@@ -71,13 +71,13 @@ internal static class Asn1TextCodec
         };
     }
 
-    public static string FormatTime(DateTimeOffset value, Asn1TimeForm form)
+    public static string FormatTime(DateTimeOffset value, Asn1TimeForm form, int fractionDigits = 3)
     {
         var utc = value.ToUniversalTime();
         return form switch
         {
             Asn1TimeForm.Utc => FormatUtc(utc),
-            Asn1TimeForm.Generalized => FormatGeneralized(utc),
+            Asn1TimeForm.Generalized => FormatGeneralized(utc, fractionDigits),
             _ => throw new Asn1Exception($"Unknown time form '{form}'.")
         };
     }
@@ -282,10 +282,16 @@ internal static class Asn1TextCodec
             span[12] = 'Z';
         });
 
-    private static string FormatGeneralized(DateTimeOffset utc)
+    private static string FormatGeneralized(DateTimeOffset utc, int fractionDigits)
     {
+        if (fractionDigits is < 0 or > 7)
+        {
+            throw new Asn1Exception($"GeneralizedTime fractionDigits must be in 0..7, got '{fractionDigits}'.");
+        }
+
+        utc = RoundToFractionDigits(utc, fractionDigits);
         var fractionTicks = (int)(utc.Ticks % TimeSpan.TicksPerSecond);
-        if (fractionTicks == 0)
+        if (fractionTicks == 0 || fractionDigits == 0)
         {
             return string.Create(15, utc, (span, value) =>
             {
@@ -300,8 +306,26 @@ internal static class Asn1TextCodec
         }
 
         // DER (X.690 §11.7): seconds + optional fraction without trailing zeros, terminate with Z.
-        // Precision follows DateTimeOffset (100 ns → at most 7 digits after TrimEnd('0')).
         var frac = fractionTicks.ToString("D7", CultureInfo.InvariantCulture).TrimEnd('0');
+        if (frac.Length > fractionDigits)
+        {
+            frac = frac[..fractionDigits].TrimEnd('0');
+        }
+
+        if (frac.Length == 0)
+        {
+            return string.Create(15, utc, (span, value) =>
+            {
+                Write4(span, 0, value.Year);
+                Write2(span, 4, value.Month);
+                Write2(span, 6, value.Day);
+                Write2(span, 8, value.Hour);
+                Write2(span, 10, value.Minute);
+                Write2(span, 12, value.Second);
+                span[14] = 'Z';
+            });
+        }
+
         return string.Create(15 + 1 + frac.Length, (utc, frac), (span, state) =>
         {
             Write4(span, 0, state.utc.Year);
@@ -314,6 +338,32 @@ internal static class Asn1TextCodec
             state.frac.AsSpan().CopyTo(span[15..]);
             span[^1] = 'Z';
         });
+    }
+
+    private static DateTimeOffset RoundToFractionDigits(DateTimeOffset utc, int fractionDigits)
+    {
+        if (fractionDigits == 0)
+        {
+            var wholeTicks = utc.Ticks / TimeSpan.TicksPerSecond;
+            var remainder = utc.Ticks % TimeSpan.TicksPerSecond;
+            if (remainder * 2 >= TimeSpan.TicksPerSecond)
+            {
+                wholeTicks++;
+            }
+
+            return new DateTimeOffset(wholeTicks * TimeSpan.TicksPerSecond, TimeSpan.Zero);
+        }
+
+        var unit = (long)Math.Pow(10, 7 - fractionDigits);
+        var secondBase = utc.Ticks / TimeSpan.TicksPerSecond * TimeSpan.TicksPerSecond;
+        var fractionTicks = utc.Ticks - secondBase;
+        var roundedFraction = (long)Math.Round(fractionTicks / (double)unit, MidpointRounding.AwayFromZero) * unit;
+        if (roundedFraction >= TimeSpan.TicksPerSecond)
+        {
+            return new DateTimeOffset(secondBase + TimeSpan.TicksPerSecond, TimeSpan.Zero);
+        }
+
+        return new DateTimeOffset(secondBase + roundedFraction, TimeSpan.Zero);
     }
 
     private static DateTimeOffset ParseUtc(string text, Asn1Encoding encoding)
@@ -405,11 +455,6 @@ internal static class Asn1TextCodec
             }
 
             var frac = text[start..index];
-            if (encoding == Asn1Encoding.Der && frac.EndsWith('0'))
-            {
-                throw new Asn1Exception("DER GeneralizedTime fraction must not have trailing zeros.");
-            }
-
             fractionTicks = int.Parse(frac.PadRight(7, '0'), CultureInfo.InvariantCulture);
         }
 

@@ -231,6 +231,9 @@ public sealed class TimeType : TypeExpr
 
     [JsonPropertyName("timeType")]
     public string Form { get; set; } = "";
+
+    [JsonPropertyName("fractionDigits")]
+    public int? FractionDigits { get; set; }
 }
 
 public sealed class AnyType : TypeExpr

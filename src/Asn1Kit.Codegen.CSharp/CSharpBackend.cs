@@ -733,7 +733,7 @@ public sealed class CSharpBackend : ILanguageBackend
             EnumeratedType enumerated => new EnumeratedType { Values = enumerated.Values },
             BitStringType bitString => new BitStringType { NamedBits = bitString.NamedBits },
             StringType stringType => new StringType { Form = stringType.Form },
-            TimeType timeType => new TimeType { Form = timeType.Form },
+            TimeType timeType => new TimeType { Form = timeType.Form, FractionDigits = timeType.FractionDigits },
             SequenceType sequence => new SequenceType { Components = sequence.Components },
             ChoiceType choice => new ChoiceType { Components = choice.Components },
             SequenceOfType sequenceOf => new SequenceOfType { Element = sequenceOf.Element },
@@ -754,7 +754,9 @@ public sealed class CSharpBackend : ILanguageBackend
         NullType => $"{writer}.WriteNull({tag})",
         OidType => $"{writer}.WriteObjectIdentifier({tag}, {expr})",
         StringType stringType => $"{writer}.WriteString({tag}, {expr}, {StringFormEnum(stringType.Form)})",
-        TimeType timeType => $"{writer}.WriteTime({tag}, {expr}, {TimeFormEnum(timeType.Form)})",
+        TimeType timeType => timeType.Form == TimeTypes.Generalized
+            ? $"{writer}.WriteTime({tag}, {expr}, {TimeFormEnum(timeType.Form)}, {timeType.FractionDigits ?? 3})"
+            : $"{writer}.WriteTime({tag}, {expr}, {TimeFormEnum(timeType.Form)})",
         _ => throw new InvalidOperationException(type.Kind)
     };
 

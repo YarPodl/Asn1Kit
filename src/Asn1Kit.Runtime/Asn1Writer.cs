@@ -59,9 +59,9 @@ public sealed class Asn1Writer
         WritePrimitive(tag.AsPrimitive(), Asn1TextCodec.EncodeString(value, form));
     }
 
-    public void WriteTime(Asn1Tag tag, DateTimeOffset value, Asn1TimeForm form)
+    public void WriteTime(Asn1Tag tag, DateTimeOffset value, Asn1TimeForm form, int fractionDigits = 3)
     {
-        var text = Asn1TextCodec.FormatTime(value, form);
+        var text = Asn1TextCodec.FormatTime(value, form, fractionDigits);
         WritePrimitive(tag.AsPrimitive(), Asn1TextCodec.EncodeString(text, Asn1StringForm.Visible));
     }
 

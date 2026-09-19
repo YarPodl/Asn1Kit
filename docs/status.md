@@ -13,7 +13,7 @@
 | `octetString` | да | да → `byte[]` | `RoundTripTests`, `RuntimeTests` |
 | `oid` | да, dotted-строка | да → `string` | `RuntimeTests.ObjectIdentifier_*` |
 | `string` (12 форм `stringType`) | да | да → `string` + `Asn1StringForm` | `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*` |
-| `time` (`utc` / `generalized`) | да | да → `DateTimeOffset` + `Asn1TimeForm` | `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*` |
+| `time` (`utc` / `generalized`) | да; `fractionDigits` 0…7 (default 3) для `generalized` | да → `DateTimeOffset` + `Asn1TimeForm`; запись с округлением | `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*` |
 | `any` (+ `definedBy`) | да, с проверкой sibling-компонента | **нет** | `ParserTests`, `ValueResolutionTests.RejectsAnyDefinedByUnknownField` |
 | `sequence` | да, `extensible` | да → класс с `Encode` / `Decode` | `RoundTripTests`, `PkixExplicit88Tests` |
 | `set` | да | **нет** | `ParserTests` |
@@ -48,12 +48,12 @@
 | NULL | `WriteNull` | `ReadNull` |
 | OBJECT IDENTIFIER | `WriteObjectIdentifier` (dotted) | `ReadObjectIdentifier` |
 | STRING (12 форм) | `WriteString` + `Asn1StringForm` | `ReadString` (BER: constructed склеивается) |
-| TIME (`utc` / `generalized`) | `WriteTime` (`DateTimeOffset`) | `ReadTime` |
+| TIME (`utc` / `generalized`) | `WriteTime` (`DateTimeOffset`, `fractionDigits` для generalized) | `ReadTime` (дробь 1…7, хвостовые нули ок) |
 | SEQUENCE / constructed | `WriteSequence` | `ReadSequence`, `TryPeekTag`, `Eof` |
 | EXPLICIT-обёртка | `WriteExplicit` | через `ReadSequence` |
 | Готовый TLV | `WriteRaw` | `ReadValue` |
 
-DER: только definite length, минимальная кодировка INTEGER, BOOLEAN `0x00` / `0xFF`, BIT STRING с нулевыми хвостовыми битами, время только с секундами и суффиксом `Z`. BER на чтении принимает indefinite length, constructed строки/BIT STRING, время без секунд и со смещением `±hhmm`.
+DER: только definite length, минимальная кодировка INTEGER, BOOLEAN `0x00` / `0xFF`, BIT STRING с нулевыми хвостовыми битами, время только с секундами и суффиксом `Z` (GeneralizedTime: `fractionDigits` 0…7, default 3; на записи без хвостовых нулей дроби). BER на чтении принимает indefinite length, constructed строки/BIT STRING, время без секунд и со смещением `±hhmm`; дробь 1…7 цифр с хвостовыми нулями допускается и в DER.
 
 ## Вне профиля компилятора
 

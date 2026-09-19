@@ -173,6 +173,21 @@ public static class IrValidator
                     throw new IrException($"time '{context}' has unknown timeType '{timeType.Form}'.");
                 }
 
+                if (timeType.FractionDigits is { } digits)
+                {
+                    if (digits is < 0 or > 7)
+                    {
+                        throw new IrException(
+                            $"time '{context}' has fractionDigits '{digits}' outside 0..7.");
+                    }
+
+                    if (timeType.Form == TimeTypes.Utc && digits != 0)
+                    {
+                        throw new IrException(
+                            $"time '{context}' with timeType 'utc' cannot have fractionDigits '{digits}'.");
+                    }
+                }
+
                 break;
             case AnyType any:
                 if (any.DefinedBy is not null)

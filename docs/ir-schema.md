@@ -36,7 +36,7 @@
 - `enumerated` — `values: [{ name, value }]`
 - `bitString` — опционально `namedBits: [{ name, value }]`
 - `string` — обязательно `stringType`: `utf8` \| `printable` \| `teletex` \| `t61` \| `ia5` \| `numeric` \| `visible` \| `bmp` \| `universal` \| `general` \| `graphic` \| `videotex`
-- `time` — обязательно `timeType`: `utc` \| `generalized`
+- `time` — обязательно `timeType`: `utc` \| `generalized`; опционально `fractionDigits` `0…7` (только `generalized`; отсутствие = 3 при записи)
 - `any` — опционально `definedBy` (имя sibling-компонента)
 - `sequence` / `set` / `choice` — `components[]`, опционально `extensible`
 - `sequenceOf` / `setOf` — `element`

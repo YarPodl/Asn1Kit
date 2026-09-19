@@ -121,8 +121,13 @@ public static class Asn1Time
 {
     public static Asn1Tag DefaultTag(Asn1TimeForm form) => Asn1TextCodec.DefaultTimeTag(form);
 
-    public static void Encode(Asn1Writer writer, DateTimeOffset value, Asn1TimeForm form, Asn1Tag? tag = null) =>
-        writer.WriteTime(tag ?? DefaultTag(form), value, form);
+    public static void Encode(
+        Asn1Writer writer,
+        DateTimeOffset value,
+        Asn1TimeForm form,
+        Asn1Tag? tag = null,
+        int fractionDigits = 3) =>
+        writer.WriteTime(tag ?? DefaultTag(form), value, form, fractionDigits);
 
     public static DateTimeOffset Decode(Asn1Reader reader, Asn1TimeForm form, Asn1Tag? tag = null) =>
         reader.ReadTime(tag ?? DefaultTag(form), form);

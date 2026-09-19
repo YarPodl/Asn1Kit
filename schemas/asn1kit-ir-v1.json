@@ -328,6 +328,7 @@
           "properties": {
             "kind": { "const": "time" },
             "timeType": { "enum": ["utc", "generalized"] },
+            "fractionDigits": { "type": "integer", "minimum": 0, "maximum": 7 },
             "tag": { "$ref": "#/$defs/tag" },
             "constraint": { "$ref": "#/$defs/constraint" },
             "options": { "$ref": "#/$defs/options" }

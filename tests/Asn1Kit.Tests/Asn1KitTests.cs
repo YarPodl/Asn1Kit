@@ -39,6 +39,41 @@ public sealed class IrSchemaTests
         var roundTrip = IrSerializer.FromJson(IrSerializer.ToJson(document));
         Assert.Equal("keep-me", roundTrip.Modules[0].Options!["extra"]!.ToString());
     }
+
+    [Fact]
+    public void TimeFractionDigits_RoundTripsAndRejectsUtcNonZero()
+    {
+        var document = new IrDocument
+        {
+            IrVersion = 1,
+            Modules =
+            {
+                new IrModule
+                {
+                    Name = "TimeMod",
+                    TagDefault = TagDefaults.Explicit,
+                    Types =
+                    {
+                        new IrTypeDef
+                        {
+                            Name = "Stamp",
+                            Type = new TimeType { Form = TimeTypes.Generalized, FractionDigits = 5 }
+                        }
+                    }
+                }
+            }
+        };
+
+        var json = IrSerializer.ToJson(document);
+        IrSerializer.ValidateSchema(json);
+        var again = IrSerializer.FromJson(json);
+        Assert.Equal(5, Assert.IsType<TimeType>(again.Modules[0].Types[0].Type).FractionDigits);
+
+        document.Modules[0].Types[0].Type = new TimeType { Form = TimeTypes.Utc, FractionDigits = 3 };
+        var ex = Assert.Throws<IrException>(() => IrValidator.Validate(document));
+        Assert.Contains("utc", ex.Message);
+        Assert.Contains("fractionDigits", ex.Message);
+    }
 }
 
 public sealed class CompilerTests
@@ -282,6 +317,7 @@ public sealed class RuntimeTests
             bytes);
         Assert.Equal(utc, Asn1Time.Decode(new Asn1Reader(bytes, Asn1Encoding.Der), Asn1TimeForm.Utc));
 
+        // Default fractionDigits = 3: 120 ms → ".12Z" after trim.
         var withFraction = new DateTimeOffset(2017, 1, 2, 3, 4, 5, 120, TimeSpan.Zero);
         var gWriter = new Asn1Writer(Asn1Encoding.Der);
         Asn1Time.Encode(gWriter, withFraction, Asn1TimeForm.Generalized);
@@ -295,7 +331,7 @@ public sealed class RuntimeTests
     [Fact]
     public void Time_GeneralizedFraction_ReadsOneToSevenDigits_WritesDer()
     {
-        // Read: 1..7 fractional digits.
+        // Read: 1..7 fractional digits (BER and DER).
         Assert.Equal(1_000_000, FractionTicksOf("20170102030405.1Z"));
         Assert.Equal(1_200_000, FractionTicksOf("20170102030405.12Z"));
         Assert.Equal(1_230_000, FractionTicksOf("20170102030405.123Z"));
@@ -307,27 +343,41 @@ public sealed class RuntimeTests
         Assert.Throws<Asn1Exception>(() => FractionTicksOf("20170102030405.Z"));
         Assert.Throws<Asn1Exception>(() => FractionTicksOf("20170102030405.12345678Z"));
 
-        // Write: DER — no trailing zeros; zero fraction omitted.
+        // DER read accepts trailing zeros (soft profile).
+        Assert.Equal(
+            1_200_000,
+            FractionTicksOf("20170102030405.120Z", Asn1Encoding.Der));
+
+        // Write default (=3): round to ms, then DER-trim trailing zeros.
         AssertDerFraction(0, "20170102030405Z");
         AssertDerFraction(1_000_000, "20170102030405.1Z");
         AssertDerFraction(1_200_000, "20170102030405.12Z");
         AssertDerFraction(1_230_000, "20170102030405.123Z");
-        AssertDerFraction(1_200_000, "20170102030405.12Z"); // 1_200_000, not ".1200000"
-        AssertDerFraction(1_234_567, "20170102030405.1234567Z");
+        AssertDerFraction(1_234_567, "20170102030405.123Z"); // rounds 0.1234567 → 0.123
+
+        // Write with fractionDigits = 0: drop subseconds.
+        AssertDerFraction(1_234_567, "20170102030405Z", fractionDigits: 0);
+        AssertDerFraction(6_000_000, "20170102030406Z", fractionDigits: 0); // 0.6s → round up
+
+        // Write with fractionDigits = 7: full tick precision, trim zeros.
+        AssertDerFraction(0, "20170102030405Z", fractionDigits: 7);
+        AssertDerFraction(1_000_000, "20170102030405.1Z", fractionDigits: 7);
+        AssertDerFraction(1_200_000, "20170102030405.12Z", fractionDigits: 7);
+        AssertDerFraction(1_234_567, "20170102030405.1234567Z", fractionDigits: 7);
     }
 
-    private static int FractionTicksOf(string generalized)
+    private static int FractionTicksOf(string generalized, Asn1Encoding encoding = Asn1Encoding.Ber)
     {
         var bytes = WrapTime(Asn1Tag.GeneralizedTime, generalized);
-        var value = Asn1Time.Decode(new Asn1Reader(bytes, Asn1Encoding.Ber), Asn1TimeForm.Generalized);
+        var value = Asn1Time.Decode(new Asn1Reader(bytes, encoding), Asn1TimeForm.Generalized);
         return (int)(value.Ticks % TimeSpan.TicksPerSecond);
     }
 
-    private static void AssertDerFraction(int fractionTicks, string expectedText)
+    private static void AssertDerFraction(int fractionTicks, string expectedText, int fractionDigits = 3)
     {
         var value = new DateTimeOffset(2017, 1, 2, 3, 4, 5, TimeSpan.Zero).AddTicks(fractionTicks);
         var writer = new Asn1Writer(Asn1Encoding.Der);
-        Asn1Time.Encode(writer, value, Asn1TimeForm.Generalized);
+        Asn1Time.Encode(writer, value, Asn1TimeForm.Generalized, fractionDigits: fractionDigits);
         Assert.Equal(Encoding.ASCII.GetBytes(expectedText), writer.Encode().AsSpan(2).ToArray());
     }
 
@@ -425,6 +475,7 @@ public sealed class RoundTripTests
         Assert.Contains("Bit_DigitalSignature", source);
         Assert.Contains("WriteString", source);
         Assert.Contains("WriteTime", source);
+        Assert.Contains("Asn1TimeForm.Generalized, 3)", source);
         Assert.Contains("WriteBitString", source);
         Assert.Contains("WriteExplicit", source);
 
