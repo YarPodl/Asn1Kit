@@ -1,0 +1,36 @@
+---
+description: Повышенные требования к Asn1Kit.Runtime — покрытие сценариев, скорость, память
+globs: src/Asn1Kit.Runtime/**/*.cs
+alwaysApply: false
+---
+
+# Runtime BER/DER
+
+К runtime требования выше, чем к остальному проекту: это горячий путь каждого encode/decode.
+
+## Покрытие
+
+- Тестируй **весь** публичный API `Asn1Reader` / `Asn1Writer` / примитивов.
+- Для каждого типа: BER и DER, definite length; на чтении BER — indefinite length и constructed `OCTET STRING`.
+- DER: отказ на indefinite length, неминимальный INTEGER, BOOLEAN не `0x00`/`0xFF`.
+- Границы: пустой INTEGER, `0`, `-1`, длинный `BigInteger`, вложенные SEQUENCE/CHOICE, OPTIONAL отсутствует/присутствует, EOF, чужой тег, обрезанный TLV.
+- Round-trip: encode → decode → encode даёт те же DER-байты.
+
+## Производительность и память
+
+- Не копируй буфер, если достаточно `ReadOnlySpan<byte>` / смещения в исходном массиве.
+- Не выделяй `byte[]` на каждый тег или длину; переиспользуй writer-буфер, расти его предсказуемо.
+- Избегай LINQ, `ToArray()`, `Encoding.UTF8.GetString` и `new Asn1Reader(copy)` на горячем пути, если можно срез.
+- Сгенерированный код вызывает runtime; логику кодека не дублируй здесь «для удобства» в другом виде.
+
+```csharp
+// ❌ BAD: копия содержимого на каждый ReadValue
+var contents = new byte[length];
+Buffer.BlockCopy(_data, _offset, contents, 0, length);
+return contents;
+
+// ✅ GOOD: срез без копии, копия только если владение обязано уйти наружу
+ReadOnlySpan<byte> contents = _data.AsSpan(_offset, length);
+```
+
+После правок runtime — отдельные тесты на векторы BER/DER, не только через сгенерированные типы.
