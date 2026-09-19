@@ -42,6 +42,10 @@
         "types": {
           "type": "array",
           "items": { "$ref": "#/$defs/typeDef" }
+        },
+        "values": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/valueDef" }
         }
       }
     },
@@ -54,6 +58,10 @@
         "types": {
           "type": "array",
           "items": { "type": "string", "minLength": 1 }
+        },
+        "values": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
         }
       }
     },
@@ -64,6 +72,17 @@
       "properties": {
         "name": { "type": "string", "minLength": 1 },
         "type": { "$ref": "#/$defs/typeExpr" },
+        "options": { "$ref": "#/$defs/options" }
+      }
+    },
+    "valueDef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type", "value"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "type": { "$ref": "#/$defs/typeExpr" },
+        "value": { "$ref": "#/$defs/valueExpr" },
         "options": { "$ref": "#/$defs/options" }
       }
     },
@@ -86,6 +105,24 @@
         "mode": { "enum": ["implicit", "explicit"] }
       }
     },
+    "bound": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min"],
+      "properties": {
+        "min": { "type": "integer" },
+        "max": { "type": "integer" }
+      }
+    },
+    "constraint": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "size": { "$ref": "#/$defs/bound" },
+        "value": { "$ref": "#/$defs/bound" },
+        "unsupported": { "type": "string", "minLength": 1 }
+      }
+    },
     "component": {
       "type": "object",
       "additionalProperties": false,
@@ -94,8 +131,80 @@
         "name": { "type": "string", "minLength": 1 },
         "type": { "$ref": "#/$defs/typeExpr" },
         "optional": { "type": "boolean" },
+        "default": { "$ref": "#/$defs/valueExpr" },
         "options": { "$ref": "#/$defs/options" }
       }
+    },
+    "valueExpr": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "value"],
+          "properties": {
+            "kind": { "const": "integer" },
+            "value": { "type": "integer" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "value"],
+          "properties": {
+            "kind": { "const": "boolean" },
+            "value": { "type": "boolean" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": {
+            "kind": { "const": "null" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "arcs"],
+          "properties": {
+            "kind": { "const": "oid" },
+            "arcs": {
+              "type": "array",
+              "items": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "value"],
+          "properties": {
+            "kind": { "const": "string" },
+            "value": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": {
+            "kind": { "const": "bitString" },
+            "bits": { "type": "string" },
+            "hex": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "name"],
+          "properties": {
+            "kind": { "const": "ref" },
+            "name": { "type": "string", "minLength": 1 },
+            "module": { "type": "string", "minLength": 1 }
+          }
+        }
+      ]
     },
     "typeExpr": {
       "oneOf": [
@@ -106,6 +215,7 @@
           "properties": {
             "kind": { "const": "boolean" },
             "tag": { "$ref": "#/$defs/tag" },
+            "constraint": { "$ref": "#/$defs/constraint" },
             "options": { "$ref": "#/$defs/options" }
           }
         },
@@ -116,6 +226,7 @@
           "properties": {
             "kind": { "const": "null" },
             "tag": { "$ref": "#/$defs/tag" },
+            "constraint": { "$ref": "#/$defs/constraint" },
             "options": { "$ref": "#/$defs/options" }
           }
         },
@@ -126,6 +237,7 @@
           "properties": {
             "kind": { "const": "octetString" },
             "tag": { "$ref": "#/$defs/tag" },
+            "constraint": { "$ref": "#/$defs/constraint" },
             "options": { "$ref": "#/$defs/options" }
           }
         },
@@ -136,6 +248,7 @@
           "properties": {
             "kind": { "const": "oid" },
             "tag": { "$ref": "#/$defs/tag" },
+            "constraint": { "$ref": "#/$defs/constraint" },
             "options": { "$ref": "#/$defs/options" }
           }
         },
@@ -150,6 +263,7 @@
               "items": { "$ref": "#/$defs/namedNumber" }
             },
             "tag": { "$ref": "#/$defs/tag" },
+            "constraint": { "$ref": "#/$defs/constraint" },
             "options": { "$ref": "#/$defs/options" }
           }
         },
@@ -164,6 +278,73 @@
               "items": { "$ref": "#/$defs/namedNumber" }
             },
             "tag": { "$ref": "#/$defs/tag" },
+            "constraint": { "$ref": "#/$defs/constraint" },
+            "options": { "$ref": "#/$defs/options" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": {
+            "kind": { "const": "bitString" },
+            "namedBits": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/namedNumber" }
+            },
+            "tag": { "$ref": "#/$defs/tag" },
+            "constraint": { "$ref": "#/$defs/constraint" },
+            "options": { "$ref": "#/$defs/options" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "stringType"],
+          "properties": {
+            "kind": { "const": "string" },
+            "stringType": {
+              "enum": [
+                "utf8",
+                "printable",
+                "teletex",
+                "t61",
+                "ia5",
+                "numeric",
+                "visible",
+                "bmp",
+                "universal",
+                "general",
+                "graphic",
+                "videotex"
+              ]
+            },
+            "tag": { "$ref": "#/$defs/tag" },
+            "constraint": { "$ref": "#/$defs/constraint" },
+            "options": { "$ref": "#/$defs/options" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "timeType"],
+          "properties": {
+            "kind": { "const": "time" },
+            "timeType": { "enum": ["utc", "generalized"] },
+            "tag": { "$ref": "#/$defs/tag" },
+            "constraint": { "$ref": "#/$defs/constraint" },
+            "options": { "$ref": "#/$defs/options" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": {
+            "kind": { "const": "any" },
+            "definedBy": { "type": "string", "minLength": 1 },
+            "tag": { "$ref": "#/$defs/tag" },
+            "constraint": { "$ref": "#/$defs/constraint" },
             "options": { "$ref": "#/$defs/options" }
           }
         },
@@ -177,7 +358,25 @@
               "type": "array",
               "items": { "$ref": "#/$defs/component" }
             },
+            "extensible": { "type": "boolean" },
             "tag": { "$ref": "#/$defs/tag" },
+            "constraint": { "$ref": "#/$defs/constraint" },
+            "options": { "$ref": "#/$defs/options" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "components"],
+          "properties": {
+            "kind": { "const": "set" },
+            "components": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/component" }
+            },
+            "extensible": { "type": "boolean" },
+            "tag": { "$ref": "#/$defs/tag" },
+            "constraint": { "$ref": "#/$defs/constraint" },
             "options": { "$ref": "#/$defs/options" }
           }
         },
@@ -192,7 +391,9 @@
               "minItems": 1,
               "items": { "$ref": "#/$defs/component" }
             },
+            "extensible": { "type": "boolean" },
             "tag": { "$ref": "#/$defs/tag" },
+            "constraint": { "$ref": "#/$defs/constraint" },
             "options": { "$ref": "#/$defs/options" }
           }
         },
@@ -204,6 +405,19 @@
             "kind": { "const": "sequenceOf" },
             "element": { "$ref": "#/$defs/typeExpr" },
             "tag": { "$ref": "#/$defs/tag" },
+            "constraint": { "$ref": "#/$defs/constraint" },
+            "options": { "$ref": "#/$defs/options" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "element"],
+          "properties": {
+            "kind": { "const": "setOf" },
+            "element": { "$ref": "#/$defs/typeExpr" },
+            "tag": { "$ref": "#/$defs/tag" },
+            "constraint": { "$ref": "#/$defs/constraint" },
             "options": { "$ref": "#/$defs/options" }
           }
         },
@@ -216,6 +430,7 @@
             "name": { "type": "string", "minLength": 1 },
             "module": { "type": "string", "minLength": 1 },
             "tag": { "$ref": "#/$defs/tag" },
+            "constraint": { "$ref": "#/$defs/constraint" },
             "options": { "$ref": "#/$defs/options" }
           }
         }

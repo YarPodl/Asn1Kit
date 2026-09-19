@@ -13,6 +13,12 @@ public enum TokenKind
     RParen,
     Comma,
     Semicolon,
+    Dot,
+    Range,
+    Ellipsis,
+    CString,
+    BString,
+    HString,
     EndOfFile
 }
 

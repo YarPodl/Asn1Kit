@@ -119,6 +119,7 @@ public static class IrSerializer
         {
             module.Imports ??= new List<IrImport>();
             module.Types ??= new List<IrTypeDef>();
+            module.Values ??= new List<IrValueDef>();
         }
     }
 
@@ -133,6 +134,7 @@ public static class IrSerializer
         };
         options.Converters.Add(new JsonStringEnumConverter());
         options.Converters.Add(new TypeExprConverter());
+        options.Converters.Add(new IrValueConverter());
         return options;
     }
 }

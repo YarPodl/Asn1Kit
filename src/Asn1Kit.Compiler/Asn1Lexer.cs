@@ -37,6 +37,30 @@ internal sealed class Asn1Lexer
                 continue;
             }
 
+            if (ch == '.' && Peek(1) == '.' && Peek(2) == '.')
+            {
+                Advance();
+                Advance();
+                Advance();
+                tokens.Add(new Token(TokenKind.Ellipsis, "...", line, column));
+                continue;
+            }
+
+            if (ch == '.' && Peek(1) == '.')
+            {
+                Advance();
+                Advance();
+                tokens.Add(new Token(TokenKind.Range, "..", line, column));
+                continue;
+            }
+
+            if (ch == '.')
+            {
+                Advance();
+                tokens.Add(new Token(TokenKind.Dot, ".", line, column));
+                continue;
+            }
+
             switch (ch)
             {
                 case '{':
@@ -73,6 +97,24 @@ internal sealed class Asn1Lexer
                     continue;
             }
 
+            if (ch == '"')
+            {
+                tokens.Add(ReadCString(line, column));
+                continue;
+            }
+
+            if (ch == '\'')
+            {
+                tokens.Add(ReadQuotedString(line, column));
+                continue;
+            }
+
+            if (ch == '-' && char.IsDigit(Peek(1)))
+            {
+                tokens.Add(ReadNumber(line, column));
+                continue;
+            }
+
             if (char.IsDigit(ch))
             {
                 tokens.Add(ReadNumber(line, column));
@@ -92,6 +134,11 @@ internal sealed class Asn1Lexer
     private Token ReadNumber(int line, int column)
     {
         var start = _index;
+        if (_text[_index] == '-')
+        {
+            Advance();
+        }
+
         while (_index < _text.Length && char.IsDigit(_text[_index]))
         {
             Advance();
@@ -112,6 +159,72 @@ internal sealed class Asn1Lexer
         return new Token(TokenKind.Identifier, _text[start.._index], line, column);
     }
 
+    private Token ReadCString(int line, int column)
+    {
+        Advance(); // "
+        var start = _index;
+        while (_index < _text.Length && _text[_index] != '"')
+        {
+            if (_text[_index] == '\n')
+            {
+                throw new CompileException("Unterminated character string.", line, column);
+            }
+
+            Advance();
+        }
+
+        if (_index >= _text.Length)
+        {
+            throw new CompileException("Unterminated character string.", line, column);
+        }
+
+        var value = _text[start.._index];
+        Advance(); // "
+        return new Token(TokenKind.CString, value, line, column);
+    }
+
+    private Token ReadQuotedString(int line, int column)
+    {
+        Advance(); // '
+        var start = _index;
+        while (_index < _text.Length && _text[_index] != '\'')
+        {
+            if (_text[_index] == '\n')
+            {
+                throw new CompileException("Unterminated binary/hex string.", line, column);
+            }
+
+            Advance();
+        }
+
+        if (_index >= _text.Length)
+        {
+            throw new CompileException("Unterminated binary/hex string.", line, column);
+        }
+
+        var value = _text[start.._index];
+        Advance(); // '
+        if (_index >= _text.Length)
+        {
+            throw new CompileException("Binary/hex string missing B or H suffix.", line, column);
+        }
+
+        var suffix = _text[_index];
+        if (suffix is 'B' or 'b')
+        {
+            Advance();
+            return new Token(TokenKind.BString, value, line, column);
+        }
+
+        if (suffix is 'H' or 'h')
+        {
+            Advance();
+            return new Token(TokenKind.HString, value, line, column);
+        }
+
+        throw new CompileException($"Expected 'B' or 'H' after quoted string, found '{suffix}'.", _line, _column);
+    }
+
     private void SkipTrivia()
     {
         while (_index < _text.Length)
@@ -130,6 +243,25 @@ internal sealed class Asn1Lexer
                 while (_index < _text.Length && _text[_index] != '\n')
                 {
                     if (_text[_index] == '-' && Peek(1) == '-')
+                    {
+                        Advance();
+                        Advance();
+                        break;
+                    }
+
+                    Advance();
+                }
+
+                continue;
+            }
+
+            if (ch == '/' && Peek(1) == '*')
+            {
+                Advance();
+                Advance();
+                while (_index < _text.Length)
+                {
+                    if (_text[_index] == '*' && Peek(1) == '/')
                     {
                         Advance();
                         Advance();
@@ -183,11 +315,14 @@ internal static class Keywords
     public const string Begin = "BEGIN";
     public const string End = "END";
     public const string Sequence = "SEQUENCE";
+    public const string Set = "SET";
     public const string Of = "OF";
     public const string Choice = "CHOICE";
     public const string Optional = "OPTIONAL";
+    public const string Default = "DEFAULT";
     public const string Integer = "INTEGER";
     public const string Boolean = "BOOLEAN";
+    public const string Bit = "BIT";
     public const string Octet = "OCTET";
     public const string String = "STRING";
     public const string Null = "NULL";
@@ -205,4 +340,30 @@ internal static class Keywords
     public const string Application = "APPLICATION";
     public const string Private = "PRIVATE";
     public const string Enumerated = "ENUMERATED";
+    public const string Any = "ANY";
+    public const string Defined = "DEFINED";
+    public const string By = "BY";
+    public const string Size = "SIZE";
+    public const string Max = "MAX";
+    public const string Min = "MIN";
+    public const string True = "TRUE";
+    public const string False = "FALSE";
+    public const string Components = "COMPONENTS";
+    public const string Class = "CLASS";
+    public const string Real = "REAL";
+    public const string External = "EXTERNAL";
+    public const string UtcTime = "UTCTime";
+    public const string GeneralizedTime = "GeneralizedTime";
+    public const string Utf8String = "UTF8String";
+    public const string PrintableString = "PrintableString";
+    public const string TeletexString = "TeletexString";
+    public const string T61String = "T61String";
+    public const string Ia5String = "IA5String";
+    public const string NumericString = "NumericString";
+    public const string VisibleString = "VisibleString";
+    public const string BmpString = "BMPString";
+    public const string UniversalString = "UniversalString";
+    public const string GeneralString = "GeneralString";
+    public const string GraphicString = "GraphicString";
+    public const string VideotexString = "VideotexString";
 }

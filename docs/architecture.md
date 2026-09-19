@@ -34,6 +34,14 @@ C++ планируется как ещё один backend и отдельный 
 
 `asn1kit compile` перезаписывает IR из ASN.1. Правки `options` вносите в JSON перед `generate`, либо не пересобирайте IR.
 
+Компилятор делает двухфазный резолв значений: сначала собирает все type/value assignments модулей, затем разворачивает OID-цепочки, подставляет `ub-*` в constraints и `DEFAULT`. Это нужно, потому что в реальных модулях (например PKIX1Explicit88) upper bounds объявлены в конце файла.
+
+### Границы профиля компилятора
+
+Поддерживается широко используемое подмножество X.680 / PKCS-модулей: value assignments, `SET`/`SET OF`, `BIT STRING`, строки, время, `ANY DEFINED BY`, `DEFAULT`, `SIZE`/диапазоны. Вне профиля — явная `CompileException`: `CLASS` / information objects, `COMPONENTS OF`, параметризованные типы, `REAL`, `EXTERNAL`. Нераспознанные constraint-формы сохраняются в `constraint.unsupported`, а не отбрасываются молча.
+
+C# codegen пока не покрывает все kind IR; на неподдерживаемых kind бросает `NotSupportedException`.
+
 ## Runtime
 
 `Asn1Writer` / `Asn1Reader` принимают `Asn1Encoding.Ber` или `Asn1Encoding.Der`.

@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 
 namespace Asn1Kit.Compiler;
 
@@ -22,11 +23,11 @@ internal sealed class Asn1Parser
 
     private ModuleAst ParseModule()
     {
-        var name = ExpectIdentifier("module name");
+        var nameTok = ExpectIdentifier("module name");
         List<int>? oid = null;
         if (Check(TokenKind.LBrace))
         {
-            oid = ParseOidValue();
+            oid = ParseNumericOidValue();
         }
 
         ExpectKeyword(Keywords.Definitions);
@@ -36,10 +37,12 @@ internal sealed class Asn1Parser
 
         var module = new ModuleAst
         {
-            Name = name.Text,
+            Name = nameTok.Text,
             Oid = oid,
             Source = _source,
-            TagDefault = tagDefault
+            TagDefault = tagDefault,
+            Line = nameTok.Line,
+            Column = nameTok.Column
         };
 
         if (IsKeyword(Keywords.Exports))
@@ -54,7 +57,7 @@ internal sealed class Asn1Parser
 
         while (!IsKeyword(Keywords.End) && !Check(TokenKind.EndOfFile))
         {
-            module.Assignments.Add(ParseAssignment());
+            ParseAssignment(module);
         }
 
         ExpectKeyword(Keywords.End);
@@ -110,37 +113,91 @@ internal sealed class Asn1Parser
         ExpectKeyword(Keywords.Imports);
         while (!Check(TokenKind.Semicolon) && !Check(TokenKind.EndOfFile))
         {
-            var types = new List<string> { ExpectIdentifier("imported type").Text };
+            var symbols = new List<Token> { ExpectIdentifier("imported symbol") };
             while (Check(TokenKind.Comma))
             {
                 Advance();
-                types.Add(ExpectIdentifier("imported type").Text);
+                symbols.Add(ExpectIdentifier("imported symbol"));
             }
 
             ExpectKeyword(Keywords.From);
-            var from = ExpectIdentifier("imported module").Text;
+            var from = ExpectIdentifier("imported module");
             if (Check(TokenKind.LBrace))
             {
-                ParseOidValue();
+                ParseOidValueAst();
             }
 
-            var import = new ImportAst { Module = from };
-            import.Types.AddRange(types);
+            var import = new ImportAst
+            {
+                Module = from.Text,
+                Line = from.Line,
+                Column = from.Column
+            };
+            foreach (var symbol in symbols)
+            {
+                if (char.IsUpper(symbol.Text[0]))
+                {
+                    import.Types.Add(symbol.Text);
+                }
+                else
+                {
+                    import.Values.Add(symbol.Text);
+                }
+            }
+
             module.Imports.Add(import);
         }
 
         Expect(TokenKind.Semicolon, ";");
     }
 
-    private AssignmentAst ParseAssignment()
+    private void ParseAssignment(ModuleAst module)
     {
-        var name = ExpectIdentifier("type assignment");
+        RejectOutOfProfile();
+        var name = ExpectIdentifier("assignment name");
+        if (char.IsLower(name.Text[0]))
+        {
+            var type = ParseType();
+            Expect(TokenKind.Assign, "::=");
+            var value = ParseValue();
+            module.ValueAssignments.Add(new ValueAssignmentAst
+            {
+                Name = name.Text,
+                Type = type,
+                Value = value,
+                Line = name.Line,
+                Column = name.Column
+            });
+            return;
+        }
+
         Expect(TokenKind.Assign, "::=");
-        return new AssignmentAst { Name = name.Text, Type = ParseType() };
+        module.TypeAssignments.Add(new TypeAssignmentAst
+        {
+            Name = name.Text,
+            Type = ParseType(),
+            Line = name.Line,
+            Column = name.Column
+        });
+    }
+
+    private void RejectOutOfProfile()
+    {
+        if (IsKeyword(Keywords.Class) || IsKeyword(Keywords.Real) || IsKeyword(Keywords.External))
+        {
+            throw Error($"'{Peek().Text}' is outside the Asn1Kit compiler profile.");
+        }
     }
 
     private TypeAst ParseType()
     {
+        RejectOutOfProfile();
+        if (IsKeyword(Keywords.Components))
+        {
+            throw Error("COMPONENTS OF is outside the Asn1Kit compiler profile.");
+        }
+
+        TypeAst type;
         if (Check(TokenKind.LBracket))
         {
             var tag = ParseTag();
@@ -156,131 +213,385 @@ internal sealed class Asn1Parser
                 mode = "explicit";
             }
 
-            tag = new TagAst { Class = tag.Class, Number = tag.Number, Mode = mode };
-            return new TaggedTypeAst(tag, ParseType());
+            tag = new TagAst
+            {
+                Class = tag.Class,
+                Number = tag.Number,
+                Mode = mode,
+                Line = tag.Line,
+                Column = tag.Column
+            };
+            type = new TaggedTypeAst(tag, ParseType())
+            {
+                Line = tag.Line,
+                Column = tag.Column
+            };
+            return ApplyTrailingConstraint(type);
         }
 
         if (IsKeyword(Keywords.Sequence))
         {
-            Advance();
-            if (IsKeyword(Keywords.Of))
-            {
-                Advance();
-                return new SequenceOfTypeAst(ParseType());
-            }
-
-            return ParseSequenceBody();
+            type = ParseSequenceOrSequenceOf();
         }
-
-        if (IsKeyword(Keywords.Choice))
+        else if (IsKeyword(Keywords.Set))
+        {
+            type = ParseSetOrSetOf();
+        }
+        else if (IsKeyword(Keywords.Choice))
         {
             Advance();
-            return ParseChoiceBody();
+            type = ParseChoiceBody();
         }
-
-        if (IsKeyword(Keywords.Integer))
+        else if (IsKeyword(Keywords.Integer))
         {
-            Advance();
+            var tok = Advance();
             List<NamedNumberAst>? named = null;
             if (Check(TokenKind.LBrace))
             {
                 named = ParseNamedNumberList();
             }
 
-            return new BuiltinTypeAst("INTEGER", named);
+            type = new BuiltinTypeAst("INTEGER", named) { Line = tok.Line, Column = tok.Column };
         }
-
-        if (IsKeyword(Keywords.Enumerated))
+        else if (IsKeyword(Keywords.Enumerated))
         {
-            Advance();
-            return new EnumeratedTypeAst(ParseNamedNumberList());
+            var tok = Advance();
+            type = new EnumeratedTypeAst(ParseNamedNumberList()) { Line = tok.Line, Column = tok.Column };
         }
-
-        if (IsKeyword(Keywords.Boolean))
+        else if (IsKeyword(Keywords.Boolean))
         {
-            Advance();
-            return new BuiltinTypeAst("BOOLEAN");
+            var tok = Advance();
+            type = new BuiltinTypeAst("BOOLEAN") { Line = tok.Line, Column = tok.Column };
         }
-
-        if (IsKeyword(Keywords.Null))
+        else if (IsKeyword(Keywords.Null))
         {
-            Advance();
-            return new BuiltinTypeAst("NULL");
+            var tok = Advance();
+            type = new BuiltinTypeAst("NULL") { Line = tok.Line, Column = tok.Column };
         }
-
-        if (IsKeyword(Keywords.Octet))
+        else if (IsKeyword(Keywords.Bit))
         {
-            Advance();
+            var tok = Advance();
             ExpectKeyword(Keywords.String);
-            return new BuiltinTypeAst("OCTET STRING");
-        }
+            List<NamedNumberAst>? namedBits = null;
+            if (Check(TokenKind.LBrace))
+            {
+                namedBits = ParseNamedNumberList();
+            }
 
-        if (IsKeyword(Keywords.Object))
+            type = new BitStringTypeAst(namedBits) { Line = tok.Line, Column = tok.Column };
+        }
+        else if (IsKeyword(Keywords.Octet))
         {
-            Advance();
+            var tok = Advance();
+            ExpectKeyword(Keywords.String);
+            type = new BuiltinTypeAst("OCTET STRING") { Line = tok.Line, Column = tok.Column };
+        }
+        else if (IsKeyword(Keywords.Object))
+        {
+            var tok = Advance();
             ExpectKeyword(Keywords.Identifier);
-            return new BuiltinTypeAst("OBJECT IDENTIFIER");
+            type = new BuiltinTypeAst("OBJECT IDENTIFIER") { Line = tok.Line, Column = tok.Column };
+        }
+        else if (IsKeyword(Keywords.Any))
+        {
+            var tok = Advance();
+            string? definedBy = null;
+            if (IsKeyword(Keywords.Defined))
+            {
+                Advance();
+                ExpectKeyword(Keywords.By);
+                definedBy = ExpectIdentifier("DEFINED BY field").Text;
+            }
+
+            type = new AnyTypeAst(definedBy) { Line = tok.Line, Column = tok.Column };
+        }
+        else if (TryParseStringType(out var stringType))
+        {
+            type = stringType;
+        }
+        else if (TryParseTimeType(out var timeType))
+        {
+            type = timeType;
+        }
+        else
+        {
+            var ident = ExpectIdentifier("type");
+            string? module = null;
+            string name = ident.Text;
+            if (Check(TokenKind.Dot))
+            {
+                Advance();
+                module = ident.Text;
+                name = ExpectIdentifier("type name").Text;
+            }
+
+            type = new TypeReferenceAst(name, module) { Line = ident.Line, Column = ident.Column };
         }
 
-        var ident = ExpectIdentifier("type");
-        return new TypeReferenceAst(ident.Text);
+        return ApplyTrailingConstraint(type);
     }
 
-    private SequenceTypeAst ParseSequenceBody()
+    private TypeAst ApplyTrailingConstraint(TypeAst type)
     {
-        var seq = new SequenceTypeAst();
+        if (!Check(TokenKind.LParen))
+        {
+            return type;
+        }
+
+        type.Constraint = ParseConstraint();
+        return type;
+    }
+
+    private TypeAst ParseSequenceOrSequenceOf()
+    {
+        var tok = Advance();
+        ConstraintAst? sizeConstraint = null;
+        if (IsKeyword(Keywords.Size))
+        {
+            sizeConstraint = ParseSizeConstraintKeyword();
+        }
+
+        if (IsKeyword(Keywords.Of))
+        {
+            Advance();
+            var sequenceOf = new SequenceOfTypeAst(ParseType())
+            {
+                Line = tok.Line,
+                Column = tok.Column,
+                Constraint = sizeConstraint
+            };
+            return sequenceOf;
+        }
+
+        if (sizeConstraint is not null)
+        {
+            throw Error("SIZE is only valid on SEQUENCE OF / SET OF in this profile.");
+        }
+
+        return ParseSequenceBody(tok);
+    }
+
+    private TypeAst ParseSetOrSetOf()
+    {
+        var tok = Advance();
+        ConstraintAst? sizeConstraint = null;
+        if (IsKeyword(Keywords.Size))
+        {
+            sizeConstraint = ParseSizeConstraintKeyword();
+        }
+
+        if (IsKeyword(Keywords.Of))
+        {
+            Advance();
+            return new SetOfTypeAst(ParseType())
+            {
+                Line = tok.Line,
+                Column = tok.Column,
+                Constraint = sizeConstraint
+            };
+        }
+
+        if (sizeConstraint is not null)
+        {
+            throw Error("SIZE is only valid on SEQUENCE OF / SET OF in this profile.");
+        }
+
+        return ParseSetBody(tok);
+    }
+
+    private SequenceTypeAst ParseSequenceBody(Token tok)
+    {
+        var seq = new SequenceTypeAst { Line = tok.Line, Column = tok.Column };
         Expect(TokenKind.LBrace, "{");
         if (!Check(TokenKind.RBrace))
         {
-            seq.Fields.Add(ParseComponentType());
-            while (Check(TokenKind.Comma))
-            {
-                Advance();
-                seq.Fields.Add(ParseComponentType());
-            }
+            ParseComponentList(seq.Fields, allowOptional: true, out var extensible);
+            seq.Extensible = extensible;
         }
 
         Expect(TokenKind.RBrace, "}");
         return seq;
     }
 
-    private ChoiceTypeAst ParseChoiceBody()
+    private SetTypeAst ParseSetBody(Token tok)
     {
-        var choice = new ChoiceTypeAst();
+        var set = new SetTypeAst { Line = tok.Line, Column = tok.Column };
         Expect(TokenKind.LBrace, "{");
-        choice.Fields.Add(ParseNamedType());
-        while (Check(TokenKind.Comma))
+        if (!Check(TokenKind.RBrace))
         {
-            Advance();
-            choice.Fields.Add(ParseNamedType());
+            ParseComponentList(set.Fields, allowOptional: true, out var extensible);
+            set.Extensible = extensible;
         }
 
+        Expect(TokenKind.RBrace, "}");
+        return set;
+    }
+
+    private ChoiceTypeAst ParseChoiceBody()
+    {
+        var choice = new ChoiceTypeAst { Line = Peek().Line, Column = Peek().Column };
+        Expect(TokenKind.LBrace, "{");
+        ParseComponentList(choice.Fields, allowOptional: false, out var extensible);
+        choice.Extensible = extensible;
         Expect(TokenKind.RBrace, "}");
         return choice;
     }
 
-    private FieldAst ParseComponentType()
+    private void ParseComponentList(List<FieldAst> fields, bool allowOptional, out bool extensible)
+    {
+        extensible = false;
+        var first = true;
+        while (!Check(TokenKind.RBrace) && !Check(TokenKind.EndOfFile))
+        {
+            if (!first)
+            {
+                Expect(TokenKind.Comma, ",");
+            }
+
+            first = false;
+            if (Check(TokenKind.Ellipsis))
+            {
+                Advance();
+                extensible = true;
+                if (Check(TokenKind.Comma))
+                {
+                    Advance();
+                    if (Check(TokenKind.RBrace))
+                    {
+                        break;
+                    }
+
+                    // extension additions after ... are accepted as normal fields
+                    first = true;
+                    continue;
+                }
+
+                break;
+            }
+
+            if (IsKeyword(Keywords.Components))
+            {
+                throw Error("COMPONENTS OF is outside the Asn1Kit compiler profile.");
+            }
+
+            fields.Add(ParseComponentType(allowOptional));
+        }
+    }
+
+    private FieldAst ParseComponentType(bool allowOptional)
     {
         var named = ParseNamedType();
-        var optional = false;
-        if (IsKeyword(Keywords.Optional))
+        if (allowOptional && IsKeyword(Keywords.Optional))
         {
             Advance();
-            optional = true;
+            named.Optional = true;
         }
 
-        return new FieldAst { Name = named.Name, Type = named.Type, Optional = optional };
+        if (allowOptional && IsKeyword(Keywords.Default))
+        {
+            Advance();
+            named.Default = ParseValue();
+            named.Optional = true;
+        }
+
+        return named;
     }
 
     private FieldAst ParseNamedType()
     {
         var name = ExpectIdentifier("field name");
-        return new FieldAst { Name = name.Text, Type = ParseType(), Optional = false };
+        return new FieldAst
+        {
+            Name = name.Text,
+            Type = ParseType(),
+            Optional = false,
+            Line = name.Line,
+            Column = name.Column
+        };
+    }
+
+    private bool TryParseStringType(out TypeAst type)
+    {
+        type = null!;
+        string? stringType = null;
+        if (IsKeyword(Keywords.Utf8String))
+        {
+            stringType = StringTypeNames.Utf8;
+        }
+        else if (IsKeyword(Keywords.PrintableString))
+        {
+            stringType = StringTypeNames.Printable;
+        }
+        else if (IsKeyword(Keywords.TeletexString) || IsKeyword(Keywords.T61String))
+        {
+            stringType = IsKeyword(Keywords.T61String) ? StringTypeNames.T61 : StringTypeNames.Teletex;
+        }
+        else if (IsKeyword(Keywords.Ia5String))
+        {
+            stringType = StringTypeNames.Ia5;
+        }
+        else if (IsKeyword(Keywords.NumericString))
+        {
+            stringType = StringTypeNames.Numeric;
+        }
+        else if (IsKeyword(Keywords.VisibleString))
+        {
+            stringType = StringTypeNames.Visible;
+        }
+        else if (IsKeyword(Keywords.BmpString))
+        {
+            stringType = StringTypeNames.Bmp;
+        }
+        else if (IsKeyword(Keywords.UniversalString))
+        {
+            stringType = StringTypeNames.Universal;
+        }
+        else if (IsKeyword(Keywords.GeneralString))
+        {
+            stringType = StringTypeNames.General;
+        }
+        else if (IsKeyword(Keywords.GraphicString))
+        {
+            stringType = StringTypeNames.Graphic;
+        }
+        else if (IsKeyword(Keywords.VideotexString))
+        {
+            stringType = StringTypeNames.Videotex;
+        }
+
+        if (stringType is null)
+        {
+            return false;
+        }
+
+        var tok = Advance();
+        type = new StringTypeAst(stringType) { Line = tok.Line, Column = tok.Column };
+        return true;
+    }
+
+    private bool TryParseTimeType(out TypeAst type)
+    {
+        type = null!;
+        if (IsKeyword(Keywords.UtcTime))
+        {
+            var tok = Advance();
+            type = new TimeTypeAst(TimeTypeNames.Utc) { Line = tok.Line, Column = tok.Column };
+            return true;
+        }
+
+        if (IsKeyword(Keywords.GeneralizedTime))
+        {
+            var tok = Advance();
+            type = new TimeTypeAst(TimeTypeNames.Generalized) { Line = tok.Line, Column = tok.Column };
+            return true;
+        }
+
+        return false;
     }
 
     private TagAst ParseTag()
     {
-        Expect(TokenKind.LBracket, "[");
+        var open = Expect(TokenKind.LBracket, "[");
         var cls = "context";
         if (IsKeyword(Keywords.Universal))
         {
@@ -303,7 +614,9 @@ internal sealed class Asn1Parser
         return new TagAst
         {
             Class = cls,
-            Number = int.Parse(number.Text, CultureInfo.InvariantCulture)
+            Number = int.Parse(number.Text, CultureInfo.InvariantCulture),
+            Line = open.Line,
+            Column = open.Column
         };
     }
 
@@ -315,6 +628,12 @@ internal sealed class Asn1Parser
         while (Check(TokenKind.Comma))
         {
             Advance();
+            if (Check(TokenKind.Ellipsis))
+            {
+                Advance();
+                break;
+            }
+
             list.Add(ParseNamedNumber());
         }
 
@@ -331,35 +650,290 @@ internal sealed class Asn1Parser
         return new NamedNumberAst
         {
             Name = name.Text,
-            Value = long.Parse(value.Text, CultureInfo.InvariantCulture)
+            Value = long.Parse(value.Text, CultureInfo.InvariantCulture),
+            Line = name.Line,
+            Column = name.Column
         };
     }
 
-    private List<int> ParseOidValue()
+    private ConstraintAst ParseConstraint()
     {
-        var arcs = new List<int>();
-        Expect(TokenKind.LBrace, "{");
+        var open = Expect(TokenKind.LParen, "(");
+        if (IsKeyword(Keywords.Size))
+        {
+            var size = ParseSizeConstraintKeyword();
+            Expect(TokenKind.RParen, ")");
+            size.Line = open.Line;
+            size.Column = open.Column;
+            return size;
+        }
+
+        if (LooksLikeSimpleBoundConstraint())
+        {
+            var constraint = new ConstraintAst
+            {
+                HasValue = true,
+                Line = open.Line,
+                Column = open.Column
+            };
+            ParseBoundRange(out var min, out var max);
+            constraint.ValueMin = min;
+            constraint.ValueMax = max;
+            Expect(TokenKind.RParen, ")");
+            return constraint;
+        }
+
+        var raw = CaptureUntilMatchingParen(open);
+        return new ConstraintAst
+        {
+            Unsupported = raw,
+            Line = open.Line,
+            Column = open.Column
+        };
+    }
+
+    private ConstraintAst ParseSizeConstraintKeyword()
+    {
+        var tok = ExpectKeywordToken(Keywords.Size);
+        Expect(TokenKind.LParen, "(");
+        ParseBoundRange(out var min, out var max);
+        Expect(TokenKind.RParen, ")");
+        return new ConstraintAst
+        {
+            HasSize = true,
+            SizeMin = min,
+            SizeMax = max,
+            Line = tok.Line,
+            Column = tok.Column
+        };
+    }
+
+    private bool LooksLikeSimpleBoundConstraint()
+    {
+        return Check(TokenKind.Number)
+               || IsKeyword(Keywords.Min)
+               || IsKeyword(Keywords.Max)
+               || (Check(TokenKind.Identifier) && char.IsLower(Peek().Text[0]));
+    }
+
+    private void ParseBoundRange(out BoundAst min, out BoundAst max)
+    {
+        min = ParseBound();
+        if (Check(TokenKind.Range))
+        {
+            Advance();
+            max = ParseBound();
+        }
+        else
+        {
+            max = min;
+        }
+    }
+
+    private BoundAst ParseBound()
+    {
+        var tok = Peek();
+        if (IsKeyword(Keywords.Min))
+        {
+            Advance();
+            return new BoundAst { IsMin = true, Line = tok.Line, Column = tok.Column };
+        }
+
+        if (IsKeyword(Keywords.Max))
+        {
+            Advance();
+            return new BoundAst { IsMax = true, Line = tok.Line, Column = tok.Column };
+        }
+
+        if (Check(TokenKind.Number))
+        {
+            var number = Advance();
+            return new BoundAst
+            {
+                Number = long.Parse(number.Text, CultureInfo.InvariantCulture),
+                Line = number.Line,
+                Column = number.Column
+            };
+        }
+
+        var ident = ExpectIdentifier("constraint bound");
+        return new BoundAst
+        {
+            Reference = ident.Text,
+            Line = ident.Line,
+            Column = ident.Column
+        };
+    }
+
+    private string CaptureUntilMatchingParen(Token open)
+    {
+        var depth = 1;
+        var sb = new StringBuilder();
+        sb.Append('(');
+        while (!Check(TokenKind.EndOfFile) && depth > 0)
+        {
+            var tok = Advance();
+            if (tok.Kind == TokenKind.LParen)
+            {
+                depth++;
+            }
+            else if (tok.Kind == TokenKind.RParen)
+            {
+                depth--;
+            }
+
+            if (depth == 0)
+            {
+                sb.Append(')');
+                break;
+            }
+
+            if (sb.Length > 1)
+            {
+                sb.Append(' ');
+            }
+
+            sb.Append(tok.Text);
+        }
+
+        if (depth != 0)
+        {
+            throw new CompileException("Unterminated constraint.", open.Line, open.Column);
+        }
+
+        return sb.ToString();
+    }
+
+    private ValueAst ParseValue()
+    {
+        if (IsKeyword(Keywords.True))
+        {
+            var tok = Advance();
+            return new BooleanValueAst(true) { Line = tok.Line, Column = tok.Column };
+        }
+
+        if (IsKeyword(Keywords.False))
+        {
+            var tok = Advance();
+            return new BooleanValueAst(false) { Line = tok.Line, Column = tok.Column };
+        }
+
+        if (IsKeyword(Keywords.Null))
+        {
+            var tok = Advance();
+            return new NullValueAst { Line = tok.Line, Column = tok.Column };
+        }
+
+        if (Check(TokenKind.Number))
+        {
+            var number = Advance();
+            return new IntegerValueAst(long.Parse(number.Text, CultureInfo.InvariantCulture))
+            {
+                Line = number.Line,
+                Column = number.Column
+            };
+        }
+
+        if (Check(TokenKind.CString))
+        {
+            var tok = Advance();
+            return new CStringValueAst(tok.Text) { Line = tok.Line, Column = tok.Column };
+        }
+
+        if (Check(TokenKind.BString))
+        {
+            var tok = Advance();
+            return new BStringValueAst(tok.Text) { Line = tok.Line, Column = tok.Column };
+        }
+
+        if (Check(TokenKind.HString))
+        {
+            var tok = Advance();
+            return new HStringValueAst(tok.Text) { Line = tok.Line, Column = tok.Column };
+        }
+
+        if (Check(TokenKind.LBrace))
+        {
+            return ParseOidValueAst();
+        }
+
+        var ident = ExpectIdentifier("value");
+        string? module = null;
+        var name = ident.Text;
+        if (Check(TokenKind.Dot))
+        {
+            Advance();
+            module = ident.Text;
+            name = ExpectIdentifier("value name").Text;
+        }
+
+        return new ValueReferenceAst(name, module) { Line = ident.Line, Column = ident.Column };
+    }
+
+    private OidValueAst ParseOidValueAst()
+    {
+        var open = Expect(TokenKind.LBrace, "{");
+        var arcs = new List<OidArcAst>();
         while (!Check(TokenKind.RBrace))
         {
             if (Check(TokenKind.Number))
             {
-                arcs.Add(int.Parse(Advance().Text, CultureInfo.InvariantCulture));
+                var number = Advance();
+                arcs.Add(new OidArcAst
+                {
+                    Number = int.Parse(number.Text, CultureInfo.InvariantCulture),
+                    Line = number.Line,
+                    Column = number.Column
+                });
                 continue;
             }
 
-            ExpectIdentifier("OID component");
-            if (!Check(TokenKind.LParen))
+            var name = ExpectIdentifier("OID component");
+            if (Check(TokenKind.LParen))
             {
-                throw Error("OID component must be a number or name(number).");
+                Advance();
+                var n = Expect(TokenKind.Number, "OID number");
+                Expect(TokenKind.RParen, ")");
+                arcs.Add(new OidArcAst
+                {
+                    Name = name.Text,
+                    Number = int.Parse(n.Text, CultureInfo.InvariantCulture),
+                    Line = name.Line,
+                    Column = name.Column
+                });
             }
-
-            Advance();
-            var n = Expect(TokenKind.Number, "OID number");
-            Expect(TokenKind.RParen, ")");
-            arcs.Add(int.Parse(n.Text, CultureInfo.InvariantCulture));
+            else
+            {
+                arcs.Add(new OidArcAst
+                {
+                    Name = name.Text,
+                    Line = name.Line,
+                    Column = name.Column
+                });
+            }
         }
 
         Expect(TokenKind.RBrace, "}");
+        return new OidValueAst(arcs) { Line = open.Line, Column = open.Column };
+    }
+
+    private List<int> ParseNumericOidValue()
+    {
+        var oid = ParseOidValueAst();
+        var arcs = new List<int>();
+        foreach (var arc in oid.Arcs)
+        {
+            if (arc.Number is null)
+            {
+                throw new CompileException(
+                    "Module OID must use numeric arcs or name(number).",
+                    arc.Line,
+                    arc.Column);
+            }
+
+            arcs.Add(arc.Number.Value);
+        }
+
         return arcs;
     }
 
@@ -393,16 +967,40 @@ internal sealed class Asn1Parser
 
     private Token ExpectIdentifier(string what) => Expect(TokenKind.Identifier, what);
 
-    private void ExpectKeyword(string keyword)
+    private void ExpectKeyword(string keyword) => ExpectKeywordToken(keyword);
+
+    private Token ExpectKeywordToken(string keyword)
     {
         if (!IsKeyword(keyword))
         {
             throw Error($"Expected '{keyword}', found {Peek()}.");
         }
 
-        Advance();
+        return Advance();
     }
 
     private CompileException Error(string message) =>
         new(message, Peek().Line, Peek().Column);
+}
+
+internal static class StringTypeNames
+{
+    public const string Utf8 = "utf8";
+    public const string Printable = "printable";
+    public const string Teletex = "teletex";
+    public const string T61 = "t61";
+    public const string Ia5 = "ia5";
+    public const string Numeric = "numeric";
+    public const string Visible = "visible";
+    public const string Bmp = "bmp";
+    public const string Universal = "universal";
+    public const string General = "general";
+    public const string Graphic = "graphic";
+    public const string Videotex = "videotex";
+}
+
+internal static class TimeTypeNames
+{
+    public const string Utc = "utc";
+    public const string Generalized = "generalized";
 }

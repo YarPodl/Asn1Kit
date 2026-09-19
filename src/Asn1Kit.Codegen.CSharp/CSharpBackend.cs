@@ -131,6 +131,7 @@ public sealed class CSharpBackend : ILanguageBackend
 
     private void EmitType(StringBuilder sb, IrDocument document, IrModule module, string typeName, TypeExpr type)
     {
+        EnsureBackendSupport(type);
         switch (type)
         {
             case SequenceType sequence:
@@ -144,6 +145,38 @@ public sealed class CSharpBackend : ILanguageBackend
                 break;
             default:
                 EmitAlias(sb, document, module, typeName, type);
+                break;
+        }
+    }
+
+    private static void EnsureBackendSupport(TypeExpr type)
+    {
+        switch (type)
+        {
+            case BitStringType:
+            case StringType:
+            case TimeType:
+            case AnyType:
+            case SetType:
+            case SetOfType:
+                throw new NotSupportedException(
+                    $"C# backend does not support kind '{type.Kind}' yet.");
+            case SequenceType sequence:
+                foreach (var component in sequence.Components)
+                {
+                    EnsureBackendSupport(component.Type);
+                }
+
+                break;
+            case ChoiceType choice:
+                foreach (var component in choice.Components)
+                {
+                    EnsureBackendSupport(component.Type);
+                }
+
+                break;
+            case SequenceOfType sequenceOf:
+                EnsureBackendSupport(sequenceOf.Element);
                 break;
         }
     }
