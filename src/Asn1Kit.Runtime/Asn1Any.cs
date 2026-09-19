@@ -15,6 +15,9 @@ public readonly struct Asn1Any : IEquatable<Asn1Any>
 
     public byte[] Contents => _contents ?? Array.Empty<byte>();
 
+    /// <summary>Owned contents as memory (same lifetime as this value; not an alias into a reader buffer).</summary>
+    public ReadOnlyMemory<byte> ContentsMemory => _contents ?? Array.Empty<byte>();
+
     public static void Encode(Asn1Writer writer, Asn1Any value) => writer.WriteAny(value);
 
     public static void Encode(Asn1Writer writer, Asn1Any value, Asn1Tag tag) => writer.WriteAny(tag, value);
@@ -24,7 +27,7 @@ public readonly struct Asn1Any : IEquatable<Asn1Any>
     public static Asn1Any Decode(Asn1Reader reader, Asn1Tag tag) => reader.ReadAny(tag);
 
     public bool Equals(Asn1Any other) =>
-        Tag.Equals(other.Tag) && Contents.AsSpan().SequenceEqual(other.Contents);
+        Tag.Equals(other.Tag) && ContentsMemory.Span.SequenceEqual(other.ContentsMemory.Span);
 
     public override bool Equals(object? obj) => obj is Asn1Any other && Equals(other);
 
@@ -32,7 +35,7 @@ public readonly struct Asn1Any : IEquatable<Asn1Any>
     {
         var hash = new HashCode();
         hash.Add(Tag);
-        foreach (var b in Contents)
+        foreach (var b in ContentsMemory.Span)
         {
             hash.Add(b);
         }

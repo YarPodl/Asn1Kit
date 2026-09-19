@@ -184,6 +184,83 @@ public sealed class RuntimeTests
     }
 
     [Fact]
+    public void TryEncode_CopiesIntoCallerBuffer()
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        Asn1Integer.Encode(writer, 42);
+        var expected = writer.Encode();
+        Assert.Equal(expected.Length, writer.EncodedLength);
+
+        Span<byte> exact = stackalloc byte[expected.Length];
+        Assert.True(writer.TryEncode(exact, out var written));
+        Assert.Equal(expected.Length, written);
+        Assert.True(expected.AsSpan().SequenceEqual(exact));
+
+        Span<byte> tooSmall = stackalloc byte[expected.Length - 1];
+        Assert.False(writer.TryEncode(tooSmall, out written));
+        Assert.Equal(0, written);
+
+        var memory = new byte[expected.Length];
+        Assert.True(writer.TryEncode(memory.AsSpan(), out written));
+        Assert.Equal(expected, memory);
+    }
+
+    [Fact]
+    public void TryReadOctetString_CopiesAndRejectsShortDestination()
+    {
+        var payload = new byte[] { 0x41, 0x6E, 0x6E };
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteOctetString(Asn1Tag.OctetString, payload.AsMemory().Span);
+        var bytes = writer.Encode();
+
+        var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
+        Span<byte> dest = stackalloc byte[3];
+        Assert.True(reader.TryReadOctetString(Asn1Tag.OctetString, dest, out var written));
+        Assert.Equal(3, written);
+        Assert.True(payload.AsSpan().SequenceEqual(dest));
+
+        var shortReader = new Asn1Reader(bytes, Asn1Encoding.Der);
+        Span<byte> tooSmall = stackalloc byte[2];
+        Assert.False(shortReader.TryReadOctetString(Asn1Tag.OctetString, tooSmall, out written));
+        Assert.Equal(0, written);
+        Assert.True(shortReader.Eof);
+
+        var ber = new byte[] { 0x24, 0x80, 0x04, 0x03, 0x41, 0x6E, 0x6E, 0x00, 0x00 };
+        var berReader = new Asn1Reader(ber, Asn1Encoding.Ber);
+        var berDest = new byte[3];
+        Assert.True(berReader.TryReadOctetString(Asn1Tag.OctetString, berDest.AsSpan(), out written));
+        Assert.Equal(3, written);
+        Assert.Equal(payload, berDest);
+    }
+
+    [Fact]
+    public void TryReadValue_CopiesPrimitiveContents()
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        Asn1Integer.Encode(writer, 1);
+        var bytes = writer.Encode();
+        var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
+        Span<byte> dest = stackalloc byte[1];
+        Assert.True(reader.TryReadValue(Asn1Tag.Integer, allowConstructed: false, dest, out var written));
+        Assert.Equal(1, written);
+        Assert.Equal(0x01, dest[0]);
+    }
+
+    [Fact]
+    public void WriteOctetString_And_Any_AcceptReadOnlyMemoryViaSpan()
+    {
+        ReadOnlyMemory<byte> payload = new byte[] { 0x01, 0x02 };
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteOctetString(Asn1Tag.OctetString, payload.Span);
+        var any = new Asn1Any(Asn1Tag.OctetString, payload.Span);
+        Assert.Equal(payload.ToArray(), any.ContentsMemory.ToArray());
+
+        var rewrite = new Asn1Writer(Asn1Encoding.Der);
+        rewrite.WriteAny(any);
+        Assert.Equal(writer.Encode(), rewrite.Encode());
+    }
+
+    [Fact]
     public void WriteSetOf_DerSortsElementEncodings()
     {
         // INTEGER 2 then INTEGER 1 — DER must emit 1 then 2 (X.690 §11.6).

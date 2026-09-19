@@ -29,6 +29,13 @@ public static class Asn1OctetString
 
     public static byte[] Decode(Asn1Reader reader, Asn1Tag? tag = null) =>
         reader.ReadOctetString(tag ?? Asn1Tag.OctetString);
+
+    public static bool TryDecode(
+        Asn1Reader reader,
+        Span<byte> destination,
+        out int bytesWritten,
+        Asn1Tag? tag = null) =>
+        reader.TryReadOctetString(tag ?? Asn1Tag.OctetString, destination, out bytesWritten);
 }
 
 public static class Asn1Null

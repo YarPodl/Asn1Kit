@@ -30,6 +30,9 @@ public readonly struct Asn1BitString : IEquatable<Asn1BitString>
 
     public ReadOnlySpan<byte> Span => _bytes ?? Array.Empty<byte>();
 
+    /// <summary>Owned content octets as memory (same lifetime as this value).</summary>
+    public ReadOnlyMemory<byte> Memory => _bytes ?? Array.Empty<byte>();
+
     public int UnusedBits { get; }
 
     public int BitLength => Span.Length == 0 ? 0 : Span.Length * 8 - UnusedBits;
@@ -67,7 +70,7 @@ public readonly struct Asn1BitString : IEquatable<Asn1BitString>
         }
 
         var unused = byteCount * 8 - bits.Length;
-        return new Asn1BitString(bytes, unused);
+        return new Asn1BitString(bytes.AsSpan(), unused);
     }
 
     public static void Encode(Asn1Writer writer, Asn1BitString value, Asn1Tag? tag = null) =>

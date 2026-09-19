@@ -141,6 +141,21 @@ public sealed class Asn1Reader
         return parts.ToArray();
     }
 
+    public bool TryReadOctetString(Asn1Tag expected, Span<byte> destination, out int bytesWritten)
+    {
+        // Always advances past the TLV; on false the value is not copied (caller must re-read from a saved buffer).
+        var value = ReadOctetString(expected);
+        if (destination.Length < value.Length)
+        {
+            bytesWritten = 0;
+            return false;
+        }
+
+        value.CopyTo(destination);
+        bytesWritten = value.Length;
+        return true;
+    }
+
     public bool ReadNull(Asn1Tag expected)
     {
         var contents = ReadValue(expected, allowConstructed: false);
@@ -223,7 +238,7 @@ public sealed class Asn1Reader
             throw new Asn1Exception("Constructed BIT STRING has no segments.");
         }
 
-        var value = new Asn1BitString(parts.ToArray(), unusedBits);
+        var value = new Asn1BitString(parts.ToArray().AsSpan(), unusedBits);
         if (Encoding == Asn1Encoding.Der)
         {
             Asn1TextCodec.EnsureTrailingBitsZero(value.Span, value.UnusedBits);
@@ -261,11 +276,25 @@ public sealed class Asn1Reader
         return contents;
     }
 
+    public bool TryReadValue(Asn1Tag expected, bool allowConstructed, Span<byte> destination, out int bytesWritten)
+    {
+        var value = ReadValue(expected, allowConstructed);
+        if (destination.Length < value.Length)
+        {
+            bytesWritten = 0;
+            return false;
+        }
+
+        value.CopyTo(destination);
+        bytesWritten = value.Length;
+        return true;
+    }
+
     /// <summary>Reads the next complete TLV as ANY (tag + value octets).</summary>
     public Asn1Any ReadAny()
     {
         var (tag, contents, _) = ReadTlv();
-        return new Asn1Any(tag, contents);
+        return new Asn1Any(tag, contents.AsSpan());
     }
 
     /// <summary>Reads ANY expecting a specific tag (IMPLICIT); returns the wire tag and contents.</summary>
@@ -277,7 +306,7 @@ public sealed class Asn1Reader
             throw new Asn1Exception($"Expected tag {expected}, found {tag}.");
         }
 
-        return new Asn1Any(tag, contents);
+        return new Asn1Any(tag, contents.AsSpan());
     }
 
     public (Asn1Tag Tag, byte[] Contents, bool Constructed) ReadTlv()
@@ -436,6 +465,6 @@ public sealed class Asn1Reader
             Asn1TextCodec.EnsureTrailingBitsZero(bytes, unusedBits);
         }
 
-        return new Asn1BitString(bytes, unusedBits);
+        return new Asn1BitString(bytes.AsSpan(), unusedBits);
     }
 }

@@ -44,15 +44,15 @@
 | BOOLEAN | `WriteBoolean` | `ReadBoolean` |
 | INTEGER | `WriteInteger` (`BigInteger`) | `ReadInteger` |
 | BIT STRING | `WriteBitString` (`Asn1BitString`) | `ReadBitString` (BER: constructed и indefinite length склеиваются) |
-| OCTET STRING | `WriteOctetString` | `ReadOctetString` (BER: constructed и indefinite length склеиваются) |
+| OCTET STRING | `WriteOctetString` (`ReadOnlySpan`) | `ReadOctetString` → `byte[]`; `TryReadOctetString(Span)` copy-out (BER: constructed и indefinite склеиваются) |
 | NULL | `WriteNull` | `ReadNull` |
 | OBJECT IDENTIFIER | `WriteObjectIdentifier` (dotted) | `ReadObjectIdentifier` |
 | STRING (12 форм) | `WriteString` + `Asn1StringForm` | `ReadString` (BER: constructed склеивается) |
 | TIME (`utc` / `generalized`) | `WriteTime` (`DateTimeOffset`, `fractionDigits` для generalized) | `ReadTime` (дробь 1…7, хвостовые нули ок) |
 | SEQUENCE / SET / constructed | `WriteSequence`, `WriteSet` | `ReadSequence`, `ReadSet`, `TryPeekTag`, `Eof` |
-| SET OF (DER sort) | `WriteSetOf` | через `ReadSet` |
+| SET OF (DER sort) | `WriteSetOf(Action)` | через `ReadSet` |
 | EXPLICIT-обёртка | `WriteExplicit` | через `ReadSequence` |
-| Готовый TLV | `WriteRaw` | `ReadValue` |
+| Готовый TLV | `WriteRaw`; `Encode` / `EncodedLength` / `TryEncode` | `ReadValue` / `TryReadValue` / `ReadTlv` |
 | ANY | `WriteAny` (`Asn1Any`) | `ReadAny` (с ожидаемым тегом или без) |
 
 DER: только definite length, BOOLEAN `0x00` / `0xFF`, BIT STRING с нулевыми хвостовыми битами, время только с секундами и суффиксом `Z` (GeneralizedTime: `fractionDigits` 0…7, default 3; на записи без хвостовых нулей дроби). INTEGER на записи идёт через `BigInteger.ToByteArray` (минимальная форма на выходе). BER на чтении принимает indefinite length, constructed строки/BIT STRING, время без секунд и со смещением `±hhmm`; дробь 1…7 цифр с хвостовыми нулями допускается и в DER.

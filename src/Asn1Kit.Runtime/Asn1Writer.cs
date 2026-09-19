@@ -14,11 +14,37 @@ public sealed class Asn1Writer
 
     public Asn1Encoding Encoding { get; }
 
+    public int EncodedLength => checked((int)_buffer.Length);
+
     public byte[] Encode() => _buffer.ToArray();
+
+    public bool TryEncode(Span<byte> destination, out int bytesWritten)
+    {
+        var length = EncodedLength;
+        if (destination.Length < length)
+        {
+            bytesWritten = 0;
+            return false;
+        }
+
+        if (_buffer.TryGetBuffer(out var segment))
+        {
+            segment.AsSpan(0, length).CopyTo(destination);
+        }
+        else
+        {
+            _buffer.ToArray().AsSpan(0, length).CopyTo(destination);
+        }
+
+        bytesWritten = length;
+        return true;
+    }
 
     public void WriteBoolean(Asn1Tag tag, bool value)
     {
-        WritePrimitive(tag.AsPrimitive(), new byte[] { value ? (byte)0xFF : (byte)0x00 });
+        Span<byte> octet = stackalloc byte[1];
+        octet[0] = value ? (byte)0xFF : (byte)0x00;
+        WritePrimitive(tag.AsPrimitive(), octet);
     }
 
     public void WriteInteger(Asn1Tag tag, BigInteger value)
@@ -28,12 +54,12 @@ public sealed class Asn1Writer
 
     public void WriteOctetString(Asn1Tag tag, ReadOnlySpan<byte> value)
     {
-        WritePrimitive(tag.AsPrimitive(), value.ToArray());
+        WritePrimitive(tag.AsPrimitive(), value);
     }
 
     public void WriteNull(Asn1Tag tag)
     {
-        WritePrimitive(tag.AsPrimitive(), Array.Empty<byte>());
+        WritePrimitive(tag.AsPrimitive(), ReadOnlySpan<byte>.Empty);
     }
 
     public void WriteObjectIdentifier(Asn1Tag tag, string oid)
@@ -107,7 +133,7 @@ public sealed class Asn1Writer
     /// <summary>Writes ANY as a complete TLV using the tag and contents from <paramref name="value"/>.</summary>
     public void WriteAny(Asn1Any value)
     {
-        WriteTlv(value.Tag, value.Contents, definiteOnly: Encoding == Asn1Encoding.Der);
+        WriteTlv(value.Tag, value.ContentsMemory.Span, definiteOnly: Encoding == Asn1Encoding.Der);
     }
 
     /// <summary>
@@ -117,7 +143,7 @@ public sealed class Asn1Writer
     public void WriteAny(Asn1Tag tag, Asn1Any value)
     {
         var wire = new Asn1Tag(tag.TagClass, tag.Number, value.Tag.Constructed);
-        WriteTlv(wire, value.Contents, definiteOnly: Encoding == Asn1Encoding.Der);
+        WriteTlv(wire, value.ContentsMemory.Span, definiteOnly: Encoding == Asn1Encoding.Der);
     }
 
     private static byte[] SortDerSetOfContents(byte[] concatenated)
@@ -233,16 +259,16 @@ public sealed class Asn1Writer
         return offset + length;
     }
 
-    private void WritePrimitive(Asn1Tag tag, byte[] contents)
+    private void WritePrimitive(Asn1Tag tag, ReadOnlySpan<byte> contents)
     {
         WriteTlv(tag.AsPrimitive(), contents, definiteOnly: true);
     }
 
-    private void WriteTlv(Asn1Tag tag, byte[] contents, bool definiteOnly)
+    private void WriteTlv(Asn1Tag tag, ReadOnlySpan<byte> contents, bool definiteOnly)
     {
         WriteTag(tag);
         WriteLength(contents.Length, definiteOnly);
-        _buffer.Write(contents, 0, contents.Length);
+        _buffer.Write(contents);
     }
 
     private void WriteTag(Asn1Tag tag)
