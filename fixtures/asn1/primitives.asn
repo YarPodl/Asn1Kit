@@ -1,0 +1,19 @@
+PrimitivesModule DEFINITIONS EXPLICIT TAGS ::= BEGIN
+
+KeyUsage ::= BIT STRING {
+    digitalSignature(0),
+    nonRepudiation(1),
+    keyEncipherment(2)
+}
+
+Sample ::= SEQUENCE {
+    note       [0] EXPLICIT UTF8String,
+    flags      KeyUsage,
+    name       PrintableString,
+    email      IA5String,
+    notBefore  UTCTime,
+    notAfter   GeneralizedTime,
+    nickname   UTF8String OPTIONAL
+}
+
+END

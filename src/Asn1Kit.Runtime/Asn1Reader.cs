@@ -155,6 +155,63 @@ public sealed class Asn1Reader
         return builder.ToString();
     }
 
+    public Asn1BitString ReadBitString(Asn1Tag expected)
+    {
+        var (tag, contents, constructed) = ReadTlv();
+        if (!tag.MatchesIgnoreConstructed(expected))
+        {
+            throw new Asn1Exception($"Expected tag {expected}, found {tag}.");
+        }
+
+        if (!constructed)
+        {
+            return ParsePrimitiveBitString(contents, Encoding == Asn1Encoding.Der);
+        }
+
+        var nested = new Asn1Reader(contents, Encoding);
+        var parts = new List<byte>();
+        var unusedBits = 0;
+        var sawSegment = false;
+        while (!nested.Eof)
+        {
+            var segment = nested.ReadBitString(Asn1Tag.BitString);
+            if (sawSegment && unusedBits != 0)
+            {
+                throw new Asn1Exception("Only the last BIT STRING segment may have unused bits.");
+            }
+
+            parts.AddRange(segment.Span.ToArray());
+            unusedBits = segment.UnusedBits;
+            sawSegment = true;
+        }
+
+        if (!sawSegment)
+        {
+            throw new Asn1Exception("Constructed BIT STRING has no segments.");
+        }
+
+        var value = new Asn1BitString(parts.ToArray(), unusedBits);
+        if (Encoding == Asn1Encoding.Der)
+        {
+            Asn1TextCodec.EnsureTrailingBitsZero(value.Span, value.UnusedBits);
+        }
+
+        return value;
+    }
+
+    public string ReadString(Asn1Tag expected, Asn1StringForm form)
+    {
+        var bytes = ReadOctetLike(expected);
+        return Asn1TextCodec.DecodeString(bytes, form);
+    }
+
+    public DateTimeOffset ReadTime(Asn1Tag expected, Asn1TimeForm form)
+    {
+        var bytes = ReadOctetLike(expected);
+        var text = Asn1TextCodec.DecodeString(bytes, Asn1StringForm.Visible);
+        return Asn1TextCodec.ParseTime(text, form, Encoding);
+    }
+
     public byte[] ReadValue(Asn1Tag expected, bool allowConstructed)
     {
         var (tag, contents, constructed) = ReadTlv();
@@ -273,5 +330,60 @@ public sealed class Asn1Reader
         {
             throw new Asn1Exception("Unexpected end of ASN.1 data.");
         }
+    }
+
+    private byte[] ReadOctetLike(Asn1Tag expected)
+    {
+        var (tag, contents, constructed) = ReadTlv();
+        if (!tag.MatchesIgnoreConstructed(expected))
+        {
+            throw new Asn1Exception($"Expected tag {expected}, found {tag}.");
+        }
+
+        if (!constructed)
+        {
+            return contents;
+        }
+
+        var nested = new Asn1Reader(contents, Encoding);
+        var parts = new List<byte>();
+        while (!nested.Eof)
+        {
+            parts.AddRange(nested.ReadOctetLike(expected.AsPrimitive()));
+        }
+
+        return parts.ToArray();
+    }
+
+    private static Asn1BitString ParsePrimitiveBitString(byte[] contents, bool derStrict)
+    {
+        if (contents.Length == 0)
+        {
+            throw new Asn1Exception("BIT STRING contents must not be empty.");
+        }
+
+        var unusedBits = contents[0];
+        if (unusedBits > 7)
+        {
+            throw new Asn1Exception("BIT STRING unusedBits must be in 0..7.");
+        }
+
+        if (contents.Length == 1)
+        {
+            if (unusedBits != 0)
+            {
+                throw new Asn1Exception("Empty BIT STRING must have unusedBits = 0.");
+            }
+
+            return default;
+        }
+
+        var bytes = contents.AsSpan(1).ToArray();
+        if (derStrict)
+        {
+            Asn1TextCodec.EnsureTrailingBitsZero(bytes, unusedBits);
+        }
+
+        return new Asn1BitString(bytes, unusedBits);
     }
 }

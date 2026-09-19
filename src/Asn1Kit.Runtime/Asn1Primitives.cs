@@ -105,3 +105,25 @@ public static class Asn1ObjectIdentifier
         }
     }
 }
+
+public static class Asn1String
+{
+    public static Asn1Tag DefaultTag(Asn1StringForm form) => Asn1TextCodec.DefaultStringTag(form);
+
+    public static void Encode(Asn1Writer writer, string value, Asn1StringForm form, Asn1Tag? tag = null) =>
+        writer.WriteString(tag ?? DefaultTag(form), value, form);
+
+    public static string Decode(Asn1Reader reader, Asn1StringForm form, Asn1Tag? tag = null) =>
+        reader.ReadString(tag ?? DefaultTag(form), form);
+}
+
+public static class Asn1Time
+{
+    public static Asn1Tag DefaultTag(Asn1TimeForm form) => Asn1TextCodec.DefaultTimeTag(form);
+
+    public static void Encode(Asn1Writer writer, DateTimeOffset value, Asn1TimeForm form, Asn1Tag? tag = null) =>
+        writer.WriteTime(tag ?? DefaultTag(form), value, form);
+
+    public static DateTimeOffset Decode(Asn1Reader reader, Asn1TimeForm form, Asn1Tag? tag = null) =>
+        reader.ReadTime(tag ?? DefaultTag(form), form);
+}

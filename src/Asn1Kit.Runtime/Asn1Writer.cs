@@ -41,6 +41,30 @@ public sealed class Asn1Writer
         WritePrimitive(tag.AsPrimitive(), Asn1ObjectIdentifier.EncodeContents(oid));
     }
 
+    public void WriteBitString(Asn1Tag tag, Asn1BitString value)
+    {
+        if (Encoding == Asn1Encoding.Der)
+        {
+            Asn1TextCodec.EnsureTrailingBitsZero(value.Span, value.UnusedBits);
+        }
+
+        var contents = new byte[1 + value.Span.Length];
+        contents[0] = (byte)value.UnusedBits;
+        value.Span.CopyTo(contents.AsSpan(1));
+        WritePrimitive(tag.AsPrimitive(), contents);
+    }
+
+    public void WriteString(Asn1Tag tag, string value, Asn1StringForm form)
+    {
+        WritePrimitive(tag.AsPrimitive(), Asn1TextCodec.EncodeString(value, form));
+    }
+
+    public void WriteTime(Asn1Tag tag, DateTimeOffset value, Asn1TimeForm form)
+    {
+        var text = Asn1TextCodec.FormatTime(value, form);
+        WritePrimitive(tag.AsPrimitive(), Asn1TextCodec.EncodeString(text, Asn1StringForm.Visible));
+    }
+
     public void WriteSequence(Asn1Tag tag, Action<Asn1Writer> content)
     {
         var inner = new Asn1Writer(Encoding);

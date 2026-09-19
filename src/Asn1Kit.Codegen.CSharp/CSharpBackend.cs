@@ -153,9 +153,6 @@ public sealed class CSharpBackend : ILanguageBackend
     {
         switch (type)
         {
-            case BitStringType:
-            case StringType:
-            case TimeType:
             case AnyType:
             case SetType:
             case SetOfType:
@@ -332,6 +329,17 @@ public sealed class CSharpBackend : ILanguageBackend
         var csType = CsType(document, module, typeName, "Value", type, optional: false);
         sb.AppendLine($"public sealed class {typeName}");
         sb.AppendLine("{");
+        if (type is BitStringType { NamedBits: { Count: > 0 } namedBits })
+        {
+            foreach (var bit in namedBits)
+            {
+                sb.AppendLine(
+                    $"    public const int Bit_{SanitizeIdentifier(bit.Name)} = {bit.Value.ToString(CultureInfo.InvariantCulture)};");
+            }
+
+            sb.AppendLine();
+        }
+
         sb.AppendLine($"    public {csType} Value {{ get; set; }}{Initializer(type, false)}");
         sb.AppendLine();
         sb.AppendLine("    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);");
@@ -350,7 +358,7 @@ public sealed class CSharpBackend : ILanguageBackend
         EmitDecodeAssign(sb, document, module, typeName, "Value", untagged, "        ", "reader", "value.Value", forceTag: "tag");
         sb.AppendLine("        return value;");
         sb.AppendLine("    }");
-        EmitDefaultTag(sb, type, IsConstructed(document, module, type), UniversalFallback(type));
+        EmitDefaultTag(sb, type, IsConstructed(document, module, type), UniversalFallback(document, module, type));
         sb.AppendLine("}");
     }
 
@@ -390,7 +398,8 @@ public sealed class CSharpBackend : ILanguageBackend
     }
 
     private bool IsValueOptionalWrapper(TypeExpr type) =>
-        ResolvePrimitive(type) is TypeKinds.Boolean or TypeKinds.Integer or TypeKinds.Enumerated;
+        ResolvePrimitive(type) is TypeKinds.Boolean or TypeKinds.Integer or TypeKinds.Enumerated
+            or TypeKinds.BitString or TypeKinds.Time;
 
     private void EmitEncodeValue(
         StringBuilder sb,
@@ -418,13 +427,7 @@ public sealed class CSharpBackend : ILanguageBackend
         var primitive = ResolvePrimitive(type);
         if (primitive is not null && type is not RefType)
         {
-            if (primitive == TypeKinds.Null)
-            {
-                sb.AppendLine($"{indent}{writer}.WriteNull({tag});");
-                return;
-            }
-
-            sb.AppendLine($"{indent}{writer}.{WriteMethod(primitive)}({tag}, {expr});");
+            sb.AppendLine($"{indent}{WriteCall(writer, tag, expr, type)};");
             return;
         }
 
@@ -512,13 +515,7 @@ public sealed class CSharpBackend : ILanguageBackend
         var primitive = ResolvePrimitive(type);
         if (primitive is not null && type is not RefType)
         {
-            if (primitive == TypeKinds.Null)
-            {
-                sb.Append($"{reader}.ReadNull({tag})");
-                return;
-            }
-
-            sb.Append($"{reader}.{ReadMethod(primitive)}({tag})");
+            sb.Append(ReadCall(reader, tag, type));
             return;
         }
 
@@ -544,6 +541,9 @@ public sealed class CSharpBackend : ILanguageBackend
                 TypeKinds.OctetString => optional ? "byte[]?" : "byte[]",
                 TypeKinds.Null => optional ? "bool?" : "bool",
                 TypeKinds.Oid => optional ? "string?" : "string",
+                TypeKinds.BitString => optional ? "Asn1BitString?" : "Asn1BitString",
+                TypeKinds.String => optional ? "string?" : "string",
+                TypeKinds.Time => optional ? "DateTimeOffset?" : "DateTimeOffset",
                 _ => "object"
             };
             return mapped;
@@ -585,6 +585,7 @@ public sealed class CSharpBackend : ILanguageBackend
         {
             OctetStringType => " = Array.Empty<byte>();",
             OidType => " = \"\";",
+            StringType => " = \"\";",
             SequenceOfType => " = new();",
             _ => ""
         };
@@ -616,26 +617,70 @@ public sealed class CSharpBackend : ILanguageBackend
 
     private string UniversalTag(IrDocument document, IrModule module, TypeExpr type)
     {
-        var primitive = ResolvePrimitive(type);
-        return primitive switch
+        return type switch
         {
-            TypeKinds.Boolean => "Asn1Tag.Boolean",
-            TypeKinds.Integer or TypeKinds.Enumerated => "Asn1Tag.Integer",
-            TypeKinds.OctetString => "Asn1Tag.OctetString",
-            TypeKinds.Null => "Asn1Tag.Null",
-            TypeKinds.Oid => "Asn1Tag.ObjectIdentifier",
-            _ => IsConstructed(document, module, type) ? "Asn1Tag.Sequence" : "Asn1Tag.Sequence"
+            BooleanType => "Asn1Tag.Boolean",
+            IntegerType or EnumeratedType => "Asn1Tag.Integer",
+            BitStringType => "Asn1Tag.BitString",
+            OctetStringType => "Asn1Tag.OctetString",
+            NullType => "Asn1Tag.Null",
+            OidType => "Asn1Tag.ObjectIdentifier",
+            StringType stringType => StringFormTag(stringType.Form),
+            TimeType timeType => TimeFormTag(timeType.Form),
+            RefType reference when Find(document, module, reference)?.Type is { } inner =>
+                UniversalTag(document, module, inner),
+            _ => "Asn1Tag.Sequence"
         };
     }
 
-    private static string UniversalFallback(TypeExpr type) => type switch
+    private string UniversalFallback(IrDocument document, IrModule module, TypeExpr type) =>
+        UniversalTag(document, module, type);
+
+    private static string StringFormTag(string form) => form switch
     {
-        BooleanType => "Asn1Tag.Boolean",
-        IntegerType or EnumeratedType => "Asn1Tag.Integer",
-        OctetStringType => "Asn1Tag.OctetString",
-        NullType => "Asn1Tag.Null",
-        OidType => "Asn1Tag.ObjectIdentifier",
-        _ => "Asn1Tag.Sequence"
+        StringTypes.Utf8 => "Asn1Tag.Utf8String",
+        StringTypes.Numeric => "Asn1Tag.NumericString",
+        StringTypes.Printable => "Asn1Tag.PrintableString",
+        StringTypes.Teletex or StringTypes.T61 => "Asn1Tag.TeletexString",
+        StringTypes.Videotex => "Asn1Tag.VideotexString",
+        StringTypes.Ia5 => "Asn1Tag.Ia5String",
+        StringTypes.Graphic => "Asn1Tag.GraphicString",
+        StringTypes.Visible => "Asn1Tag.VisibleString",
+        StringTypes.General => "Asn1Tag.GeneralString",
+        StringTypes.Universal => "Asn1Tag.UniversalString",
+        StringTypes.Bmp => "Asn1Tag.BmpString",
+        _ => throw new NotSupportedException($"Unknown stringType '{form}'.")
+    };
+
+    private static string TimeFormTag(string form) => form switch
+    {
+        TimeTypes.Utc => "Asn1Tag.UtcTime",
+        TimeTypes.Generalized => "Asn1Tag.GeneralizedTime",
+        _ => throw new NotSupportedException($"Unknown timeType '{form}'.")
+    };
+
+    private static string StringFormEnum(string form) => form switch
+    {
+        StringTypes.Utf8 => "Asn1StringForm.Utf8",
+        StringTypes.Printable => "Asn1StringForm.Printable",
+        StringTypes.Teletex => "Asn1StringForm.Teletex",
+        StringTypes.T61 => "Asn1StringForm.T61",
+        StringTypes.Ia5 => "Asn1StringForm.Ia5",
+        StringTypes.Numeric => "Asn1StringForm.Numeric",
+        StringTypes.Visible => "Asn1StringForm.Visible",
+        StringTypes.Bmp => "Asn1StringForm.Bmp",
+        StringTypes.Universal => "Asn1StringForm.Universal",
+        StringTypes.General => "Asn1StringForm.General",
+        StringTypes.Graphic => "Asn1StringForm.Graphic",
+        StringTypes.Videotex => "Asn1StringForm.Videotex",
+        _ => throw new NotSupportedException($"Unknown stringType '{form}'.")
+    };
+
+    private static string TimeFormEnum(string form) => form switch
+    {
+        TimeTypes.Utc => "Asn1TimeForm.Utc",
+        TimeTypes.Generalized => "Asn1TimeForm.Generalized",
+        _ => throw new NotSupportedException($"Unknown timeType '{form}'.")
     };
 
     private string? ResolvePrimitive(TypeExpr type) => type switch
@@ -643,9 +688,12 @@ public sealed class CSharpBackend : ILanguageBackend
         BooleanType => TypeKinds.Boolean,
         IntegerType => TypeKinds.Integer,
         EnumeratedType => TypeKinds.Enumerated,
+        BitStringType => TypeKinds.BitString,
         OctetStringType => TypeKinds.OctetString,
         NullType => TypeKinds.Null,
         OidType => TypeKinds.Oid,
+        StringType => TypeKinds.String,
+        TimeType => TypeKinds.Time,
         _ => null
     };
 
@@ -683,34 +731,44 @@ public sealed class CSharpBackend : ILanguageBackend
             OidType => new OidType(),
             IntegerType integer => new IntegerType { NamedValues = integer.NamedValues },
             EnumeratedType enumerated => new EnumeratedType { Values = enumerated.Values },
+            BitStringType bitString => new BitStringType { NamedBits = bitString.NamedBits },
+            StringType stringType => new StringType { Form = stringType.Form },
+            TimeType timeType => new TimeType { Form = timeType.Form },
             SequenceType sequence => new SequenceType { Components = sequence.Components },
             ChoiceType choice => new ChoiceType { Components = choice.Components },
             SequenceOfType sequenceOf => new SequenceOfType { Element = sequenceOf.Element },
             RefType reference => new RefType { Name = reference.Name, Module = reference.Module },
-            _ => type
+            _ => throw new NotSupportedException($"Cannot clone untagged type kind '{type.Kind}'.")
         };
         clone.Options = type.Options;
+        clone.Constraint = type.Constraint;
         return clone;
     }
 
-    private static string WriteMethod(string primitive) => primitive switch
+    private static string WriteCall(string writer, string tag, string expr, TypeExpr type) => type switch
     {
-        TypeKinds.Boolean => "WriteBoolean",
-        TypeKinds.Integer or TypeKinds.Enumerated => "WriteInteger",
-        TypeKinds.OctetString => "WriteOctetString",
-        TypeKinds.Null => "WriteNull",
-        TypeKinds.Oid => "WriteObjectIdentifier",
-        _ => throw new InvalidOperationException(primitive)
+        BooleanType => $"{writer}.WriteBoolean({tag}, {expr})",
+        IntegerType or EnumeratedType => $"{writer}.WriteInteger({tag}, {expr})",
+        BitStringType => $"{writer}.WriteBitString({tag}, {expr})",
+        OctetStringType => $"{writer}.WriteOctetString({tag}, {expr})",
+        NullType => $"{writer}.WriteNull({tag})",
+        OidType => $"{writer}.WriteObjectIdentifier({tag}, {expr})",
+        StringType stringType => $"{writer}.WriteString({tag}, {expr}, {StringFormEnum(stringType.Form)})",
+        TimeType timeType => $"{writer}.WriteTime({tag}, {expr}, {TimeFormEnum(timeType.Form)})",
+        _ => throw new InvalidOperationException(type.Kind)
     };
 
-    private static string ReadMethod(string primitive) => primitive switch
+    private static string ReadCall(string reader, string tag, TypeExpr type) => type switch
     {
-        TypeKinds.Boolean => "ReadBoolean",
-        TypeKinds.Integer or TypeKinds.Enumerated => "ReadInteger",
-        TypeKinds.OctetString => "ReadOctetString",
-        TypeKinds.Null => "ReadNull",
-        TypeKinds.Oid => "ReadObjectIdentifier",
-        _ => throw new InvalidOperationException(primitive)
+        BooleanType => $"{reader}.ReadBoolean({tag})",
+        IntegerType or EnumeratedType => $"{reader}.ReadInteger({tag})",
+        BitStringType => $"{reader}.ReadBitString({tag})",
+        OctetStringType => $"{reader}.ReadOctetString({tag})",
+        NullType => $"{reader}.ReadNull({tag})",
+        OidType => $"{reader}.ReadObjectIdentifier({tag})",
+        StringType stringType => $"{reader}.ReadString({tag}, {StringFormEnum(stringType.Form)})",
+        TimeType timeType => $"{reader}.ReadTime({tag}, {TimeFormEnum(timeType.Form)})",
+        _ => throw new InvalidOperationException(type.Kind)
     };
 
     private static string PropertyName(IrComponent field)
