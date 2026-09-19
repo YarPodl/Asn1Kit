@@ -9,140 +9,176 @@ public sealed class IrException : Exception
 
 public static class IrValidator
 {
-    public static void Validate(IrModule module)
+    public static void Validate(IrDocument document)
     {
-        if (module.IrVersion != 1)
+        if (document.IrVersion != 1)
         {
-            throw new IrException($"Unsupported irVersion '{module.IrVersion}'. Expected 1.");
+            throw new IrException($"Unsupported irVersion '{document.IrVersion}'. Expected 1.");
         }
 
-        if (string.IsNullOrWhiteSpace(module.Module))
+        document.Modules ??= new List<IrModule>();
+        var moduleNames = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var module in document.Modules)
         {
-            throw new IrException("Module name is required.");
-        }
+            if (string.IsNullOrWhiteSpace(module.Name))
+            {
+                throw new IrException("Module name is required.");
+            }
 
+            if (!moduleNames.Add(module.Name))
+            {
+                throw new IrException($"Duplicate module '{module.Name}'.");
+            }
+
+            ValidateModule(document, module);
+        }
+    }
+
+    private static void ValidateModule(IrDocument document, IrModule module)
+    {
         var tagDefault = module.TagDefault?.ToLowerInvariant();
         if (tagDefault is not (TagDefaults.Explicit or TagDefaults.Implicit or TagDefaults.Automatic))
         {
             throw new IrException($"Unknown tagDefault '{module.TagDefault}'.");
         }
 
+        module.Imports ??= new List<IrImport>();
+        module.Types ??= new List<IrTypeDef>();
+
         var names = new HashSet<string>(StringComparer.Ordinal);
         foreach (var type in module.Types)
         {
             if (string.IsNullOrWhiteSpace(type.Name))
             {
-                throw new IrException("Type name is required.");
+                throw new IrException($"Type name is required in module '{module.Name}'.");
             }
 
             if (!names.Add(type.Name))
             {
-                throw new IrException($"Duplicate type '{type.Name}' in module '{module.Module}'.");
+                throw new IrException($"Duplicate type '{type.Name}' in module '{module.Name}'.");
             }
 
-            ValidateType(module, type);
-        }
+            if (type.Type is null)
+            {
+                throw new IrException($"Type '{type.Name}' is missing a type expression.");
+            }
 
-        foreach (var type in module.Types)
-        {
-            ValidateReferences(module, type);
+            ValidateExpr(document, module, type.Type, type.Name);
         }
     }
 
-    private static void ValidateType(IrModule module, IrTypeDef type)
+    private static void ValidateExpr(IrDocument document, IrModule module, TypeExpr expr, string context)
     {
-        switch (type.Kind)
+        ValidateTag(expr.Tag, context);
+        switch (expr)
         {
-            case TypeKinds.Sequence:
-            case TypeKinds.Choice:
-                if (type.Fields is null)
+            case SequenceType sequence:
+                ValidateComponents(document, module, sequence.Components, context, allowOptional: true);
+                break;
+            case ChoiceType choice:
+                if (choice.Components.Count == 0)
                 {
-                    throw new IrException($"Type '{type.Name}' is missing fields.");
+                    throw new IrException($"CHOICE '{context}' has no alternatives.");
                 }
 
-                var fields = new HashSet<string>(StringComparer.Ordinal);
-                foreach (var field in type.Fields)
+                ValidateComponents(document, module, choice.Components, context, allowOptional: false);
+                break;
+            case SequenceOfType sequenceOf:
+                if (sequenceOf.Element is null)
                 {
-                    if (string.IsNullOrWhiteSpace(field.Name))
-                    {
-                        throw new IrException($"Type '{type.Name}' has a field without a name.");
-                    }
+                    throw new IrException($"sequenceOf '{context}' is missing element.");
+                }
 
-                    if (!fields.Add(field.Name))
-                    {
-                        throw new IrException($"Duplicate field '{field.Name}' on type '{type.Name}'.");
-                    }
+                ValidateExpr(document, module, sequenceOf.Element, context + "[]");
+                break;
+            case RefType reference:
+                if (string.IsNullOrWhiteSpace(reference.Name))
+                {
+                    throw new IrException($"Type reference in '{context}' has no name.");
+                }
 
-                    if (string.IsNullOrWhiteSpace(field.Type))
-                    {
-                        throw new IrException($"Field '{type.Name}.{field.Name}' is missing a type.");
-                    }
-
-                    ValidateTag(field.Tag, $"{type.Name}.{field.Name}");
+                if (!ResolveRef(document, module, reference))
+                {
+                    throw new IrException($"Unresolved type '{FormatRef(reference)}' referenced from {context}.");
                 }
 
                 break;
-            case TypeKinds.SequenceOf:
-                if (string.IsNullOrWhiteSpace(type.ElementType))
+            case EnumeratedType enumerated:
+                if (enumerated.Values is null || enumerated.Values.Count == 0)
                 {
-                    throw new IrException($"Type '{type.Name}' is sequence-of without elementType.");
+                    throw new IrException($"ENUMERATED '{context}' has no values.");
                 }
 
                 break;
-            case TypeKinds.Alias:
-                if (string.IsNullOrWhiteSpace(type.Type))
-                {
-                    throw new IrException($"Type '{type.Name}' is alias without type.");
-                }
-
+            case BooleanType:
+            case NullType:
+            case OctetStringType:
+            case OidType:
+            case IntegerType:
                 break;
             default:
-                throw new IrException($"Unknown kind '{type.Kind}' on type '{type.Name}'.");
+                throw new IrException($"Unknown type expression in '{context}'.");
         }
-
-        ValidateTag(type.Tag, type.Name);
     }
 
-    private static void ValidateReferences(IrModule module, IrTypeDef type)
+    private static void ValidateComponents(
+        IrDocument document,
+        IrModule module,
+        List<IrComponent> components,
+        string owner,
+        bool allowOptional)
     {
-        void Check(string name, string context)
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var component in components)
         {
-            if (BuiltinTypes.IsBuiltin(name))
+            if (string.IsNullOrWhiteSpace(component.Name))
             {
-                return;
+                throw new IrException($"Type '{owner}' has a component without a name.");
             }
 
-            if (module.Types.Any(t => t.Name == name))
+            if (!names.Add(component.Name))
             {
-                return;
+                throw new IrException($"Duplicate component '{component.Name}' on type '{owner}'.");
             }
 
-            if (module.Imports.SelectMany(i => i.Types).Contains(name))
+            if (!allowOptional && component.Optional)
             {
-                return;
+                throw new IrException($"CHOICE alternative '{owner}.{component.Name}' cannot be OPTIONAL.");
             }
 
-            throw new IrException($"Unresolved type '{name}' referenced from {context}.");
-        }
+            if (component.Type is null)
+            {
+                throw new IrException($"Component '{owner}.{component.Name}' is missing a type.");
+            }
 
-        switch (type.Kind)
-        {
-            case TypeKinds.Alias:
-                Check(type.Type!, type.Name);
-                break;
-            case TypeKinds.SequenceOf:
-                Check(type.ElementType!, type.Name);
-                break;
-            case TypeKinds.Sequence:
-            case TypeKinds.Choice:
-                foreach (var field in type.Fields!)
-                {
-                    Check(field.Type, $"{type.Name}.{field.Name}");
-                }
-
-                break;
+            ValidateExpr(document, module, component.Type, $"{owner}.{component.Name}");
         }
     }
+
+    private static bool ResolveRef(IrDocument document, IrModule module, RefType reference)
+    {
+        IEnumerable<IrModule> candidates = string.IsNullOrEmpty(reference.Module)
+            ? new[] { module }.Concat(document.Modules.Where(m => m != module))
+            : document.Modules.Where(m => m.Name == reference.Module);
+
+        foreach (var candidate in candidates)
+        {
+            if (candidate.Types.Any(t => t.Name == reference.Name))
+            {
+                return true;
+            }
+
+            if (candidate.Imports.SelectMany(i => i.Types).Contains(reference.Name))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static string FormatRef(RefType reference) =>
+        string.IsNullOrEmpty(reference.Module) ? reference.Name : $"{reference.Module}.{reference.Name}";
 
     private static void ValidateTag(IrTag? tag, string context)
     {

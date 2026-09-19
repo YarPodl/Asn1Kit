@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Text;
 
 namespace Asn1Kit.Compiler;
 
@@ -24,7 +23,7 @@ internal sealed class Asn1Parser
     private ModuleAst ParseModule()
     {
         var name = ExpectIdentifier("module name");
-        string? oid = null;
+        List<int>? oid = null;
         if (Check(TokenKind.LBrace))
         {
             oid = ParseOidValue();
@@ -191,6 +190,12 @@ internal sealed class Asn1Parser
             return new BuiltinTypeAst("INTEGER", named);
         }
 
+        if (IsKeyword(Keywords.Enumerated))
+        {
+            Advance();
+            return new EnumeratedTypeAst(ParseNamedNumberList());
+        }
+
         if (IsKeyword(Keywords.Boolean))
         {
             Advance();
@@ -330,42 +335,32 @@ internal sealed class Asn1Parser
         };
     }
 
-    private string ParseOidValue()
+    private List<int> ParseOidValue()
     {
-        var builder = new StringBuilder();
+        var arcs = new List<int>();
         Expect(TokenKind.LBrace, "{");
-        var first = true;
         while (!Check(TokenKind.RBrace))
         {
-            if (!first)
-            {
-                builder.Append('.');
-            }
-
-            first = false;
             if (Check(TokenKind.Number))
             {
-                builder.Append(Advance().Text);
+                arcs.Add(int.Parse(Advance().Text, CultureInfo.InvariantCulture));
+                continue;
             }
-            else
+
+            ExpectIdentifier("OID component");
+            if (!Check(TokenKind.LParen))
             {
-                var ident = ExpectIdentifier("OID component");
-                if (Check(TokenKind.LParen))
-                {
-                    Advance();
-                    var n = Expect(TokenKind.Number, "OID number");
-                    Expect(TokenKind.RParen, ")");
-                    builder.Append(n.Text);
-                }
-                else
-                {
-                    builder.Append(ident.Text);
-                }
+                throw Error("OID component must be a number or name(number).");
             }
+
+            Advance();
+            var n = Expect(TokenKind.Number, "OID number");
+            Expect(TokenKind.RParen, ")");
+            arcs.Add(int.Parse(n.Text, CultureInfo.InvariantCulture));
         }
 
         Expect(TokenKind.RBrace, "}");
-        return builder.ToString();
+        return arcs;
     }
 
     private Token Peek() => _tokens[_index];

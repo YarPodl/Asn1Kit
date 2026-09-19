@@ -1,0 +1,225 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://asn1kit.dev/schemas/ir-v1.json",
+  "title": "Asn1Kit IR v1",
+  "description": "Normalized, human-editable JSON representation of ASN.1 modules.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["irVersion", "modules"],
+  "properties": {
+    "irVersion": { "const": 1 },
+    "sourceFiles": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "options": { "$ref": "#/$defs/options" },
+    "modules": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/module" }
+    }
+  },
+  "$defs": {
+    "options": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "module": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "tagDefault", "types"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "oid": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 0 }
+        },
+        "tagDefault": { "enum": ["explicit", "implicit", "automatic"] },
+        "imports": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/import" }
+        },
+        "options": { "$ref": "#/$defs/options" },
+        "types": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/typeDef" }
+        }
+      }
+    },
+    "import": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["module", "types"],
+      "properties": {
+        "module": { "type": "string", "minLength": 1 },
+        "types": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "typeDef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "type": { "$ref": "#/$defs/typeExpr" },
+        "options": { "$ref": "#/$defs/options" }
+      }
+    },
+    "namedNumber": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "value"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "value": { "type": "integer" }
+      }
+    },
+    "tag": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["class", "number", "mode"],
+      "properties": {
+        "class": { "enum": ["universal", "application", "context", "private"] },
+        "number": { "type": "integer", "minimum": 0 },
+        "mode": { "enum": ["implicit", "explicit"] }
+      }
+    },
+    "component": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "type": { "$ref": "#/$defs/typeExpr" },
+        "optional": { "type": "boolean" },
+        "options": { "$ref": "#/$defs/options" }
+      }
+    },
+    "typeExpr": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": {
+            "kind": { "const": "boolean" },
+            "tag": { "$ref": "#/$defs/tag" },
+            "options": { "$ref": "#/$defs/options" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": {
+            "kind": { "const": "null" },
+            "tag": { "$ref": "#/$defs/tag" },
+            "options": { "$ref": "#/$defs/options" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": {
+            "kind": { "const": "octetString" },
+            "tag": { "$ref": "#/$defs/tag" },
+            "options": { "$ref": "#/$defs/options" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": {
+            "kind": { "const": "oid" },
+            "tag": { "$ref": "#/$defs/tag" },
+            "options": { "$ref": "#/$defs/options" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": {
+            "kind": { "const": "integer" },
+            "namedValues": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/namedNumber" }
+            },
+            "tag": { "$ref": "#/$defs/tag" },
+            "options": { "$ref": "#/$defs/options" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "values"],
+          "properties": {
+            "kind": { "const": "enumerated" },
+            "values": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/namedNumber" }
+            },
+            "tag": { "$ref": "#/$defs/tag" },
+            "options": { "$ref": "#/$defs/options" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "components"],
+          "properties": {
+            "kind": { "const": "sequence" },
+            "components": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/component" }
+            },
+            "tag": { "$ref": "#/$defs/tag" },
+            "options": { "$ref": "#/$defs/options" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "components"],
+          "properties": {
+            "kind": { "const": "choice" },
+            "components": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/$defs/component" }
+            },
+            "tag": { "$ref": "#/$defs/tag" },
+            "options": { "$ref": "#/$defs/options" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "element"],
+          "properties": {
+            "kind": { "const": "sequenceOf" },
+            "element": { "$ref": "#/$defs/typeExpr" },
+            "tag": { "$ref": "#/$defs/tag" },
+            "options": { "$ref": "#/$defs/options" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "name"],
+          "properties": {
+            "kind": { "const": "ref" },
+            "name": { "type": "string", "minLength": 1 },
+            "module": { "type": "string", "minLength": 1 },
+            "tag": { "$ref": "#/$defs/tag" },
+            "options": { "$ref": "#/$defs/options" }
+          }
+        }
+      ]
+    }
+  }
+}

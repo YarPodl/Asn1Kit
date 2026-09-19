@@ -204,4 +204,5 @@ internal static class Keywords
     public const string Universal = "UNIVERSAL";
     public const string Application = "APPLICATION";
     public const string Private = "PRIVATE";
+    public const string Enumerated = "ENUMERATED";
 }

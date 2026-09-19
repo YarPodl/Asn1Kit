@@ -1,20 +1,30 @@
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
+
 namespace Asn1Kit.Ir;
 
-public sealed class IrModule
+public sealed class IrDocument
 {
     public int IrVersion { get; set; } = 1;
 
-    public string Module { get; set; } = "";
+    public List<string>? SourceFiles { get; set; }
 
-    public string? Oid { get; set; }
+    public JsonObject? Options { get; set; }
 
-    public string? Source { get; set; }
+    public List<IrModule> Modules { get; set; } = new();
+}
+
+public sealed class IrModule
+{
+    public string Name { get; set; } = "";
+
+    public List<int>? Oid { get; set; }
 
     public string TagDefault { get; set; } = TagDefaults.Explicit;
 
     public List<IrImport> Imports { get; set; } = new();
 
-    public Dictionary<string, object?> Options { get; set; } = new(StringComparer.Ordinal);
+    public JsonObject? Options { get; set; }
 
     public List<IrTypeDef> Types { get; set; } = new();
 }
@@ -30,45 +40,28 @@ public sealed class IrTypeDef
 {
     public string Name { get; set; } = "";
 
-    /// <summary>sequence, choice, sequence-of, alias</summary>
-    public string Kind { get; set; } = "";
+    public TypeExpr Type { get; set; } = null!;
 
-    /// <summary>For alias: referenced or builtin type name.</summary>
-    public string? Type { get; set; }
-
-    /// <summary>For sequence-of: element type name.</summary>
-    public string? ElementType { get; set; }
-
-    public IrTag? Tag { get; set; }
-
-    public List<IrNamedNumber>? NamedNumbers { get; set; }
-
-    public List<IrField>? Fields { get; set; }
-
-    public Dictionary<string, object?> Options { get; set; } = new(StringComparer.Ordinal);
+    public JsonObject? Options { get; set; }
 }
 
-public sealed class IrField
+public sealed class IrComponent
 {
     public string Name { get; set; } = "";
 
-    public string Type { get; set; } = "";
+    public TypeExpr Type { get; set; } = null!;
 
     public bool Optional { get; set; }
 
-    public IrTag? Tag { get; set; }
-
-    public Dictionary<string, object?> Options { get; set; } = new(StringComparer.Ordinal);
+    public JsonObject? Options { get; set; }
 }
 
 public sealed class IrTag
 {
-    /// <summary>universal, application, context, private</summary>
     public string Class { get; set; } = TagClasses.Context;
 
     public int Number { get; set; }
 
-    /// <summary>implicit or explicit</summary>
     public string Mode { get; set; } = TagModes.Implicit;
 }
 
@@ -79,12 +72,93 @@ public sealed class IrNamedNumber
     public long Value { get; set; }
 }
 
+[JsonConverter(typeof(TypeExprConverter))]
+public abstract class TypeExpr
+{
+    public IrTag? Tag { get; set; }
+
+    public JsonObject? Options { get; set; }
+
+    [JsonIgnore]
+    public abstract string Kind { get; }
+}
+
+public sealed class BooleanType : TypeExpr
+{
+    public override string Kind => TypeKinds.Boolean;
+}
+
+public sealed class NullType : TypeExpr
+{
+    public override string Kind => TypeKinds.Null;
+}
+
+public sealed class OctetStringType : TypeExpr
+{
+    public override string Kind => TypeKinds.OctetString;
+}
+
+public sealed class OidType : TypeExpr
+{
+    public override string Kind => TypeKinds.Oid;
+}
+
+public sealed class IntegerType : TypeExpr
+{
+    public override string Kind => TypeKinds.Integer;
+
+    public List<IrNamedNumber>? NamedValues { get; set; }
+}
+
+public sealed class EnumeratedType : TypeExpr
+{
+    public override string Kind => TypeKinds.Enumerated;
+
+    public List<IrNamedNumber> Values { get; set; } = new();
+}
+
+public sealed class SequenceType : TypeExpr
+{
+    public override string Kind => TypeKinds.Sequence;
+
+    public List<IrComponent> Components { get; set; } = new();
+}
+
+public sealed class ChoiceType : TypeExpr
+{
+    public override string Kind => TypeKinds.Choice;
+
+    public List<IrComponent> Components { get; set; } = new();
+}
+
+public sealed class SequenceOfType : TypeExpr
+{
+    public override string Kind => TypeKinds.SequenceOf;
+
+    public TypeExpr Element { get; set; } = null!;
+}
+
+public sealed class RefType : TypeExpr
+{
+    public override string Kind => TypeKinds.Ref;
+
+    public string Name { get; set; } = "";
+
+    public string? Module { get; set; }
+}
+
 public static class TypeKinds
 {
+    public const string Boolean = "boolean";
+    public const string Null = "null";
+    public const string OctetString = "octetString";
+    public const string Oid = "oid";
+    public const string Integer = "integer";
+    public const string Enumerated = "enumerated";
     public const string Sequence = "sequence";
     public const string Choice = "choice";
-    public const string SequenceOf = "sequence-of";
-    public const string Alias = "alias";
+    public const string SequenceOf = "sequenceOf";
+    public const string Ref = "ref";
 }
 
 public static class TagDefaults
@@ -106,20 +180,4 @@ public static class TagModes
 {
     public const string Implicit = "implicit";
     public const string Explicit = "explicit";
-}
-
-public static class BuiltinTypes
-{
-    public const string Boolean = "BOOLEAN";
-    public const string Integer = "INTEGER";
-    public const string OctetString = "OCTET STRING";
-    public const string Null = "NULL";
-    public const string ObjectIdentifier = "OBJECT IDENTIFIER";
-
-    public static readonly IReadOnlySet<string> All = new HashSet<string>(StringComparer.Ordinal)
-    {
-        Boolean, Integer, OctetString, Null, ObjectIdentifier
-    };
-
-    public static bool IsBuiltin(string name) => All.Contains(name);
 }

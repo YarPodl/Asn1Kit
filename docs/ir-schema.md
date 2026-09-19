@@ -1,65 +1,72 @@
 # Схема IR v1
 
-Человекочитаемое представление ASN.1-модуля. Кодировка файла: YAML (по умолчанию) или JSON. Имена полей — camelCase.
+Контракт между компилятором ASN.1 и генераторами кода. Формат — только JSON, схема: [schemas/asn1kit-ir-v1.json](../schemas/asn1kit-ir-v1.json) (Draft 2020-12).
 
-## Корневой объект
+Имена полей — camelCase. `kind` типов — camelCase (`octetString`, `sequenceOf`).
+
+## Корень
 
 | Поле | Тип | Описание |
 | --- | --- | --- |
-| `irVersion` | number | Сейчас `1` |
-| `module` | string | Имя модуля |
-| `oid` | string? | Object identifier модуля, если был в исходнике |
-| `source` | string? | Путь исходного файла |
-| `tagDefault` | string | `explicit`, `implicit` или `automatic` |
-| `imports` | array | `{ module, types[] }` |
-| `options` | object | Свободный словарь |
-| `types` | array | Нормализованные типы |
+| `irVersion` | number | Сейчас `1`. Несовместимые изменения → `2`. |
+| `sourceFiles` | string[]? | Имена исходных файлов (диагностика). |
+| `options` | object? | Свободный словарь. |
+| `modules` | array | Модули (несколько — для `IMPORTS`). |
 
-Неизвестные ключи в `options` не отбрасываются.
-
-## Тип (`types[]`)
+## Модуль
 
 | Поле | Описание |
 | --- | --- |
-| `name` | typereference |
-| `kind` | `sequence`, `choice`, `sequence-of`, `alias` |
-| `type` | Для `alias`: имя builtin или другого типа |
-| `elementType` | Для `sequence-of` |
-| `tag` | Опциональный тег самого типа |
-| `namedNumbers` | Именованные значения INTEGER |
-| `fields` | Поля SEQUENCE/CHOICE |
+| `name` | Имя модуля |
+| `oid` | Массив дуг, если OID был в исходнике |
+| `tagDefault` | `explicit`, `implicit` или `automatic` |
+| `imports` | `{ module, types[] }` |
 | `options` | Свободный словарь |
+| `types` | Именованные определения `{ name, type, options? }` |
 
-## Поле
+## Выражение типа (`type`)
 
-| Поле | Описание |
-| --- | --- |
-| `name` | identifier |
-| `type` | Builtin (`INTEGER`, `OCTET STRING`, …) или имя типа |
-| `optional` | Только для SEQUENCE |
-| `tag` | Назначенный или явный тег |
-| `options` | Свободный словарь |
+Дискриминатор `kind`:
 
-## Тег
+- `boolean`, `null`, `octetString`, `oid`
+- `integer` — опционально `namedValues: [{ name, value }]`
+- `enumerated` — `values: [{ name, value }]`
+- `sequence` / `choice` — `components[]`
+- `sequenceOf` — `element` (вложенное выражение)
+- `ref` — `name`, опционально `module`
 
-```yaml
-tag:
-  class: context   # universal | application | context | private
-  number: 0
-  mode: implicit   # implicit | explicit
+У любого выражения опциональны `tag` и `options`.
+
+```json
+{
+  "class": "context",
+  "number": 0,
+  "mode": "implicit"
+}
 ```
 
-## Известные options
+`class`: `universal` | `application` | `context` | `private`.  
+`mode`: `implicit` | `explicit`.
 
-| Ключ | Где | Смысл |
+Компилятор раскрывает `AUTOMATIC TAGS` в явные `tag` на компонентах. Генератор правила X.680 не повторяет.
+
+## Компонент SEQUENCE / CHOICE
+
+`name`, `type`, `optional` (для CHOICE всегда `false`), `options`.
+
+## Options
+
+Объект с `additionalProperties: true`. Неизвестные ключи сохраняются при round-trip.
+
+Рекомендуемая вложенность по бэкенду:
+
+| Путь | Где | Смысл |
 | --- | --- | --- |
-| `csharp.namespace` | модуль | Namespace сгенерированного кода |
-| `csharp.typeName` | тип | Имя класса |
-| `csharp.propertyName` | поле | Имя свойства |
-| `generate` | тип | `false` — не генерировать |
-
-Компилятор заполняет `csharp.namespace` и `csharp.typeName` значениями по умолчанию. Их можно изменить вручную.
+| `options.csharp.namespace` | модуль | Namespace |
+| `options.csharp.typeName` | тип | Имя класса |
+| `options.csharp.propertyName` | поле | Имя свойства |
+| `options.generate` | тип | `false` — не генерировать |
 
 ## Пример
 
-См. [fixtures/ir/example.asn1.yaml](../fixtures/ir/example.asn1.yaml).
+См. [fixtures/ir/example.json](../fixtures/ir/example.json).

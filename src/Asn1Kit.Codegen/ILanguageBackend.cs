@@ -8,7 +8,7 @@ public interface ILanguageBackend
 {
     string LanguageId { get; }
 
-    IReadOnlyList<GeneratedFile> Generate(IrModule module);
+    IReadOnlyList<GeneratedFile> Generate(IrDocument document);
 }
 
 public sealed class CodeGenerator
@@ -20,14 +20,14 @@ public sealed class CodeGenerator
         _backends = backends.ToDictionary(b => b.LanguageId, StringComparer.OrdinalIgnoreCase);
     }
 
-    public IReadOnlyList<GeneratedFile> Generate(IrModule module, string language)
+    public IReadOnlyList<GeneratedFile> Generate(IrDocument document, string language)
     {
-        IrValidator.Validate(module);
+        IrValidator.Validate(document);
         if (!_backends.TryGetValue(language, out var backend))
         {
             throw new InvalidOperationException($"Unsupported language '{language}'.");
         }
 
-        return backend.Generate(module);
+        return backend.Generate(document);
     }
 }

@@ -108,13 +108,15 @@ public sealed class Asn1Reader
         return parts.ToArray();
     }
 
-    public void ReadNull(Asn1Tag expected)
+    public bool ReadNull(Asn1Tag expected)
     {
         var contents = ReadValue(expected, allowConstructed: false);
         if (contents.Length != 0)
         {
             throw new Asn1Exception("NULL must have empty contents.");
         }
+
+        return true;
     }
 
     public string ReadObjectIdentifier(Asn1Tag expected)

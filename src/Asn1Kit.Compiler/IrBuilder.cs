@@ -5,14 +5,13 @@ namespace Asn1Kit.Compiler;
 internal sealed class IrBuilder
 {
     private readonly List<ModuleAst> _modules;
-    private int _synthetic;
 
     public IrBuilder(List<ModuleAst> modules)
     {
         _modules = modules;
     }
 
-    public IReadOnlyList<IrModule> Build()
+    public IrDocument Build()
     {
         var known = new HashSet<string>(StringComparer.Ordinal);
         foreach (var module in _modules)
@@ -29,7 +28,7 @@ internal sealed class IrBuilder
             {
                 foreach (var type in import.Types)
                 {
-                    if (!known.Contains(type) && !BuiltinTypes.IsBuiltin(type))
+                    if (!known.Contains(type))
                     {
                         throw new CompileException(
                             $"Imported type '{type}' from '{import.Module}' was not found among compiled modules.",
@@ -40,17 +39,27 @@ internal sealed class IrBuilder
             }
         }
 
-        return _modules.Select(BuildModule).ToList();
+        var document = new IrDocument { IrVersion = 1 };
+        var sources = _modules.Select(m => m.Source).Where(s => !string.IsNullOrEmpty(s)).Cast<string>().ToList();
+        if (sources.Count > 0)
+        {
+            document.SourceFiles = sources;
+        }
+
+        foreach (var module in _modules)
+        {
+            document.Modules.Add(BuildModule(module));
+        }
+
+        return document;
     }
 
-    private IrModule BuildModule(ModuleAst ast)
+    private static IrModule BuildModule(ModuleAst ast)
     {
         var ir = new IrModule
         {
-            IrVersion = 1,
-            Module = ast.Name,
+            Name = ast.Name,
             Oid = ast.Oid,
-            Source = ast.Source,
             TagDefault = ast.TagDefault switch
             {
                 TagDefaultKind.Implicit => TagDefaults.Implicit,
@@ -64,180 +73,113 @@ internal sealed class IrBuilder
             ir.Imports.Add(new IrImport { Module = import.Module, Types = import.Types.ToList() });
         }
 
-        ir.Options[OptionKeys.CSharpNamespace] = SanitizeNamespace(ast.Name);
+        ir.Options = IrOptions.SetCSharp(ir.Options, "namespace", SanitizeNamespace(ast.Name));
 
         foreach (var assignment in ast.Assignments)
         {
-            FlattenAssignment(ir, assignment.Name, assignment.Type, typeTag: null);
+            var def = new IrTypeDef
+            {
+                Name = assignment.Name,
+                Type = ConvertType(assignment.Type, ir.TagDefault, assignedName: assignment.Name)
+            };
+            def.Options = IrOptions.SetCSharp(def.Options, "typeName", SanitizeTypeName(assignment.Name));
+            ir.Types.Add(def);
         }
 
         return ir;
     }
 
-    private void FlattenAssignment(IrModule ir, string name, TypeAst type, IrTag? typeTag)
+    private static TypeExpr ConvertType(TypeAst type, string tagDefault, string? assignedName)
     {
         if (type is TaggedTypeAst tagged)
         {
-            var resolved = ResolveTag(tagged.Tag, ir.TagDefault, innerIsChoice: tagged.Inner is ChoiceTypeAst);
-            FlattenAssignment(ir, name, tagged.Inner, resolved);
-            if (ir.Types.Last().Tag is null)
-            {
-                ir.Types.Last().Tag = resolved;
-            }
-
-            return;
+            var innerIsChoice = IsChoice(tagged.Inner);
+            var converted = ConvertType(tagged.Inner, tagDefault, assignedName);
+            converted.Tag = ResolveTag(tagged.Tag, tagDefault, innerIsChoice);
+            return converted;
         }
 
-        IrTypeDef def;
-        switch (type)
+        return type switch
         {
-            case BuiltinTypeAst builtin:
-                def = new IrTypeDef
-                {
-                    Name = name,
-                    Kind = TypeKinds.Alias,
-                    Type = builtin.Name,
-                    Tag = typeTag,
-                    NamedNumbers = builtin.NamedNumbers?
-                        .Select(n => new IrNamedNumber { Name = n.Name, Value = n.Value })
-                        .ToList()
-                };
-                break;
-            case TypeReferenceAst reference:
-                def = new IrTypeDef
-                {
-                    Name = name,
-                    Kind = TypeKinds.Alias,
-                    Type = reference.Name,
-                    Tag = typeTag
-                };
-                break;
-            case SequenceOfTypeAst sequenceOf:
-                var elementName = EnsureNamed(ir, $"{name}Element", sequenceOf.Element);
-                def = new IrTypeDef
-                {
-                    Name = name,
-                    Kind = TypeKinds.SequenceOf,
-                    ElementType = elementName,
-                    Tag = typeTag
-                };
-                break;
-            case SequenceTypeAst sequence:
-                def = new IrTypeDef
-                {
-                    Name = name,
-                    Kind = TypeKinds.Sequence,
-                    Tag = typeTag,
-                    Fields = BuildFields(ir, name, sequence.Fields, ir.TagDefault, allowOptional: true)
-                };
-                break;
-            case ChoiceTypeAst choice:
-                def = new IrTypeDef
-                {
-                    Name = name,
-                    Kind = TypeKinds.Choice,
-                    Tag = typeTag,
-                    Fields = BuildFields(ir, name, choice.Fields, ir.TagDefault, allowOptional: false)
-                };
-                break;
-            default:
-                throw new CompileException($"Unsupported type form for '{name}'.", 1, 1);
-        }
-
-        def.Options[OptionKeys.CSharpTypeName] = SanitizeTypeName(name);
-        ir.Types.Add(def);
+            BuiltinTypeAst builtin => ConvertBuiltin(builtin),
+            EnumeratedTypeAst enumerated => new EnumeratedType
+            {
+                Values = enumerated.Values.Select(n => new IrNamedNumber { Name = n.Name, Value = n.Value }).ToList()
+            },
+            TypeReferenceAst reference => new RefType { Name = reference.Name },
+            SequenceOfTypeAst sequenceOf => new SequenceOfType
+            {
+                Element = ConvertType(sequenceOf.Element, tagDefault, assignedName: null)
+            },
+            SequenceTypeAst sequence => new SequenceType
+            {
+                Components = ConvertComponents(sequence.Fields, tagDefault, allowOptional: true)
+            },
+            ChoiceTypeAst choice => new ChoiceType
+            {
+                Components = ConvertComponents(choice.Fields, tagDefault, allowOptional: false)
+            },
+            _ => throw new CompileException($"Unsupported type form{(assignedName is null ? "" : $" for '{assignedName}'")}.", 1, 1)
+        };
     }
 
-    private List<IrField> BuildFields(
-        IrModule ir,
-        string owner,
-        List<FieldAst> fields,
-        string tagDefault,
-        bool allowOptional)
+    private static TypeExpr ConvertBuiltin(BuiltinTypeAst builtin) => builtin.Name switch
     {
-        var result = new List<IrField>();
-        var autoIndex = 0;
-        foreach (var field in fields)
+        "BOOLEAN" => new BooleanType(),
+        "NULL" => new NullType(),
+        "OCTET STRING" => new OctetStringType(),
+        "OBJECT IDENTIFIER" => new OidType(),
+        "INTEGER" => new IntegerType
         {
-            var (typeName, explicitTag, innerIsChoice) = UnwrapFieldType(ir, owner, field);
-            IrTag? tag = explicitTag;
-            if (tag is null && tagDefault == TagDefaults.Automatic)
+            NamedValues = builtin.NamedNumbers is { Count: > 0 }
+                ? builtin.NamedNumbers.Select(n => new IrNamedNumber { Name = n.Name, Value = n.Value }).ToList()
+                : null
+        },
+        _ => throw new CompileException($"Unsupported builtin '{builtin.Name}'.", 1, 1)
+    };
+
+    private static List<IrComponent> ConvertComponents(List<FieldAst> fields, string tagDefault, bool allowOptional)
+    {
+        var result = new List<IrComponent>();
+        for (var i = 0; i < fields.Count; i++)
+        {
+            var field = fields[i];
+            var innerIsChoice = IsChoice(field.Type);
+            var expr = ConvertType(field.Type, tagDefault, assignedName: null);
+            if (expr.Tag is null && tagDefault == TagDefaults.Automatic)
             {
-                var mode = innerIsChoice ? TagModes.Explicit : TagModes.Implicit;
-                tag = new IrTag { Class = TagClasses.Context, Number = autoIndex, Mode = mode };
+                expr.Tag = new IrTag
+                {
+                    Class = TagClasses.Context,
+                    Number = i,
+                    Mode = innerIsChoice ? TagModes.Explicit : TagModes.Implicit
+                };
             }
 
-            if (tagDefault == TagDefaults.Automatic)
-            {
-                autoIndex++;
-            }
-
-            result.Add(new IrField
+            result.Add(new IrComponent
             {
                 Name = field.Name,
-                Type = typeName,
-                Optional = allowOptional && field.Optional,
-                Tag = tag
+                Type = expr,
+                Optional = allowOptional && field.Optional
             });
         }
 
         return result;
     }
 
-    private (string TypeName, IrTag? Tag, bool InnerIsChoice) UnwrapFieldType(IrModule ir, string owner, FieldAst field)
+    private static bool IsChoice(TypeAst type) => type switch
     {
-        var type = field.Type;
-        IrTag? tag = null;
-        var innerIsChoice = false;
-
-        if (type is TaggedTypeAst tagged)
-        {
-            innerIsChoice = tagged.Inner is ChoiceTypeAst;
-            tag = ResolveTag(tagged.Tag, ir.TagDefault, innerIsChoice);
-            type = tagged.Inner;
-        }
-
-        innerIsChoice = type is ChoiceTypeAst;
-        var typeName = EnsureNamed(ir, $"{owner}_{field.Name}", type);
-        return (typeName, tag, innerIsChoice);
-    }
-
-    private string EnsureNamed(IrModule ir, string hint, TypeAst type)
-    {
-        switch (type)
-        {
-            case BuiltinTypeAst builtin:
-                return builtin.Name;
-            case TypeReferenceAst reference:
-                return reference.Name;
-            case TaggedTypeAst tagged:
-                var synthetic = Unique(hint);
-                FlattenAssignment(ir, synthetic, tagged, typeTag: null);
-                return synthetic;
-            default:
-                var name = Unique(hint);
-                FlattenAssignment(ir, name, type, typeTag: null);
-                return name;
-        }
-    }
-
-    private string Unique(string hint)
-    {
-        var cleaned = SanitizeTypeName(hint);
-        _synthetic++;
-        return $"{cleaned}_{_synthetic}";
-    }
+        ChoiceTypeAst => true,
+        TaggedTypeAst tagged => IsChoice(tagged.Inner),
+        _ => false
+    };
 
     private static IrTag ResolveTag(TagAst tag, string tagDefault, bool innerIsChoice)
     {
         var mode = tag.Mode;
         if (string.IsNullOrEmpty(mode))
         {
-            if (tagDefault == TagDefaults.Implicit && !innerIsChoice)
-            {
-                mode = TagModes.Implicit;
-            }
-            else if (tagDefault == TagDefaults.Automatic && !innerIsChoice)
+            if ((tagDefault == TagDefaults.Implicit || tagDefault == TagDefaults.Automatic) && !innerIsChoice)
             {
                 mode = TagModes.Implicit;
             }

@@ -1,0 +1,72 @@
+{
+  "irVersion": 1,
+  "sourceFiles": ["example.asn"],
+  "modules": [
+    {
+      "name": "ExampleModule",
+      "tagDefault": "automatic",
+      "imports": [],
+      "options": {
+        "csharp": {
+          "namespace": "Example.Asn1"
+        }
+      },
+      "types": [
+        {
+          "name": "Person",
+          "options": {
+            "csharp": {
+              "typeName": "Person"
+            }
+          },
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "id",
+                "optional": false,
+                "type": {
+                  "kind": "integer",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "implicit"
+                  }
+                }
+              },
+              {
+                "name": "name",
+                "optional": false,
+                "type": {
+                  "kind": "octetString",
+                  "tag": {
+                    "class": "context",
+                    "number": 1,
+                    "mode": "implicit"
+                  }
+                }
+              },
+              {
+                "name": "nick",
+                "optional": true,
+                "options": {
+                  "csharp": {
+                    "propertyName": "Nickname"
+                  }
+                },
+                "type": {
+                  "kind": "octetString",
+                  "tag": {
+                    "class": "context",
+                    "number": 2,
+                    "mode": "implicit"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

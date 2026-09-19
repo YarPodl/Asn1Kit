@@ -1,10 +1,10 @@
 # Asn1Kit
 
-Набор инструментов для работы с ASN.1: компилятор модуля во внутреннее представление, генератор кода и runtime BER/DER.
+Набор инструментов для работы с ASN.1: компилятор модуля во внутреннее JSON-представление, генератор кода и runtime BER/DER.
 
 ## Компоненты
 
-1. **Компилятор** — текст ASN.1 → человекочитаемый IR (YAML или JSON). Файл можно править: namespace, имена типов, отключение генерации.
+1. **Компилятор** — текст ASN.1 → JSON IR (`irVersion` + схема [schemas/asn1kit-ir-v1.json](schemas/asn1kit-ir-v1.json)). Файл можно править: `options.csharp.namespace`, имена типов, `generate: false`.
 2. **Генератор** — IR → исходный код. Сейчас C#, позже C++.
 3. **Runtime** — примитивы BER и DER на языке цели. Сгенерированный код вызывает эту библиотеку.
 
@@ -20,8 +20,8 @@ dotnet test Asn1Kit.sln
 ## CLI
 
 ```text
-dotnet run --project src/Asn1Kit.Cli -- compile -i fixtures/asn1/example.asn -o fixtures/ir/example.asn1.yaml
-dotnet run --project src/Asn1Kit.Cli -- generate -i fixtures/ir/example.asn1.yaml --lang csharp -o ./generated
+dotnet run --project src/Asn1Kit.Cli -- compile -i fixtures/asn1/example.asn -o fixtures/ir/example.json
+dotnet run --project src/Asn1Kit.Cli -- generate -i fixtures/ir/example.json --lang csharp -o ./generated
 ```
 
 `generate` также принимает `.asn` напрямую: компиляция выполняется в памяти.
@@ -30,7 +30,7 @@ dotnet run --project src/Asn1Kit.Cli -- generate -i fixtures/ir/example.asn1.yam
 
 Модули с `DEFINITIONS`, теги `EXPLICIT` / `IMPLICIT` / `AUTOMATIC`, `IMPORTS` внутри переданных файлов.
 
-Типы: `BOOLEAN`, `INTEGER`, `OCTET STRING`, `NULL`, `OBJECT IDENTIFIER`, `SEQUENCE`, `SEQUENCE OF`, `CHOICE`, `OPTIONAL`.
+Типы: `BOOLEAN`, `INTEGER`, `ENUMERATED`, `OCTET STRING`, `NULL`, `OBJECT IDENTIFIER`, `SEQUENCE`, `SEQUENCE OF`, `CHOICE`, `OPTIONAL`.
 
 Кодировки runtime: BER (в том числе indefinite length на чтении) и DER (каноническая запись).
 

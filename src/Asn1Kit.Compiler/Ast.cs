@@ -10,7 +10,7 @@ internal enum TagDefaultKind
 internal sealed class ModuleAst
 {
     public string Name { get; init; } = "";
-    public string? Oid { get; init; }
+    public List<int>? Oid { get; init; }
     public string? Source { get; init; }
     public TagDefaultKind TagDefault { get; init; } = TagDefaultKind.Explicit;
     public List<ImportAst> Imports { get; } = new();
@@ -31,6 +31,13 @@ internal sealed class AssignmentAst
 
 internal abstract class TypeAst
 {
+}
+
+internal sealed class EnumeratedTypeAst : TypeAst
+{
+    public EnumeratedTypeAst(List<NamedNumberAst> values) => Values = values;
+
+    public List<NamedNumberAst> Values { get; }
 }
 
 internal sealed class BuiltinTypeAst : TypeAst
