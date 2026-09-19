@@ -20,7 +20,7 @@ END
         var document = new Asn1Compiler().CompileText(asn);
         var module = document.Modules[0];
         var child = module.Values.Single(v => v.Name == "id-child");
-        Assert.Equal(new[] { 1, 3, 6, 7 }, Assert.IsType<IrOidValue>(child.Value).Arcs);
+        Assert.Equal("1.3.6.7", Assert.IsType<IrOidValue>(child.Value).Value);
 
         var name = Assert.IsType<StringType>(module.Types.Single(t => t.Name == "Name").Type);
         Assert.Equal(1, name.Constraint!.Size!.Min);

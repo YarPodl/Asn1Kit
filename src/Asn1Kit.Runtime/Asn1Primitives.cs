@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Numerics;
 
 namespace Asn1Kit.Runtime;
@@ -46,4 +47,61 @@ public static class Asn1ObjectIdentifier
 
     public static string Decode(Asn1Reader reader, Asn1Tag? tag = null) =>
         reader.ReadObjectIdentifier(tag ?? Asn1Tag.ObjectIdentifier);
+
+    public static int[] ParseArcs(string oid)
+    {
+        if (string.IsNullOrWhiteSpace(oid))
+        {
+            throw new Asn1Exception("OID is empty.");
+        }
+
+        var parts = oid.Split('.');
+        if (parts.Length < 2)
+        {
+            throw new Asn1Exception($"OID '{oid}' is too short.");
+        }
+
+        var arcs = new int[parts.Length];
+        for (var i = 0; i < parts.Length; i++)
+        {
+            if (!int.TryParse(parts[i], NumberStyles.Integer, CultureInfo.InvariantCulture, out var arc) ||
+                arc < 0)
+            {
+                throw new Asn1Exception($"OID '{oid}' has an invalid component.");
+            }
+
+            arcs[i] = arc;
+        }
+
+        return arcs;
+    }
+
+    public static byte[] EncodeContents(string oid)
+    {
+        var parts = ParseArcs(oid);
+        var output = new List<byte> { (byte)(40 * parts[0] + parts[1]) };
+        for (var i = 2; i < parts.Length; i++)
+        {
+            EncodeBase128(output, parts[i]);
+        }
+
+        return output.ToArray();
+    }
+
+    private static void EncodeBase128(List<byte> output, int value)
+    {
+        var stack = new Stack<byte>();
+        stack.Push((byte)(value & 0x7F));
+        value >>= 7;
+        while (value > 0)
+        {
+            stack.Push((byte)((value & 0x7F) | 0x80));
+            value >>= 7;
+        }
+
+        while (stack.Count > 0)
+        {
+            output.Add(stack.Pop());
+        }
+    }
 }

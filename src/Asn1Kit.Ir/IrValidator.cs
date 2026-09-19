@@ -42,6 +42,11 @@ public static class IrValidator
             throw new IrException($"Unknown tagDefault '{module.TagDefault}'.");
         }
 
+        if (module.Oid is not null && string.IsNullOrWhiteSpace(module.Oid))
+        {
+            throw new IrException($"Module '{module.Name}' has an empty oid.");
+        }
+
         module.Imports ??= new List<IrImport>();
         module.Types ??= new List<IrTypeDef>();
         module.Values ??= new List<IrValueDef>();
@@ -240,9 +245,9 @@ public static class IrValidator
             case IrStringValue:
                 break;
             case IrOidValue oid:
-                if (oid.Arcs is null)
+                if (string.IsNullOrWhiteSpace(oid.Value))
                 {
-                    throw new IrException($"OID value '{context}' has no arcs.");
+                    throw new IrException($"OID value '{context}' is empty.");
                 }
 
                 break;

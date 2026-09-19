@@ -29,6 +29,7 @@ public sealed class PkixExplicit88Tests
         });
         var module = document.Modules.Single();
         Assert.Equal("PKIX1Explicit88", module.Name);
+        Assert.Equal("1.3.6.1.5.5.7.0.18", module.Oid);
         Assert.Equal(TagDefaults.Explicit, module.TagDefault);
 
         var types = module.Types.ToDictionary(t => t.Name);
@@ -76,9 +77,7 @@ public sealed class PkixExplicit88Tests
         Assert.Equal(TimeTypes.Utc, Assert.IsType<TimeType>(time.Components[0].Type).Form);
         Assert.Equal(TimeTypes.Generalized, Assert.IsType<TimeType>(time.Components[1].Type).Form);
 
-        Assert.Equal(
-            new[] { 1, 3, 6, 1, 5, 5, 7, 48, 1 },
-            Assert.IsType<IrOidValue>(values["id-ad-ocsp"].Value).Arcs);
+        Assert.Equal("1.3.6.1.5.5.7.48.1", Assert.IsType<IrOidValue>(values["id-ad-ocsp"].Value).Value);
         Assert.Equal(32768, Assert.IsType<IrIntegerValue>(values["ub-name"].Value).Value);
     }
 }

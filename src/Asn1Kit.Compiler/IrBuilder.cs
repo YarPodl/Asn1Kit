@@ -91,7 +91,7 @@ internal sealed class IrBuilder
         var ir = new IrModule
         {
             Name = ast.Name,
-            Oid = ast.Oid,
+            Oid = FormatOid(ast.Oid),
             TagDefault = ast.TagDefault switch
             {
                 TagDefaultKind.Implicit => TagDefaults.Implicit,
@@ -394,7 +394,7 @@ internal sealed class IrBuilder
             CStringValueAst cstring => new IrStringValue { Value = cstring.Value },
             BStringValueAst bstring => new IrBitStringValue { Bits = bstring.Bits },
             HStringValueAst hstring => new IrBitStringValue { Hex = hstring.Hex },
-            OidValueAst oid => new IrOidValue { Arcs = ResolveOidArcs(oid) },
+            OidValueAst oid => new IrOidValue { Value = FormatOid(ResolveOidArcs(oid))! },
             ValueReferenceAst reference => ResolveValueReference(reference, declaredType),
             _ => throw new CompileException("Unsupported value form.", value.Line, value.Column)
         };
@@ -453,7 +453,7 @@ internal sealed class IrBuilder
                         head.Column);
                 }
 
-                arcs.AddRange(parent.Arcs);
+                arcs.AddRange(ParseOidArcs(parent.Value));
             }
             finally
             {
@@ -479,6 +479,12 @@ internal sealed class IrBuilder
 
         return arcs;
     }
+
+    private static string? FormatOid(IReadOnlyList<int>? arcs) =>
+        arcs is null || arcs.Count == 0 ? null : string.Join(".", arcs);
+
+    private static IEnumerable<int> ParseOidArcs(string oid) =>
+        oid.Split('.', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse);
 
     private static bool IsChoice(TypeAst type) => type switch
     {

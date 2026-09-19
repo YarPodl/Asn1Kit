@@ -18,7 +18,7 @@ public sealed class IrModule
 {
     public string Name { get; set; } = "";
 
-    public List<int>? Oid { get; set; }
+    public string? Oid { get; set; }
 
     public string TagDefault { get; set; } = TagDefaults.Explicit;
 
@@ -135,7 +135,7 @@ public sealed class IrOidValue : IrValue
 {
     public override string Kind => ValueKinds.Oid;
 
-    public List<int> Arcs { get; set; } = new();
+    public string Value { get; set; } = "";
 }
 
 public sealed class IrStringValue : IrValue

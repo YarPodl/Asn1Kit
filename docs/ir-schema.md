@@ -20,7 +20,7 @@
 | Поле | Описание |
 | --- | --- |
 | `name` | Имя модуля |
-| `oid` | Массив дуг, если OID был в исходнике |
+| `oid` | Dotted-строка (`"1.3.6.1"`), если OID был в исходнике |
 | `tagDefault` | `explicit`, `implicit` или `automatic` |
 | `imports` | `{ module, types[], values? }` |
 | `options` | Свободный словарь |
@@ -86,7 +86,7 @@
 | `integer` | `value` |
 | `boolean` | `value` |
 | `null` | — |
-| `oid` | `arcs: number[]` (цепочки вроде `{ id-pkix 1 }` уже развёрнуты) |
+| `oid` | `value: string` dotted-форма (`"1.3.6.1"`; цепочки вроде `{ id-pkix 1 }` уже развёрнуты) |
 | `string` | `value` |
 | `bitString` | `bits?` / `hex?` |
 | `ref` | `name`, опционально `module` (в скомпилированном IR обычно уже разрешён) |

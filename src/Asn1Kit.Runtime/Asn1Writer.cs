@@ -38,7 +38,7 @@ public sealed class Asn1Writer
 
     public void WriteObjectIdentifier(Asn1Tag tag, string oid)
     {
-        WritePrimitive(tag.AsPrimitive(), EncodeOid(oid));
+        WritePrimitive(tag.AsPrimitive(), Asn1ObjectIdentifier.EncodeContents(oid));
     }
 
     public void WriteSequence(Asn1Tag tag, Action<Asn1Writer> content)
@@ -123,46 +123,5 @@ public sealed class Asn1Writer
         var bytes = value.ToByteArray();
         Array.Reverse(bytes);
         return bytes;
-    }
-
-    internal static byte[] EncodeOid(string oid)
-    {
-        var parts = oid.Split('.', StringSplitOptions.RemoveEmptyEntries)
-            .Select(int.Parse)
-            .ToArray();
-        if (parts.Length < 2)
-        {
-            throw new Asn1Exception($"OID '{oid}' is too short.");
-        }
-
-        var output = new List<byte> { (byte)(40 * parts[0] + parts[1]) };
-        for (var i = 2; i < parts.Length; i++)
-        {
-            EncodeBase128(output, parts[i]);
-        }
-
-        return output.ToArray();
-    }
-
-    private static void EncodeBase128(List<byte> output, int value)
-    {
-        if (value < 0)
-        {
-            throw new Asn1Exception("OID component cannot be negative.");
-        }
-
-        var stack = new Stack<byte>();
-        stack.Push((byte)(value & 0x7F));
-        value >>= 7;
-        while (value > 0)
-        {
-            stack.Push((byte)((value & 0x7F) | 0x80));
-            value >>= 7;
-        }
-
-        while (stack.Count > 0)
-        {
-            output.Add(stack.Pop());
-        }
     }
 }

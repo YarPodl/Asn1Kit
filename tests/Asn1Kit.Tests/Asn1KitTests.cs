@@ -112,6 +112,34 @@ public sealed class RuntimeTests
         var reader = new Asn1Reader(ber, Asn1Encoding.Der);
         Assert.Throws<Asn1Exception>(() => reader.ReadSequence(Asn1Tag.Sequence, _ => { }));
     }
+
+    [Fact]
+    public void ObjectIdentifier_RoundTripsDottedString()
+    {
+        const string oid = "1.2.840.113549";
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        Asn1ObjectIdentifier.Encode(writer, oid);
+        var reader = new Asn1Reader(writer.Encode(), Asn1Encoding.Der);
+        Assert.Equal(oid, Asn1ObjectIdentifier.Decode(reader));
+    }
+
+    [Fact]
+    public void ObjectIdentifier_ParseArcsAndEncodeContents()
+    {
+        const string oid = "1.2.840.113549";
+        Assert.Equal(new[] { 1, 2, 840, 113549 }, Asn1ObjectIdentifier.ParseArcs(oid));
+        Assert.Equal(new byte[] { 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d }, Asn1ObjectIdentifier.EncodeContents(oid));
+    }
+
+    [Fact]
+    public void ObjectIdentifier_RejectsInvalidDottedStrings()
+    {
+        Assert.Throws<Asn1Exception>(() => Asn1ObjectIdentifier.ParseArcs(""));
+        Assert.Throws<Asn1Exception>(() => Asn1ObjectIdentifier.ParseArcs("1"));
+        Assert.Throws<Asn1Exception>(() => Asn1ObjectIdentifier.ParseArcs("1.2.x"));
+        Assert.Throws<Asn1Exception>(() => Asn1ObjectIdentifier.ParseArcs("1.-2"));
+        Assert.Throws<Asn1Exception>(() => Asn1ObjectIdentifier.EncodeContents("1"));
+    }
 }
 
 public sealed class RoundTripTests
