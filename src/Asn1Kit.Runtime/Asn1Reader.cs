@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Asn1Kit.Runtime;
@@ -10,15 +11,43 @@ public sealed class Asn1Reader
     private readonly int _end;
 
     public Asn1Reader(byte[] data, Asn1Encoding encoding = Asn1Encoding.Ber)
-        : this(data, 0, data.Length, encoding)
+        : this(data, 0, data is null ? 0 : data.Length, encoding)
     {
     }
 
-    private Asn1Reader(byte[] data, int offset, int end, Asn1Encoding encoding)
+    public Asn1Reader(byte[] data, int offset, int length, Asn1Encoding encoding = Asn1Encoding.Ber)
     {
+        if (data is null)
+        {
+            throw new ArgumentNullException(nameof(data));
+        }
+
+        if ((uint)offset > (uint)data.Length || (uint)length > (uint)(data.Length - offset))
+        {
+            throw new ArgumentOutOfRangeException(nameof(length));
+        }
+
         _data = data;
         _offset = offset;
-        _end = end;
+        _end = offset + length;
+        Encoding = encoding;
+    }
+
+    public Asn1Reader(ReadOnlyMemory<byte> data, Asn1Encoding encoding = Asn1Encoding.Ber)
+    {
+        if (MemoryMarshal.TryGetArray(data, out ArraySegment<byte> segment) && segment.Array is not null)
+        {
+            _data = segment.Array;
+            _offset = segment.Offset;
+            _end = segment.Offset + segment.Count;
+        }
+        else
+        {
+            _data = data.ToArray();
+            _offset = 0;
+            _end = _data.Length;
+        }
+
         Encoding = encoding;
     }
 

@@ -157,6 +157,33 @@ public sealed class RuntimeTests
     }
 
     [Fact]
+    public void Reader_OffsetLengthCtor_ReadsSliceWithoutOwningPrefix()
+    {
+        // NULL then INTEGER 42 — reader starts at the INTEGER TLV.
+        var data = new byte[] { 0x05, 0x00, 0x02, 0x01, 0x2A };
+        var reader = new Asn1Reader(data, offset: 2, length: 3, Asn1Encoding.Der);
+        Assert.Equal(42, reader.ReadInteger(Asn1Tag.Integer));
+        Assert.True(reader.Eof);
+    }
+
+    [Fact]
+    public void Reader_ReadOnlyMemoryCtor_ReadsArrayBackedSlice()
+    {
+        var data = new byte[] { 0x05, 0x00, 0x02, 0x01, 0x2A };
+        var reader = new Asn1Reader(data.AsMemory(2, 3), Asn1Encoding.Der);
+        Assert.Equal(42, reader.ReadInteger(Asn1Tag.Integer));
+        Assert.True(reader.Eof);
+    }
+
+    [Fact]
+    public void Reader_OffsetLengthCtor_RejectsOutOfRange()
+    {
+        var data = new byte[] { 0x02, 0x01, 0x01 };
+        Assert.Throws<ArgumentOutOfRangeException>(() => new Asn1Reader(data, 1, 3, Asn1Encoding.Der));
+        Assert.Throws<ArgumentNullException>(() => new Asn1Reader((byte[])null!, Asn1Encoding.Der));
+    }
+
+    [Fact]
     public void WriteSetOf_DerSortsElementEncodings()
     {
         // INTEGER 2 then INTEGER 1 — DER must emit 1 then 2 (X.690 §11.6).

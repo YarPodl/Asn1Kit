@@ -50,8 +50,8 @@ Ownership: **owned** — вызывающий получает или отдаё
 | `WriteSetOf(Action<Asn1Writer>)`                                                                                         | hot (SET OF)     | callback; DER sort внутри | да (разбор TLV для sort — внутреннее)                        |
 | `WriteAny` / `WriteAny(tag, …)`                                                                                          | hot              | owned в `Asn1Any`       | да                                                           |
 | `WriteRaw(ReadOnlySpan<byte>)`                                                                                           | cold             | borrow                  | да                                                           |
-| `Asn1Reader(byte[])` / `Encoding` / `Eof` / `TryPeekTag`                                                                 | hot              | buffer у reader         | да для тел; ctor только `byte[]` ограничивает вход           |
-| `ReadSequence` / `ReadSet` (`Action` / `Func`)                                                                           | hot              | —                       | **да — главный рычаг чтения** (private offset-ctor уже есть) |
+| `Asn1Reader(byte[])` / `(byte[], offset, length)` / `ReadOnlyMemory<byte>` / `Encoding` / `Eof` / `TryPeekTag` | hot | buffer у reader (срез без копии) | да для тел; nested read — backlog |
+| `ReadSequence` / `ReadSet` (`Action` / `Func`)                                                                           | hot              | —                       | **да — главный рычаг чтения** (offset-ctor публичный)        |
 | `ReadBoolean`…`ReadTime`                                                                                                 | hot              | owned где применимо     | да                                                           |
 | `ReadOctetString → byte[]`                                                                                               | hot              | owned                   | частично                                                     |
 | `ReadAny` / `ReadAny(expected)`                                                                                          | hot              | owned                   | да                                                           |
@@ -84,8 +84,8 @@ Ownership: **owned** — вызывающий получает или отдаё
 | Кандидат                                                                 | Зачем                                                                                 | Стоимость, если отложить                |
 | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- | --------------------------------------- |
 | ~~Форма `WriteSetOf` + codegen~~ (**сделано:** `Action<Asn1Writer>`)     | убрать обязательные промежуточные TLV-массивы в codegen                               | —                                       |
-| Публичность `ReadTlv` / `ReadValue`                                      | hot path и так не использует; можно сузить surface или дать Span/offset-вариант рядом | тесты escape-hatch и любой внешний код  |
-| Вход reader: только `byte[]`                                             | `ReadOnlyMemory<byte>` / `(byte[], offset, length)` public ctor                       | все тесты, создающие reader             |
+| Публичность `ReadTlv` / `ReadValue`                                      | **отменено** — остаются public                                                        | —                                       |
+| ~~Вход reader~~ (**сделано:** `offset`/`length` + `ReadOnlyMemory`)      | срез без копии на входе                                                               | —                                       |
 | `Encode() → byte[]` only                                                 | additive `TryEncode(Span)` / запись в caller buffer                                   | тесты snapshot-encode                   |
 | `ReadOctetString → byte[]` only                                          | Span/`ReadOnlyMemory` перегрузка или «copy out» явно                                  | тесты OCTET и codegen property `byte[]` |
 | Wrappers `Asn1Primitives`                                                | оставить как warm API или свести к тестам; на hot path не влияют                      | низкая                                  |
@@ -96,7 +96,7 @@ Ownership: **owned** — вызывающий получает или отдаё
 ## Backlog внутренней оптимизации (сигнатуры можно не трогать)
 
 1. **Nested write:** один буфер / резерв длины вместо `new Asn1Writer` + `Encode()` на уровень.
-2. **Nested read:** срез `(offset, end)` в исходном `_data`; публичный `ReadTlv` может остаться allocating-обёрткой.
+2. **Nested read:** срез `(offset, end)` в исходном `_data` через публичный offset-ctor; публичный `ReadTlv` остаётся allocating-обёрткой.
 3. **Constructed OCTET / BIT / string (BER):** без `List<byte>` + `AddRange` / лишних `ToArray`.
 4. **OID encode:** без `Split` + `List` + `Stack` на коротких OID.
 5. **Scratch:** BOOLEAN `new byte[]{…}`, `WriteOctetString` → `ToArray`, high-tag / length scratch, лишний reverse в `ReadInteger`.
