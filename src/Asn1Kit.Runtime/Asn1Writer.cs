@@ -131,6 +131,22 @@ public sealed class Asn1Writer
         _buffer.Write(tlv);
     }
 
+    /// <summary>Writes ANY as a complete TLV using the tag and contents from <paramref name="value"/>.</summary>
+    public void WriteAny(Asn1Any value)
+    {
+        WriteTlv(value.Tag, value.Contents, definiteOnly: Encoding == Asn1Encoding.Der);
+    }
+
+    /// <summary>
+    /// Writes ANY with an IMPLICIT outer tag: class/number from <paramref name="tag"/>,
+    /// constructed flag preserved from <paramref name="value"/>.
+    /// </summary>
+    public void WriteAny(Asn1Tag tag, Asn1Any value)
+    {
+        var wire = new Asn1Tag(tag.TagClass, tag.Number, value.Tag.Constructed);
+        WriteTlv(wire, value.Contents, definiteOnly: Encoding == Asn1Encoding.Der);
+    }
+
     private static int CompareDerSetOfEncodings(byte[] left, byte[] right)
     {
         var length = Math.Min(left.Length, right.Length);

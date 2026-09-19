@@ -10,6 +10,7 @@
 | [Asn1Writer.cs](../../src/Asn1Kit.Runtime/Asn1Writer.cs) | `WriteTag` / `WriteLength` / `WriteTlv`, `WriteSequence` через вложенный writer, `WriteExplicit`, `WriteRaw`, примитивы включая `WriteBitString` / `WriteString` / `WriteTime` |
 | [Asn1Reader.cs](../../src/Asn1Kit.Runtime/Asn1Reader.cs) | Чтение TLV, definite и indefinite length, `TryPeekTag`, `Eof`, `ReadValue`, `ReadBitString` / `ReadString` / `ReadTime` |
 | [Asn1BitString.cs](../../src/Asn1Kit.Runtime/Asn1BitString.cs) | `Asn1BitString` (`Bytes` + `UnusedBits`), индексатор MSB-first, `FromBits`, статические `Encode` / `Decode` |
+| [Asn1Any.cs](../../src/Asn1Kit.Runtime/Asn1Any.cs) | `Asn1Any` (`Tag` + `Contents`), `WriteAny` / `ReadAny` |
 | [Asn1TextCodec.cs](../../src/Asn1Kit.Runtime/Asn1TextCodec.cs) | Внутренние encode/decode строк и времени (наборы символов, DER/BER-формы) |
 | [Asn1Primitives.cs](../../src/Asn1Kit.Runtime/Asn1Primitives.cs) | `Asn1Boolean` / `Asn1Integer` / `Asn1OctetString` / `Asn1Null` / `Asn1ObjectIdentifier` / `Asn1String` / `Asn1Time` — тонкие обёртки для сгенерированного кода |
 

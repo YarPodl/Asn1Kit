@@ -169,9 +169,6 @@ public sealed class CSharpBackend : ILanguageBackend
     {
         switch (type)
         {
-            case AnyType:
-                throw new NotSupportedException(
-                    $"C# backend does not support kind '{type.Kind}' yet.");
             case SequenceType sequence:
                 foreach (var component in sequence.Components)
                 {
@@ -479,6 +476,12 @@ public sealed class CSharpBackend : ILanguageBackend
 
     private void EmitAlias(StringBuilder sb, IrDocument document, IrModule module, string typeName, TypeExpr type)
     {
+        if (type is AnyType)
+        {
+            EmitAnyAlias(sb, typeName);
+            return;
+        }
+
         var csType = CsType(document, module, typeName, "Value", type, optional: false);
         sb.AppendLine($"public sealed class {typeName}");
         sb.AppendLine("{");
@@ -512,6 +515,24 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine("        return value;");
         sb.AppendLine("    }");
         EmitDefaultTag(sb, type, IsConstructed(document, module, type), UniversalFallback(document, module, type));
+        sb.AppendLine("}");
+    }
+
+    private static void EmitAnyAlias(StringBuilder sb, string typeName)
+    {
+        sb.AppendLine($"public sealed class {typeName}");
+        sb.AppendLine("{");
+        sb.AppendLine("    public Asn1Any Value { get; set; }");
+        sb.AppendLine();
+        sb.AppendLine("    public void Encode(Asn1Writer writer) => writer.WriteAny(Value);");
+        sb.AppendLine();
+        sb.AppendLine("    public void Encode(Asn1Writer writer, Asn1Tag tag) => writer.WriteAny(tag, Value);");
+        sb.AppendLine();
+        sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader) =>");
+        sb.AppendLine($"        new {typeName} {{ Value = reader.ReadAny() }};");
+        sb.AppendLine();
+        sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader, Asn1Tag tag) =>");
+        sb.AppendLine($"        new {typeName} {{ Value = reader.ReadAny(tag) }};");
         sb.AppendLine("}");
     }
 
@@ -552,7 +573,7 @@ public sealed class CSharpBackend : ILanguageBackend
 
     private bool IsValueOptionalWrapper(TypeExpr type) =>
         ResolvePrimitive(type) is TypeKinds.Boolean or TypeKinds.Integer or TypeKinds.Enumerated
-            or TypeKinds.BitString or TypeKinds.Time;
+            or TypeKinds.BitString or TypeKinds.Time or TypeKinds.Any;
 
     private void EmitEncodeValue(
         StringBuilder sb,
@@ -576,6 +597,21 @@ public sealed class CSharpBackend : ILanguageBackend
             return;
         }
 
+        if (type is AnyType)
+        {
+            if (forceTag is not null || type.Tag is not null)
+            {
+                var anyTag = forceTag ?? TagExpr(document, module, type);
+                sb.AppendLine($"{indent}{writer}.WriteAny({anyTag}, {expr});");
+            }
+            else
+            {
+                sb.AppendLine($"{indent}{writer}.WriteAny({expr});");
+            }
+
+            return;
+        }
+
         var tag = forceTag ?? TagExpr(document, module, type);
         var primitive = ResolvePrimitive(type);
         if (primitive is not null && type is not RefType)
@@ -587,7 +623,7 @@ public sealed class CSharpBackend : ILanguageBackend
         if (type is RefType reference)
         {
             var resolved = Find(document, module, reference);
-            if (resolved?.Type is ChoiceType)
+            if (resolved?.Type is ChoiceType or AnyType)
             {
                 sb.AppendLine($"{indent}{expr}.Encode({writer});");
                 return;
@@ -616,15 +652,40 @@ public sealed class CSharpBackend : ILanguageBackend
         var prop = PropertyName(field);
         if (field.Optional)
         {
-            sb.AppendLine($"{indent}if ({reader}.TryPeekTag(out var tag_{field.Name}) && tag_{field.Name}.MatchesIgnoreConstructed({TagExpr(document, module, field.Type)}))");
-            sb.AppendLine($"{indent}{{");
-            EmitDecodeAssign(sb, document, module, owner, field.Name, field.Type, indent + "    ", reader, $"{target}.{prop}");
-            sb.AppendLine($"{indent}}}");
+            if (IsUntaggedAny(document, module, field.Type))
+            {
+                sb.AppendLine($"{indent}if (!{reader}.Eof)");
+                sb.AppendLine($"{indent}{{");
+                EmitDecodeAssign(sb, document, module, owner, field.Name, field.Type, indent + "    ", reader, $"{target}.{prop}");
+                sb.AppendLine($"{indent}}}");
+            }
+            else
+            {
+                sb.AppendLine($"{indent}if ({reader}.TryPeekTag(out var tag_{field.Name}) && tag_{field.Name}.MatchesIgnoreConstructed({TagExpr(document, module, field.Type)}))");
+                sb.AppendLine($"{indent}{{");
+                EmitDecodeAssign(sb, document, module, owner, field.Name, field.Type, indent + "    ", reader, $"{target}.{prop}");
+                sb.AppendLine($"{indent}}}");
+            }
         }
         else
         {
             EmitDecodeAssign(sb, document, module, owner, field.Name, field.Type, indent, reader, $"{target}.{prop}");
         }
+    }
+
+    private bool IsUntaggedAny(IrDocument document, IrModule module, TypeExpr type)
+    {
+        if (type.Tag is not null)
+        {
+            return false;
+        }
+
+        if (type is AnyType)
+        {
+            return true;
+        }
+
+        return type is RefType reference && Find(document, module, reference)?.Type is AnyType { Tag: null };
     }
 
     private void EmitDecodeAssign(
@@ -664,6 +725,21 @@ public sealed class CSharpBackend : ILanguageBackend
             return;
         }
 
+        if (type is AnyType)
+        {
+            if (forceTag is not null || type.Tag is not null)
+            {
+                var anyTag = forceTag ?? TagExpr(document, module, type);
+                sb.Append($"{reader}.ReadAny({anyTag})");
+            }
+            else
+            {
+                sb.Append($"{reader}.ReadAny()");
+            }
+
+            return;
+        }
+
         var tag = forceTag ?? TagExpr(document, module, type);
         var primitive = ResolvePrimitive(type);
         if (primitive is not null && type is not RefType)
@@ -673,7 +749,8 @@ public sealed class CSharpBackend : ILanguageBackend
         }
 
         var typeName = NamedTypeName(document, module, owner, hint, type);
-        if (type is ChoiceType || (type is RefType r && Find(document, module, r)?.Type is ChoiceType))
+        if (type is ChoiceType ||
+            (type is RefType r && Find(document, module, r)?.Type is ChoiceType or AnyType))
         {
             sb.Append($"{typeName}.Decode({reader})");
             return;
@@ -697,6 +774,7 @@ public sealed class CSharpBackend : ILanguageBackend
                 TypeKinds.BitString => optional ? "Asn1BitString?" : "Asn1BitString",
                 TypeKinds.String => optional ? "string?" : "string",
                 TypeKinds.Time => optional ? "DateTimeOffset?" : "DateTimeOffset",
+                TypeKinds.Any => optional ? "Asn1Any?" : "Asn1Any",
                 _ => "object"
             };
             return mapped;
@@ -849,6 +927,7 @@ public sealed class CSharpBackend : ILanguageBackend
         OidType => TypeKinds.Oid,
         StringType => TypeKinds.String,
         TimeType => TypeKinds.Time,
+        AnyType => TypeKinds.Any,
         _ => null
     };
 
@@ -951,6 +1030,7 @@ public sealed class CSharpBackend : ILanguageBackend
             BitStringType bitString => new BitStringType { NamedBits = bitString.NamedBits },
             StringType stringType => new StringType { Form = stringType.Form },
             TimeType timeType => new TimeType { Form = timeType.Form, FractionDigits = timeType.FractionDigits },
+            AnyType any => new AnyType { DefinedBy = any.DefinedBy },
             SequenceType sequence => new SequenceType { Components = sequence.Components },
             SetType set => new SetType { Components = set.Components, Extensible = set.Extensible },
             ChoiceType choice => new ChoiceType { Components = choice.Components },

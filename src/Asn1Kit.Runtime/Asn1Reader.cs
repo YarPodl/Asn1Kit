@@ -232,6 +232,25 @@ public sealed class Asn1Reader
         return contents;
     }
 
+    /// <summary>Reads the next complete TLV as ANY (tag + value octets).</summary>
+    public Asn1Any ReadAny()
+    {
+        var (tag, contents, _) = ReadTlv();
+        return new Asn1Any(tag, contents);
+    }
+
+    /// <summary>Reads ANY expecting a specific tag (IMPLICIT); returns the wire tag and contents.</summary>
+    public Asn1Any ReadAny(Asn1Tag expected)
+    {
+        var (tag, contents, _) = ReadTlv();
+        if (!tag.MatchesIgnoreConstructed(expected))
+        {
+            throw new Asn1Exception($"Expected tag {expected}, found {tag}.");
+        }
+
+        return new Asn1Any(tag, contents);
+    }
+
     public (Asn1Tag Tag, byte[] Contents, bool Constructed) ReadTlv()
     {
         var tag = ReadTag();

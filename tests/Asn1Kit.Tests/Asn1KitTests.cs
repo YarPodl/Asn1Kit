@@ -195,6 +195,63 @@ public sealed class RuntimeTests
     }
 
     [Fact]
+    public void Any_DerRoundTripsTagAndContents()
+    {
+        var value = new Asn1Any(Asn1Tag.Integer, new byte[] { 0x05 });
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteAny(value);
+        var bytes = writer.Encode();
+        Assert.Equal(new byte[] { 0x02, 0x01, 0x05 }, bytes);
+
+        var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
+        var decoded = reader.ReadAny();
+        Assert.Equal(Asn1Tag.Integer, decoded.Tag);
+        Assert.Equal(new byte[] { 0x05 }, decoded.Contents);
+        Assert.True(reader.Eof);
+
+        var rewrite = new Asn1Writer(Asn1Encoding.Der);
+        rewrite.WriteAny(decoded);
+        Assert.Equal(bytes, rewrite.Encode());
+    }
+
+    [Fact]
+    public void Any_ReadAnyExpectedTag_RejectsMismatch()
+    {
+        var bytes = new byte[] { 0x02, 0x01, 0x05 };
+        var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
+        var ex = Assert.Throws<Asn1Exception>(() => reader.ReadAny(Asn1Tag.Null));
+        Assert.Contains("Expected tag", ex.Message);
+    }
+
+    [Fact]
+    public void Any_ImplicitTag_RoundTrips()
+    {
+        var value = new Asn1Any(Asn1Tag.Null, Array.Empty<byte>());
+        var context = new Asn1Tag(Asn1TagClass.ContextSpecific, 0);
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteAny(context, value);
+        var bytes = writer.Encode();
+        Assert.Equal(new byte[] { 0x80, 0x00 }, bytes);
+
+        var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
+        var decoded = reader.ReadAny(context);
+        Assert.Equal(context, decoded.Tag);
+        Assert.Empty(decoded.Contents);
+    }
+
+    [Fact]
+    public void Any_BerReadsIndefiniteLength()
+    {
+        // SEQUENCE { INTEGER 1 } with indefinite length as ANY
+        var ber = new byte[] { 0x30, 0x80, 0x02, 0x01, 0x01, 0x00, 0x00 };
+        var reader = new Asn1Reader(ber, Asn1Encoding.Ber);
+        var decoded = reader.ReadAny();
+        Assert.Equal(Asn1Tag.Sequence, decoded.Tag);
+        Assert.Equal(new byte[] { 0x02, 0x01, 0x01 }, decoded.Contents);
+        Assert.True(reader.Eof);
+    }
+
+    [Fact]
     public void ObjectIdentifier_RoundTripsDottedString()
     {
         const string oid = "1.2.840.113549";
@@ -681,6 +738,107 @@ END
         var listRewrite = new Asn1Writer(Asn1Encoding.Der);
         listType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(decodedList, new object[] { listRewrite });
         Assert.Equal(expectedSetOf, listRewrite.Encode());
+    }
+
+    [Fact]
+    public void GeneratedCSharp_Any_RoundTripsAlgorithmIdentifierAndAttributeValue()
+    {
+        const string asn = @"
+AnyMod DEFINITIONS EXPLICIT TAGS ::= BEGIN
+AlgorithmIdentifier ::= SEQUENCE {
+  algorithm OBJECT IDENTIFIER,
+  parameters ANY DEFINED BY algorithm OPTIONAL
+}
+AttributeValue ::= ANY
+AttributeTypeAndValue ::= SEQUENCE {
+  type OBJECT IDENTIFIER,
+  value AttributeValue
+}
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+        Assert.Contains("Asn1Any", source);
+        Assert.Contains("if (!inner.Eof)", source);
+        Assert.Contains("WriteAny", source);
+
+        var assembly = CompileGenerated(source);
+        var algType = assembly.GetType("AnyMod.AlgorithmIdentifier")!;
+        var attrType = assembly.GetType("AnyMod.AttributeTypeAndValue")!;
+        var valueType = assembly.GetType("AnyMod.AttributeValue")!;
+
+        // OID 1.2.840.113549.1.1.1 = rsaEncryption, no parameters
+        var alg = Activator.CreateInstance(algType)!;
+        algType.GetProperty("Algorithm")!.SetValue(alg, "1.2.840.113549.1.1.1");
+        algType.GetProperty("Parameters")!.SetValue(alg, null);
+
+        var expectedNoParams = new byte[]
+        {
+            0x30, 0x0B,
+            0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01
+        };
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        algType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(alg, new object[] { writer });
+        Assert.Equal(expectedNoParams, writer.Encode());
+
+        var decodedNoParams = algType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(expectedNoParams, Asn1Encoding.Der) })!;
+        Assert.Equal("1.2.840.113549.1.1.1", algType.GetProperty("Algorithm")!.GetValue(decodedNoParams));
+        Assert.Null(algType.GetProperty("Parameters")!.GetValue(decodedNoParams));
+
+        // With NULL parameters
+        var nullAny = new Asn1Any(Asn1Tag.Null, Array.Empty<byte>());
+        algType.GetProperty("Parameters")!.SetValue(alg, nullAny);
+        var expectedWithNull = new byte[]
+        {
+            0x30, 0x0D,
+            0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01,
+            0x05, 0x00
+        };
+        var writerWith = new Asn1Writer(Asn1Encoding.Der);
+        algType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(alg, new object[] { writerWith });
+        Assert.Equal(expectedWithNull, writerWith.Encode());
+
+        var decodedWith = algType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(expectedWithNull, Asn1Encoding.Der) })!;
+        var parameters = (Asn1Any)algType.GetProperty("Parameters")!.GetValue(decodedWith)!;
+        Assert.Equal(Asn1Tag.Null, parameters.Tag);
+        Assert.Empty(parameters.Contents);
+
+        var rewrite = new Asn1Writer(Asn1Encoding.Der);
+        algType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(decodedWith, new object[] { rewrite });
+        Assert.Equal(expectedWithNull, rewrite.Encode());
+
+        // Named ANY alias via AttributeTypeAndValue
+        var attr = Activator.CreateInstance(attrType)!;
+        attrType.GetProperty("Type")!.SetValue(attr, "2.5.4.3");
+        var attrValue = Activator.CreateInstance(valueType)!;
+        valueType.GetProperty("Value")!.SetValue(attrValue, new Asn1Any(Asn1Tag.Utf8String, Encoding.UTF8.GetBytes("Ann")));
+        attrType.GetProperty("Value")!.SetValue(attr, attrValue);
+
+        var expectedAttr = new byte[]
+        {
+            0x30, 0x0A,
+            0x06, 0x03, 0x55, 0x04, 0x03,
+            0x0C, 0x03, 0x41, 0x6E, 0x6E
+        };
+        var attrWriter = new Asn1Writer(Asn1Encoding.Der);
+        attrType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(attr, new object[] { attrWriter });
+        Assert.Equal(expectedAttr, attrWriter.Encode());
+
+        var decodedAttr = attrType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(expectedAttr, Asn1Encoding.Der) })!;
+        var decodedValueWrapper = attrType.GetProperty("Value")!.GetValue(decodedAttr)!;
+        var decodedAny = (Asn1Any)valueType.GetProperty("Value")!.GetValue(decodedValueWrapper)!;
+        Assert.Equal(Asn1Tag.Utf8String, decodedAny.Tag);
+        Assert.Equal("Ann", Encoding.UTF8.GetString(decodedAny.Contents));
+
+        var broken = new byte[] { 0x30, 0x02, 0x05, 0x00 };
+        var ex = Assert.Throws<TargetInvocationException>(() =>
+            algType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+                .Invoke(null, new object[] { new Asn1Reader(broken, Asn1Encoding.Der) }));
+        Assert.IsType<Asn1Exception>(ex.InnerException);
     }
 
     private static Assembly CompileGenerated(string source)

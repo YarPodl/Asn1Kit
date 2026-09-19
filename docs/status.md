@@ -14,7 +14,7 @@
 | `oid` | да, dotted-строка | да → `string` | `RuntimeTests.ObjectIdentifier_*` |
 | `string` (12 форм `stringType`) | да | да → `string` + `Asn1StringForm` | `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*` |
 | `time` (`utc` / `generalized`) | да; `fractionDigits` 0…7 (default 3) для `generalized` | да → `DateTimeOffset` + `Asn1TimeForm`; запись с округлением | `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*` |
-| `any` (+ `definedBy`) | да, с проверкой sibling-компонента | **нет** | `ParserTests`, `ValueResolutionTests.RejectsAnyDefinedByUnknownField` |
+| `any` (+ `definedBy`) | да, с проверкой sibling-компонента | да → `Asn1Any` (Tag + Contents; `definedBy` не резолвится) | `ParserTests`, `RuntimeTests.Any_*`, `RoundTripTests.GeneratedCSharp_Any_*`, `ValueResolutionTests.RejectsAnyDefinedByUnknownField` |
 | `sequence` | да, `extensible` | да → класс с `Encode` / `Decode` | `RoundTripTests`, `PkixExplicit88Tests` |
 | `set` | да | да → класс с `Encode` / `Decode` (DER: порядок по тегу; decode по тегу) | `RoundTripTests`, `ParserTests`, `RuntimeTests` |
 | `choice` | да | да → класс + enum `…Kind` | `ParserTests`, `PkixExplicit88Tests` |
@@ -53,6 +53,7 @@
 | SET OF (DER sort) | `WriteSetOf` | через `ReadSet` |
 | EXPLICIT-обёртка | `WriteExplicit` | через `ReadSequence` |
 | Готовый TLV | `WriteRaw` | `ReadValue` |
+| ANY | `WriteAny` (`Asn1Any`) | `ReadAny` (с ожидаемым тегом или без) |
 
 DER: только definite length, минимальная кодировка INTEGER, BOOLEAN `0x00` / `0xFF`, BIT STRING с нулевыми хвостовыми битами, время только с секундами и суффиксом `Z` (GeneralizedTime: `fractionDigits` 0…7, default 3; на записи без хвостовых нулей дроби). BER на чтении принимает indefinite length, constructed строки/BIT STRING, время без секунд и со смещением `±hhmm`; дробь 1…7 цифр с хвостовыми нулями допускается и в DER.
 
@@ -62,5 +63,5 @@ DER: только definite length, минимальная кодировка INT
 
 ## Ближайшие пробелы
 
-1. `any` / `ANY DEFINED BY` в генерации — требует решения, как отдавать сырой TLV наружу.
-2. C++ backend и C++ runtime — см. [playbooks/new-backend.md](playbooks/new-backend.md).
+1. C++ backend и C++ runtime — см. [playbooks/new-backend.md](playbooks/new-backend.md).
+2. Резолв `ANY DEFINED BY` в конкретный тип по значению sibling-компонента (сейчас `Asn1Any` остаётся сырым TLV).

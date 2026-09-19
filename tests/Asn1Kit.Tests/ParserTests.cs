@@ -82,7 +82,7 @@ END
     }
 
     [Fact]
-    public void BackendRejectsAnyKind()
+    public void BackendGeneratesAnyAlias()
     {
         const string asn = @"
 M DEFINITIONS ::= BEGIN
@@ -90,9 +90,11 @@ S ::= ANY
 END
 ";
         var document = new Asn1Compiler().CompileText(asn);
-        var backend = new Asn1Kit.Codegen.CSharp.CSharpBackend();
-        var ex = Assert.Throws<NotSupportedException>(() => backend.Generate(document));
-        Assert.Contains("does not support kind 'any'", ex.Message);
+        var source = new Asn1Kit.Codegen.CSharp.CSharpBackend().Generate(document).Single().Contents;
+        Assert.Contains("Asn1Any", source);
+        Assert.Contains("WriteAny", source);
+        Assert.Contains("ReadAny", source);
+        Assert.DoesNotContain("does not support kind 'any'", source);
     }
 
     [Fact]
