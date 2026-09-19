@@ -75,49 +75,22 @@ public sealed class Asn1Writer
     public void WriteSet(Asn1Tag tag, Action<Asn1Writer> content) => WriteSequence(tag, content);
 
     /// <summary>
-    /// Writes a SET OF. In DER mode, element encodings are sorted lexicographically (X.690 §11.6).
+    /// Writes a SET OF. Each call inside <paramref name="content"/> should write one complete element TLV.
+    /// In DER mode, element encodings are sorted lexicographically (X.690 §11.6).
     /// </summary>
-    public void WriteSetOf(Asn1Tag tag, IReadOnlyList<byte[]> encodedElements)
+    public void WriteSetOf(Asn1Tag tag, Action<Asn1Writer> content)
     {
-        if (encodedElements is null)
+        if (content is null)
         {
-            throw new ArgumentNullException(nameof(encodedElements));
+            throw new ArgumentNullException(nameof(content));
         }
 
-        byte[][] parts;
-        if (Encoding == Asn1Encoding.Der && encodedElements.Count > 1)
-        {
-            parts = new byte[encodedElements.Count][];
-            for (var i = 0; i < encodedElements.Count; i++)
-            {
-                parts[i] = encodedElements[i] ?? throw new ArgumentNullException(nameof(encodedElements));
-            }
-
-            Array.Sort(parts, CompareDerSetOfEncodings);
-        }
-        else
-        {
-            parts = new byte[encodedElements.Count][];
-            for (var i = 0; i < encodedElements.Count; i++)
-            {
-                parts[i] = encodedElements[i] ?? throw new ArgumentNullException(nameof(encodedElements));
-            }
-        }
-
-        var total = 0;
-        foreach (var part in parts)
-        {
-            total += part.Length;
-        }
-
-        var contents = new byte[total];
-        var offset = 0;
-        foreach (var part in parts)
-        {
-            Buffer.BlockCopy(part, 0, contents, offset, part.Length);
-            offset += part.Length;
-        }
-
+        var inner = new Asn1Writer(Encoding);
+        content(inner);
+        var concatenated = inner.Encode();
+        var contents = Encoding == Asn1Encoding.Der
+            ? SortDerSetOfContents(concatenated)
+            : concatenated;
         WriteTlv(tag.AsConstructed(), contents, definiteOnly: Encoding == Asn1Encoding.Der);
     }
 
@@ -147,19 +120,117 @@ public sealed class Asn1Writer
         WriteTlv(wire, value.Contents, definiteOnly: Encoding == Asn1Encoding.Der);
     }
 
-    private static int CompareDerSetOfEncodings(byte[] left, byte[] right)
+    private static byte[] SortDerSetOfContents(byte[] concatenated)
     {
-        var length = Math.Min(left.Length, right.Length);
-        for (var i = 0; i < length; i++)
+        if (concatenated.Length == 0)
         {
-            var cmp = left[i].CompareTo(right[i]);
-            if (cmp != 0)
+            return concatenated;
+        }
+
+        var ranges = new List<(int Start, int Length)>();
+        var offset = 0;
+        while (offset < concatenated.Length)
+        {
+            var start = offset;
+            offset = GetTlvEnd(concatenated, offset);
+            ranges.Add((start, offset - start));
+        }
+
+        if (ranges.Count <= 1)
+        {
+            return concatenated;
+        }
+
+        ranges.Sort((left, right) =>
+            concatenated.AsSpan(left.Start, left.Length)
+                .SequenceCompareTo(concatenated.AsSpan(right.Start, right.Length)));
+
+        var alreadySorted = true;
+        for (var i = 1; i < ranges.Count; i++)
+        {
+            if (ranges[i].Start < ranges[i - 1].Start)
             {
-                return cmp;
+                alreadySorted = false;
+                break;
             }
         }
 
-        return left.Length.CompareTo(right.Length);
+        if (alreadySorted)
+        {
+            return concatenated;
+        }
+
+        var contents = new byte[concatenated.Length];
+        var writeOffset = 0;
+        foreach (var (start, length) in ranges)
+        {
+            Buffer.BlockCopy(concatenated, start, contents, writeOffset, length);
+            writeOffset += length;
+        }
+
+        return contents;
+    }
+
+    /// <summary>Returns the index just past one complete TLV starting at <paramref name="offset"/>.</summary>
+    private static int GetTlvEnd(byte[] data, int offset)
+    {
+        if (offset >= data.Length)
+        {
+            throw new Asn1Exception("Unexpected end of ASN.1 data.");
+        }
+
+        var first = data[offset++];
+        if ((first & 0x1F) == 0x1F)
+        {
+            byte b;
+            do
+            {
+                if (offset >= data.Length)
+                {
+                    throw new Asn1Exception("Unexpected end of ASN.1 data.");
+                }
+
+                b = data[offset++];
+            } while ((b & 0x80) != 0);
+        }
+
+        if (offset >= data.Length)
+        {
+            throw new Asn1Exception("Unexpected end of ASN.1 data.");
+        }
+
+        var lengthFirst = data[offset++];
+        if (lengthFirst == 0x80)
+        {
+            throw new Asn1Exception("Indefinite length is not allowed when sorting SET OF for DER.");
+        }
+
+        int length;
+        if ((lengthFirst & 0x80) == 0)
+        {
+            length = lengthFirst;
+        }
+        else
+        {
+            var count = lengthFirst & 0x7F;
+            if (count == 0 || count > 4 || offset + count > data.Length)
+            {
+                throw new Asn1Exception("Unsupported length form.");
+            }
+
+            length = 0;
+            for (var i = 0; i < count; i++)
+            {
+                length = (length << 8) | data[offset++];
+            }
+        }
+
+        if (offset + length > data.Length)
+        {
+            throw new Asn1Exception("Length exceeds buffer.");
+        }
+
+        return offset + length;
     }
 
     private void WritePrimitive(Asn1Tag tag, byte[] contents)

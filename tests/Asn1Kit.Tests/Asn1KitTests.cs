@@ -159,11 +159,13 @@ public sealed class RuntimeTests
     [Fact]
     public void WriteSetOf_DerSortsElementEncodings()
     {
-        // INTEGER 2 = 02 01 02, INTEGER 1 = 02 01 01 — out of DER order when written 2 then 1.
-        var two = EncodeIntegerTlv(2);
-        var one = EncodeIntegerTlv(1);
+        // INTEGER 2 then INTEGER 1 — DER must emit 1 then 2 (X.690 §11.6).
         var writer = new Asn1Writer(Asn1Encoding.Der);
-        writer.WriteSetOf(Asn1Tag.Set, new[] { two, one });
+        writer.WriteSetOf(Asn1Tag.Set, inner =>
+        {
+            Asn1Integer.Encode(inner, 2);
+            Asn1Integer.Encode(inner, 1);
+        });
         var bytes = writer.Encode();
         Assert.Equal(new byte[] { 0x31, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02 }, bytes);
 
@@ -179,19 +181,14 @@ public sealed class RuntimeTests
     [Fact]
     public void WriteSetOf_BerPreservesElementOrder()
     {
-        var two = EncodeIntegerTlv(2);
-        var one = EncodeIntegerTlv(1);
         var writer = new Asn1Writer(Asn1Encoding.Ber);
-        writer.WriteSetOf(Asn1Tag.Set, new[] { two, one });
+        writer.WriteSetOf(Asn1Tag.Set, inner =>
+        {
+            Asn1Integer.Encode(inner, 2);
+            Asn1Integer.Encode(inner, 1);
+        });
         var bytes = writer.Encode();
         Assert.Equal(new byte[] { 0x31, 0x06, 0x02, 0x01, 0x02, 0x02, 0x01, 0x01 }, bytes);
-    }
-
-    private static byte[] EncodeIntegerTlv(int value)
-    {
-        var writer = new Asn1Writer(Asn1Encoding.Der);
-        Asn1Integer.Encode(writer, value);
-        return writer.Encode();
     }
 
     [Fact]

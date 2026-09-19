@@ -47,7 +47,7 @@ Ownership: **owned** — вызывающий получает или отдаё
 | `WriteBoolean` / `WriteInteger` / `WriteNull` / `WriteObjectIdentifier` / `WriteBitString` / `WriteString` / `WriteTime` | hot              | вход по значению / Span | да (scratch)                                                 |
 | `WriteOctetString(ReadOnlySpan<byte>)`                                                                                   | hot              | borrow                  | да (убрать внутренний `ToArray`)                             |
 | `WriteSequence` / `WriteSet` / `WriteExplicit(Action<Asn1Writer>)`                                                       | hot              | callback                | **да — главный рычаг записи**                                |
-| `WriteSetOf(IReadOnlyList<byte[]>)`                                                                                      | hot (SET OF)     | owned TLV               | частично; форма требует готовых массивов                     |
+| `WriteSetOf(Action<Asn1Writer>)`                                                                                         | hot (SET OF)     | callback; DER sort внутри | да (разбор TLV для sort — внутреннее)                        |
 | `WriteAny` / `WriteAny(tag, …)`                                                                                          | hot              | owned в `Asn1Any`       | да                                                           |
 | `WriteRaw(ReadOnlySpan<byte>)`                                                                                           | cold             | borrow                  | да                                                           |
 | `Asn1Reader(byte[])` / `Encoding` / `Eof` / `TryPeekTag`                                                                 | hot              | buffer у reader         | да для тел; ctor только `byte[]` ограничивает вход           |
@@ -72,7 +72,7 @@ Ownership: **owned** — вызывающий получает или отдаё
 - `ReadOctetString` / `ReadValue` / публичный `ReadTlv` → `byte[]`
 - `Asn1Any.Contents`, ctor `Asn1BitString` / `Asn1Any`
 - OID: `string` ↔ `ParseArcs` / `EncodeContents`
-- `WriteSetOf(IReadOnlyList<byte[]>)`
+- `WriteSetOf` — элементы пишутся callback'ом; DER sort внутри runtime
 
 Менять эти типы имеет смысл только если нужен zero-copy наружу; иначе достаточно внутренней оптимизации.
 
@@ -83,7 +83,7 @@ Ownership: **owned** — вызывающий получает или отдаё
 
 | Кандидат                                                                 | Зачем                                                                                 | Стоимость, если отложить                |
 | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- | --------------------------------------- |
-| Форма `WriteSetOf` + codegen (сейчас `List<byte[]>` + writer на элемент) | убрать обязательные промежуточные TLV-массивы; callback/`Action` как у SEQUENCE       | переписать SET OF тесты и эмит backend  |
+| ~~Форма `WriteSetOf` + codegen~~ (**сделано:** `Action<Asn1Writer>`)     | убрать обязательные промежуточные TLV-массивы в codegen                               | —                                       |
 | Публичность `ReadTlv` / `ReadValue`                                      | hot path и так не использует; можно сузить surface или дать Span/offset-вариант рядом | тесты escape-hatch и любой внешний код  |
 | Вход reader: только `byte[]`                                             | `ReadOnlyMemory<byte>` / `(byte[], offset, length)` public ctor                       | все тесты, создающие reader             |
 | `Encode() → byte[]` only                                                 | additive `TryEncode(Span)` / запись в caller buffer                                   | тесты snapshot-encode                   |
