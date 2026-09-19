@@ -1,0 +1,9 @@
+ExampleModule DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+
+Person ::= SEQUENCE {
+  id    INTEGER,
+  name  OCTET STRING,
+  nick  OCTET STRING OPTIONAL
+}
+
+END

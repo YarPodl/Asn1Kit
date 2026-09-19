@@ -1,0 +1,35 @@
+irVersion: 1
+module: ExampleModule
+source: example.asn
+tagDefault: automatic
+options:
+  csharp.namespace: ExampleModule
+types:
+- name: Person
+  kind: sequence
+  options:
+    csharp.typeName: Person
+  fields:
+  - name: id
+    type: INTEGER
+    optional: false
+    tag:
+      class: context
+      number: 0
+      mode: implicit
+  - name: name
+    type: OCTET STRING
+    optional: false
+    tag:
+      class: context
+      number: 1
+      mode: implicit
+  - name: nick
+    type: OCTET STRING
+    optional: true
+    tag:
+      class: context
+      number: 2
+      mode: implicit
+    options:
+      csharp.propertyName: Nickname
