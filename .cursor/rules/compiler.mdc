@@ -1,0 +1,41 @@
+---
+description: Требования к лексеру, парсеру и IrBuilder — границы профиля, резолв значений, отказы с позицией
+globs: src/Asn1Kit.Compiler/**/*.cs
+alwaysApply: false
+---
+
+# Компилятор ASN.1
+
+Компилятор — единственное место, где живёт знание X.680. Целевой язык ему неизвестен: на выходе только IR.
+
+## Границы профиля
+
+- Поддерживаемое подмножество перечислено в [docs/status.md](../../docs/status.md). Расширяешь профиль — обновляешь этот файл и README.
+- Всё, что вне профиля (`CLASS`, `COMPONENTS OF`, параметризованные типы, `REAL`, `EXTERNAL`), падает `CompileException` с текстом `... is outside the Asn1Kit compiler profile.` и позицией.
+- Не «додумывай» разбор непонятной конструкции. Либо разбираешь полностью, либо явный отказ.
+- Нераспознанные формы constraint попадают в `constraint.unsupported`, а не теряются.
+
+```csharp
+// ❌ BAD: тихо пропустить непонятный токен
+while (!IsKeyword(Keywords.End)) { Advance(); }
+
+// ✅ GOOD
+throw Error($"'{Peek().Text}' is outside the Asn1Kit compiler profile.");
+```
+
+## Резолв значений
+
+- Резолв двухфазный: `IrBuilder` сначала собирает все type/value assignments всех модулей, потом разворачивает OID-цепочки, `ub-*` в constraints и `DEFAULT`. Порядок объявлений в файле значения не имеет.
+- OID в IR — dotted-строка (`"1.3.6.1.5.5.7.48.1"`), цепочки вроде `{ id-pkix 1 }` уже развёрнуты. Арифметика над дугами — в runtime (`Asn1ObjectIdentifier.ParseArcs`), не в компиляторе.
+- Циклы (`id-a ::= { id-b 1 }`, `id-b ::= { id-a 2 }`) и неизвестные ссылки — явный отказ, не бесконечная рекурсия.
+- `AUTOMATIC TAGS` раскрывается в явные `tag` на компонентах; `IMPLICIT` не применяется к `CHOICE`.
+
+## Тесты
+
+- Разбор новых конструкций — в `ParserTests`, резолв значений и отказы — в `ValueResolutionTests`.
+- На каждую новую конструкцию: успешный разбор + отказ на соседней форме, которая осталась вне профиля.
+- После любых правок `IrBuilder` пересобери golden-фикстуру и прогони `dotnet test Asn1Kit.sln`:
+
+```powershell
+dotnet run --project src/Asn1Kit.Cli -- compile -i fixtures/asn1/pkix1-explicit88.asn -o fixtures/ir/pkix1-explicit88.json
+```

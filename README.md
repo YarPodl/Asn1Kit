@@ -42,4 +42,4 @@ C# backend пока генерирует прежний набор (`sequence` /
 
 Кодировки runtime: BER (в том числе indefinite length на чтении) и DER (каноническая запись).
 
-Подробности: [docs/architecture.md](docs/architecture.md), [docs/ir-schema.md](docs/ir-schema.md).
+Подробности: [docs/architecture.md](docs/architecture.md), [docs/ir-schema.md](docs/ir-schema.md), текущее состояние поддержки — [docs/status.md](docs/status.md).
