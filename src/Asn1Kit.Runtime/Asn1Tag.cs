@@ -66,6 +66,7 @@ public readonly struct Asn1Tag : IEquatable<Asn1Tag>
     public static Asn1Tag ObjectIdentifier { get; } = new(Asn1TagClass.Universal, 6);
     public static Asn1Tag Utf8String { get; } = new(Asn1TagClass.Universal, 12);
     public static Asn1Tag Sequence { get; } = new(Asn1TagClass.Universal, 16, constructed: true);
+    public static Asn1Tag Set { get; } = new(Asn1TagClass.Universal, 17, constructed: true);
     public static Asn1Tag NumericString { get; } = new(Asn1TagClass.Universal, 18);
     public static Asn1Tag PrintableString { get; } = new(Asn1TagClass.Universal, 19);
     public static Asn1Tag TeletexString { get; } = new(Asn1TagClass.Universal, 20);

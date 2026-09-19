@@ -55,6 +55,10 @@ public sealed class Asn1Reader
             return 0;
         });
 
+    public T ReadSet<T>(Asn1Tag expected, Func<Asn1Reader, T> read) => ReadSequence(expected, read);
+
+    public void ReadSet(Asn1Tag expected, Action<Asn1Reader> read) => ReadSequence(expected, read);
+
     public bool ReadBoolean(Asn1Tag expected)
     {
         var contents = ReadValue(expected, allowConstructed: false);

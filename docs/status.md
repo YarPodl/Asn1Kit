@@ -16,13 +16,13 @@
 | `time` (`utc` / `generalized`) | да; `fractionDigits` 0…7 (default 3) для `generalized` | да → `DateTimeOffset` + `Asn1TimeForm`; запись с округлением | `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*` |
 | `any` (+ `definedBy`) | да, с проверкой sibling-компонента | **нет** | `ParserTests`, `ValueResolutionTests.RejectsAnyDefinedByUnknownField` |
 | `sequence` | да, `extensible` | да → класс с `Encode` / `Decode` | `RoundTripTests`, `PkixExplicit88Tests` |
-| `set` | да | **нет** | `ParserTests` |
+| `set` | да | да → класс с `Encode` / `Decode` (DER: порядок по тегу; decode по тегу) | `RoundTripTests`, `ParserTests`, `RuntimeTests` |
 | `choice` | да | да → класс + enum `…Kind` | `ParserTests`, `PkixExplicit88Tests` |
 | `sequenceOf` | да | да → класс с `List<T> Items` | `ParserTests` |
-| `setOf` | да | **нет** | `ParserTests.BackendRejectsUnsupportedKinds` |
+| `setOf` | да | да → класс с `List<T> Items` (DER: сортировка TLV в `WriteSetOf`) | `RoundTripTests`, `ParserTests`, `RuntimeTests` |
 | `ref` | да, с резолвом через модули | да | `PkixExplicit88Tests` |
 
-Неподдержанные бэкендом kind отсекает `CSharpBackend.EnsureBackendSupport` с текстом `C# backend does not support kind '<kind>' yet.` — рекурсивно, включая вложенные компоненты и элементы `SEQUENCE OF`.
+Неподдержанные бэкендом kind отсекает `CSharpBackend.EnsureBackendSupport` с текстом `C# backend does not support kind '<kind>' yet.` — рекурсивно, включая вложенные компоненты и элементы `SEQUENCE OF` / `SET OF`.
 
 ## Значения IR
 
@@ -49,7 +49,8 @@
 | OBJECT IDENTIFIER | `WriteObjectIdentifier` (dotted) | `ReadObjectIdentifier` |
 | STRING (12 форм) | `WriteString` + `Asn1StringForm` | `ReadString` (BER: constructed склеивается) |
 | TIME (`utc` / `generalized`) | `WriteTime` (`DateTimeOffset`, `fractionDigits` для generalized) | `ReadTime` (дробь 1…7, хвостовые нули ок) |
-| SEQUENCE / constructed | `WriteSequence` | `ReadSequence`, `TryPeekTag`, `Eof` |
+| SEQUENCE / SET / constructed | `WriteSequence`, `WriteSet` | `ReadSequence`, `ReadSet`, `TryPeekTag`, `Eof` |
+| SET OF (DER sort) | `WriteSetOf` | через `ReadSet` |
 | EXPLICIT-обёртка | `WriteExplicit` | через `ReadSequence` |
 | Готовый TLV | `WriteRaw` | `ReadValue` |
 
@@ -61,6 +62,5 @@ DER: только definite length, минимальная кодировка INT
 
 ## Ближайшие пробелы
 
-1. `set` / `setOf` в C# backend (для `SET OF` в DER нужна каноническая сортировка элементов).
-2. `any` / `ANY DEFINED BY` в генерации — требует решения, как отдавать сырой TLV наружу.
-3. C++ backend и C++ runtime — см. [playbooks/new-backend.md](playbooks/new-backend.md).
+1. `any` / `ANY DEFINED BY` в генерации — требует решения, как отдавать сырой TLV наружу.
+2. C++ backend и C++ runtime — см. [playbooks/new-backend.md](playbooks/new-backend.md).

@@ -149,6 +149,52 @@ public sealed class RuntimeTests
     }
 
     [Fact]
+    public void Set_TagIsUniversal17()
+    {
+        Assert.Equal(Asn1TagClass.Universal, Asn1Tag.Set.TagClass);
+        Assert.Equal(17, Asn1Tag.Set.Number);
+        Assert.True(Asn1Tag.Set.Constructed);
+    }
+
+    [Fact]
+    public void WriteSetOf_DerSortsElementEncodings()
+    {
+        // INTEGER 2 = 02 01 02, INTEGER 1 = 02 01 01 — out of DER order when written 2 then 1.
+        var two = EncodeIntegerTlv(2);
+        var one = EncodeIntegerTlv(1);
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteSetOf(Asn1Tag.Set, new[] { two, one });
+        var bytes = writer.Encode();
+        Assert.Equal(new byte[] { 0x31, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02 }, bytes);
+
+        var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
+        reader.ReadSet(Asn1Tag.Set, inner =>
+        {
+            Assert.Equal(1, Asn1Integer.Decode(inner));
+            Assert.Equal(2, Asn1Integer.Decode(inner));
+            Assert.True(inner.Eof);
+        });
+    }
+
+    [Fact]
+    public void WriteSetOf_BerPreservesElementOrder()
+    {
+        var two = EncodeIntegerTlv(2);
+        var one = EncodeIntegerTlv(1);
+        var writer = new Asn1Writer(Asn1Encoding.Ber);
+        writer.WriteSetOf(Asn1Tag.Set, new[] { two, one });
+        var bytes = writer.Encode();
+        Assert.Equal(new byte[] { 0x31, 0x06, 0x02, 0x01, 0x02, 0x02, 0x01, 0x01 }, bytes);
+    }
+
+    private static byte[] EncodeIntegerTlv(int value)
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        Asn1Integer.Encode(writer, value);
+        return writer.Encode();
+    }
+
+    [Fact]
     public void ObjectIdentifier_RoundTripsDottedString()
     {
         const string oid = "1.2.840.113549";
@@ -542,6 +588,99 @@ public sealed class RoundTripTests
             sampleType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
                 .Invoke(null, new object[] { new Asn1Reader(broken, Asn1Encoding.Der) }));
         Assert.IsType<Asn1Exception>(ex.InnerException);
+    }
+
+    [Fact]
+    public void GeneratedCSharp_SetAndSetOf_RoundTripAndDerOrder()
+    {
+        const string asn = @"
+SetMod DEFINITIONS EXPLICIT TAGS ::= BEGIN
+Bag ::= SET {
+  a INTEGER,
+  b [0] BOOLEAN OPTIONAL
+}
+List ::= SET OF INTEGER
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+        Assert.Contains("WriteSet", source);
+        Assert.Contains("WriteSetOf", source);
+        Assert.Contains("Asn1Tag.Set", source);
+
+        var assembly = CompileGenerated(source);
+        var bagType = assembly.GetType("SetMod.Bag")!;
+        var listType = assembly.GetType("SetMod.List")!;
+
+        var bag = Activator.CreateInstance(bagType)!;
+        bagType.GetProperty("A")!.SetValue(bag, new BigInteger(42));
+        bagType.GetProperty("B")!.SetValue(bag, true);
+
+        var expectedWithOptional = new byte[]
+        {
+            0x31, 0x08,
+            0x02, 0x01, 0x2A,
+            0xA0, 0x03, 0x01, 0x01, 0xFF
+        };
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        bagType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(bag, new object[] { writer });
+        Assert.Equal(expectedWithOptional, writer.Encode());
+
+        var decoded = bagType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(expectedWithOptional, Asn1Encoding.Der) })!;
+        Assert.Equal(new BigInteger(42), bagType.GetProperty("A")!.GetValue(decoded));
+        Assert.Equal(true, bagType.GetProperty("B")!.GetValue(decoded));
+
+        // BER may present components in reverse tag order.
+        var berReversed = new byte[]
+        {
+            0x31, 0x08,
+            0xA0, 0x03, 0x01, 0x01, 0xFF,
+            0x02, 0x01, 0x2A
+        };
+        var fromBer = bagType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(berReversed, Asn1Encoding.Ber) })!;
+        Assert.Equal(new BigInteger(42), bagType.GetProperty("A")!.GetValue(fromBer));
+        Assert.Equal(true, bagType.GetProperty("B")!.GetValue(fromBer));
+        var rewrite = new Asn1Writer(Asn1Encoding.Der);
+        bagType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(fromBer, new object[] { rewrite });
+        Assert.Equal(expectedWithOptional, rewrite.Encode());
+
+        bagType.GetProperty("B")!.SetValue(bag, null);
+        var withoutOptional = new byte[] { 0x31, 0x03, 0x02, 0x01, 0x2A };
+        var writerNoOpt = new Asn1Writer(Asn1Encoding.Der);
+        bagType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(bag, new object[] { writerNoOpt });
+        Assert.Equal(withoutOptional, writerNoOpt.Encode());
+        var decodedNoOpt = bagType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(withoutOptional, Asn1Encoding.Der) })!;
+        Assert.Null(bagType.GetProperty("B")!.GetValue(decodedNoOpt));
+
+        var unknown = new byte[] { 0x31, 0x02, 0x05, 0x00 };
+        var unknownEx = Assert.Throws<TargetInvocationException>(() =>
+            bagType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+                .Invoke(null, new object[] { new Asn1Reader(unknown, Asn1Encoding.Der) }));
+        Assert.IsType<Asn1Exception>(unknownEx.InnerException);
+
+        var list = Activator.CreateInstance(listType)!;
+        var items = (System.Collections.IList)listType.GetProperty("Items")!.GetValue(list)!;
+        items.Add(new BigInteger(2));
+        items.Add(new BigInteger(1));
+        var expectedSetOf = new byte[] { 0x31, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02 };
+        var listWriter = new Asn1Writer(Asn1Encoding.Der);
+        listType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(list, new object[] { listWriter });
+        Assert.Equal(expectedSetOf, listWriter.Encode());
+
+        var decodedList = listType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(expectedSetOf, Asn1Encoding.Der) })!;
+        var decodedItems = (System.Collections.IList)listType.GetProperty("Items")!.GetValue(decodedList)!;
+        Assert.Equal(2, decodedItems.Count);
+        Assert.Equal(new BigInteger(1), decodedItems[0]);
+        Assert.Equal(new BigInteger(2), decodedItems[1]);
+
+        var listRewrite = new Asn1Writer(Asn1Encoding.Der);
+        listType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(decodedList, new object[] { listRewrite });
+        Assert.Equal(expectedSetOf, listRewrite.Encode());
     }
 
     private static Assembly CompileGenerated(string source)

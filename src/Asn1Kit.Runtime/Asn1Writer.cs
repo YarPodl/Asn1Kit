@@ -72,6 +72,55 @@ public sealed class Asn1Writer
         WriteTlv(tag.AsConstructed(), inner.Encode(), definiteOnly: Encoding == Asn1Encoding.Der);
     }
 
+    public void WriteSet(Asn1Tag tag, Action<Asn1Writer> content) => WriteSequence(tag, content);
+
+    /// <summary>
+    /// Writes a SET OF. In DER mode, element encodings are sorted lexicographically (X.690 §11.6).
+    /// </summary>
+    public void WriteSetOf(Asn1Tag tag, IReadOnlyList<byte[]> encodedElements)
+    {
+        if (encodedElements is null)
+        {
+            throw new ArgumentNullException(nameof(encodedElements));
+        }
+
+        byte[][] parts;
+        if (Encoding == Asn1Encoding.Der && encodedElements.Count > 1)
+        {
+            parts = new byte[encodedElements.Count][];
+            for (var i = 0; i < encodedElements.Count; i++)
+            {
+                parts[i] = encodedElements[i] ?? throw new ArgumentNullException(nameof(encodedElements));
+            }
+
+            Array.Sort(parts, CompareDerSetOfEncodings);
+        }
+        else
+        {
+            parts = new byte[encodedElements.Count][];
+            for (var i = 0; i < encodedElements.Count; i++)
+            {
+                parts[i] = encodedElements[i] ?? throw new ArgumentNullException(nameof(encodedElements));
+            }
+        }
+
+        var total = 0;
+        foreach (var part in parts)
+        {
+            total += part.Length;
+        }
+
+        var contents = new byte[total];
+        var offset = 0;
+        foreach (var part in parts)
+        {
+            Buffer.BlockCopy(part, 0, contents, offset, part.Length);
+            offset += part.Length;
+        }
+
+        WriteTlv(tag.AsConstructed(), contents, definiteOnly: Encoding == Asn1Encoding.Der);
+    }
+
     public void WriteExplicit(Asn1Tag outer, Action<Asn1Writer> inner)
     {
         WriteSequence(outer, inner);
@@ -80,6 +129,21 @@ public sealed class Asn1Writer
     public void WriteRaw(ReadOnlySpan<byte> tlv)
     {
         _buffer.Write(tlv);
+    }
+
+    private static int CompareDerSetOfEncodings(byte[] left, byte[] right)
+    {
+        var length = Math.Min(left.Length, right.Length);
+        for (var i = 0; i < length; i++)
+        {
+            var cmp = left[i].CompareTo(right[i]);
+            if (cmp != 0)
+            {
+                return cmp;
+            }
+        }
+
+        return left.Length.CompareTo(right.Length);
     }
 
     private void WritePrimitive(Asn1Tag tag, byte[] contents)

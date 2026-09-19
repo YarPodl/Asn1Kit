@@ -82,16 +82,36 @@ END
     }
 
     [Fact]
-    public void BackendRejectsUnsupportedKinds()
+    public void BackendRejectsAnyKind()
     {
         const string asn = @"
 M DEFINITIONS ::= BEGIN
-S ::= SET OF INTEGER
+S ::= ANY
 END
 ";
         var document = new Asn1Compiler().CompileText(asn);
         var backend = new Asn1Kit.Codegen.CSharp.CSharpBackend();
         var ex = Assert.Throws<NotSupportedException>(() => backend.Generate(document));
-        Assert.Contains("does not support kind 'setOf'", ex.Message);
+        Assert.Contains("does not support kind 'any'", ex.Message);
+    }
+
+    [Fact]
+    public void BackendGeneratesSetAndSetOf()
+    {
+        const string asn = @"
+M DEFINITIONS ::= BEGIN
+Bag ::= SET {
+  a INTEGER,
+  b [0] BOOLEAN OPTIONAL
+}
+List ::= SET OF INTEGER
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        var source = new Asn1Kit.Codegen.CSharp.CSharpBackend().Generate(document).Single().Contents;
+        Assert.Contains("WriteSet", source);
+        Assert.Contains("WriteSetOf", source);
+        Assert.Contains("Asn1Tag.Set", source);
+        Assert.Contains("ReadSet", source);
     }
 }

@@ -84,6 +84,13 @@ public sealed class CSharpBackend : ILanguageBackend
                 }
 
                 break;
+            case SetType set:
+                foreach (var component in set.Components)
+                {
+                    OfferNested(document, module, owner + "_" + SanitizeIdentifier(component.Name), component.Type, queue);
+                }
+
+                break;
             case ChoiceType choice:
                 foreach (var component in choice.Components)
                 {
@@ -93,6 +100,9 @@ public sealed class CSharpBackend : ILanguageBackend
                 break;
             case SequenceOfType sequenceOf:
                 OfferNested(document, module, owner + "Item", sequenceOf.Element, queue);
+                break;
+            case SetOfType setOf:
+                OfferNested(document, module, owner + "Item", setOf.Element, queue);
                 break;
         }
     }
@@ -113,7 +123,7 @@ public sealed class CSharpBackend : ILanguageBackend
         {
             return;
         }
-        else if (type is SequenceOfType or SequenceType or ChoiceType)
+        else if (type is SequenceOfType or SetOfType or SequenceType or SetType or ChoiceType)
         {
             CollectNested(document, module, hint, type, queue);
         }
@@ -127,7 +137,7 @@ public sealed class CSharpBackend : ILanguageBackend
     }
 
     private static bool NeedsNamedType(TypeExpr type) =>
-        type is SequenceType or ChoiceType or SequenceOfType;
+        type is SequenceType or SetType or ChoiceType or SequenceOfType or SetOfType;
 
     private void EmitType(StringBuilder sb, IrDocument document, IrModule module, string typeName, TypeExpr type)
     {
@@ -137,11 +147,17 @@ public sealed class CSharpBackend : ILanguageBackend
             case SequenceType sequence:
                 EmitSequence(sb, document, module, typeName, sequence);
                 break;
+            case SetType set:
+                EmitSet(sb, document, module, typeName, set);
+                break;
             case ChoiceType choice:
                 EmitChoice(sb, document, module, typeName, choice);
                 break;
             case SequenceOfType sequenceOf:
                 EmitSequenceOf(sb, document, module, typeName, sequenceOf);
+                break;
+            case SetOfType setOf:
+                EmitSetOf(sb, document, module, typeName, setOf);
                 break;
             default:
                 EmitAlias(sb, document, module, typeName, type);
@@ -154,12 +170,17 @@ public sealed class CSharpBackend : ILanguageBackend
         switch (type)
         {
             case AnyType:
-            case SetType:
-            case SetOfType:
                 throw new NotSupportedException(
                     $"C# backend does not support kind '{type.Kind}' yet.");
             case SequenceType sequence:
                 foreach (var component in sequence.Components)
+                {
+                    EnsureBackendSupport(component.Type);
+                }
+
+                break;
+            case SetType set:
+                foreach (var component in set.Components)
                 {
                     EnsureBackendSupport(component.Type);
                 }
@@ -174,6 +195,9 @@ public sealed class CSharpBackend : ILanguageBackend
                 break;
             case SequenceOfType sequenceOf:
                 EnsureBackendSupport(sequenceOf.Element);
+                break;
+            case SetOfType setOf:
+                EnsureBackendSupport(setOf.Element);
                 break;
         }
     }
@@ -220,6 +244,94 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine("        });");
         sb.AppendLine("    }");
         EmitDefaultTag(sb, type, constructed: true, fallback: "Asn1Tag.Sequence");
+        sb.AppendLine("}");
+    }
+
+    private void EmitSet(StringBuilder sb, IrDocument document, IrModule module, string typeName, SetType type)
+    {
+        sb.AppendLine($"public sealed class {typeName}");
+        sb.AppendLine("{");
+        foreach (var field in type.Components)
+        {
+            var prop = PropertyName(field);
+            var csType = CsType(document, module, typeName, field.Name, field.Type, field.Optional);
+            sb.AppendLine($"    public {csType} {prop} {{ get; set; }}{Initializer(field.Type, field.Optional)}");
+        }
+
+        sb.AppendLine();
+        sb.AppendLine("    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);");
+        sb.AppendLine();
+        sb.AppendLine("    public void Encode(Asn1Writer writer, Asn1Tag tag)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        writer.WriteSet(tag, inner =>");
+        sb.AppendLine("        {");
+        foreach (var field in SortedSetComponents(document, module, type.Components))
+        {
+            EmitEncodeField(sb, document, module, typeName, field, "            ", "inner");
+        }
+
+        sb.AppendLine("        });");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader) => Decode(reader, DefaultTag);");
+        sb.AppendLine();
+        sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader, Asn1Tag tag)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        return reader.ReadSet(tag, inner =>");
+        sb.AppendLine("        {");
+        sb.AppendLine($"            var value = new {typeName}();");
+        foreach (var field in type.Components)
+        {
+            if (!field.Optional)
+            {
+                sb.AppendLine($"            var seen_{SanitizeIdentifier(field.Name)} = false;");
+            }
+        }
+
+        sb.AppendLine("            while (!inner.Eof)");
+        sb.AppendLine("            {");
+        sb.AppendLine("                if (!inner.TryPeekTag(out var peeked))");
+        sb.AppendLine("                {");
+        sb.AppendLine("                    break;");
+        sb.AppendLine("                }");
+        var first = true;
+        foreach (var field in type.Components)
+        {
+            var prop = PropertyName(field);
+            var cond = first ? "if" : "else if";
+            first = false;
+            sb.AppendLine($"                {cond} (peeked.MatchesIgnoreConstructed({TagExpr(document, module, field.Type)}))");
+            sb.AppendLine("                {");
+            if (!field.Optional)
+            {
+                var seen = $"seen_{SanitizeIdentifier(field.Name)}";
+                sb.AppendLine($"                    if ({seen}) throw new Asn1Exception(\"Duplicate SET component '{field.Name}'.\");");
+                sb.AppendLine($"                    {seen} = true;");
+            }
+            else
+            {
+                sb.AppendLine($"                    if (value.{prop} != null) throw new Asn1Exception(\"Duplicate SET component '{field.Name}'.\");");
+            }
+
+            EmitDecodeAssign(sb, document, module, typeName, field.Name, field.Type, "                    ", "inner", $"value.{prop}");
+            sb.AppendLine("                }");
+        }
+
+        sb.AppendLine("                else throw new Asn1Exception(\"Unknown SET component.\");");
+        sb.AppendLine("            }");
+        foreach (var field in type.Components)
+        {
+            if (!field.Optional)
+            {
+                sb.AppendLine(
+                    $"            if (!seen_{SanitizeIdentifier(field.Name)}) throw new Asn1Exception(\"Missing SET component '{field.Name}'.\");");
+            }
+        }
+
+        sb.AppendLine("            return value;");
+        sb.AppendLine("        });");
+        sb.AppendLine("    }");
+        EmitDefaultTag(sb, type, constructed: true, fallback: "Asn1Tag.Set");
         sb.AppendLine("}");
     }
 
@@ -321,6 +433,47 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine("        });");
         sb.AppendLine("    }");
         EmitDefaultTag(sb, type, constructed: true, fallback: "Asn1Tag.Sequence");
+        sb.AppendLine("}");
+    }
+
+    private void EmitSetOf(StringBuilder sb, IrDocument document, IrModule module, string typeName, SetOfType type)
+    {
+        var itemType = CsType(document, module, typeName, "Item", type.Element, optional: false);
+        sb.AppendLine($"public sealed class {typeName}");
+        sb.AppendLine("{");
+        sb.AppendLine($"    public List<{itemType}> Items {{ get; set; }} = new List<{itemType}>();");
+        sb.AppendLine();
+        sb.AppendLine("    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);");
+        sb.AppendLine();
+        sb.AppendLine("    public void Encode(Asn1Writer writer, Asn1Tag tag)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        var parts = new List<byte[]>(Items.Count);");
+        sb.AppendLine("        foreach (var item in Items)");
+        sb.AppendLine("        {");
+        sb.AppendLine("            var part = new Asn1Writer(writer.Encoding);");
+        EmitEncodeValue(sb, document, module, typeName, "Item", type.Element, "            ", "part", "item");
+        sb.AppendLine("            parts.Add(part.Encode());");
+        sb.AppendLine("        }");
+        sb.AppendLine("        writer.WriteSetOf(tag, parts);");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader) => Decode(reader, DefaultTag);");
+        sb.AppendLine();
+        sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader, Asn1Tag tag)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        return reader.ReadSet(tag, inner =>");
+        sb.AppendLine("        {");
+        sb.AppendLine($"            var value = new {typeName}();");
+        sb.AppendLine("            while (!inner.Eof)");
+        sb.AppendLine("            {");
+        sb.Append("                value.Items.Add(");
+        EmitDecodeExpr(sb, document, module, typeName, "Item", type.Element, "inner");
+        sb.AppendLine(");");
+        sb.AppendLine("            }");
+        sb.AppendLine("            return value;");
+        sb.AppendLine("        });");
+        sb.AppendLine("    }");
+        EmitDefaultTag(sb, type, constructed: true, fallback: "Asn1Tag.Set");
         sb.AppendLine("}");
     }
 
@@ -586,7 +739,7 @@ public sealed class CSharpBackend : ILanguageBackend
             OctetStringType => " = Array.Empty<byte>();",
             OidType => " = \"\";",
             StringType => " = \"\";",
-            SequenceOfType => " = new();",
+            SequenceOfType or SetOfType => " = new();",
             _ => ""
         };
     }
@@ -627,6 +780,8 @@ public sealed class CSharpBackend : ILanguageBackend
             OidType => "Asn1Tag.ObjectIdentifier",
             StringType stringType => StringFormTag(stringType.Form),
             TimeType timeType => TimeFormTag(timeType.Form),
+            SetType or SetOfType => "Asn1Tag.Set",
+            SequenceType or SequenceOfType => "Asn1Tag.Sequence",
             RefType reference when Find(document, module, reference)?.Type is { } inner =>
                 UniversalTag(document, module, inner),
             _ => "Asn1Tag.Sequence"
@@ -699,9 +854,71 @@ public sealed class CSharpBackend : ILanguageBackend
 
     private bool IsConstructed(IrDocument document, IrModule module, TypeExpr type) => type switch
     {
-        SequenceType or SequenceOfType or ChoiceType => true,
+        SequenceType or SetType or SequenceOfType or SetOfType or ChoiceType => true,
         RefType reference => Find(document, module, reference)?.Type is { } inner && IsConstructed(document, module, inner),
         _ => false
+    };
+
+    private IEnumerable<IrComponent> SortedSetComponents(
+        IrDocument document,
+        IrModule module,
+        IReadOnlyList<IrComponent> components) =>
+        components
+            .Select((component, index) => (component, index, key: ComponentTagSortKey(document, module, component.Type)))
+            .OrderBy(x => x.key.TagClass)
+            .ThenBy(x => x.key.Number)
+            .ThenBy(x => x.index)
+            .Select(x => x.component);
+
+    private (int TagClass, int Number) ComponentTagSortKey(IrDocument document, IrModule module, TypeExpr type)
+    {
+        if (type.Tag is not null)
+        {
+            return (TagClassOrdinal(type.Tag.Class), type.Tag.Number);
+        }
+
+        return (0, UniversalTagNumber(document, module, type));
+    }
+
+    private static int TagClassOrdinal(string tagClass) => tagClass.ToLowerInvariant() switch
+    {
+        TagClasses.Universal => 0,
+        TagClasses.Application => 1,
+        TagClasses.Private => 3,
+        _ => 2
+    };
+
+    private int UniversalTagNumber(IrDocument document, IrModule module, TypeExpr type) => type switch
+    {
+        BooleanType => 1,
+        IntegerType or EnumeratedType => 2,
+        BitStringType => 3,
+        OctetStringType => 4,
+        NullType => 5,
+        OidType => 6,
+        StringType stringType => StringFormTagNumber(stringType.Form),
+        TimeType timeType => timeType.Form == TimeTypes.Utc ? 23 : 24,
+        SequenceType or SequenceOfType => 16,
+        SetType or SetOfType => 17,
+        RefType reference when Find(document, module, reference)?.Type is { } inner =>
+            UniversalTagNumber(document, module, inner),
+        _ => 16
+    };
+
+    private static int StringFormTagNumber(string form) => form switch
+    {
+        StringTypes.Utf8 => 12,
+        StringTypes.Numeric => 18,
+        StringTypes.Printable => 19,
+        StringTypes.Teletex or StringTypes.T61 => 20,
+        StringTypes.Videotex => 21,
+        StringTypes.Ia5 => 22,
+        StringTypes.Graphic => 25,
+        StringTypes.Visible => 26,
+        StringTypes.General => 27,
+        StringTypes.Universal => 28,
+        StringTypes.Bmp => 30,
+        _ => throw new NotSupportedException($"Unknown stringType '{form}'.")
     };
 
     private static IrTypeDef? Find(IrDocument document, IrModule module, RefType reference)
@@ -735,8 +952,10 @@ public sealed class CSharpBackend : ILanguageBackend
             StringType stringType => new StringType { Form = stringType.Form },
             TimeType timeType => new TimeType { Form = timeType.Form, FractionDigits = timeType.FractionDigits },
             SequenceType sequence => new SequenceType { Components = sequence.Components },
+            SetType set => new SetType { Components = set.Components, Extensible = set.Extensible },
             ChoiceType choice => new ChoiceType { Components = choice.Components },
             SequenceOfType sequenceOf => new SequenceOfType { Element = sequenceOf.Element },
+            SetOfType setOf => new SetOfType { Element = setOf.Element },
             RefType reference => new RefType { Name = reference.Name, Module = reference.Module },
             _ => throw new NotSupportedException($"Cannot clone untagged type kind '{type.Kind}'.")
         };
