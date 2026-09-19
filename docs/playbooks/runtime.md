@@ -7,26 +7,29 @@
 | Файл | Что внутри |
 | --- | --- |
 | [Asn1Tag.cs](../../src/Asn1Kit.Runtime/Asn1Tag.cs) | Класс тега, universal-константы, `Asn1StringForm` / `Asn1TimeForm`, `MatchesIgnoreConstructed`, `AsPrimitive` / `AsConstructed` |
-| [Asn1Writer.cs](../../src/Asn1Kit.Runtime/Asn1Writer.cs) | `WriteTag` / `WriteLength` / `WriteTlv`, `WriteSequence` через вложенный writer, `WriteExplicit`, `WriteRaw`, примитивы включая `WriteBitString` / `WriteString` / `WriteTime` |
-| [Asn1Reader.cs](../../src/Asn1Kit.Runtime/Asn1Reader.cs) | Чтение TLV, definite и indefinite length, `TryPeekTag`, `Eof`, `ReadValue`, `ReadBitString` / `ReadString` / `ReadTime` |
-| [Asn1BitString.cs](../../src/Asn1Kit.Runtime/Asn1BitString.cs) | `Asn1BitString` (`Bytes` + `UnusedBits`), индексатор MSB-first, `FromBits`, статические `Encode` / `Decode` |
+| [Asn1Writer.cs](../../src/Asn1Kit.Runtime/Asn1Writer.cs) | Публичные `Write*` / `Encode` / `WriteRaw`; внутри (`private`) `WriteTag` / `WriteLength` / `WriteTlv` / `WritePrimitive`. `WriteSequence` сейчас через вложенный writer |
+| [Asn1Reader.cs](../../src/Asn1Kit.Runtime/Asn1Reader.cs) | Чтение TLV, definite и indefinite length, `TryPeekTag`, `Eof`, публичные `ReadValue` / `ReadTlv`, `ReadBitString` / `ReadString` / `ReadTime` |
+| [Asn1BitString.cs](../../src/Asn1Kit.Runtime/Asn1BitString.cs) | `Asn1BitString` (`Span` + `UnusedBits`), индексатор MSB-first, `FromBits`, статические `Encode` / `Decode` |
 | [Asn1Any.cs](../../src/Asn1Kit.Runtime/Asn1Any.cs) | `Asn1Any` (`Tag` + `Contents`), `WriteAny` / `ReadAny` |
-| [Asn1TextCodec.cs](../../src/Asn1Kit.Runtime/Asn1TextCodec.cs) | Внутренние encode/decode строк и времени (наборы символов, DER/BER-формы) |
-| [Asn1Primitives.cs](../../src/Asn1Kit.Runtime/Asn1Primitives.cs) | `Asn1Boolean` / `Asn1Integer` / `Asn1OctetString` / `Asn1Null` / `Asn1ObjectIdentifier` / `Asn1String` / `Asn1Time` — тонкие обёртки для сгенерированного кода |
+| [Asn1TextCodec.cs](../../src/Asn1Kit.Runtime/Asn1TextCodec.cs) | `internal`: encode/decode строк и времени (наборы символов, DER/BER-формы) |
+| [Asn1Primitives.cs](../../src/Asn1Kit.Runtime/Asn1Primitives.cs) | `Asn1Boolean` / `Asn1Integer` / `Asn1OctetString` / `Asn1Null` / `Asn1ObjectIdentifier` / `Asn1String` / `Asn1Time` — тонкие обёртки для тестов и прикладного кода; **C# backend эмитит `writer.Write*` / `reader.Read*` напрямую** |
 
 Кодировка выбирается через `Asn1Encoding.Ber` / `Asn1Encoding.Der` в конструкторе writer'а и reader'а.
 
+Ревью публичного API (кандидаты на смену до тестов, backlog, чеклист) — [runtime-api.md](../runtime-api.md).
+
 ## Новый примитив
 
-1. `Write*` в `Asn1Writer` и `Read*` в `Asn1Reader` — строго парой.
+1. `Write*` в `Asn1Writer` и `Read*` в `Asn1Reader` — строго парой (это то, что эмитит C# backend).
 2. Universal-тег в `Asn1Tag`, если его ещё нет (например `Set` = 17).
-3. Обёртка `Asn1Xxx.Encode` / `Decode` в `Asn1Primitives` с параметром `Asn1Tag? tag = null` — её вызывает сгенерированный код.
+3. Обёртка `Asn1Xxx.Encode` / `Decode` в `Asn1Primitives` с параметром `Asn1Tag? tag = null` — для симметрии тестов и ручного использования; codegen её не вызывает.
 4. Только после этого — ветка в C# backend, см. [csharp-backend.md](csharp-backend.md).
+5. Обновить инвентарь в [runtime-api.md](../runtime-api.md).
 
 ## Правила, которые нельзя нарушать
 
-- **DER:** только definite length, минимальная кодировка INTEGER, BOOLEAN строго `0x00` / `0xFF`. Нарушение на чтении — `Asn1Exception`, а не «терпимо принять».
-- **BER на чтении:** definite и indefinite length, constructed `OCTET STRING` склеивается. На записи indefinite length не порождается.
+- **DER:** только definite length, BOOLEAN строго `0x00` / `0xFF`, BIT STRING с нулевыми хвостовыми битами. Нарушение этих правил на чтении — `Asn1Exception`, а не «терпимо принять».
+- **BER на чтении:** definite и indefinite length, constructed `OCTET STRING` склеивается. На записи indefinite length не порождается (`definiteOnly` в private `WriteTlv` сейчас не используется — поведение то же).
 - Ошибка ввода — всегда `Asn1Exception` с внятным текстом: чужой тег, обрезанный TLV, лишние байты, невалидная строка OID.
 - Runtime ничего не знает про ASN.1-модули, имена типов и IR.
 
@@ -55,7 +58,7 @@ ReadOnlySpan<byte> contents = _data.AsSpan(_offset, length);
 2. BER: decode известного вектора, включая indefinite length и constructed форму, где она возможна.
 3. Round-trip encode → decode → encode совпадает побайтово.
 4. Границы: пустое значение, `0`, `-1`, длинный `BigInteger`, длина > 127 (длинная форма), вложенность.
-5. Отказы: indefinite length в DER, неминимальный INTEGER, BOOLEAN не `0x00` / `0xFF`, чужой тег, обрезанный TLV, EOF.
+5. Отказы: indefinite length в DER, BOOLEAN не `0x00` / `0xFF`, чужой тег, обрезанный TLV, EOF.
 
 ```csharp
 var ber = new byte[] { 0x24, 0x80, 0x04, 0x03, 0x41, 0x6E, 0x6E, 0x00, 0x00 };

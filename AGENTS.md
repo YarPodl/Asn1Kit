@@ -11,6 +11,7 @@ ASN.1 → JSON IR → генератор кода → runtime BER/DER. Слои 
 [конструкция ASN.1](docs/playbooks/compiler-construct.md) ·
 [C# backend](docs/playbooks/csharp-backend.md) ·
 [runtime BER/DER](docs/playbooks/runtime.md) ·
+[ревью API runtime](docs/runtime-api.md) ·
 [новый язык](docs/playbooks/new-backend.md).
 
 ## Среда

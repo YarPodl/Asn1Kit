@@ -55,7 +55,9 @@
 | Готовый TLV | `WriteRaw` | `ReadValue` |
 | ANY | `WriteAny` (`Asn1Any`) | `ReadAny` (с ожидаемым тегом или без) |
 
-DER: только definite length, минимальная кодировка INTEGER, BOOLEAN `0x00` / `0xFF`, BIT STRING с нулевыми хвостовыми битами, время только с секундами и суффиксом `Z` (GeneralizedTime: `fractionDigits` 0…7, default 3; на записи без хвостовых нулей дроби). BER на чтении принимает indefinite length, constructed строки/BIT STRING, время без секунд и со смещением `±hhmm`; дробь 1…7 цифр с хвостовыми нулями допускается и в DER.
+DER: только definite length, BOOLEAN `0x00` / `0xFF`, BIT STRING с нулевыми хвостовыми битами, время только с секундами и суффиксом `Z` (GeneralizedTime: `fractionDigits` 0…7, default 3; на записи без хвостовых нулей дроби). INTEGER на записи идёт через `BigInteger.ToByteArray` (минимальная форма на выходе). BER на чтении принимает indefinite length, constructed строки/BIT STRING, время без секунд и со смещением `±hhmm`; дробь 1…7 цифр с хвостовыми нулями допускается и в DER.
+
+Ревью API Writer/Reader (кандидаты на смену до тестов, backlog оптимизаций) — [runtime-api.md](runtime-api.md).
 
 ## Вне профиля компилятора
 

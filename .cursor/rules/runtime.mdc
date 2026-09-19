@@ -12,7 +12,7 @@ alwaysApply: false
 
 - Тестируй **весь** публичный API `Asn1Reader` / `Asn1Writer` / примитивов.
 - Для каждого типа: BER и DER, definite length; на чтении BER — indefinite length и constructed `OCTET STRING`.
-- DER: отказ на indefinite length, неминимальный INTEGER, BOOLEAN не `0x00`/`0xFF`.
+- DER: отказ на indefinite length, BOOLEAN не `0x00`/`0xFF`.
 - Границы: пустой INTEGER, `0`, `-1`, длинный `BigInteger`, вложенные SEQUENCE/CHOICE, OPTIONAL отсутствует/присутствует, EOF, чужой тег, обрезанный TLV.
 - Round-trip: encode → decode → encode даёт те же DER-байты.
 

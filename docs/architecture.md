@@ -45,8 +45,9 @@ C# codegen пока не покрывает все kind IR; на неподде�
 ## Runtime
 
 `Asn1Writer` / `Asn1Reader` принимают `Asn1Encoding.Ber` или `Asn1Encoding.Der`.
+Ревью API и кандидаты на правки до тестов — [runtime-api.md](runtime-api.md).
 
-- DER: только definite length, минимальная кодировка INTEGER, BOOLEAN `0xFF` / `0x00`.
+- DER: только definite length, BOOLEAN `0xFF` / `0x00`; INTEGER на записи через `BigInteger.ToByteArray`.
 - BER: decode принимает definite и indefinite length; constructed `OCTET STRING` склеивается.
 
-Сгенерированные типы вызывают writer/reader и не дублируют кодек.
+Сгенерированные типы вызывают `Write*` / `Read*` напрямую и не дублируют кодек.
