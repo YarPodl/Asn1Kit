@@ -57,6 +57,22 @@ public sealed class CompilerTests
         Assert.IsType<IntegerType>(person.Components[0].Type);
         Assert.IsType<OctetStringType>(person.Components[1].Type);
     }
+
+    [Fact]
+    public void CSharpTypeName_OmittedWhenSameAsAsnName()
+    {
+        const string asn = @"
+HyphenModule DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+PlainName ::= INTEGER
+Some-Type ::= INTEGER
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
+        var types = document.Modules[0].Types.ToDictionary(t => t.Name);
+        Assert.Null(IrOptions.CSharpTypeName(types["PlainName"].Options));
+        Assert.Equal("SomeType", IrOptions.CSharpTypeName(types["Some-Type"].Options));
+    }
 }
 
 public sealed class RuntimeTests

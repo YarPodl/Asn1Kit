@@ -119,7 +119,12 @@ internal sealed class IrBuilder
                 Name = assignment.Name,
                 Type = ConvertType(assignment.Type, ir.TagDefault, assignedName: assignment.Name, ownerFields: null)
             };
-            def.Options = IrOptions.SetCSharp(def.Options, "typeName", SanitizeTypeName(assignment.Name));
+            var csharpTypeName = SanitizeTypeName(assignment.Name);
+            if (!string.Equals(csharpTypeName, assignment.Name, StringComparison.Ordinal))
+            {
+                def.Options = IrOptions.SetCSharp(def.Options, "typeName", csharpTypeName);
+            }
+
             ir.Types.Add(def);
         }
 

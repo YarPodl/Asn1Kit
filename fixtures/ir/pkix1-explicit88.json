@@ -34,11 +34,6 @@
               "number": 28,
               "mode": "implicit"
             }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "UniversalString"
-            }
           }
         },
         {
@@ -50,11 +45,6 @@
               "number": 30,
               "mode": "implicit"
             }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "BMPString"
-            }
           }
         },
         {
@@ -65,11 +55,6 @@
               "class": "universal",
               "number": 12,
               "mode": "implicit"
-            }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "UTF8String"
             }
           }
         },
@@ -99,33 +84,18 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "Attribute"
-            }
           }
         },
         {
           "name": "AttributeType",
           "type": {
             "kind": "oid"
-          },
-          "options": {
-            "csharp": {
-              "typeName": "AttributeType"
-            }
           }
         },
         {
           "name": "AttributeValue",
           "type": {
             "kind": "any"
-          },
-          "options": {
-            "csharp": {
-              "typeName": "AttributeValue"
-            }
           }
         },
         {
@@ -151,11 +121,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "AttributeTypeAndValue"
-            }
           }
         },
         {
@@ -235,11 +200,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "X520name"
-            }
           }
         },
         {
@@ -319,11 +279,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "X520CommonName"
-            }
           }
         },
         {
@@ -403,11 +358,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "X520LocalityName"
-            }
           }
         },
         {
@@ -487,11 +437,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "X520StateOrProvinceName"
-            }
           }
         },
         {
@@ -571,11 +516,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "X520OrganizationName"
-            }
           }
         },
         {
@@ -655,11 +595,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "X520OrganizationalUnitName"
-            }
           }
         },
         {
@@ -739,11 +674,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "X520Title"
-            }
           }
         },
         {
@@ -751,11 +681,6 @@
           "type": {
             "kind": "string",
             "stringType": "printable"
-          },
-          "options": {
-            "csharp": {
-              "typeName": "X520dnQualifier"
-            }
           }
         },
         {
@@ -769,11 +694,6 @@
                 "max": 2
               }
             }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "X520countryName"
-            }
           }
         },
         {
@@ -786,11 +706,6 @@
                 "min": 1,
                 "max": 64
               }
-            }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "X520SerialNumber"
             }
           }
         },
@@ -871,11 +786,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "X520Pseudonym"
-            }
           }
         },
         {
@@ -883,11 +793,6 @@
           "type": {
             "kind": "string",
             "stringType": "ia5"
-          },
-          "options": {
-            "csharp": {
-              "typeName": "DomainComponent"
-            }
           }
         },
         {
@@ -900,11 +805,6 @@
                 "min": 1,
                 "max": 255
               }
-            }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "EmailAddress"
             }
           }
         },
@@ -923,11 +823,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "Name"
-            }
           }
         },
         {
@@ -938,11 +833,6 @@
               "kind": "ref",
               "name": "RelativeDistinguishedName"
             }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "RDNSequence"
-            }
           }
         },
         {
@@ -950,11 +840,6 @@
           "type": {
             "kind": "ref",
             "name": "RDNSequence"
-          },
-          "options": {
-            "csharp": {
-              "typeName": "DistinguishedName"
-            }
           }
         },
         {
@@ -969,11 +854,6 @@
               "size": {
                 "min": 1
               }
-            }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "RelativeDistinguishedName"
             }
           }
         },
@@ -1049,11 +929,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "DirectoryString"
-            }
           }
         },
         {
@@ -1086,11 +961,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "Certificate"
-            }
           }
         },
         {
@@ -1204,11 +1074,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "TBSCertificate"
-            }
           }
         },
         {
@@ -1229,22 +1094,12 @@
                 "value": 2
               }
             ]
-          },
-          "options": {
-            "csharp": {
-              "typeName": "Version"
-            }
           }
         },
         {
           "name": "CertificateSerialNumber",
           "type": {
             "kind": "integer"
-          },
-          "options": {
-            "csharp": {
-              "typeName": "CertificateSerialNumber"
-            }
           }
         },
         {
@@ -1270,11 +1125,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "Validity"
-            }
           }
         },
         {
@@ -1300,22 +1150,12 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "Time"
-            }
           }
         },
         {
           "name": "UniqueIdentifier",
           "type": {
             "kind": "bitString"
-          },
-          "options": {
-            "csharp": {
-              "typeName": "UniqueIdentifier"
-            }
           }
         },
         {
@@ -1340,11 +1180,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "SubjectPublicKeyInfo"
-            }
           }
         },
         {
@@ -1359,11 +1194,6 @@
               "size": {
                 "min": 1
               }
-            }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "Extensions"
             }
           }
         },
@@ -1399,11 +1229,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "Extension"
-            }
           }
         },
         {
@@ -1436,11 +1261,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "CertificateList"
-            }
           }
         },
         {
@@ -1540,11 +1360,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "TBSCertList"
-            }
           }
         },
         {
@@ -1569,11 +1384,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "AlgorithmIdentifier"
-            }
           }
         },
         {
@@ -1607,11 +1417,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "ORAddress"
-            }
           }
         },
         {
@@ -1728,11 +1533,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "BuiltInStandardAttributes"
-            }
           }
         },
         {
@@ -1774,11 +1574,6 @@
               "class": "application",
               "number": 1,
               "mode": "explicit"
-            }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "CountryName"
             }
           }
         },
@@ -1822,11 +1617,6 @@
               "number": 2,
               "mode": "explicit"
             }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "AdministrationDomainName"
-            }
           }
         },
         {
@@ -1834,11 +1624,6 @@
           "type": {
             "kind": "ref",
             "name": "X121Address"
-          },
-          "options": {
-            "csharp": {
-              "typeName": "NetworkAddress"
-            }
           }
         },
         {
@@ -1852,11 +1637,6 @@
                 "max": 16
               }
             }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "X121Address"
-            }
           }
         },
         {
@@ -1869,11 +1649,6 @@
                 "min": 1,
                 "max": 24
               }
-            }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "TerminalIdentifier"
             }
           }
         },
@@ -1912,11 +1687,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "PrivateDomainName"
-            }
           }
         },
         {
@@ -1930,11 +1700,6 @@
                 "max": 64
               }
             }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "OrganizationName"
-            }
           }
         },
         {
@@ -1947,11 +1712,6 @@
                 "min": 1,
                 "max": 32
               }
-            }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "NumericUserIdentifier"
             }
           }
         },
@@ -2038,11 +1798,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "PersonalName"
-            }
           }
         },
         {
@@ -2059,11 +1814,6 @@
                 "max": 4
               }
             }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "OrganizationalUnitNames"
-            }
           }
         },
         {
@@ -2076,11 +1826,6 @@
                 "min": 1,
                 "max": 32
               }
-            }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "OrganizationalUnitName"
             }
           }
         },
@@ -2097,11 +1842,6 @@
                 "min": 1,
                 "max": 4
               }
-            }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "BuiltInDomainDefinedAttributes"
             }
           }
         },
@@ -2140,11 +1880,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "BuiltInDomainDefinedAttribute"
-            }
           }
         },
         {
@@ -2160,11 +1895,6 @@
                 "min": 1,
                 "max": 256
               }
-            }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "ExtensionAttributes"
             }
           }
         },
@@ -2206,11 +1936,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "ExtensionAttribute"
-            }
           }
         },
         {
@@ -2223,11 +1948,6 @@
                 "min": 1,
                 "max": 64
               }
-            }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "CommonName"
             }
           }
         },
@@ -2242,11 +1962,6 @@
                 "max": 64
               }
             }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "TeletexCommonName"
-            }
           }
         },
         {
@@ -2259,11 +1974,6 @@
                 "min": 1,
                 "max": 64
               }
-            }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "TeletexOrganizationName"
             }
           }
         },
@@ -2350,11 +2060,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "TeletexPersonalName"
-            }
           }
         },
         {
@@ -2371,11 +2076,6 @@
                 "max": 4
               }
             }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "TeletexOrganizationalUnitNames"
-            }
           }
         },
         {
@@ -2389,11 +2089,6 @@
                 "max": 32
               }
             }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "TeletexOrganizationalUnitName"
-            }
           }
         },
         {
@@ -2406,11 +2101,6 @@
                 "min": 1,
                 "max": 16
               }
-            }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "PDSName"
             }
           }
         },
@@ -2449,11 +2139,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "PhysicalDeliveryCountryName"
-            }
           }
         },
         {
@@ -2491,11 +2176,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "PostalCode"
-            }
           }
         },
         {
@@ -2503,11 +2183,6 @@
           "type": {
             "kind": "ref",
             "name": "PDSParameter"
-          },
-          "options": {
-            "csharp": {
-              "typeName": "PhysicalDeliveryOfficeName"
-            }
           }
         },
         {
@@ -2515,11 +2190,6 @@
           "type": {
             "kind": "ref",
             "name": "PDSParameter"
-          },
-          "options": {
-            "csharp": {
-              "typeName": "PhysicalDeliveryOfficeNumber"
-            }
           }
         },
         {
@@ -2527,11 +2197,6 @@
           "type": {
             "kind": "ref",
             "name": "PDSParameter"
-          },
-          "options": {
-            "csharp": {
-              "typeName": "ExtensionORAddressComponents"
-            }
           }
         },
         {
@@ -2539,11 +2204,6 @@
           "type": {
             "kind": "ref",
             "name": "PDSParameter"
-          },
-          "options": {
-            "csharp": {
-              "typeName": "PhysicalDeliveryPersonalName"
-            }
           }
         },
         {
@@ -2551,11 +2211,6 @@
           "type": {
             "kind": "ref",
             "name": "PDSParameter"
-          },
-          "options": {
-            "csharp": {
-              "typeName": "PhysicalDeliveryOrganizationName"
-            }
           }
         },
         {
@@ -2563,11 +2218,6 @@
           "type": {
             "kind": "ref",
             "name": "PDSParameter"
-          },
-          "options": {
-            "csharp": {
-              "typeName": "ExtensionPhysicalDeliveryAddressComponents"
-            }
           }
         },
         {
@@ -2614,11 +2264,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "UnformattedPostalAddress"
-            }
           }
         },
         {
@@ -2626,11 +2271,6 @@
           "type": {
             "kind": "ref",
             "name": "PDSParameter"
-          },
-          "options": {
-            "csharp": {
-              "typeName": "StreetAddress"
-            }
           }
         },
         {
@@ -2638,11 +2278,6 @@
           "type": {
             "kind": "ref",
             "name": "PDSParameter"
-          },
-          "options": {
-            "csharp": {
-              "typeName": "PostOfficeBoxAddress"
-            }
           }
         },
         {
@@ -2650,11 +2285,6 @@
           "type": {
             "kind": "ref",
             "name": "PDSParameter"
-          },
-          "options": {
-            "csharp": {
-              "typeName": "PosteRestanteAddress"
-            }
           }
         },
         {
@@ -2662,11 +2292,6 @@
           "type": {
             "kind": "ref",
             "name": "PDSParameter"
-          },
-          "options": {
-            "csharp": {
-              "typeName": "UniquePostalName"
-            }
           }
         },
         {
@@ -2674,11 +2299,6 @@
           "type": {
             "kind": "ref",
             "name": "PDSParameter"
-          },
-          "options": {
-            "csharp": {
-              "typeName": "LocalPostalAttributes"
-            }
           }
         },
         {
@@ -2716,11 +2336,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "PDSParameter"
-            }
           }
         },
         {
@@ -2791,11 +2406,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "ExtendedNetworkAddress"
-            }
           }
         },
         {
@@ -2861,11 +2471,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "PresentationAddress"
-            }
           }
         },
         {
@@ -2904,11 +2509,6 @@
                 "max": 256
               }
             }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "TerminalType"
-            }
           }
         },
         {
@@ -2924,11 +2524,6 @@
                 "min": 1,
                 "max": 4
               }
-            }
-          },
-          "options": {
-            "csharp": {
-              "typeName": "TeletexDomainDefinedAttributes"
             }
           }
         },
@@ -2967,11 +2562,6 @@
               }
             ],
             "extensible": false
-          },
-          "options": {
-            "csharp": {
-              "typeName": "TeletexDomainDefinedAttribute"
-            }
           }
         }
       ],

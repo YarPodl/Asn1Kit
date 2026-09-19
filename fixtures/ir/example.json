@@ -14,11 +14,6 @@
       "types": [
         {
           "name": "Person",
-          "options": {
-            "csharp": {
-              "typeName": "Person"
-            }
-          },
           "type": {
             "kind": "sequence",
             "components": [
