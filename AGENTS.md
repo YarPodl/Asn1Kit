@@ -23,6 +23,7 @@ ASN.1 → JSON IR → генератор кода → runtime BER/DER. Слои 
 - Только .NET 6 SDK (локально 6.0.402), `net6.0`, `LangVersion 10`, `Nullable enable`.
 - Оболочка — PowerShell на Windows; пути в командах пиши через `/`, они работают.
 - Репозиторий локальный: remote и CI нет, проверка только локальными `dotnet build` / `dotnet test`.
+- Git commit: правило [`.cursor/rules/git-commit.mdc`](.cursor/rules/git-commit.mdc) — PowerShell-синтаксис, один проход, approval для `main` с первой попытки.
 
 ## Команды
 

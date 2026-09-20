@@ -1,0 +1,34 @@
+---
+description: Оптимальный git commit на Windows PowerShell
+alwaysApply: true
+---
+
+# Git commit в этом репозитории
+
+Оболочка — **PowerShell**. Ветка по умолчанию часто `main`. Коммит только по явной просьбе пользователя.
+
+1. Сначала параллельно: `git status --short`, `git diff` / `git diff --cached`, `git log -8 --oneline`, `git branch --show-current`. На этой машине для git сразу проси `required_permissions: ["all"]` (sandbox `workspace_readwrite` здесь не работает).
+2. Отбери только файлы своей задачи; чужое не стейджи.
+
+## PowerShell: синтаксис
+
+Не используй bash: ни `&&`, ни `cat <<'EOF'`. Разделяй команды `;`, проверяй `$LASTEXITCODE`.
+
+```powershell
+git add path/a path/b
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+git commit -m @"
+Short why-focused summary.
+
+Optional second sentence.
+"@
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+git status --short
+git log -1 --oneline
+```
+
+## Коммит в `main` / `master`
+
+Если текущая ветка `main` или `master` и пользователь просит commit: в **первом** вызове Shell с commit сразу ставь `request_smart_mode_approval: true` и `smart_mode_block_reason` с текстом про commit в main (иначе Auto-review отклонит, и получится лишняя попытка).
+
+Не пушь, если не просили. Не `--amend`, если не выполнены правила amend из user rules.
