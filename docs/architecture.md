@@ -15,18 +15,30 @@ ASN.1 module  -->  Compiler (C#)  -->  IR JSON (schema v1)
                                    Asn1Kit.Runtime (BER/DER)
 ```
 
+## Каталоги репозитория
+
+| Каталог | Роль |
+| --- | --- |
+| [compiler/](../compiler/) | IR, компилятор, codegen, CLI, ASN.1/IR-фикстуры и тесты инструментов |
+| [runtime-csharp/](../runtime-csharp/) | C# BER/DER runtime, hex-фикстуры и тесты кодека |
+| [runtime-cpp/](../runtime-cpp/) | Заглушка под будущий C++ runtime |
+| [schemas/](../schemas/) | Общий контракт IR (JSON Schema) |
+| [docs/](.) | Сквозная документация (этот файл, status, decisions, ir-schema) |
+
+Один корневой `Asn1Kit.sln` собирает оба рабочих каталога.
+
 ## Проекты
 
-| Проект | Роль |
-| --- | --- |
-| `Asn1Kit.Ir` | Модель IR, JSON, валидация по JSON Schema |
-| `Asn1Kit.Compiler` | Лексер, парсер, резолв имён, эмит IR |
-| `Asn1Kit.Codegen` | `ILanguageBackend` |
-| `Asn1Kit.Codegen.CSharp` | Генерация `.cs` |
-| `Asn1Kit.Runtime` | TLV, примитивы BER/DER |
-| `Asn1Kit.Cli` | Команды `compile` и `generate` |
+| Проект | Каталог | Роль |
+| --- | --- | --- |
+| `Asn1Kit.Ir` | compiler | Модель IR, JSON, валидация по JSON Schema |
+| `Asn1Kit.Compiler` | compiler | Лексер, парсер, резолв имён, эмит IR |
+| `Asn1Kit.Codegen` | compiler | `ILanguageBackend` |
+| `Asn1Kit.Codegen.CSharp` | compiler | Генерация `.cs` |
+| `Asn1Kit.Cli` | compiler | Команды `compile` и `generate` |
+| `Asn1Kit.Runtime` | runtime-csharp | TLV, примитивы BER/DER |
 
-C++ планируется как ещё один backend и отдельный runtime, без изменений фронтенда.
+C++ планируется как backend в `compiler/` и runtime в `runtime-cpp/`, без изменений фронтенда.
 
 ## IR
 
@@ -45,7 +57,7 @@ C# codegen пока не покрывает все kind IR; на неподде�
 ## Runtime
 
 `Asn1Writer` / `Asn1Reader` принимают `Asn1Encoding.Ber` или `Asn1Encoding.Der`.
-Ревью API и кандидаты на правки до тестов — [runtime-api.md](runtime-api.md).
+Ревью API и кандидаты на правки — [runtime-csharp/docs/runtime-api.md](../runtime-csharp/docs/runtime-api.md).
 
 - DER: только definite length, BOOLEAN `0xFF` / `0x00`; INTEGER на записи через `BigInteger.ToByteArray`.
 - BER: decode принимает definite и indefinite length; constructed `OCTET STRING` склеивается.

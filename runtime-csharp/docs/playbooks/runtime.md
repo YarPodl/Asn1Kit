@@ -1,6 +1,6 @@
 # Плейбук: правки runtime BER/DER
 
-[src/Asn1Kit.Runtime](../../src/Asn1Kit.Runtime) — горячий путь каждого encode/decode и единственное место, где живут правила кодирования. Требования жёстче, чем к остальному проекту, см. правило `runtime.mdc`.
+[Asn1Kit.Runtime](../../src/Asn1Kit.Runtime) — горячий путь каждого encode/decode и единственное место, где живут правила кодирования. Требования жёстче, чем к остальному проекту, см. правило `runtime.mdc`.
 
 ## Устройство
 
@@ -23,7 +23,7 @@
 1. `Write*` в `Asn1Writer` и `Read*` в `Asn1Reader` — строго парой (это то, что эмитит C# backend).
 2. Universal-тег в `Asn1Tag`, если его ещё нет (например `Set` = 17).
 3. Обёртка `Asn1Xxx.Encode` / `Decode` в `Asn1Primitives` с параметром `Asn1Tag? tag = null` — для симметрии тестов и ручного использования; codegen её не вызывает.
-4. Только после этого — ветка в C# backend, см. [csharp-backend.md](csharp-backend.md).
+4. Только после этого — ветка в C# backend, см. [csharp-backend.md](../../../compiler/docs/playbooks/csharp-backend.md).
 5. Обновить инвентарь в [runtime-api.md](../runtime-api.md).
 
 ## Правила, которые нельзя нарушать
@@ -52,9 +52,9 @@ ReadOnlySpan<byte> contents = _data.AsSpan(_offset, length);
 
 Три слоя (см. [fixtures/ber-der/README.md](../../fixtures/ber-der/README.md)):
 
-1. **Своя матрица** — hex JSON в `fixtures/ber-der/`, прогон в `PrimitiveCodecTests` (и точечные кейсы в `RuntimeTests`).
+1. **Своя матрица** — hex JSON в `runtime-csharp/fixtures/ber-der/`, прогон в `PrimitiveCodecTests` (и точечные кейсы в `RuntimeTests`).
 2. **Oracle** — `PrimitiveOracleTests` + `DotnetAsnOracle` против `System.Formats.Asn1` (DER байт-в-байт; BER — по значению).
-3. **Внешние векторы** — `fixtures/ber-der/external/` + `ExternalVectorTests` (поле `source` обязательно).
+3. **Внешние векторы** — `runtime-csharp/fixtures/ber-der/external/` + `ExternalVectorTests` (поле `source` обязательно).
 
 Обязательный набор на каждый тип:
 

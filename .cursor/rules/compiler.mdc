@@ -1,6 +1,6 @@
 ---
 description: Требования к лексеру, парсеру и IrBuilder — границы профиля, резолв значений, отказы с позицией
-globs: src/Asn1Kit.Compiler/**/*.cs
+globs: compiler/src/Asn1Kit.Compiler/**/*.cs
 alwaysApply: false
 ---
 
@@ -37,5 +37,5 @@ throw Error($"'{Peek().Text}' is outside the Asn1Kit compiler profile.");
 - После любых правок `IrBuilder` пересобери golden-фикстуру и прогони `dotnet test Asn1Kit.sln`:
 
 ```powershell
-dotnet run --project src/Asn1Kit.Cli -- compile -i fixtures/asn1/pkix1-explicit88.asn -o fixtures/ir/pkix1-explicit88.json
+dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/pkix1-explicit88.asn -o compiler/fixtures/ir/pkix1-explicit88.json
 ```

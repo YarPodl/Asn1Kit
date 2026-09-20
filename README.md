@@ -2,6 +2,14 @@
 
 Набор инструментов для работы с ASN.1: компилятор модуля во внутреннее JSON-представление, генератор кода и runtime BER/DER.
 
+Репозиторий разбит на каталоги:
+
+| Каталог | Содержание |
+| --- | --- |
+| [compiler/](compiler/) | IR, компилятор, codegen (C#), CLI и их тесты |
+| [runtime-csharp/](runtime-csharp/) | C# runtime BER/DER и его тесты |
+| [runtime-cpp/](runtime-cpp/) | Заглушка под будущий C++ runtime |
+
 ## Компоненты
 
 1. **Компилятор** — текст ASN.1 → JSON IR (`irVersion` + схема [schemas/asn1kit-ir-v1.json](schemas/asn1kit-ir-v1.json)). Файл можно править: `options.csharp.namespace`, имена типов, `generate: false`.
@@ -20,8 +28,8 @@ dotnet test Asn1Kit.sln
 ## CLI
 
 ```text
-dotnet run --project src/Asn1Kit.Cli -- compile -i fixtures/asn1/example.asn -o fixtures/ir/example.json
-dotnet run --project src/Asn1Kit.Cli -- generate -i fixtures/ir/example.json --lang csharp -o ./generated
+dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/example.asn -o out.json
+dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/ir/example.json --lang csharp -o ./generated
 ```
 
 `generate` также принимает `.asn` напрямую: компиляция выполняется в памяти.
@@ -34,7 +42,7 @@ dotnet run --project src/Asn1Kit.Cli -- generate -i fixtures/ir/example.json --l
 
 Value assignments (`id-pkix OBJECT IDENTIFIER ::= { … }`, `ub-name INTEGER ::= 32768`) попадают в `module.values`.
 
-Опорная фикстура: [fixtures/asn1/pkix1-explicit88.asn](fixtures/asn1/pkix1-explicit88.asn) (RFC 5280 Appendix A.1).
+Опорная фикстура: [compiler/fixtures/asn1/pkix1-explicit88.asn](compiler/fixtures/asn1/pkix1-explicit88.asn) (RFC 5280 Appendix A.1).
 
 Вне профиля (явная ошибка): information object classes (`CLASS`), `COMPONENTS OF`, параметризованные типы, `REAL`, `EXTERNAL`.
 

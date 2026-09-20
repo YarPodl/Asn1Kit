@@ -57,9 +57,9 @@
 
 DER: только definite length, BOOLEAN `0x00` / `0xFF`, BIT STRING с нулевыми хвостовыми битами, время только с секундами и суффиксом `Z` (GeneralizedTime: `fractionDigits` 0…7, default 3; на записи без хвостовых нулей дроби). INTEGER на записи идёт через `BigInteger.ToByteArray` (минимальная форма на выходе). BER на чтении принимает indefinite length, constructed строки/BIT STRING, время без секунд и со смещением `±hhmm`; дробь 1…7 цифр с хвостовыми нулями допускается и в DER.
 
-Примитивы runtime: матрица hex в [fixtures/ber-der/](../fixtures/ber-der/) (`PrimitiveCodecTests`), перекрёстный oracle с `System.Formats.Asn1` (`PrimitiveOracleTests`; Teletex/T61/Videotex/Graphic/General — только свои векторы, Latin-1), внешние фрагменты RFC/X.690 — `ExternalVectorTests`.
+Примитивы runtime: матрица hex в [runtime-csharp/fixtures/ber-der/](../runtime-csharp/fixtures/ber-der/) (`PrimitiveCodecTests`), перекрёстный oracle с `System.Formats.Asn1` (`PrimitiveOracleTests`; Teletex/T61/Videotex/Graphic/General — только свои векторы, Latin-1), внешние фрагменты RFC/X.690 — `ExternalVectorTests`.
 
-Ревью API Writer/Reader (кандидаты на смену до тестов, backlog оптимизаций) — [runtime-api.md](runtime-api.md).
+Ревью API Writer/Reader (кандидаты на смену до тестов, backlog оптимизаций) — [runtime-csharp/docs/runtime-api.md](../runtime-csharp/docs/runtime-api.md).
 
 ## Вне профиля компилятора
 
@@ -67,19 +67,20 @@ DER: только definite length, BOOLEAN `0x00` / `0xFF`, BIT STRING с нул
 
 ## Ближайшие пробелы
 
-1. C++ backend и C++ runtime — см. [playbooks/new-backend.md](playbooks/new-backend.md).
+1. C++ backend (`compiler/src/Asn1Kit.Codegen.Cpp`) и C++ runtime (`runtime-cpp/`) — см. [compiler/docs/playbooks/new-backend.md](../compiler/docs/playbooks/new-backend.md).
 2. Резолв `ANY DEFINED BY` в конкретный тип по значению sibling-компонента (сейчас `Asn1Any` остаётся сырым TLV).
+3. Эталонный сгенерированный C#-код и его тесты в `runtime-csharp/` (сейчас round-trip через Roslyn в `compiler/tests`).
 
 ## Backlog: тесты примитивов
 
-Стратегия (матрица + oracle `System.Formats.Asn1` + external) уже внедрена; ниже — добивка полноты, не смена подхода. Чеклист API — [runtime-api.md](runtime-api.md) § «Чеклист RuntimeTests».
+Стратегия (матрица + oracle `System.Formats.Asn1` + external) уже внедрена; ниже — добивка полноты, не смена подхода. Чеклист API — [runtime-csharp/docs/runtime-api.md](../runtime-csharp/docs/runtime-api.md) § «Чеклист RuntimeTests».
 
 | Приоритет | Задача | Заметки |
 | --- | --- | --- |
 | высокий | Oracle: `UniversalString` в `PrimitiveOracleTests` / `DotnetAsnOracle.TryMapStringForm` | В плане BCL-совместимых; сейчас только слой 1 |
 | высокий | Oracle: пивот UTCTime `00–49` → 20xx / `50–99` → 19xx | Сейчас только `RuntimeTests.Time_YearPivotAndBerOffset` |
 | средний | Oracle: GeneralizedTime с дробью при одинаковой точности с BCL | Сейчас cross-check только `fractionDigits: 0` |
-| средний | Перенести оставшиеся строки чеклиста в `fixtures/ber-der/` | `TryEncode` / `TryRead*` / `WriteAny` / `ReadTlv` reject wrong-tag и т.п. сейчас в основном в `RuntimeTests` |
+| средний | Перенести оставшиеся строки чеклиста в `runtime-csharp/fixtures/ber-der/` | `TryEncode` / `TryRead*` / `WriteAny` / `ReadTlv` reject wrong-tag и т.п. сейчас в основном в `RuntimeTests` |
 | средний | 5–10 внешних INTEGER/OID из RFC 8017 (и/или регенерация через `AsnWriter`) | В `external/` есть OID/AlgorithmIdentifier, мало классических INTEGER |
 | низкий | Второй oracle — BouncyCastle | Только если появятся расхождения с BCL; не единственный эталон |
 

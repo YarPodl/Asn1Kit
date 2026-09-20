@@ -1,32 +1,36 @@
 ---
-description: Правила работы с фикстурами ASN.1 и IR — golden-артефакты, ручные фикстуры, регрессии
-globs: fixtures/**
+description: Правила работы с фикстурами ASN.1, IR и BER/DER — golden-артефакты, ручные фикстуры, регрессии
+globs: compiler/fixtures/**,runtime-csharp/fixtures/**
 alwaysApply: false
 ---
 
 # Фикстуры
 
-В `fixtures/` лежат файлы двух разных сортов. Путать их нельзя.
+Фикстуры лежат в каталогах продуктов. Путать сорта нельзя.
 
-## Golden-артефакт: `fixtures/ir/pkix1-explicit88.json`
+## Golden-артефакт: `compiler/fixtures/ir/pkix1-explicit88.json`
 
-- Генерируется компилятором из [fixtures/asn1/pkix1-explicit88.asn](../../fixtures/asn1/pkix1-explicit88.asn) (RFC 5280 Appendix A.1). Руками не правится никогда.
+- Генерируется компилятором из [compiler/fixtures/asn1/pkix1-explicit88.asn](../../compiler/fixtures/asn1/pkix1-explicit88.asn) (RFC 5280 Appendix A.1). Руками не правится никогда.
 - Сверяется в `PkixExplicit88Tests.CompilesAndMatchesGoldenIr`: JSON компилятора сравнивается с нормализованным golden побайтово как строка. Любая правка `IrBuilder`, схемы или сериализации роняет этот тест.
 - Если тест упал — сначала убедись, что новый вывод правильный, затем пересобери фикстуру и посмотри diff глазами:
 
 ```powershell
-dotnet run --project src/Asn1Kit.Cli -- compile -i fixtures/asn1/pkix1-explicit88.asn -o fixtures/ir/pkix1-explicit88.json
+dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/pkix1-explicit88.asn -o compiler/fixtures/ir/pkix1-explicit88.json
 ```
 
 Diff фикстуры — часть ревью изменения. Неожиданные строки в нём означают регрессию, а не «фикстура протухла».
 
-## Ручная фикстура: `fixtures/ir/example.json`
+## Ручная фикстура: `compiler/fixtures/ir/example.json`
 
 - Демонстрирует ручные правки `options`: namespace `Example.Asn1` и `propertyName: Nickname`, которых компилятор не выдаёт.
-- Компилятором **не** перегенерируется. Если она разошлась с [fixtures/asn1/example.asn](../../fixtures/asn1/example.asn) по форме типов — правь точечно, сохраняя `options`.
+- Компилятором **не** перегенерируется. Если она разошлась с [compiler/fixtures/asn1/example.asn](../../compiler/fixtures/asn1/example.asn) по форме типов — правь точечно, сохраняя `options`.
+
+## BER/DER: `runtime-csharp/fixtures/ber-der/`
+
+- Hex-матрица и `external/` для runtime-тестов. Формат — [runtime-csharp/fixtures/ber-der/README.md](../../runtime-csharp/fixtures/ber-der/README.md).
 
 ## Регрессии
 
-- Каждый воспроизводимый баг закрывается фикстурой (`.asn` или `.json`) либо явным байтовым вектором в тесте, а не комментарием.
-- Новый `.asn` в `fixtures/asn1/` заводится вместе с тестом, который его компилирует и валидирует по схеме.
+- Каждый воспроизводимый баг закрывается фикстурой (`.asn`, `.json` или hex-вектор) либо явным байтовым вектором в тесте, а не комментарием.
+- Новый `.asn` в `compiler/fixtures/asn1/` заводится вместе с тестом, который его компилирует и валидирует по схеме.
 - Фикстура без теста, который её читает, — мёртвый файл; не оставляй такие.

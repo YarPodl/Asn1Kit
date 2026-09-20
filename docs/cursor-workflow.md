@@ -15,12 +15,12 @@
 | Задача | Контекст |
 | --- | --- |
 | «Что уже сделано / что осталось» | [docs/status.md](status.md) |
-| Расширение компилятора | [playbooks/compiler-construct.md](playbooks/compiler-construct.md) |
-| Новое поле или `kind` в IR | [playbooks/new-ir-kind.md](playbooks/new-ir-kind.md) |
-| Генерация C# | [playbooks/csharp-backend.md](playbooks/csharp-backend.md) |
-| BER/DER | [playbooks/runtime.md](playbooks/runtime.md) |
-| Ревью API runtime (до тестов) | [runtime-api.md](runtime-api.md) |
-| C++ | [playbooks/new-backend.md](playbooks/new-backend.md) |
+| Расширение компилятора | [compiler/docs/playbooks/compiler-construct.md](../compiler/docs/playbooks/compiler-construct.md) |
+| Новое поле или `kind` в IR | [compiler/docs/playbooks/new-ir-kind.md](../compiler/docs/playbooks/new-ir-kind.md) |
+| Генерация C# | [compiler/docs/playbooks/csharp-backend.md](../compiler/docs/playbooks/csharp-backend.md) |
+| BER/DER | [runtime-csharp/docs/playbooks/runtime.md](../runtime-csharp/docs/playbooks/runtime.md) |
+| Ревью API runtime | [runtime-csharp/docs/runtime-api.md](../runtime-csharp/docs/runtime-api.md) |
+| C++ | [compiler/docs/playbooks/new-backend.md](../compiler/docs/playbooks/new-backend.md) |
 | «Почему так сделано» | [docs/decisions.md](decisions.md) |
 
 Конкретный `.asn`-фрагмент, на котором воспроизводится проблема, стоит больше любого описания словами.
@@ -43,4 +43,4 @@
 dotnet test Asn1Kit.sln
 ```
 
-Прогон занимает секунды, так что «проверю потом» не окупается. Отдельно стоит посмотреть `git diff` по [fixtures/ir/pkix1-explicit88.json](../fixtures/ir/pkix1-explicit88.json): неожиданные строки в нём означают регрессию компилятора, даже если тесты зелёные после пересборки фикстуры.
+Прогон занимает секунды, так что «проверю потом» не окупается. Отдельно стоит посмотреть `git diff` по [compiler/fixtures/ir/pkix1-explicit88.json](../compiler/fixtures/ir/pkix1-explicit88.json): неожиданные строки в нём означают регрессию компилятора, даже если тесты зелёные после пересборки фикстуры.

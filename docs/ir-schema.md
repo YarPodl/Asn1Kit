@@ -106,5 +106,5 @@
 
 ## Примеры
 
-- [fixtures/ir/example.json](../fixtures/ir/example.json) — минимальный SEQUENCE
-- [fixtures/ir/pkix1-explicit88.json](../fixtures/ir/pkix1-explicit88.json) — RFC 5280 Appendix A.1
+- [compiler/fixtures/ir/example.json](../compiler/fixtures/ir/example.json) — минимальный SEQUENCE
+- [compiler/fixtures/ir/pkix1-explicit88.json](../compiler/fixtures/ir/pkix1-explicit88.json) — RFC 5280 Appendix A.1

@@ -3,7 +3,7 @@
 Цель документа: понять, **что в API стоит поменять до начала полной матрицы тестов**, чтобы потом дешевле оптимизировать реализацию. Смена API позже не запрещена — только дороже (переписывание тестов и codegen).
 
 Реализация — [`src/Asn1Kit.Runtime`](../src/Asn1Kit.Runtime). Как править кодек — [playbooks/runtime.md](playbooks/runtime.md).
-Что уже поддержано по типам — [status.md](status.md) § Runtime BER/DER.
+Что уже поддержано по типам — [status.md](../../docs/status.md) § Runtime BER/DER.
 
 ## Порядок работ
 

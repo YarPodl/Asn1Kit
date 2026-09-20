@@ -7,14 +7,14 @@ namespace Asn1Kit.Tests;
 /// </summary>
 public sealed class PrimitiveCodecTests
 {
-    public static IEnumerable<object[]> BooleanCases() => BerDerFixtures.AsTheoryData("fixtures/ber-der/boolean.json");
-    public static IEnumerable<object[]> NullCases() => BerDerFixtures.AsTheoryData("fixtures/ber-der/null.json");
-    public static IEnumerable<object[]> IntegerCases() => BerDerFixtures.AsTheoryData("fixtures/ber-der/integer.json");
-    public static IEnumerable<object[]> OctetCases() => BerDerFixtures.AsTheoryData("fixtures/ber-der/octet-string.json");
-    public static IEnumerable<object[]> OidCases() => BerDerFixtures.AsTheoryData("fixtures/ber-der/oid.json");
-    public static IEnumerable<object[]> BitStringCases() => BerDerFixtures.AsTheoryData("fixtures/ber-der/bit-string.json");
-    public static IEnumerable<object[]> StringCases() => BerDerFixtures.AsTheoryData("fixtures/ber-der/string.json");
-    public static IEnumerable<object[]> TimeCases() => BerDerFixtures.AsTheoryData("fixtures/ber-der/time.json");
+    public static IEnumerable<object[]> BooleanCases() => BerDerFixtures.AsTheoryData("runtime-csharp/fixtures/ber-der/boolean.json");
+    public static IEnumerable<object[]> NullCases() => BerDerFixtures.AsTheoryData("runtime-csharp/fixtures/ber-der/null.json");
+    public static IEnumerable<object[]> IntegerCases() => BerDerFixtures.AsTheoryData("runtime-csharp/fixtures/ber-der/integer.json");
+    public static IEnumerable<object[]> OctetCases() => BerDerFixtures.AsTheoryData("runtime-csharp/fixtures/ber-der/octet-string.json");
+    public static IEnumerable<object[]> OidCases() => BerDerFixtures.AsTheoryData("runtime-csharp/fixtures/ber-der/oid.json");
+    public static IEnumerable<object[]> BitStringCases() => BerDerFixtures.AsTheoryData("runtime-csharp/fixtures/ber-der/bit-string.json");
+    public static IEnumerable<object[]> StringCases() => BerDerFixtures.AsTheoryData("runtime-csharp/fixtures/ber-der/string.json");
+    public static IEnumerable<object[]> TimeCases() => BerDerFixtures.AsTheoryData("runtime-csharp/fixtures/ber-der/time.json");
 
     [Theory]
     [MemberData(nameof(BooleanCases))]

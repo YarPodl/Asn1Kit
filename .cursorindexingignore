@@ -1,7 +1,7 @@
 # Файлы остаются читаемыми для агента, но не попадают в семантический индекс.
 
 # Golden-артефакт компилятора: машинный JSON на тысячи строк, шум в поиске.
-fixtures/ir/pkix1-explicit88.json
+compiler/fixtures/ir/pkix1-explicit88.json
 
 # Выходные каталоги.
 generated/

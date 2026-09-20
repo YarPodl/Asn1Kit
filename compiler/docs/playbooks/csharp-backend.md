@@ -1,10 +1,10 @@
 # Плейбук: поддержка `kind` в C# backend
 
-Всё происходит в [src/Asn1Kit.Codegen.CSharp/CSharpBackend.cs](../../src/Asn1Kit.Codegen.CSharp/CSharpBackend.cs). Текущее состояние — в [docs/status.md](../status.md).
+Всё происходит в [CSharpBackend.cs](../../src/Asn1Kit.Codegen.CSharp/CSharpBackend.cs). Текущее состояние — в [docs/status.md](../../../docs/status.md).
 
 ## Предусловие
 
-Нужный примитив обязан существовать в runtime. Если для kind нет пары `Write*` / `Read*` в [src/Asn1Kit.Runtime](../../src/Asn1Kit.Runtime), сначала [runtime.md](runtime.md): кодек пишется там, а не в шаблоне генератора.
+Нужный примитив обязан существовать в runtime. Если для kind нет пары `Write*` / `Read*` в [Asn1Kit.Runtime](../../../runtime-csharp/src/Asn1Kit.Runtime), сначала [runtime.md](../../../runtime-csharp/docs/playbooks/runtime.md): кодек пишется там, а не в шаблоне генератора.
 
 ## Порядок
 
@@ -25,7 +25,7 @@
 
 ## Тесты
 
-Образец — `RoundTripTests.GeneratedCSharp_CompilesAndRoundTripsPerson` в [tests/Asn1Kit.Tests/Asn1KitTests.cs](../../tests/Asn1Kit.Tests/Asn1KitTests.cs): IR → генерация → компиляция Roslyn → encode/decode через рефлексию.
+Образец — `RoundTripTests.GeneratedCSharp_CompilesAndRoundTripsPerson` в [Asn1KitTests.cs](../../tests/Asn1Kit.Compiler.Tests/Asn1KitTests.cs): IR → генерация → компиляция Roslyn → encode/decode через рефлексию.
 
 Минимум на новый kind:
 
@@ -35,7 +35,7 @@
 4. `OPTIONAL` присутствует и отсутствует — оба случая.
 5. Порченый вход даёт `Asn1Exception`.
 
-Не забудь строку в матрице [docs/status.md](../status.md).
+Не забудь строку в матрице [docs/status.md](../../../docs/status.md).
 
 ```powershell
 dotnet test Asn1Kit.sln

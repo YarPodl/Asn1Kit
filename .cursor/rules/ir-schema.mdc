@@ -1,6 +1,6 @@
 ---
 description: Контракт IR — аддитивность схемы v1, синхронность схемы, моделей, конвертеров, валидатора и документации
-globs: src/Asn1Kit.Ir/**/*.cs,schemas/**/*.json,fixtures/ir/**/*.json
+globs: compiler/src/Asn1Kit.Ir/**/*.cs,schemas/**/*.json,compiler/fixtures/ir/**/*.json
 alwaysApply: false
 ---
 
@@ -19,15 +19,15 @@ IR — единственный контракт между компилятор
 Добавление или изменение `kind` (типа либо значения) трогает все пункты сразу:
 
 1. [schemas/asn1kit-ir-v1.json](../../schemas/asn1kit-ir-v1.json) — вариант в `oneOf`, `additionalProperties: false`.
-2. [src/Asn1Kit.Ir/IrModels.cs](../../src/Asn1Kit.Ir/IrModels.cs) — класс и константа в `TypeKinds` / `ValueKinds`.
-3. [src/Asn1Kit.Ir/TypeExprConverter.cs](../../src/Asn1Kit.Ir/TypeExprConverter.cs) — ветка `switch` в `TypeExprConverter` или `IrValueConverter`.
-4. [src/Asn1Kit.Ir/IrValidator.cs](../../src/Asn1Kit.Ir/IrValidator.cs) — семантика, которую JSON Schema не выражает.
+2. [compiler/src/Asn1Kit.Ir/IrModels.cs](../../compiler/src/Asn1Kit.Ir/IrModels.cs) — класс и константа в `TypeKinds` / `ValueKinds`.
+3. [compiler/src/Asn1Kit.Ir/TypeExprConverter.cs](../../compiler/src/Asn1Kit.Ir/TypeExprConverter.cs) — ветка `switch` в `TypeExprConverter` или `IrValueConverter`.
+4. [compiler/src/Asn1Kit.Ir/IrValidator.cs](../../compiler/src/Asn1Kit.Ir/IrValidator.cs) — семантика, которую JSON Schema не выражает.
 5. [docs/ir-schema.md](../../docs/ir-schema.md) и [docs/status.md](../../docs/status.md).
 6. Фикстуры и тесты.
 
 Пропущенный пункт 3 даёт `IrException("Unknown type kind '...'")` уже после того, как схема пропустила документ, — это не «работает частично», это сломанный round-trip.
 
-Подробный порядок шагов — [docs/playbooks/new-ir-kind.md](../../docs/playbooks/new-ir-kind.md).
+Подробный порядок шагов — [compiler/docs/playbooks/new-ir-kind.md](../../compiler/docs/playbooks/new-ir-kind.md).
 
 ## Правила моделирования
 

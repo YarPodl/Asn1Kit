@@ -1,6 +1,6 @@
 ---
 description: Повышенные требования к Asn1Kit.Runtime — покрытие сценариев, скорость, память
-globs: src/Asn1Kit.Runtime/**/*.cs
+globs: runtime-csharp/src/Asn1Kit.Runtime/**/*.cs
 alwaysApply: false
 ---
 

@@ -8,8 +8,8 @@ public sealed class PkixExplicit88Tests
     [Fact]
     public void CompilesAndMatchesGoldenIr()
     {
-        var asnPath = TestData.RepoPath("fixtures/asn1/pkix1-explicit88.asn");
-        var goldenPath = TestData.RepoPath("fixtures/ir/pkix1-explicit88.json");
+        var asnPath = TestData.RepoPath("compiler/fixtures/asn1/pkix1-explicit88.asn");
+        var goldenPath = TestData.RepoPath("compiler/fixtures/ir/pkix1-explicit88.json");
         var document = new Asn1Compiler().CompileFiles(new[] { asnPath });
         var actual = IrSerializer.ToJson(document);
         IrSerializer.ValidateSchema(actual);
@@ -25,7 +25,7 @@ public sealed class PkixExplicit88Tests
     {
         var document = new Asn1Compiler().CompileFiles(new[]
         {
-            TestData.RepoPath("fixtures/asn1/pkix1-explicit88.asn")
+            TestData.RepoPath("compiler/fixtures/asn1/pkix1-explicit88.asn")
         });
         var module = document.Modules.Single();
         Assert.Equal("PKIX1Explicit88", module.Name);

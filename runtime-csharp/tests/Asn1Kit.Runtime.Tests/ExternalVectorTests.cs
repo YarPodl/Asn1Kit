@@ -8,7 +8,7 @@ namespace Asn1Kit.Tests;
 public sealed class ExternalVectorTests
 {
     public static IEnumerable<object[]> ExternalCases() =>
-        BerDerFixtures.AsTheoryData("fixtures/ber-der/external/rfc-and-dotnet.json");
+        BerDerFixtures.AsTheoryData("runtime-csharp/fixtures/ber-der/external/rfc-and-dotnet.json");
 
     [Theory]
     [MemberData(nameof(ExternalCases))]

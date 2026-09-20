@@ -1,6 +1,6 @@
 ---
 description: Повышенные требования к генератору и сгенерированному коду — сценарии, тесты, эффективность
-globs: src/Asn1Kit.Codegen/**/*.cs,src/Asn1Kit.Codegen.CSharp/**/*.cs,**/*.g.cs
+globs: compiler/src/Asn1Kit.Codegen/**/*.cs,compiler/src/Asn1Kit.Codegen.CSharp/**/*.cs,**/*.g.cs
 alwaysApply: false
 ---
 
