@@ -56,7 +56,16 @@
 | Готовый TLV | `WriteRaw`; `Encode` / `EncodedLength` / `TryEncode` | `ReadValue` / `TryReadValue` / `ReadTlv` |
 | ANY | `WriteAny` (`Asn1Any`) | `ReadAny` (с ожидаемым тегом или без) |
 
-DER: только definite length, BOOLEAN `0x00` / `0xFF`, BIT STRING с нулевыми хвостовыми битами, время только с секундами и суффиксом `Z` (GeneralizedTime: `fractionDigits` 0…7, default 3; на записи без хвостовых нулей дроби). INTEGER на записи идёт через `BigInteger.ToByteArray` (минимальная форма на выходе). BER на чтении принимает indefinite length, constructed строки/BIT STRING, время без секунд и со смещением `±hhmm`; дробь 1…7 цифр с хвостовыми нулями допускается и в DER.
+**Запись (всегда канон):** definite length; BOOLEAN `0x00` / `0xFF`; BIT STRING с нулевыми хвостовыми битами; время с секундами и суффиксом `Z` (GeneralizedTime: `fractionDigits` 0…7, default 3; без хвостовых нулей дроби); INTEGER через `BigInteger.ToByteArray` (минимальная форма).
+
+**Чтение — soft-profile (см. [decisions.md](decisions.md) «мягкое чтение»):** часть запретов DER/X.690 по умолчанию **не** роняет decode; строгий reject — через опции reader’а (ещё не введены; backlog ниже). Уже зафиксированные soft-accept по умолчанию:
+
+| Форма | Default | Строгая опция (план) |
+| --- | --- | --- |
+| Non-minimal INTEGER contents (`02 02 00 01`, …) | accept | reject when enabled |
+| BIT STRING nonzero trailing bits (в т.ч. под DER) | accept | reject when enabled |
+
+Сейчас код **уже** принимает non-minimal INTEGER; BIT STRING trailing bits под DER **ещё отвергает** — это расхождение с решением, чинится вместе с опциями. BER: indefinite length, constructed строки/BIT STRING, время без секунд и `±hhmm`; дробь 1…7 с хвостовыми нулями допускается и в DER.
 
 Примитивы runtime: матрица hex в [runtime-csharp/fixtures/ber-der/](../runtime-csharp/fixtures/ber-der/) (`PrimitiveCodecTests`), перекрёстный oracle с `System.Formats.Asn1` (`PrimitiveOracleTests`; Teletex/T61/Videotex/Graphic/General — только свои векторы, Latin-1), внешние фрагменты RFC/X.690 — `ExternalVectorTests`.
 
@@ -74,16 +83,18 @@ DER: только definite length, BOOLEAN `0x00` / `0xFF`, BIT STRING с нул
 
 ## Backlog: тесты примитивов
 
-Стратегия (матрица + oracle `System.Formats.Asn1` + external) уже внедрена; ниже — добивка полноты, не смена подхода. Чеклист API — [runtime-csharp/docs/runtime-api.md](../runtime-csharp/docs/runtime-api.md) § «Чеклист RuntimeTests».
+Стратегия (матрица + oracle `System.Formats.Asn1` + external) уже внедрена. Политика soft-read + strict options — [decisions.md](decisions.md). Чеклист API — [runtime-csharp/docs/runtime-api.md](../runtime-csharp/docs/runtime-api.md) § «Чеклист RuntimeTests». Развёрнутый план — canvas `runtime-test-backlog`.
 
 | Приоритет | Задача | Заметки |
 | --- | --- | --- |
-| высокий | Oracle: `UniversalString` в `PrimitiveOracleTests` / `DotnetAsnOracle.TryMapStringForm` | В плане BCL-совместимых; сейчас только слой 1 |
-| высокий | Oracle: пивот UTCTime `00–49` → 20xx / `50–99` → 19xx | Сейчас только `RuntimeTests.Time_YearPivotAndBerOffset` |
-| средний | Oracle: GeneralizedTime с дробью при одинаковой точности с BCL | Сейчас cross-check только `fractionDigits: 0` |
-| средний | Перенести оставшиеся строки чеклиста в `runtime-csharp/fixtures/ber-der/` | `TryEncode` / `TryRead*` / `WriteAny` / `ReadTlv` reject wrong-tag и т.п. сейчас в основном в `RuntimeTests` |
-| средний | 5–10 внешних INTEGER/OID из RFC 8017 (и/или регенерация через `AsnWriter`) | В `external/` есть OID/AlgorithmIdentifier, мало классических INTEGER |
-| низкий | Второй oracle — BouncyCastle | Только если появятся расхождения с BCL; не единственный эталон |
+| высокий | Reader options + soft defaults: non-minimal INTEGER accept; BIT trailing nonzero accept (в т.ч. DER); strict → reject | Документировать в status/runtime-api; тесты default+strict; сейчас BIT DER reject — выровнять |
+| высокий | Fixture/тесты soft INTEGER (`02 02 00 01` …) + strict reject | Default: decode OK; encode по-прежнему минимальный |
+| высокий | Fixture/тесты BIT trailing nonzero: default accept под DER; strict reject | Обновить `bitstring-der-rejects-trailing-bits` |
+| высокий | Oracle: `UniversalString`; UTCTime year pivot | Сейчас pivot только в `RuntimeTests` |
+| средний | Решить+документировать+опция: non-minimal length, OID overlong base-128 | Не включать в default soft без записи в status |
+| средний | Негативы всегда-reject: BOOLEAN length≠1/constructed; truncated EOC; empty INTEGER | Не soft |
+| средний | Oracle GeneralizedTime с дробью; чеклист API → fixtures; external INTEGER RFC 8017 | |
+| низкий | Второй oracle — BouncyCastle | Только при расхождении с BCL |
 
 Не делать: subprocess (openssl/pyasn1) как gate `dotnet test`; копирование чужих сьютов целиком; CER в oracle.
 

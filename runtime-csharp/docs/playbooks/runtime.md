@@ -28,9 +28,10 @@
 
 ## Правила, которые нельзя нарушать
 
-- **DER:** только definite length, BOOLEAN строго `0x00` / `0xFF`, BIT STRING с нулевыми хвостовыми битами. Нарушение этих правил на чтении — `Asn1Exception`, а не «терпимо принять».
+- **Запись DER:** только definite length, BOOLEAN строго `0x00` / `0xFF`, BIT STRING с нулевыми хвостовыми битами, минимальный INTEGER. Encode не ослабляется soft-profile.
+- **Чтение:** soft-accept для зафиксированных неканоничных форм (см. [decisions.md](../../../docs/decisions.md), [status.md](../../../docs/status.md), [runtime-api.md](../runtime-api.md)). Строгий reject — через опции reader’а, не через молчаливое ужесточение default. Новый soft-accept без записи в status/runtime-api — запрещён.
 - **BER на чтении:** definite и indefinite length, constructed `OCTET STRING` склеивается. На записи indefinite length не порождается (`definiteOnly` в private `WriteTlv` сейчас не используется — поведение то же).
-- Ошибка ввода — всегда `Asn1Exception` с внятным текстом: чужой тег, обрезанный TLV, лишние байты, невалидная строка OID.
+- Ошибка ввода (вне soft-списка) — всегда `Asn1Exception` с внятным текстом: чужой тег, обрезанный TLV, лишние байты, невалидная строка OID.
 - Runtime ничего не знает про ASN.1-модули, имена типов и IR.
 
 ## Производительность
@@ -62,7 +63,8 @@ ReadOnlySpan<byte> contents = _data.AsSpan(_offset, length);
 2. BER: decode известного вектора, включая indefinite length и constructed форму, где она возможна.
 3. Round-trip encode → decode → encode совпадает побайтово.
 4. Границы: пустое значение, `0`, `-1`, длинный `BigInteger`, длина > 127 (длинная форма), вложенность.
-5. Отказы: indefinite length в DER, BOOLEAN не `0x00` / `0xFF`, чужой тег, обрезанный TLV, EOF.
+5. Отказы всегда: indefinite length в DER, BOOLEAN не `0x00` / `0xFF`, чужой тег, обрезанный TLV, EOF.
+6. Soft-формы: default decode OK; при включённой strict-опции — `Asn1Exception` (пара фикстур).
 
 ```csharp
 var ber = new byte[] { 0x24, 0x80, 0x04, 0x03, 0x41, 0x6E, 0x6E, 0x00, 0x00 };

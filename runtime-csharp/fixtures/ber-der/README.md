@@ -35,3 +35,14 @@ Each JSON file is an array of cases:
 1. Own matrix — files in this directory (except `external/`).
 2. Oracle — generated at runtime via `System.Formats.Asn1` (no fixture required).
 3. External — `external/` with `source` provenance.
+
+## Soft-read vs strict
+
+Some encodings forbidden by strict DER/X.690 are accepted on decode by default (encode stays canonical). Policy: [docs/decisions.md](../../../docs/decisions.md), inventory: [docs/status.md](../../../docs/status.md) § Runtime, API notes: [docs/runtime-api.md](../../docs/runtime-api.md).
+
+For each soft form, prefer a pair of cases:
+
+- default: successful decode (`encode: false` when bytes are non-canonical);
+- strict: `reject: true` when the corresponding reader option is enabled (once options exist).
+
+Soft by default today (planned / partially landed): non-minimal INTEGER; BIT STRING nonzero trailing bits under DER.

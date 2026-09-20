@@ -46,22 +46,32 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 - `definiteOnly` в private `WriteTlv` игнорируется; indefinite на записи не эмитится.
 - `TryReadOctetString` / `TryReadValue` при нехватке destination возвращают `false`, но TLV уже потреблён.
 
+## Soft-read и строгие опции
+
+Политика: [docs/decisions.md](../../docs/decisions.md) «мягкое чтение»; инвентарь soft-accept — [docs/status.md](../../docs/status.md) § Runtime.
+
+- **Encode** всегда канонический (минимальный INTEGER, нулевые trailing bits BIT STRING, …).
+- **Decode** по умолчанию принимает зафиксированные неканоничные формы; строгий reject — опциями reader’а (план/backlog; API опций ещё не введён).
+- Soft по умолчанию (reject выключен): non-minimal INTEGER contents; BIT STRING nonzero trailing bits (включая режим DER).
+- Новый soft-accept без строки в status + этой секции — не допускается.
+- В фикстурах: default-кейс = `encode: false` + успешный decode; strict-кейс = `reject: true` при включённой опции (когда опции появятся).
+
 ## Чеклист RuntimeTests
 
 Писать в `PrimitiveCodecTests` / `PrimitiveOracleTests` / `ExternalVectorTests` (и точечно в `RuntimeTests`) на байтовых векторах из [fixtures/ber-der/](../fixtures/ber-der/). Round-trip через Roslyn — дополнение, не замена.
 
-На каждый примитив из status § Runtime: DER encode/decode, BER где применимо, round-trip, границы, отказы (чужой тег, truncated, DER indefinite, BOOLEAN не `00`/`FF`, BIT trailing bits).
+На каждый примитив из status § Runtime: DER encode/decode, BER где применимо, round-trip, границы, отказы (чужой тег, truncated, DER indefinite, BOOLEAN не `00`/`FF`). Для soft-форм — пара default-accept / strict-reject.
 
 | API | Минимум |
 | --- | --- |
 | `TryEncode` / `EncodedLength` | exact fit; short Span → false; равенство с `Encode()` |
 | `TryReadOctetString` / `TryReadValue` | fit; short → false; BER constructed OCTET |
 | `WriteBoolean` / `ReadBoolean` | DER `00`/`FF`; BER nonzero-as-true |
-| `WriteInteger` / `ReadInteger` | `0`, `-1`, 127/128, длинный; empty reject |
+| `WriteInteger` / `ReadInteger` | `0`, `-1`, 127/128, длинный; empty reject; soft non-minimal accept + strict reject |
 | `WriteOctetString` / `ReadOctetString` | empty; long-form; BER constructed + indefinite; ROM overload |
 | `WriteNull` / `ReadNull` | empty OK; nonempty reject |
 | `WriteObjectIdentifier` / `ReadObjectIdentifier` | OID; arcs; rejects |
-| `WriteBitString` / `ReadBitString` | unusedBits; DER trailing-zero; BER constructed |
+| `WriteBitString` / `ReadBitString` | unusedBits; encode trailing-zero; soft nonzero trailing accept + strict reject; BER constructed |
 | `WriteString` / `ReadString` | 12 forms smoke; BER constructed UTF8 |
 | `WriteTime` / `ReadTime` | UTC + Generalized; fractionDigits; BER |
 | `WriteSequence` / `ReadSequence` | вложенность; OPTIONAL |
