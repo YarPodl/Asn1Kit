@@ -65,9 +65,64 @@ public sealed class PrimitiveCodecTests
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
         Assert.True(Asn1Boolean.Decode(reader));
         Assert.True(Asn1Null.Decode(reader));
-        Assert.Equal(42, Asn1Integer.Decode(reader));
+        Assert.Equal(42, Asn1Integer.Decode(reader).GetInt32());
         Assert.Equal(3, Asn1Enumerated.Decode(reader));
         Assert.True(reader.Eof);
+    }
+
+    [Fact]
+    public void IntegerValue_PreservesNonMinimalContents_OnWrite()
+    {
+        var soft = Asn1Integer.FromContents(new byte[] { 0x00, 0x01 });
+        Assert.Equal(new byte[] { 0x00, 0x01 }, soft.Span.ToArray());
+        Assert.Equal(1, soft.GetInt32());
+
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteInteger(Asn1Tag.Integer, soft);
+        Assert.Equal(new byte[] { 0x02, 0x02, 0x00, 0x01 }, writer.Encode());
+    }
+
+    [Fact]
+    public void IntegerValue_FromBigInteger_IsCanonical()
+    {
+        var value = Asn1Integer.FromBigInteger(1);
+        Assert.Equal(new byte[] { 0x01 }, value.Span.ToArray());
+    }
+
+    [Fact]
+    public void ReadInt32_RejectsOutOfRange()
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteInteger(Asn1Tag.Integer, (long)int.MaxValue + 1);
+        var bytes = writer.Encode();
+        var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
+        Assert.Throws<Asn1Exception>(() => reader.ReadInt32(Asn1Tag.Integer));
+    }
+
+    [Fact]
+    public void ReadUInt32_RejectsNegative()
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteInteger(Asn1Tag.Integer, -1);
+        var bytes = writer.Encode();
+        var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
+        Assert.Throws<Asn1Exception>(() => reader.ReadUInt32(Asn1Tag.Integer));
+    }
+
+    [Fact]
+    public void Integer_FixedWidth_RoundTrips()
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteInteger(Asn1Tag.Integer, -7);
+        writer.WriteInteger(Asn1Tag.Integer, 3u);
+        writer.WriteInteger(Asn1Tag.Integer, long.MinValue);
+        writer.WriteInteger(Asn1Tag.Integer, ulong.MaxValue);
+        var bytes = writer.Encode();
+        var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
+        Assert.Equal(-7, reader.ReadInt32(Asn1Tag.Integer));
+        Assert.Equal(3u, reader.ReadUInt32(Asn1Tag.Integer));
+        Assert.Equal(long.MinValue, reader.ReadInt64(Asn1Tag.Integer));
+        Assert.Equal(ulong.MaxValue, reader.ReadUInt64(Asn1Tag.Integer));
     }
 
     [Fact]
@@ -125,7 +180,7 @@ public sealed class PrimitiveCodecTests
         Assert.Equal(new byte[] { 0xA0, 0x03, 0x02, 0x01, 0x01 }, bytes);
 
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
-        reader.ReadSequence(tag, inner => Assert.Equal(1, Asn1Integer.Decode(inner)));
+        reader.ReadSequence(tag, inner => Assert.Equal(1, Asn1Integer.Decode(inner).GetInt32()));
     }
 
     [Fact]

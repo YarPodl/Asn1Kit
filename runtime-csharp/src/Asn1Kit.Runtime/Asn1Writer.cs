@@ -52,6 +52,26 @@ public sealed class Asn1Writer
         WritePrimitive(tag.AsPrimitive(), EncodeInteger(value));
     }
 
+    public void WriteInteger(Asn1Tag tag, int value) => WriteInteger(tag, (BigInteger)value);
+
+    public void WriteInteger(Asn1Tag tag, uint value) => WriteInteger(tag, (BigInteger)value);
+
+    public void WriteInteger(Asn1Tag tag, long value) => WriteInteger(tag, (BigInteger)value);
+
+    public void WriteInteger(Asn1Tag tag, ulong value) => WriteInteger(tag, (BigInteger)value);
+
+    /// <summary>Writes owned INTEGER contents as-is (may be non-minimal).</summary>
+    public void WriteInteger(Asn1Tag tag, Asn1Integer value)
+    {
+        var span = value.Span;
+        if (span.Length == 0)
+        {
+            throw new Asn1Exception("INTEGER contents must not be empty.");
+        }
+
+        WritePrimitive(tag.AsPrimitive(), span);
+    }
+
     /// <summary>ENUMERATED uses the same contents encoding as INTEGER (X.690).</summary>
     public void WriteEnumerated(Asn1Tag tag, BigInteger value) => WriteInteger(tag, value);
 

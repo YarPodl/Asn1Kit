@@ -13,7 +13,7 @@ public sealed class AuthorityKeyIdentifier
     public byte[]? KeyIdentifier { get; set; }
     public GeneralNames? AuthorityCertIssuer { get; set; }
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
-    public BigInteger? AuthorityCertSerialNumber { get; set; }
+    public Asn1Integer? AuthorityCertSerialNumber { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -53,7 +53,7 @@ public sealed class AuthorityKeyIdentifier
             }
             if (inner.TryPeekTag(out var tag_AuthorityCertSerialNumber) && tag_AuthorityCertSerialNumber.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false)))
             {
-                value.AuthorityCertSerialNumber = inner.ReadInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false));
+                value.AuthorityCertSerialNumber = inner.ReadIntegerValue(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false));
             }
             return value;
         });
@@ -736,7 +736,7 @@ public sealed class SubjectDirectoryAttributes
 public sealed class BasicConstraints
 {
     public bool? CA { get; set; }
-    public BigInteger? PathLenConstraint { get; set; }
+    public Asn1Integer? PathLenConstraint { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -768,7 +768,7 @@ public sealed class BasicConstraints
             }
             if (inner.TryPeekTag(out var tag_PathLenConstraint) && tag_PathLenConstraint.MatchesIgnoreConstructed(Asn1Tag.Integer))
             {
-                value.PathLenConstraint = inner.ReadInteger(Asn1Tag.Integer);
+                value.PathLenConstraint = inner.ReadIntegerValue(Asn1Tag.Integer);
             }
             return value;
         });
@@ -860,9 +860,9 @@ public sealed class GeneralSubtree
 {
     public GeneralName Base { get; set; }
     /// <summary>ASN.1 alias BaseDistance ::= INTEGER.</summary>
-    public BigInteger? Minimum { get; set; }
+    public Asn1Integer? Minimum { get; set; }
     /// <summary>ASN.1 alias BaseDistance ::= INTEGER.</summary>
-    public BigInteger? Maximum { get; set; }
+    public Asn1Integer? Maximum { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -892,11 +892,11 @@ public sealed class GeneralSubtree
             value.Base = GeneralName.Decode(inner);
             if (inner.TryPeekTag(out var tag_Minimum) && tag_Minimum.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false)))
             {
-                value.Minimum = inner.ReadInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
+                value.Minimum = inner.ReadIntegerValue(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
             }
             if (inner.TryPeekTag(out var tag_Maximum) && tag_Maximum.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
             {
-                value.Maximum = inner.ReadInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
+                value.Maximum = inner.ReadIntegerValue(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
             }
             return value;
         });
@@ -908,9 +908,9 @@ public sealed class GeneralSubtree
 public sealed class PolicyConstraints
 {
     /// <summary>ASN.1 alias SkipCerts ::= INTEGER.</summary>
-    public BigInteger? RequireExplicitPolicy { get; set; }
+    public Asn1Integer? RequireExplicitPolicy { get; set; }
     /// <summary>ASN.1 alias SkipCerts ::= INTEGER.</summary>
-    public BigInteger? InhibitPolicyMapping { get; set; }
+    public Asn1Integer? InhibitPolicyMapping { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -938,11 +938,11 @@ public sealed class PolicyConstraints
             var value = new PolicyConstraints();
             if (inner.TryPeekTag(out var tag_RequireExplicitPolicy) && tag_RequireExplicitPolicy.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false)))
             {
-                value.RequireExplicitPolicy = inner.ReadInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
+                value.RequireExplicitPolicy = inner.ReadIntegerValue(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
             }
             if (inner.TryPeekTag(out var tag_InhibitPolicyMapping) && tag_InhibitPolicyMapping.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
             {
-                value.InhibitPolicyMapping = inner.ReadInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
+                value.InhibitPolicyMapping = inner.ReadIntegerValue(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
             }
             return value;
         });
@@ -1448,7 +1448,7 @@ public sealed class PolicyInformation_PolicyQualifiers
 
 public sealed class NoticeReference_NoticeNumbers
 {
-    public List<BigInteger> Items { get; set; } = new List<BigInteger>();
+    public List<Asn1Integer> Items { get; set; } = new List<Asn1Integer>();
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1472,7 +1472,7 @@ public sealed class NoticeReference_NoticeNumbers
             var value = new NoticeReference_NoticeNumbers();
             while (!inner.Eof)
             {
-                value.Items.Add(inner.ReadInteger(Asn1Tag.Integer));
+                value.Items.Add(inner.ReadIntegerValue(Asn1Tag.Integer));
             }
             return value;
         });

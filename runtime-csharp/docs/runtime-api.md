@@ -21,7 +21,8 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
               → Asn1Tag, Asn1BitString, Asn1Any, Asn1Exception
 ```
 
-Статические `Asn1Boolean` / `Asn1Integer` / … — warm convenience; codegen их не эмитит.
+Статические `Asn1Boolean` / `Asn1Enumerated` / … — warm convenience; codegen их не эмитит.
+`Asn1Integer` — **hot** value type (owned DER contents) для codegen при `representation=der`; статические `Encode(BigInteger)` / `DecodeBigInteger` — warm.
 
 Непублично: `Asn1TextCodec` (`internal`), `Asn1Writer.EncodeInteger` (`internal`), `WriteTag` / `WriteLength` / `WriteTlv` / `WritePrimitive` (`private`).
 
@@ -39,6 +40,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `ReadValue → byte[]` / `TryReadValue(Span)` / `ReadTlv` | cold/warm | owned / copy-out |
 | `Asn1Any.Contents` / `ContentsMemory` | hot | owned |
 | `Asn1BitString.Span` / `Memory` | hot | owned |
+| `Asn1Integer.Span` / `Memory` | hot | owned DER contents |
 | `Asn1Primitives` wrappers (+ `Asn1OctetString.TryDecode`) | warm | делегируют |
 
 ## Заметки
@@ -67,7 +69,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `TryEncode` / `EncodedLength` | exact fit; short Span → false; равенство с `Encode()` |
 | `TryReadOctetString` / `TryReadValue` | fit; short → false; BER constructed OCTET |
 | `WriteBoolean` / `ReadBoolean` | DER `00`/`FF`; BER nonzero-as-true |
-| `WriteInteger` / `ReadInteger` | `0`, `-1`, 127/128, длинный; empty reject; soft non-minimal accept + strict reject |
+| `WriteInteger` / `ReadInteger` / `ReadIntegerValue` / `ReadInt32`… | `0`, `-1`, 127/128, длинный; empty reject; soft non-minimal accept + as-is write через `Asn1Integer`; fixed-width range reject |
 | `WriteEnumerated` / `ReadEnumerated` | tag `0A`; contents как INTEGER; empty / wrong tag reject |
 | `WriteOctetString` / `ReadOctetString` | empty; long-form; BER constructed + indefinite; ROM overload |
 | `WriteNull` / `ReadNull` | empty OK; nonempty reject |
@@ -83,4 +85,4 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `WriteRaw` | append TLV |
 | `ReadValue` / `ReadTlv` | owned; wrong tag |
 | Wrappers | smoke |
-| `Asn1BitString` / `Asn1Any` | Memory/ContentsMemory; equality |
+| `Asn1BitString` / `Asn1Any` / `Asn1Integer` | Memory/ContentsMemory; equality; `Asn1Integer` numeric accessors |

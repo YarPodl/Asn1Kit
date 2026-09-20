@@ -103,6 +103,7 @@
 | `options.csharp.typeName` | тип | Имя класса |
 | `options.csharp.propertyName` | поле | Имя свойства |
 | `options.generate` | тип | `false` — не генерировать |
+| `options.integer.representation` | тип / модуль | Представление INTEGER: `int32` \| `uint32` \| `int64` \| `uint64` \| `bigint` \| `der`. На типе перекрывает модуль. Если не задано, C# backend выводит из `constraint.value` (полный диапазон → фиксированная ширина; иначе `der`). |
 
 ## Примеры
 

@@ -892,9 +892,9 @@ public sealed class Certificate
 public sealed class TBSCertificate
 {
     /// <summary>ASN.1 alias Version ::= INTEGER.</summary>
-    public BigInteger? Version { get; set; }
+    public Asn1Integer? Version { get; set; }
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
-    public BigInteger SerialNumber { get; set; }
+    public Asn1Integer SerialNumber { get; set; } = Asn1Integer.FromInt32(0);
     public AlgorithmIdentifier Signature { get; set; }
     public Name Issuer { get; set; }
     public Validity Validity { get; set; }
@@ -952,9 +952,9 @@ public sealed class TBSCertificate
             var value = new TBSCertificate();
             if (inner.TryPeekTag(out var tag_Version) && tag_Version.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
-                value.Version = inner.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested => nested.ReadInteger(Asn1Tag.Integer));
+                value.Version = inner.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested => nested.ReadIntegerValue(Asn1Tag.Integer));
             }
-            value.SerialNumber = inner.ReadInteger(Asn1Tag.Integer);
+            value.SerialNumber = inner.ReadIntegerValue(Asn1Tag.Integer);
             value.Signature = AlgorithmIdentifier.Decode(inner, Asn1Tag.Sequence);
             value.Issuer = Name.Decode(inner);
             value.Validity = Validity.Decode(inner, Asn1Tag.Sequence);
@@ -1202,7 +1202,7 @@ public sealed class CertificateList
 public sealed class TBSCertList
 {
     /// <summary>ASN.1 alias Version ::= INTEGER.</summary>
-    public BigInteger? Version { get; set; }
+    public Asn1Integer? Version { get; set; }
     public AlgorithmIdentifier Signature { get; set; }
     public Name Issuer { get; set; }
     public Time ThisUpdate { get; set; }
@@ -1250,7 +1250,7 @@ public sealed class TBSCertList
             var value = new TBSCertList();
             if (inner.TryPeekTag(out var tag_Version) && tag_Version.MatchesIgnoreConstructed(Asn1Tag.Integer))
             {
-                value.Version = inner.ReadInteger(Asn1Tag.Integer);
+                value.Version = inner.ReadIntegerValue(Asn1Tag.Integer);
             }
             value.Signature = AlgorithmIdentifier.Decode(inner, Asn1Tag.Sequence);
             value.Issuer = Name.Decode(inner);
@@ -1821,7 +1821,7 @@ public sealed class ExtensionAttributes
 
 public sealed class ExtensionAttribute
 {
-    public BigInteger ExtensionAttributeType { get; set; }
+    public int ExtensionAttributeType { get; set; }
     public Asn1Any ExtensionAttributeValue { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1845,7 +1845,7 @@ public sealed class ExtensionAttribute
         return reader.ReadSequence(tag, inner =>
         {
             var value = new ExtensionAttribute();
-            value.ExtensionAttributeType = inner.ReadInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
+            value.ExtensionAttributeType = inner.ReadInt32(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
             value.ExtensionAttributeValue = inner.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), nested => nested.ReadAny());
             return value;
         });
@@ -2414,7 +2414,7 @@ public sealed class TBSCertList_RevokedCertificates
 public sealed class TBSCertList_RevokedCertificates_Item
 {
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
-    public BigInteger UserCertificate { get; set; }
+    public Asn1Integer UserCertificate { get; set; } = Asn1Integer.FromInt32(0);
     public Time RevocationDate { get; set; }
     public Extensions? CrlEntryExtensions { get; set; }
 
@@ -2440,7 +2440,7 @@ public sealed class TBSCertList_RevokedCertificates_Item
         return reader.ReadSequence(tag, inner =>
         {
             var value = new TBSCertList_RevokedCertificates_Item();
-            value.UserCertificate = inner.ReadInteger(Asn1Tag.Integer);
+            value.UserCertificate = inner.ReadIntegerValue(Asn1Tag.Integer);
             value.RevocationDate = Time.Decode(inner);
             if (inner.TryPeekTag(out var tag_CrlEntryExtensions) && tag_CrlEntryExtensions.MatchesIgnoreConstructed(Asn1Tag.Sequence))
             {

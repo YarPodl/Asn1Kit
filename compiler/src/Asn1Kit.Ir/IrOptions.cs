@@ -5,6 +5,16 @@ namespace Asn1Kit.Ir;
 
 public static class IrOptions
 {
+    public static class IntegerRepresentations
+    {
+        public const string Int32 = "int32";
+        public const string UInt32 = "uint32";
+        public const string Int64 = "int64";
+        public const string UInt64 = "uint64";
+        public const string BigInt = "bigint";
+        public const string Der = "der";
+    }
+
     public static string? CSharpNamespace(JsonObject? options) =>
         GetCSharp(options, "namespace");
 
@@ -13,6 +23,18 @@ public static class IrOptions
 
     public static string? CSharpPropertyName(JsonObject? options) =>
         GetCSharp(options, "propertyName");
+
+    public static string? IntegerRepresentation(JsonObject? options)
+    {
+        if (options?["integer"] is not JsonObject integer)
+        {
+            return null;
+        }
+
+        return integer["representation"] is JsonValue value && value.TryGetValue<string>(out var text)
+            ? text
+            : null;
+    }
 
     public static bool ShouldGenerate(JsonObject? options)
     {
@@ -39,6 +61,9 @@ public static class IrOptions
 
     public static JsonObject SetCSharp(JsonObject? options, string key, string value) =>
         Set(options, "csharp." + key, JsonValue.Create(value)!);
+
+    public static JsonObject SetIntegerRepresentation(JsonObject? options, string value) =>
+        Set(options, "integer.representation", JsonValue.Create(value)!);
 
     public static JsonObject Set(JsonObject? options, string path, JsonNode value)
     {

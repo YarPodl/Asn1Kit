@@ -104,18 +104,57 @@ public sealed class Asn1Reader
         return contents[0] != 0x00;
     }
 
-    public BigInteger ReadInteger(Asn1Tag expected)
+    public BigInteger ReadInteger(Asn1Tag expected) => ReadIntegerValue(expected).ToBigInteger();
+
+    /// <summary>Reads INTEGER contents into an owned value (preserves wire bytes).</summary>
+    public Asn1Integer ReadIntegerValue(Asn1Tag expected)
     {
         var contents = ReadValue(expected, allowConstructed: false);
-        if (contents.Length == 0)
+        return Asn1Integer.FromContents(contents);
+    }
+
+    public int ReadInt32(Asn1Tag expected)
+    {
+        var value = ReadIntegerValue(expected);
+        if (!value.TryGetInt32(out var number))
         {
-            throw new Asn1Exception("INTEGER contents must not be empty.");
+            throw new Asn1Exception("INTEGER value does not fit in Int32.");
         }
 
-        var copy = new byte[contents.Length];
-        Array.Copy(contents, copy, contents.Length);
-        Array.Reverse(copy);
-        return new BigInteger(copy);
+        return number;
+    }
+
+    public uint ReadUInt32(Asn1Tag expected)
+    {
+        var value = ReadIntegerValue(expected);
+        if (!value.TryGetUInt32(out var number))
+        {
+            throw new Asn1Exception("INTEGER value does not fit in UInt32.");
+        }
+
+        return number;
+    }
+
+    public long ReadInt64(Asn1Tag expected)
+    {
+        var value = ReadIntegerValue(expected);
+        if (!value.TryGetInt64(out var number))
+        {
+            throw new Asn1Exception("INTEGER value does not fit in Int64.");
+        }
+
+        return number;
+    }
+
+    public ulong ReadUInt64(Asn1Tag expected)
+    {
+        var value = ReadIntegerValue(expected);
+        if (!value.TryGetUInt64(out var number))
+        {
+            throw new Asn1Exception("INTEGER value does not fit in UInt64.");
+        }
+
+        return number;
     }
 
     /// <summary>ENUMERATED uses the same contents encoding as INTEGER (X.690).</summary>

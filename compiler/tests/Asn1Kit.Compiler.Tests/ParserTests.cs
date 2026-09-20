@@ -149,8 +149,8 @@ END
 ";
         var document = new Asn1Compiler().CompileText(asn);
         var source = new Asn1Kit.Codegen.CSharp.CSharpBackend().Generate(document).Single().Contents;
-        Assert.Contains("public BigInteger? DistributionPointValue", source);
-        Assert.DoesNotContain("public BigInteger? DistributionPoint {", source);
+        Assert.Contains("public Asn1Integer? DistributionPointValue", source);
+        Assert.DoesNotContain("public Asn1Integer? DistributionPoint {", source);
     }
 
     [Fact]

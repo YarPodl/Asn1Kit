@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using System.Text.Json.Nodes;
 using Asn1Kit.Codegen;
 using Asn1Kit.Ir;
 
@@ -643,9 +644,8 @@ public sealed class CSharpBackend : ILanguageBackend
         var prop = PropertyName(field, typeName);
         EmitCollapsedAliasDoc(sb, document, module, field.Type);
         var csType = CsType(document, module, typeName, field.Name, field.Type, optional);
-        var effective = UnwrapAliases(document, module, field.Type);
         var setter = privateSetter ? "private set" : "set";
-        var initializer = privateSetter ? "" : Initializer(effective, optional);
+        var initializer = privateSetter ? "" : Initializer(document, module, field.Type, optional);
         sb.AppendLine($"    public {csType} {prop} {{ get; {setter}; }}{initializer}");
     }
 
@@ -908,6 +908,7 @@ public sealed class CSharpBackend : ILanguageBackend
         string reader,
         string? forceTag = null)
     {
+        var integerRepresentation = TryResolveIntegerRepresentation(document, module, type);
         type = UnwrapAliases(document, module, type);
 
         if (type.Tag?.Mode == TagModes.Explicit && forceTag is null)
@@ -944,7 +945,7 @@ public sealed class CSharpBackend : ILanguageBackend
         var primitive = ResolvePrimitive(type);
         if (primitive is not null)
         {
-            sb.Append(ReadCall(reader, tag, type));
+            sb.Append(ReadCall(reader, tag, type, integerRepresentation));
             return;
         }
 
@@ -961,6 +962,7 @@ public sealed class CSharpBackend : ILanguageBackend
 
     private string CsType(IrDocument document, IrModule module, string owner, string hint, TypeExpr type, bool optional)
     {
+        var integerRepresentation = TryResolveIntegerRepresentation(document, module, type);
         type = UnwrapAliases(document, module, type);
         var primitive = ResolvePrimitive(type);
         if (primitive is not null)
@@ -968,7 +970,9 @@ public sealed class CSharpBackend : ILanguageBackend
             var mapped = primitive switch
             {
                 TypeKinds.Boolean => optional ? "bool?" : "bool",
-                TypeKinds.Integer => optional ? "BigInteger?" : "BigInteger",
+                TypeKinds.Integer => MapIntegerCsType(
+                    integerRepresentation ?? IrOptions.IntegerRepresentations.Der,
+                    optional),
                 TypeKinds.OctetString => optional ? "byte[]?" : "byte[]",
                 TypeKinds.Null => optional ? "bool?" : "bool",
                 TypeKinds.Oid => optional ? "string?" : "string",
@@ -983,6 +987,116 @@ public sealed class CSharpBackend : ILanguageBackend
 
         var name = NamedTypeName(document, module, owner, hint, type);
         return optional ? name + "?" : name;
+    }
+
+    private static string MapIntegerCsType(string representation, bool optional) => representation switch
+    {
+        IrOptions.IntegerRepresentations.Int32 => optional ? "int?" : "int",
+        IrOptions.IntegerRepresentations.UInt32 => optional ? "uint?" : "uint",
+        IrOptions.IntegerRepresentations.Int64 => optional ? "long?" : "long",
+        IrOptions.IntegerRepresentations.UInt64 => optional ? "ulong?" : "ulong",
+        IrOptions.IntegerRepresentations.BigInt => optional ? "BigInteger?" : "BigInteger",
+        IrOptions.IntegerRepresentations.Der => optional ? "Asn1Integer?" : "Asn1Integer",
+        _ => throw new NotSupportedException($"Unknown integer representation '{representation}'.")
+    };
+
+    private string? TryResolveIntegerRepresentation(IrDocument document, IrModule module, TypeExpr type)
+    {
+        string? explicitRepresentation = null;
+        var visited = new HashSet<string>(StringComparer.Ordinal);
+        var cursor = type;
+
+        while (true)
+        {
+            explicitRepresentation ??= IrOptions.IntegerRepresentation(cursor.Options);
+
+            if (cursor is RefType reference)
+            {
+                var key = (reference.Module ?? module.Name) + "::" + reference.Name;
+                if (!visited.Add(key))
+                {
+                    throw new NotSupportedException($"Circular type alias '{reference.Name}'.");
+                }
+
+                var found = FindWithModule(document, module, reference);
+                if (found is null)
+                {
+                    return null;
+                }
+
+                var (definingModule, def) = found.Value;
+                explicitRepresentation ??= IrOptions.IntegerRepresentation(def.Options);
+                var inner = def.Type;
+                if (IsNamedBitString(inner) || NeedsNamedType(inner) || IsEnumerated(inner))
+                {
+                    return null;
+                }
+
+                cursor = inner;
+                module = definingModule;
+                continue;
+            }
+
+            if (cursor is not IntegerType integer)
+            {
+                return null;
+            }
+
+            explicitRepresentation ??= IrOptions.IntegerRepresentation(module.Options);
+            if (explicitRepresentation is not null)
+            {
+                return NormalizeIntegerRepresentation(explicitRepresentation);
+            }
+
+            return InferIntegerRepresentation(integer.Constraint);
+        }
+    }
+
+    private static string NormalizeIntegerRepresentation(string representation)
+    {
+        return representation switch
+        {
+            IrOptions.IntegerRepresentations.Int32 => IrOptions.IntegerRepresentations.Int32,
+            IrOptions.IntegerRepresentations.UInt32 => IrOptions.IntegerRepresentations.UInt32,
+            IrOptions.IntegerRepresentations.Int64 => IrOptions.IntegerRepresentations.Int64,
+            IrOptions.IntegerRepresentations.UInt64 => IrOptions.IntegerRepresentations.UInt64,
+            IrOptions.IntegerRepresentations.BigInt => IrOptions.IntegerRepresentations.BigInt,
+            IrOptions.IntegerRepresentations.Der => IrOptions.IntegerRepresentations.Der,
+            _ => throw new NotSupportedException($"Unknown integer representation '{representation}'.")
+        };
+    }
+
+    private static string InferIntegerRepresentation(IrConstraint? constraint)
+    {
+        if (constraint?.Value is not { } bound || bound.Max is null)
+        {
+            return IrOptions.IntegerRepresentations.Der;
+        }
+
+        var min = bound.Min;
+        var max = bound.Max.Value;
+
+        if (min >= int.MinValue && max <= int.MaxValue)
+        {
+            return IrOptions.IntegerRepresentations.Int32;
+        }
+
+        if (min >= 0 && max <= uint.MaxValue)
+        {
+            return IrOptions.IntegerRepresentations.UInt32;
+        }
+
+        if (min >= long.MinValue && max <= long.MaxValue)
+        {
+            return IrOptions.IntegerRepresentations.Int64;
+        }
+
+        if (min >= 0)
+        {
+            return IrOptions.IntegerRepresentations.UInt64;
+        }
+
+        return IrOptions.IntegerRepresentations.Der;
     }
 
     private string NamedTypeName(IrDocument document, IrModule module, string owner, string hint, TypeExpr type)
@@ -1018,14 +1132,20 @@ public sealed class CSharpBackend : ILanguageBackend
     private static string ModuleNamespace(IrModule module) =>
         IrOptions.CSharpNamespace(module.Options) ?? SanitizeIdentifier(module.Name);
 
-    private static string Initializer(TypeExpr type, bool optional)
+    private string Initializer(IrDocument document, IrModule module, TypeExpr type, bool optional)
     {
         if (optional)
         {
             return "";
         }
 
-        return type switch
+        if (TryResolveIntegerRepresentation(document, module, type) == IrOptions.IntegerRepresentations.Der)
+        {
+            return " = Asn1Integer.FromInt32(0);";
+        }
+
+        var unwrapped = UnwrapAliases(document, module, type);
+        return unwrapped switch
         {
             OctetStringType => " = Array.Empty<byte>();",
             OidType => " = \"\";",
@@ -1178,10 +1298,32 @@ public sealed class CSharpBackend : ILanguageBackend
                 next.Tag = type.Tag;
             }
 
+            next.Options = MergeIntegerRepresentationOptions(
+                next.Options,
+                type.Options,
+                found.Value.Def.Options);
+
             type = next;
         }
 
         return type;
+    }
+
+    private static JsonObject? MergeIntegerRepresentationOptions(
+        JsonObject? target,
+        JsonObject? first,
+        JsonObject? second)
+    {
+        if (IrOptions.IntegerRepresentation(target) is not null)
+        {
+            return target;
+        }
+
+        var representation = IrOptions.IntegerRepresentation(first)
+            ?? IrOptions.IntegerRepresentation(second);
+        return representation is null
+            ? target
+            : IrOptions.SetIntegerRepresentation(target, representation);
     }
 
     private static TypeExpr CloneType(TypeExpr type)
@@ -1312,7 +1454,11 @@ public sealed class CSharpBackend : ILanguageBackend
         return clone;
     }
 
-    private static string WriteCall(string writer, string tag, string expr, TypeExpr type) => type switch
+    private static string WriteCall(
+        string writer,
+        string tag,
+        string expr,
+        TypeExpr type) => type switch
     {
         BooleanType => $"{writer}.WriteBoolean({tag}, {expr})",
         IntegerType => $"{writer}.WriteInteger({tag}, {expr})",
@@ -1327,10 +1473,14 @@ public sealed class CSharpBackend : ILanguageBackend
         _ => throw new InvalidOperationException(type.Kind)
     };
 
-    private static string ReadCall(string reader, string tag, TypeExpr type) => type switch
+    private static string ReadCall(
+        string reader,
+        string tag,
+        TypeExpr type,
+        string? integerRepresentation) => type switch
     {
         BooleanType => $"{reader}.ReadBoolean({tag})",
-        IntegerType => $"{reader}.ReadInteger({tag})",
+        IntegerType => IntegerReadCall(reader, tag, integerRepresentation),
         BitStringType => $"{reader}.ReadBitString({tag})",
         OctetStringType => $"{reader}.ReadOctetString({tag})",
         NullType => $"{reader}.ReadNull({tag})",
@@ -1339,6 +1489,18 @@ public sealed class CSharpBackend : ILanguageBackend
         TimeType timeType => $"{reader}.ReadTime({tag}, {TimeFormEnum(timeType.Form)})",
         _ => throw new InvalidOperationException(type.Kind)
     };
+
+    private static string IntegerReadCall(string reader, string tag, string? representation) =>
+        (representation ?? IrOptions.IntegerRepresentations.Der) switch
+        {
+            IrOptions.IntegerRepresentations.Int32 => $"{reader}.ReadInt32({tag})",
+            IrOptions.IntegerRepresentations.UInt32 => $"{reader}.ReadUInt32({tag})",
+            IrOptions.IntegerRepresentations.Int64 => $"{reader}.ReadInt64({tag})",
+            IrOptions.IntegerRepresentations.UInt64 => $"{reader}.ReadUInt64({tag})",
+            IrOptions.IntegerRepresentations.BigInt => $"{reader}.ReadInteger({tag})",
+            IrOptions.IntegerRepresentations.Der => $"{reader}.ReadIntegerValue({tag})",
+            _ => throw new NotSupportedException($"Unknown integer representation '{representation}'.")
+        };
 
     private static string PropertyName(IrComponent field, string? enclosingTypeName = null)
     {

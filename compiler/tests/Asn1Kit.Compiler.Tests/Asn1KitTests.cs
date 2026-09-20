@@ -1,5 +1,4 @@
-﻿using System.Numerics;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text;
 using Asn1Kit.Codegen;
 using Asn1Kit.Codegen.CSharp;
@@ -125,7 +124,7 @@ public sealed class RoundTripTests
         var type = assembly.GetType("Example.Asn1.Person");
         Assert.NotNull(type);
         var person = Activator.CreateInstance(type!)!;
-        type!.GetProperty("Id")!.SetValue(person, new BigInteger(42));
+        type!.GetProperty("Id")!.SetValue(person, Asn1Integer.FromInt32(42));
         type.GetProperty("Name")!.SetValue(person, Encoding.UTF8.GetBytes("Ann"));
         type.GetProperty("Nickname")!.SetValue(person, Encoding.UTF8.GetBytes("A"));
 
@@ -135,7 +134,7 @@ public sealed class RoundTripTests
 
         var reader = new Asn1Reader(encoded, Asn1Encoding.Der);
         var decoded = type.GetMethod("Decode", new[] { typeof(Asn1Reader) })!.Invoke(null, new object[] { reader })!;
-        Assert.Equal(new BigInteger(42), type.GetProperty("Id")!.GetValue(decoded));
+        Assert.Equal(Asn1Integer.FromInt32(42), type.GetProperty("Id")!.GetValue(decoded));
         Assert.Equal("Ann", Encoding.UTF8.GetString((byte[])type.GetProperty("Name")!.GetValue(decoded)!));
         Assert.Equal("A", Encoding.UTF8.GetString((byte[])type.GetProperty("Nickname")!.GetValue(decoded)!));
     }
@@ -253,7 +252,7 @@ END
         var listType = assembly.GetType("SetMod.List")!;
 
         var bag = Activator.CreateInstance(bagType)!;
-        bagType.GetProperty("A")!.SetValue(bag, new BigInteger(42));
+        bagType.GetProperty("A")!.SetValue(bag, Asn1Integer.FromInt32(42));
         bagType.GetProperty("B")!.SetValue(bag, true);
 
         var expectedWithOptional = new byte[]
@@ -268,7 +267,7 @@ END
 
         var decoded = bagType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
             .Invoke(null, new object[] { new Asn1Reader(expectedWithOptional, Asn1Encoding.Der) })!;
-        Assert.Equal(new BigInteger(42), bagType.GetProperty("A")!.GetValue(decoded));
+        Assert.Equal(Asn1Integer.FromInt32(42), bagType.GetProperty("A")!.GetValue(decoded));
         Assert.Equal(true, bagType.GetProperty("B")!.GetValue(decoded));
 
         // BER may present components in reverse tag order.
@@ -280,7 +279,7 @@ END
         };
         var fromBer = bagType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
             .Invoke(null, new object[] { new Asn1Reader(berReversed, Asn1Encoding.Ber) })!;
-        Assert.Equal(new BigInteger(42), bagType.GetProperty("A")!.GetValue(fromBer));
+        Assert.Equal(Asn1Integer.FromInt32(42), bagType.GetProperty("A")!.GetValue(fromBer));
         Assert.Equal(true, bagType.GetProperty("B")!.GetValue(fromBer));
         var rewrite = new Asn1Writer(Asn1Encoding.Der);
         bagType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(fromBer, new object[] { rewrite });
@@ -303,8 +302,8 @@ END
 
         var list = Activator.CreateInstance(listType)!;
         var items = (System.Collections.IList)listType.GetProperty("Items")!.GetValue(list)!;
-        items.Add(new BigInteger(2));
-        items.Add(new BigInteger(1));
+        items.Add(Asn1Integer.FromInt32(2));
+        items.Add(Asn1Integer.FromInt32(1));
         var expectedSetOf = new byte[] { 0x31, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02 };
         var listWriter = new Asn1Writer(Asn1Encoding.Der);
         listType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(list, new object[] { listWriter });
@@ -314,8 +313,8 @@ END
             .Invoke(null, new object[] { new Asn1Reader(expectedSetOf, Asn1Encoding.Der) })!;
         var decodedItems = (System.Collections.IList)listType.GetProperty("Items")!.GetValue(decodedList)!;
         Assert.Equal(2, decodedItems.Count);
-        Assert.Equal(new BigInteger(1), decodedItems[0]);
-        Assert.Equal(new BigInteger(2), decodedItems[1]);
+        Assert.Equal(Asn1Integer.FromInt32(1), decodedItems[0]);
+        Assert.Equal(Asn1Integer.FromInt32(2), decodedItems[1]);
 
         var listRewrite = new Asn1Writer(Asn1Encoding.Der);
         listType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(decodedList, new object[] { listRewrite });
@@ -471,7 +470,7 @@ END
         var flagsEnum = assembly.GetType("AliasMod.KeyUsageFlags")!;
 
         Assert.Equal(typeof(string), holderType.GetProperty("Type")!.PropertyType);
-        Assert.Equal(typeof(BigInteger), holderType.GetProperty("Id")!.PropertyType);
+        Assert.Equal(typeof(Asn1Integer), holderType.GetProperty("Id")!.PropertyType);
         Assert.Equal(rdnType, holderType.GetProperty("Who")!.PropertyType);
         Assert.Equal(keyUsageType, holderType.GetProperty("Usage")!.PropertyType);
 
@@ -497,7 +496,7 @@ END
 
         var holder = Activator.CreateInstance(holderType)!;
         holderType.GetProperty("Type")!.SetValue(holder, "1.2.3");
-        holderType.GetProperty("Id")!.SetValue(holder, new BigInteger(7));
+        holderType.GetProperty("Id")!.SetValue(holder, Asn1Integer.FromInt32(7));
         holderType.GetProperty("Who")!.SetValue(holder, rdn);
         holderType.GetProperty("Usage")!.SetValue(holder, usage);
 
@@ -508,7 +507,7 @@ END
         var decoded = holderType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
             .Invoke(null, new object[] { new Asn1Reader(encoded, Asn1Encoding.Der) })!;
         Assert.Equal("1.2.3", holderType.GetProperty("Type")!.GetValue(decoded));
-        Assert.Equal(new BigInteger(7), holderType.GetProperty("Id")!.GetValue(decoded));
+        Assert.Equal(Asn1Integer.FromInt32(7), holderType.GetProperty("Id")!.GetValue(decoded));
         var decodedRdn = holderType.GetProperty("Who")!.GetValue(decoded)!;
         Assert.Equal("2.5.4.3", rdnType.GetProperty("Attr")!.GetValue(decodedRdn));
         var decodedUsage = holderType.GetProperty("Usage")!.GetValue(decoded)!;
@@ -613,6 +612,46 @@ END
             entryType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
                 .Invoke(null, new object[] { new Asn1Reader(wrongTag, Asn1Encoding.Der) }));
         Assert.IsType<Asn1Exception>(ex.InnerException);
+    }
+
+    [Fact]
+    public void IntegerRepresentation_InfersFixedWidthAndHonorsOptions()
+    {
+        const string asn = @"
+IntMod DEFINITIONS ::= BEGIN
+Small ::= INTEGER (0..100)
+Wide ::= INTEGER (0..3000000000)
+Open ::= INTEGER
+Holder ::= SEQUENCE {
+  a Small,
+  b Wide,
+  c Open
+}
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+        Assert.Contains("public int A { get; set; }", source);
+        Assert.Contains("public uint B { get; set; }", source);
+        Assert.Contains("public Asn1Integer C { get; set; } = Asn1Integer.FromInt32(0);", source);
+        Assert.Contains("ReadInt32", source);
+        Assert.Contains("ReadUInt32", source);
+        Assert.Contains("ReadIntegerValue", source);
+
+        document.Modules[0].Options = IrOptions.SetIntegerRepresentation(null, IrOptions.IntegerRepresentations.BigInt);
+        var forced = new CSharpBackend().Generate(document).Single().Contents;
+        Assert.Contains("public BigInteger A { get; set; }", forced);
+        Assert.Contains("ReadInteger(", forced);
+
+        var open = document.Modules[0].Types.Single(t => t.Name == "Open");
+        open.Options = IrOptions.SetIntegerRepresentation(null, IrOptions.IntegerRepresentations.Int32);
+        document.Modules[0].Options = null;
+        var typedefOverride = new CSharpBackend().Generate(document).Single().Contents;
+        Assert.Contains("public int C { get; set; }", typedefOverride);
+
+        document.Modules[0].Options = IrOptions.SetIntegerRepresentation(null, "nope");
+        var ex = Assert.Throws<NotSupportedException>(() => new CSharpBackend().Generate(document));
+        Assert.Contains("nope", ex.Message);
     }
 
     private static Assembly CompileGenerated(string source)

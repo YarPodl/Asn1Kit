@@ -9,7 +9,7 @@
 ## Порядок
 
 1. **Снять запрет.** Убрать kind из `EnsureBackendSupport` — но только вместе с реализацией, не «на будущее».
-2. **Тип C#.** `CsType`: маппинг kind → тип C# и его nullable-форма для `OPTIONAL`. Текущие: `boolean` → `bool`, `integer` → `BigInteger`, `enumerated` → именованный `enum`, `octetString` → `byte[]`, `oid` → `string`, `null` → `bool`, `bitString` → `Asn1BitString`, `string` → `string`, `time` → `DateTimeOffset`.
+2. **Тип C#.** `CsType`: маппинг kind → тип C# и его nullable-форма для `OPTIONAL`. Текущие: `boolean` → `bool`, `integer` → по `options.integer.representation` или выводу из `constraint.value` (`int` / `uint` / `long` / `ulong` / `BigInteger` / `Asn1Integer`), `enumerated` → именованный `enum`, `octetString` → `byte[]`, `oid` → `string`, `null` → `bool`, `bitString` → `Asn1BitString`, `string` → `string`, `time` → `DateTimeOffset`.
 3. **Примитив или именованный тип.** `ResolvePrimitive` возвращает kind для «плоских» типов; `NeedsNamedType` перечисляет те, для которых эмитится отдельный класс (`sequence`, `choice`, `sequenceOf`). `enumerated` и `namedBits` тоже эмитятся как отдельные типы (не через `ResolvePrimitive`). Новый составной kind добавляется в обе функции и в `CollectNested`.
 4. **Тег по умолчанию.** `UniversalTag` и `UniversalFallback` — universal-тег kind, когда в IR тега нет. Для строк и времени тег выбирается по `stringType` / `timeType`. Для `SET` / `SET OF` это тег 17, а не 16. Для `enumerated` — `Asn1Tag.Enumerated` (10).
 5. **Encode / Decode.** `WriteCall` / `ReadCall` — полные вызовы runtime (у строк и времени с аргументом `Asn1StringForm` / `Asn1TimeForm`). Для `enumerated`: `WriteEnumerated` / `ReadEnumerated` с cast `(long)` / `(EnumName)`. `EmitEncodeValue` и `EmitDecodeExpr` уже обрабатывают `EXPLICIT`-обёртку и `OPTIONAL`; повторять это в новой ветке не нужно. `CloneUntagged` обязан создавать новый объект без `Tag` — иначе `EXPLICIT` уйдёт в бесконечную рекурсию.
@@ -21,7 +21,7 @@
 ## Требования к сгенерированному коду
 
 - Только вызовы runtime: байтов тегов, длин и правил DER в шаблоне быть не должно.
-- `options.csharp.namespace` / `typeName` / `propertyName` и `options.generate: false` уважаются (читаются через `IrOptions`).
+- `options.csharp.namespace` / `typeName` / `propertyName`, `options.generate: false` и `options.integer.representation` уважаются (читаются через `IrOptions`). Для INTEGER без опции: полный `constraint.value` → наименьший подходящий `int32`→`uint32`→`int64`→`uint64`, иначе `der` (`Asn1Integer`).
 - Никаких лишних аллокаций: без промежуточных `MemoryStream` на поле, без `Func` на элемент `SEQUENCE OF`, коллекции с известной ёмкостью, где размер известен.
 - Ломаный вход падает `Asn1Exception` (чужой тег, неизвестная альтернатива `CHOICE`, лишние байты) — это обеспечивает runtime, задача шаблона его не обходить.
 

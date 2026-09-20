@@ -19,7 +19,7 @@ public sealed class RuntimeTests
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
         reader.ReadSequence(Asn1Tag.Sequence, inner =>
         {
-            Assert.Equal(42, Asn1Integer.Decode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 0)));
+            Assert.Equal(42, Asn1Integer.Decode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 0)).GetInt32());
             Assert.Equal("Ann", Encoding.UTF8.GetString(Asn1OctetString.Decode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 1))));
             Assert.True(inner.Eof);
         });
@@ -170,8 +170,8 @@ public sealed class RuntimeTests
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
         reader.ReadSet(Asn1Tag.Set, inner =>
         {
-            Assert.Equal(1, Asn1Integer.Decode(inner));
-            Assert.Equal(2, Asn1Integer.Decode(inner));
+            Assert.Equal(1, Asn1Integer.Decode(inner).GetInt32());
+            Assert.Equal(2, Asn1Integer.Decode(inner).GetInt32());
             Assert.True(inner.Eof);
         });
     }

@@ -12,7 +12,8 @@
 | [Asn1BitString.cs](../../src/Asn1Kit.Runtime/Asn1BitString.cs) | `Asn1BitString` (`Span` + `UnusedBits`), индексатор MSB-first, `FromBits`, статические `Encode` / `Decode` |
 | [Asn1Any.cs](../../src/Asn1Kit.Runtime/Asn1Any.cs) | `Asn1Any` (`Tag` + `Contents`), `WriteAny` / `ReadAny` |
 | [Asn1TextCodec.cs](../../src/Asn1Kit.Runtime/Asn1TextCodec.cs) | `internal`: encode/decode строк и времени (наборы символов, DER/BER-формы) |
-| [Asn1Primitives.cs](../../src/Asn1Kit.Runtime/Asn1Primitives.cs) | `Asn1Boolean` / `Asn1Integer` / `Asn1OctetString` / `Asn1Null` / `Asn1ObjectIdentifier` / `Asn1String` / `Asn1Time` — тонкие обёртки для тестов и прикладного кода; **C# backend эмитит `writer.Write*` / `reader.Read*` напрямую** |
+| [Asn1Integer.cs](../../src/Asn1Kit.Runtime/Asn1Integer.cs) | Value type: owned DER contents; `FromBigInteger` / `GetInt32`…; hot для codegen `der` |
+| [Asn1Primitives.cs](../../src/Asn1Kit.Runtime/Asn1Primitives.cs) | `Asn1Boolean` / `Asn1Enumerated` / `Asn1OctetString` / … — warm обёртки; **C# backend эмитит `writer.Write*` / `reader.Read*` напрямую** |
 
 Кодировка выбирается через `Asn1Encoding.Ber` / `Asn1Encoding.Der` в конструкторе writer'а и reader'а.
 
@@ -28,7 +29,7 @@
 
 ## Правила, которые нельзя нарушать
 
-- **Запись DER:** только definite length, BOOLEAN строго `0x00` / `0xFF`, BIT STRING с нулевыми хвостовыми битами, минимальный INTEGER. Encode не ослабляется soft-profile.
+- **Запись DER:** только definite length, BOOLEAN строго `0x00` / `0xFF`, BIT STRING с нулевыми хвостовыми битами, минимальный INTEGER из чисел. `WriteInteger(Asn1Integer)` пишет сохранённые contents as-is (владение проводом). Encode из числовых типов не ослабляется soft-profile.
 - **Чтение:** soft-accept для зафиксированных неканоничных форм (см. [decisions.md](../../../docs/decisions.md), [status.md](../../../docs/status.md), [runtime-api.md](../runtime-api.md)). Строгий reject — через опции reader’а, не через молчаливое ужесточение default. Новый soft-accept без записи в status/runtime-api — запрещён.
 - **BER на чтении:** definite и indefinite length, constructed `OCTET STRING` склеивается. На записи indefinite length не порождается (`definiteOnly` в private `WriteTlv` сейчас не используется — поведение то же).
 - Ошибка ввода (вне soft-списка) — всегда `Asn1Exception` с внятным текстом: чужой тег, обрезанный TLV, лишние байты, невалидная строка OID.
