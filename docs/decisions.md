@@ -76,6 +76,12 @@
 
 **Последствие.** Эти формы кодируются и декодируются как ISO-8859-1 без проверки набора: 8-битные октеты переживают round-trip без потерь. `Printable` / `Numeric` / `IA5` / `Visible` по-прежнему валидируют допустимые символы; `UTF8` / `BMP` / `Universal` используют UTF-8 / UTF-16BE / UTF-32BE.
 
+## Decode — zero-copy `ReadOnlyMemory` на буфер reader
+
+**Причина.** Owned-копия каждого OCTET / ANY / INTEGER / BIT STRING на горячем пути дороже пользы: буфер уже есть у вызывающего (сертификат, CMS, PDU). Безопасное долговременное хранение без исходных байтов — отдельный сценарий, его закрывает явный detach.
+
+**Последствие.** `Asn1Reader` держит `_data`; `Source` и значения из `Read*` (`ReadOnlyMemory`, `Asn1Any` / `Asn1BitString` / `Asn1Integer`) по возможности **алиасят** этот массив. Lifetime views = lifetime буфера (или reader’а). Мутация буфера после decode — UB. Constructed BER (конкатенация сегментов) и materialize (`string` / `BigInteger` / `DateTimeOffset`) аллоцируют. Отвязка — `ToArray` / `Clone` на value-types. Codegen: OCTET STRING → `ReadOnlyMemory<byte>`.
+
 ## ANY — `Asn1Any` (тег + contents), без резолва `DEFINED BY`
 
 **Причина.** В PKIX `parameters ANY DEFINED BY algorithm` и `AttributeValue ::= ANY` встречаются постоянно, а полноценный open-type (таблица OID → тип) требует information object classes, которые вне профиля компилятора. Нужен способ пропустить чужой TLV без молчаливой потери байтов.

@@ -736,7 +736,7 @@ public sealed class CSharpBackend : ILanguageBackend
         }
 
         return ResolvePrimitive(unwrapped) is TypeKinds.Boolean or TypeKinds.Integer
-            or TypeKinds.BitString or TypeKinds.Time or TypeKinds.Any;
+            or TypeKinds.OctetString or TypeKinds.BitString or TypeKinds.Time or TypeKinds.Any;
     }
 
     private bool IsEnumeratedRefOrType(IrDocument document, IrModule module, TypeExpr type) =>
@@ -1040,7 +1040,7 @@ public sealed class CSharpBackend : ILanguageBackend
                 TypeKinds.Integer => MapIntegerCsType(
                     integerRepresentation ?? IrOptions.IntegerRepresentations.Der,
                     optional),
-                TypeKinds.OctetString => optional ? "byte[]?" : "byte[]",
+                TypeKinds.OctetString => optional ? "ReadOnlyMemory<byte>?" : "ReadOnlyMemory<byte>",
                 TypeKinds.Null => optional ? "bool?" : "bool",
                 TypeKinds.Oid => optional ? "string?" : "string",
                 TypeKinds.BitString => optional ? "Asn1BitString?" : "Asn1BitString",
@@ -1300,7 +1300,6 @@ public sealed class CSharpBackend : ILanguageBackend
         var unwrapped = UnwrapAliases(document, module, type);
         return unwrapped switch
         {
-            OctetStringType => " = Array.Empty<byte>();",
             OidType => " = \"\";",
             StringType => " = \"\";",
             SequenceOfType or SetOfType => " = new();",
@@ -1633,7 +1632,7 @@ public sealed class CSharpBackend : ILanguageBackend
         BooleanType => $"{writer}.WriteBoolean({tag}, {expr})",
         IntegerType => $"{writer}.WriteInteger({tag}, {expr})",
         BitStringType => $"{writer}.WriteBitString({tag}, {expr})",
-        OctetStringType => $"{writer}.WriteOctetString({tag}, {expr})",
+        OctetStringType => $"{writer}.WriteOctetString({tag}, {expr}.Span)",
         NullType => $"{writer}.WriteNull({tag})",
         OidType => $"{writer}.WriteObjectIdentifier({tag}, {expr})",
         StringType stringType => $"{writer}.WriteString({tag}, {expr}, {StringFormEnum(stringType.Form)})",

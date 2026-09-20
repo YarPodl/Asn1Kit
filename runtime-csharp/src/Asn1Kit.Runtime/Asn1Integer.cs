@@ -3,24 +3,43 @@ using System.Numerics;
 namespace Asn1Kit.Runtime;
 
 /// <summary>
-/// INTEGER value owning DER contents (big-endian, without TLV).
-/// Numeric factories produce canonical contents; <see cref="FromContents"/> preserves wire bytes.
+/// INTEGER value holding DER contents (big-endian, without TLV).
+/// Numeric factories produce canonical contents; <see cref="FromContents"/> wraps Memory without copy;
+/// <see cref="CopyFrom"/> copies a Span.
 /// </summary>
 public readonly struct Asn1Integer : IEquatable<Asn1Integer>
 {
-    private readonly byte[]? _bytes;
+    private readonly ReadOnlyMemory<byte> _bytes;
 
-    private Asn1Integer(byte[] bytes)
+    private Asn1Integer(ReadOnlyMemory<byte> bytes)
     {
         _bytes = bytes;
     }
 
-    public ReadOnlySpan<byte> Span => _bytes ?? Array.Empty<byte>();
+    public ReadOnlySpan<byte> Span => _bytes.Span;
 
-    /// <summary>Owned DER contents as memory (same lifetime as this value).</summary>
-    public ReadOnlyMemory<byte> Memory => _bytes ?? Array.Empty<byte>();
+    /// <summary>DER contents as memory (may alias an <see cref="Asn1Reader"/> buffer).</summary>
+    public ReadOnlyMemory<byte> Memory => _bytes;
 
-    public static Asn1Integer FromContents(ReadOnlySpan<byte> contents)
+    /// <summary>Detaches DER contents into a new array.</summary>
+    public byte[] ToArray() => _bytes.ToArray();
+
+    /// <summary>Returns a copy that does not alias an external buffer.</summary>
+    public Asn1Integer Clone() => new(ToArray());
+
+    /// <summary>Wraps <paramref name="contents"/> without copying (caller owns lifetime).</summary>
+    public static Asn1Integer FromContents(ReadOnlyMemory<byte> contents)
+    {
+        if (contents.Length == 0)
+        {
+            throw new Asn1Exception("INTEGER contents must not be empty.");
+        }
+
+        return new Asn1Integer(contents);
+    }
+
+    /// <summary>Copies <paramref name="contents"/> into an owned buffer.</summary>
+    public static Asn1Integer CopyFrom(ReadOnlySpan<byte> contents)
     {
         if (contents.Length == 0)
         {

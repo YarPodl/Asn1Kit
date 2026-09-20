@@ -9,6 +9,7 @@ public sealed class Asn1Reader
     private readonly byte[] _data;
     private int _offset;
     private readonly int _end;
+    private readonly int _start;
 
     public Asn1Reader(byte[] data, Asn1Encoding encoding = Asn1Encoding.Ber)
         : this(data, 0, data is null ? 0 : data.Length, encoding)
@@ -28,6 +29,7 @@ public sealed class Asn1Reader
         }
 
         _data = data;
+        _start = offset;
         _offset = offset;
         _end = offset + length;
         Encoding = encoding;
@@ -38,12 +40,14 @@ public sealed class Asn1Reader
         if (MemoryMarshal.TryGetArray(data, out ArraySegment<byte> segment) && segment.Array is not null)
         {
             _data = segment.Array;
+            _start = segment.Offset;
             _offset = segment.Offset;
             _end = segment.Offset + segment.Count;
         }
         else
         {
             _data = data.ToArray();
+            _start = 0;
             _offset = 0;
             _end = _data.Length;
         }
@@ -52,6 +56,9 @@ public sealed class Asn1Reader
     }
 
     public Asn1Encoding Encoding { get; }
+
+    /// <summary>Window into the underlying buffer this reader was constructed over (lifetime anchor for views).</summary>
+    public ReadOnlyMemory<byte> Source => _data.AsMemory(_start, _end - _start);
 
     public bool Eof => _offset >= _end;
 
@@ -73,8 +80,7 @@ public sealed class Asn1Reader
     {
         var contents = ReadValue(expected, allowConstructed: true);
         var inner = new Asn1Reader(contents, Encoding);
-        var result = read(inner);
-        return result;
+        return read(inner);
     }
 
     public void ReadSequence(Asn1Tag expected, Action<Asn1Reader> read) =>
@@ -116,7 +122,7 @@ public sealed class Asn1Reader
 
     public bool ReadBoolean(Asn1Tag expected)
     {
-        var contents = ReadValue(expected, allowConstructed: false);
+        var contents = ReadValue(expected, allowConstructed: false).Span;
         if (contents.Length != 1)
         {
             throw new Asn1Exception("BOOLEAN must contain one octet.");
@@ -132,7 +138,7 @@ public sealed class Asn1Reader
 
     public BigInteger ReadInteger(Asn1Tag expected) => ReadIntegerValue(expected).ToBigInteger();
 
-    /// <summary>Reads INTEGER contents into an owned value (preserves wire bytes).</summary>
+    /// <summary>Reads INTEGER contents (preserves wire bytes; may alias <see cref="Source"/>).</summary>
     public Asn1Integer ReadIntegerValue(Asn1Tag expected)
     {
         var contents = ReadValue(expected, allowConstructed: false);
@@ -186,7 +192,7 @@ public sealed class Asn1Reader
     /// <summary>ENUMERATED uses the same contents encoding as INTEGER (X.690).</summary>
     public BigInteger ReadEnumerated(Asn1Tag expected) => ReadInteger(expected);
 
-    public byte[] ReadOctetString(Asn1Tag expected)
+    public ReadOnlyMemory<byte> ReadOctetString(Asn1Tag expected)
     {
         var (tag, contents, constructed) = ReadTlv();
         if (!tag.MatchesIgnoreConstructed(expected))
@@ -199,14 +205,7 @@ public sealed class Asn1Reader
             return contents;
         }
 
-        var nested = new Asn1Reader(contents, Encoding);
-        var parts = new List<byte>();
-        while (!nested.Eof)
-        {
-            parts.AddRange(nested.ReadOctetString(Asn1Tag.OctetString));
-        }
-
-        return parts.ToArray();
+        return ConcatOctetLike(contents, Asn1Tag.OctetString);
     }
 
     public bool TryReadOctetString(Asn1Tag expected, Span<byte> destination, out int bytesWritten)
@@ -219,7 +218,7 @@ public sealed class Asn1Reader
             return false;
         }
 
-        value.CopyTo(destination);
+        value.Span.CopyTo(destination);
         bytesWritten = value.Length;
         return true;
     }
@@ -237,7 +236,7 @@ public sealed class Asn1Reader
 
     public string ReadObjectIdentifier(Asn1Tag expected)
     {
-        var contents = ReadValue(expected, allowConstructed: false);
+        var contents = ReadValue(expected, allowConstructed: false).Span;
         if (contents.Length == 0)
         {
             throw new Asn1Exception("OBJECT IDENTIFIER is empty.");
@@ -276,7 +275,7 @@ public sealed class Asn1Reader
         return builder.ToString();
     }
 
-    private static int ReadOidArc(byte[] contents, ref int i)
+    private static int ReadOidArc(ReadOnlySpan<byte> contents, ref int i)
     {
         var value = 0;
         byte b;
@@ -334,7 +333,7 @@ public sealed class Asn1Reader
             throw new Asn1Exception("Constructed BIT STRING has no segments.");
         }
 
-        var value = new Asn1BitString(parts.ToArray().AsSpan(), unusedBits);
+        var value = new Asn1BitString(parts.ToArray(), unusedBits);
         if (Encoding == Asn1Encoding.Der)
         {
             Asn1TextCodec.EnsureTrailingBitsZero(value.Span, value.UnusedBits);
@@ -346,17 +345,17 @@ public sealed class Asn1Reader
     public string ReadString(Asn1Tag expected, Asn1StringForm form)
     {
         var bytes = ReadOctetLike(expected);
-        return Asn1TextCodec.DecodeString(bytes, form);
+        return Asn1TextCodec.DecodeString(bytes.Span, form);
     }
 
     public DateTimeOffset ReadTime(Asn1Tag expected, Asn1TimeForm form)
     {
         var bytes = ReadOctetLike(expected);
-        var text = Asn1TextCodec.DecodeString(bytes, Asn1StringForm.Visible);
+        var text = Asn1TextCodec.DecodeString(bytes.Span, Asn1StringForm.Visible);
         return Asn1TextCodec.ParseTime(text, form, Encoding);
     }
 
-    public byte[] ReadValue(Asn1Tag expected, bool allowConstructed)
+    public ReadOnlyMemory<byte> ReadValue(Asn1Tag expected, bool allowConstructed)
     {
         var (tag, contents, constructed) = ReadTlv();
         if (!tag.MatchesIgnoreConstructed(expected))
@@ -381,7 +380,7 @@ public sealed class Asn1Reader
             return false;
         }
 
-        value.CopyTo(destination);
+        value.Span.CopyTo(destination);
         bytesWritten = value.Length;
         return true;
     }
@@ -390,7 +389,7 @@ public sealed class Asn1Reader
     public Asn1Any ReadAny()
     {
         var (tag, contents, _) = ReadTlv();
-        return new Asn1Any(tag, contents.AsSpan());
+        return new Asn1Any(tag, contents);
     }
 
     /// <summary>Reads ANY expecting a specific tag (IMPLICIT); returns the wire tag and contents.</summary>
@@ -402,14 +401,14 @@ public sealed class Asn1Reader
             throw new Asn1Exception($"Expected tag {expected}, found {tag}.");
         }
 
-        return new Asn1Any(tag, contents.AsSpan());
+        return new Asn1Any(tag, contents);
     }
 
-    public (Asn1Tag Tag, byte[] Contents, bool Constructed) ReadTlv()
+    public (Asn1Tag Tag, ReadOnlyMemory<byte> Contents, bool Constructed) ReadTlv()
     {
         var tag = ReadTag();
         var (length, indefinite) = ReadLength();
-        byte[] contents;
+        ReadOnlyMemory<byte> contents;
         if (indefinite)
         {
             if (Encoding == Asn1Encoding.Der)
@@ -427,7 +426,7 @@ public sealed class Asn1Reader
 
                 if (_data[_offset] == 0x00 && _data[_offset + 1] == 0x00)
                 {
-                    contents = _data[start.._offset];
+                    contents = _data.AsMemory(start, _offset - start);
                     _offset += 2;
                     break;
                 }
@@ -442,7 +441,7 @@ public sealed class Asn1Reader
                 throw new Asn1Exception("Length exceeds buffer.");
             }
 
-            contents = _data[_offset..(_offset + length)];
+            contents = _data.AsMemory(_offset, length);
             _offset += length;
         }
 
@@ -509,7 +508,7 @@ public sealed class Asn1Reader
         }
     }
 
-    private byte[] ReadOctetLike(Asn1Tag expected)
+    private ReadOnlyMemory<byte> ReadOctetLike(Asn1Tag expected)
     {
         var (tag, contents, constructed) = ReadTlv();
         if (!tag.MatchesIgnoreConstructed(expected))
@@ -522,24 +521,29 @@ public sealed class Asn1Reader
             return contents;
         }
 
-        var nested = new Asn1Reader(contents, Encoding);
+        return ConcatOctetLike(contents, expected.AsPrimitive());
+    }
+
+    private ReadOnlyMemory<byte> ConcatOctetLike(ReadOnlyMemory<byte> constructedContents, Asn1Tag segmentTag)
+    {
+        var nested = new Asn1Reader(constructedContents, Encoding);
         var parts = new List<byte>();
         while (!nested.Eof)
         {
-            parts.AddRange(nested.ReadOctetLike(expected.AsPrimitive()));
+            parts.AddRange(nested.ReadOctetLike(segmentTag).ToArray());
         }
 
         return parts.ToArray();
     }
 
-    private static Asn1BitString ParsePrimitiveBitString(byte[] contents, bool derStrict)
+    private static Asn1BitString ParsePrimitiveBitString(ReadOnlyMemory<byte> contents, bool derStrict)
     {
         if (contents.Length == 0)
         {
             throw new Asn1Exception("BIT STRING contents must not be empty.");
         }
 
-        var unusedBits = contents[0];
+        var unusedBits = contents.Span[0];
         if (unusedBits > 7)
         {
             throw new Asn1Exception("BIT STRING unusedBits must be in 0..7.");
@@ -555,12 +559,12 @@ public sealed class Asn1Reader
             return default;
         }
 
-        var bytes = contents.AsSpan(1).ToArray();
+        var bytes = contents.Slice(1);
         if (derStrict)
         {
-            Asn1TextCodec.EnsureTrailingBitsZero(bytes, unusedBits);
+            Asn1TextCodec.EnsureTrailingBitsZero(bytes.Span, unusedBits);
         }
 
-        return new Asn1BitString(bytes.AsSpan(), unusedBits);
+        return new Asn1BitString(bytes, unusedBits);
     }
 }

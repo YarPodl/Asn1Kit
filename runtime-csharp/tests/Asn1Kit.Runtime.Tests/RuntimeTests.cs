@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using Asn1Kit.Runtime;
 
@@ -20,7 +21,7 @@ public sealed class RuntimeTests
         reader.ReadSequence(Asn1Tag.Sequence, inner =>
         {
             Assert.Equal(42, Asn1Integer.Decode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 0)).GetInt32());
-            Assert.Equal("Ann", Encoding.UTF8.GetString(Asn1OctetString.Decode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 1))));
+            Assert.Equal("Ann", Encoding.UTF8.GetString(Asn1OctetString.Decode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 1)).Span));
             Assert.True(inner.Eof);
         });
     }
@@ -31,7 +32,7 @@ public sealed class RuntimeTests
         var ber = new byte[] { 0x24, 0x80, 0x04, 0x03, 0x41, 0x6E, 0x6E, 0x00, 0x00 };
         var reader = new Asn1Reader(ber, Asn1Encoding.Ber);
         var value = reader.ReadOctetString(Asn1Tag.OctetString);
-        Assert.Equal("Ann", Encoding.UTF8.GetString(value));
+        Assert.Equal("Ann", Encoding.UTF8.GetString(value.Span));
     }
 
     [Fact]
@@ -67,6 +68,53 @@ public sealed class RuntimeTests
         var reader = new Asn1Reader(data.AsMemory(2, 3), Asn1Encoding.Der);
         Assert.Equal(42, reader.ReadInteger(Asn1Tag.Integer));
         Assert.True(reader.Eof);
+    }
+
+    [Fact]
+    public void Reader_DecodedValues_AliasSourceBuffer()
+    {
+        var data = new byte[]
+        {
+            0x04, 0x03, 0x41, 0x6E, 0x6E,
+            0x02, 0x01, 0x2A,
+            0x03, 0x02, 0x00, 0xA0,
+            0x05, 0x00
+        };
+        var reader = new Asn1Reader(data, Asn1Encoding.Der);
+
+        var octet = reader.ReadOctetString(Asn1Tag.OctetString);
+        AssertSameArray(data, octet, expectedOffset: 2);
+
+        var integer = reader.ReadIntegerValue(Asn1Tag.Integer);
+        AssertSameArray(data, integer.Memory, expectedOffset: 7);
+
+        var bits = reader.ReadBitString(Asn1Tag.BitString);
+        AssertSameArray(data, bits.Memory, expectedOffset: 11);
+
+        var any = reader.ReadAny();
+        AssertSameArray(data, any.ContentsMemory, expectedOffset: 14);
+        Assert.True(reader.Eof);
+        Assert.True(MemoryMarshal.TryGetArray(reader.Source, out ArraySegment<byte> source));
+        Assert.Same(data, source.Array);
+    }
+
+    [Fact]
+    public void Reader_ConstructedBerOctet_DoesNotAliasSource()
+    {
+        var ber = new byte[] { 0x24, 0x80, 0x04, 0x03, 0x41, 0x6E, 0x6E, 0x00, 0x00 };
+        var reader = new Asn1Reader(ber, Asn1Encoding.Ber);
+        var value = reader.ReadOctetString(Asn1Tag.OctetString);
+        Assert.Equal(new byte[] { 0x41, 0x6E, 0x6E }, value.ToArray());
+        Assert.True(MemoryMarshal.TryGetArray(value, out ArraySegment<byte> segment));
+        Assert.NotSame(ber, segment.Array);
+    }
+
+    private static void AssertSameArray(byte[] source, ReadOnlyMemory<byte> view, int expectedOffset)
+    {
+        Assert.True(MemoryMarshal.TryGetArray(view, out ArraySegment<byte> segment));
+        Assert.Same(source, segment.Array);
+        Assert.Equal(expectedOffset, segment.Offset);
+        Assert.Equal(view.Length, segment.Count);
     }
 
     [Fact]
@@ -146,7 +194,7 @@ public sealed class RuntimeTests
         ReadOnlyMemory<byte> payload = new byte[] { 0x01, 0x02 };
         var writer = new Asn1Writer(Asn1Encoding.Der);
         writer.WriteOctetString(Asn1Tag.OctetString, payload.Span);
-        var any = new Asn1Any(Asn1Tag.OctetString, payload.Span);
+        var any = new Asn1Any(Asn1Tag.OctetString, payload);
         Assert.Equal(payload.ToArray(), any.ContentsMemory.ToArray());
 
         var rewrite = new Asn1Writer(Asn1Encoding.Der);
@@ -242,7 +290,7 @@ public sealed class RuntimeTests
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
         var decoded = reader.ReadAny();
         Assert.Equal(Asn1Tag.Integer, decoded.Tag);
-        Assert.Equal(new byte[] { 0x05 }, decoded.Contents);
+        Assert.Equal(new byte[] { 0x05 }, decoded.ToArray());
         Assert.True(reader.Eof);
 
         var rewrite = new Asn1Writer(Asn1Encoding.Der);
@@ -272,7 +320,7 @@ public sealed class RuntimeTests
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
         var decoded = reader.ReadAny(context);
         Assert.Equal(context, decoded.Tag);
-        Assert.Empty(decoded.Contents);
+        Assert.Equal(0, decoded.Span.Length);
     }
 
     [Fact]
@@ -283,7 +331,7 @@ public sealed class RuntimeTests
         var reader = new Asn1Reader(ber, Asn1Encoding.Ber);
         var decoded = reader.ReadAny();
         Assert.Equal(Asn1Tag.Sequence, decoded.Tag);
-        Assert.Equal(new byte[] { 0x02, 0x01, 0x01 }, decoded.Contents);
+        Assert.Equal(new byte[] { 0x02, 0x01, 0x01 }, decoded.ToArray());
         Assert.True(reader.Eof);
     }
 
@@ -359,7 +407,7 @@ public sealed class RuntimeTests
     public void BitString_RejectsInvalidForms()
     {
         Assert.Throws<Asn1Exception>(() => new Asn1BitString(new byte[] { 0xFF }, 8));
-        Assert.Throws<Asn1Exception>(() => new Asn1BitString(ReadOnlySpan<byte>.Empty, 1));
+        Assert.Throws<Asn1Exception>(() => Asn1BitString.CopyFrom(ReadOnlySpan<byte>.Empty, 1));
 
         var emptyContents = new byte[] { 0x03, 0x00 };
         Assert.Throws<Asn1Exception>(() =>

@@ -10,7 +10,7 @@ namespace Asn1Kit.Pkix;
 public sealed class AuthorityKeyIdentifier
 {
     /// <summary>ASN.1 alias KeyIdentifier ::= OCTET STRING.</summary>
-    public byte[]? KeyIdentifier { get; set; }
+    public ReadOnlyMemory<byte>? KeyIdentifier { get; set; }
     /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName.</summary>
     public List<GeneralName>? AuthorityCertIssuer { get; set; }
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
@@ -24,7 +24,7 @@ public sealed class AuthorityKeyIdentifier
         {
             if (KeyIdentifier != null)
             {
-                inner.WriteOctetString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), KeyIdentifier);
+                inner.WriteOctetString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), KeyIdentifier.Value.Span);
             }
             if (AuthorityCertIssuer != null)
             {
@@ -473,7 +473,7 @@ public sealed class GeneralName
     public List<List<AttributeTypeAndValue>>? DirectoryName { get; private set; }
     public EDIPartyName? EdiPartyName { get; private set; }
     public string? UniformResourceIdentifier { get; private set; }
-    public byte[]? IPAddress { get; private set; }
+    public ReadOnlyMemory<byte>? IPAddress { get; private set; }
     public string? RegisteredID { get; private set; }
 
     public void Encode(Asn1Writer writer)
@@ -508,7 +508,7 @@ public sealed class GeneralName
                 writer.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 6, false), UniformResourceIdentifier, Asn1StringForm.Ia5);
                 break;
             case GeneralNameKind.IPAddress:
-                writer.WriteOctetString(new Asn1Tag(Asn1TagClass.ContextSpecific, 7, false), IPAddress);
+                writer.WriteOctetString(new Asn1Tag(Asn1TagClass.ContextSpecific, 7, false), IPAddress.Value.Span);
                 break;
             case GeneralNameKind.RegisteredID:
                 writer.WriteObjectIdentifier(new Asn1Tag(Asn1TagClass.ContextSpecific, 8, false), RegisteredID);

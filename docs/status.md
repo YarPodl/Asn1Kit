@@ -11,11 +11,11 @@
 | `integer`                       | да, с `namedValues`                                                  | да → `int`/`uint`/`long`/`ulong`/`BigInteger`/`Asn1Integer` по опции или выводу (`namedValues` → `int` + `static class` констант; иначе `constraint.value`; иначе `Asn1Integer`) | `CompilerTests`, `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RoundTripTests`                                                                    |
 | `enumerated`                    | да, с `values`                                                       | да → C# `enum` (tag 10); inline → `Owner_Field`                                                                                           | `PkixImplicit88Tests`, `RoundTripTests.GeneratedCSharp_Enumerated_*`, `PrimitiveCodecTests`                                                         |
 | `bitString`                     | да, с `namedBits`                                                    | без имён → `Asn1BitString`; с `namedBits` → класс + `[Flags]` enum (`ToFlags`/`FromFlags`)                                                | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*`, `RoundTripTests.GeneratedCSharp_CollapsesAliases*` |
-| `octetString`                   | да                                                                   | да → `byte[]`                                                                                                                             | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RoundTripTests`, `RuntimeTests`                                                                     |
+| `octetString`                   | да                                                                   | да → `ReadOnlyMemory<byte>`                                                                                                               | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RoundTripTests`, `RuntimeTests`                                                                     |
 | `oid`                           | да, dotted-строка; первый subidentifier — base-128 (в т.ч. `2.999…`) | да → `string`                                                                                                                             | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RuntimeTests.ObjectIdentifier_*`                                                                    |
 | `string` (12 форм `stringType`) | да                                                                   | да → `string` + `Asn1StringForm`                                                                                                          | `PrimitiveCodecTests` (все 12), `PrimitiveOracleTests` (BCL-совместимые), `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*`                          |
 | `time` (`utc` / `generalized`)  | да; `fractionDigits` 0…7 (default 3) для `generalized`               | да → `DateTimeOffset` + `Asn1TimeForm`; запись с округлением                                                                              | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*`                                                     |
-| `any` (+ `definedBy`)           | да, с проверкой sibling-компонента                                   | да → `Asn1Any` (Tag + Contents; `definedBy` не резолвится); typedef `Name ::= ANY` сворачивается                                          | `ParserTests`, `RuntimeTests.Any_*`, `RoundTripTests.GeneratedCSharp_Any_*`, `ValueResolutionTests.RejectsAnyDefinedByUnknownField`                 |
+| `any` (+ `definedBy`)           | да, с проверкой sibling-компонента                                   | да → `Asn1Any` (Tag + ContentsMemory; `definedBy` не резолвится); typedef `Name ::= ANY` сворачивается                                    | `ParserTests`, `RuntimeTests.Any_*`, `RoundTripTests.GeneratedCSharp_Any_*`, `ValueResolutionTests.RejectsAnyDefinedByUnknownField`                 |
 | `sequence`                      | да, `extensible`                                                     | да → класс с `Encode` / `Decode`                                                                                                          | `RoundTripTests`, `PkixExplicit88Tests`, `PkixImplicit88Tests`, `PkixGeneratedCodeTests`                                                            |
 | `set`                           | да                                                                   | да → класс с `Encode` / `Decode` (DER: порядок по тегу; decode по тегу)                                                                   | `RoundTripTests`, `ParserTests`, `RuntimeTests`                                                                                                     |
 | `choice`                        | да                                                                   | да → класс + enum `…Kind`; **один** вариант → сворачивается как алиас (без класса/`Kind`)                                              | `ParserTests`, `PkixExplicit88Tests`, `PkixGeneratedCodeTests`, `RoundTripTests.GeneratedCSharp_CollapsesSingleAlternativeChoice`                 |
@@ -51,7 +51,7 @@
 | INTEGER                      | `WriteInteger` (`BigInteger` / фиксированные числа / `Asn1Integer` as-is) | `ReadInteger` / `ReadIntegerValue` / `ReadInt32`…`ReadUInt64`                                      |
 | ENUMERATED                   | `WriteEnumerated` (`BigInteger`, contents как INTEGER)           | `ReadEnumerated`                                                                                              |
 | BIT STRING                   | `WriteBitString` (`Asn1BitString`)                               | `ReadBitString` (BER: constructed и indefinite length склеиваются)                                            |
-| OCTET STRING                 | `WriteOctetString` (`ReadOnlySpan`)                              | `ReadOctetString` → `byte[]`; `TryReadOctetString(Span)` copy-out (BER: constructed и indefinite склеиваются) |
+| OCTET STRING                 | `WriteOctetString` (`ReadOnlySpan`)                              | `ReadOctetString` → `ReadOnlyMemory` (view; BER constructed — owned); `TryReadOctetString(Span)` copy-out |
 | NULL                         | `WriteNull`                                                      | `ReadNull`                                                                                                    |
 | OBJECT IDENTIFIER            | `WriteObjectIdentifier` (dotted)                                 | `ReadObjectIdentifier`                                                                                        |
 | STRING (12 форм)             | `WriteString` + `Asn1StringForm`                                 | `ReadString` (BER: constructed склеивается)                                                                   |
@@ -99,7 +99,7 @@
 7. Encode/decode тесты на golden-либе `[runtime-csharp/generated/Asn1Kit.Pkix](../runtime-csharp/generated/Asn1Kit.Pkix/)` (сама либа и сверка `PkixGeneratedCodeTests` уже есть; мелкий round-trip через Roslyn — в `compiler/tests`).
 8. ~~Убрать лишний алиас для CHOICE из одного варианта~~ — `Name ::= CHOICE { rdnSequence RDNSequence }` сворачивается в underlying (как typedef-алиас)
 9. Для Asn1Integer создать дефотный вариант (например пустой конструктор), чтобы оптимизировать места по типу public Asn1Integer UserCertificate { get; set; } = Asn1Integer.FromInt32(0);
-10. Все таки подумать над логикой API, слишком много byte[], можно лучше. В Decode не принимать владение. Заменить List на массивы, чтобы избежать лишних выделений за счет Array.Empty.
+10. ~~Все таки подумать над логикой API, слишком много byte[], можно лучше. В Decode не принимать владение.~~ — decode zero-copy `ReadOnlyMemory` / structs с Memory на буфер reader; detach — `ToArray`/`Clone`. Follow-up: `List<T>` → массивы в `ReadSequenceOf` / `Array.Empty`.
 11. Оптимизация API для Time и строк (например оптимизация Choice для случая, если все элементы мапятся в один тип)
 12. Добавить опцию Lazy, чтобы откладывать разбор структуры
 13. Добавить опцию сохранения исходного (и неизменного) закодированного представления в поле класса
@@ -110,6 +110,7 @@
 ### Крупные задачи
 
 1. C++backend (++`compiler/src/Asn1Kit.Codegen.Cpp`++) и C++ runtime (`runtime-cpp/`) — см. [compiler/docs/playbooks/new-backend.md](../compiler/docs/playbooks/new-backend.md).
+2. Инструменты PKI поверх сгенерированного.
 
 
 
@@ -134,15 +135,15 @@
 
 ## Backlog: оптимизация runtime
 
-Внутренние аллокации; публичный API не меняется. Контракт Writer/Reader — [runtime-api.md](../runtime-csharp/docs/runtime-api.md).
+Внутренние аллокации поверх zero-copy decode. Контракт Writer/Reader — [runtime-api.md](../runtime-csharp/docs/runtime-api.md).
 
 
 | Приоритет | Задача                                                                                                                   | Заметки                                          |
 | --------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ |
 | средний   | Nested write: один буфер / резерв длины вместо `new Asn1Writer` + `Encode()` на уровень                                  | Горячий путь SEQUENCE/SET                        |
-| средний   | Nested read: срез `(offset, end)` без `ReadValue`→copy                                                                   | Публичный `ReadTlv` остаётся allocating-обёрткой |
-| низкий    | Constructed OCTET / BIT / string (BER): без `List<byte>` + `AddRange`                                                    |                                                  |
+| средний   | ~~Nested read: срез `(offset, end)` без `ReadValue`→copy~~                                                               | Сделано: nested reader на том же `_data`         |
+| низкий    | Constructed OCTET / BIT / string (BER): без `List<byte>` + `AddRange`                                                    | По-прежнему owned concat                         |
 | низкий    | OID encode: без `Split` + `List` + `Stack` на коротких OID                                                               |                                                  |
-| низкий    | Scratch: high-tag / length; reverse в `ReadInteger`; `TryRead*` без промежуточного `byte[]` когда destination достаточен |                                                  |
+| низкий    | Scratch: high-tag / length; reverse в `ReadInteger`; `TryRead*` без промежуточного owned когда destination достаточен    |                                                  |
 
 

@@ -1017,7 +1017,7 @@ public sealed class Extension
 {
     public string ExtnID { get; set; } = "";
     public bool? Critical { get; set; }
-    public byte[] ExtnValue { get; set; } = Array.Empty<byte>();
+    public ReadOnlyMemory<byte> ExtnValue { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1030,7 +1030,7 @@ public sealed class Extension
             {
                 inner.WriteBoolean(Asn1Tag.Boolean, Critical.Value);
             }
-            inner.WriteOctetString(Asn1Tag.OctetString, ExtnValue);
+            inner.WriteOctetString(Asn1Tag.OctetString, ExtnValue.Span);
         });
     }
 
@@ -1986,10 +1986,10 @@ public sealed class ExtendedNetworkAddress
 
 public sealed class PresentationAddress
 {
-    public byte[]? PSelector { get; set; }
-    public byte[]? SSelector { get; set; }
-    public byte[]? TSelector { get; set; }
-    public List<byte[]> NAddresses { get; set; } = new();
+    public ReadOnlyMemory<byte>? PSelector { get; set; }
+    public ReadOnlyMemory<byte>? SSelector { get; set; }
+    public ReadOnlyMemory<byte>? TSelector { get; set; }
+    public List<ReadOnlyMemory<byte>> NAddresses { get; set; } = new();
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -2001,28 +2001,28 @@ public sealed class PresentationAddress
             {
                 inner.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested =>
                 {
-                    nested.WriteOctetString(Asn1Tag.OctetString, PSelector);
+                    nested.WriteOctetString(Asn1Tag.OctetString, PSelector.Value.Span);
                 });
             }
             if (SSelector != null)
             {
                 inner.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), nested =>
                 {
-                    nested.WriteOctetString(Asn1Tag.OctetString, SSelector);
+                    nested.WriteOctetString(Asn1Tag.OctetString, SSelector.Value.Span);
                 });
             }
             if (TSelector != null)
             {
                 inner.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), nested =>
                 {
-                    nested.WriteOctetString(Asn1Tag.OctetString, TSelector);
+                    nested.WriteOctetString(Asn1Tag.OctetString, TSelector.Value.Span);
                 });
             }
             inner.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true), nested =>
             {
                 nested.WriteSetOf(Asn1Tag.Set, NAddresses, static (inner, item) =>
                 {
-                    inner.WriteOctetString(Asn1Tag.OctetString, item);
+                    inner.WriteOctetString(Asn1Tag.OctetString, item.Span);
                 });
             });
         });

@@ -95,7 +95,7 @@ public sealed class PrimitiveOracleTests
         CrossDer(
             () => EncodeUs(w => w.WriteOctetString(Asn1Tag.OctetString, value)),
             () => DotnetAsnOracle.EncodeOctetString(value),
-            bytes => Assert.Equal(value, new Asn1Reader(bytes, Asn1Encoding.Der).ReadOctetString(Asn1Tag.OctetString)),
+            bytes => Assert.Equal(value, new Asn1Reader(bytes, Asn1Encoding.Der).ReadOctetString(Asn1Tag.OctetString).ToArray()),
             bytes => Assert.Equal(value, DotnetAsnOracle.DecodeOctetString(bytes)));
     }
 
@@ -174,8 +174,8 @@ public sealed class PrimitiveOracleTests
         var ber = Hex.Parse("24800403416E6E0000");
         var us = new Asn1Reader(ber, Asn1Encoding.Ber).ReadOctetString(Asn1Tag.OctetString);
         var bcl = DotnetAsnOracle.DecodeOctetString(ber, AsnEncodingRules.BER);
-        Assert.Equal(us, bcl);
-        Assert.Equal(new byte[] { 0x41, 0x6E, 0x6E }, us);
+        Assert.Equal(bcl, us.ToArray());
+        Assert.Equal(new byte[] { 0x41, 0x6E, 0x6E }, us.ToArray());
     }
 
     [Fact]

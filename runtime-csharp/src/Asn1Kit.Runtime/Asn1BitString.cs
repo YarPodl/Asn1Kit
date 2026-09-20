@@ -3,9 +3,10 @@ namespace Asn1Kit.Runtime;
 /// <summary>BIT STRING value: content octets plus the count of unused trailing bits.</summary>
 public readonly struct Asn1BitString : IEquatable<Asn1BitString>
 {
-    private readonly byte[]? _bytes;
+    private readonly ReadOnlyMemory<byte> _bytes;
 
-    public Asn1BitString(ReadOnlySpan<byte> bytes, int unusedBits)
+    /// <summary>Wraps <paramref name="bytes"/> without copying (caller owns lifetime).</summary>
+    public Asn1BitString(ReadOnlyMemory<byte> bytes, int unusedBits)
     {
         if (unusedBits is < 0 or > 7)
         {
@@ -19,23 +20,33 @@ public readonly struct Asn1BitString : IEquatable<Asn1BitString>
                 throw new Asn1Exception("Empty BIT STRING must have unusedBits = 0.");
             }
 
-            _bytes = Array.Empty<byte>();
+            _bytes = ReadOnlyMemory<byte>.Empty;
             UnusedBits = 0;
             return;
         }
 
-        _bytes = bytes.ToArray();
+        _bytes = bytes;
         UnusedBits = unusedBits;
     }
 
-    public ReadOnlySpan<byte> Span => _bytes ?? Array.Empty<byte>();
+    /// <summary>Copies <paramref name="bytes"/> into an owned buffer.</summary>
+    public static Asn1BitString CopyFrom(ReadOnlySpan<byte> bytes, int unusedBits) =>
+        new(bytes.Length == 0 ? ReadOnlyMemory<byte>.Empty : bytes.ToArray(), unusedBits);
 
-    /// <summary>Owned content octets as memory (same lifetime as this value).</summary>
-    public ReadOnlyMemory<byte> Memory => _bytes ?? Array.Empty<byte>();
+    public ReadOnlySpan<byte> Span => _bytes.Span;
+
+    /// <summary>Content octets as memory (may alias an <see cref="Asn1Reader"/> buffer).</summary>
+    public ReadOnlyMemory<byte> Memory => _bytes;
 
     public int UnusedBits { get; }
 
     public int BitLength => Span.Length == 0 ? 0 : Span.Length * 8 - UnusedBits;
+
+    /// <summary>Detaches content octets into a new array.</summary>
+    public byte[] ToArray() => _bytes.ToArray();
+
+    /// <summary>Returns a copy that does not alias an external buffer.</summary>
+    public Asn1BitString Clone() => new(ToArray(), UnusedBits);
 
     public bool this[int index]
     {
@@ -70,7 +81,7 @@ public readonly struct Asn1BitString : IEquatable<Asn1BitString>
         }
 
         var unused = byteCount * 8 - bits.Length;
-        return new Asn1BitString(bytes.AsSpan(), unused);
+        return new Asn1BitString(bytes, unused);
     }
 
     public static void Encode(Asn1Writer writer, Asn1BitString value, Asn1Tag? tag = null) =>

@@ -37,7 +37,7 @@ public sealed class ExternalVectorTests
             case "octetString":
                 RunPrimitive(c, bytes,
                     w => w.WriteOctetString(Asn1Tag.OctetString, BerDerFixtures.GetOctetValue(c)),
-                    r => Assert.Equal(BerDerFixtures.GetOctetValue(c), r.ReadOctetString(Asn1Tag.OctetString)));
+                    r => Assert.Equal(BerDerFixtures.GetOctetValue(c), r.ReadOctetString(Asn1Tag.OctetString).ToArray()));
                 break;
             case "oid":
                 RunPrimitive(c, bytes,

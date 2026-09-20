@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Text;
 using Asn1Kit.Codegen;
 using Asn1Kit.Codegen.CSharp;
@@ -125,8 +126,8 @@ public sealed class RoundTripTests
         Assert.NotNull(type);
         var person = Activator.CreateInstance(type!)!;
         type!.GetProperty("Id")!.SetValue(person, Asn1Integer.FromInt32(42));
-        type.GetProperty("Name")!.SetValue(person, Encoding.UTF8.GetBytes("Ann"));
-        type.GetProperty("Nickname")!.SetValue(person, Encoding.UTF8.GetBytes("A"));
+        type.GetProperty("Name")!.SetValue(person, (ReadOnlyMemory<byte>)Encoding.UTF8.GetBytes("Ann"));
+        type.GetProperty("Nickname")!.SetValue(person, (ReadOnlyMemory<byte>)Encoding.UTF8.GetBytes("A"));
 
         var writer = new Asn1Writer(Asn1Encoding.Der);
         type.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(person, new object[] { writer });
@@ -135,8 +136,8 @@ public sealed class RoundTripTests
         var reader = new Asn1Reader(encoded, Asn1Encoding.Der);
         var decoded = type.GetMethod("Decode", new[] { typeof(Asn1Reader) })!.Invoke(null, new object[] { reader })!;
         Assert.Equal(Asn1Integer.FromInt32(42), type.GetProperty("Id")!.GetValue(decoded));
-        Assert.Equal("Ann", Encoding.UTF8.GetString((byte[])type.GetProperty("Name")!.GetValue(decoded)!));
-        Assert.Equal("A", Encoding.UTF8.GetString((byte[])type.GetProperty("Nickname")!.GetValue(decoded)!));
+        Assert.Equal("Ann", Encoding.UTF8.GetString(((ReadOnlyMemory<byte>)type.GetProperty("Name")!.GetValue(decoded)!).Span));
+        Assert.Equal("A", Encoding.UTF8.GetString(((ReadOnlyMemory<byte>)type.GetProperty("Nickname")!.GetValue(decoded)!).Span));
     }
 
     [Fact]
@@ -449,7 +450,7 @@ END
             .Invoke(null, new object[] { new Asn1Reader(expectedWithNull, Asn1Encoding.Der) })!;
         var parameters = (Asn1Any)algType.GetProperty("Parameters")!.GetValue(decodedWith)!;
         Assert.Equal(Asn1Tag.Null, parameters.Tag);
-        Assert.Empty(parameters.Contents);
+        Assert.Equal(0, parameters.Span.Length);
 
         var rewrite = new Asn1Writer(Asn1Encoding.Der);
         algType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(decodedWith, new object[] { rewrite });
@@ -474,7 +475,7 @@ END
             .Invoke(null, new object[] { new Asn1Reader(expectedAttr, Asn1Encoding.Der) })!;
         var decodedAny = (Asn1Any)attrType.GetProperty("Value")!.GetValue(decodedAttr)!;
         Assert.Equal(Asn1Tag.Utf8String, decodedAny.Tag);
-        Assert.Equal("Ann", Encoding.UTF8.GetString(decodedAny.Contents));
+        Assert.Equal("Ann", Encoding.UTF8.GetString(decodedAny.Span));
 
         var broken = new byte[] { 0x30, 0x02, 0x05, 0x00 };
         var ex = Assert.Throws<TargetInvocationException>(() =>

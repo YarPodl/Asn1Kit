@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Asn1Kit.Runtime;
 
 namespace Asn1Kit.Tests;
@@ -156,7 +157,7 @@ public sealed class PrimitiveCodecTests
         Assert.Equal(payload, bytes.AsSpan(3).ToArray());
 
         var decoded = new Asn1Reader(bytes, Asn1Encoding.Der).ReadOctetString(Asn1Tag.OctetString);
-        Assert.Equal(payload, decoded);
+        Assert.Equal(payload, decoded.ToArray());
     }
 
     [Fact]
@@ -184,14 +185,16 @@ public sealed class PrimitiveCodecTests
     }
 
     [Fact]
-    public void ReadTlv_ReturnsOwnedContents()
+    public void ReadTlv_ReturnsContentsView()
     {
         var bytes = Hex.Parse("02012A");
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
         var (tag, contents, constructed) = reader.ReadTlv();
         Assert.Equal(Asn1Tag.Integer, tag);
         Assert.False(constructed);
-        Assert.Equal(new byte[] { 0x2A }, contents);
+        Assert.Equal(new byte[] { 0x2A }, contents.ToArray());
+        Assert.True(MemoryMarshal.TryGetArray(contents, out ArraySegment<byte> segment));
+        Assert.Same(bytes, segment.Array);
         Assert.True(reader.Eof);
     }
 
@@ -268,7 +271,7 @@ public sealed class PrimitiveCodecTests
         var value = r.ReadOctetString(Asn1Tag.OctetString);
         if (c.HasValue)
         {
-            Assert.Equal(BerDerFixtures.GetOctetValue(c), value);
+            Assert.Equal(BerDerFixtures.GetOctetValue(c), value.ToArray());
         }
     }
 

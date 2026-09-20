@@ -27,7 +27,7 @@ public static class Asn1OctetString
     public static void Encode(Asn1Writer writer, ReadOnlySpan<byte> value, Asn1Tag? tag = null) =>
         writer.WriteOctetString(tag ?? Asn1Tag.OctetString, value);
 
-    public static byte[] Decode(Asn1Reader reader, Asn1Tag? tag = null) =>
+    public static ReadOnlyMemory<byte> Decode(Asn1Reader reader, Asn1Tag? tag = null) =>
         reader.ReadOctetString(tag ?? Asn1Tag.OctetString);
 
     public static bool TryDecode(

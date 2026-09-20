@@ -9,10 +9,10 @@
 | [Asn1Tag.cs](../../src/Asn1Kit.Runtime/Asn1Tag.cs) | Класс тега, universal-константы, `Asn1StringForm` / `Asn1TimeForm`, `MatchesIgnoreConstructed`, `AsPrimitive` / `AsConstructed` |
 | [Asn1Writer.cs](../../src/Asn1Kit.Runtime/Asn1Writer.cs) | Публичные `Write*` / `Encode` / `WriteRaw`; внутри (`private`) `WriteTag` / `WriteLength` / `WriteTlv` / `WritePrimitive`. `WriteSequence` сейчас через вложенный writer |
 | [Asn1Reader.cs](../../src/Asn1Kit.Runtime/Asn1Reader.cs) | Чтение TLV, definite и indefinite length, `TryPeekTag`, `Eof`, публичные `ReadValue` / `ReadTlv`, ctors: `byte[]`, `(byte[], offset, length)`, `ReadOnlyMemory<byte>` |
-| [Asn1BitString.cs](../../src/Asn1Kit.Runtime/Asn1BitString.cs) | `Asn1BitString` (`Span` + `UnusedBits`), индексатор MSB-first, `FromBits`, статические `Encode` / `Decode` |
-| [Asn1Any.cs](../../src/Asn1Kit.Runtime/Asn1Any.cs) | `Asn1Any` (`Tag` + `Contents`), `WriteAny` / `ReadAny` |
+| [Asn1BitString.cs](../../src/Asn1Kit.Runtime/Asn1BitString.cs) | `Asn1BitString` (Memory wrap / `CopyFrom`), `UnusedBits`, indexer MSB-first, `FromBits` |
+| [Asn1Any.cs](../../src/Asn1Kit.Runtime/Asn1Any.cs) | `Asn1Any` (`Tag` + `ContentsMemory`); Memory wrap / `CopyFrom` |
 | [Asn1TextCodec.cs](../../src/Asn1Kit.Runtime/Asn1TextCodec.cs) | `internal`: encode/decode строк и времени (наборы символов, DER/BER-формы) |
-| [Asn1Integer.cs](../../src/Asn1Kit.Runtime/Asn1Integer.cs) | Value type: owned DER contents; `FromBigInteger` / `GetInt32`…; hot для codegen `der` |
+| [Asn1Integer.cs](../../src/Asn1Kit.Runtime/Asn1Integer.cs) | Value type: DER contents as Memory (view from reader); `FromContents` / `CopyFrom` / `FromBigInteger` / `GetInt32`…; hot для codegen `der` |
 | [Asn1Primitives.cs](../../src/Asn1Kit.Runtime/Asn1Primitives.cs) | `Asn1Boolean` / `Asn1Enumerated` / `Asn1OctetString` / … — warm обёртки; **C# backend эмитит `writer.Write*` / `reader.Read*` напрямую** |
 
 Кодировка выбирается через `Asn1Encoding.Ber` / `Asn1Encoding.Der` в конструкторе writer'а и reader'а.
@@ -70,7 +70,7 @@ ReadOnlySpan<byte> contents = _data.AsSpan(_offset, length);
 ```csharp
 var ber = new byte[] { 0x24, 0x80, 0x04, 0x03, 0x41, 0x6E, 0x6E, 0x00, 0x00 };
 var reader = new Asn1Reader(ber, Asn1Encoding.Ber);
-Assert.Equal("Ann", Encoding.UTF8.GetString(reader.ReadOctetString(Asn1Tag.OctetString)));
+Assert.Equal("Ann", Encoding.UTF8.GetString(reader.ReadOctetString(Asn1Tag.OctetString).Span));
 ```
 
 ```powershell

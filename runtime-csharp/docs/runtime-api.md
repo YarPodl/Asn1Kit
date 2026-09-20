@@ -9,8 +9,10 @@ Backlog оптимизаций — там же, § «Backlog: оптимизац
 ## Политика Memory / Span
 
 - **Вход** и **буфер вызывающего** — `ReadOnlySpan` / `Span` (у `Memory` вызывайте `.Span`; парные перегрузки Span+Memory не делаем — `byte[]` неоднозначен).
-- **Вход reader** — дополнительно `ReadOnlyMemory<byte>` ctor (без копии, если array-backed).
-- **Значения, уходящие из reader** — **owned `byte[]`** / owned structs; `ContentsMemory` / `Asn1BitString.Memory` — view на owned массив, не на буфер reader.
+- **Вход reader** — дополнительно `ReadOnlyMemory<byte>` ctor (без копии, если array-backed). Reader держит `_data`; `Source` — окно буфера (якорь lifetime).
+- **Значения, уходящие из reader** — `ReadOnlyMemory<byte>` / structs с `Memory` / `ContentsMemory`: **view на буфер reader** (primitive / definite). Мутация исходного буфера после decode — UB для views. Долговременное хранение без буфера — явный detach (`ToArray` / `Clone`).
+- **Исключения (owned):** constructed BER (OCTET / BIT / string — конкатенация сегментов); materialize в `string` / `BigInteger` / `DateTimeOffset`.
+- **Value-types:** ctor / `FromContents(ReadOnlyMemory)` — wrap без копии; `CopyFrom(ReadOnlySpan)` — owned копия (отдельное имя, чтобы `byte[]` не был неоднозначен между Span и Memory).
 
 ## Кто кого вызывает
 
@@ -22,7 +24,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 ```
 
 Статические `Asn1Boolean` / `Asn1Enumerated` / … — warm convenience; codegen их не эмитит.
-`Asn1Integer` — **hot** value type (owned DER contents) для codegen при `representation=der`; статические `Encode(BigInteger)` / `DecodeBigInteger` — warm.
+`Asn1Integer` — **hot** value type (DER contents как `ReadOnlyMemory`; из reader — view) для codegen при `representation=der`; статические `Encode(BigInteger)` / `DecodeBigInteger` — warm.
 
 Непублично: `Asn1TextCodec` (`internal`), `Asn1Writer.EncodeInteger` (`internal`), `WriteTag` / `WriteLength` / `WriteTlv` / `WritePrimitive` (`private`).
 
@@ -36,12 +38,12 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `WriteOctetString(ReadOnlySpan)` / `WriteRaw(ReadOnlySpan)` | hot/cold | borrow |
 | `WriteSequence` / `WriteSet` / `WriteSetOf` / `WriteSequenceOf<T>` / `WriteSetOf<T>` / `WriteExplicit(Action)` | hot | callback |
 | `ReadSequenceOf<T>` / `ReadSetOf<T>` | hot | owned `List<T>` |
-| `Asn1Reader(byte[]\|offset/length\|ReadOnlyMemory)` | hot | срез без копии на входе |
-| `ReadOctetString → byte[]` / `TryReadOctetString(Span)` | hot | owned / copy-out (Try всегда продвигает reader) |
-| `ReadValue → byte[]` / `TryReadValue(Span)` / `ReadTlv` | cold/warm | owned / copy-out |
-| `Asn1Any.Contents` / `ContentsMemory` | hot | owned |
-| `Asn1BitString.Span` / `Memory` | hot | owned |
-| `Asn1Integer.Span` / `Memory` | hot | owned DER contents |
+| `Asn1Reader(byte[]\|offset/length\|ReadOnlyMemory)` / `Source` | hot | срез без копии на входе; `Source` якорит lifetime |
+| `ReadOctetString → ReadOnlyMemory` / `TryReadOctetString(Span)` | hot | view / copy-out (Try всегда продвигает reader); constructed BER — owned |
+| `ReadValue → ReadOnlyMemory` / `TryReadValue(Span)` / `ReadTlv` | cold/warm | view / copy-out |
+| `Asn1Any.ContentsMemory` / `ToArray` | hot | view (из reader) / detach |
+| `Asn1BitString.Span` / `Memory` / `ToArray` | hot | view (из reader) / detach |
+| `Asn1Integer.Span` / `Memory` / `ToArray` | hot | view DER contents / detach |
 | `Asn1Primitives` wrappers (+ `Asn1OctetString.TryDecode`) | warm | делегируют |
 
 ## Заметки
@@ -85,6 +87,6 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `WriteExplicit` | constructed wrapper |
 | `WriteAny` / `ReadAny` | IMPLICIT; ContentsMemory |
 | `WriteRaw` | append TLV |
-| `ReadValue` / `ReadTlv` | owned; wrong tag |
+| `ReadValue` / `ReadTlv` | view; wrong tag |
 | Wrappers | smoke |
-| `Asn1BitString` / `Asn1Any` / `Asn1Integer` | Memory/ContentsMemory; equality; `Asn1Integer` numeric accessors |
+| `Asn1BitString` / `Asn1Any` / `Asn1Integer` | Memory/ContentsMemory alias source; `ToArray` detach; equality; `Asn1Integer` numeric accessors |
