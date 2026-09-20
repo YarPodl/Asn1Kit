@@ -27,6 +27,86 @@ public sealed class RuntimeTests
     }
 
     [Fact]
+    public void WriteSequence_Empty_EmitsShortFormLengthZero()
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteSequence(Asn1Tag.Sequence, _ => { });
+        Assert.Equal(new byte[] { 0x30, 0x00 }, writer.Encode());
+    }
+
+    [Fact]
+    public void WriteSequence_ContentsLength128_UsesLongFormLength()
+    {
+        // 128-byte OCTET STRING: 04 81 80 + 128 payload = 131 content octets → outer length long-form.
+        var payload = new byte[128];
+        for (var i = 0; i < payload.Length; i++)
+        {
+            payload[i] = (byte)i;
+        }
+
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteSequence(Asn1Tag.Sequence, inner =>
+        {
+            inner.WriteOctetString(Asn1Tag.OctetString, payload);
+        });
+        var bytes = writer.Encode();
+
+        Assert.Equal(0x30, bytes[0]);
+        Assert.Equal(0x81, bytes[1]);
+        Assert.Equal(131, bytes[2]);
+        Assert.Equal(0x04, bytes[3]);
+        Assert.Equal(0x81, bytes[4]);
+        Assert.Equal(0x80, bytes[5]);
+        Assert.Equal(payload, bytes.AsSpan(6).ToArray());
+
+        var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
+        reader.ReadSequence(Asn1Tag.Sequence, inner =>
+        {
+            Assert.Equal(payload, inner.ReadOctetString(Asn1Tag.OctetString).ToArray());
+            Assert.True(inner.Eof);
+        });
+    }
+
+    [Fact]
+    public void WriteSequence_DeepNesting_RoundTrips()
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteSequence(Asn1Tag.Sequence, level1 =>
+        {
+            level1.WriteSequence(Asn1Tag.Sequence, level2 =>
+            {
+                level2.WriteSequence(Asn1Tag.Sequence, level3 =>
+                {
+                    Asn1Integer.Encode(level3, 7);
+                    Asn1Integer.Encode(level3, 9);
+                });
+            });
+        });
+        var bytes = writer.Encode();
+
+        // 30 0A 30 08 30 06 02 01 07 02 01 09
+        Assert.Equal(
+            new byte[] { 0x30, 0x0A, 0x30, 0x08, 0x30, 0x06, 0x02, 0x01, 0x07, 0x02, 0x01, 0x09 },
+            bytes);
+
+        var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
+        reader.ReadSequence(Asn1Tag.Sequence, level1 =>
+        {
+            level1.ReadSequence(Asn1Tag.Sequence, level2 =>
+            {
+                level2.ReadSequence(Asn1Tag.Sequence, level3 =>
+                {
+                    Assert.Equal(7, Asn1Integer.Decode(level3).GetInt32());
+                    Assert.Equal(9, Asn1Integer.Decode(level3).GetInt32());
+                    Assert.True(level3.Eof);
+                });
+                Assert.True(level2.Eof);
+            });
+            Assert.True(level1.Eof);
+        });
+    }
+
+    [Fact]
     public void Ber_ReadsIndefiniteLengthOctetString()
     {
         var ber = new byte[] { 0x24, 0x80, 0x04, 0x03, 0x41, 0x6E, 0x6E, 0x00, 0x00 };

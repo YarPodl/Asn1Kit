@@ -49,6 +49,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 ## Заметки
 
 - `definiteOnly` в private `WriteTlv` игнорируется; indefinite на записи не эмитится.
+- `WriteSequence` / `WriteSet` / `WriteSetOf` / `WriteExplicit` пишут nested contents в тот же буфер writer’а (callback получает outer `Asn1Writer`); length — резерв + patch/compact.
 - `TryReadOctetString` / `TryReadValue` при нехватке destination возвращают `false`, но TLV уже потреблён.
 
 ## Soft-read и строгие опции
