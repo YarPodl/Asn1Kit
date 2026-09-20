@@ -89,40 +89,36 @@ public enum X520nameKind
 public sealed class X520name
 {
     public X520nameKind Kind { get; private set; }
-    public string? TeletexString { get; private set; }
-    public string? PrintableString { get; private set; }
-    public string? UniversalString { get; private set; }
-    public string? Utf8String { get; private set; }
-    public string? BmpString { get; private set; }
+    public string Value { get; private set; } = "";
 
     public static X520name FromTeletexString(string teletexString) => new X520name
     {
         Kind = X520nameKind.TeletexString,
-        TeletexString = teletexString,
+        Value = teletexString,
     };
 
     public static X520name FromPrintableString(string printableString) => new X520name
     {
         Kind = X520nameKind.PrintableString,
-        PrintableString = printableString,
+        Value = printableString,
     };
 
     public static X520name FromUniversalString(string universalString) => new X520name
     {
         Kind = X520nameKind.UniversalString,
-        UniversalString = universalString,
+        Value = universalString,
     };
 
     public static X520name FromUtf8String(string utf8String) => new X520name
     {
         Kind = X520nameKind.Utf8String,
-        Utf8String = utf8String,
+        Value = utf8String,
     };
 
     public static X520name FromBmpString(string bmpString) => new X520name
     {
         Kind = X520nameKind.BmpString,
-        BmpString = bmpString,
+        Value = bmpString,
     };
 
     public void Encode(Asn1Writer writer)
@@ -130,19 +126,19 @@ public sealed class X520name
         switch (Kind)
         {
             case X520nameKind.TeletexString:
-                writer.WriteString(Asn1Tag.TeletexString, TeletexString, Asn1StringForm.Teletex);
+                writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
                 break;
             case X520nameKind.PrintableString:
-                writer.WriteString(Asn1Tag.PrintableString, PrintableString, Asn1StringForm.Printable);
+                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
                 break;
             case X520nameKind.UniversalString:
-                writer.WriteString(Asn1Tag.UniversalString, UniversalString, Asn1StringForm.Universal);
+                writer.WriteString(Asn1Tag.UniversalString, Value, Asn1StringForm.Universal);
                 break;
             case X520nameKind.Utf8String:
-                writer.WriteString(Asn1Tag.Utf8String, Utf8String, Asn1StringForm.Utf8);
+                writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
                 break;
             case X520nameKind.BmpString:
-                writer.WriteString(Asn1Tag.BmpString, BmpString, Asn1StringForm.Bmp);
+                writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -155,27 +151,27 @@ public sealed class X520name
         if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
         {
             value.Kind = X520nameKind.TeletexString;
-            value.TeletexString = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
+            value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
         {
             value.Kind = X520nameKind.PrintableString;
-            value.PrintableString = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
+            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
         {
             value.Kind = X520nameKind.UniversalString;
-            value.UniversalString = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
+            value.Value = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
         {
             value.Kind = X520nameKind.Utf8String;
-            value.Utf8String = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
+            value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
         {
             value.Kind = X520nameKind.BmpString;
-            value.BmpString = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
+            value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
@@ -194,40 +190,36 @@ public enum X520CommonNameKind
 public sealed class X520CommonName
 {
     public X520CommonNameKind Kind { get; private set; }
-    public string? TeletexString { get; private set; }
-    public string? PrintableString { get; private set; }
-    public string? UniversalString { get; private set; }
-    public string? Utf8String { get; private set; }
-    public string? BmpString { get; private set; }
+    public string Value { get; private set; } = "";
 
     public static X520CommonName FromTeletexString(string teletexString) => new X520CommonName
     {
         Kind = X520CommonNameKind.TeletexString,
-        TeletexString = teletexString,
+        Value = teletexString,
     };
 
     public static X520CommonName FromPrintableString(string printableString) => new X520CommonName
     {
         Kind = X520CommonNameKind.PrintableString,
-        PrintableString = printableString,
+        Value = printableString,
     };
 
     public static X520CommonName FromUniversalString(string universalString) => new X520CommonName
     {
         Kind = X520CommonNameKind.UniversalString,
-        UniversalString = universalString,
+        Value = universalString,
     };
 
     public static X520CommonName FromUtf8String(string utf8String) => new X520CommonName
     {
         Kind = X520CommonNameKind.Utf8String,
-        Utf8String = utf8String,
+        Value = utf8String,
     };
 
     public static X520CommonName FromBmpString(string bmpString) => new X520CommonName
     {
         Kind = X520CommonNameKind.BmpString,
-        BmpString = bmpString,
+        Value = bmpString,
     };
 
     public void Encode(Asn1Writer writer)
@@ -235,19 +227,19 @@ public sealed class X520CommonName
         switch (Kind)
         {
             case X520CommonNameKind.TeletexString:
-                writer.WriteString(Asn1Tag.TeletexString, TeletexString, Asn1StringForm.Teletex);
+                writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
                 break;
             case X520CommonNameKind.PrintableString:
-                writer.WriteString(Asn1Tag.PrintableString, PrintableString, Asn1StringForm.Printable);
+                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
                 break;
             case X520CommonNameKind.UniversalString:
-                writer.WriteString(Asn1Tag.UniversalString, UniversalString, Asn1StringForm.Universal);
+                writer.WriteString(Asn1Tag.UniversalString, Value, Asn1StringForm.Universal);
                 break;
             case X520CommonNameKind.Utf8String:
-                writer.WriteString(Asn1Tag.Utf8String, Utf8String, Asn1StringForm.Utf8);
+                writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
                 break;
             case X520CommonNameKind.BmpString:
-                writer.WriteString(Asn1Tag.BmpString, BmpString, Asn1StringForm.Bmp);
+                writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -260,27 +252,27 @@ public sealed class X520CommonName
         if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
         {
             value.Kind = X520CommonNameKind.TeletexString;
-            value.TeletexString = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
+            value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
         {
             value.Kind = X520CommonNameKind.PrintableString;
-            value.PrintableString = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
+            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
         {
             value.Kind = X520CommonNameKind.UniversalString;
-            value.UniversalString = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
+            value.Value = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
         {
             value.Kind = X520CommonNameKind.Utf8String;
-            value.Utf8String = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
+            value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
         {
             value.Kind = X520CommonNameKind.BmpString;
-            value.BmpString = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
+            value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
@@ -299,40 +291,36 @@ public enum X520LocalityNameKind
 public sealed class X520LocalityName
 {
     public X520LocalityNameKind Kind { get; private set; }
-    public string? TeletexString { get; private set; }
-    public string? PrintableString { get; private set; }
-    public string? UniversalString { get; private set; }
-    public string? Utf8String { get; private set; }
-    public string? BmpString { get; private set; }
+    public string Value { get; private set; } = "";
 
     public static X520LocalityName FromTeletexString(string teletexString) => new X520LocalityName
     {
         Kind = X520LocalityNameKind.TeletexString,
-        TeletexString = teletexString,
+        Value = teletexString,
     };
 
     public static X520LocalityName FromPrintableString(string printableString) => new X520LocalityName
     {
         Kind = X520LocalityNameKind.PrintableString,
-        PrintableString = printableString,
+        Value = printableString,
     };
 
     public static X520LocalityName FromUniversalString(string universalString) => new X520LocalityName
     {
         Kind = X520LocalityNameKind.UniversalString,
-        UniversalString = universalString,
+        Value = universalString,
     };
 
     public static X520LocalityName FromUtf8String(string utf8String) => new X520LocalityName
     {
         Kind = X520LocalityNameKind.Utf8String,
-        Utf8String = utf8String,
+        Value = utf8String,
     };
 
     public static X520LocalityName FromBmpString(string bmpString) => new X520LocalityName
     {
         Kind = X520LocalityNameKind.BmpString,
-        BmpString = bmpString,
+        Value = bmpString,
     };
 
     public void Encode(Asn1Writer writer)
@@ -340,19 +328,19 @@ public sealed class X520LocalityName
         switch (Kind)
         {
             case X520LocalityNameKind.TeletexString:
-                writer.WriteString(Asn1Tag.TeletexString, TeletexString, Asn1StringForm.Teletex);
+                writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
                 break;
             case X520LocalityNameKind.PrintableString:
-                writer.WriteString(Asn1Tag.PrintableString, PrintableString, Asn1StringForm.Printable);
+                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
                 break;
             case X520LocalityNameKind.UniversalString:
-                writer.WriteString(Asn1Tag.UniversalString, UniversalString, Asn1StringForm.Universal);
+                writer.WriteString(Asn1Tag.UniversalString, Value, Asn1StringForm.Universal);
                 break;
             case X520LocalityNameKind.Utf8String:
-                writer.WriteString(Asn1Tag.Utf8String, Utf8String, Asn1StringForm.Utf8);
+                writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
                 break;
             case X520LocalityNameKind.BmpString:
-                writer.WriteString(Asn1Tag.BmpString, BmpString, Asn1StringForm.Bmp);
+                writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -365,27 +353,27 @@ public sealed class X520LocalityName
         if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
         {
             value.Kind = X520LocalityNameKind.TeletexString;
-            value.TeletexString = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
+            value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
         {
             value.Kind = X520LocalityNameKind.PrintableString;
-            value.PrintableString = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
+            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
         {
             value.Kind = X520LocalityNameKind.UniversalString;
-            value.UniversalString = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
+            value.Value = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
         {
             value.Kind = X520LocalityNameKind.Utf8String;
-            value.Utf8String = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
+            value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
         {
             value.Kind = X520LocalityNameKind.BmpString;
-            value.BmpString = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
+            value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
@@ -404,40 +392,36 @@ public enum X520StateOrProvinceNameKind
 public sealed class X520StateOrProvinceName
 {
     public X520StateOrProvinceNameKind Kind { get; private set; }
-    public string? TeletexString { get; private set; }
-    public string? PrintableString { get; private set; }
-    public string? UniversalString { get; private set; }
-    public string? Utf8String { get; private set; }
-    public string? BmpString { get; private set; }
+    public string Value { get; private set; } = "";
 
     public static X520StateOrProvinceName FromTeletexString(string teletexString) => new X520StateOrProvinceName
     {
         Kind = X520StateOrProvinceNameKind.TeletexString,
-        TeletexString = teletexString,
+        Value = teletexString,
     };
 
     public static X520StateOrProvinceName FromPrintableString(string printableString) => new X520StateOrProvinceName
     {
         Kind = X520StateOrProvinceNameKind.PrintableString,
-        PrintableString = printableString,
+        Value = printableString,
     };
 
     public static X520StateOrProvinceName FromUniversalString(string universalString) => new X520StateOrProvinceName
     {
         Kind = X520StateOrProvinceNameKind.UniversalString,
-        UniversalString = universalString,
+        Value = universalString,
     };
 
     public static X520StateOrProvinceName FromUtf8String(string utf8String) => new X520StateOrProvinceName
     {
         Kind = X520StateOrProvinceNameKind.Utf8String,
-        Utf8String = utf8String,
+        Value = utf8String,
     };
 
     public static X520StateOrProvinceName FromBmpString(string bmpString) => new X520StateOrProvinceName
     {
         Kind = X520StateOrProvinceNameKind.BmpString,
-        BmpString = bmpString,
+        Value = bmpString,
     };
 
     public void Encode(Asn1Writer writer)
@@ -445,19 +429,19 @@ public sealed class X520StateOrProvinceName
         switch (Kind)
         {
             case X520StateOrProvinceNameKind.TeletexString:
-                writer.WriteString(Asn1Tag.TeletexString, TeletexString, Asn1StringForm.Teletex);
+                writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
                 break;
             case X520StateOrProvinceNameKind.PrintableString:
-                writer.WriteString(Asn1Tag.PrintableString, PrintableString, Asn1StringForm.Printable);
+                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
                 break;
             case X520StateOrProvinceNameKind.UniversalString:
-                writer.WriteString(Asn1Tag.UniversalString, UniversalString, Asn1StringForm.Universal);
+                writer.WriteString(Asn1Tag.UniversalString, Value, Asn1StringForm.Universal);
                 break;
             case X520StateOrProvinceNameKind.Utf8String:
-                writer.WriteString(Asn1Tag.Utf8String, Utf8String, Asn1StringForm.Utf8);
+                writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
                 break;
             case X520StateOrProvinceNameKind.BmpString:
-                writer.WriteString(Asn1Tag.BmpString, BmpString, Asn1StringForm.Bmp);
+                writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -470,27 +454,27 @@ public sealed class X520StateOrProvinceName
         if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
         {
             value.Kind = X520StateOrProvinceNameKind.TeletexString;
-            value.TeletexString = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
+            value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
         {
             value.Kind = X520StateOrProvinceNameKind.PrintableString;
-            value.PrintableString = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
+            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
         {
             value.Kind = X520StateOrProvinceNameKind.UniversalString;
-            value.UniversalString = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
+            value.Value = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
         {
             value.Kind = X520StateOrProvinceNameKind.Utf8String;
-            value.Utf8String = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
+            value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
         {
             value.Kind = X520StateOrProvinceNameKind.BmpString;
-            value.BmpString = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
+            value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
@@ -509,40 +493,36 @@ public enum X520OrganizationNameKind
 public sealed class X520OrganizationName
 {
     public X520OrganizationNameKind Kind { get; private set; }
-    public string? TeletexString { get; private set; }
-    public string? PrintableString { get; private set; }
-    public string? UniversalString { get; private set; }
-    public string? Utf8String { get; private set; }
-    public string? BmpString { get; private set; }
+    public string Value { get; private set; } = "";
 
     public static X520OrganizationName FromTeletexString(string teletexString) => new X520OrganizationName
     {
         Kind = X520OrganizationNameKind.TeletexString,
-        TeletexString = teletexString,
+        Value = teletexString,
     };
 
     public static X520OrganizationName FromPrintableString(string printableString) => new X520OrganizationName
     {
         Kind = X520OrganizationNameKind.PrintableString,
-        PrintableString = printableString,
+        Value = printableString,
     };
 
     public static X520OrganizationName FromUniversalString(string universalString) => new X520OrganizationName
     {
         Kind = X520OrganizationNameKind.UniversalString,
-        UniversalString = universalString,
+        Value = universalString,
     };
 
     public static X520OrganizationName FromUtf8String(string utf8String) => new X520OrganizationName
     {
         Kind = X520OrganizationNameKind.Utf8String,
-        Utf8String = utf8String,
+        Value = utf8String,
     };
 
     public static X520OrganizationName FromBmpString(string bmpString) => new X520OrganizationName
     {
         Kind = X520OrganizationNameKind.BmpString,
-        BmpString = bmpString,
+        Value = bmpString,
     };
 
     public void Encode(Asn1Writer writer)
@@ -550,19 +530,19 @@ public sealed class X520OrganizationName
         switch (Kind)
         {
             case X520OrganizationNameKind.TeletexString:
-                writer.WriteString(Asn1Tag.TeletexString, TeletexString, Asn1StringForm.Teletex);
+                writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
                 break;
             case X520OrganizationNameKind.PrintableString:
-                writer.WriteString(Asn1Tag.PrintableString, PrintableString, Asn1StringForm.Printable);
+                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
                 break;
             case X520OrganizationNameKind.UniversalString:
-                writer.WriteString(Asn1Tag.UniversalString, UniversalString, Asn1StringForm.Universal);
+                writer.WriteString(Asn1Tag.UniversalString, Value, Asn1StringForm.Universal);
                 break;
             case X520OrganizationNameKind.Utf8String:
-                writer.WriteString(Asn1Tag.Utf8String, Utf8String, Asn1StringForm.Utf8);
+                writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
                 break;
             case X520OrganizationNameKind.BmpString:
-                writer.WriteString(Asn1Tag.BmpString, BmpString, Asn1StringForm.Bmp);
+                writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -575,27 +555,27 @@ public sealed class X520OrganizationName
         if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
         {
             value.Kind = X520OrganizationNameKind.TeletexString;
-            value.TeletexString = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
+            value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
         {
             value.Kind = X520OrganizationNameKind.PrintableString;
-            value.PrintableString = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
+            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
         {
             value.Kind = X520OrganizationNameKind.UniversalString;
-            value.UniversalString = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
+            value.Value = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
         {
             value.Kind = X520OrganizationNameKind.Utf8String;
-            value.Utf8String = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
+            value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
         {
             value.Kind = X520OrganizationNameKind.BmpString;
-            value.BmpString = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
+            value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
@@ -614,40 +594,36 @@ public enum X520OrganizationalUnitNameKind
 public sealed class X520OrganizationalUnitName
 {
     public X520OrganizationalUnitNameKind Kind { get; private set; }
-    public string? TeletexString { get; private set; }
-    public string? PrintableString { get; private set; }
-    public string? UniversalString { get; private set; }
-    public string? Utf8String { get; private set; }
-    public string? BmpString { get; private set; }
+    public string Value { get; private set; } = "";
 
     public static X520OrganizationalUnitName FromTeletexString(string teletexString) => new X520OrganizationalUnitName
     {
         Kind = X520OrganizationalUnitNameKind.TeletexString,
-        TeletexString = teletexString,
+        Value = teletexString,
     };
 
     public static X520OrganizationalUnitName FromPrintableString(string printableString) => new X520OrganizationalUnitName
     {
         Kind = X520OrganizationalUnitNameKind.PrintableString,
-        PrintableString = printableString,
+        Value = printableString,
     };
 
     public static X520OrganizationalUnitName FromUniversalString(string universalString) => new X520OrganizationalUnitName
     {
         Kind = X520OrganizationalUnitNameKind.UniversalString,
-        UniversalString = universalString,
+        Value = universalString,
     };
 
     public static X520OrganizationalUnitName FromUtf8String(string utf8String) => new X520OrganizationalUnitName
     {
         Kind = X520OrganizationalUnitNameKind.Utf8String,
-        Utf8String = utf8String,
+        Value = utf8String,
     };
 
     public static X520OrganizationalUnitName FromBmpString(string bmpString) => new X520OrganizationalUnitName
     {
         Kind = X520OrganizationalUnitNameKind.BmpString,
-        BmpString = bmpString,
+        Value = bmpString,
     };
 
     public void Encode(Asn1Writer writer)
@@ -655,19 +631,19 @@ public sealed class X520OrganizationalUnitName
         switch (Kind)
         {
             case X520OrganizationalUnitNameKind.TeletexString:
-                writer.WriteString(Asn1Tag.TeletexString, TeletexString, Asn1StringForm.Teletex);
+                writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
                 break;
             case X520OrganizationalUnitNameKind.PrintableString:
-                writer.WriteString(Asn1Tag.PrintableString, PrintableString, Asn1StringForm.Printable);
+                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
                 break;
             case X520OrganizationalUnitNameKind.UniversalString:
-                writer.WriteString(Asn1Tag.UniversalString, UniversalString, Asn1StringForm.Universal);
+                writer.WriteString(Asn1Tag.UniversalString, Value, Asn1StringForm.Universal);
                 break;
             case X520OrganizationalUnitNameKind.Utf8String:
-                writer.WriteString(Asn1Tag.Utf8String, Utf8String, Asn1StringForm.Utf8);
+                writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
                 break;
             case X520OrganizationalUnitNameKind.BmpString:
-                writer.WriteString(Asn1Tag.BmpString, BmpString, Asn1StringForm.Bmp);
+                writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -680,27 +656,27 @@ public sealed class X520OrganizationalUnitName
         if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
         {
             value.Kind = X520OrganizationalUnitNameKind.TeletexString;
-            value.TeletexString = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
+            value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
         {
             value.Kind = X520OrganizationalUnitNameKind.PrintableString;
-            value.PrintableString = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
+            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
         {
             value.Kind = X520OrganizationalUnitNameKind.UniversalString;
-            value.UniversalString = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
+            value.Value = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
         {
             value.Kind = X520OrganizationalUnitNameKind.Utf8String;
-            value.Utf8String = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
+            value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
         {
             value.Kind = X520OrganizationalUnitNameKind.BmpString;
-            value.BmpString = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
+            value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
@@ -719,40 +695,36 @@ public enum X520TitleKind
 public sealed class X520Title
 {
     public X520TitleKind Kind { get; private set; }
-    public string? TeletexString { get; private set; }
-    public string? PrintableString { get; private set; }
-    public string? UniversalString { get; private set; }
-    public string? Utf8String { get; private set; }
-    public string? BmpString { get; private set; }
+    public string Value { get; private set; } = "";
 
     public static X520Title FromTeletexString(string teletexString) => new X520Title
     {
         Kind = X520TitleKind.TeletexString,
-        TeletexString = teletexString,
+        Value = teletexString,
     };
 
     public static X520Title FromPrintableString(string printableString) => new X520Title
     {
         Kind = X520TitleKind.PrintableString,
-        PrintableString = printableString,
+        Value = printableString,
     };
 
     public static X520Title FromUniversalString(string universalString) => new X520Title
     {
         Kind = X520TitleKind.UniversalString,
-        UniversalString = universalString,
+        Value = universalString,
     };
 
     public static X520Title FromUtf8String(string utf8String) => new X520Title
     {
         Kind = X520TitleKind.Utf8String,
-        Utf8String = utf8String,
+        Value = utf8String,
     };
 
     public static X520Title FromBmpString(string bmpString) => new X520Title
     {
         Kind = X520TitleKind.BmpString,
-        BmpString = bmpString,
+        Value = bmpString,
     };
 
     public void Encode(Asn1Writer writer)
@@ -760,19 +732,19 @@ public sealed class X520Title
         switch (Kind)
         {
             case X520TitleKind.TeletexString:
-                writer.WriteString(Asn1Tag.TeletexString, TeletexString, Asn1StringForm.Teletex);
+                writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
                 break;
             case X520TitleKind.PrintableString:
-                writer.WriteString(Asn1Tag.PrintableString, PrintableString, Asn1StringForm.Printable);
+                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
                 break;
             case X520TitleKind.UniversalString:
-                writer.WriteString(Asn1Tag.UniversalString, UniversalString, Asn1StringForm.Universal);
+                writer.WriteString(Asn1Tag.UniversalString, Value, Asn1StringForm.Universal);
                 break;
             case X520TitleKind.Utf8String:
-                writer.WriteString(Asn1Tag.Utf8String, Utf8String, Asn1StringForm.Utf8);
+                writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
                 break;
             case X520TitleKind.BmpString:
-                writer.WriteString(Asn1Tag.BmpString, BmpString, Asn1StringForm.Bmp);
+                writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -785,27 +757,27 @@ public sealed class X520Title
         if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
         {
             value.Kind = X520TitleKind.TeletexString;
-            value.TeletexString = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
+            value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
         {
             value.Kind = X520TitleKind.PrintableString;
-            value.PrintableString = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
+            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
         {
             value.Kind = X520TitleKind.UniversalString;
-            value.UniversalString = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
+            value.Value = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
         {
             value.Kind = X520TitleKind.Utf8String;
-            value.Utf8String = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
+            value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
         {
             value.Kind = X520TitleKind.BmpString;
-            value.BmpString = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
+            value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
@@ -824,40 +796,36 @@ public enum X520PseudonymKind
 public sealed class X520Pseudonym
 {
     public X520PseudonymKind Kind { get; private set; }
-    public string? TeletexString { get; private set; }
-    public string? PrintableString { get; private set; }
-    public string? UniversalString { get; private set; }
-    public string? Utf8String { get; private set; }
-    public string? BmpString { get; private set; }
+    public string Value { get; private set; } = "";
 
     public static X520Pseudonym FromTeletexString(string teletexString) => new X520Pseudonym
     {
         Kind = X520PseudonymKind.TeletexString,
-        TeletexString = teletexString,
+        Value = teletexString,
     };
 
     public static X520Pseudonym FromPrintableString(string printableString) => new X520Pseudonym
     {
         Kind = X520PseudonymKind.PrintableString,
-        PrintableString = printableString,
+        Value = printableString,
     };
 
     public static X520Pseudonym FromUniversalString(string universalString) => new X520Pseudonym
     {
         Kind = X520PseudonymKind.UniversalString,
-        UniversalString = universalString,
+        Value = universalString,
     };
 
     public static X520Pseudonym FromUtf8String(string utf8String) => new X520Pseudonym
     {
         Kind = X520PseudonymKind.Utf8String,
-        Utf8String = utf8String,
+        Value = utf8String,
     };
 
     public static X520Pseudonym FromBmpString(string bmpString) => new X520Pseudonym
     {
         Kind = X520PseudonymKind.BmpString,
-        BmpString = bmpString,
+        Value = bmpString,
     };
 
     public void Encode(Asn1Writer writer)
@@ -865,19 +833,19 @@ public sealed class X520Pseudonym
         switch (Kind)
         {
             case X520PseudonymKind.TeletexString:
-                writer.WriteString(Asn1Tag.TeletexString, TeletexString, Asn1StringForm.Teletex);
+                writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
                 break;
             case X520PseudonymKind.PrintableString:
-                writer.WriteString(Asn1Tag.PrintableString, PrintableString, Asn1StringForm.Printable);
+                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
                 break;
             case X520PseudonymKind.UniversalString:
-                writer.WriteString(Asn1Tag.UniversalString, UniversalString, Asn1StringForm.Universal);
+                writer.WriteString(Asn1Tag.UniversalString, Value, Asn1StringForm.Universal);
                 break;
             case X520PseudonymKind.Utf8String:
-                writer.WriteString(Asn1Tag.Utf8String, Utf8String, Asn1StringForm.Utf8);
+                writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
                 break;
             case X520PseudonymKind.BmpString:
-                writer.WriteString(Asn1Tag.BmpString, BmpString, Asn1StringForm.Bmp);
+                writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -890,27 +858,27 @@ public sealed class X520Pseudonym
         if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
         {
             value.Kind = X520PseudonymKind.TeletexString;
-            value.TeletexString = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
+            value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
         {
             value.Kind = X520PseudonymKind.PrintableString;
-            value.PrintableString = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
+            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
         {
             value.Kind = X520PseudonymKind.UniversalString;
-            value.UniversalString = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
+            value.Value = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
         {
             value.Kind = X520PseudonymKind.Utf8String;
-            value.Utf8String = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
+            value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
         {
             value.Kind = X520PseudonymKind.BmpString;
-            value.BmpString = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
+            value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
@@ -929,40 +897,36 @@ public enum DirectoryStringKind
 public sealed class DirectoryString
 {
     public DirectoryStringKind Kind { get; private set; }
-    public string? TeletexString { get; private set; }
-    public string? PrintableString { get; private set; }
-    public string? UniversalString { get; private set; }
-    public string? Utf8String { get; private set; }
-    public string? BmpString { get; private set; }
+    public string Value { get; private set; } = "";
 
     public static DirectoryString FromTeletexString(string teletexString) => new DirectoryString
     {
         Kind = DirectoryStringKind.TeletexString,
-        TeletexString = teletexString,
+        Value = teletexString,
     };
 
     public static DirectoryString FromPrintableString(string printableString) => new DirectoryString
     {
         Kind = DirectoryStringKind.PrintableString,
-        PrintableString = printableString,
+        Value = printableString,
     };
 
     public static DirectoryString FromUniversalString(string universalString) => new DirectoryString
     {
         Kind = DirectoryStringKind.UniversalString,
-        UniversalString = universalString,
+        Value = universalString,
     };
 
     public static DirectoryString FromUtf8String(string utf8String) => new DirectoryString
     {
         Kind = DirectoryStringKind.Utf8String,
-        Utf8String = utf8String,
+        Value = utf8String,
     };
 
     public static DirectoryString FromBmpString(string bmpString) => new DirectoryString
     {
         Kind = DirectoryStringKind.BmpString,
-        BmpString = bmpString,
+        Value = bmpString,
     };
 
     public void Encode(Asn1Writer writer)
@@ -970,19 +934,19 @@ public sealed class DirectoryString
         switch (Kind)
         {
             case DirectoryStringKind.TeletexString:
-                writer.WriteString(Asn1Tag.TeletexString, TeletexString, Asn1StringForm.Teletex);
+                writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
                 break;
             case DirectoryStringKind.PrintableString:
-                writer.WriteString(Asn1Tag.PrintableString, PrintableString, Asn1StringForm.Printable);
+                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
                 break;
             case DirectoryStringKind.UniversalString:
-                writer.WriteString(Asn1Tag.UniversalString, UniversalString, Asn1StringForm.Universal);
+                writer.WriteString(Asn1Tag.UniversalString, Value, Asn1StringForm.Universal);
                 break;
             case DirectoryStringKind.Utf8String:
-                writer.WriteString(Asn1Tag.Utf8String, Utf8String, Asn1StringForm.Utf8);
+                writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
                 break;
             case DirectoryStringKind.BmpString:
-                writer.WriteString(Asn1Tag.BmpString, BmpString, Asn1StringForm.Bmp);
+                writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -995,27 +959,27 @@ public sealed class DirectoryString
         if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
         {
             value.Kind = DirectoryStringKind.TeletexString;
-            value.TeletexString = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
+            value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
         {
             value.Kind = DirectoryStringKind.PrintableString;
-            value.PrintableString = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
+            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
         {
             value.Kind = DirectoryStringKind.UniversalString;
-            value.UniversalString = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
+            value.Value = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
         {
             value.Kind = DirectoryStringKind.Utf8String;
-            value.Utf8String = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
+            value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
         {
             value.Kind = DirectoryStringKind.BmpString;
-            value.BmpString = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
+            value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
@@ -1215,19 +1179,18 @@ public enum TimeKind
 public sealed class Time
 {
     public TimeKind Kind { get; private set; }
-    public DateTimeOffset? UtcTime { get; private set; }
-    public DateTimeOffset? GeneralTime { get; private set; }
+    public DateTimeOffset Value { get; private set; }
 
     public static Time FromUtcTime(DateTimeOffset utcTime) => new Time
     {
         Kind = TimeKind.UtcTime,
-        UtcTime = utcTime,
+        Value = utcTime,
     };
 
     public static Time FromGeneralTime(DateTimeOffset generalTime) => new Time
     {
         Kind = TimeKind.GeneralTime,
-        GeneralTime = generalTime,
+        Value = generalTime,
     };
 
     public void Encode(Asn1Writer writer)
@@ -1235,10 +1198,10 @@ public sealed class Time
         switch (Kind)
         {
             case TimeKind.UtcTime:
-                writer.WriteTime(Asn1Tag.UtcTime, UtcTime.Value, Asn1TimeForm.Utc);
+                writer.WriteTime(Asn1Tag.UtcTime, Value, Asn1TimeForm.Utc);
                 break;
             case TimeKind.GeneralTime:
-                writer.WriteTime(Asn1Tag.GeneralizedTime, GeneralTime.Value, Asn1TimeForm.Generalized, 3);
+                writer.WriteTime(Asn1Tag.GeneralizedTime, Value, Asn1TimeForm.Generalized, 3);
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -1251,12 +1214,12 @@ public sealed class Time
         if (peeked.MatchesIgnoreConstructed(Asn1Tag.UtcTime))
         {
             value.Kind = TimeKind.UtcTime;
-            value.UtcTime = reader.ReadTime(Asn1Tag.UtcTime, Asn1TimeForm.Utc);
+            value.Value = reader.ReadTime(Asn1Tag.UtcTime, Asn1TimeForm.Utc);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.GeneralizedTime))
         {
             value.Kind = TimeKind.GeneralTime;
-            value.GeneralTime = reader.ReadTime(Asn1Tag.GeneralizedTime, Asn1TimeForm.Generalized);
+            value.Value = reader.ReadTime(Asn1Tag.GeneralizedTime, Asn1TimeForm.Generalized);
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
@@ -1679,19 +1642,18 @@ public enum CountryNameKind
 public sealed class CountryName
 {
     public CountryNameKind Kind { get; private set; }
-    public string? X121DccCode { get; private set; }
-    public string? Iso3166Alpha2Code { get; private set; }
+    public string Value { get; private set; } = "";
 
     public static CountryName FromX121DccCode(string x121DccCode) => new CountryName
     {
         Kind = CountryNameKind.X121DccCode,
-        X121DccCode = x121DccCode,
+        Value = x121DccCode,
     };
 
     public static CountryName FromIso3166Alpha2Code(string iso3166Alpha2Code) => new CountryName
     {
         Kind = CountryNameKind.Iso3166Alpha2Code,
-        Iso3166Alpha2Code = iso3166Alpha2Code,
+        Value = iso3166Alpha2Code,
     };
 
     public void Encode(Asn1Writer writer)
@@ -1699,10 +1661,10 @@ public sealed class CountryName
         switch (Kind)
         {
             case CountryNameKind.X121DccCode:
-                writer.WriteString(Asn1Tag.NumericString, X121DccCode, Asn1StringForm.Numeric);
+                writer.WriteString(Asn1Tag.NumericString, Value, Asn1StringForm.Numeric);
                 break;
             case CountryNameKind.Iso3166Alpha2Code:
-                writer.WriteString(Asn1Tag.PrintableString, Iso3166Alpha2Code, Asn1StringForm.Printable);
+                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -1715,12 +1677,12 @@ public sealed class CountryName
         if (peeked.MatchesIgnoreConstructed(Asn1Tag.NumericString))
         {
             value.Kind = CountryNameKind.X121DccCode;
-            value.X121DccCode = reader.ReadString(Asn1Tag.NumericString, Asn1StringForm.Numeric);
+            value.Value = reader.ReadString(Asn1Tag.NumericString, Asn1StringForm.Numeric);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
         {
             value.Kind = CountryNameKind.Iso3166Alpha2Code;
-            value.Iso3166Alpha2Code = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
+            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
@@ -1736,19 +1698,18 @@ public enum AdministrationDomainNameKind
 public sealed class AdministrationDomainName
 {
     public AdministrationDomainNameKind Kind { get; private set; }
-    public string? Numeric { get; private set; }
-    public string? Printable { get; private set; }
+    public string Value { get; private set; } = "";
 
     public static AdministrationDomainName FromNumeric(string numeric) => new AdministrationDomainName
     {
         Kind = AdministrationDomainNameKind.Numeric,
-        Numeric = numeric,
+        Value = numeric,
     };
 
     public static AdministrationDomainName FromPrintable(string printable) => new AdministrationDomainName
     {
         Kind = AdministrationDomainNameKind.Printable,
-        Printable = printable,
+        Value = printable,
     };
 
     public void Encode(Asn1Writer writer)
@@ -1756,10 +1717,10 @@ public sealed class AdministrationDomainName
         switch (Kind)
         {
             case AdministrationDomainNameKind.Numeric:
-                writer.WriteString(Asn1Tag.NumericString, Numeric, Asn1StringForm.Numeric);
+                writer.WriteString(Asn1Tag.NumericString, Value, Asn1StringForm.Numeric);
                 break;
             case AdministrationDomainNameKind.Printable:
-                writer.WriteString(Asn1Tag.PrintableString, Printable, Asn1StringForm.Printable);
+                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -1772,12 +1733,12 @@ public sealed class AdministrationDomainName
         if (peeked.MatchesIgnoreConstructed(Asn1Tag.NumericString))
         {
             value.Kind = AdministrationDomainNameKind.Numeric;
-            value.Numeric = reader.ReadString(Asn1Tag.NumericString, Asn1StringForm.Numeric);
+            value.Value = reader.ReadString(Asn1Tag.NumericString, Asn1StringForm.Numeric);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
         {
             value.Kind = AdministrationDomainNameKind.Printable;
-            value.Printable = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
+            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
@@ -1793,19 +1754,18 @@ public enum PrivateDomainNameKind
 public sealed class PrivateDomainName
 {
     public PrivateDomainNameKind Kind { get; private set; }
-    public string? Numeric { get; private set; }
-    public string? Printable { get; private set; }
+    public string Value { get; private set; } = "";
 
     public static PrivateDomainName FromNumeric(string numeric) => new PrivateDomainName
     {
         Kind = PrivateDomainNameKind.Numeric,
-        Numeric = numeric,
+        Value = numeric,
     };
 
     public static PrivateDomainName FromPrintable(string printable) => new PrivateDomainName
     {
         Kind = PrivateDomainNameKind.Printable,
-        Printable = printable,
+        Value = printable,
     };
 
     public void Encode(Asn1Writer writer)
@@ -1813,10 +1773,10 @@ public sealed class PrivateDomainName
         switch (Kind)
         {
             case PrivateDomainNameKind.Numeric:
-                writer.WriteString(Asn1Tag.NumericString, Numeric, Asn1StringForm.Numeric);
+                writer.WriteString(Asn1Tag.NumericString, Value, Asn1StringForm.Numeric);
                 break;
             case PrivateDomainNameKind.Printable:
-                writer.WriteString(Asn1Tag.PrintableString, Printable, Asn1StringForm.Printable);
+                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -1829,12 +1789,12 @@ public sealed class PrivateDomainName
         if (peeked.MatchesIgnoreConstructed(Asn1Tag.NumericString))
         {
             value.Kind = PrivateDomainNameKind.Numeric;
-            value.Numeric = reader.ReadString(Asn1Tag.NumericString, Asn1StringForm.Numeric);
+            value.Value = reader.ReadString(Asn1Tag.NumericString, Asn1StringForm.Numeric);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
         {
             value.Kind = PrivateDomainNameKind.Printable;
-            value.Printable = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
+            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
@@ -2065,19 +2025,18 @@ public enum PhysicalDeliveryCountryNameKind
 public sealed class PhysicalDeliveryCountryName
 {
     public PhysicalDeliveryCountryNameKind Kind { get; private set; }
-    public string? X121DccCode { get; private set; }
-    public string? Iso3166Alpha2Code { get; private set; }
+    public string Value { get; private set; } = "";
 
     public static PhysicalDeliveryCountryName FromX121DccCode(string x121DccCode) => new PhysicalDeliveryCountryName
     {
         Kind = PhysicalDeliveryCountryNameKind.X121DccCode,
-        X121DccCode = x121DccCode,
+        Value = x121DccCode,
     };
 
     public static PhysicalDeliveryCountryName FromIso3166Alpha2Code(string iso3166Alpha2Code) => new PhysicalDeliveryCountryName
     {
         Kind = PhysicalDeliveryCountryNameKind.Iso3166Alpha2Code,
-        Iso3166Alpha2Code = iso3166Alpha2Code,
+        Value = iso3166Alpha2Code,
     };
 
     public void Encode(Asn1Writer writer)
@@ -2085,10 +2044,10 @@ public sealed class PhysicalDeliveryCountryName
         switch (Kind)
         {
             case PhysicalDeliveryCountryNameKind.X121DccCode:
-                writer.WriteString(Asn1Tag.NumericString, X121DccCode, Asn1StringForm.Numeric);
+                writer.WriteString(Asn1Tag.NumericString, Value, Asn1StringForm.Numeric);
                 break;
             case PhysicalDeliveryCountryNameKind.Iso3166Alpha2Code:
-                writer.WriteString(Asn1Tag.PrintableString, Iso3166Alpha2Code, Asn1StringForm.Printable);
+                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -2101,12 +2060,12 @@ public sealed class PhysicalDeliveryCountryName
         if (peeked.MatchesIgnoreConstructed(Asn1Tag.NumericString))
         {
             value.Kind = PhysicalDeliveryCountryNameKind.X121DccCode;
-            value.X121DccCode = reader.ReadString(Asn1Tag.NumericString, Asn1StringForm.Numeric);
+            value.Value = reader.ReadString(Asn1Tag.NumericString, Asn1StringForm.Numeric);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
         {
             value.Kind = PhysicalDeliveryCountryNameKind.Iso3166Alpha2Code;
-            value.Iso3166Alpha2Code = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
+            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
@@ -2122,19 +2081,18 @@ public enum PostalCodeKind
 public sealed class PostalCode
 {
     public PostalCodeKind Kind { get; private set; }
-    public string? NumericCode { get; private set; }
-    public string? PrintableCode { get; private set; }
+    public string Value { get; private set; } = "";
 
     public static PostalCode FromNumericCode(string numericCode) => new PostalCode
     {
         Kind = PostalCodeKind.NumericCode,
-        NumericCode = numericCode,
+        Value = numericCode,
     };
 
     public static PostalCode FromPrintableCode(string printableCode) => new PostalCode
     {
         Kind = PostalCodeKind.PrintableCode,
-        PrintableCode = printableCode,
+        Value = printableCode,
     };
 
     public void Encode(Asn1Writer writer)
@@ -2142,10 +2100,10 @@ public sealed class PostalCode
         switch (Kind)
         {
             case PostalCodeKind.NumericCode:
-                writer.WriteString(Asn1Tag.NumericString, NumericCode, Asn1StringForm.Numeric);
+                writer.WriteString(Asn1Tag.NumericString, Value, Asn1StringForm.Numeric);
                 break;
             case PostalCodeKind.PrintableCode:
-                writer.WriteString(Asn1Tag.PrintableString, PrintableCode, Asn1StringForm.Printable);
+                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -2158,12 +2116,12 @@ public sealed class PostalCode
         if (peeked.MatchesIgnoreConstructed(Asn1Tag.NumericString))
         {
             value.Kind = PostalCodeKind.NumericCode;
-            value.NumericCode = reader.ReadString(Asn1Tag.NumericString, Asn1StringForm.Numeric);
+            value.Value = reader.ReadString(Asn1Tag.NumericString, Asn1StringForm.Numeric);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
         {
             value.Kind = PostalCodeKind.PrintableCode;
-            value.PrintableCode = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
+            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;

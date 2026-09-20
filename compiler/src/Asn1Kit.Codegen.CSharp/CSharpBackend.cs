@@ -383,6 +383,8 @@ public sealed class CSharpBackend : ILanguageBackend
 
     private void EmitChoice(StringBuilder sb, IrDocument document, IrModule module, string typeName, ChoiceType type)
     {
+        var homogeneousCsType = TryHomogeneousChoiceCsType(document, module, typeName, type);
+
         sb.AppendLine($"public enum {typeName}Kind");
         sb.AppendLine("{");
         foreach (var field in type.Components)
@@ -395,9 +397,17 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine($"public sealed class {typeName}");
         sb.AppendLine("{");
         sb.AppendLine($"    public {typeName}Kind Kind {{ get; private set; }}");
-        foreach (var field in type.Components)
+        if (homogeneousCsType is not null)
         {
-            EmitProperty(sb, document, module, typeName, field, optional: true, privateSetter: true);
+            var valueInit = Initializer(document, module, type.Components[0].Type, optional: false);
+            sb.AppendLine($"    public {homogeneousCsType} Value {{ get; private set; }}{valueInit}");
+        }
+        else
+        {
+            foreach (var field in type.Components)
+            {
+                EmitProperty(sb, document, module, typeName, field, optional: true, privateSetter: true);
+            }
         }
 
         sb.AppendLine();
@@ -405,12 +415,14 @@ public sealed class CSharpBackend : ILanguageBackend
         {
             var prop = PropertyName(field, typeName);
             var factoryName = prop.StartsWith('@') ? prop[1..] : prop;
-            var csType = CsType(document, module, typeName, field.Name, field.Type, optional: false);
+            var csType = homogeneousCsType
+                ?? CsType(document, module, typeName, field.Name, field.Type, optional: false);
             var param = CamelCaseIdentifier(prop);
+            var assignProp = homogeneousCsType is not null ? "Value" : prop;
             sb.AppendLine($"    public static {typeName} From{factoryName}({csType} {param}) => new {typeName}");
             sb.AppendLine("    {");
             sb.AppendLine($"        Kind = {typeName}Kind.{prop},");
-            sb.AppendLine($"        {prop} = {param},");
+            sb.AppendLine($"        {assignProp} = {param},");
             sb.AppendLine("    };");
             sb.AppendLine();
         }
@@ -422,6 +434,9 @@ public sealed class CSharpBackend : ILanguageBackend
         foreach (var field in type.Components)
         {
             var prop = PropertyName(field, typeName);
+            var encodeExpr = homogeneousCsType is not null
+                ? "Value"
+                : UnwrapOptional(document, module, field.Type, prop);
             sb.AppendLine($"            case {typeName}Kind.{prop}:");
             EmitEncodeValue(
                 sb,
@@ -432,7 +447,7 @@ public sealed class CSharpBackend : ILanguageBackend
                 field.Type,
                 "                ",
                 "writer",
-                UnwrapOptional(document, module, field.Type, prop));
+                encodeExpr);
             sb.AppendLine("                break;");
         }
 
@@ -448,12 +463,13 @@ public sealed class CSharpBackend : ILanguageBackend
         foreach (var field in type.Components)
         {
             var prop = PropertyName(field, typeName);
+            var assignTarget = homogeneousCsType is not null ? "value.Value" : $"value.{prop}";
             var cond = first ? "if" : "else if";
             first = false;
             sb.AppendLine($"        {cond} (peeked.MatchesIgnoreConstructed({TagExpr(document, module, field.Type)}))");
             sb.AppendLine("        {");
             sb.AppendLine($"            value.Kind = {typeName}Kind.{prop};");
-            EmitDecodeAssign(sb, document, module, typeName, field.Name, field.Type, "            ", "reader", $"value.{prop}");
+            EmitDecodeAssign(sb, document, module, typeName, field.Name, field.Type, "            ", "reader", assignTarget);
             sb.AppendLine("        }");
         }
 
@@ -461,6 +477,37 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine("        return value;");
         sb.AppendLine("    }");
         sb.AppendLine("}");
+    }
+
+    /// <summary>
+    /// When every alternative maps to the same non-nullable CLR type, collapse alt properties into one Value.
+    /// </summary>
+    private string? TryHomogeneousChoiceCsType(
+        IrDocument document,
+        IrModule module,
+        string typeName,
+        ChoiceType type)
+    {
+        if (type.Components.Count < 2)
+        {
+            return null;
+        }
+
+        string? shared = null;
+        foreach (var field in type.Components)
+        {
+            var csType = CsType(document, module, typeName, field.Name, field.Type, optional: false);
+            if (shared is null)
+            {
+                shared = csType;
+            }
+            else if (!string.Equals(shared, csType, StringComparison.Ordinal))
+            {
+                return null;
+            }
+        }
+
+        return shared;
     }
 
     private void EmitNamedBitString(StringBuilder sb, string typeName, BitStringType type)

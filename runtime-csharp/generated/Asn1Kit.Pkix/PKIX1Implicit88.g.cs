@@ -361,33 +361,30 @@ public enum DisplayTextKind
 public sealed class DisplayText
 {
     public DisplayTextKind Kind { get; private set; }
-    public string? Ia5String { get; private set; }
-    public string? VisibleString { get; private set; }
-    public string? BmpString { get; private set; }
-    public string? Utf8String { get; private set; }
+    public string Value { get; private set; } = "";
 
     public static DisplayText FromIa5String(string ia5String) => new DisplayText
     {
         Kind = DisplayTextKind.Ia5String,
-        Ia5String = ia5String,
+        Value = ia5String,
     };
 
     public static DisplayText FromVisibleString(string visibleString) => new DisplayText
     {
         Kind = DisplayTextKind.VisibleString,
-        VisibleString = visibleString,
+        Value = visibleString,
     };
 
     public static DisplayText FromBmpString(string bmpString) => new DisplayText
     {
         Kind = DisplayTextKind.BmpString,
-        BmpString = bmpString,
+        Value = bmpString,
     };
 
     public static DisplayText FromUtf8String(string utf8String) => new DisplayText
     {
         Kind = DisplayTextKind.Utf8String,
-        Utf8String = utf8String,
+        Value = utf8String,
     };
 
     public void Encode(Asn1Writer writer)
@@ -395,16 +392,16 @@ public sealed class DisplayText
         switch (Kind)
         {
             case DisplayTextKind.Ia5String:
-                writer.WriteString(Asn1Tag.Ia5String, Ia5String, Asn1StringForm.Ia5);
+                writer.WriteString(Asn1Tag.Ia5String, Value, Asn1StringForm.Ia5);
                 break;
             case DisplayTextKind.VisibleString:
-                writer.WriteString(Asn1Tag.VisibleString, VisibleString, Asn1StringForm.Visible);
+                writer.WriteString(Asn1Tag.VisibleString, Value, Asn1StringForm.Visible);
                 break;
             case DisplayTextKind.BmpString:
-                writer.WriteString(Asn1Tag.BmpString, BmpString, Asn1StringForm.Bmp);
+                writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
                 break;
             case DisplayTextKind.Utf8String:
-                writer.WriteString(Asn1Tag.Utf8String, Utf8String, Asn1StringForm.Utf8);
+                writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -417,22 +414,22 @@ public sealed class DisplayText
         if (peeked.MatchesIgnoreConstructed(Asn1Tag.Ia5String))
         {
             value.Kind = DisplayTextKind.Ia5String;
-            value.Ia5String = reader.ReadString(Asn1Tag.Ia5String, Asn1StringForm.Ia5);
+            value.Value = reader.ReadString(Asn1Tag.Ia5String, Asn1StringForm.Ia5);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.VisibleString))
         {
             value.Kind = DisplayTextKind.VisibleString;
-            value.VisibleString = reader.ReadString(Asn1Tag.VisibleString, Asn1StringForm.Visible);
+            value.Value = reader.ReadString(Asn1Tag.VisibleString, Asn1StringForm.Visible);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
         {
             value.Kind = DisplayTextKind.BmpString;
-            value.BmpString = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
+            value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
         {
             value.Kind = DisplayTextKind.Utf8String;
-            value.Utf8String = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
+            value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;

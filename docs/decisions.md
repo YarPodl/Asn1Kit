@@ -107,6 +107,12 @@
 
 **Последствие.** C# backend не эмитит класс для typedef, чей RHS — не constructed (кроме single-alternative CHOICE) и не `BIT STRING` с `namedBits`: в полях подставляется исходный тип (`string`, `Asn1Any`, `List<…>`, …), имя алиаса остаётся в `/// <summary>ASN.1 alias …</summary>`. CHOICE с одним вариантом сворачивается в тип альтернативы (тег CHOICE, если есть, переносится на неё); если и CHOICE, и альтернатива уже с тегами — класс CHOICE сохраняется. Исключение — named BIT STRING: класс с `Asn1BitString Value`, `[Flags]` enum `{Name}Flags` и `ToFlags` / `FromFlags` / свойство `Flags`. IR не меняется.
 
+## C# codegen — однотипный CHOICE → `Kind` + `Value`
+
+**Причина.** `Time` (UTCTime | GeneralizedTime) и строковые CHOICE вроде `DisplayText` / `DirectoryString` порождали N nullable-свойств одного CLR-типа (`DateTimeOffset?` / `string?`). Читать и писать значение неудобно; wire-форма всё равно задаётся `Kind`.
+
+**Последствие.** Если у всех альтернатив одинаковый non-nullable `CsType`, класс имеет одно свойство `Value` и фабрики `From…`, которые выставляют `Kind` + `Value`. `Kind` сохраняется: encode/decode выбирают тег и `Asn1StringForm` / `Asn1TimeForm` по нему, без эвристик. Смешанные CHOICE (`GeneralName` и т.п.) остаются с отдельным свойством на альтернативу.
+
 ## C++ — ещё один бэкенд, а не форк фронтенда
 
 **Причина.** Компилятор не знает целевой язык, поэтому второй язык не требует изменений в разборе ASN.1 и в IR.

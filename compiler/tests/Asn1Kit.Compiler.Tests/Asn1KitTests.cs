@@ -608,6 +608,9 @@ END
         Assert.Contains("enum MultiKind", source);
         Assert.Contains("public static Multi FromA(Asn1Integer a) => new Multi", source);
         Assert.Contains("public static Multi FromB(string b) => new Multi", source);
+        Assert.Contains("public Asn1Integer? A { get; private set; }", source);
+        Assert.Contains("public string? B { get; private set; }", source);
+        Assert.DoesNotContain("public Asn1Integer Value", source);
 
         var assembly = CompileGenerated(source);
         Assert.Null(assembly.GetType("ChoiceMod.Name"));
@@ -661,6 +664,87 @@ END
         var decodedPick = holderType.GetProperty("Pick")!.GetValue(decoded)!;
         Assert.Equal(Enum.Parse(multiKind, "A"), multiType.GetProperty("Kind")!.GetValue(decodedPick));
         Assert.Equal(Asn1Integer.FromInt32(7), multiType.GetProperty("A")!.GetValue(decodedPick));
+    }
+
+    [Fact]
+    public void GeneratedCSharp_CollapsesHomogeneousChoiceToValue()
+    {
+        const string asn = @"
+HomogeneousMod DEFINITIONS EXPLICIT TAGS ::= BEGIN
+When ::= CHOICE { u UTCTime, g GeneralizedTime }
+Text ::= CHOICE { a UTF8String, b PrintableString }
+Bag ::= SEQUENCE { when When, text Text }
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+
+        Assert.Contains("enum WhenKind", source);
+        Assert.Contains("public DateTimeOffset Value { get; private set; }", source);
+        Assert.DoesNotContain("public DateTimeOffset? U { get; private set; }", source);
+        Assert.DoesNotContain("public DateTimeOffset? G { get; private set; }", source);
+        Assert.Contains("public static When FromU(DateTimeOffset u) => new When", source);
+        Assert.Contains("Value = u,", source);
+
+        Assert.Contains("enum TextKind", source);
+        Assert.Contains("public string Value { get; private set; } = \"\";", source);
+        Assert.DoesNotContain("public string? A { get; private set; }", source);
+        Assert.DoesNotContain("public string? B { get; private set; }", source);
+        Assert.Contains("public static Text FromA(string a) => new Text", source);
+
+        var assembly = CompileGenerated(source);
+        var whenType = assembly.GetType("HomogeneousMod.When")!;
+        var whenKind = assembly.GetType("HomogeneousMod.WhenKind")!;
+        var textType = assembly.GetType("HomogeneousMod.Text")!;
+        var textKind = assembly.GetType("HomogeneousMod.TextKind")!;
+        var formType = assembly.GetType("HomogeneousMod.Bag")!;
+
+        var instant = new DateTimeOffset(2020, 1, 2, 3, 4, 5, TimeSpan.Zero);
+        var when = whenType.GetMethod("FromU", new[] { typeof(DateTimeOffset) })!
+            .Invoke(null, new object[] { instant })!;
+        Assert.Equal(Enum.Parse(whenKind, "U"), whenType.GetProperty("Kind")!.GetValue(when));
+        Assert.Equal(instant, whenType.GetProperty("Value")!.GetValue(when));
+
+        var text = textType.GetMethod("FromA", new[] { typeof(string) })!
+            .Invoke(null, new object[] { "hi" })!;
+        Assert.Equal(Enum.Parse(textKind, "A"), textType.GetProperty("Kind")!.GetValue(text));
+        Assert.Equal("hi", textType.GetProperty("Value")!.GetValue(text));
+
+        var form = Activator.CreateInstance(formType)!;
+        formType.GetProperty("When")!.SetValue(form, when);
+        formType.GetProperty("Text")!.SetValue(form, text);
+
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        formType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(form, new object[] { writer });
+        var encoded = writer.Encode();
+
+        var decoded = formType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(encoded, Asn1Encoding.Der) })!;
+        var decodedWhen = formType.GetProperty("When")!.GetValue(decoded)!;
+        var decodedText = formType.GetProperty("Text")!.GetValue(decoded)!;
+        Assert.Equal(Enum.Parse(whenKind, "U"), whenType.GetProperty("Kind")!.GetValue(decodedWhen));
+        Assert.Equal(instant, whenType.GetProperty("Value")!.GetValue(decodedWhen));
+        Assert.Equal(Enum.Parse(textKind, "A"), textType.GetProperty("Kind")!.GetValue(decodedText));
+        Assert.Equal("hi", textType.GetProperty("Value")!.GetValue(decodedText));
+
+        var roundTrip = new Asn1Writer(Asn1Encoding.Der);
+        formType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(decoded, new object[] { roundTrip });
+        Assert.Equal(encoded, roundTrip.Encode());
+
+        var general = whenType.GetMethod("FromG", new[] { typeof(DateTimeOffset) })!
+            .Invoke(null, new object[] { instant })!;
+        Assert.Equal(Enum.Parse(whenKind, "G"), whenType.GetProperty("Kind")!.GetValue(general));
+        var generalWriter = new Asn1Writer(Asn1Encoding.Der);
+        whenType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(general, new object[] { generalWriter });
+        var generalBytes = generalWriter.Encode();
+        Assert.Equal(0x18, generalBytes[0]); // GeneralizedTime
+
+        var printable = textType.GetMethod("FromB", new[] { typeof(string) })!
+            .Invoke(null, new object[] { "OK" })!;
+        var printableWriter = new Asn1Writer(Asn1Encoding.Der);
+        textType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(printable, new object[] { printableWriter });
+        Assert.Equal(new byte[] { 0x13, 0x02, 0x4F, 0x4B }, printableWriter.Encode());
     }
 
     [Fact]
