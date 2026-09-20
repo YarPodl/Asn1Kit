@@ -238,6 +238,9 @@ Bag ::= SET {
   b [0] BOOLEAN OPTIONAL
 }
 List ::= SET OF INTEGER
+Holder ::= SEQUENCE {
+  items List
+}
 END
 ";
         var document = new Asn1Compiler().CompileText(asn);
@@ -246,10 +249,14 @@ END
         Assert.Contains("WriteSet", source);
         Assert.Contains("WriteSetOf", source);
         Assert.Contains("Asn1Tag.Set", source);
+        Assert.DoesNotContain("class List", source);
+        Assert.Contains("ASN.1 alias List ::= SET OF INTEGER.", source);
+        Assert.Contains("List<Asn1Integer> Items", source);
 
         var assembly = CompileGenerated(source);
         var bagType = assembly.GetType("SetMod.Bag")!;
-        var listType = assembly.GetType("SetMod.List")!;
+        var holderType = assembly.GetType("SetMod.Holder")!;
+        Assert.Null(assembly.GetType("SetMod.List"));
 
         var bag = Activator.CreateInstance(bagType)!;
         bagType.GetProperty("A")!.SetValue(bag, Asn1Integer.FromInt32(42));
@@ -300,25 +307,80 @@ END
                 .Invoke(null, new object[] { new Asn1Reader(unknown, Asn1Encoding.Der) }));
         Assert.IsType<Asn1Exception>(unknownEx.InnerException);
 
-        var list = Activator.CreateInstance(listType)!;
-        var items = (System.Collections.IList)listType.GetProperty("Items")!.GetValue(list)!;
-        items.Add(Asn1Integer.FromInt32(2));
-        items.Add(Asn1Integer.FromInt32(1));
-        var expectedSetOf = new byte[] { 0x31, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02 };
+        var holder = Activator.CreateInstance(holderType)!;
+        var items = new List<Asn1Integer>
+        {
+            Asn1Integer.FromInt32(2),
+            Asn1Integer.FromInt32(1),
+        };
+        holderType.GetProperty("Items")!.SetValue(holder, items);
+        // SET OF inside SEQUENCE: outer SEQUENCE tag, inner SET OF sorted in DER.
+        var expectedHolder = new byte[]
+        {
+            0x30, 0x08,
+            0x31, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02
+        };
         var listWriter = new Asn1Writer(Asn1Encoding.Der);
-        listType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(list, new object[] { listWriter });
-        Assert.Equal(expectedSetOf, listWriter.Encode());
+        holderType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(holder, new object[] { listWriter });
+        Assert.Equal(expectedHolder, listWriter.Encode());
 
-        var decodedList = listType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
-            .Invoke(null, new object[] { new Asn1Reader(expectedSetOf, Asn1Encoding.Der) })!;
-        var decodedItems = (System.Collections.IList)listType.GetProperty("Items")!.GetValue(decodedList)!;
+        var decodedHolder = holderType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(expectedHolder, Asn1Encoding.Der) })!;
+        var decodedItems = (List<Asn1Integer>)holderType.GetProperty("Items")!.GetValue(decodedHolder)!;
         Assert.Equal(2, decodedItems.Count);
         Assert.Equal(Asn1Integer.FromInt32(1), decodedItems[0]);
         Assert.Equal(Asn1Integer.FromInt32(2), decodedItems[1]);
 
         var listRewrite = new Asn1Writer(Asn1Encoding.Der);
-        listType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(decodedList, new object[] { listRewrite });
-        Assert.Equal(expectedSetOf, listRewrite.Encode());
+        holderType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(decodedHolder, new object[] { listRewrite });
+        Assert.Equal(expectedHolder, listRewrite.Encode());
+    }
+
+    [Fact]
+    public void GeneratedCSharp_CollapsesSequenceOfAliasToList()
+    {
+        const string asn = @"
+OfMod DEFINITIONS EXPLICIT TAGS ::= BEGIN
+Seq ::= SEQUENCE OF INTEGER
+Holder ::= SEQUENCE {
+  values Seq
+}
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+
+        Assert.DoesNotContain("class Seq", source);
+        Assert.Contains("ASN.1 alias Seq ::= SEQUENCE OF INTEGER.", source);
+        Assert.Contains("List<Asn1Integer> Values", source);
+        Assert.Contains("WriteSequenceOf", source);
+        Assert.Contains("ReadSequenceOf", source);
+
+        var assembly = CompileGenerated(source);
+        Assert.Null(assembly.GetType("OfMod.Seq"));
+        var holderType = assembly.GetType("OfMod.Holder")!;
+
+        var holder = Activator.CreateInstance(holderType)!;
+        holderType.GetProperty("Values")!.SetValue(
+            holder,
+            new List<Asn1Integer> { Asn1Integer.FromInt32(1), Asn1Integer.FromInt32(2) });
+
+        var expected = new byte[]
+        {
+            0x30, 0x08,
+            0x30, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02
+        };
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        holderType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(holder, new object[] { writer });
+        Assert.Equal(expected, writer.Encode());
+
+        var decoded = holderType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(expected, Asn1Encoding.Der) })!;
+        var values = (List<Asn1Integer>)holderType.GetProperty("Values")!.GetValue(decoded)!;
+        Assert.Equal(2, values.Count);
+        Assert.Equal(Asn1Integer.FromInt32(1), values[0]);
+        Assert.Equal(Asn1Integer.FromInt32(2), values[1]);
     }
 
     [Fact]

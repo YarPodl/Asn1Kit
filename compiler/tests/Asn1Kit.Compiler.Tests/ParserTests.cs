@@ -127,6 +127,9 @@ PolicyMappings ::= SEQUENCE OF SEQUENCE {
   a INTEGER,
   b INTEGER
 }
+Holder ::= SEQUENCE {
+  mappings PolicyMappings
+}
 END
 ";
         var document = new Asn1Compiler().CompileText(asn);
@@ -134,6 +137,9 @@ END
         Assert.Contains("List<PolicyMappings_Item>", source);
         Assert.Contains("public sealed class PolicyMappings_Item", source);
         Assert.DoesNotContain("class PolicyMappingsItem", source);
+        Assert.DoesNotContain("class PolicyMappings\n{", source.Replace("\r\n", "\n", StringComparison.Ordinal));
+        Assert.Contains("WriteSequenceOf", source);
+        Assert.Contains("ASN.1 alias PolicyMappings ::= SEQUENCE OF SEQUENCE.", source);
     }
 
     [Fact]

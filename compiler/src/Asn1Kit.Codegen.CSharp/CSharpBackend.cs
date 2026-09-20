@@ -42,12 +42,15 @@ public sealed class CSharpBackend : ILanguageBackend
                 continue;
             }
 
+            var typeName = IrOptions.CSharpTypeName(type.Options) ?? SanitizeIdentifier(type.Name);
             if (IsCollapsibleAlias(type.Type))
             {
+                // SEQUENCE OF / SET OF aliases collapse to List<T>, but nested element types
+                // (e.g. SEQUENCE OF SEQUENCE {…}) must still be emitted as Owner_Item.
+                CollectNested(document, module, typeName, type.Type, queue);
                 continue;
             }
 
-            var typeName = IrOptions.CSharpTypeName(type.Options) ?? SanitizeIdentifier(type.Name);
             queue.Enqueue((typeName, type.Type));
         }
 
@@ -146,7 +149,7 @@ public sealed class CSharpBackend : ILanguageBackend
     }
 
     private static bool NeedsNamedType(TypeExpr type) =>
-        type is SequenceType or SetType or ChoiceType or SequenceOfType or SetOfType;
+        type is SequenceType or SetType or ChoiceType;
 
     private static bool IsNamedBitString(TypeExpr type) =>
         type is BitStringType { NamedBits: { Count: > 0 } };
@@ -174,12 +177,10 @@ public sealed class CSharpBackend : ILanguageBackend
             case ChoiceType choice:
                 EmitChoice(sb, document, module, typeName, choice);
                 break;
-            case SequenceOfType sequenceOf:
-                EmitSequenceOf(sb, document, module, typeName, sequenceOf);
-                break;
-            case SetOfType setOf:
-                EmitSetOf(sb, document, module, typeName, setOf);
-                break;
+            case SequenceOfType:
+            case SetOfType:
+                throw new NotSupportedException(
+                    $"C# backend does not emit a named type for '{type.Kind}'; use List<T> via field encode/decode.");
             case BitStringType bitString when IsNamedBitString(bitString):
                 EmitNamedBitString(sb, typeName, bitString);
                 break;
@@ -426,86 +427,6 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine("}");
     }
 
-    private void EmitSequenceOf(StringBuilder sb, IrDocument document, IrModule module, string typeName, SequenceOfType type)
-    {
-        var itemType = CsType(document, module, typeName, "Item", type.Element, optional: false);
-        sb.AppendLine($"public sealed class {typeName}");
-        sb.AppendLine("{");
-        sb.AppendLine($"    public List<{itemType}> Items {{ get; set; }} = new List<{itemType}>();");
-        sb.AppendLine();
-        sb.AppendLine("    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);");
-        sb.AppendLine();
-        sb.AppendLine("    public void Encode(Asn1Writer writer, Asn1Tag tag)");
-        sb.AppendLine("    {");
-        sb.AppendLine("        writer.WriteSequence(tag, inner =>");
-        sb.AppendLine("        {");
-        sb.AppendLine("            foreach (var item in Items)");
-        sb.AppendLine("            {");
-        EmitEncodeValue(sb, document, module, typeName, "Item", type.Element, "                ", "inner", "item");
-        sb.AppendLine("            }");
-        sb.AppendLine("        });");
-        sb.AppendLine("    }");
-        sb.AppendLine();
-        sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader) => Decode(reader, DefaultTag);");
-        sb.AppendLine();
-        sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader, Asn1Tag tag)");
-        sb.AppendLine("    {");
-        sb.AppendLine("        return reader.ReadSequence(tag, inner =>");
-        sb.AppendLine("        {");
-        sb.AppendLine($"            var value = new {typeName}();");
-        sb.AppendLine("            while (!inner.Eof)");
-        sb.AppendLine("            {");
-        sb.Append("                value.Items.Add(");
-        EmitDecodeExpr(sb, document, module, typeName, "Item", type.Element, "inner");
-        sb.AppendLine(");");
-        sb.AppendLine("            }");
-        sb.AppendLine("            return value;");
-        sb.AppendLine("        });");
-        sb.AppendLine("    }");
-        EmitDefaultTag(sb, type, constructed: true, fallback: "Asn1Tag.Sequence");
-        sb.AppendLine("}");
-    }
-
-    private void EmitSetOf(StringBuilder sb, IrDocument document, IrModule module, string typeName, SetOfType type)
-    {
-        var itemType = CsType(document, module, typeName, "Item", type.Element, optional: false);
-        sb.AppendLine($"public sealed class {typeName}");
-        sb.AppendLine("{");
-        sb.AppendLine($"    public List<{itemType}> Items {{ get; set; }} = new List<{itemType}>();");
-        sb.AppendLine();
-        sb.AppendLine("    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);");
-        sb.AppendLine();
-        sb.AppendLine("    public void Encode(Asn1Writer writer, Asn1Tag tag)");
-        sb.AppendLine("    {");
-        sb.AppendLine("        writer.WriteSetOf(tag, inner =>");
-        sb.AppendLine("        {");
-        sb.AppendLine("            foreach (var item in Items)");
-        sb.AppendLine("            {");
-        EmitEncodeValue(sb, document, module, typeName, "Item", type.Element, "                ", "inner", "item");
-        sb.AppendLine("            }");
-        sb.AppendLine("        });");
-        sb.AppendLine("    }");
-        sb.AppendLine();
-        sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader) => Decode(reader, DefaultTag);");
-        sb.AppendLine();
-        sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader, Asn1Tag tag)");
-        sb.AppendLine("    {");
-        sb.AppendLine("        return reader.ReadSet(tag, inner =>");
-        sb.AppendLine("        {");
-        sb.AppendLine($"            var value = new {typeName}();");
-        sb.AppendLine("            while (!inner.Eof)");
-        sb.AppendLine("            {");
-        sb.Append("                value.Items.Add(");
-        EmitDecodeExpr(sb, document, module, typeName, "Item", type.Element, "inner");
-        sb.AppendLine(");");
-        sb.AppendLine("            }");
-        sb.AppendLine("            return value;");
-        sb.AppendLine("        });");
-        sb.AppendLine("    }");
-        EmitDefaultTag(sb, type, constructed: true, fallback: "Asn1Tag.Set");
-        sb.AppendLine("}");
-    }
-
     private void EmitNamedBitString(StringBuilder sb, string typeName, BitStringType type)
     {
         var namedBits = type.NamedBits!;
@@ -698,10 +619,10 @@ public sealed class CSharpBackend : ILanguageBackend
             return;
         }
 
-        sb.AppendLine($"    /// <summary>ASN.1 alias {reference.Name} ::= {FormatAliasRhs(found.Type)}.</summary>");
+        sb.AppendLine($"    /// <summary>ASN.1 alias {reference.Name} ::= {FormatAliasRhs(document, module, found.Type)}.</summary>");
     }
 
-    private static string FormatAliasRhs(TypeExpr type) => type switch
+    private string FormatAliasRhs(IrDocument document, IrModule module, TypeExpr type) => type switch
     {
         BooleanType => "BOOLEAN",
         IntegerType => "INTEGER",
@@ -732,8 +653,8 @@ public sealed class CSharpBackend : ILanguageBackend
         SequenceType => "SEQUENCE",
         SetType => "SET",
         ChoiceType => "CHOICE",
-        SequenceOfType => "SEQUENCE OF",
-        SetOfType => "SET OF",
+        SequenceOfType sequenceOf => "SEQUENCE OF " + FormatAliasRhs(document, module, sequenceOf.Element),
+        SetOfType setOf => "SET OF " + FormatAliasRhs(document, module, setOf.Element),
         _ => type.Kind
     };
 
@@ -809,6 +730,7 @@ public sealed class CSharpBackend : ILanguageBackend
         string expr,
         string? forceTag = null)
     {
+        var original = type;
         type = UnwrapAliases(document, module, type);
 
         if (type.Tag?.Mode == TagModes.Explicit && forceTag is null)
@@ -816,8 +738,23 @@ public sealed class CSharpBackend : ILanguageBackend
             sb.AppendLine($"{indent}{writer}.WriteExplicit({TagFromIr(type.Tag, constructed: true)}, nested =>");
             sb.AppendLine($"{indent}{{");
             var inner = CloneUntagged(type);
-            EmitEncodeValue(sb, document, module, owner, hint, inner, indent + "    ", "nested", expr);
+            if (inner is SequenceOfType or SetOfType)
+            {
+                EmitOfEncode(
+                    sb, document, module, original, owner, hint, inner, indent + "    ", "nested", expr, forceTag: null);
+            }
+            else
+            {
+                EmitEncodeValue(sb, document, module, owner, hint, inner, indent + "    ", "nested", expr);
+            }
+
             sb.AppendLine($"{indent}}});");
+            return;
+        }
+
+        if (type is SequenceOfType or SetOfType)
+        {
+            EmitOfEncode(sb, document, module, original, owner, hint, type, indent, writer, expr, forceTag);
             return;
         }
 
@@ -836,17 +773,17 @@ public sealed class CSharpBackend : ILanguageBackend
             return;
         }
 
-        var tag = forceTag ?? TagExpr(document, module, type);
+        var encodeTag = forceTag ?? TagExpr(document, module, type);
         if (IsEnumeratedRefOrType(document, module, type))
         {
-            sb.AppendLine($"{indent}{writer}.WriteEnumerated({tag}, (BigInteger)(long){expr});");
+            sb.AppendLine($"{indent}{writer}.WriteEnumerated({encodeTag}, (BigInteger)(long){expr});");
             return;
         }
 
         var primitive = ResolvePrimitive(type);
         if (primitive is not null)
         {
-            sb.AppendLine($"{indent}{WriteCall(writer, tag, expr, type)};");
+            sb.AppendLine($"{indent}{WriteCall(writer, encodeTag, expr, type)};");
             return;
         }
 
@@ -866,7 +803,30 @@ public sealed class CSharpBackend : ILanguageBackend
             return;
         }
 
-        sb.AppendLine($"{indent}{expr}.Encode({writer}, {tag});");
+        sb.AppendLine($"{indent}{expr}.Encode({writer}, {encodeTag});");
+    }
+
+    private void EmitOfEncode(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        TypeExpr original,
+        string owner,
+        string hint,
+        TypeExpr ofType,
+        string indent,
+        string writer,
+        string expr,
+        string? forceTag)
+    {
+        ResolveOfItemNaming(document, module, original, owner, hint, out var itemOwner, out var itemHint);
+        var writeMethod = ofType is SetOfType ? "WriteSetOf" : "WriteSequenceOf";
+        var tag = forceTag ?? TagExpr(document, module, ofType);
+        var element = ofType is SetOfType setOf ? setOf.Element : ((SequenceOfType)ofType).Element;
+        sb.AppendLine($"{indent}{writer}.{writeMethod}({tag}, {expr}, static (inner, item) =>");
+        sb.AppendLine($"{indent}{{");
+        EmitEncodeValue(sb, document, module, itemOwner, itemHint, element, indent + "    ", "inner", "item");
+        sb.AppendLine($"{indent}}});");
     }
 
     private void EmitDecodeField(
@@ -945,13 +905,29 @@ public sealed class CSharpBackend : ILanguageBackend
         string? forceTag = null)
     {
         var integerRepresentation = TryResolveIntegerRepresentation(document, module, type);
+        var original = type;
         type = UnwrapAliases(document, module, type);
 
         if (type.Tag?.Mode == TagModes.Explicit && forceTag is null)
         {
             sb.Append($"{reader}.ReadSequence({TagFromIr(type.Tag, constructed: true)}, nested => ");
-            EmitDecodeExpr(sb, document, module, owner, hint, CloneUntagged(type), "nested");
+            var inner = CloneUntagged(type);
+            if (inner is SequenceOfType or SetOfType)
+            {
+                EmitOfDecodeExpr(sb, document, module, original, owner, hint, inner, "nested", forceTag: null);
+            }
+            else
+            {
+                EmitDecodeExpr(sb, document, module, owner, hint, inner, "nested");
+            }
+
             sb.Append(')');
+            return;
+        }
+
+        if (type is SequenceOfType or SetOfType)
+        {
+            EmitOfDecodeExpr(sb, document, module, original, owner, hint, type, reader, forceTag);
             return;
         }
 
@@ -970,18 +946,18 @@ public sealed class CSharpBackend : ILanguageBackend
             return;
         }
 
-        var tag = forceTag ?? TagExpr(document, module, type);
+        var decodeTag = forceTag ?? TagExpr(document, module, type);
         if (IsEnumeratedRefOrType(document, module, type))
         {
             var enumName = NamedTypeName(document, module, owner, hint, type);
-            sb.Append($"({enumName})(long){reader}.ReadEnumerated({tag})");
+            sb.Append($"({enumName})(long){reader}.ReadEnumerated({decodeTag})");
             return;
         }
 
         var primitive = ResolvePrimitive(type);
         if (primitive is not null)
         {
-            sb.Append(ReadCall(reader, tag, type, integerRepresentation));
+            sb.Append(ReadCall(reader, decodeTag, type, integerRepresentation));
             return;
         }
 
@@ -993,13 +969,43 @@ public sealed class CSharpBackend : ILanguageBackend
             return;
         }
 
-        sb.Append($"{typeName}.Decode({reader}, {tag})");
+        sb.Append($"{typeName}.Decode({reader}, {decodeTag})");
+    }
+
+    private void EmitOfDecodeExpr(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        TypeExpr original,
+        string owner,
+        string hint,
+        TypeExpr ofType,
+        string reader,
+        string? forceTag)
+    {
+        ResolveOfItemNaming(document, module, original, owner, hint, out var itemOwner, out var itemHint);
+        var readMethod = ofType is SetOfType ? "ReadSetOf" : "ReadSequenceOf";
+        var tag = forceTag ?? TagExpr(document, module, ofType);
+        var element = ofType is SetOfType setOf ? setOf.Element : ((SequenceOfType)ofType).Element;
+        sb.Append($"{reader}.{readMethod}({tag}, static inner => ");
+        EmitDecodeExpr(sb, document, module, itemOwner, itemHint, element, "inner");
+        sb.Append(')');
     }
 
     private string CsType(IrDocument document, IrModule module, string owner, string hint, TypeExpr type, bool optional)
     {
         var integerRepresentation = TryResolveIntegerRepresentation(document, module, type);
+        var original = type;
         type = UnwrapAliases(document, module, type);
+
+        if (type is SequenceOfType or SetOfType)
+        {
+            ResolveOfItemNaming(document, module, original, owner, hint, out var itemOwner, out var itemHint);
+            var element = type is SetOfType setOf ? setOf.Element : ((SequenceOfType)type).Element;
+            var itemType = CsType(document, module, itemOwner, itemHint, element, optional: false);
+            return optional ? $"List<{itemType}>?" : $"List<{itemType}>";
+        }
+
         var primitive = ResolvePrimitive(type);
         if (primitive is not null)
         {
@@ -1023,6 +1029,57 @@ public sealed class CSharpBackend : ILanguageBackend
 
         var name = NamedTypeName(document, module, owner, hint, type);
         return optional ? name + "?" : name;
+    }
+
+    /// <summary>
+    /// Names nested OF element types after the ASN.1 typedef (PolicyMappings_Item) or, for inline OF,
+    /// after the enclosing field (Owner_Field_Item) — matching CollectNested.
+    /// </summary>
+    private void ResolveOfItemNaming(
+        IrDocument document,
+        IrModule module,
+        TypeExpr original,
+        string owner,
+        string hint,
+        out string itemOwner,
+        out string itemHint)
+    {
+        itemHint = "Item";
+        var cursor = original;
+        var currentModule = module;
+        var visited = new HashSet<string>(StringComparer.Ordinal);
+        while (cursor is RefType reference)
+        {
+            var key = (reference.Module ?? currentModule.Name) + "::" + reference.Name;
+            if (!visited.Add(key))
+            {
+                break;
+            }
+
+            var found = FindWithModule(document, currentModule, reference);
+            if (found is null)
+            {
+                break;
+            }
+
+            var (definingModule, def) = found.Value;
+            var inner = def.Type;
+            if (inner is SequenceOfType or SetOfType)
+            {
+                itemOwner = IrOptions.CSharpTypeName(def.Options) ?? SanitizeIdentifier(def.Name);
+                return;
+            }
+
+            if (IsNamedBitString(inner) || NeedsNamedType(inner) || IsEnumerated(inner) || IsNamedInteger(inner))
+            {
+                break;
+            }
+
+            cursor = inner;
+            currentModule = definingModule;
+        }
+
+        itemOwner = owner + "_" + SanitizeIdentifier(hint);
     }
 
     private static string MapIntegerCsType(string representation, bool optional) => representation switch

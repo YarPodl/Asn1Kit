@@ -34,7 +34,8 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | --- | --- | --- |
 | `Asn1Writer.EncodedLength` / `TryEncode(Span)` / `Encode() → byte[]` | hot | snapshot / copy-out |
 | `WriteOctetString(ReadOnlySpan)` / `WriteRaw(ReadOnlySpan)` | hot/cold | borrow |
-| `WriteSequence` / `WriteSet` / `WriteSetOf` / `WriteExplicit(Action)` | hot | callback |
+| `WriteSequence` / `WriteSet` / `WriteSetOf` / `WriteSequenceOf<T>` / `WriteSetOf<T>` / `WriteExplicit(Action)` | hot | callback |
+| `ReadSequenceOf<T>` / `ReadSetOf<T>` | hot | owned `List<T>` |
 | `Asn1Reader(byte[]\|offset/length\|ReadOnlyMemory)` | hot | срез без копии на входе |
 | `ReadOctetString → byte[]` / `TryReadOctetString(Span)` | hot | owned / copy-out (Try всегда продвигает reader) |
 | `ReadValue → byte[]` / `TryReadValue(Span)` / `ReadTlv` | cold/warm | owned / copy-out |
@@ -79,7 +80,8 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `WriteTime` / `ReadTime` | UTC + Generalized; fractionDigits; BER |
 | `WriteSequence` / `ReadSequence` | вложенность; OPTIONAL |
 | `WriteSet` / `ReadSet` | tag SET |
-| `WriteSetOf` | DER sort; BER order |
+| `WriteSetOf` / `WriteSetOf<T>` | DER sort; BER order |
+| `WriteSequenceOf<T>` / `ReadSequenceOf<T>` / `ReadSetOf<T>` | list round-trip; empty list |
 | `WriteExplicit` | constructed wrapper |
 | `WriteAny` / `ReadAny` | IMPLICIT; ContentsMemory |
 | `WriteRaw` | append TLV |

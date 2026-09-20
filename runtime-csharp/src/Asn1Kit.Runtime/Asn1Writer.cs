@@ -121,6 +121,31 @@ public sealed class Asn1Writer
         WriteTlv(tag.AsConstructed(), inner.Encode(), definiteOnly: Encoding == Asn1Encoding.Der);
     }
 
+    /// <summary>
+    /// Writes a SEQUENCE OF: one SEQUENCE TLV whose contents are the encodings of <paramref name="items"/>.
+    /// <paramref name="encodeItem"/> is invoked once per item (no per-element delegate allocation beyond the call).
+    /// </summary>
+    public void WriteSequenceOf<T>(Asn1Tag tag, IList<T> items, Action<Asn1Writer, T> encodeItem)
+    {
+        if (items is null)
+        {
+            throw new ArgumentNullException(nameof(items));
+        }
+
+        if (encodeItem is null)
+        {
+            throw new ArgumentNullException(nameof(encodeItem));
+        }
+
+        WriteSequence(tag, inner =>
+        {
+            for (var i = 0; i < items.Count; i++)
+            {
+                encodeItem(inner, items[i]);
+            }
+        });
+    }
+
     public void WriteSet(Asn1Tag tag, Action<Asn1Writer> content) => WriteSequence(tag, content);
 
     /// <summary>
@@ -141,6 +166,31 @@ public sealed class Asn1Writer
             ? SortDerSetOfContents(concatenated)
             : concatenated;
         WriteTlv(tag.AsConstructed(), contents, definiteOnly: Encoding == Asn1Encoding.Der);
+    }
+
+    /// <summary>
+    /// Writes a SET OF from <paramref name="items"/>. In DER mode, element encodings are sorted
+    /// lexicographically (X.690 §11.6).
+    /// </summary>
+    public void WriteSetOf<T>(Asn1Tag tag, IList<T> items, Action<Asn1Writer, T> encodeItem)
+    {
+        if (items is null)
+        {
+            throw new ArgumentNullException(nameof(items));
+        }
+
+        if (encodeItem is null)
+        {
+            throw new ArgumentNullException(nameof(encodeItem));
+        }
+
+        WriteSetOf(tag, inner =>
+        {
+            for (var i = 0; i < items.Count; i++)
+            {
+                encodeItem(inner, items[i]);
+            }
+        });
     }
 
     public void WriteExplicit(Asn1Tag outer, Action<Asn1Writer> inner)

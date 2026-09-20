@@ -88,6 +88,32 @@ public sealed class Asn1Reader
 
     public void ReadSet(Asn1Tag expected, Action<Asn1Reader> read) => ReadSequence(expected, read);
 
+    /// <summary>
+    /// Reads a SEQUENCE OF into a new <see cref="List{T}"/>, decoding elements until the contents are exhausted.
+    /// </summary>
+    public List<T> ReadSequenceOf<T>(Asn1Tag expected, Func<Asn1Reader, T> decodeItem)
+    {
+        if (decodeItem is null)
+        {
+            throw new ArgumentNullException(nameof(decodeItem));
+        }
+
+        return ReadSequence(expected, inner =>
+        {
+            var items = new List<T>();
+            while (!inner.Eof)
+            {
+                items.Add(decodeItem(inner));
+            }
+
+            return items;
+        });
+    }
+
+    /// <summary>Reads a SET OF; same as <see cref="ReadSequenceOf{T}"/> (order is wire order).</summary>
+    public List<T> ReadSetOf<T>(Asn1Tag expected, Func<Asn1Reader, T> decodeItem) =>
+        ReadSequenceOf(expected, decodeItem);
+
     public bool ReadBoolean(Asn1Tag expected)
     {
         var contents = ReadValue(expected, allowConstructed: false);

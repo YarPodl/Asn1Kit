@@ -190,6 +190,47 @@ public sealed class RuntimeTests
     }
 
     [Fact]
+    public void WriteSequenceOf_RoundTripsItems()
+    {
+        var items = new List<Asn1Integer>
+        {
+            Asn1Integer.FromInt32(1),
+            Asn1Integer.FromInt32(2),
+        };
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteSequenceOf(Asn1Tag.Sequence, items, static (w, item) => Asn1Integer.Encode(w, item));
+        var bytes = writer.Encode();
+        Assert.Equal(new byte[] { 0x30, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02 }, bytes);
+
+        var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
+        var decoded = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Integer.Decode(inner));
+        Assert.Equal(2, decoded.Count);
+        Assert.Equal(1, decoded[0].GetInt32());
+        Assert.Equal(2, decoded[1].GetInt32());
+        Assert.True(reader.Eof);
+    }
+
+    [Fact]
+    public void WriteSetOfItems_DerSortsElementEncodings()
+    {
+        var items = new List<Asn1Integer>
+        {
+            Asn1Integer.FromInt32(2),
+            Asn1Integer.FromInt32(1),
+        };
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteSetOf(Asn1Tag.Set, items, static (w, item) => Asn1Integer.Encode(w, item));
+        var bytes = writer.Encode();
+        Assert.Equal(new byte[] { 0x31, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02 }, bytes);
+
+        var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
+        var decoded = reader.ReadSetOf(Asn1Tag.Set, static inner => Asn1Integer.Decode(inner));
+        Assert.Equal(2, decoded.Count);
+        Assert.Equal(1, decoded[0].GetInt32());
+        Assert.Equal(2, decoded[1].GetInt32());
+    }
+
+    [Fact]
     public void Any_DerRoundTripsTagAndContents()
     {
         var value = new Asn1Any(Asn1Tag.Integer, new byte[] { 0x05 });
