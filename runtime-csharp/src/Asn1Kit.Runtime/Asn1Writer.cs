@@ -445,18 +445,19 @@ public sealed class Asn1Writer
 
         _buffer.WriteByte((byte)(first | 0x1F));
         var number = tag.Number;
-        var stack = new Stack<byte>();
-        stack.Push((byte)(number & 0x7F));
+        Span<byte> temp = stackalloc byte[5];
+        var count = 0;
+        temp[count++] = (byte)(number & 0x7F);
         number >>= 7;
         while (number > 0)
         {
-            stack.Push((byte)((number & 0x7F) | 0x80));
+            temp[count++] = (byte)((number & 0x7F) | 0x80);
             number >>= 7;
         }
 
-        while (stack.Count > 0)
+        for (var i = count - 1; i >= 0; i--)
         {
-            _buffer.WriteByte(stack.Pop());
+            _buffer.WriteByte(temp[i]);
         }
     }
 

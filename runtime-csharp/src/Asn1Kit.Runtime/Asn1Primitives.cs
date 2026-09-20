@@ -62,22 +62,45 @@ public static class Asn1ObjectIdentifier
             throw new Asn1Exception("OID is empty.");
         }
 
-        var parts = oid.Split('.');
-        if (parts.Length < 2)
+        var span = oid.AsSpan().Trim();
+        var arcCount = 1;
+        for (var i = 0; i < span.Length; i++)
+        {
+            if (span[i] == '.')
+            {
+                arcCount++;
+            }
+        }
+
+        if (arcCount < 2)
         {
             throw new Asn1Exception($"OID '{oid}' is too short.");
         }
 
-        var arcs = new int[parts.Length];
-        for (var i = 0; i < parts.Length; i++)
+        var arcs = new int[arcCount];
+        var arcIndex = 0;
+        var start = 0;
+        for (var i = 0; i <= span.Length; i++)
         {
-            if (!int.TryParse(parts[i], NumberStyles.Integer, CultureInfo.InvariantCulture, out var arc) ||
+            if (i != span.Length && span[i] != '.')
+            {
+                continue;
+            }
+
+            if (i == start)
+            {
+                throw new Asn1Exception($"OID '{oid}' has an invalid component.");
+            }
+
+            var component = span.Slice(start, i - start);
+            if (!int.TryParse(component, NumberStyles.Integer, CultureInfo.InvariantCulture, out var arc) ||
                 arc < 0)
             {
                 throw new Asn1Exception($"OID '{oid}' has an invalid component.");
             }
 
-            arcs[i] = arc;
+            arcs[arcIndex++] = arc;
+            start = i + 1;
         }
 
         return arcs;
@@ -102,36 +125,41 @@ public static class Asn1ObjectIdentifier
             throw new Asn1Exception($"OID '{oid}' first subidentifier is too large.");
         }
 
-        var output = new List<byte>();
-        EncodeBase128(output, (int)first);
+        // At most 5 base-128 octets per int arc.
+        var maxBytes = parts.Length * 5;
+        Span<byte> scratch = maxBytes <= 128 ? stackalloc byte[maxBytes] : new byte[maxBytes];
+        var written = EncodeBase128(scratch, (int)first);
         for (var i = 2; i < parts.Length; i++)
         {
-            EncodeBase128(output, parts[i]);
+            written += EncodeBase128(scratch.Slice(written), parts[i]);
         }
 
-        return output.ToArray();
+        return scratch.Slice(0, written).ToArray();
     }
 
-    private static void EncodeBase128(List<byte> output, int value)
+    private static int EncodeBase128(Span<byte> destination, int value)
     {
         if (value < 0)
         {
             throw new Asn1Exception("OID arc must not be negative.");
         }
 
-        var stack = new Stack<byte>();
-        stack.Push((byte)(value & 0x7F));
+        Span<byte> temp = stackalloc byte[5];
+        var count = 0;
+        temp[count++] = (byte)(value & 0x7F);
         value >>= 7;
         while (value > 0)
         {
-            stack.Push((byte)((value & 0x7F) | 0x80));
+            temp[count++] = (byte)((value & 0x7F) | 0x80);
             value >>= 7;
         }
 
-        while (stack.Count > 0)
+        for (var i = 0; i < count; i++)
         {
-            output.Add(stack.Pop());
+            destination[i] = temp[count - 1 - i];
         }
+
+        return count;
     }
 }
 

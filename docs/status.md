@@ -78,7 +78,7 @@
 
 Примитивы runtime: матрица hex в [runtime-csharp/fixtures/ber-der/](../runtime-csharp/fixtures/ber-der/) (`PrimitiveCodecTests`), перекрёстный oracle с `System.Formats.Asn1` (`PrimitiveOracleTests`; Teletex/T61/Videotex/Graphic/General — только свои векторы, Latin-1), внешние фрагменты RFC/X.690 — `ExternalVectorTests`.
 
-Публичный API Writer/Reader — [runtime-csharp/docs/runtime-api.md](../runtime-csharp/docs/runtime-api.md). Backlog оптимизаций — § ниже.
+Публичный API Writer/Reader — [runtime-csharp/docs/runtime-api.md](../runtime-csharp/docs/runtime-api.md).
 
 ## Вне профиля компилятора
 
@@ -132,18 +132,4 @@
 
 
 Не делать: subprocess (openssl/pyasn1) как gate `dotnet test`; копирование чужих сьютов целиком; CER в oracle.
-
-## Backlog: оптимизация runtime
-
-Внутренние аллокации поверх zero-copy decode. Контракт Writer/Reader — [runtime-api.md](../runtime-csharp/docs/runtime-api.md).
-
-
-| Приоритет | Задача                                                                                                                   | Заметки                                          |
-| --------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ |
-| средний   | ~~Nested write: один буфер / резерв длины вместо `new Asn1Writer` + `Encode()` на уровень~~ | Сделано: `WriteConstructed` пишет в тот же `_buffer` |
-| средний   | ~~Nested read: срез `(offset, end)` без `ReadValue`→copy~~                                                               | Сделано: nested reader на том же `_data`         |
-| низкий    | Constructed OCTET / BIT / string (BER): без `List<byte>` + `AddRange`                                                    | По-прежнему owned concat                         |
-| низкий    | OID encode: без `Split` + `List` + `Stack` на коротких OID                                                               |                                                  |
-| низкий    | Scratch: high-tag / length; reverse в `ReadInteger`; `TryRead*` без промежуточного owned когда destination достаточен    |                                                  |
-
 

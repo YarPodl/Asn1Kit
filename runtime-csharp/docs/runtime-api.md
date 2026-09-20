@@ -4,7 +4,6 @@
 
 Реализация — [`src/Asn1Kit.Runtime`](../src/Asn1Kit.Runtime). Как править кодек — [playbooks/runtime.md](playbooks/runtime.md).
 Что уже поддержано по типам — [status.md](../../docs/status.md) § Runtime BER/DER.
-Backlog оптимизаций — там же, § «Backlog: оптимизация runtime».
 
 ## Политика Memory / Span
 

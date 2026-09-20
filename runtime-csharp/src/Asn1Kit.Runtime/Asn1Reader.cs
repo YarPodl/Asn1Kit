@@ -214,16 +214,26 @@ public sealed class Asn1Reader
     public bool TryReadOctetString(Asn1Tag expected, Span<byte> destination, out int bytesWritten)
     {
         // Always advances past the TLV; on false the value is not copied (caller must re-read from a saved buffer).
-        var value = ReadOctetString(expected);
-        if (destination.Length < value.Length)
+        var (tag, contents, constructed) = ReadTlv();
+        if (!tag.MatchesIgnoreConstructed(expected))
         {
-            bytesWritten = 0;
-            return false;
+            throw new Asn1Exception($"Expected tag {expected}, found {tag}.");
         }
 
-        value.Span.CopyTo(destination);
-        bytesWritten = value.Length;
-        return true;
+        if (!constructed)
+        {
+            if (destination.Length < contents.Length)
+            {
+                bytesWritten = 0;
+                return false;
+            }
+
+            contents.Span.CopyTo(destination);
+            bytesWritten = contents.Length;
+            return true;
+        }
+
+        return TryCopyConcatOctetLike(contents, Asn1Tag.OctetString, destination, out bytesWritten);
     }
 
     public bool ReadNull(Asn1Tag expected)
@@ -315,28 +325,40 @@ public sealed class Asn1Reader
         }
 
         var nested = new Asn1Reader(contents, Encoding);
-        var parts = new List<byte>();
+        var segments = new List<Asn1BitString>();
         var unusedBits = 0;
-        var sawSegment = false;
         while (!nested.Eof)
         {
             var segment = nested.ReadBitString(Asn1Tag.BitString);
-            if (sawSegment && unusedBits != 0)
+            if (segments.Count > 0 && unusedBits != 0)
             {
                 throw new Asn1Exception("Only the last BIT STRING segment may have unused bits.");
             }
 
-            parts.AddRange(segment.Span.ToArray());
+            segments.Add(segment);
             unusedBits = segment.UnusedBits;
-            sawSegment = true;
         }
 
-        if (!sawSegment)
+        if (segments.Count == 0)
         {
             throw new Asn1Exception("Constructed BIT STRING has no segments.");
         }
 
-        var value = new Asn1BitString(parts.ToArray(), unusedBits);
+        var total = 0;
+        foreach (var segment in segments)
+        {
+            total += segment.Span.Length;
+        }
+
+        var concatenated = total == 0 ? Array.Empty<byte>() : new byte[total];
+        var offset = 0;
+        foreach (var segment in segments)
+        {
+            segment.Span.CopyTo(concatenated.AsSpan(offset));
+            offset += segment.Span.Length;
+        }
+
+        var value = new Asn1BitString(concatenated, unusedBits);
         if (Encoding == Asn1Encoding.Der)
         {
             Asn1TextCodec.EnsureTrailingBitsZero(value.Span, value.UnusedBits);
@@ -529,14 +551,61 @@ public sealed class Asn1Reader
 
     private ReadOnlyMemory<byte> ConcatOctetLike(ReadOnlyMemory<byte> constructedContents, Asn1Tag segmentTag)
     {
-        var nested = new Asn1Reader(constructedContents, Encoding);
-        var parts = new List<byte>();
-        while (!nested.Eof)
+        var segments = CollectOctetLikeSegments(constructedContents, segmentTag, out var total);
+        if (total == 0)
         {
-            parts.AddRange(nested.ReadOctetLike(segmentTag).ToArray());
+            return Array.Empty<byte>();
         }
 
-        return parts.ToArray();
+        var result = new byte[total];
+        CopySegments(segments, result);
+        return result;
+    }
+
+    private bool TryCopyConcatOctetLike(
+        ReadOnlyMemory<byte> constructedContents,
+        Asn1Tag segmentTag,
+        Span<byte> destination,
+        out int bytesWritten)
+    {
+        var segments = CollectOctetLikeSegments(constructedContents, segmentTag, out var total);
+        if (destination.Length < total)
+        {
+            bytesWritten = 0;
+            return false;
+        }
+
+        CopySegments(segments, destination);
+        bytesWritten = total;
+        return true;
+    }
+
+    private List<ReadOnlyMemory<byte>> CollectOctetLikeSegments(
+        ReadOnlyMemory<byte> constructedContents,
+        Asn1Tag segmentTag,
+        out int totalLength)
+    {
+        var nested = new Asn1Reader(constructedContents, Encoding);
+        var segments = new List<ReadOnlyMemory<byte>>();
+        totalLength = 0;
+        while (!nested.Eof)
+        {
+            var segment = nested.ReadOctetLike(segmentTag);
+            segments.Add(segment);
+            totalLength += segment.Length;
+        }
+
+        return segments;
+    }
+
+    private static void CopySegments(List<ReadOnlyMemory<byte>> segments, Span<byte> destination)
+    {
+        var offset = 0;
+        foreach (var segment in segments)
+        {
+            segment.Span.CopyTo(destination.Slice(offset));
+            offset += segment.Length;
+        }
     }
 
     private static Asn1BitString ParsePrimitiveBitString(ReadOnlyMemory<byte> contents, bool derStrict)
