@@ -57,50 +57,18 @@ public static class Asn1ObjectIdentifier
 
     public static int[] ParseArcs(string oid)
     {
-        if (string.IsNullOrWhiteSpace(oid))
-        {
-            throw new Asn1Exception("OID is empty.");
-        }
-
-        var span = oid.AsSpan().Trim();
-        var arcCount = 1;
-        for (var i = 0; i < span.Length; i++)
-        {
-            if (span[i] == '.')
-            {
-                arcCount++;
-            }
-        }
-
+        var span = NormalizeOid(oid);
+        var arcCount = CountArcs(span);
         if (arcCount < 2)
         {
             throw new Asn1Exception($"OID '{oid}' is too short.");
         }
 
         var arcs = new int[arcCount];
-        var arcIndex = 0;
-        var start = 0;
-        for (var i = 0; i <= span.Length; i++)
+        var index = 0;
+        for (var i = 0; i < arcCount; i++)
         {
-            if (i != span.Length && span[i] != '.')
-            {
-                continue;
-            }
-
-            if (i == start)
-            {
-                throw new Asn1Exception($"OID '{oid}' has an invalid component.");
-            }
-
-            var component = span.Slice(start, i - start);
-            if (!int.TryParse(component, NumberStyles.Integer, CultureInfo.InvariantCulture, out var arc) ||
-                arc < 0)
-            {
-                throw new Asn1Exception($"OID '{oid}' has an invalid component.");
-            }
-
-            arcs[arcIndex++] = arc;
-            start = i + 1;
+            arcs[i] = ParseNextArc(span, ref index, oid);
         }
 
         return arcs;
@@ -108,33 +76,100 @@ public static class Asn1ObjectIdentifier
 
     public static byte[] EncodeContents(string oid)
     {
-        var parts = ParseArcs(oid);
-        if (parts[0] > 2)
+        var span = NormalizeOid(oid);
+        var arcCount = CountArcs(span);
+        if (arcCount < 2)
+        {
+            throw new Asn1Exception($"OID '{oid}' is too short.");
+        }
+
+        // At most 5 base-128 octets per int subidentifier (first packs arcs 0+1).
+        var maxBytes = arcCount * 5;
+        Span<byte> scratch = maxBytes <= 128 ? stackalloc byte[maxBytes] : new byte[maxBytes];
+
+        var index = 0;
+        var arc0 = ParseNextArc(span, ref index, oid);
+        var arc1 = ParseNextArc(span, ref index, oid);
+        if (arc0 > 2)
         {
             throw new Asn1Exception($"OID '{oid}' first arc must be 0, 1, or 2.");
         }
 
-        if (parts[0] < 2 && parts[1] >= 40)
+        if (arc0 < 2 && arc1 >= 40)
         {
-            throw new Asn1Exception($"OID '{oid}' second arc must be in 0..39 when first arc is {parts[0]}.");
+            throw new Asn1Exception($"OID '{oid}' second arc must be in 0..39 when first arc is {arc0}.");
         }
 
-        long first = 40L * parts[0] + parts[1];
+        long first = 40L * arc0 + arc1;
         if (first > int.MaxValue)
         {
             throw new Asn1Exception($"OID '{oid}' first subidentifier is too large.");
         }
 
-        // At most 5 base-128 octets per int arc.
-        var maxBytes = parts.Length * 5;
-        Span<byte> scratch = maxBytes <= 128 ? stackalloc byte[maxBytes] : new byte[maxBytes];
         var written = EncodeBase128(scratch, (int)first);
-        for (var i = 2; i < parts.Length; i++)
+        for (var i = 2; i < arcCount; i++)
         {
-            written += EncodeBase128(scratch.Slice(written), parts[i]);
+            written += EncodeBase128(scratch.Slice(written), ParseNextArc(span, ref index, oid));
         }
 
         return scratch.Slice(0, written).ToArray();
+    }
+
+    private static ReadOnlySpan<char> NormalizeOid(string oid)
+    {
+        if (string.IsNullOrWhiteSpace(oid))
+        {
+            throw new Asn1Exception("OID is empty.");
+        }
+
+        return oid.AsSpan().Trim();
+    }
+
+    private static int CountArcs(ReadOnlySpan<char> span)
+    {
+        var count = 1;
+        for (var i = 0; i < span.Length; i++)
+        {
+            if (span[i] == '.')
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    private static int ParseNextArc(ReadOnlySpan<char> span, ref int index, string oid)
+    {
+        if (index >= span.Length)
+        {
+            throw new Asn1Exception($"OID '{oid}' has an invalid component.");
+        }
+
+        var start = index;
+        while (index < span.Length && span[index] != '.')
+        {
+            index++;
+        }
+
+        if (index == start)
+        {
+            throw new Asn1Exception($"OID '{oid}' has an invalid component.");
+        }
+
+        var component = span.Slice(start, index - start);
+        if (!int.TryParse(component, NumberStyles.Integer, CultureInfo.InvariantCulture, out var arc) ||
+            arc < 0)
+        {
+            throw new Asn1Exception($"OID '{oid}' has an invalid component.");
+        }
+
+        if (index < span.Length)
+        {
+            index++; // skip '.'
+        }
+
+        return arc;
     }
 
     private static int EncodeBase128(Span<byte> destination, int value)
