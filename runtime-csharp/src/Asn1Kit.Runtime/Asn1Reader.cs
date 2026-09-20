@@ -136,7 +136,7 @@ public sealed class Asn1Reader
         return contents[0] != 0x00;
     }
 
-    public BigInteger ReadInteger(Asn1Tag expected) => ReadIntegerValue(expected).ToBigInteger();
+    public BigInteger ReadInteger(Asn1Tag expected) => ReadSignedIntegerContents(expected);
 
     /// <summary>Reads INTEGER contents (preserves wire bytes; may alias <see cref="Source"/>).</summary>
     public Asn1Integer ReadIntegerValue(Asn1Tag expected)
@@ -190,7 +190,10 @@ public sealed class Asn1Reader
     }
 
     /// <summary>ENUMERATED uses the same contents encoding as INTEGER (X.690).</summary>
-    public BigInteger ReadEnumerated(Asn1Tag expected) => ReadInteger(expected);
+    public BigInteger ReadEnumerated(Asn1Tag expected) => ReadSignedIntegerContents(expected);
+
+    private BigInteger ReadSignedIntegerContents(Asn1Tag expected) =>
+        Asn1Integer.ToBigInteger(ReadValue(expected, allowConstructed: false).Span);
 
     public ReadOnlyMemory<byte> ReadOctetString(Asn1Tag expected)
     {

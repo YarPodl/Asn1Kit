@@ -60,18 +60,18 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
 
     public static Asn1Integer FromUInt64(ulong value) => FromBigInteger(value);
 
-    public BigInteger ToBigInteger()
+    /// <summary>Interprets DER INTEGER/ENUMERATED contents as a signed big-endian integer.</summary>
+    public static BigInteger ToBigInteger(ReadOnlySpan<byte> contents)
     {
-        var span = Span;
-        if (span.Length == 0)
+        if (contents.Length == 0)
         {
             throw new Asn1Exception("INTEGER contents must not be empty.");
         }
 
-        var copy = span.ToArray();
-        Array.Reverse(copy);
-        return new BigInteger(copy);
+        return new BigInteger(contents, isUnsigned: false, isBigEndian: true);
     }
+
+    public BigInteger ToBigInteger() => ToBigInteger(Span);
 
     public bool TryGetInt32(out int value)
     {
