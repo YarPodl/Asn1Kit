@@ -140,7 +140,7 @@
 
 | Приоритет | Задача                                                                                                                   | Заметки                                          |
 | --------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ |
-| средний   | Nested write: один буфер / резерв длины вместо `new Asn1Writer` + `Encode()` на уровень                                  | Горячий путь SEQUENCE/SET                        |
+| средний   | ~~Nested write: один буфер / резерв длины вместо `new Asn1Writer` + `Encode()` на уровень~~ | Сделано: `WriteConstructed` пишет в тот же `_buffer` |
 | средний   | ~~Nested read: срез `(offset, end)` без `ReadValue`→copy~~                                                               | Сделано: nested reader на том же `_data`         |
 | низкий    | Constructed OCTET / BIT / string (BER): без `List<byte>` + `AddRange`                                                    | По-прежнему owned concat                         |
 | низкий    | OID encode: без `Split` + `List` + `Stack` на коротких OID                                                               |                                                  |

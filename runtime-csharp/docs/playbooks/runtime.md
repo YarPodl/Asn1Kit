@@ -7,7 +7,7 @@
 | Файл | Что внутри |
 | --- | --- |
 | [Asn1Tag.cs](../../src/Asn1Kit.Runtime/Asn1Tag.cs) | Класс тега, universal-константы, `Asn1StringForm` / `Asn1TimeForm`, `MatchesIgnoreConstructed`, `AsPrimitive` / `AsConstructed` |
-| [Asn1Writer.cs](../../src/Asn1Kit.Runtime/Asn1Writer.cs) | Публичные `Write*` / `Encode` / `WriteRaw`; внутри (`private`) `WriteTag` / `WriteLength` / `WriteTlv` / `WritePrimitive`. `WriteSequence` сейчас через вложенный writer |
+| [Asn1Writer.cs](../../src/Asn1Kit.Runtime/Asn1Writer.cs) | Публичные `Write*` / `Encode` / `WriteRaw`; внутри (`private`) `WriteTag` / `WriteLength` / `WriteTlv` / `WritePrimitive` / `WriteConstructed` (один буфер + резерв длины) |
 | [Asn1Reader.cs](../../src/Asn1Kit.Runtime/Asn1Reader.cs) | Чтение TLV, definite и indefinite length, `TryPeekTag`, `Eof`, публичные `ReadValue` / `ReadTlv`, ctors: `byte[]`, `(byte[], offset, length)`, `ReadOnlyMemory<byte>` |
 | [Asn1BitString.cs](../../src/Asn1Kit.Runtime/Asn1BitString.cs) | `Asn1BitString` (Memory wrap / `CopyFrom`), `UnusedBits`, indexer MSB-first, `FromBits` |
 | [Asn1Any.cs](../../src/Asn1Kit.Runtime/Asn1Any.cs) | `Asn1Any` (`Tag` + `ContentsMemory`); Memory wrap / `CopyFrom` |
