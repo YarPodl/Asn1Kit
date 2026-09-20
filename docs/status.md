@@ -15,12 +15,12 @@
 | `string` (12 форм `stringType`) | да | да → `string` + `Asn1StringForm` | `PrimitiveCodecTests` (все 12), `PrimitiveOracleTests` (BCL-совместимые), `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*` |
 | `time` (`utc` / `generalized`) | да; `fractionDigits` 0…7 (default 3) для `generalized` | да → `DateTimeOffset` + `Asn1TimeForm`; запись с округлением | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*` |
 | `any` (+ `definedBy`) | да, с проверкой sibling-компонента | да → `Asn1Any` (Tag + Contents; `definedBy` не резолвится) | `ParserTests`, `RuntimeTests.Any_*`, `RoundTripTests.GeneratedCSharp_Any_*`, `ValueResolutionTests.RejectsAnyDefinedByUnknownField` |
-| `sequence` | да, `extensible` | да → класс с `Encode` / `Decode` | `RoundTripTests`, `PkixExplicit88Tests`, `PkixImplicit88Tests` |
+| `sequence` | да, `extensible` | да → класс с `Encode` / `Decode` | `RoundTripTests`, `PkixExplicit88Tests`, `PkixImplicit88Tests`, `PkixGeneratedCodeTests` |
 | `set` | да | да → класс с `Encode` / `Decode` (DER: порядок по тегу; decode по тегу) | `RoundTripTests`, `ParserTests`, `RuntimeTests` |
-| `choice` | да | да → класс + enum `…Kind` | `ParserTests`, `PkixExplicit88Tests` |
-| `sequenceOf` | да | да → класс с `List<T> Items` | `ParserTests` |
+| `choice` | да | да → класс + enum `…Kind` | `ParserTests`, `PkixExplicit88Tests`, `PkixGeneratedCodeTests` |
+| `sequenceOf` | да | да → класс с `List<T> Items` | `ParserTests`, `PkixGeneratedCodeTests` |
 | `setOf` | да | да → класс с `List<T> Items` (DER: сортировка TLV в `WriteSetOf`) | `RoundTripTests`, `ParserTests`, `RuntimeTests` |
-| `ref` | да, с резолвом через модули и `IMPORTS` | да | `PkixExplicit88Tests`, `PkixImplicit88Tests`, `ImportResolutionTests` |
+| `ref` | да, с резолвом через модули и `IMPORTS` | да (cross-module → квалифицированное имя при разных namespace) | `PkixExplicit88Tests`, `PkixImplicit88Tests`, `ImportResolutionTests`, `PkixGeneratedCodeTests` |
 
 Неподдержанные бэкендом kind отсекает `CSharpBackend.EnsureBackendSupport` с текстом `C# backend does not support kind '<kind>' yet.` — рекурсивно, включая вложенные компоненты и элементы `SEQUENCE OF` / `SET OF`.
 
@@ -70,7 +70,7 @@ DER: только definite length, BOOLEAN `0x00` / `0xFF`, BIT STRING с нул
 
 1. C++ backend (`compiler/src/Asn1Kit.Codegen.Cpp`) и C++ runtime (`runtime-cpp/`) — см. [compiler/docs/playbooks/new-backend.md](../compiler/docs/playbooks/new-backend.md).
 2. Резолв `ANY DEFINED BY` в конкретный тип по значению sibling-компонента (сейчас `Asn1Any` остаётся сырым TLV).
-3. Эталонный сгенерированный C#-код и его тесты в `runtime-csharp/` (сейчас round-trip через Roslyn в `compiler/tests`).
+3. Encode/decode тесты на golden-либе [`runtime-csharp/generated/Asn1Kit.Pkix`](../runtime-csharp/generated/Asn1Kit.Pkix/) (сама либа и сверка `PkixGeneratedCodeTests` уже есть; мелкий round-trip через Roslyn — в `compiler/tests`).
 
 ## Backlog: тесты примитивов
 

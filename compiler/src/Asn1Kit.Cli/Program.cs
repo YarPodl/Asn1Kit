@@ -40,14 +40,16 @@ internal static class Program
         {
             IsRequired = true
         };
+        var csharpNamespace = new Option<string?>("--csharp-namespace", "Override options.csharp.namespace on every module");
 
         var generate = new Command("generate", "Generate code from JSON IR or ASN.1")
         {
             generateInput,
             language,
-            generateOutput
+            generateOutput,
+            csharpNamespace
         };
-        generate.SetHandler(Generate, generateInput, language, generateOutput);
+        generate.SetHandler(Generate, generateInput, language, generateOutput, csharpNamespace);
 
         var root = new RootCommand("Asn1Kit — compile ASN.1 and generate codecs")
         {
@@ -72,7 +74,7 @@ internal static class Program
         Console.WriteLine($"Wrote {output.FullName}");
     }
 
-    private static void Generate(FileInfo input, string language, DirectoryInfo output)
+    private static void Generate(FileInfo input, string language, DirectoryInfo output, string? csharpNamespace)
     {
         if (!input.Exists)
         {
@@ -80,6 +82,11 @@ internal static class Program
         }
 
         var document = LoadDocument(input);
+        if (!string.IsNullOrWhiteSpace(csharpNamespace))
+        {
+            ApplyCSharpNamespace(document, csharpNamespace);
+        }
+
         var generator = new CodeGenerator(new ILanguageBackend[] { new CSharpBackend() });
         var files = generator.Generate(document, language);
         output.Create();
@@ -94,6 +101,14 @@ internal static class Program
 
             File.WriteAllText(path, file.Contents);
             Console.WriteLine($"Wrote {path}");
+        }
+    }
+
+    private static void ApplyCSharpNamespace(IrDocument document, string csharpNamespace)
+    {
+        foreach (var module in document.Modules)
+        {
+            module.Options = IrOptions.SetCSharp(module.Options, "namespace", csharpNamespace);
         }
     }
 

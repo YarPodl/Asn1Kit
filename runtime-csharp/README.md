@@ -2,13 +2,14 @@
 
 Библиотека кодека: `Asn1Writer` / `Asn1Reader` и примитивы. Не знает про ASN.1-модули и IR — только TLV и правила кодирования.
 
-Позже сюда же планируется эталонный сгенерированный код и его тесты (сейчас round-trip через Roslyn живёт в `compiler/tests`).
+Рядом лежит эталонный сгенерированный код PKIX ([generated/Asn1Kit.Pkix](generated/Asn1Kit.Pkix/)) — golden артефакт C# backend. Encode/decode тесты на нём ещё не написаны; мелкий round-trip через Roslyn остаётся в `compiler/tests`.
 
 ## Проекты
 
 | Проект | Роль |
 | --- | --- |
 | `src/Asn1Kit.Runtime` | Теги, writer/reader, примитивы |
+| `generated/Asn1Kit.Pkix` | Golden C# из PKIX1Explicit88 + PKIX1Implicit88; `*.g.cs` руками не править |
 | `tests/Asn1Kit.Runtime.Tests` | Матрица hex, oracle BCL, внешние векторы, `RuntimeTests` |
 
 ## Фикстуры

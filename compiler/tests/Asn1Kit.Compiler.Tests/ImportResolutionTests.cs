@@ -78,4 +78,62 @@ END
         var leaf = consumerModule.Values.Single(v => v.Name == "leaf");
         Assert.Equal("1.2.3.4", Assert.IsType<IrOidValue>(leaf.Value).Value);
     }
+
+    [Fact]
+    public void BackendQualifiesCrossModuleRefWhenNamespacesDiffer()
+    {
+        const string provider = @"
+Provider DEFINITIONS EXPLICIT TAGS ::= BEGIN
+Shared ::= INTEGER
+END
+";
+        const string consumer = @"
+Consumer DEFINITIONS IMPLICIT TAGS ::= BEGIN
+IMPORTS Shared FROM Provider;
+Wrapped ::= SEQUENCE { value Shared }
+END
+";
+        var document = new Asn1Compiler().CompileTexts(new (string Text, string? FileName)[]
+        {
+            (provider, "provider.asn"),
+            (consumer, "consumer.asn")
+        });
+
+        var files = new Asn1Kit.Codegen.CSharp.CSharpBackend().Generate(document);
+        Assert.Equal(2, files.Count);
+        var consumerSource = files.Single(f => f.RelativePath == "Consumer.g.cs").Contents;
+        Assert.Contains("public Provider.Shared Value", consumerSource);
+        Assert.DoesNotContain("public Shared Value", consumerSource);
+    }
+
+    [Fact]
+    public void BackendKeepsUnqualifiedRefWhenNamespacesMatch()
+    {
+        const string provider = @"
+Provider DEFINITIONS EXPLICIT TAGS ::= BEGIN
+Shared ::= INTEGER
+END
+";
+        const string consumer = @"
+Consumer DEFINITIONS IMPLICIT TAGS ::= BEGIN
+IMPORTS Shared FROM Provider;
+Wrapped ::= SEQUENCE { value Shared }
+END
+";
+        var document = new Asn1Compiler().CompileTexts(new (string Text, string? FileName)[]
+        {
+            (provider, "provider.asn"),
+            (consumer, "consumer.asn")
+        });
+        foreach (var module in document.Modules)
+        {
+            module.Options = IrOptions.SetCSharp(module.Options, "namespace", "Same.Ns");
+        }
+
+        var files = new Asn1Kit.Codegen.CSharp.CSharpBackend().Generate(document);
+        var consumerSource = files.Single(f => f.RelativePath == "Consumer.g.cs").Contents;
+        Assert.Contains("namespace Same.Ns;", consumerSource);
+        Assert.Contains("public Shared Value", consumerSource);
+        Assert.DoesNotContain("public Same.Ns.Shared Value", consumerSource);
+    }
 }

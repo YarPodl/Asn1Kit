@@ -32,7 +32,9 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/as
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/ir/example.json --lang csharp -o ./generated
 ```
 
-`generate` также принимает `.asn` напрямую: компиляция выполняется в памяти.
+`generate` также принимает `.asn` напрямую: компиляция выполняется в памяти. Опция `--csharp-namespace` задаёт `options.csharp.namespace` всем модулям (используется для golden PKIX).
+
+Эталонный C# PKIX: [runtime-csharp/generated/Asn1Kit.Pkix](runtime-csharp/generated/Asn1Kit.Pkix/).
 
 ## Профиль компилятора
 

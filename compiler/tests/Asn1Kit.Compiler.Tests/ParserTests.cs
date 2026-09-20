@@ -116,22 +116,56 @@ END
     }
 
     [Fact]
-    public void BackendGeneratesSetAndSetOf()
+    public void BackendEmitsNestedSequenceOfItemTypeWithUnderscore()
     {
         const string asn = @"
 M DEFINITIONS ::= BEGIN
-Bag ::= SET {
+PolicyMappings ::= SEQUENCE OF SEQUENCE {
   a INTEGER,
-  b [0] BOOLEAN OPTIONAL
+  b INTEGER
 }
-List ::= SET OF INTEGER
 END
 ";
         var document = new Asn1Compiler().CompileText(asn);
         var source = new Asn1Kit.Codegen.CSharp.CSharpBackend().Generate(document).Single().Contents;
-        Assert.Contains("WriteSet", source);
-        Assert.Contains("WriteSetOf", source);
-        Assert.Contains("Asn1Tag.Set", source);
-        Assert.Contains("ReadSet", source);
+        Assert.Contains("List<PolicyMappings_Item>", source);
+        Assert.Contains("public sealed class PolicyMappings_Item", source);
+        Assert.DoesNotContain("class PolicyMappingsItem", source);
+    }
+
+    [Fact]
+    public void BackendRenamesPropertyMatchingEnclosingType()
+    {
+        const string asn = @"
+M DEFINITIONS ::= BEGIN
+DistributionPoint ::= SEQUENCE {
+  distributionPoint INTEGER OPTIONAL,
+  reasons BOOLEAN OPTIONAL
+}
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        var source = new Asn1Kit.Codegen.CSharp.CSharpBackend().Generate(document).Single().Contents;
+        Assert.Contains("public BigInteger? DistributionPointValue", source);
+        Assert.DoesNotContain("public BigInteger? DistributionPoint {", source);
+    }
+
+    [Fact]
+    public void BackendSanitizesHyphenatedFieldNamesInPeekLocals()
+    {
+        const string asn = @"
+M DEFINITIONS ::= BEGIN
+S ::= SEQUENCE {
+  country-name INTEGER OPTIONAL,
+  built-in-domain INTEGER OPTIONAL
+}
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        var source = new Asn1Kit.Codegen.CSharp.CSharpBackend().Generate(document).Single().Contents;
+        Assert.Contains("out var tag_CountryName", source);
+        Assert.Contains("out var tag_BuiltInDomain", source);
+        Assert.DoesNotContain("tag_country-name", source);
+        Assert.DoesNotContain("tag_built-in-domain", source);
     }
 }

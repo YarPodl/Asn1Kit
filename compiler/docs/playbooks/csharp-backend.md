@@ -27,6 +27,12 @@
 
 Образец — `RoundTripTests.GeneratedCSharp_CompilesAndRoundTripsPerson` в [Asn1KitTests.cs](../../tests/Asn1Kit.Compiler.Tests/Asn1KitTests.cs): IR → генерация → компиляция Roslyn → encode/decode через рефлексию.
 
+Golden C# для PKIX: [runtime-csharp/generated/Asn1Kit.Pkix](../../../runtime-csharp/generated/Asn1Kit.Pkix/), сверка `PkixGeneratedCodeTests`. После правок шаблона пересобери:
+
+```powershell
+dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/ir/pkix1-implicit88.json --lang csharp --csharp-namespace Asn1Kit.Pkix -o runtime-csharp/generated/Asn1Kit.Pkix
+```
+
 Минимум на новый kind:
 
 1. Сгенерированный код компилируется (`CompileGenerated` кидает с текстом диагностик, если нет).
