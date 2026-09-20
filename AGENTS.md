@@ -13,7 +13,7 @@ ASN.1 → JSON IR → генератор кода → runtime BER/DER. Слои 
 [конструкция ASN.1](compiler/docs/playbooks/compiler-construct.md) ·
 [C# backend](compiler/docs/playbooks/csharp-backend.md) ·
 [runtime BER/DER](runtime-csharp/docs/playbooks/runtime.md) ·
-[ревью API runtime](runtime-csharp/docs/runtime-api.md) ·
+[публичный API runtime](runtime-csharp/docs/runtime-api.md) ·
 [новый язык](compiler/docs/playbooks/new-backend.md).
 
 Локальные README каталогов: [compiler/README.md](compiler/README.md), [runtime-csharp/README.md](runtime-csharp/README.md), [runtime-cpp/README.md](runtime-cpp/README.md).

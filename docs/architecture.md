@@ -57,7 +57,7 @@ C# codegen пока не покрывает все kind IR; на неподде�
 ## Runtime
 
 `Asn1Writer` / `Asn1Reader` принимают `Asn1Encoding.Ber` или `Asn1Encoding.Der`.
-Ревью API и кандидаты на правки — [runtime-csharp/docs/runtime-api.md](../runtime-csharp/docs/runtime-api.md).
+Публичный API Writer/Reader — [runtime-csharp/docs/runtime-api.md](../runtime-csharp/docs/runtime-api.md).
 
 - DER: только definite length, BOOLEAN `0xFF` / `0x00`; INTEGER на записи через `BigInteger.ToByteArray`.
 - BER: decode принимает definite и indefinite length; constructed `OCTET STRING` склеивается.

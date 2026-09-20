@@ -1,17 +1,10 @@
-# Ревью публичного API Asn1Kit.Runtime
+# Публичный API Asn1Kit.Runtime
 
-Цель документа: понять, **что в API стоит поменять до начала полной матрицы тестов**, чтобы потом дешевле оптимизировать реализацию. Смена API позже не запрещена — только дороже (переписывание тестов и codegen).
+Контракт Writer/Reader: ownership буферов, горячий путь codegen и инвентарь символов.
 
 Реализация — [`src/Asn1Kit.Runtime`](../src/Asn1Kit.Runtime). Как править кодек — [playbooks/runtime.md](playbooks/runtime.md).
 Что уже поддержано по типам — [status.md](../../docs/status.md) § Runtime BER/DER.
-
-## Порядок работ
-
-```text
-1. Этот обзор → решение по правкам API (если нужны)
-2. Полная матрица RuntimeTests по чеклисту ниже — `PrimitiveCodecTests` + `fixtures/ber-der/` + oracle `PrimitiveOracleTests`
-3. Внутренние оптимизации по backlog
-```
+Backlog оптимизаций — там же, § «Backlog: оптимизация runtime».
 
 ## Политика Memory / Span
 
@@ -47,25 +40,6 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `Asn1Any.Contents` / `ContentsMemory` | hot | owned |
 | `Asn1BitString.Span` / `Memory` | hot | owned |
 | `Asn1Primitives` wrappers (+ `Asn1OctetString.TryDecode`) | warm | делегируют |
-
-## Кандидаты на смену API до тестов
-
-| Кандидат | Статус |
-| --- | --- |
-| Форма `WriteSetOf` + codegen | **сделано:** `Action<Asn1Writer>` |
-| Публичность `ReadTlv` / `ReadValue` | **отменено** — остаются public |
-| Вход reader | **сделано:** `offset`/`length` + `ReadOnlyMemory` |
-| `Encode() → byte[]` only | **сделано:** `EncodedLength` + `TryEncode` |
-| `ReadOctetString → byte[]` only | **сделано:** `TryReadOctetString` (+ `TryReadValue`); `byte[]` оставлен |
-| Wrappers `Asn1Primitives` | **оставлен** warm API |
-
-## Backlog внутренней оптимизации
-
-1. **Nested write:** один буфер / резерв длины вместо `new Asn1Writer` + `Encode()` на уровень.
-2. **Nested read:** срез `(offset, end)` без `ReadValue`→copy; публичный `ReadTlv` остаётся allocating-обёрткой.
-3. **Constructed OCTET / BIT / string (BER):** без `List<byte>` + `AddRange`.
-4. **OID encode:** без `Split` + `List` + `Stack` на коротких OID.
-5. **Scratch:** high-tag / length; reverse в `ReadInteger`; `TryRead*` без промежуточного `byte[]` когда destination достаточен.
 
 ## Заметки
 

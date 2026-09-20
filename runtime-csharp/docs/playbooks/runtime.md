@@ -16,7 +16,7 @@
 
 Кодировка выбирается через `Asn1Encoding.Ber` / `Asn1Encoding.Der` в конструкторе writer'а и reader'а.
 
-Ревью публичного API (кандидаты на смену до тестов, backlog, чеклист) — [runtime-api.md](../runtime-api.md).
+Публичный API (ownership, инвентарь, чеклист) — [runtime-api.md](../runtime-api.md). Backlog оптимизаций — [status.md](../../../docs/status.md) § «Backlog: оптимизация runtime».
 
 ## Новый примитив
 

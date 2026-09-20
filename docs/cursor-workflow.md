@@ -19,7 +19,7 @@
 | Новое поле или `kind` в IR | [compiler/docs/playbooks/new-ir-kind.md](../compiler/docs/playbooks/new-ir-kind.md) |
 | Генерация C# | [compiler/docs/playbooks/csharp-backend.md](../compiler/docs/playbooks/csharp-backend.md) |
 | BER/DER | [runtime-csharp/docs/playbooks/runtime.md](../runtime-csharp/docs/playbooks/runtime.md) |
-| Ревью API runtime | [runtime-csharp/docs/runtime-api.md](../runtime-csharp/docs/runtime-api.md) |
+| Публичный API runtime | [runtime-csharp/docs/runtime-api.md](../runtime-csharp/docs/runtime-api.md) |
 | C++ | [compiler/docs/playbooks/new-backend.md](../compiler/docs/playbooks/new-backend.md) |
 | «Почему так сделано» | [docs/decisions.md](decisions.md) |
 

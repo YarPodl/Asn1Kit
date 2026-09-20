@@ -24,7 +24,7 @@
 
 ## Документация
 
-- [Ревью API](docs/runtime-api.md)
+- [Публичный API](docs/runtime-api.md)
 - [Плейбук runtime](docs/playbooks/runtime.md)
 - Матрица поддержки — [docs/status.md](../docs/status.md) § Runtime BER/DER
 

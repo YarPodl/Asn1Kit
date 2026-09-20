@@ -60,7 +60,7 @@ DER: только definite length, BOOLEAN `0x00` / `0xFF`, BIT STRING с нул
 
 Примитивы runtime: матрица hex в [runtime-csharp/fixtures/ber-der/](../runtime-csharp/fixtures/ber-der/) (`PrimitiveCodecTests`), перекрёстный oracle с `System.Formats.Asn1` (`PrimitiveOracleTests`; Teletex/T61/Videotex/Graphic/General — только свои векторы, Latin-1), внешние фрагменты RFC/X.690 — `ExternalVectorTests`.
 
-Ревью API Writer/Reader (кандидаты на смену до тестов, backlog оптимизаций) — [runtime-csharp/docs/runtime-api.md](../runtime-csharp/docs/runtime-api.md).
+Публичный API Writer/Reader — [runtime-csharp/docs/runtime-api.md](../runtime-csharp/docs/runtime-api.md). Backlog оптимизаций — § ниже.
 
 ## Вне профиля компилятора
 
@@ -86,3 +86,15 @@ DER: только definite length, BOOLEAN `0x00` / `0xFF`, BIT STRING с нул
 | низкий | Второй oracle — BouncyCastle | Только если появятся расхождения с BCL; не единственный эталон |
 
 Не делать: subprocess (openssl/pyasn1) как gate `dotnet test`; копирование чужих сьютов целиком; CER в oracle.
+
+## Backlog: оптимизация runtime
+
+Внутренние аллокации; публичный API не меняется. Контракт Writer/Reader — [runtime-api.md](../runtime-csharp/docs/runtime-api.md).
+
+| Приоритет | Задача | Заметки |
+| --- | --- | --- |
+| средний | Nested write: один буфер / резерв длины вместо `new Asn1Writer` + `Encode()` на уровень | Горячий путь SEQUENCE/SET |
+| средний | Nested read: срез `(offset, end)` без `ReadValue`→copy | Публичный `ReadTlv` остаётся allocating-обёрткой |
+| низкий | Constructed OCTET / BIT / string (BER): без `List<byte>` + `AddRange` | |
+| низкий | OID encode: без `Split` + `List` + `Stack` на коротких OID | |
+| низкий | Scratch: high-tag / length; reverse в `ReadInteger`; `TryRead*` без промежуточного `byte[]` когда destination достаточен | |
