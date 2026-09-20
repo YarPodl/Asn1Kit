@@ -82,6 +82,24 @@ END
     }
 
     [Fact]
+    public void PreservesUnionValueConstraintAsUnsupported()
+    {
+        const string asn = @"
+M DEFINITIONS ::= BEGIN
+id-a OBJECT IDENTIFIER ::= { 1 2 3 }
+id-b OBJECT IDENTIFIER ::= { 1 2 4 }
+PolicyQualifierId ::= OBJECT IDENTIFIER ( id-a | id-b )
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        var type = document.Modules[0].Types.Single(t => t.Name == "PolicyQualifierId").Type;
+        Assert.IsType<OidType>(type);
+        Assert.Contains("|", type.Constraint!.Unsupported);
+        Assert.Contains("id-a", type.Constraint.Unsupported);
+        Assert.Contains("id-b", type.Constraint.Unsupported);
+    }
+
+    [Fact]
     public void BackendGeneratesAnyAlias()
     {
         const string asn = @"

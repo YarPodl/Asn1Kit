@@ -95,6 +95,10 @@ internal sealed class Asn1Lexer
                     Advance();
                     tokens.Add(new Token(TokenKind.Semicolon, ";", line, column));
                     continue;
+                case '|':
+                    Advance();
+                    tokens.Add(new Token(TokenKind.Union, "|", line, column));
+                    continue;
             }
 
             if (ch == '"')

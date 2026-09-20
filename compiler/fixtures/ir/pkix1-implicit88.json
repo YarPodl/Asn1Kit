@@ -1,0 +1,5114 @@
+{
+  "irVersion": 1,
+  "sourceFiles": [
+    "pkix1-explicit88.asn",
+    "pkix1-implicit88.asn"
+  ],
+  "modules": [
+    {
+      "name": "PKIX1Explicit88",
+      "oid": "1.3.6.1.5.5.7.0.18",
+      "tagDefault": "explicit",
+      "imports": [],
+      "options": {
+        "csharp": {
+          "namespace": "PKIX1Explicit88"
+        }
+      },
+      "types": [
+        {
+          "name": "UniversalString",
+          "type": {
+            "kind": "octetString",
+            "tag": {
+              "class": "universal",
+              "number": 28,
+              "mode": "implicit"
+            }
+          }
+        },
+        {
+          "name": "BMPString",
+          "type": {
+            "kind": "octetString",
+            "tag": {
+              "class": "universal",
+              "number": 30,
+              "mode": "implicit"
+            }
+          }
+        },
+        {
+          "name": "UTF8String",
+          "type": {
+            "kind": "octetString",
+            "tag": {
+              "class": "universal",
+              "number": 12,
+              "mode": "implicit"
+            }
+          }
+        },
+        {
+          "name": "Attribute",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "type",
+                "type": {
+                  "kind": "ref",
+                  "name": "AttributeType"
+                },
+                "optional": false
+              },
+              {
+                "name": "values",
+                "type": {
+                  "kind": "setOf",
+                  "element": {
+                    "kind": "ref",
+                    "name": "AttributeValue"
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "AttributeType",
+          "type": {
+            "kind": "oid"
+          }
+        },
+        {
+          "name": "AttributeValue",
+          "type": {
+            "kind": "any"
+          }
+        },
+        {
+          "name": "AttributeTypeAndValue",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "type",
+                "type": {
+                  "kind": "ref",
+                  "name": "AttributeType"
+                },
+                "optional": false
+              },
+              {
+                "name": "value",
+                "type": {
+                  "kind": "ref",
+                  "name": "AttributeValue"
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "X520name",
+          "type": {
+            "kind": "choice",
+            "components": [
+              {
+                "name": "teletexString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "teletex",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 32768
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "printableString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "printable",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 32768
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "universalString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "universal",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 32768
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "utf8String",
+                "type": {
+                  "kind": "string",
+                  "stringType": "utf8",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 32768
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "bmpString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "bmp",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 32768
+                    }
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "X520CommonName",
+          "type": {
+            "kind": "choice",
+            "components": [
+              {
+                "name": "teletexString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "teletex",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 64
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "printableString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "printable",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 64
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "universalString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "universal",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 64
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "utf8String",
+                "type": {
+                  "kind": "string",
+                  "stringType": "utf8",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 64
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "bmpString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "bmp",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 64
+                    }
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "X520LocalityName",
+          "type": {
+            "kind": "choice",
+            "components": [
+              {
+                "name": "teletexString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "teletex",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 128
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "printableString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "printable",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 128
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "universalString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "universal",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 128
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "utf8String",
+                "type": {
+                  "kind": "string",
+                  "stringType": "utf8",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 128
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "bmpString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "bmp",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 128
+                    }
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "X520StateOrProvinceName",
+          "type": {
+            "kind": "choice",
+            "components": [
+              {
+                "name": "teletexString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "teletex",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 128
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "printableString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "printable",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 128
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "universalString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "universal",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 128
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "utf8String",
+                "type": {
+                  "kind": "string",
+                  "stringType": "utf8",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 128
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "bmpString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "bmp",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 128
+                    }
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "X520OrganizationName",
+          "type": {
+            "kind": "choice",
+            "components": [
+              {
+                "name": "teletexString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "teletex",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 64
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "printableString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "printable",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 64
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "universalString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "universal",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 64
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "utf8String",
+                "type": {
+                  "kind": "string",
+                  "stringType": "utf8",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 64
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "bmpString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "bmp",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 64
+                    }
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "X520OrganizationalUnitName",
+          "type": {
+            "kind": "choice",
+            "components": [
+              {
+                "name": "teletexString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "teletex",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 64
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "printableString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "printable",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 64
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "universalString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "universal",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 64
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "utf8String",
+                "type": {
+                  "kind": "string",
+                  "stringType": "utf8",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 64
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "bmpString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "bmp",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 64
+                    }
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "X520Title",
+          "type": {
+            "kind": "choice",
+            "components": [
+              {
+                "name": "teletexString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "teletex",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 64
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "printableString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "printable",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 64
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "universalString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "universal",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 64
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "utf8String",
+                "type": {
+                  "kind": "string",
+                  "stringType": "utf8",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 64
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "bmpString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "bmp",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 64
+                    }
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "X520dnQualifier",
+          "type": {
+            "kind": "string",
+            "stringType": "printable"
+          }
+        },
+        {
+          "name": "X520countryName",
+          "type": {
+            "kind": "string",
+            "stringType": "printable",
+            "constraint": {
+              "size": {
+                "min": 2,
+                "max": 2
+              }
+            }
+          }
+        },
+        {
+          "name": "X520SerialNumber",
+          "type": {
+            "kind": "string",
+            "stringType": "printable",
+            "constraint": {
+              "size": {
+                "min": 1,
+                "max": 64
+              }
+            }
+          }
+        },
+        {
+          "name": "X520Pseudonym",
+          "type": {
+            "kind": "choice",
+            "components": [
+              {
+                "name": "teletexString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "teletex",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 128
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "printableString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "printable",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 128
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "universalString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "universal",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 128
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "utf8String",
+                "type": {
+                  "kind": "string",
+                  "stringType": "utf8",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 128
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "bmpString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "bmp",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 128
+                    }
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "DomainComponent",
+          "type": {
+            "kind": "string",
+            "stringType": "ia5"
+          }
+        },
+        {
+          "name": "EmailAddress",
+          "type": {
+            "kind": "string",
+            "stringType": "ia5",
+            "constraint": {
+              "size": {
+                "min": 1,
+                "max": 255
+              }
+            }
+          }
+        },
+        {
+          "name": "Name",
+          "type": {
+            "kind": "choice",
+            "components": [
+              {
+                "name": "rdnSequence",
+                "type": {
+                  "kind": "ref",
+                  "name": "RDNSequence"
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "RDNSequence",
+          "type": {
+            "kind": "sequenceOf",
+            "element": {
+              "kind": "ref",
+              "name": "RelativeDistinguishedName"
+            }
+          }
+        },
+        {
+          "name": "DistinguishedName",
+          "type": {
+            "kind": "ref",
+            "name": "RDNSequence"
+          }
+        },
+        {
+          "name": "RelativeDistinguishedName",
+          "type": {
+            "kind": "setOf",
+            "element": {
+              "kind": "ref",
+              "name": "AttributeTypeAndValue"
+            },
+            "constraint": {
+              "size": {
+                "min": 1
+              }
+            }
+          }
+        },
+        {
+          "name": "DirectoryString",
+          "type": {
+            "kind": "choice",
+            "components": [
+              {
+                "name": "teletexString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "teletex",
+                  "constraint": {
+                    "size": {
+                      "min": 1
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "printableString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "printable",
+                  "constraint": {
+                    "size": {
+                      "min": 1
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "universalString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "universal",
+                  "constraint": {
+                    "size": {
+                      "min": 1
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "utf8String",
+                "type": {
+                  "kind": "string",
+                  "stringType": "utf8",
+                  "constraint": {
+                    "size": {
+                      "min": 1
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "bmpString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "bmp",
+                  "constraint": {
+                    "size": {
+                      "min": 1
+                    }
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "Certificate",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "tbsCertificate",
+                "type": {
+                  "kind": "ref",
+                  "name": "TBSCertificate"
+                },
+                "optional": false
+              },
+              {
+                "name": "signatureAlgorithm",
+                "type": {
+                  "kind": "ref",
+                  "name": "AlgorithmIdentifier"
+                },
+                "optional": false
+              },
+              {
+                "name": "signature",
+                "type": {
+                  "kind": "bitString"
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "TBSCertificate",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "version",
+                "type": {
+                  "kind": "ref",
+                  "name": "Version",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "explicit"
+                  }
+                },
+                "optional": true,
+                "default": {
+                  "kind": "integer",
+                  "value": 0
+                }
+              },
+              {
+                "name": "serialNumber",
+                "type": {
+                  "kind": "ref",
+                  "name": "CertificateSerialNumber"
+                },
+                "optional": false
+              },
+              {
+                "name": "signature",
+                "type": {
+                  "kind": "ref",
+                  "name": "AlgorithmIdentifier"
+                },
+                "optional": false
+              },
+              {
+                "name": "issuer",
+                "type": {
+                  "kind": "ref",
+                  "name": "Name"
+                },
+                "optional": false
+              },
+              {
+                "name": "validity",
+                "type": {
+                  "kind": "ref",
+                  "name": "Validity"
+                },
+                "optional": false
+              },
+              {
+                "name": "subject",
+                "type": {
+                  "kind": "ref",
+                  "name": "Name"
+                },
+                "optional": false
+              },
+              {
+                "name": "subjectPublicKeyInfo",
+                "type": {
+                  "kind": "ref",
+                  "name": "SubjectPublicKeyInfo"
+                },
+                "optional": false
+              },
+              {
+                "name": "issuerUniqueID",
+                "type": {
+                  "kind": "ref",
+                  "name": "UniqueIdentifier",
+                  "tag": {
+                    "class": "context",
+                    "number": 1,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "subjectUniqueID",
+                "type": {
+                  "kind": "ref",
+                  "name": "UniqueIdentifier",
+                  "tag": {
+                    "class": "context",
+                    "number": 2,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "extensions",
+                "type": {
+                  "kind": "ref",
+                  "name": "Extensions",
+                  "tag": {
+                    "class": "context",
+                    "number": 3,
+                    "mode": "explicit"
+                  }
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "Version",
+          "type": {
+            "kind": "integer",
+            "namedValues": [
+              {
+                "name": "v1",
+                "value": 0
+              },
+              {
+                "name": "v2",
+                "value": 1
+              },
+              {
+                "name": "v3",
+                "value": 2
+              }
+            ]
+          }
+        },
+        {
+          "name": "CertificateSerialNumber",
+          "type": {
+            "kind": "integer"
+          }
+        },
+        {
+          "name": "Validity",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "notBefore",
+                "type": {
+                  "kind": "ref",
+                  "name": "Time"
+                },
+                "optional": false
+              },
+              {
+                "name": "notAfter",
+                "type": {
+                  "kind": "ref",
+                  "name": "Time"
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "Time",
+          "type": {
+            "kind": "choice",
+            "components": [
+              {
+                "name": "utcTime",
+                "type": {
+                  "kind": "time",
+                  "timeType": "utc"
+                },
+                "optional": false
+              },
+              {
+                "name": "generalTime",
+                "type": {
+                  "kind": "time",
+                  "timeType": "generalized"
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "UniqueIdentifier",
+          "type": {
+            "kind": "bitString"
+          }
+        },
+        {
+          "name": "SubjectPublicKeyInfo",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "algorithm",
+                "type": {
+                  "kind": "ref",
+                  "name": "AlgorithmIdentifier"
+                },
+                "optional": false
+              },
+              {
+                "name": "subjectPublicKey",
+                "type": {
+                  "kind": "bitString"
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "Extensions",
+          "type": {
+            "kind": "sequenceOf",
+            "element": {
+              "kind": "ref",
+              "name": "Extension"
+            },
+            "constraint": {
+              "size": {
+                "min": 1
+              }
+            }
+          }
+        },
+        {
+          "name": "Extension",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "extnID",
+                "type": {
+                  "kind": "oid"
+                },
+                "optional": false
+              },
+              {
+                "name": "critical",
+                "type": {
+                  "kind": "boolean"
+                },
+                "optional": true,
+                "default": {
+                  "kind": "boolean",
+                  "value": false
+                }
+              },
+              {
+                "name": "extnValue",
+                "type": {
+                  "kind": "octetString"
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "CertificateList",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "tbsCertList",
+                "type": {
+                  "kind": "ref",
+                  "name": "TBSCertList"
+                },
+                "optional": false
+              },
+              {
+                "name": "signatureAlgorithm",
+                "type": {
+                  "kind": "ref",
+                  "name": "AlgorithmIdentifier"
+                },
+                "optional": false
+              },
+              {
+                "name": "signature",
+                "type": {
+                  "kind": "bitString"
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "TBSCertList",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "version",
+                "type": {
+                  "kind": "ref",
+                  "name": "Version"
+                },
+                "optional": true
+              },
+              {
+                "name": "signature",
+                "type": {
+                  "kind": "ref",
+                  "name": "AlgorithmIdentifier"
+                },
+                "optional": false
+              },
+              {
+                "name": "issuer",
+                "type": {
+                  "kind": "ref",
+                  "name": "Name"
+                },
+                "optional": false
+              },
+              {
+                "name": "thisUpdate",
+                "type": {
+                  "kind": "ref",
+                  "name": "Time"
+                },
+                "optional": false
+              },
+              {
+                "name": "nextUpdate",
+                "type": {
+                  "kind": "ref",
+                  "name": "Time"
+                },
+                "optional": true
+              },
+              {
+                "name": "revokedCertificates",
+                "type": {
+                  "kind": "sequenceOf",
+                  "element": {
+                    "kind": "sequence",
+                    "components": [
+                      {
+                        "name": "userCertificate",
+                        "type": {
+                          "kind": "ref",
+                          "name": "CertificateSerialNumber"
+                        },
+                        "optional": false
+                      },
+                      {
+                        "name": "revocationDate",
+                        "type": {
+                          "kind": "ref",
+                          "name": "Time"
+                        },
+                        "optional": false
+                      },
+                      {
+                        "name": "crlEntryExtensions",
+                        "type": {
+                          "kind": "ref",
+                          "name": "Extensions"
+                        },
+                        "optional": true
+                      }
+                    ],
+                    "extensible": false
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "crlExtensions",
+                "type": {
+                  "kind": "ref",
+                  "name": "Extensions",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "explicit"
+                  }
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "AlgorithmIdentifier",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "algorithm",
+                "type": {
+                  "kind": "oid"
+                },
+                "optional": false
+              },
+              {
+                "name": "parameters",
+                "type": {
+                  "kind": "any",
+                  "definedBy": "algorithm"
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "ORAddress",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "built-in-standard-attributes",
+                "type": {
+                  "kind": "ref",
+                  "name": "BuiltInStandardAttributes"
+                },
+                "optional": false
+              },
+              {
+                "name": "built-in-domain-defined-attributes",
+                "type": {
+                  "kind": "ref",
+                  "name": "BuiltInDomainDefinedAttributes"
+                },
+                "optional": true
+              },
+              {
+                "name": "extension-attributes",
+                "type": {
+                  "kind": "ref",
+                  "name": "ExtensionAttributes"
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "BuiltInStandardAttributes",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "country-name",
+                "type": {
+                  "kind": "ref",
+                  "name": "CountryName"
+                },
+                "optional": true
+              },
+              {
+                "name": "administration-domain-name",
+                "type": {
+                  "kind": "ref",
+                  "name": "AdministrationDomainName"
+                },
+                "optional": true
+              },
+              {
+                "name": "network-address",
+                "type": {
+                  "kind": "ref",
+                  "name": "NetworkAddress",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "terminal-identifier",
+                "type": {
+                  "kind": "ref",
+                  "name": "TerminalIdentifier",
+                  "tag": {
+                    "class": "context",
+                    "number": 1,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "private-domain-name",
+                "type": {
+                  "kind": "ref",
+                  "name": "PrivateDomainName",
+                  "tag": {
+                    "class": "context",
+                    "number": 2,
+                    "mode": "explicit"
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "organization-name",
+                "type": {
+                  "kind": "ref",
+                  "name": "OrganizationName",
+                  "tag": {
+                    "class": "context",
+                    "number": 3,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "numeric-user-identifier",
+                "type": {
+                  "kind": "ref",
+                  "name": "NumericUserIdentifier",
+                  "tag": {
+                    "class": "context",
+                    "number": 4,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "personal-name",
+                "type": {
+                  "kind": "ref",
+                  "name": "PersonalName",
+                  "tag": {
+                    "class": "context",
+                    "number": 5,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "organizational-unit-names",
+                "type": {
+                  "kind": "ref",
+                  "name": "OrganizationalUnitNames",
+                  "tag": {
+                    "class": "context",
+                    "number": 6,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "CountryName",
+          "type": {
+            "kind": "choice",
+            "components": [
+              {
+                "name": "x121-dcc-code",
+                "type": {
+                  "kind": "string",
+                  "stringType": "numeric",
+                  "constraint": {
+                    "size": {
+                      "min": 3,
+                      "max": 3
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "iso-3166-alpha2-code",
+                "type": {
+                  "kind": "string",
+                  "stringType": "printable",
+                  "constraint": {
+                    "size": {
+                      "min": 2,
+                      "max": 2
+                    }
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false,
+            "tag": {
+              "class": "application",
+              "number": 1,
+              "mode": "explicit"
+            }
+          }
+        },
+        {
+          "name": "AdministrationDomainName",
+          "type": {
+            "kind": "choice",
+            "components": [
+              {
+                "name": "numeric",
+                "type": {
+                  "kind": "string",
+                  "stringType": "numeric",
+                  "constraint": {
+                    "size": {
+                      "min": 0,
+                      "max": 16
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "printable",
+                "type": {
+                  "kind": "string",
+                  "stringType": "printable",
+                  "constraint": {
+                    "size": {
+                      "min": 0,
+                      "max": 16
+                    }
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false,
+            "tag": {
+              "class": "application",
+              "number": 2,
+              "mode": "explicit"
+            }
+          }
+        },
+        {
+          "name": "NetworkAddress",
+          "type": {
+            "kind": "ref",
+            "name": "X121Address"
+          }
+        },
+        {
+          "name": "X121Address",
+          "type": {
+            "kind": "string",
+            "stringType": "numeric",
+            "constraint": {
+              "size": {
+                "min": 1,
+                "max": 16
+              }
+            }
+          }
+        },
+        {
+          "name": "TerminalIdentifier",
+          "type": {
+            "kind": "string",
+            "stringType": "printable",
+            "constraint": {
+              "size": {
+                "min": 1,
+                "max": 24
+              }
+            }
+          }
+        },
+        {
+          "name": "PrivateDomainName",
+          "type": {
+            "kind": "choice",
+            "components": [
+              {
+                "name": "numeric",
+                "type": {
+                  "kind": "string",
+                  "stringType": "numeric",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 16
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "printable",
+                "type": {
+                  "kind": "string",
+                  "stringType": "printable",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 16
+                    }
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "OrganizationName",
+          "type": {
+            "kind": "string",
+            "stringType": "printable",
+            "constraint": {
+              "size": {
+                "min": 1,
+                "max": 64
+              }
+            }
+          }
+        },
+        {
+          "name": "NumericUserIdentifier",
+          "type": {
+            "kind": "string",
+            "stringType": "numeric",
+            "constraint": {
+              "size": {
+                "min": 1,
+                "max": 32
+              }
+            }
+          }
+        },
+        {
+          "name": "PersonalName",
+          "type": {
+            "kind": "set",
+            "components": [
+              {
+                "name": "surname",
+                "type": {
+                  "kind": "string",
+                  "stringType": "printable",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "implicit"
+                  },
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 40
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "given-name",
+                "type": {
+                  "kind": "string",
+                  "stringType": "printable",
+                  "tag": {
+                    "class": "context",
+                    "number": 1,
+                    "mode": "implicit"
+                  },
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 16
+                    }
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "initials",
+                "type": {
+                  "kind": "string",
+                  "stringType": "printable",
+                  "tag": {
+                    "class": "context",
+                    "number": 2,
+                    "mode": "implicit"
+                  },
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 5
+                    }
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "generation-qualifier",
+                "type": {
+                  "kind": "string",
+                  "stringType": "printable",
+                  "tag": {
+                    "class": "context",
+                    "number": 3,
+                    "mode": "implicit"
+                  },
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 3
+                    }
+                  }
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "OrganizationalUnitNames",
+          "type": {
+            "kind": "sequenceOf",
+            "element": {
+              "kind": "ref",
+              "name": "OrganizationalUnitName"
+            },
+            "constraint": {
+              "size": {
+                "min": 1,
+                "max": 4
+              }
+            }
+          }
+        },
+        {
+          "name": "OrganizationalUnitName",
+          "type": {
+            "kind": "string",
+            "stringType": "printable",
+            "constraint": {
+              "size": {
+                "min": 1,
+                "max": 32
+              }
+            }
+          }
+        },
+        {
+          "name": "BuiltInDomainDefinedAttributes",
+          "type": {
+            "kind": "sequenceOf",
+            "element": {
+              "kind": "ref",
+              "name": "BuiltInDomainDefinedAttribute"
+            },
+            "constraint": {
+              "size": {
+                "min": 1,
+                "max": 4
+              }
+            }
+          }
+        },
+        {
+          "name": "BuiltInDomainDefinedAttribute",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "type",
+                "type": {
+                  "kind": "string",
+                  "stringType": "printable",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 8
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "value",
+                "type": {
+                  "kind": "string",
+                  "stringType": "printable",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 128
+                    }
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "ExtensionAttributes",
+          "type": {
+            "kind": "setOf",
+            "element": {
+              "kind": "ref",
+              "name": "ExtensionAttribute"
+            },
+            "constraint": {
+              "size": {
+                "min": 1,
+                "max": 256
+              }
+            }
+          }
+        },
+        {
+          "name": "ExtensionAttribute",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "extension-attribute-type",
+                "type": {
+                  "kind": "integer",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "implicit"
+                  },
+                  "constraint": {
+                    "value": {
+                      "min": 0,
+                      "max": 256
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "extension-attribute-value",
+                "type": {
+                  "kind": "any",
+                  "definedBy": "extension-attribute-type",
+                  "tag": {
+                    "class": "context",
+                    "number": 1,
+                    "mode": "explicit"
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "CommonName",
+          "type": {
+            "kind": "string",
+            "stringType": "printable",
+            "constraint": {
+              "size": {
+                "min": 1,
+                "max": 64
+              }
+            }
+          }
+        },
+        {
+          "name": "TeletexCommonName",
+          "type": {
+            "kind": "string",
+            "stringType": "teletex",
+            "constraint": {
+              "size": {
+                "min": 1,
+                "max": 64
+              }
+            }
+          }
+        },
+        {
+          "name": "TeletexOrganizationName",
+          "type": {
+            "kind": "string",
+            "stringType": "teletex",
+            "constraint": {
+              "size": {
+                "min": 1,
+                "max": 64
+              }
+            }
+          }
+        },
+        {
+          "name": "TeletexPersonalName",
+          "type": {
+            "kind": "set",
+            "components": [
+              {
+                "name": "surname",
+                "type": {
+                  "kind": "string",
+                  "stringType": "teletex",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "implicit"
+                  },
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 40
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "given-name",
+                "type": {
+                  "kind": "string",
+                  "stringType": "teletex",
+                  "tag": {
+                    "class": "context",
+                    "number": 1,
+                    "mode": "implicit"
+                  },
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 16
+                    }
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "initials",
+                "type": {
+                  "kind": "string",
+                  "stringType": "teletex",
+                  "tag": {
+                    "class": "context",
+                    "number": 2,
+                    "mode": "implicit"
+                  },
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 5
+                    }
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "generation-qualifier",
+                "type": {
+                  "kind": "string",
+                  "stringType": "teletex",
+                  "tag": {
+                    "class": "context",
+                    "number": 3,
+                    "mode": "implicit"
+                  },
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 3
+                    }
+                  }
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "TeletexOrganizationalUnitNames",
+          "type": {
+            "kind": "sequenceOf",
+            "element": {
+              "kind": "ref",
+              "name": "TeletexOrganizationalUnitName"
+            },
+            "constraint": {
+              "size": {
+                "min": 1,
+                "max": 4
+              }
+            }
+          }
+        },
+        {
+          "name": "TeletexOrganizationalUnitName",
+          "type": {
+            "kind": "string",
+            "stringType": "teletex",
+            "constraint": {
+              "size": {
+                "min": 1,
+                "max": 32
+              }
+            }
+          }
+        },
+        {
+          "name": "PDSName",
+          "type": {
+            "kind": "string",
+            "stringType": "printable",
+            "constraint": {
+              "size": {
+                "min": 1,
+                "max": 16
+              }
+            }
+          }
+        },
+        {
+          "name": "PhysicalDeliveryCountryName",
+          "type": {
+            "kind": "choice",
+            "components": [
+              {
+                "name": "x121-dcc-code",
+                "type": {
+                  "kind": "string",
+                  "stringType": "numeric",
+                  "constraint": {
+                    "size": {
+                      "min": 3,
+                      "max": 3
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "iso-3166-alpha2-code",
+                "type": {
+                  "kind": "string",
+                  "stringType": "printable",
+                  "constraint": {
+                    "size": {
+                      "min": 2,
+                      "max": 2
+                    }
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "PostalCode",
+          "type": {
+            "kind": "choice",
+            "components": [
+              {
+                "name": "numeric-code",
+                "type": {
+                  "kind": "string",
+                  "stringType": "numeric",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 16
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "printable-code",
+                "type": {
+                  "kind": "string",
+                  "stringType": "printable",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 16
+                    }
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "PhysicalDeliveryOfficeName",
+          "type": {
+            "kind": "ref",
+            "name": "PDSParameter"
+          }
+        },
+        {
+          "name": "PhysicalDeliveryOfficeNumber",
+          "type": {
+            "kind": "ref",
+            "name": "PDSParameter"
+          }
+        },
+        {
+          "name": "ExtensionORAddressComponents",
+          "type": {
+            "kind": "ref",
+            "name": "PDSParameter"
+          }
+        },
+        {
+          "name": "PhysicalDeliveryPersonalName",
+          "type": {
+            "kind": "ref",
+            "name": "PDSParameter"
+          }
+        },
+        {
+          "name": "PhysicalDeliveryOrganizationName",
+          "type": {
+            "kind": "ref",
+            "name": "PDSParameter"
+          }
+        },
+        {
+          "name": "ExtensionPhysicalDeliveryAddressComponents",
+          "type": {
+            "kind": "ref",
+            "name": "PDSParameter"
+          }
+        },
+        {
+          "name": "UnformattedPostalAddress",
+          "type": {
+            "kind": "set",
+            "components": [
+              {
+                "name": "printable-address",
+                "type": {
+                  "kind": "sequenceOf",
+                  "element": {
+                    "kind": "string",
+                    "stringType": "printable",
+                    "constraint": {
+                      "size": {
+                        "min": 1,
+                        "max": 30
+                      }
+                    }
+                  },
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 6
+                    }
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "teletex-string",
+                "type": {
+                  "kind": "string",
+                  "stringType": "teletex",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 180
+                    }
+                  }
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "StreetAddress",
+          "type": {
+            "kind": "ref",
+            "name": "PDSParameter"
+          }
+        },
+        {
+          "name": "PostOfficeBoxAddress",
+          "type": {
+            "kind": "ref",
+            "name": "PDSParameter"
+          }
+        },
+        {
+          "name": "PosteRestanteAddress",
+          "type": {
+            "kind": "ref",
+            "name": "PDSParameter"
+          }
+        },
+        {
+          "name": "UniquePostalName",
+          "type": {
+            "kind": "ref",
+            "name": "PDSParameter"
+          }
+        },
+        {
+          "name": "LocalPostalAttributes",
+          "type": {
+            "kind": "ref",
+            "name": "PDSParameter"
+          }
+        },
+        {
+          "name": "PDSParameter",
+          "type": {
+            "kind": "set",
+            "components": [
+              {
+                "name": "printable-string",
+                "type": {
+                  "kind": "string",
+                  "stringType": "printable",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 30
+                    }
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "teletex-string",
+                "type": {
+                  "kind": "string",
+                  "stringType": "teletex",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 30
+                    }
+                  }
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "ExtendedNetworkAddress",
+          "type": {
+            "kind": "choice",
+            "components": [
+              {
+                "name": "e163-4-address",
+                "type": {
+                  "kind": "sequence",
+                  "components": [
+                    {
+                      "name": "number",
+                      "type": {
+                        "kind": "string",
+                        "stringType": "numeric",
+                        "tag": {
+                          "class": "context",
+                          "number": 0,
+                          "mode": "implicit"
+                        },
+                        "constraint": {
+                          "size": {
+                            "min": 1,
+                            "max": 15
+                          }
+                        }
+                      },
+                      "optional": false
+                    },
+                    {
+                      "name": "sub-address",
+                      "type": {
+                        "kind": "string",
+                        "stringType": "numeric",
+                        "tag": {
+                          "class": "context",
+                          "number": 1,
+                          "mode": "implicit"
+                        },
+                        "constraint": {
+                          "size": {
+                            "min": 1,
+                            "max": 40
+                          }
+                        }
+                      },
+                      "optional": true
+                    }
+                  ],
+                  "extensible": false
+                },
+                "optional": false
+              },
+              {
+                "name": "psap-address",
+                "type": {
+                  "kind": "ref",
+                  "name": "PresentationAddress",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "PresentationAddress",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "pSelector",
+                "type": {
+                  "kind": "octetString",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "explicit"
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "sSelector",
+                "type": {
+                  "kind": "octetString",
+                  "tag": {
+                    "class": "context",
+                    "number": 1,
+                    "mode": "explicit"
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "tSelector",
+                "type": {
+                  "kind": "octetString",
+                  "tag": {
+                    "class": "context",
+                    "number": 2,
+                    "mode": "explicit"
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "nAddresses",
+                "type": {
+                  "kind": "setOf",
+                  "element": {
+                    "kind": "octetString"
+                  },
+                  "tag": {
+                    "class": "context",
+                    "number": 3,
+                    "mode": "explicit"
+                  },
+                  "constraint": {
+                    "size": {
+                      "min": 1
+                    }
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "TerminalType",
+          "type": {
+            "kind": "integer",
+            "namedValues": [
+              {
+                "name": "telex",
+                "value": 3
+              },
+              {
+                "name": "teletex",
+                "value": 4
+              },
+              {
+                "name": "g3-facsimile",
+                "value": 5
+              },
+              {
+                "name": "g4-facsimile",
+                "value": 6
+              },
+              {
+                "name": "ia5-terminal",
+                "value": 7
+              },
+              {
+                "name": "videotex",
+                "value": 8
+              }
+            ],
+            "constraint": {
+              "value": {
+                "min": 0,
+                "max": 256
+              }
+            }
+          }
+        },
+        {
+          "name": "TeletexDomainDefinedAttributes",
+          "type": {
+            "kind": "sequenceOf",
+            "element": {
+              "kind": "ref",
+              "name": "TeletexDomainDefinedAttribute"
+            },
+            "constraint": {
+              "size": {
+                "min": 1,
+                "max": 4
+              }
+            }
+          }
+        },
+        {
+          "name": "TeletexDomainDefinedAttribute",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "type",
+                "type": {
+                  "kind": "string",
+                  "stringType": "teletex",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 8
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "value",
+                "type": {
+                  "kind": "string",
+                  "stringType": "teletex",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 128
+                    }
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        }
+      ],
+      "values": [
+        {
+          "name": "id-pkix",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "1.3.6.1.5.5.7"
+          }
+        },
+        {
+          "name": "id-pe",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "1.3.6.1.5.5.7.1"
+          }
+        },
+        {
+          "name": "id-qt",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "1.3.6.1.5.5.7.2"
+          }
+        },
+        {
+          "name": "id-kp",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "1.3.6.1.5.5.7.3"
+          }
+        },
+        {
+          "name": "id-ad",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "1.3.6.1.5.5.7.48"
+          }
+        },
+        {
+          "name": "id-qt-cps",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "1.3.6.1.5.5.7.2.1"
+          }
+        },
+        {
+          "name": "id-qt-unotice",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "1.3.6.1.5.5.7.2.2"
+          }
+        },
+        {
+          "name": "id-ad-ocsp",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "1.3.6.1.5.5.7.48.1"
+          }
+        },
+        {
+          "name": "id-ad-caIssuers",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "1.3.6.1.5.5.7.48.2"
+          }
+        },
+        {
+          "name": "id-ad-timeStamping",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "1.3.6.1.5.5.7.48.3"
+          }
+        },
+        {
+          "name": "id-ad-caRepository",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "1.3.6.1.5.5.7.48.5"
+          }
+        },
+        {
+          "name": "id-at",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.4"
+          }
+        },
+        {
+          "name": "id-at-name",
+          "type": {
+            "kind": "ref",
+            "name": "AttributeType"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.4.41"
+          }
+        },
+        {
+          "name": "id-at-surname",
+          "type": {
+            "kind": "ref",
+            "name": "AttributeType"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.4.4"
+          }
+        },
+        {
+          "name": "id-at-givenName",
+          "type": {
+            "kind": "ref",
+            "name": "AttributeType"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.4.42"
+          }
+        },
+        {
+          "name": "id-at-initials",
+          "type": {
+            "kind": "ref",
+            "name": "AttributeType"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.4.43"
+          }
+        },
+        {
+          "name": "id-at-generationQualifier",
+          "type": {
+            "kind": "ref",
+            "name": "AttributeType"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.4.44"
+          }
+        },
+        {
+          "name": "id-at-commonName",
+          "type": {
+            "kind": "ref",
+            "name": "AttributeType"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.4.3"
+          }
+        },
+        {
+          "name": "id-at-localityName",
+          "type": {
+            "kind": "ref",
+            "name": "AttributeType"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.4.7"
+          }
+        },
+        {
+          "name": "id-at-stateOrProvinceName",
+          "type": {
+            "kind": "ref",
+            "name": "AttributeType"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.4.8"
+          }
+        },
+        {
+          "name": "id-at-organizationName",
+          "type": {
+            "kind": "ref",
+            "name": "AttributeType"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.4.10"
+          }
+        },
+        {
+          "name": "id-at-organizationalUnitName",
+          "type": {
+            "kind": "ref",
+            "name": "AttributeType"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.4.11"
+          }
+        },
+        {
+          "name": "id-at-title",
+          "type": {
+            "kind": "ref",
+            "name": "AttributeType"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.4.12"
+          }
+        },
+        {
+          "name": "id-at-dnQualifier",
+          "type": {
+            "kind": "ref",
+            "name": "AttributeType"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.4.46"
+          }
+        },
+        {
+          "name": "id-at-countryName",
+          "type": {
+            "kind": "ref",
+            "name": "AttributeType"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.4.6"
+          }
+        },
+        {
+          "name": "id-at-serialNumber",
+          "type": {
+            "kind": "ref",
+            "name": "AttributeType"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.4.5"
+          }
+        },
+        {
+          "name": "id-at-pseudonym",
+          "type": {
+            "kind": "ref",
+            "name": "AttributeType"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.4.65"
+          }
+        },
+        {
+          "name": "id-domainComponent",
+          "type": {
+            "kind": "ref",
+            "name": "AttributeType"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "0.9.2342.19200300.100.1.25"
+          }
+        },
+        {
+          "name": "pkcs-9",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "1.2.840.113549.1.9"
+          }
+        },
+        {
+          "name": "id-emailAddress",
+          "type": {
+            "kind": "ref",
+            "name": "AttributeType"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "1.2.840.113549.1.9.1"
+          }
+        },
+        {
+          "name": "common-name",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 1
+          }
+        },
+        {
+          "name": "teletex-common-name",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 2
+          }
+        },
+        {
+          "name": "teletex-organization-name",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 3
+          }
+        },
+        {
+          "name": "teletex-personal-name",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 4
+          }
+        },
+        {
+          "name": "teletex-organizational-unit-names",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 5
+          }
+        },
+        {
+          "name": "pds-name",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 7
+          }
+        },
+        {
+          "name": "physical-delivery-country-name",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 8
+          }
+        },
+        {
+          "name": "postal-code",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 9
+          }
+        },
+        {
+          "name": "physical-delivery-office-name",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 10
+          }
+        },
+        {
+          "name": "physical-delivery-office-number",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 11
+          }
+        },
+        {
+          "name": "extension-OR-address-components",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 12
+          }
+        },
+        {
+          "name": "physical-delivery-personal-name",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 13
+          }
+        },
+        {
+          "name": "physical-delivery-organization-name",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 14
+          }
+        },
+        {
+          "name": "extension-physical-delivery-address-components",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 15
+          }
+        },
+        {
+          "name": "unformatted-postal-address",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 16
+          }
+        },
+        {
+          "name": "street-address",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 17
+          }
+        },
+        {
+          "name": "post-office-box-address",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 18
+          }
+        },
+        {
+          "name": "poste-restante-address",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 19
+          }
+        },
+        {
+          "name": "unique-postal-name",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 20
+          }
+        },
+        {
+          "name": "local-postal-attributes",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 21
+          }
+        },
+        {
+          "name": "extended-network-address",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 22
+          }
+        },
+        {
+          "name": "terminal-type",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 23
+          }
+        },
+        {
+          "name": "teletex-domain-defined-attributes",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 6
+          }
+        },
+        {
+          "name": "ub-name",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 32768
+          }
+        },
+        {
+          "name": "ub-common-name",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 64
+          }
+        },
+        {
+          "name": "ub-locality-name",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 128
+          }
+        },
+        {
+          "name": "ub-state-name",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 128
+          }
+        },
+        {
+          "name": "ub-organization-name",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 64
+          }
+        },
+        {
+          "name": "ub-organizational-unit-name",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 64
+          }
+        },
+        {
+          "name": "ub-title",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 64
+          }
+        },
+        {
+          "name": "ub-serial-number",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 64
+          }
+        },
+        {
+          "name": "ub-match",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 128
+          }
+        },
+        {
+          "name": "ub-emailaddress-length",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 255
+          }
+        },
+        {
+          "name": "ub-common-name-length",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 64
+          }
+        },
+        {
+          "name": "ub-country-name-alpha-length",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 2
+          }
+        },
+        {
+          "name": "ub-country-name-numeric-length",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 3
+          }
+        },
+        {
+          "name": "ub-domain-defined-attributes",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 4
+          }
+        },
+        {
+          "name": "ub-domain-defined-attribute-type-length",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 8
+          }
+        },
+        {
+          "name": "ub-domain-defined-attribute-value-length",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 128
+          }
+        },
+        {
+          "name": "ub-domain-name-length",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 16
+          }
+        },
+        {
+          "name": "ub-extension-attributes",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 256
+          }
+        },
+        {
+          "name": "ub-e163-4-number-length",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 15
+          }
+        },
+        {
+          "name": "ub-e163-4-sub-address-length",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 40
+          }
+        },
+        {
+          "name": "ub-generation-qualifier-length",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 3
+          }
+        },
+        {
+          "name": "ub-given-name-length",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 16
+          }
+        },
+        {
+          "name": "ub-initials-length",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 5
+          }
+        },
+        {
+          "name": "ub-integer-options",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 256
+          }
+        },
+        {
+          "name": "ub-numeric-user-id-length",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 32
+          }
+        },
+        {
+          "name": "ub-organization-name-length",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 64
+          }
+        },
+        {
+          "name": "ub-organizational-unit-name-length",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 32
+          }
+        },
+        {
+          "name": "ub-organizational-units",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 4
+          }
+        },
+        {
+          "name": "ub-pds-name-length",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 16
+          }
+        },
+        {
+          "name": "ub-pds-parameter-length",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 30
+          }
+        },
+        {
+          "name": "ub-pds-physical-address-lines",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 6
+          }
+        },
+        {
+          "name": "ub-postal-code-length",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 16
+          }
+        },
+        {
+          "name": "ub-pseudonym",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 128
+          }
+        },
+        {
+          "name": "ub-surname-length",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 40
+          }
+        },
+        {
+          "name": "ub-terminal-id-length",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 24
+          }
+        },
+        {
+          "name": "ub-unformatted-address-length",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 180
+          }
+        },
+        {
+          "name": "ub-x121-address-length",
+          "type": {
+            "kind": "integer"
+          },
+          "value": {
+            "kind": "integer",
+            "value": 16
+          }
+        }
+      ]
+    },
+    {
+      "name": "PKIX1Implicit88",
+      "oid": "1.3.6.1.5.5.7.0.19",
+      "tagDefault": "implicit",
+      "imports": [
+        {
+          "module": "PKIX1Explicit88",
+          "types": [
+            "BMPString",
+            "UTF8String",
+            "ORAddress",
+            "Name",
+            "RelativeDistinguishedName",
+            "CertificateSerialNumber",
+            "Attribute",
+            "DirectoryString"
+          ],
+          "values": [
+            "id-pe",
+            "id-kp",
+            "id-qt-unotice",
+            "id-qt-cps"
+          ]
+        }
+      ],
+      "options": {
+        "csharp": {
+          "namespace": "PKIX1Implicit88"
+        }
+      },
+      "types": [
+        {
+          "name": "AuthorityKeyIdentifier",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "keyIdentifier",
+                "type": {
+                  "kind": "ref",
+                  "name": "KeyIdentifier",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "authorityCertIssuer",
+                "type": {
+                  "kind": "ref",
+                  "name": "GeneralNames",
+                  "tag": {
+                    "class": "context",
+                    "number": 1,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "authorityCertSerialNumber",
+                "type": {
+                  "kind": "ref",
+                  "name": "CertificateSerialNumber",
+                  "tag": {
+                    "class": "context",
+                    "number": 2,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "KeyIdentifier",
+          "type": {
+            "kind": "octetString"
+          }
+        },
+        {
+          "name": "SubjectKeyIdentifier",
+          "type": {
+            "kind": "ref",
+            "name": "KeyIdentifier"
+          }
+        },
+        {
+          "name": "KeyUsage",
+          "type": {
+            "kind": "bitString",
+            "namedBits": [
+              {
+                "name": "digitalSignature",
+                "value": 0
+              },
+              {
+                "name": "nonRepudiation",
+                "value": 1
+              },
+              {
+                "name": "keyEncipherment",
+                "value": 2
+              },
+              {
+                "name": "dataEncipherment",
+                "value": 3
+              },
+              {
+                "name": "keyAgreement",
+                "value": 4
+              },
+              {
+                "name": "keyCertSign",
+                "value": 5
+              },
+              {
+                "name": "cRLSign",
+                "value": 6
+              },
+              {
+                "name": "encipherOnly",
+                "value": 7
+              },
+              {
+                "name": "decipherOnly",
+                "value": 8
+              }
+            ]
+          }
+        },
+        {
+          "name": "PrivateKeyUsagePeriod",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "notBefore",
+                "type": {
+                  "kind": "time",
+                  "timeType": "generalized",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "notAfter",
+                "type": {
+                  "kind": "time",
+                  "timeType": "generalized",
+                  "tag": {
+                    "class": "context",
+                    "number": 1,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "CertificatePolicies",
+          "type": {
+            "kind": "sequenceOf",
+            "element": {
+              "kind": "ref",
+              "name": "PolicyInformation"
+            },
+            "constraint": {
+              "size": {
+                "min": 1
+              }
+            }
+          }
+        },
+        {
+          "name": "PolicyInformation",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "policyIdentifier",
+                "type": {
+                  "kind": "ref",
+                  "name": "CertPolicyId"
+                },
+                "optional": false
+              },
+              {
+                "name": "policyQualifiers",
+                "type": {
+                  "kind": "sequenceOf",
+                  "element": {
+                    "kind": "ref",
+                    "name": "PolicyQualifierInfo"
+                  },
+                  "constraint": {
+                    "size": {
+                      "min": 1
+                    }
+                  }
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "CertPolicyId",
+          "type": {
+            "kind": "oid"
+          }
+        },
+        {
+          "name": "PolicyQualifierInfo",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "policyQualifierId",
+                "type": {
+                  "kind": "ref",
+                  "name": "PolicyQualifierId"
+                },
+                "optional": false
+              },
+              {
+                "name": "qualifier",
+                "type": {
+                  "kind": "any",
+                  "definedBy": "policyQualifierId"
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "PolicyQualifierId",
+          "type": {
+            "kind": "oid",
+            "constraint": {
+              "unsupported": "(id-qt-cps | id-qt-unotice)"
+            }
+          }
+        },
+        {
+          "name": "CPSuri",
+          "type": {
+            "kind": "string",
+            "stringType": "ia5"
+          }
+        },
+        {
+          "name": "UserNotice",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "noticeRef",
+                "type": {
+                  "kind": "ref",
+                  "name": "NoticeReference"
+                },
+                "optional": true
+              },
+              {
+                "name": "explicitText",
+                "type": {
+                  "kind": "ref",
+                  "name": "DisplayText"
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "NoticeReference",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "organization",
+                "type": {
+                  "kind": "ref",
+                  "name": "DisplayText"
+                },
+                "optional": false
+              },
+              {
+                "name": "noticeNumbers",
+                "type": {
+                  "kind": "sequenceOf",
+                  "element": {
+                    "kind": "integer"
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "DisplayText",
+          "type": {
+            "kind": "choice",
+            "components": [
+              {
+                "name": "ia5String",
+                "type": {
+                  "kind": "string",
+                  "stringType": "ia5",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 200
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "visibleString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "visible",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 200
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "bmpString",
+                "type": {
+                  "kind": "string",
+                  "stringType": "bmp",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 200
+                    }
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "utf8String",
+                "type": {
+                  "kind": "string",
+                  "stringType": "utf8",
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 200
+                    }
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "PolicyMappings",
+          "type": {
+            "kind": "sequenceOf",
+            "element": {
+              "kind": "sequence",
+              "components": [
+                {
+                  "name": "issuerDomainPolicy",
+                  "type": {
+                    "kind": "ref",
+                    "name": "CertPolicyId"
+                  },
+                  "optional": false
+                },
+                {
+                  "name": "subjectDomainPolicy",
+                  "type": {
+                    "kind": "ref",
+                    "name": "CertPolicyId"
+                  },
+                  "optional": false
+                }
+              ],
+              "extensible": false
+            },
+            "constraint": {
+              "size": {
+                "min": 1
+              }
+            }
+          }
+        },
+        {
+          "name": "SubjectAltName",
+          "type": {
+            "kind": "ref",
+            "name": "GeneralNames"
+          }
+        },
+        {
+          "name": "GeneralNames",
+          "type": {
+            "kind": "sequenceOf",
+            "element": {
+              "kind": "ref",
+              "name": "GeneralName"
+            },
+            "constraint": {
+              "size": {
+                "min": 1
+              }
+            }
+          }
+        },
+        {
+          "name": "GeneralName",
+          "type": {
+            "kind": "choice",
+            "components": [
+              {
+                "name": "otherName",
+                "type": {
+                  "kind": "ref",
+                  "name": "AnotherName",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "rfc822Name",
+                "type": {
+                  "kind": "string",
+                  "stringType": "ia5",
+                  "tag": {
+                    "class": "context",
+                    "number": 1,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "dNSName",
+                "type": {
+                  "kind": "string",
+                  "stringType": "ia5",
+                  "tag": {
+                    "class": "context",
+                    "number": 2,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "x400Address",
+                "type": {
+                  "kind": "ref",
+                  "name": "ORAddress",
+                  "tag": {
+                    "class": "context",
+                    "number": 3,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "directoryName",
+                "type": {
+                  "kind": "ref",
+                  "name": "Name",
+                  "tag": {
+                    "class": "context",
+                    "number": 4,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "ediPartyName",
+                "type": {
+                  "kind": "ref",
+                  "name": "EDIPartyName",
+                  "tag": {
+                    "class": "context",
+                    "number": 5,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "uniformResourceIdentifier",
+                "type": {
+                  "kind": "string",
+                  "stringType": "ia5",
+                  "tag": {
+                    "class": "context",
+                    "number": 6,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "iPAddress",
+                "type": {
+                  "kind": "octetString",
+                  "tag": {
+                    "class": "context",
+                    "number": 7,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "registeredID",
+                "type": {
+                  "kind": "oid",
+                  "tag": {
+                    "class": "context",
+                    "number": 8,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "AnotherName",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "type-id",
+                "type": {
+                  "kind": "oid"
+                },
+                "optional": false
+              },
+              {
+                "name": "value",
+                "type": {
+                  "kind": "any",
+                  "definedBy": "type-id",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "explicit"
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "EDIPartyName",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "nameAssigner",
+                "type": {
+                  "kind": "ref",
+                  "name": "DirectoryString",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "partyName",
+                "type": {
+                  "kind": "ref",
+                  "name": "DirectoryString",
+                  "tag": {
+                    "class": "context",
+                    "number": 1,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "IssuerAltName",
+          "type": {
+            "kind": "ref",
+            "name": "GeneralNames"
+          }
+        },
+        {
+          "name": "SubjectDirectoryAttributes",
+          "type": {
+            "kind": "sequenceOf",
+            "element": {
+              "kind": "ref",
+              "name": "Attribute"
+            },
+            "constraint": {
+              "size": {
+                "min": 1
+              }
+            }
+          }
+        },
+        {
+          "name": "BasicConstraints",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "cA",
+                "type": {
+                  "kind": "boolean"
+                },
+                "optional": true,
+                "default": {
+                  "kind": "boolean",
+                  "value": false
+                }
+              },
+              {
+                "name": "pathLenConstraint",
+                "type": {
+                  "kind": "integer",
+                  "constraint": {
+                    "value": {
+                      "min": 0
+                    }
+                  }
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "NameConstraints",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "permittedSubtrees",
+                "type": {
+                  "kind": "ref",
+                  "name": "GeneralSubtrees",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "excludedSubtrees",
+                "type": {
+                  "kind": "ref",
+                  "name": "GeneralSubtrees",
+                  "tag": {
+                    "class": "context",
+                    "number": 1,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "GeneralSubtrees",
+          "type": {
+            "kind": "sequenceOf",
+            "element": {
+              "kind": "ref",
+              "name": "GeneralSubtree"
+            },
+            "constraint": {
+              "size": {
+                "min": 1
+              }
+            }
+          }
+        },
+        {
+          "name": "GeneralSubtree",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "base",
+                "type": {
+                  "kind": "ref",
+                  "name": "GeneralName"
+                },
+                "optional": false
+              },
+              {
+                "name": "minimum",
+                "type": {
+                  "kind": "ref",
+                  "name": "BaseDistance",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true,
+                "default": {
+                  "kind": "integer",
+                  "value": 0
+                }
+              },
+              {
+                "name": "maximum",
+                "type": {
+                  "kind": "ref",
+                  "name": "BaseDistance",
+                  "tag": {
+                    "class": "context",
+                    "number": 1,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "BaseDistance",
+          "type": {
+            "kind": "integer",
+            "constraint": {
+              "value": {
+                "min": 0
+              }
+            }
+          }
+        },
+        {
+          "name": "PolicyConstraints",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "requireExplicitPolicy",
+                "type": {
+                  "kind": "ref",
+                  "name": "SkipCerts",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "inhibitPolicyMapping",
+                "type": {
+                  "kind": "ref",
+                  "name": "SkipCerts",
+                  "tag": {
+                    "class": "context",
+                    "number": 1,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "SkipCerts",
+          "type": {
+            "kind": "integer",
+            "constraint": {
+              "value": {
+                "min": 0
+              }
+            }
+          }
+        },
+        {
+          "name": "CRLDistributionPoints",
+          "type": {
+            "kind": "sequenceOf",
+            "element": {
+              "kind": "ref",
+              "name": "DistributionPoint"
+            },
+            "constraint": {
+              "size": {
+                "min": 1
+              }
+            }
+          }
+        },
+        {
+          "name": "DistributionPoint",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "distributionPoint",
+                "type": {
+                  "kind": "ref",
+                  "name": "DistributionPointName",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "reasons",
+                "type": {
+                  "kind": "ref",
+                  "name": "ReasonFlags",
+                  "tag": {
+                    "class": "context",
+                    "number": 1,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "cRLIssuer",
+                "type": {
+                  "kind": "ref",
+                  "name": "GeneralNames",
+                  "tag": {
+                    "class": "context",
+                    "number": 2,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "DistributionPointName",
+          "type": {
+            "kind": "choice",
+            "components": [
+              {
+                "name": "fullName",
+                "type": {
+                  "kind": "ref",
+                  "name": "GeneralNames",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "nameRelativeToCRLIssuer",
+                "type": {
+                  "kind": "ref",
+                  "name": "RelativeDistinguishedName",
+                  "tag": {
+                    "class": "context",
+                    "number": 1,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "ReasonFlags",
+          "type": {
+            "kind": "bitString",
+            "namedBits": [
+              {
+                "name": "unused",
+                "value": 0
+              },
+              {
+                "name": "keyCompromise",
+                "value": 1
+              },
+              {
+                "name": "cACompromise",
+                "value": 2
+              },
+              {
+                "name": "affiliationChanged",
+                "value": 3
+              },
+              {
+                "name": "superseded",
+                "value": 4
+              },
+              {
+                "name": "cessationOfOperation",
+                "value": 5
+              },
+              {
+                "name": "certificateHold",
+                "value": 6
+              },
+              {
+                "name": "privilegeWithdrawn",
+                "value": 7
+              },
+              {
+                "name": "aACompromise",
+                "value": 8
+              }
+            ]
+          }
+        },
+        {
+          "name": "ExtKeyUsageSyntax",
+          "type": {
+            "kind": "sequenceOf",
+            "element": {
+              "kind": "ref",
+              "name": "KeyPurposeId"
+            },
+            "constraint": {
+              "size": {
+                "min": 1
+              }
+            }
+          }
+        },
+        {
+          "name": "KeyPurposeId",
+          "type": {
+            "kind": "oid"
+          }
+        },
+        {
+          "name": "InhibitAnyPolicy",
+          "type": {
+            "kind": "ref",
+            "name": "SkipCerts"
+          }
+        },
+        {
+          "name": "FreshestCRL",
+          "type": {
+            "kind": "ref",
+            "name": "CRLDistributionPoints"
+          }
+        },
+        {
+          "name": "AuthorityInfoAccessSyntax",
+          "type": {
+            "kind": "sequenceOf",
+            "element": {
+              "kind": "ref",
+              "name": "AccessDescription"
+            },
+            "constraint": {
+              "size": {
+                "min": 1
+              }
+            }
+          }
+        },
+        {
+          "name": "AccessDescription",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "accessMethod",
+                "type": {
+                  "kind": "oid"
+                },
+                "optional": false
+              },
+              {
+                "name": "accessLocation",
+                "type": {
+                  "kind": "ref",
+                  "name": "GeneralName"
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "SubjectInfoAccessSyntax",
+          "type": {
+            "kind": "sequenceOf",
+            "element": {
+              "kind": "ref",
+              "name": "AccessDescription"
+            },
+            "constraint": {
+              "size": {
+                "min": 1
+              }
+            }
+          }
+        },
+        {
+          "name": "CRLNumber",
+          "type": {
+            "kind": "integer",
+            "constraint": {
+              "value": {
+                "min": 0
+              }
+            }
+          }
+        },
+        {
+          "name": "IssuingDistributionPoint",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "distributionPoint",
+                "type": {
+                  "kind": "ref",
+                  "name": "DistributionPointName",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "onlyContainsUserCerts",
+                "type": {
+                  "kind": "boolean",
+                  "tag": {
+                    "class": "context",
+                    "number": 1,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true,
+                "default": {
+                  "kind": "boolean",
+                  "value": false
+                }
+              },
+              {
+                "name": "onlyContainsCACerts",
+                "type": {
+                  "kind": "boolean",
+                  "tag": {
+                    "class": "context",
+                    "number": 2,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true,
+                "default": {
+                  "kind": "boolean",
+                  "value": false
+                }
+              },
+              {
+                "name": "onlySomeReasons",
+                "type": {
+                  "kind": "ref",
+                  "name": "ReasonFlags",
+                  "tag": {
+                    "class": "context",
+                    "number": 3,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "indirectCRL",
+                "type": {
+                  "kind": "boolean",
+                  "tag": {
+                    "class": "context",
+                    "number": 4,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true,
+                "default": {
+                  "kind": "boolean",
+                  "value": false
+                }
+              },
+              {
+                "name": "onlyContainsAttributeCerts",
+                "type": {
+                  "kind": "boolean",
+                  "tag": {
+                    "class": "context",
+                    "number": 5,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true,
+                "default": {
+                  "kind": "boolean",
+                  "value": false
+                }
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "BaseCRLNumber",
+          "type": {
+            "kind": "ref",
+            "name": "CRLNumber"
+          }
+        },
+        {
+          "name": "CRLReason",
+          "type": {
+            "kind": "enumerated",
+            "values": [
+              {
+                "name": "unspecified",
+                "value": 0
+              },
+              {
+                "name": "keyCompromise",
+                "value": 1
+              },
+              {
+                "name": "cACompromise",
+                "value": 2
+              },
+              {
+                "name": "affiliationChanged",
+                "value": 3
+              },
+              {
+                "name": "superseded",
+                "value": 4
+              },
+              {
+                "name": "cessationOfOperation",
+                "value": 5
+              },
+              {
+                "name": "certificateHold",
+                "value": 6
+              },
+              {
+                "name": "removeFromCRL",
+                "value": 8
+              },
+              {
+                "name": "privilegeWithdrawn",
+                "value": 9
+              },
+              {
+                "name": "aACompromise",
+                "value": 10
+              }
+            ]
+          }
+        },
+        {
+          "name": "CertificateIssuer",
+          "type": {
+            "kind": "ref",
+            "name": "GeneralNames"
+          }
+        },
+        {
+          "name": "HoldInstructionCode",
+          "type": {
+            "kind": "oid"
+          }
+        },
+        {
+          "name": "InvalidityDate",
+          "type": {
+            "kind": "time",
+            "timeType": "generalized"
+          }
+        }
+      ],
+      "values": [
+        {
+          "name": "id-ce",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29"
+          }
+        },
+        {
+          "name": "id-ce-authorityKeyIdentifier",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.35"
+          }
+        },
+        {
+          "name": "id-ce-subjectKeyIdentifier",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.14"
+          }
+        },
+        {
+          "name": "id-ce-keyUsage",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.15"
+          }
+        },
+        {
+          "name": "id-ce-privateKeyUsagePeriod",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.16"
+          }
+        },
+        {
+          "name": "id-ce-certificatePolicies",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.32"
+          }
+        },
+        {
+          "name": "anyPolicy",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.32.0"
+          }
+        },
+        {
+          "name": "id-ce-policyMappings",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.33"
+          }
+        },
+        {
+          "name": "id-ce-subjectAltName",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.17"
+          }
+        },
+        {
+          "name": "id-ce-issuerAltName",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.18"
+          }
+        },
+        {
+          "name": "id-ce-subjectDirectoryAttributes",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.9"
+          }
+        },
+        {
+          "name": "id-ce-basicConstraints",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.19"
+          }
+        },
+        {
+          "name": "id-ce-nameConstraints",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.30"
+          }
+        },
+        {
+          "name": "id-ce-policyConstraints",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.36"
+          }
+        },
+        {
+          "name": "id-ce-cRLDistributionPoints",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.31"
+          }
+        },
+        {
+          "name": "id-ce-extKeyUsage",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.37"
+          }
+        },
+        {
+          "name": "anyExtendedKeyUsage",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.37.0"
+          }
+        },
+        {
+          "name": "id-kp-serverAuth",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "1.3.6.1.5.5.7.3.1"
+          }
+        },
+        {
+          "name": "id-kp-clientAuth",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "1.3.6.1.5.5.7.3.2"
+          }
+        },
+        {
+          "name": "id-kp-codeSigning",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "1.3.6.1.5.5.7.3.3"
+          }
+        },
+        {
+          "name": "id-kp-emailProtection",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "1.3.6.1.5.5.7.3.4"
+          }
+        },
+        {
+          "name": "id-kp-timeStamping",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "1.3.6.1.5.5.7.3.8"
+          }
+        },
+        {
+          "name": "id-kp-OCSPSigning",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "1.3.6.1.5.5.7.3.9"
+          }
+        },
+        {
+          "name": "id-ce-inhibitAnyPolicy",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.54"
+          }
+        },
+        {
+          "name": "id-ce-freshestCRL",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.46"
+          }
+        },
+        {
+          "name": "id-pe-authorityInfoAccess",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "1.3.6.1.5.5.7.1.1"
+          }
+        },
+        {
+          "name": "id-pe-subjectInfoAccess",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "1.3.6.1.5.5.7.1.11"
+          }
+        },
+        {
+          "name": "id-ce-cRLNumber",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.20"
+          }
+        },
+        {
+          "name": "id-ce-issuingDistributionPoint",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.28"
+          }
+        },
+        {
+          "name": "id-ce-deltaCRLIndicator",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.27"
+          }
+        },
+        {
+          "name": "id-ce-cRLReasons",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.21"
+          }
+        },
+        {
+          "name": "id-ce-certificateIssuer",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.29"
+          }
+        },
+        {
+          "name": "id-ce-holdInstructionCode",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.23"
+          }
+        },
+        {
+          "name": "holdInstruction",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.2.840.10040.2"
+          }
+        },
+        {
+          "name": "id-holdinstruction-none",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.2.840.10040.2.1"
+          }
+        },
+        {
+          "name": "id-holdinstruction-callissuer",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.2.840.10040.2.2"
+          }
+        },
+        {
+          "name": "id-holdinstruction-reject",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.2.840.10040.2.3"
+          }
+        },
+        {
+          "name": "id-ce-invalidityDate",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "2.5.29.24"
+          }
+        }
+      ]
+    }
+  ]
+}

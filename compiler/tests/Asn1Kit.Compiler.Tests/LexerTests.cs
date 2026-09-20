@@ -23,4 +23,11 @@ public sealed class LexerTests
         Assert.Contains(tokens, t => t.Kind == TokenKind.Number && t.Text == "-1");
         Assert.Contains(tokens, t => t.Kind == TokenKind.BString && t.Text == "1010");
     }
+
+    [Fact]
+    public void TokenizesUnion()
+    {
+        var tokens = new Asn1Lexer("OBJECT IDENTIFIER ( a | b )").Tokenize();
+        Assert.Contains(tokens, t => t.Kind == TokenKind.Union && t.Text == "|");
+    }
 }

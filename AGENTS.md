@@ -37,8 +37,9 @@ dotnet test Asn1Kit.sln --filter FullyQualifiedName~PkixExplicit88Tests
 dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/example.asn -o out.json
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/ir/example.json --lang csharp -o ./generated
 
-# пересборка golden-фикстуры (после любых правок компилятора или IR)
+# пересборка golden-фикстур (после любых правок компилятора или IR)
 dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/pkix1-explicit88.asn -o compiler/fixtures/ir/pkix1-explicit88.json
+dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/pkix1-explicit88.asn -i compiler/fixtures/asn1/pkix1-implicit88.asn -o compiler/fixtures/ir/pkix1-implicit88.json
 ```
 
 Полный прогон тестов — секунды, отдельная «быстрая» цель не нужна: гоняй `dotnet test Asn1Kit.sln` целиком.
@@ -67,6 +68,7 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/as
 ## Фикстуры
 
 - [compiler/fixtures/ir/pkix1-explicit88.json](compiler/fixtures/ir/pkix1-explicit88.json) — **golden-артефакт**: генерируется CLI из `.asn`, руками не правится.
+- [compiler/fixtures/ir/pkix1-implicit88.json](compiler/fixtures/ir/pkix1-implicit88.json) — **golden**: Explicit88 + Implicit88 (multi-module `IMPORTS`), руками не правится.
 - [compiler/fixtures/ir/example.json](compiler/fixtures/ir/example.json) — **ручная** фикстура с правками `options`; компилятором не воспроизводится.
 - [runtime-csharp/fixtures/ber-der/](runtime-csharp/fixtures/ber-der/) — hex-векторы runtime.
 

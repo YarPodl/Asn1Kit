@@ -16,6 +16,7 @@ public enum TokenKind
     Dot,
     Range,
     Ellipsis,
+    Union,
     CString,
     BString,
     HString,

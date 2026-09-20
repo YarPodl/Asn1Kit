@@ -43,16 +43,36 @@ internal sealed class IrBuilder
 
     public IrDocument Build()
     {
+        var modulesByName = new Dictionary<string, ModuleAst>(StringComparer.Ordinal);
+        foreach (var module in _modules)
+        {
+            if (!modulesByName.TryAdd(module.Name, module))
+            {
+                throw new CompileException(
+                    $"Duplicate module '{module.Name}'.",
+                    module.Line,
+                    module.Column);
+            }
+        }
+
         foreach (var module in _modules)
         {
             foreach (var import in module.Imports)
             {
+                if (!modulesByName.TryGetValue(import.Module, out var source))
+                {
+                    throw new CompileException(
+                        $"Imported module '{import.Module}' was not found among compiled modules.",
+                        import.Line,
+                        import.Column);
+                }
+
                 foreach (var type in import.Types)
                 {
-                    if (!_typesByName.ContainsKey(type))
+                    if (!source.TypeAssignments.Any(t => t.Name == type))
                     {
                         throw new CompileException(
-                            $"Imported type '{type}' from '{import.Module}' was not found among compiled modules.",
+                            $"Imported type '{type}' from '{import.Module}' was not found in module '{import.Module}'.",
                             import.Line,
                             import.Column);
                     }
@@ -60,10 +80,10 @@ internal sealed class IrBuilder
 
                 foreach (var value in import.Values)
                 {
-                    if (!_valuesByName.ContainsKey(value))
+                    if (!source.ValueAssignments.Any(v => v.Name == value))
                     {
                         throw new CompileException(
-                            $"Imported value '{value}' from '{import.Module}' was not found among compiled modules.",
+                            $"Imported value '{value}' from '{import.Module}' was not found in module '{import.Module}'.",
                             import.Line,
                             import.Column);
                     }

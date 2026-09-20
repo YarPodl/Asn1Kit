@@ -23,8 +23,9 @@
 dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/example.asn -o out.json
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/ir/example.json --lang csharp -o ./generated
 
-# пересборка golden-фикстуры
+# пересборка golden-фикстур
 dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/pkix1-explicit88.asn -o compiler/fixtures/ir/pkix1-explicit88.json
+dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/pkix1-explicit88.asn -i compiler/fixtures/asn1/pkix1-implicit88.asn -o compiler/fixtures/ir/pkix1-implicit88.json
 ```
 
 ## Фикстуры
@@ -33,9 +34,10 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/as
 | --- | --- |
 | `fixtures/asn1/` | Входные модули ASN.1 |
 | `fixtures/ir/pkix1-explicit88.json` | **Golden**: только через CLI, руками не править |
+| `fixtures/ir/pkix1-implicit88.json` | **Golden**: Explicit + Implicit (оба `-i`), руками не править |
 | `fixtures/ir/example.json` | **Ручная**: `options.csharp.*`; компилятором не пересобирать |
 
-Golden сверяет `PkixExplicit88Tests.CompilesAndMatchesGoldenIr`. Diff фикстуры — часть ревью.
+Golden сверяют `PkixExplicit88Tests` / `PkixImplicit88Tests`. Diff фикстуры — часть ревью.
 
 ## Плейбуки
 

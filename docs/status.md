@@ -8,19 +8,19 @@
 | --- | --- | --- | --- |
 | `boolean` | да | да → `bool` | `ParserTests`, `PrimitiveCodecTests`, `PrimitiveOracleTests` |
 | `integer` | да, с `namedValues` | да → `BigInteger` | `CompilerTests`, `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RoundTripTests` |
-| `enumerated` | да, с `values` | да → `BigInteger` (как INTEGER) | — |
+| `enumerated` | да, с `values` | да → `BigInteger` (как INTEGER) | `PkixImplicit88Tests` |
 | `bitString` | да, с `namedBits` | да → `Asn1BitString`; `namedBits` → `Bit_*` константы | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*` |
 | `octetString` | да | да → `byte[]` | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RoundTripTests`, `RuntimeTests` |
 | `oid` | да, dotted-строка; первый subidentifier — base-128 (в т.ч. `2.999…`) | да → `string` | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RuntimeTests.ObjectIdentifier_*` |
 | `string` (12 форм `stringType`) | да | да → `string` + `Asn1StringForm` | `PrimitiveCodecTests` (все 12), `PrimitiveOracleTests` (BCL-совместимые), `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*` |
 | `time` (`utc` / `generalized`) | да; `fractionDigits` 0…7 (default 3) для `generalized` | да → `DateTimeOffset` + `Asn1TimeForm`; запись с округлением | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*` |
 | `any` (+ `definedBy`) | да, с проверкой sibling-компонента | да → `Asn1Any` (Tag + Contents; `definedBy` не резолвится) | `ParserTests`, `RuntimeTests.Any_*`, `RoundTripTests.GeneratedCSharp_Any_*`, `ValueResolutionTests.RejectsAnyDefinedByUnknownField` |
-| `sequence` | да, `extensible` | да → класс с `Encode` / `Decode` | `RoundTripTests`, `PkixExplicit88Tests` |
+| `sequence` | да, `extensible` | да → класс с `Encode` / `Decode` | `RoundTripTests`, `PkixExplicit88Tests`, `PkixImplicit88Tests` |
 | `set` | да | да → класс с `Encode` / `Decode` (DER: порядок по тегу; decode по тегу) | `RoundTripTests`, `ParserTests`, `RuntimeTests` |
 | `choice` | да | да → класс + enum `…Kind` | `ParserTests`, `PkixExplicit88Tests` |
 | `sequenceOf` | да | да → класс с `List<T> Items` | `ParserTests` |
 | `setOf` | да | да → класс с `List<T> Items` (DER: сортировка TLV в `WriteSetOf`) | `RoundTripTests`, `ParserTests`, `RuntimeTests` |
-| `ref` | да, с резолвом через модули | да | `PkixExplicit88Tests` |
+| `ref` | да, с резолвом через модули и `IMPORTS` | да | `PkixExplicit88Tests`, `PkixImplicit88Tests`, `ImportResolutionTests` |
 
 Неподдержанные бэкендом kind отсекает `CSharpBackend.EnsureBackendSupport` с текстом `C# backend does not support kind '<kind>' yet.` — рекурсивно, включая вложенные компоненты и элементы `SEQUENCE OF` / `SET OF`.
 
@@ -33,9 +33,10 @@
 ## Теги и constraints
 
 - `EXPLICIT` / `IMPLICIT` / `AUTOMATIC TAGS`; `AUTOMATIC` раскрывается в явные `tag` на компонентах, для `CHOICE` тег остаётся `explicit`.
+- `IMPORTS … FROM Module` между переданными файлами: символы проверяются в модуле-источнике (`ImportResolutionTests`, golden PKIX1Implicit88).
 - `SIZE` и диапазоны значений → `constraint.size` / `constraint.value`; `MAX` кодируется отсутствующим `max`.
 - `SIZE` сразу после `SEQUENCE` / `SET` без `OF` и `MIN` как конкретная граница — явный отказ.
-- Остальные формы (например `FROM`) сохраняются строкой в `constraint.unsupported`.
+- Остальные формы (например `FROM`, union `|`) сохраняются строкой в `constraint.unsupported`.
 
 ## Runtime BER/DER
 

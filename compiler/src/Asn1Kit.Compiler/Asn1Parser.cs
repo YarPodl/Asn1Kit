@@ -668,7 +668,7 @@ internal sealed class Asn1Parser
             return size;
         }
 
-        if (LooksLikeSimpleBoundConstraint())
+        if (LooksLikeSimpleBoundConstraint() && !HasUnionBeforeMatchingParen())
         {
             var constraint = new ConstraintAst
             {
@@ -690,6 +690,29 @@ internal sealed class Asn1Parser
             Line = open.Line,
             Column = open.Column
         };
+    }
+
+    private bool HasUnionBeforeMatchingParen()
+    {
+        var depth = 1;
+        for (var i = _index; i < _tokens.Count && depth > 0; i++)
+        {
+            var kind = _tokens[i].Kind;
+            if (kind == TokenKind.LParen)
+            {
+                depth++;
+            }
+            else if (kind == TokenKind.RParen)
+            {
+                depth--;
+            }
+            else if (kind == TokenKind.Union && depth == 1)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private ConstraintAst ParseSizeConstraintKeyword()

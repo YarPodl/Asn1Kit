@@ -20,6 +20,18 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/as
 
 Diff фикстуры — часть ревью изменения. Неожиданные строки в нём означают регрессию, а не «фикстура протухла».
 
+## Golden-артефакт: `compiler/fixtures/ir/pkix1-implicit88.json`
+
+- Генерируется компилятором из **обоих** модулей RFC 5280 Appendix A.1 + A.2: Explicit88 и [pkix1-implicit88.asn](../../compiler/fixtures/asn1/pkix1-implicit88.asn). Руками не правится.
+- Покрывает multi-module `IMPORTS`, `IMPLICIT TAGS` и union-constraint → `unsupported`. Сверяется в `PkixImplicit88Tests.CompilesAndMatchesGoldenIr`.
+
+```powershell
+dotnet run --project compiler/src/Asn1Kit.Cli -- compile `
+  -i compiler/fixtures/asn1/pkix1-explicit88.asn `
+  -i compiler/fixtures/asn1/pkix1-implicit88.asn `
+  -o compiler/fixtures/ir/pkix1-implicit88.json
+```
+
 ## Ручная фикстура: `compiler/fixtures/ir/example.json`
 
 - Демонстрирует ручные правки `options`: namespace `Example.Asn1` и `propertyName: Nickname`, которых компилятор не выдаёт.
