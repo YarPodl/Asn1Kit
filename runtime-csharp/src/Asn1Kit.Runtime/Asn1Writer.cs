@@ -8,6 +8,9 @@ public sealed class Asn1Writer
     /// <summary>Worst-case definite length encoding: long-form prefix + 4 length octets.</summary>
     private const int MaxDefiniteLengthBytes = 5;
 
+    /// <summary>INTEGER / string contents larger than this use a heap buffer instead of stackalloc.</summary>
+    private const int StackEncodeThreshold = 64;
+
     private readonly MemoryStream _buffer = new();
 
     public Asn1Writer(Asn1Encoding encoding = Asn1Encoding.Der)
@@ -52,16 +55,55 @@ public sealed class Asn1Writer
 
     public void WriteInteger(Asn1Tag tag, BigInteger value)
     {
-        WritePrimitive(tag.AsPrimitive(), EncodeInteger(value));
+        var byteCount = value.GetByteCount(isUnsigned: false);
+        if (byteCount <= StackEncodeThreshold)
+        {
+            Span<byte> buffer = stackalloc byte[byteCount];
+            if (!value.TryWriteBytes(buffer, out var written, isUnsigned: false, isBigEndian: true))
+            {
+                throw new Asn1Exception("Failed to encode INTEGER contents.");
+            }
+
+            WritePrimitive(tag.AsPrimitive(), buffer.Slice(0, written));
+            return;
+        }
+
+        var rented = new byte[byteCount];
+        if (!value.TryWriteBytes(rented, out var writtenLarge, isUnsigned: false, isBigEndian: true))
+        {
+            throw new Asn1Exception("Failed to encode INTEGER contents.");
+        }
+
+        WritePrimitive(tag.AsPrimitive(), rented.AsSpan(0, writtenLarge));
     }
 
-    public void WriteInteger(Asn1Tag tag, int value) => WriteInteger(tag, (BigInteger)value);
+    public void WriteInteger(Asn1Tag tag, int value)
+    {
+        Span<byte> buffer = stackalloc byte[5];
+        var written = EncodeSignedLong(value, buffer);
+        WritePrimitive(tag.AsPrimitive(), buffer.Slice(0, written));
+    }
 
-    public void WriteInteger(Asn1Tag tag, uint value) => WriteInteger(tag, (BigInteger)value);
+    public void WriteInteger(Asn1Tag tag, uint value)
+    {
+        Span<byte> buffer = stackalloc byte[5];
+        var written = EncodeSignedLong(value, buffer);
+        WritePrimitive(tag.AsPrimitive(), buffer.Slice(0, written));
+    }
 
-    public void WriteInteger(Asn1Tag tag, long value) => WriteInteger(tag, (BigInteger)value);
+    public void WriteInteger(Asn1Tag tag, long value)
+    {
+        Span<byte> buffer = stackalloc byte[9];
+        var written = EncodeSignedLong(value, buffer);
+        WritePrimitive(tag.AsPrimitive(), buffer.Slice(0, written));
+    }
 
-    public void WriteInteger(Asn1Tag tag, ulong value) => WriteInteger(tag, (BigInteger)value);
+    public void WriteInteger(Asn1Tag tag, ulong value)
+    {
+        Span<byte> buffer = stackalloc byte[9];
+        var written = EncodeUnsignedLong(value, buffer);
+        WritePrimitive(tag.AsPrimitive(), buffer.Slice(0, written));
+    }
 
     /// <summary>Writes owned INTEGER contents as-is (may be non-minimal).</summary>
     public void WriteInteger(Asn1Tag tag, Asn1Integer value)
@@ -90,7 +132,10 @@ public sealed class Asn1Writer
 
     public void WriteObjectIdentifier(Asn1Tag tag, string oid)
     {
-        WritePrimitive(tag.AsPrimitive(), Asn1ObjectIdentifier.EncodeContents(oid));
+        var maxBytes = Asn1ObjectIdentifier.GetEncodeContentsMaxLength(oid);
+        Span<byte> scratch = maxBytes <= 128 ? stackalloc byte[maxBytes] : new byte[maxBytes];
+        var written = Asn1ObjectIdentifier.EncodeContents(oid, scratch);
+        WritePrimitive(tag.AsPrimitive(), scratch.Slice(0, written));
     }
 
     public void WriteBitString(Asn1Tag tag, Asn1BitString value)
@@ -100,21 +145,34 @@ public sealed class Asn1Writer
             Asn1TextCodec.EnsureTrailingBitsZero(value.Span, value.UnusedBits);
         }
 
-        var contents = new byte[1 + value.Span.Length];
-        contents[0] = (byte)value.UnusedBits;
-        value.Span.CopyTo(contents.AsSpan(1));
-        WritePrimitive(tag.AsPrimitive(), contents);
+        var payload = value.Span;
+        WriteTag(tag.AsPrimitive());
+        WriteLength(1 + payload.Length, definiteOnly: true);
+        _buffer.WriteByte((byte)value.UnusedBits);
+        _buffer.Write(payload);
     }
 
     public void WriteString(Asn1Tag tag, string value, Asn1StringForm form)
     {
-        WritePrimitive(tag.AsPrimitive(), Asn1TextCodec.EncodeString(value, form));
+        var byteCount = Asn1TextCodec.GetEncodedByteCount(value, form);
+        if (byteCount <= StackEncodeThreshold)
+        {
+            Span<byte> buffer = stackalloc byte[byteCount];
+            Asn1TextCodec.EncodeString(value, form, buffer);
+            WritePrimitive(tag.AsPrimitive(), buffer);
+            return;
+        }
+
+        var rented = new byte[byteCount];
+        Asn1TextCodec.EncodeString(value, form, rented);
+        WritePrimitive(tag.AsPrimitive(), rented);
     }
 
     public void WriteTime(Asn1Tag tag, DateTimeOffset value, Asn1TimeForm form, int fractionDigits = 3)
     {
-        var text = Asn1TextCodec.FormatTime(value, form, fractionDigits);
-        WritePrimitive(tag.AsPrimitive(), Asn1TextCodec.EncodeString(text, Asn1StringForm.Visible));
+        Span<byte> buffer = stackalloc byte[Asn1TextCodec.MaxEncodedTimeBytes];
+        var written = Asn1TextCodec.EncodeTime(value, form, fractionDigits, buffer);
+        WritePrimitive(tag.AsPrimitive(), buffer.Slice(0, written));
     }
 
     public void WriteSequence(Asn1Tag tag, Action<Asn1Writer> content)
@@ -471,8 +529,54 @@ public sealed class Asn1Writer
 
     internal static byte[] EncodeInteger(BigInteger value)
     {
-        var bytes = value.ToByteArray();
-        Array.Reverse(bytes);
+        var byteCount = value.GetByteCount(isUnsigned: false);
+        var bytes = new byte[byteCount];
+        if (!value.TryWriteBytes(bytes, out var written, isUnsigned: false, isBigEndian: true) || written != byteCount)
+        {
+            throw new Asn1Exception("Failed to encode INTEGER contents.");
+        }
+
         return bytes;
+    }
+
+    /// <summary>Minimal signed big-endian INTEGER contents for a 64-bit two's-complement value.</summary>
+    private static int EncodeSignedLong(long value, Span<byte> destination)
+    {
+        Span<byte> full = stackalloc byte[8];
+        BinaryPrimitives.WriteInt64BigEndian(full, value);
+
+        var start = 0;
+        if (value >= 0)
+        {
+            while (start < 7 && full[start] == 0x00 && (full[start + 1] & 0x80) == 0)
+            {
+                start++;
+            }
+        }
+        else
+        {
+            while (start < 7 && full[start] == 0xFF && (full[start + 1] & 0x80) != 0)
+            {
+                start++;
+            }
+        }
+
+        var length = 8 - start;
+        full.Slice(start, length).CopyTo(destination);
+        return length;
+    }
+
+    /// <summary>Minimal signed big-endian INTEGER contents for an unsigned 64-bit value.</summary>
+    private static int EncodeUnsignedLong(ulong value, Span<byte> destination)
+    {
+        if (value <= (ulong)long.MaxValue)
+        {
+            return EncodeSignedLong((long)value, destination);
+        }
+
+        // High bit of the 8-byte magnitude is set — need a leading 0x00 sign octet.
+        destination[0] = 0x00;
+        BinaryPrimitives.WriteUInt64BigEndian(destination.Slice(1), value);
+        return 9;
     }
 }

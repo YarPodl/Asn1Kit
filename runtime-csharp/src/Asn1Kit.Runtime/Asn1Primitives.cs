@@ -76,6 +76,15 @@ public static class Asn1ObjectIdentifier
 
     public static byte[] EncodeContents(string oid)
     {
+        var maxBytes = GetEncodeContentsMaxLength(oid);
+        Span<byte> scratch = maxBytes <= 128 ? stackalloc byte[maxBytes] : new byte[maxBytes];
+        var written = EncodeContents(oid, scratch);
+        return scratch.Slice(0, written).ToArray();
+    }
+
+    /// <summary>Upper bound on OID contents size (5 base-128 octets per arc).</summary>
+    public static int GetEncodeContentsMaxLength(string oid)
+    {
         var span = NormalizeOid(oid);
         var arcCount = CountArcs(span);
         if (arcCount < 2)
@@ -83,9 +92,24 @@ public static class Asn1ObjectIdentifier
             throw new Asn1Exception($"OID '{oid}' is too short.");
         }
 
-        // At most 5 base-128 octets per int subidentifier (first packs arcs 0+1).
+        return arcCount * 5;
+    }
+
+    /// <summary>Encodes OID contents into <paramref name="destination"/>; returns octet count.</summary>
+    public static int EncodeContents(string oid, Span<byte> destination)
+    {
+        var span = NormalizeOid(oid);
+        var arcCount = CountArcs(span);
+        if (arcCount < 2)
+        {
+            throw new Asn1Exception($"OID '{oid}' is too short.");
+        }
+
         var maxBytes = arcCount * 5;
-        Span<byte> scratch = maxBytes <= 128 ? stackalloc byte[maxBytes] : new byte[maxBytes];
+        if (destination.Length < maxBytes)
+        {
+            throw new Asn1Exception("OID encode destination is too small.");
+        }
 
         var index = 0;
         var arc0 = ParseNextArc(span, ref index, oid);
@@ -106,13 +130,13 @@ public static class Asn1ObjectIdentifier
             throw new Asn1Exception($"OID '{oid}' first subidentifier is too large.");
         }
 
-        var written = EncodeBase128(scratch, (int)first);
+        var written = EncodeBase128(destination, (int)first);
         for (var i = 2; i < arcCount; i++)
         {
-            written += EncodeBase128(scratch.Slice(written), ParseNextArc(span, ref index, oid));
+            written += EncodeBase128(destination.Slice(written), ParseNextArc(span, ref index, oid));
         }
 
-        return scratch.Slice(0, written).ToArray();
+        return written;
     }
 
     private static ReadOnlySpan<char> NormalizeOid(string oid)

@@ -12,6 +12,7 @@
 - **Значения, уходящие из reader** — `ReadOnlyMemory<byte>` / structs с `Memory` / `ContentsMemory`: **view на буфер reader** (primitive / definite). Мутация исходного буфера после decode — UB для views. Долговременное хранение без буфера — явный detach (`ToArray` / `Clone`).
 - **Исключения (owned):** constructed BER (OCTET / BIT / string — конкатенация сегментов); materialize в `string` / `BigInteger` / `DateTimeOffset`.
 - **Value-types:** ctor / `FromContents(ReadOnlyMemory)` — wrap без копии; `CopyFrom(ReadOnlySpan)` — owned копия (отдельное имя, чтобы `byte[]` не был неоднозначен между Span и Memory).
+- **Encode (writer):** contents примитивов — scratch на стеке (порог) или прямой write в буфер; heap только для oversized INTEGER/строк и для owned API (`EncodeInteger`, `EncodeContents(string)→byte[]`). Финальный `Encode()→byte[]` и рост внутреннего буфера — отдельно.
 
 ## Кто кого вызывает
 

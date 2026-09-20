@@ -63,7 +63,7 @@
 | ANY                          | `WriteAny` (`Asn1Any`)                                           | `ReadAny` (с ожидаемым тегом или без)                                                                         |
 
 
-**Запись (всегда канон):** definite length; BOOLEAN `0x00` / `0xFF`; BIT STRING с нулевыми хвостовыми битами; время с секундами и суффиксом `Z` (GeneralizedTime: `fractionDigits` 0…7, default 3; без хвостовых нулей дроби); INTEGER через `BigInteger.ToByteArray` (минимальная форма).
+**Запись (всегда канон):** definite length; BOOLEAN `0x00` / `0xFF`; BIT STRING с нулевыми хвостовыми битами; время с секундами и суффиксом `Z` (GeneralizedTime: `fractionDigits` 0…7, default 3; без хвостовых нулей дроби); INTEGER — минимальная signed big-endian форма (`BigInteger.TryWriteBytes` / прямой encode для `int`…`ulong`). На типичном размере contents примитивов пишутся без промежуточного `byte[]` (stackalloc / прямой write в буфер); oversized INTEGER/строки — heap.
 
 **Чтение — soft-profile (см. [decisions.md](decisions.md) «мягкое чтение»):** часть запретов DER/X.690 по умолчанию **не** роняет decode; строгий reject — через опции reader’а (ещё не введены; backlog ниже). Уже зафиксированные soft-accept по умолчанию:
 
@@ -103,8 +103,8 @@
 11. Оптимизация API для Time и строк (например оптимизация Choice для случая, если все элементы мапятся в один тип)
 12. Добавить опцию Lazy, чтобы откладывать разбор структуры
 13. Добавить опцию сохранения исходного (и неизменного) закодированного представления в поле класса
-14. Пул массивов, где нужны временные.
-15. В Encode оптимизировать, не выделять каждый раз, может RecyclableMemoryStream
+14. Пул массивов, где нужны временные (constructed BER concat, DER SET OF sort).
+15. ~~В Encode оптимизировать, не выделять каждый раз на contents примитивов~~ — `Write*` без temp-`byte[]` на типичном размере; остаётся рост `MemoryStream` / `Encode()→ToArray` (RecyclableMemoryStream — отдельно).
 
 
 ### Крупные задачи

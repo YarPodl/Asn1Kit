@@ -32,7 +32,18 @@ internal static class Asn1TextCodec
         _ => throw new Asn1Exception($"Unknown time form '{form}'.")
     };
 
+    /// <summary>Max DER time contents: GeneralizedTime with 7 fraction digits + '.' + Z.</summary>
+    public const int MaxEncodedTimeBytes = 24;
+
     public static byte[] EncodeString(string value, Asn1StringForm form)
+    {
+        var byteCount = GetEncodedByteCount(value, form);
+        var bytes = new byte[byteCount];
+        EncodeString(value, form, bytes);
+        return bytes;
+    }
+
+    public static int GetEncodedByteCount(string value, Asn1StringForm form)
     {
         if (value is null)
         {
@@ -41,17 +52,58 @@ internal static class Asn1TextCodec
 
         return form switch
         {
-            Asn1StringForm.Utf8 => EncodeUtf8(value),
-            Asn1StringForm.Bmp => EncodeBmp(value),
-            Asn1StringForm.Universal => EncodeUniversal(value),
-            Asn1StringForm.Numeric => EncodeAsciiChecked(value, IsNumeric),
-            Asn1StringForm.Printable => EncodeAsciiChecked(value, IsPrintable),
-            Asn1StringForm.Ia5 => EncodeAsciiChecked(value, IsIa5),
-            Asn1StringForm.Visible => EncodeAsciiChecked(value, IsVisible),
+            Asn1StringForm.Utf8 => GetUtf8ByteCount(value),
+            Asn1StringForm.Bmp => value.Length * 2,
+            Asn1StringForm.Universal => CountUniversalCodePoints(value) * 4,
+            Asn1StringForm.Numeric or Asn1StringForm.Printable or Asn1StringForm.Ia5 or Asn1StringForm.Visible =>
+                value.Length,
             Asn1StringForm.Teletex or Asn1StringForm.T61 or Asn1StringForm.Videotex
-                or Asn1StringForm.Graphic or Asn1StringForm.General => Latin1.GetBytes(value),
+                or Asn1StringForm.Graphic or Asn1StringForm.General => Latin1.GetByteCount(value),
             _ => throw new Asn1Exception($"Unknown string form '{form}'.")
         };
+    }
+
+    /// <summary>Encodes <paramref name="value"/> into <paramref name="destination"/> (exact size from <see cref="GetEncodedByteCount"/>).</summary>
+    public static void EncodeString(string value, Asn1StringForm form, Span<byte> destination)
+    {
+        if (value is null)
+        {
+            throw new Asn1Exception("String value must not be null.");
+        }
+
+        switch (form)
+        {
+            case Asn1StringForm.Utf8:
+                EncodeUtf8(value, destination);
+                break;
+            case Asn1StringForm.Bmp:
+                EncodeBmp(value, destination);
+                break;
+            case Asn1StringForm.Universal:
+                EncodeUniversal(value, destination);
+                break;
+            case Asn1StringForm.Numeric:
+                EncodeAsciiChecked(value, IsNumeric, destination);
+                break;
+            case Asn1StringForm.Printable:
+                EncodeAsciiChecked(value, IsPrintable, destination);
+                break;
+            case Asn1StringForm.Ia5:
+                EncodeAsciiChecked(value, IsIa5, destination);
+                break;
+            case Asn1StringForm.Visible:
+                EncodeAsciiChecked(value, IsVisible, destination);
+                break;
+            case Asn1StringForm.Teletex:
+            case Asn1StringForm.T61:
+            case Asn1StringForm.Videotex:
+            case Asn1StringForm.Graphic:
+            case Asn1StringForm.General:
+                EncodeLatin1(value, destination);
+                break;
+            default:
+                throw new Asn1Exception($"Unknown string form '{form}'.");
+        }
     }
 
     public static string DecodeString(ReadOnlySpan<byte> contents, Asn1StringForm form)
@@ -73,11 +125,19 @@ internal static class Asn1TextCodec
 
     public static string FormatTime(DateTimeOffset value, Asn1TimeForm form, int fractionDigits = 3)
     {
+        Span<byte> buffer = stackalloc byte[MaxEncodedTimeBytes];
+        var written = EncodeTime(value, form, fractionDigits, buffer);
+        return Latin1.GetString(buffer.Slice(0, written));
+    }
+
+    /// <summary>Writes DER time contents (VisibleString octets) into <paramref name="destination"/>; returns octet count.</summary>
+    public static int EncodeTime(DateTimeOffset value, Asn1TimeForm form, int fractionDigits, Span<byte> destination)
+    {
         var utc = value.ToUniversalTime();
         return form switch
         {
-            Asn1TimeForm.Utc => FormatUtc(utc),
-            Asn1TimeForm.Generalized => FormatGeneralized(utc, fractionDigits),
+            Asn1TimeForm.Utc => EncodeUtcTime(utc, destination),
+            Asn1TimeForm.Generalized => EncodeGeneralizedTime(utc, fractionDigits, destination),
             _ => throw new Asn1Exception($"Unknown time form '{form}'.")
         };
     }
@@ -111,11 +171,27 @@ internal static class Asn1TextCodec
         }
     }
 
-    private static byte[] EncodeUtf8(string value)
+    private static int GetUtf8ByteCount(string value)
     {
         try
         {
-            return Utf8Strict.GetBytes(value);
+            return Utf8Strict.GetByteCount(value);
+        }
+        catch (EncoderFallbackException ex)
+        {
+            throw new Asn1Exception($"Invalid UTF-8 string: {ex.Message}");
+        }
+    }
+
+    private static void EncodeUtf8(string value, Span<byte> destination)
+    {
+        try
+        {
+            var written = Utf8Strict.GetBytes(value, destination);
+            if (written != destination.Length)
+            {
+                throw new Asn1Exception("UTF-8 encode destination size mismatch.");
+            }
         }
         catch (EncoderFallbackException ex)
         {
@@ -135,17 +211,19 @@ internal static class Asn1TextCodec
         }
     }
 
-    private static byte[] EncodeBmp(string value)
+    private static void EncodeBmp(string value, Span<byte> destination)
     {
-        var bytes = new byte[value.Length * 2];
+        if (destination.Length != value.Length * 2)
+        {
+            throw new Asn1Exception("BMPString encode destination size mismatch.");
+        }
+
         for (var i = 0; i < value.Length; i++)
         {
             var c = value[i];
-            bytes[i * 2] = (byte)(c >> 8);
-            bytes[i * 2 + 1] = (byte)c;
+            destination[i * 2] = (byte)(c >> 8);
+            destination[i * 2 + 1] = (byte)c;
         }
-
-        return bytes;
     }
 
     private static string DecodeBmp(ReadOnlySpan<byte> contents)
@@ -164,9 +242,9 @@ internal static class Asn1TextCodec
         return new string(chars);
     }
 
-    private static byte[] EncodeUniversal(string value)
+    private static int CountUniversalCodePoints(string value)
     {
-        var codePoints = new List<int>();
+        var count = 0;
         for (var i = 0; i < value.Length; i++)
         {
             if (char.IsHighSurrogate(value[i]))
@@ -176,7 +254,7 @@ internal static class Asn1TextCodec
                     throw new Asn1Exception("UniversalString contains an incomplete surrogate pair.");
                 }
 
-                codePoints.Add(char.ConvertToUtf32(value[i], value[i + 1]));
+                count++;
                 i++;
             }
             else if (char.IsLowSurrogate(value[i]))
@@ -185,21 +263,54 @@ internal static class Asn1TextCodec
             }
             else
             {
-                codePoints.Add(value[i]);
+                count++;
             }
         }
 
-        var bytes = new byte[codePoints.Count * 4];
-        for (var i = 0; i < codePoints.Count; i++)
+        return count;
+    }
+
+    private static void EncodeUniversal(string value, Span<byte> destination)
+    {
+        var offset = 0;
+        for (var i = 0; i < value.Length; i++)
         {
-            var cp = codePoints[i];
-            bytes[i * 4] = (byte)(cp >> 24);
-            bytes[i * 4 + 1] = (byte)(cp >> 16);
-            bytes[i * 4 + 2] = (byte)(cp >> 8);
-            bytes[i * 4 + 3] = (byte)cp;
+            int cp;
+            if (char.IsHighSurrogate(value[i]))
+            {
+                if (i + 1 >= value.Length || !char.IsLowSurrogate(value[i + 1]))
+                {
+                    throw new Asn1Exception("UniversalString contains an incomplete surrogate pair.");
+                }
+
+                cp = char.ConvertToUtf32(value[i], value[i + 1]);
+                i++;
+            }
+            else if (char.IsLowSurrogate(value[i]))
+            {
+                throw new Asn1Exception("UniversalString contains an unpaired low surrogate.");
+            }
+            else
+            {
+                cp = value[i];
+            }
+
+            if (offset + 4 > destination.Length)
+            {
+                throw new Asn1Exception("UniversalString encode destination is too small.");
+            }
+
+            destination[offset] = (byte)(cp >> 24);
+            destination[offset + 1] = (byte)(cp >> 16);
+            destination[offset + 2] = (byte)(cp >> 8);
+            destination[offset + 3] = (byte)cp;
+            offset += 4;
         }
 
-        return bytes;
+        if (offset != destination.Length)
+        {
+            throw new Asn1Exception("UniversalString encode destination size mismatch.");
+        }
     }
 
     private static string DecodeUniversal(ReadOnlySpan<byte> contents)
@@ -224,9 +335,13 @@ internal static class Asn1TextCodec
         return builder.ToString();
     }
 
-    private static byte[] EncodeAsciiChecked(string value, Func<char, bool> allowed)
+    private static void EncodeAsciiChecked(string value, Func<char, bool> allowed, Span<byte> destination)
     {
-        var bytes = new byte[value.Length];
+        if (destination.Length != value.Length)
+        {
+            throw new Asn1Exception("String encode destination size mismatch.");
+        }
+
         for (var i = 0; i < value.Length; i++)
         {
             var c = value[i];
@@ -235,10 +350,17 @@ internal static class Asn1TextCodec
                 throw new Asn1Exception($"Character U+{((int)c).ToString("X4", CultureInfo.InvariantCulture)} is not allowed.");
             }
 
-            bytes[i] = (byte)c;
+            destination[i] = (byte)c;
         }
+    }
 
-        return bytes;
+    private static void EncodeLatin1(string value, Span<byte> destination)
+    {
+        var written = Latin1.GetBytes(value, destination);
+        if (written != destination.Length)
+        {
+            throw new Asn1Exception("Latin-1 encode destination size mismatch.");
+        }
     }
 
     private static string DecodeAsciiChecked(ReadOnlySpan<byte> contents, Func<char, bool> allowed, string name)
@@ -270,19 +392,24 @@ internal static class Asn1TextCodec
 
     private static bool IsVisible(char c) => c is >= (char)0x20 and <= (char)0x7E;
 
-    private static string FormatUtc(DateTimeOffset utc) =>
-        string.Create(13, utc, (span, value) =>
+    private static int EncodeUtcTime(DateTimeOffset utc, Span<byte> destination)
+    {
+        if (destination.Length < 13)
         {
-            Write2(span, 0, value.Year % 100);
-            Write2(span, 2, value.Month);
-            Write2(span, 4, value.Day);
-            Write2(span, 6, value.Hour);
-            Write2(span, 8, value.Minute);
-            Write2(span, 10, value.Second);
-            span[12] = 'Z';
-        });
+            throw new Asn1Exception("UTCTime encode destination is too small.");
+        }
 
-    private static string FormatGeneralized(DateTimeOffset utc, int fractionDigits)
+        Write2Digits(destination, 0, utc.Year % 100);
+        Write2Digits(destination, 2, utc.Month);
+        Write2Digits(destination, 4, utc.Day);
+        Write2Digits(destination, 6, utc.Hour);
+        Write2Digits(destination, 8, utc.Minute);
+        Write2Digits(destination, 10, utc.Second);
+        destination[12] = (byte)'Z';
+        return 13;
+    }
+
+    private static int EncodeGeneralizedTime(DateTimeOffset utc, int fractionDigits, Span<byte> destination)
     {
         if (fractionDigits is < 0 or > 7)
         {
@@ -293,51 +420,79 @@ internal static class Asn1TextCodec
         var fractionTicks = (int)(utc.Ticks % TimeSpan.TicksPerSecond);
         if (fractionTicks == 0 || fractionDigits == 0)
         {
-            return string.Create(15, utc, (span, value) =>
-            {
-                Write4(span, 0, value.Year);
-                Write2(span, 4, value.Month);
-                Write2(span, 6, value.Day);
-                Write2(span, 8, value.Hour);
-                Write2(span, 10, value.Minute);
-                Write2(span, 12, value.Second);
-                span[14] = 'Z';
-            });
+            return EncodeGeneralizedTimeNoFraction(utc, destination);
         }
 
         // DER (X.690 §11.7): seconds + optional fraction without trailing zeros, terminate with Z.
-        var frac = fractionTicks.ToString("D7", CultureInfo.InvariantCulture).TrimEnd('0');
-        if (frac.Length > fractionDigits)
+        Span<char> fracDigits = stackalloc char[7];
+        WriteFractionDigits(fracDigits, fractionTicks);
+        var fracLen = 7;
+        while (fracLen > 0 && fracDigits[fracLen - 1] == '0')
         {
-            frac = frac[..fractionDigits].TrimEnd('0');
+            fracLen--;
         }
 
-        if (frac.Length == 0)
+        if (fracLen > fractionDigits)
         {
-            return string.Create(15, utc, (span, value) =>
+            fracLen = fractionDigits;
+            while (fracLen > 0 && fracDigits[fracLen - 1] == '0')
             {
-                Write4(span, 0, value.Year);
-                Write2(span, 4, value.Month);
-                Write2(span, 6, value.Day);
-                Write2(span, 8, value.Hour);
-                Write2(span, 10, value.Minute);
-                Write2(span, 12, value.Second);
-                span[14] = 'Z';
-            });
+                fracLen--;
+            }
         }
 
-        return string.Create(15 + 1 + frac.Length, (utc, frac), (span, state) =>
+        if (fracLen == 0)
         {
-            Write4(span, 0, state.utc.Year);
-            Write2(span, 4, state.utc.Month);
-            Write2(span, 6, state.utc.Day);
-            Write2(span, 8, state.utc.Hour);
-            Write2(span, 10, state.utc.Minute);
-            Write2(span, 12, state.utc.Second);
-            span[14] = '.';
-            state.frac.AsSpan().CopyTo(span[15..]);
-            span[^1] = 'Z';
-        });
+            return EncodeGeneralizedTimeNoFraction(utc, destination);
+        }
+
+        var total = 15 + 1 + fracLen;
+        if (destination.Length < total)
+        {
+            throw new Asn1Exception("GeneralizedTime encode destination is too small.");
+        }
+
+        Write4Digits(destination, 0, utc.Year);
+        Write2Digits(destination, 4, utc.Month);
+        Write2Digits(destination, 6, utc.Day);
+        Write2Digits(destination, 8, utc.Hour);
+        Write2Digits(destination, 10, utc.Minute);
+        Write2Digits(destination, 12, utc.Second);
+        destination[14] = (byte)'.';
+        for (var i = 0; i < fracLen; i++)
+        {
+            destination[15 + i] = (byte)fracDigits[i];
+        }
+
+        destination[total - 1] = (byte)'Z';
+        return total;
+    }
+
+    private static int EncodeGeneralizedTimeNoFraction(DateTimeOffset utc, Span<byte> destination)
+    {
+        if (destination.Length < 15)
+        {
+            throw new Asn1Exception("GeneralizedTime encode destination is too small.");
+        }
+
+        Write4Digits(destination, 0, utc.Year);
+        Write2Digits(destination, 4, utc.Month);
+        Write2Digits(destination, 6, utc.Day);
+        Write2Digits(destination, 8, utc.Hour);
+        Write2Digits(destination, 10, utc.Minute);
+        Write2Digits(destination, 12, utc.Second);
+        destination[14] = (byte)'Z';
+        return 15;
+    }
+
+    private static void WriteFractionDigits(Span<char> destination, int fractionTicks)
+    {
+        // fractionTicks is 0..9_999_999 (7 decimal digits of a second).
+        for (var i = 6; i >= 0; i--)
+        {
+            destination[i] = (char)('0' + (fractionTicks % 10));
+            fractionTicks /= 10;
+        }
     }
 
     private static DateTimeOffset RoundToFractionDigits(DateTimeOffset utc, int fractionDigits)
@@ -552,17 +707,17 @@ internal static class Asn1TextCodec
             + (text[index + 3] - '0');
     }
 
-    private static void Write2(Span<char> span, int offset, int value)
+    private static void Write2Digits(Span<byte> span, int offset, int value)
     {
-        span[offset] = (char)('0' + value / 10);
-        span[offset + 1] = (char)('0' + value % 10);
+        span[offset] = (byte)('0' + value / 10);
+        span[offset + 1] = (byte)('0' + value % 10);
     }
 
-    private static void Write4(Span<char> span, int offset, int value)
+    private static void Write4Digits(Span<byte> span, int offset, int value)
     {
-        span[offset] = (char)('0' + value / 1000);
-        span[offset + 1] = (char)('0' + (value / 100) % 10);
-        span[offset + 2] = (char)('0' + (value / 10) % 10);
-        span[offset + 3] = (char)('0' + value % 10);
+        span[offset] = (byte)('0' + value / 1000);
+        span[offset + 1] = (byte)('0' + (value / 100) % 10);
+        span[offset + 2] = (byte)('0' + (value / 10) % 10);
+        span[offset + 3] = (byte)('0' + value % 10);
     }
 }
