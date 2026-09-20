@@ -366,6 +366,30 @@ public sealed class DisplayText
     public string? BmpString { get; private set; }
     public string? Utf8String { get; private set; }
 
+    public static DisplayText FromIa5String(string ia5String) => new DisplayText
+    {
+        Kind = DisplayTextKind.Ia5String,
+        Ia5String = ia5String,
+    };
+
+    public static DisplayText FromVisibleString(string visibleString) => new DisplayText
+    {
+        Kind = DisplayTextKind.VisibleString,
+        VisibleString = visibleString,
+    };
+
+    public static DisplayText FromBmpString(string bmpString) => new DisplayText
+    {
+        Kind = DisplayTextKind.BmpString,
+        BmpString = bmpString,
+    };
+
+    public static DisplayText FromUtf8String(string utf8String) => new DisplayText
+    {
+        Kind = DisplayTextKind.Utf8String,
+        Utf8String = utf8String,
+    };
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -475,6 +499,60 @@ public sealed class GeneralName
     public string? UniformResourceIdentifier { get; private set; }
     public ReadOnlyMemory<byte>? IPAddress { get; private set; }
     public string? RegisteredID { get; private set; }
+
+    public static GeneralName FromOtherName(AnotherName otherName) => new GeneralName
+    {
+        Kind = GeneralNameKind.OtherName,
+        OtherName = otherName,
+    };
+
+    public static GeneralName FromRfc822Name(string rfc822Name) => new GeneralName
+    {
+        Kind = GeneralNameKind.Rfc822Name,
+        Rfc822Name = rfc822Name,
+    };
+
+    public static GeneralName FromDNSName(string dNSName) => new GeneralName
+    {
+        Kind = GeneralNameKind.DNSName,
+        DNSName = dNSName,
+    };
+
+    public static GeneralName FromX400Address(ORAddress x400Address) => new GeneralName
+    {
+        Kind = GeneralNameKind.X400Address,
+        X400Address = x400Address,
+    };
+
+    public static GeneralName FromDirectoryName(List<List<AttributeTypeAndValue>> directoryName) => new GeneralName
+    {
+        Kind = GeneralNameKind.DirectoryName,
+        DirectoryName = directoryName,
+    };
+
+    public static GeneralName FromEdiPartyName(EDIPartyName ediPartyName) => new GeneralName
+    {
+        Kind = GeneralNameKind.EdiPartyName,
+        EdiPartyName = ediPartyName,
+    };
+
+    public static GeneralName FromUniformResourceIdentifier(string uniformResourceIdentifier) => new GeneralName
+    {
+        Kind = GeneralNameKind.UniformResourceIdentifier,
+        UniformResourceIdentifier = uniformResourceIdentifier,
+    };
+
+    public static GeneralName FromIPAddress(ReadOnlyMemory<byte> iPAddress) => new GeneralName
+    {
+        Kind = GeneralNameKind.IPAddress,
+        IPAddress = iPAddress,
+    };
+
+    public static GeneralName FromRegisteredID(string registeredID) => new GeneralName
+    {
+        Kind = GeneralNameKind.RegisteredID,
+        RegisteredID = registeredID,
+    };
 
     public void Encode(Asn1Writer writer)
     {
@@ -905,6 +983,18 @@ public sealed class DistributionPointName
     public List<GeneralName>? FullName { get; private set; }
     /// <summary>ASN.1 alias RelativeDistinguishedName ::= SET OF AttributeTypeAndValue.</summary>
     public List<AttributeTypeAndValue>? NameRelativeToCRLIssuer { get; private set; }
+
+    public static DistributionPointName FromFullName(List<GeneralName> fullName) => new DistributionPointName
+    {
+        Kind = DistributionPointNameKind.FullName,
+        FullName = fullName,
+    };
+
+    public static DistributionPointName FromNameRelativeToCRLIssuer(List<AttributeTypeAndValue> nameRelativeToCRLIssuer) => new DistributionPointName
+    {
+        Kind = DistributionPointNameKind.NameRelativeToCRLIssuer,
+        NameRelativeToCRLIssuer = nameRelativeToCRLIssuer,
+    };
 
     public void Encode(Asn1Writer writer)
     {

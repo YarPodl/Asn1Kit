@@ -606,6 +606,8 @@ END
         Assert.Contains("List<Relative> Who", source);
         Assert.Contains("class Multi", source);
         Assert.Contains("enum MultiKind", source);
+        Assert.Contains("public static Multi FromA(Asn1Integer a) => new Multi", source);
+        Assert.Contains("public static Multi FromB(string b) => new Multi", source);
 
         var assembly = CompileGenerated(source);
         Assert.Null(assembly.GetType("ChoiceMod.Name"));
@@ -623,10 +625,19 @@ END
 
         var multiType = assembly.GetType("ChoiceMod.Multi")!;
         var multiKind = assembly.GetType("ChoiceMod.MultiKind")!;
-        var multiBytes = new byte[] { 0x02, 0x01, 0x07 };
-        var multi = multiType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
-            .Invoke(null, new object[] { new Asn1Reader(multiBytes, Asn1Encoding.Der) })!;
+        var multi = multiType.GetMethod("FromA", new[] { typeof(Asn1Integer) })!
+            .Invoke(null, new object[] { Asn1Integer.FromInt32(7) })!;
         Assert.Equal(Enum.Parse(multiKind, "A"), multiType.GetProperty("Kind")!.GetValue(multi));
+        Assert.Equal(Asn1Integer.FromInt32(7), multiType.GetProperty("A")!.GetValue(multi));
+        Assert.Null(multiType.GetProperty("B")!.GetValue(multi));
+
+        var fromB = multiType.GetMethod("FromB", new[] { typeof(string) })!
+            .Invoke(null, new object[] { "hi" })!;
+        Assert.Equal(Enum.Parse(multiKind, "B"), multiType.GetProperty("Kind")!.GetValue(fromB));
+        Assert.Equal("hi", multiType.GetProperty("B")!.GetValue(fromB));
+        var fromBWriter = new Asn1Writer(Asn1Encoding.Der);
+        multiType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(fromB, new object[] { fromBWriter });
+        Assert.Equal(new byte[] { 0x0C, 0x02, 0x68, 0x69 }, fromBWriter.Encode());
 
         var holder = Activator.CreateInstance(holderType)!;
         holderType.GetProperty("Who")!.SetValue(holder, who);

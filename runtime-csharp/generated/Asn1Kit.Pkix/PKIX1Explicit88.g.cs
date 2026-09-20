@@ -95,6 +95,36 @@ public sealed class X520name
     public string? Utf8String { get; private set; }
     public string? BmpString { get; private set; }
 
+    public static X520name FromTeletexString(string teletexString) => new X520name
+    {
+        Kind = X520nameKind.TeletexString,
+        TeletexString = teletexString,
+    };
+
+    public static X520name FromPrintableString(string printableString) => new X520name
+    {
+        Kind = X520nameKind.PrintableString,
+        PrintableString = printableString,
+    };
+
+    public static X520name FromUniversalString(string universalString) => new X520name
+    {
+        Kind = X520nameKind.UniversalString,
+        UniversalString = universalString,
+    };
+
+    public static X520name FromUtf8String(string utf8String) => new X520name
+    {
+        Kind = X520nameKind.Utf8String,
+        Utf8String = utf8String,
+    };
+
+    public static X520name FromBmpString(string bmpString) => new X520name
+    {
+        Kind = X520nameKind.BmpString,
+        BmpString = bmpString,
+    };
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -169,6 +199,36 @@ public sealed class X520CommonName
     public string? UniversalString { get; private set; }
     public string? Utf8String { get; private set; }
     public string? BmpString { get; private set; }
+
+    public static X520CommonName FromTeletexString(string teletexString) => new X520CommonName
+    {
+        Kind = X520CommonNameKind.TeletexString,
+        TeletexString = teletexString,
+    };
+
+    public static X520CommonName FromPrintableString(string printableString) => new X520CommonName
+    {
+        Kind = X520CommonNameKind.PrintableString,
+        PrintableString = printableString,
+    };
+
+    public static X520CommonName FromUniversalString(string universalString) => new X520CommonName
+    {
+        Kind = X520CommonNameKind.UniversalString,
+        UniversalString = universalString,
+    };
+
+    public static X520CommonName FromUtf8String(string utf8String) => new X520CommonName
+    {
+        Kind = X520CommonNameKind.Utf8String,
+        Utf8String = utf8String,
+    };
+
+    public static X520CommonName FromBmpString(string bmpString) => new X520CommonName
+    {
+        Kind = X520CommonNameKind.BmpString,
+        BmpString = bmpString,
+    };
 
     public void Encode(Asn1Writer writer)
     {
@@ -245,6 +305,36 @@ public sealed class X520LocalityName
     public string? Utf8String { get; private set; }
     public string? BmpString { get; private set; }
 
+    public static X520LocalityName FromTeletexString(string teletexString) => new X520LocalityName
+    {
+        Kind = X520LocalityNameKind.TeletexString,
+        TeletexString = teletexString,
+    };
+
+    public static X520LocalityName FromPrintableString(string printableString) => new X520LocalityName
+    {
+        Kind = X520LocalityNameKind.PrintableString,
+        PrintableString = printableString,
+    };
+
+    public static X520LocalityName FromUniversalString(string universalString) => new X520LocalityName
+    {
+        Kind = X520LocalityNameKind.UniversalString,
+        UniversalString = universalString,
+    };
+
+    public static X520LocalityName FromUtf8String(string utf8String) => new X520LocalityName
+    {
+        Kind = X520LocalityNameKind.Utf8String,
+        Utf8String = utf8String,
+    };
+
+    public static X520LocalityName FromBmpString(string bmpString) => new X520LocalityName
+    {
+        Kind = X520LocalityNameKind.BmpString,
+        BmpString = bmpString,
+    };
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -319,6 +409,36 @@ public sealed class X520StateOrProvinceName
     public string? UniversalString { get; private set; }
     public string? Utf8String { get; private set; }
     public string? BmpString { get; private set; }
+
+    public static X520StateOrProvinceName FromTeletexString(string teletexString) => new X520StateOrProvinceName
+    {
+        Kind = X520StateOrProvinceNameKind.TeletexString,
+        TeletexString = teletexString,
+    };
+
+    public static X520StateOrProvinceName FromPrintableString(string printableString) => new X520StateOrProvinceName
+    {
+        Kind = X520StateOrProvinceNameKind.PrintableString,
+        PrintableString = printableString,
+    };
+
+    public static X520StateOrProvinceName FromUniversalString(string universalString) => new X520StateOrProvinceName
+    {
+        Kind = X520StateOrProvinceNameKind.UniversalString,
+        UniversalString = universalString,
+    };
+
+    public static X520StateOrProvinceName FromUtf8String(string utf8String) => new X520StateOrProvinceName
+    {
+        Kind = X520StateOrProvinceNameKind.Utf8String,
+        Utf8String = utf8String,
+    };
+
+    public static X520StateOrProvinceName FromBmpString(string bmpString) => new X520StateOrProvinceName
+    {
+        Kind = X520StateOrProvinceNameKind.BmpString,
+        BmpString = bmpString,
+    };
 
     public void Encode(Asn1Writer writer)
     {
@@ -395,6 +515,36 @@ public sealed class X520OrganizationName
     public string? Utf8String { get; private set; }
     public string? BmpString { get; private set; }
 
+    public static X520OrganizationName FromTeletexString(string teletexString) => new X520OrganizationName
+    {
+        Kind = X520OrganizationNameKind.TeletexString,
+        TeletexString = teletexString,
+    };
+
+    public static X520OrganizationName FromPrintableString(string printableString) => new X520OrganizationName
+    {
+        Kind = X520OrganizationNameKind.PrintableString,
+        PrintableString = printableString,
+    };
+
+    public static X520OrganizationName FromUniversalString(string universalString) => new X520OrganizationName
+    {
+        Kind = X520OrganizationNameKind.UniversalString,
+        UniversalString = universalString,
+    };
+
+    public static X520OrganizationName FromUtf8String(string utf8String) => new X520OrganizationName
+    {
+        Kind = X520OrganizationNameKind.Utf8String,
+        Utf8String = utf8String,
+    };
+
+    public static X520OrganizationName FromBmpString(string bmpString) => new X520OrganizationName
+    {
+        Kind = X520OrganizationNameKind.BmpString,
+        BmpString = bmpString,
+    };
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -469,6 +619,36 @@ public sealed class X520OrganizationalUnitName
     public string? UniversalString { get; private set; }
     public string? Utf8String { get; private set; }
     public string? BmpString { get; private set; }
+
+    public static X520OrganizationalUnitName FromTeletexString(string teletexString) => new X520OrganizationalUnitName
+    {
+        Kind = X520OrganizationalUnitNameKind.TeletexString,
+        TeletexString = teletexString,
+    };
+
+    public static X520OrganizationalUnitName FromPrintableString(string printableString) => new X520OrganizationalUnitName
+    {
+        Kind = X520OrganizationalUnitNameKind.PrintableString,
+        PrintableString = printableString,
+    };
+
+    public static X520OrganizationalUnitName FromUniversalString(string universalString) => new X520OrganizationalUnitName
+    {
+        Kind = X520OrganizationalUnitNameKind.UniversalString,
+        UniversalString = universalString,
+    };
+
+    public static X520OrganizationalUnitName FromUtf8String(string utf8String) => new X520OrganizationalUnitName
+    {
+        Kind = X520OrganizationalUnitNameKind.Utf8String,
+        Utf8String = utf8String,
+    };
+
+    public static X520OrganizationalUnitName FromBmpString(string bmpString) => new X520OrganizationalUnitName
+    {
+        Kind = X520OrganizationalUnitNameKind.BmpString,
+        BmpString = bmpString,
+    };
 
     public void Encode(Asn1Writer writer)
     {
@@ -545,6 +725,36 @@ public sealed class X520Title
     public string? Utf8String { get; private set; }
     public string? BmpString { get; private set; }
 
+    public static X520Title FromTeletexString(string teletexString) => new X520Title
+    {
+        Kind = X520TitleKind.TeletexString,
+        TeletexString = teletexString,
+    };
+
+    public static X520Title FromPrintableString(string printableString) => new X520Title
+    {
+        Kind = X520TitleKind.PrintableString,
+        PrintableString = printableString,
+    };
+
+    public static X520Title FromUniversalString(string universalString) => new X520Title
+    {
+        Kind = X520TitleKind.UniversalString,
+        UniversalString = universalString,
+    };
+
+    public static X520Title FromUtf8String(string utf8String) => new X520Title
+    {
+        Kind = X520TitleKind.Utf8String,
+        Utf8String = utf8String,
+    };
+
+    public static X520Title FromBmpString(string bmpString) => new X520Title
+    {
+        Kind = X520TitleKind.BmpString,
+        BmpString = bmpString,
+    };
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -620,6 +830,36 @@ public sealed class X520Pseudonym
     public string? Utf8String { get; private set; }
     public string? BmpString { get; private set; }
 
+    public static X520Pseudonym FromTeletexString(string teletexString) => new X520Pseudonym
+    {
+        Kind = X520PseudonymKind.TeletexString,
+        TeletexString = teletexString,
+    };
+
+    public static X520Pseudonym FromPrintableString(string printableString) => new X520Pseudonym
+    {
+        Kind = X520PseudonymKind.PrintableString,
+        PrintableString = printableString,
+    };
+
+    public static X520Pseudonym FromUniversalString(string universalString) => new X520Pseudonym
+    {
+        Kind = X520PseudonymKind.UniversalString,
+        UniversalString = universalString,
+    };
+
+    public static X520Pseudonym FromUtf8String(string utf8String) => new X520Pseudonym
+    {
+        Kind = X520PseudonymKind.Utf8String,
+        Utf8String = utf8String,
+    };
+
+    public static X520Pseudonym FromBmpString(string bmpString) => new X520Pseudonym
+    {
+        Kind = X520PseudonymKind.BmpString,
+        BmpString = bmpString,
+    };
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -694,6 +934,36 @@ public sealed class DirectoryString
     public string? UniversalString { get; private set; }
     public string? Utf8String { get; private set; }
     public string? BmpString { get; private set; }
+
+    public static DirectoryString FromTeletexString(string teletexString) => new DirectoryString
+    {
+        Kind = DirectoryStringKind.TeletexString,
+        TeletexString = teletexString,
+    };
+
+    public static DirectoryString FromPrintableString(string printableString) => new DirectoryString
+    {
+        Kind = DirectoryStringKind.PrintableString,
+        PrintableString = printableString,
+    };
+
+    public static DirectoryString FromUniversalString(string universalString) => new DirectoryString
+    {
+        Kind = DirectoryStringKind.UniversalString,
+        UniversalString = universalString,
+    };
+
+    public static DirectoryString FromUtf8String(string utf8String) => new DirectoryString
+    {
+        Kind = DirectoryStringKind.Utf8String,
+        Utf8String = utf8String,
+    };
+
+    public static DirectoryString FromBmpString(string bmpString) => new DirectoryString
+    {
+        Kind = DirectoryStringKind.BmpString,
+        BmpString = bmpString,
+    };
 
     public void Encode(Asn1Writer writer)
     {
@@ -947,6 +1217,18 @@ public sealed class Time
     public TimeKind Kind { get; private set; }
     public DateTimeOffset? UtcTime { get; private set; }
     public DateTimeOffset? GeneralTime { get; private set; }
+
+    public static Time FromUtcTime(DateTimeOffset utcTime) => new Time
+    {
+        Kind = TimeKind.UtcTime,
+        UtcTime = utcTime,
+    };
+
+    public static Time FromGeneralTime(DateTimeOffset generalTime) => new Time
+    {
+        Kind = TimeKind.GeneralTime,
+        GeneralTime = generalTime,
+    };
 
     public void Encode(Asn1Writer writer)
     {
@@ -1400,6 +1682,18 @@ public sealed class CountryName
     public string? X121DccCode { get; private set; }
     public string? Iso3166Alpha2Code { get; private set; }
 
+    public static CountryName FromX121DccCode(string x121DccCode) => new CountryName
+    {
+        Kind = CountryNameKind.X121DccCode,
+        X121DccCode = x121DccCode,
+    };
+
+    public static CountryName FromIso3166Alpha2Code(string iso3166Alpha2Code) => new CountryName
+    {
+        Kind = CountryNameKind.Iso3166Alpha2Code,
+        Iso3166Alpha2Code = iso3166Alpha2Code,
+    };
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -1445,6 +1739,18 @@ public sealed class AdministrationDomainName
     public string? Numeric { get; private set; }
     public string? Printable { get; private set; }
 
+    public static AdministrationDomainName FromNumeric(string numeric) => new AdministrationDomainName
+    {
+        Kind = AdministrationDomainNameKind.Numeric,
+        Numeric = numeric,
+    };
+
+    public static AdministrationDomainName FromPrintable(string printable) => new AdministrationDomainName
+    {
+        Kind = AdministrationDomainNameKind.Printable,
+        Printable = printable,
+    };
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -1489,6 +1795,18 @@ public sealed class PrivateDomainName
     public PrivateDomainNameKind Kind { get; private set; }
     public string? Numeric { get; private set; }
     public string? Printable { get; private set; }
+
+    public static PrivateDomainName FromNumeric(string numeric) => new PrivateDomainName
+    {
+        Kind = PrivateDomainNameKind.Numeric,
+        Numeric = numeric,
+    };
+
+    public static PrivateDomainName FromPrintable(string printable) => new PrivateDomainName
+    {
+        Kind = PrivateDomainNameKind.Printable,
+        Printable = printable,
+    };
 
     public void Encode(Asn1Writer writer)
     {
@@ -1750,6 +2068,18 @@ public sealed class PhysicalDeliveryCountryName
     public string? X121DccCode { get; private set; }
     public string? Iso3166Alpha2Code { get; private set; }
 
+    public static PhysicalDeliveryCountryName FromX121DccCode(string x121DccCode) => new PhysicalDeliveryCountryName
+    {
+        Kind = PhysicalDeliveryCountryNameKind.X121DccCode,
+        X121DccCode = x121DccCode,
+    };
+
+    public static PhysicalDeliveryCountryName FromIso3166Alpha2Code(string iso3166Alpha2Code) => new PhysicalDeliveryCountryName
+    {
+        Kind = PhysicalDeliveryCountryNameKind.Iso3166Alpha2Code,
+        Iso3166Alpha2Code = iso3166Alpha2Code,
+    };
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -1794,6 +2124,18 @@ public sealed class PostalCode
     public PostalCodeKind Kind { get; private set; }
     public string? NumericCode { get; private set; }
     public string? PrintableCode { get; private set; }
+
+    public static PostalCode FromNumericCode(string numericCode) => new PostalCode
+    {
+        Kind = PostalCodeKind.NumericCode,
+        NumericCode = numericCode,
+    };
+
+    public static PostalCode FromPrintableCode(string printableCode) => new PostalCode
+    {
+        Kind = PostalCodeKind.PrintableCode,
+        PrintableCode = printableCode,
+    };
 
     public void Encode(Asn1Writer writer)
     {
@@ -1950,6 +2292,18 @@ public sealed class ExtendedNetworkAddress
     public ExtendedNetworkAddressKind Kind { get; private set; }
     public ExtendedNetworkAddress_E1634Address? E1634Address { get; private set; }
     public PresentationAddress? PsapAddress { get; private set; }
+
+    public static ExtendedNetworkAddress FromE1634Address(ExtendedNetworkAddress_E1634Address e1634Address) => new ExtendedNetworkAddress
+    {
+        Kind = ExtendedNetworkAddressKind.E1634Address,
+        E1634Address = e1634Address,
+    };
+
+    public static ExtendedNetworkAddress FromPsapAddress(PresentationAddress psapAddress) => new ExtendedNetworkAddress
+    {
+        Kind = ExtendedNetworkAddressKind.PsapAddress,
+        PsapAddress = psapAddress,
+    };
 
     public void Encode(Asn1Writer writer)
     {

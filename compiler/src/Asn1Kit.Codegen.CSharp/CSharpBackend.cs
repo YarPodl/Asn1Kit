@@ -401,6 +401,20 @@ public sealed class CSharpBackend : ILanguageBackend
         }
 
         sb.AppendLine();
+        foreach (var field in type.Components)
+        {
+            var prop = PropertyName(field, typeName);
+            var factoryName = prop.StartsWith('@') ? prop[1..] : prop;
+            var csType = CsType(document, module, typeName, field.Name, field.Type, optional: false);
+            var param = CamelCaseIdentifier(prop);
+            sb.AppendLine($"    public static {typeName} From{factoryName}({csType} {param}) => new {typeName}");
+            sb.AppendLine("    {");
+            sb.AppendLine($"        Kind = {typeName}Kind.{prop},");
+            sb.AppendLine($"        {prop} = {param},");
+            sb.AppendLine("    };");
+            sb.AppendLine();
+        }
+
         sb.AppendLine("    public void Encode(Asn1Writer writer)");
         sb.AppendLine("    {");
         sb.AppendLine("        switch (Kind)");
@@ -1686,6 +1700,18 @@ public sealed class CSharpBackend : ILanguageBackend
         }
 
         return name;
+    }
+
+    private static string CamelCaseIdentifier(string identifier)
+    {
+        var name = identifier.StartsWith('@') ? identifier[1..] : identifier;
+        if (name.Length == 0)
+        {
+            return "value";
+        }
+
+        var camel = char.ToLowerInvariant(name[0]) + name[1..];
+        return Keywords.Contains(camel) ? "@" + camel : camel;
     }
 
     internal static string SanitizeIdentifier(string name)
