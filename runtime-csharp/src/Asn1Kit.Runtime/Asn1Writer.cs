@@ -5,6 +5,9 @@ namespace Asn1Kit.Runtime;
 
 public sealed class Asn1Writer
 {
+    /// <summary>Worst-case definite length encoding: long-form prefix + 4 length octets.</summary>
+    private const int MaxDefiniteLengthBytes = 5;
+
     private readonly MemoryStream _buffer = new();
 
     public Asn1Writer(Asn1Encoding encoding = Asn1Encoding.Der)
@@ -116,9 +119,12 @@ public sealed class Asn1Writer
 
     public void WriteSequence(Asn1Tag tag, Action<Asn1Writer> content)
     {
-        var inner = new Asn1Writer(Encoding);
-        content(inner);
-        WriteTlv(tag.AsConstructed(), inner.Encode(), definiteOnly: Encoding == Asn1Encoding.Der);
+        if (content is null)
+        {
+            throw new ArgumentNullException(nameof(content));
+        }
+
+        WriteConstructed(tag.AsConstructed(), content, sortDerSetOf: false);
     }
 
     /// <summary>
@@ -159,13 +165,7 @@ public sealed class Asn1Writer
             throw new ArgumentNullException(nameof(content));
         }
 
-        var inner = new Asn1Writer(Encoding);
-        content(inner);
-        var concatenated = inner.Encode();
-        var contents = Encoding == Asn1Encoding.Der
-            ? SortDerSetOfContents(concatenated)
-            : concatenated;
-        WriteTlv(tag.AsConstructed(), contents, definiteOnly: Encoding == Asn1Encoding.Der);
+        WriteConstructed(tag.AsConstructed(), content, sortDerSetOf: Encoding == Asn1Encoding.Der);
     }
 
     /// <summary>
@@ -219,30 +219,120 @@ public sealed class Asn1Writer
         WriteTlv(wire, value.ContentsMemory.Span, definiteOnly: Encoding == Asn1Encoding.Der);
     }
 
-    private static byte[] SortDerSetOfContents(byte[] concatenated)
+    private void WriteConstructed(Asn1Tag tag, Action<Asn1Writer> content, bool sortDerSetOf)
     {
-        if (concatenated.Length == 0)
+        WriteTag(tag);
+        var lengthPos = checked((int)_buffer.Position);
+        Span<byte> reserved = stackalloc byte[MaxDefiniteLengthBytes];
+        reserved.Clear();
+        _buffer.Write(reserved);
+
+        var contentStart = checked((int)_buffer.Position);
+        content(this);
+        var contentEnd = checked((int)_buffer.Position);
+        var contentLength = contentEnd - contentStart;
+
+        if (sortDerSetOf)
         {
-            return concatenated;
+            SortDerSetOfContentsInPlace(contentStart, contentLength);
         }
 
-        var ranges = new List<(int Start, int Length)>();
-        var offset = 0;
-        while (offset < concatenated.Length)
+        FinishDefiniteLength(lengthPos, contentStart, contentLength);
+    }
+
+    /// <summary>
+    /// Patches the reserved length field at <paramref name="lengthPos"/> and compacts the stream when
+    /// the minimal definite-length encoding uses fewer than <see cref="MaxDefiniteLengthBytes"/> octets.
+    /// </summary>
+    private void FinishDefiniteLength(int lengthPos, int contentStart, int contentLength)
+    {
+        Span<byte> encoded = stackalloc byte[MaxDefiniteLengthBytes];
+        var lengthSize = EncodeDefiniteLength(contentLength, encoded);
+        var shift = MaxDefiniteLengthBytes - lengthSize;
+        var contentEnd = contentStart + contentLength;
+
+        if (!_buffer.TryGetBuffer(out var segment))
         {
-            var start = offset;
-            offset = GetTlvEnd(concatenated, offset);
-            ranges.Add((start, offset - start));
+            throw new Asn1Exception("Writer buffer is not accessible.");
+        }
+
+        var array = segment.Array!;
+        var origin = segment.Offset;
+        encoded.Slice(0, lengthSize).CopyTo(array.AsSpan(origin + lengthPos, lengthSize));
+
+        if (shift != 0 && contentLength > 0)
+        {
+            Buffer.BlockCopy(
+                array,
+                origin + contentStart,
+                array,
+                origin + contentStart - shift,
+                contentLength);
+        }
+
+        var newEnd = contentEnd - shift;
+        _buffer.SetLength(newEnd);
+        _buffer.Position = newEnd;
+    }
+
+    /// <summary>Writes a minimal definite-length encoding into <paramref name="destination"/>; returns octet count (1…5).</summary>
+    private static int EncodeDefiniteLength(int length, Span<byte> destination)
+    {
+        if (length < 128)
+        {
+            destination[0] = (byte)length;
+            return 1;
+        }
+
+        Span<byte> bytes = stackalloc byte[4];
+        BinaryPrimitives.WriteInt32BigEndian(bytes, length);
+        var start = 0;
+        while (start < bytes.Length - 1 && bytes[start] == 0)
+        {
+            start++;
+        }
+
+        var count = bytes.Length - start;
+        destination[0] = (byte)(0x80 | count);
+        bytes.Slice(start, count).CopyTo(destination.Slice(1));
+        return 1 + count;
+    }
+
+    private void SortDerSetOfContentsInPlace(int contentStart, int contentLength)
+    {
+        if (contentLength == 0)
+        {
+            return;
+        }
+
+        if (!_buffer.TryGetBuffer(out var segment))
+        {
+            throw new Asn1Exception("Writer buffer is not accessible.");
+        }
+
+        SortDerSetOfContents(segment.Array!, segment.Offset + contentStart, contentLength);
+    }
+
+    private static void SortDerSetOfContents(byte[] data, int start, int length)
+    {
+        var end = start + length;
+        var ranges = new List<(int Start, int Length)>();
+        var offset = start;
+        while (offset < end)
+        {
+            var tlvStart = offset;
+            offset = GetTlvEnd(data, offset, end);
+            ranges.Add((tlvStart, offset - tlvStart));
         }
 
         if (ranges.Count <= 1)
         {
-            return concatenated;
+            return;
         }
 
         ranges.Sort((left, right) =>
-            concatenated.AsSpan(left.Start, left.Length)
-                .SequenceCompareTo(concatenated.AsSpan(right.Start, right.Length)));
+            data.AsSpan(left.Start, left.Length)
+                .SequenceCompareTo(data.AsSpan(right.Start, right.Length)));
 
         var alreadySorted = true;
         for (var i = 1; i < ranges.Count; i++)
@@ -256,24 +346,24 @@ public sealed class Asn1Writer
 
         if (alreadySorted)
         {
-            return concatenated;
+            return;
         }
 
-        var contents = new byte[concatenated.Length];
+        var sorted = new byte[length];
         var writeOffset = 0;
-        foreach (var (start, length) in ranges)
+        foreach (var (tlvStart, tlvLength) in ranges)
         {
-            Buffer.BlockCopy(concatenated, start, contents, writeOffset, length);
-            writeOffset += length;
+            Buffer.BlockCopy(data, tlvStart, sorted, writeOffset, tlvLength);
+            writeOffset += tlvLength;
         }
 
-        return contents;
+        Buffer.BlockCopy(sorted, 0, data, start, length);
     }
 
-    /// <summary>Returns the index just past one complete TLV starting at <paramref name="offset"/>.</summary>
-    private static int GetTlvEnd(byte[] data, int offset)
+    /// <summary>Returns the index just past one complete TLV starting at <paramref name="offset"/> (bounded by <paramref name="end"/>).</summary>
+    private static int GetTlvEnd(byte[] data, int offset, int end)
     {
-        if (offset >= data.Length)
+        if (offset >= end)
         {
             throw new Asn1Exception("Unexpected end of ASN.1 data.");
         }
@@ -284,7 +374,7 @@ public sealed class Asn1Writer
             byte b;
             do
             {
-                if (offset >= data.Length)
+                if (offset >= end)
                 {
                     throw new Asn1Exception("Unexpected end of ASN.1 data.");
                 }
@@ -293,7 +383,7 @@ public sealed class Asn1Writer
             } while ((b & 0x80) != 0);
         }
 
-        if (offset >= data.Length)
+        if (offset >= end)
         {
             throw new Asn1Exception("Unexpected end of ASN.1 data.");
         }
@@ -312,7 +402,7 @@ public sealed class Asn1Writer
         else
         {
             var count = lengthFirst & 0x7F;
-            if (count == 0 || count > 4 || offset + count > data.Length)
+            if (count == 0 || count > 4 || offset + count > end)
             {
                 throw new Asn1Exception("Unsupported length form.");
             }
@@ -324,7 +414,7 @@ public sealed class Asn1Writer
             }
         }
 
-        if (offset + length > data.Length)
+        if (offset + length > end)
         {
             throw new Asn1Exception("Length exceeds buffer.");
         }
@@ -373,23 +463,9 @@ public sealed class Asn1Writer
     private void WriteLength(int length, bool definiteOnly)
     {
         _ = definiteOnly;
-        if (length < 128)
-        {
-            _buffer.WriteByte((byte)length);
-            return;
-        }
-
-        var bytes = new byte[4];
-        BinaryPrimitives.WriteInt32BigEndian(bytes, length);
-        var start = 0;
-        while (start < bytes.Length - 1 && bytes[start] == 0)
-        {
-            start++;
-        }
-
-        var count = bytes.Length - start;
-        _buffer.WriteByte((byte)(0x80 | count));
-        _buffer.Write(bytes, start, count);
+        Span<byte> encoded = stackalloc byte[MaxDefiniteLengthBytes];
+        var size = EncodeDefiniteLength(length, encoded);
+        _buffer.Write(encoded[..size]);
     }
 
     internal static byte[] EncodeInteger(BigInteger value)
