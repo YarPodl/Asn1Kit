@@ -891,8 +891,7 @@ public sealed class Certificate
 
 public sealed class TBSCertificate
 {
-    /// <summary>ASN.1 alias Version ::= INTEGER.</summary>
-    public Asn1Integer? Version { get; set; }
+    public int? Version { get; set; }
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
     public Asn1Integer SerialNumber { get; set; } = Asn1Integer.FromInt32(0);
     public AlgorithmIdentifier Signature { get; set; }
@@ -952,7 +951,7 @@ public sealed class TBSCertificate
             var value = new TBSCertificate();
             if (inner.TryPeekTag(out var tag_Version) && tag_Version.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
-                value.Version = inner.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested => nested.ReadIntegerValue(Asn1Tag.Integer));
+                value.Version = inner.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested => nested.ReadInt32(Asn1Tag.Integer));
             }
             value.SerialNumber = inner.ReadIntegerValue(Asn1Tag.Integer);
             value.Signature = AlgorithmIdentifier.Decode(inner, Asn1Tag.Sequence);
@@ -977,6 +976,16 @@ public sealed class TBSCertificate
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
+}
+
+public static class Version
+{
+    /// <summary>ASN.1 named integer v1(0).</summary>
+    public const int V1 = 0;
+    /// <summary>ASN.1 named integer v2(1).</summary>
+    public const int V2 = 1;
+    /// <summary>ASN.1 named integer v3(2).</summary>
+    public const int V3 = 2;
 }
 
 public sealed class Validity
@@ -1201,8 +1210,7 @@ public sealed class CertificateList
 
 public sealed class TBSCertList
 {
-    /// <summary>ASN.1 alias Version ::= INTEGER.</summary>
-    public Asn1Integer? Version { get; set; }
+    public int? Version { get; set; }
     public AlgorithmIdentifier Signature { get; set; }
     public Name Issuer { get; set; }
     public Time ThisUpdate { get; set; }
@@ -1250,7 +1258,7 @@ public sealed class TBSCertList
             var value = new TBSCertList();
             if (inner.TryPeekTag(out var tag_Version) && tag_Version.MatchesIgnoreConstructed(Asn1Tag.Integer))
             {
-                value.Version = inner.ReadIntegerValue(Asn1Tag.Integer);
+                value.Version = inner.ReadInt32(Asn1Tag.Integer);
             }
             value.Signature = AlgorithmIdentifier.Decode(inner, Asn1Tag.Sequence);
             value.Issuer = Name.Decode(inner);
@@ -2272,6 +2280,22 @@ public sealed class PresentationAddress
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
+}
+
+public static class TerminalType
+{
+    /// <summary>ASN.1 named integer telex(3).</summary>
+    public const int Telex = 3;
+    /// <summary>ASN.1 named integer teletex(4).</summary>
+    public const int Teletex = 4;
+    /// <summary>ASN.1 named integer g3-facsimile(5).</summary>
+    public const int G3Facsimile = 5;
+    /// <summary>ASN.1 named integer g4-facsimile(6).</summary>
+    public const int G4Facsimile = 6;
+    /// <summary>ASN.1 named integer ia5-terminal(7).</summary>
+    public const int Ia5Terminal = 7;
+    /// <summary>ASN.1 named integer videotex(8).</summary>
+    public const int Videotex = 8;
 }
 
 public sealed class TeletexDomainDefinedAttributes

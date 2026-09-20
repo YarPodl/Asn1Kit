@@ -654,6 +654,38 @@ END
         Assert.Contains("nope", ex.Message);
     }
 
+    [Fact]
+    public void NamedInteger_DefaultsToIntAndEmitsConstants()
+    {
+        const string asn = @"
+NamedIntMod DEFINITIONS ::= BEGIN
+Version ::= INTEGER { v1(0), v2(1), v3(2) }
+Holder ::= SEQUENCE {
+  version Version,
+  inline INTEGER { a(1), b(2) }
+}
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+        Assert.Contains("public static class Version", source);
+        Assert.Contains("public const int V1 = 0;", source);
+        Assert.Contains("public const int V2 = 1;", source);
+        Assert.Contains("public const int V3 = 2;", source);
+        Assert.Contains("public int Version { get; set; }", source);
+        Assert.Contains("public static class Holder_Inline", source);
+        Assert.Contains("public const int A = 1;", source);
+        Assert.Contains("public int Inline { get; set; }", source);
+        Assert.Contains("ReadInt32", source);
+        Assert.DoesNotContain("Asn1Integer", source);
+
+        document.Modules[0].Types.Single(t => t.Name == "Version").Options =
+            IrOptions.SetIntegerRepresentation(null, IrOptions.IntegerRepresentations.Der);
+        var overridden = new CSharpBackend().Generate(document).Single().Contents;
+        Assert.Contains("public Asn1Integer Version { get; set; } = Asn1Integer.FromInt32(0);", overridden);
+        Assert.Contains("public const int V1 = 0;", overridden);
+    }
+
     private static Assembly CompileGenerated(string source)
     {
         var tpa = (string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!;

@@ -120,7 +120,7 @@ public sealed class CSharpBackend : ILanguageBackend
         TypeExpr type,
         Queue<(string Name, TypeExpr Type)> queue)
     {
-        if (NeedsNamedType(type) || IsEnumerated(type))
+        if (NeedsNamedType(type) || IsEnumerated(type) || IsNamedInteger(type))
         {
             queue.Enqueue((hint, WithoutTag(type)));
             if (NeedsNamedType(type))
@@ -153,9 +153,12 @@ public sealed class CSharpBackend : ILanguageBackend
 
     private static bool IsEnumerated(TypeExpr type) => type is EnumeratedType;
 
+    private static bool IsNamedInteger(TypeExpr type) =>
+        type is IntegerType { NamedValues: { Count: > 0 } };
+
     /// <summary>Typedefs that must not get their own C# class (collapsed to the underlying type).</summary>
     private static bool IsCollapsibleAlias(TypeExpr type) =>
-        !NeedsNamedType(type) && !IsNamedBitString(type) && !IsEnumerated(type);
+        !NeedsNamedType(type) && !IsNamedBitString(type) && !IsEnumerated(type) && !IsNamedInteger(type);
 
     private void EmitType(StringBuilder sb, IrDocument document, IrModule module, string typeName, TypeExpr type)
     {
@@ -182,6 +185,9 @@ public sealed class CSharpBackend : ILanguageBackend
                 break;
             case EnumeratedType enumerated:
                 EmitEnumerated(sb, typeName, enumerated);
+                break;
+            case IntegerType integer when IsNamedInteger(integer):
+                EmitNamedIntegerConstants(sb, typeName, integer);
                 break;
             default:
                 throw new InvalidOperationException(
@@ -632,6 +638,36 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine("}");
     }
 
+    private void EmitNamedIntegerConstants(StringBuilder sb, string typeName, IntegerType type)
+    {
+        var namedValues = type.NamedValues
+            ?? throw new InvalidOperationException($"INTEGER '{typeName}' has no namedValues.");
+        var useLong = namedValues.Any(v => v.Value < int.MinValue || v.Value > int.MaxValue);
+        sb.AppendLine($"public static class {typeName}");
+        sb.AppendLine("{");
+        foreach (var named in namedValues)
+        {
+            var member = SanitizeIdentifier(named.Name);
+            if (Keywords.Contains(member))
+            {
+                member += "Value";
+            }
+
+            var literal = named.Value.ToString(CultureInfo.InvariantCulture);
+            if (useLong)
+            {
+                literal += "L";
+            }
+
+            var constType = useLong ? "long" : "int";
+            sb.AppendLine(
+                $"    /// <summary>ASN.1 named integer {named.Name}({named.Value.ToString(CultureInfo.InvariantCulture)}).</summary>");
+            sb.AppendLine($"    public const {constType} {member} = {literal};");
+        }
+
+        sb.AppendLine("}");
+    }
+
     private void EmitProperty(
         StringBuilder sb,
         IrDocument document,
@@ -1048,8 +1084,26 @@ public sealed class CSharpBackend : ILanguageBackend
                 return NormalizeIntegerRepresentation(explicitRepresentation);
             }
 
+            if (integer.NamedValues is { Count: > 0 })
+            {
+                return InferNamedIntegerRepresentation(integer.NamedValues);
+            }
+
             return InferIntegerRepresentation(integer.Constraint);
         }
+    }
+
+    private static string InferNamedIntegerRepresentation(IReadOnlyList<IrNamedNumber> namedValues)
+    {
+        foreach (var named in namedValues)
+        {
+            if (named.Value < int.MinValue || named.Value > int.MaxValue)
+            {
+                return IrOptions.IntegerRepresentations.Int64;
+            }
+        }
+
+        return IrOptions.IntegerRepresentations.Int32;
     }
 
     private static string NormalizeIntegerRepresentation(string representation)
@@ -1121,7 +1175,7 @@ public sealed class CSharpBackend : ILanguageBackend
             return SanitizeIdentifier(reference.Name);
         }
 
-        if (NeedsNamedType(type) || IsEnumerated(type))
+        if (NeedsNamedType(type) || IsEnumerated(type) || IsNamedInteger(type))
         {
             return owner + "_" + SanitizeIdentifier(hint);
         }
