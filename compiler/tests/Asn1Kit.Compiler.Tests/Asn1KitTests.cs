@@ -581,6 +581,77 @@ END
     }
 
     [Fact]
+    public void GeneratedCSharp_CollapsesSingleAlternativeChoice()
+    {
+        const string asn = @"
+ChoiceMod DEFINITIONS EXPLICIT TAGS ::= BEGIN
+Relative ::= SEQUENCE { id INTEGER }
+RdnSequence ::= SEQUENCE OF Relative
+Name ::= CHOICE { rdnSequence RdnSequence }
+Multi ::= CHOICE { a INTEGER, b UTF8String }
+Holder ::= SEQUENCE {
+  who Name,
+  pick Multi
+}
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+
+        Assert.DoesNotContain("class Name", source);
+        Assert.DoesNotContain("NameKind", source);
+        Assert.Contains("ASN.1 alias Name ::= CHOICE { rdnSequence RdnSequence }.", source);
+        Assert.Contains("List<Relative> Who", source);
+        Assert.Contains("class Multi", source);
+        Assert.Contains("enum MultiKind", source);
+
+        var assembly = CompileGenerated(source);
+        Assert.Null(assembly.GetType("ChoiceMod.Name"));
+        Assert.NotNull(assembly.GetType("ChoiceMod.Multi"));
+
+        var holderType = assembly.GetType("ChoiceMod.Holder")!;
+        var relativeType = assembly.GetType("ChoiceMod.Relative")!;
+        Assert.Equal(typeof(List<>).MakeGenericType(relativeType), holderType.GetProperty("Who")!.PropertyType);
+
+        var relative = Activator.CreateInstance(relativeType)!;
+        relativeType.GetProperty("Id")!.SetValue(relative, Asn1Integer.FromInt32(7));
+
+        var who = Activator.CreateInstance(typeof(List<>).MakeGenericType(relativeType))!;
+        typeof(List<>).MakeGenericType(relativeType).GetMethod("Add")!.Invoke(who, new[] { relative });
+
+        var multiType = assembly.GetType("ChoiceMod.Multi")!;
+        var multiKind = assembly.GetType("ChoiceMod.MultiKind")!;
+        var multiBytes = new byte[] { 0x02, 0x01, 0x07 };
+        var multi = multiType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(multiBytes, Asn1Encoding.Der) })!;
+        Assert.Equal(Enum.Parse(multiKind, "A"), multiType.GetProperty("Kind")!.GetValue(multi));
+
+        var holder = Activator.CreateInstance(holderType)!;
+        holderType.GetProperty("Who")!.SetValue(holder, who);
+        holderType.GetProperty("Pick")!.SetValue(holder, multi);
+
+        var expected = new byte[]
+        {
+            0x30, 0x0A,
+            0x30, 0x05, 0x30, 0x03, 0x02, 0x01, 0x07,
+            0x02, 0x01, 0x07
+        };
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        holderType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(holder, new object[] { writer });
+        Assert.Equal(expected, writer.Encode());
+
+        var decoded = holderType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(expected, Asn1Encoding.Der) })!;
+        var decodedWho = (System.Collections.IList)holderType.GetProperty("Who")!.GetValue(decoded)!;
+        Assert.Equal(1, decodedWho.Count);
+        Assert.Equal(Asn1Integer.FromInt32(7), relativeType.GetProperty("Id")!.GetValue(decodedWho[0]));
+        var decodedPick = holderType.GetProperty("Pick")!.GetValue(decoded)!;
+        Assert.Equal(Enum.Parse(multiKind, "A"), multiType.GetProperty("Kind")!.GetValue(decodedPick));
+        Assert.Equal(Asn1Integer.FromInt32(7), multiType.GetProperty("A")!.GetValue(decodedPick));
+    }
+
+    [Fact]
     public void GeneratedCSharp_Enumerated_EmitsEnumAndRoundTrips()
     {
         const string asn = @"

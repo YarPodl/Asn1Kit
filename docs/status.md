@@ -18,7 +18,7 @@
 | `any` (+ `definedBy`)           | да, с проверкой sibling-компонента                                   | да → `Asn1Any` (Tag + Contents; `definedBy` не резолвится); typedef `Name ::= ANY` сворачивается                                          | `ParserTests`, `RuntimeTests.Any_*`, `RoundTripTests.GeneratedCSharp_Any_*`, `ValueResolutionTests.RejectsAnyDefinedByUnknownField`                 |
 | `sequence`                      | да, `extensible`                                                     | да → класс с `Encode` / `Decode`                                                                                                          | `RoundTripTests`, `PkixExplicit88Tests`, `PkixImplicit88Tests`, `PkixGeneratedCodeTests`                                                            |
 | `set`                           | да                                                                   | да → класс с `Encode` / `Decode` (DER: порядок по тегу; decode по тегу)                                                                   | `RoundTripTests`, `ParserTests`, `RuntimeTests`                                                                                                     |
-| `choice`                        | да                                                                   | да → класс + enum `…Kind`                                                                                                                 | `ParserTests`, `PkixExplicit88Tests`, `PkixGeneratedCodeTests`                                                                                      |
+| `choice`                        | да                                                                   | да → класс + enum `…Kind`; **один** вариант → сворачивается как алиас (без класса/`Kind`)                                              | `ParserTests`, `PkixExplicit88Tests`, `PkixGeneratedCodeTests`, `RoundTripTests.GeneratedCSharp_CollapsesSingleAlternativeChoice`                 |
 | `sequenceOf`                    | да                                                                   | да → `List<T>` (typedef сворачивается; `WriteSequenceOf` / `ReadSequenceOf`; `/// <summary>` с именем алиаса)                            | `ParserTests`, `RoundTripTests.GeneratedCSharp_CollapsesSequenceOf*`, `PkixGeneratedCodeTests`, `RuntimeTests.WriteSequenceOf_*`                  |
 | `setOf`                         | да                                                                   | да → `List<T>` (`WriteSetOf<T>` / `ReadSetOf`; DER-сортировка в runtime)                                                                  | `RoundTripTests`, `ParserTests`, `RuntimeTests`                                                                                                     |
 | `ref`                           | да, с резолвом через модули и `IMPORTS`                              | да; алиасы на примитивы/`SEQUENCE OF`/`SET OF`/другие имена **сворачиваются** (класс не эмитится, `/// <summary>` на поле); cross-module → квалифицированное имя | `PkixExplicit88Tests`, `PkixImplicit88Tests`, `ImportResolutionTests`, `PkixGeneratedCodeTests`, `RoundTripTests.GeneratedCSharp_CollapsesAliases`* |
@@ -97,14 +97,14 @@
 5. Для составных типов и отдельных значений в сгенерированном коде в комментарих писать копию их описания в ASN.1. Возможно еще туда же захватывать комментарий из ASN.1 модуля
 6. Резолв `ANY DEFINED BY` в конкретный тип по значению sibling-компонента (сейчас `Asn1Any` остаётся сырым TLV).
 7. Encode/decode тесты на golden-либе `[runtime-csharp/generated/Asn1Kit.Pkix](../runtime-csharp/generated/Asn1Kit.Pkix/)` (сама либа и сверка `PkixGeneratedCodeTests` уже есть; мелкий round-trip через Roslyn — в `compiler/tests`).
-8. Убрать  лишний алиас для CHOICE из одного варианта
+8. ~~Убрать лишний алиас для CHOICE из одного варианта~~ — `Name ::= CHOICE { rdnSequence RDNSequence }` сворачивается в underlying (как typedef-алиас)
 9. Для Asn1Integer создать дефотный вариант (например пустой конструктор), чтобы оптимизировать места по типу public Asn1Integer UserCertificate { get; set; } = Asn1Integer.FromInt32(0);
 10. Все таки подумать над логикой API, слишком много byte[], можно лучше. В Decode не принимать владение. Заменить List на массивы, чтобы избежать лишних выделений за счет Array.Empty.
 11. Оптимизация API для Time и строк (например оптимизация Choice для случая, если все элементы мапятся в один тип)
 12. Добавить опцию Lazy, чтобы откладывать разбор структуры
 13. Добавить опцию сохранения исходного (и неизменного) закодированного представления в поле класса
 14. Пул массивов, где нужны временные.
-
+15. В Encode оптимизировать, не выделять каждый раз, может RecyclableMemoryStream
 
 
 ### Крупные задачи

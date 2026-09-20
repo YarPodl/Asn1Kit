@@ -677,48 +677,6 @@ public sealed class X520Pseudonym
     }
 }
 
-public enum NameKind
-{
-    RdnSequence,
-}
-
-public sealed class Name
-{
-    public NameKind Kind { get; private set; }
-    /// <summary>ASN.1 alias RDNSequence ::= SEQUENCE OF RelativeDistinguishedName.</summary>
-    public List<List<AttributeTypeAndValue>>? RdnSequence { get; private set; }
-
-    public void Encode(Asn1Writer writer)
-    {
-        switch (Kind)
-        {
-            case NameKind.RdnSequence:
-                writer.WriteSequenceOf(Asn1Tag.Sequence, RdnSequence, static (inner, item) =>
-                {
-                    inner.WriteSetOf(Asn1Tag.Set, item, static (inner, item) =>
-                    {
-                        item.Encode(inner, Asn1Tag.Sequence);
-                    });
-                });
-                break;
-            default: throw new Asn1Exception("CHOICE has no alternative.");
-        }
-    }
-
-    public static Name Decode(Asn1Reader reader)
-    {
-        if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
-        var value = new Name();
-        if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-        {
-            value.Kind = NameKind.RdnSequence;
-            value.RdnSequence = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => AttributeTypeAndValue.Decode(inner, Asn1Tag.Sequence)));
-        }
-        else throw new Asn1Exception("Unknown CHOICE alternative.");
-        return value;
-    }
-}
-
 public enum DirectoryStringKind
 {
     TeletexString,
@@ -835,9 +793,11 @@ public sealed class TBSCertificate
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
     public Asn1Integer SerialNumber { get; set; } = Asn1Integer.FromInt32(0);
     public AlgorithmIdentifier Signature { get; set; }
-    public Name Issuer { get; set; }
+    /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
+    public List<List<AttributeTypeAndValue>> Issuer { get; set; } = new();
     public Validity Validity { get; set; }
-    public Name Subject { get; set; }
+    /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
+    public List<List<AttributeTypeAndValue>> Subject { get; set; } = new();
     public SubjectPublicKeyInfo SubjectPublicKeyInfo { get; set; }
     /// <summary>ASN.1 alias UniqueIdentifier ::= BIT STRING.</summary>
     public Asn1BitString? IssuerUniqueID { get; set; }
@@ -861,9 +821,21 @@ public sealed class TBSCertificate
             }
             inner.WriteInteger(Asn1Tag.Integer, SerialNumber);
             Signature.Encode(inner, Asn1Tag.Sequence);
-            Issuer.Encode(inner);
+            inner.WriteSequenceOf(Asn1Tag.Sequence, Issuer, static (inner, item) =>
+            {
+                inner.WriteSetOf(Asn1Tag.Set, item, static (inner, item) =>
+                {
+                    item.Encode(inner, Asn1Tag.Sequence);
+                });
+            });
             Validity.Encode(inner, Asn1Tag.Sequence);
-            Subject.Encode(inner);
+            inner.WriteSequenceOf(Asn1Tag.Sequence, Subject, static (inner, item) =>
+            {
+                inner.WriteSetOf(Asn1Tag.Set, item, static (inner, item) =>
+                {
+                    item.Encode(inner, Asn1Tag.Sequence);
+                });
+            });
             SubjectPublicKeyInfo.Encode(inner, Asn1Tag.Sequence);
             if (IssuerUniqueID != null)
             {
@@ -899,9 +871,9 @@ public sealed class TBSCertificate
             }
             value.SerialNumber = inner.ReadIntegerValue(Asn1Tag.Integer);
             value.Signature = AlgorithmIdentifier.Decode(inner, Asn1Tag.Sequence);
-            value.Issuer = Name.Decode(inner);
+            value.Issuer = inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => AttributeTypeAndValue.Decode(inner, Asn1Tag.Sequence)));
             value.Validity = Validity.Decode(inner, Asn1Tag.Sequence);
-            value.Subject = Name.Decode(inner);
+            value.Subject = inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => AttributeTypeAndValue.Decode(inner, Asn1Tag.Sequence)));
             value.SubjectPublicKeyInfo = SubjectPublicKeyInfo.Decode(inner, Asn1Tag.Sequence);
             if (inner.TryPeekTag(out var tag_IssuerUniqueID) && tag_IssuerUniqueID.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
             {
@@ -1121,7 +1093,8 @@ public sealed class TBSCertList
 {
     public int? Version { get; set; }
     public AlgorithmIdentifier Signature { get; set; }
-    public Name Issuer { get; set; }
+    /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
+    public List<List<AttributeTypeAndValue>> Issuer { get; set; } = new();
     public Time ThisUpdate { get; set; }
     public Time? NextUpdate { get; set; }
     public List<TBSCertList_RevokedCertificates_Item>? RevokedCertificates { get; set; }
@@ -1139,7 +1112,13 @@ public sealed class TBSCertList
                 inner.WriteInteger(Asn1Tag.Integer, Version.Value);
             }
             Signature.Encode(inner, Asn1Tag.Sequence);
-            Issuer.Encode(inner);
+            inner.WriteSequenceOf(Asn1Tag.Sequence, Issuer, static (inner, item) =>
+            {
+                inner.WriteSetOf(Asn1Tag.Set, item, static (inner, item) =>
+                {
+                    item.Encode(inner, Asn1Tag.Sequence);
+                });
+            });
             ThisUpdate.Encode(inner);
             if (NextUpdate != null)
             {
@@ -1177,7 +1156,7 @@ public sealed class TBSCertList
                 value.Version = inner.ReadInt32(Asn1Tag.Integer);
             }
             value.Signature = AlgorithmIdentifier.Decode(inner, Asn1Tag.Sequence);
-            value.Issuer = Name.Decode(inner);
+            value.Issuer = inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => AttributeTypeAndValue.Decode(inner, Asn1Tag.Sequence)));
             value.ThisUpdate = Time.Decode(inner);
             if (inner.TryPeekTag(out var tag_NextUpdate) && tag_NextUpdate.MatchesIgnoreConstructed(Asn1Tag.Sequence))
             {

@@ -469,7 +469,8 @@ public sealed class GeneralName
     public string? Rfc822Name { get; private set; }
     public string? DNSName { get; private set; }
     public ORAddress? X400Address { get; private set; }
-    public Name? DirectoryName { get; private set; }
+    /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
+    public List<List<AttributeTypeAndValue>>? DirectoryName { get; private set; }
     public EDIPartyName? EdiPartyName { get; private set; }
     public string? UniformResourceIdentifier { get; private set; }
     public byte[]? IPAddress { get; private set; }
@@ -492,7 +493,13 @@ public sealed class GeneralName
                 X400Address.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true));
                 break;
             case GeneralNameKind.DirectoryName:
-                DirectoryName.Encode(writer);
+                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true), DirectoryName, static (inner, item) =>
+                {
+                    inner.WriteSetOf(Asn1Tag.Set, item, static (inner, item) =>
+                    {
+                        item.Encode(inner, Asn1Tag.Sequence);
+                    });
+                });
                 break;
             case GeneralNameKind.EdiPartyName:
                 EdiPartyName.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 5, true));
@@ -537,7 +544,7 @@ public sealed class GeneralName
         else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true)))
         {
             value.Kind = GeneralNameKind.DirectoryName;
-            value.DirectoryName = Name.Decode(reader);
+            value.DirectoryName = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true), static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => AttributeTypeAndValue.Decode(inner, Asn1Tag.Sequence)));
         }
         else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 5, true)))
         {

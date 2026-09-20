@@ -101,9 +101,22 @@ public sealed class CSharpBackend : ILanguageBackend
 
                 break;
             case ChoiceType choice:
-                foreach (var component in choice.Components)
+                if (IsSingleAlternativeChoice(choice))
                 {
-                    OfferNested(document, module, owner + "_" + SanitizeIdentifier(component.Name), component.Type, queue);
+                    // Transparent: nested types are named as if the CHOICE wrapper were absent.
+                    OfferNested(document, module, owner, choice.Components[0].Type, queue);
+                }
+                else
+                {
+                    foreach (var component in choice.Components)
+                    {
+                        OfferNested(
+                            document,
+                            module,
+                            owner + "_" + SanitizeIdentifier(component.Name),
+                            component.Type,
+                            queue);
+                    }
                 }
 
                 break;
@@ -149,7 +162,16 @@ public sealed class CSharpBackend : ILanguageBackend
     }
 
     private static bool NeedsNamedType(TypeExpr type) =>
-        type is SequenceType or SetType or ChoiceType;
+        type is SequenceType or SetType
+        || (type is ChoiceType && !IsSingleAlternativeChoice(type));
+
+    /// <summary>
+    /// CHOICE with one alternative encodes as that alternative; collapse like a typedef alias.
+    /// Keep a real CHOICE class when both the CHOICE and the alternative carry tags (double wrap).
+    /// </summary>
+    private static bool IsSingleAlternativeChoice(TypeExpr type) =>
+        type is ChoiceType { Components: { Count: 1 } } choice
+        && (choice.Tag is null || choice.Components[0].Type.Tag is null);
 
     private static bool IsNamedBitString(TypeExpr type) =>
         type is BitStringType { NamedBits: { Count: > 0 } };
@@ -652,6 +674,9 @@ public sealed class CSharpBackend : ILanguageBackend
         RefType reference => reference.Name,
         SequenceType => "SEQUENCE",
         SetType => "SET",
+        ChoiceType choice when IsSingleAlternativeChoice(choice) =>
+            "CHOICE { " + choice.Components[0].Name + " "
+            + FormatAliasRhs(document, module, choice.Components[0].Type) + " }",
         ChoiceType => "CHOICE",
         SequenceOfType sequenceOf => "SEQUENCE OF " + FormatAliasRhs(document, module, sequenceOf.Element),
         SetOfType setOf => "SET OF " + FormatAliasRhs(document, module, setOf.Element),
@@ -1048,8 +1073,19 @@ public sealed class CSharpBackend : ILanguageBackend
         var cursor = original;
         var currentModule = module;
         var visited = new HashSet<string>(StringComparer.Ordinal);
-        while (cursor is RefType reference)
+        while (true)
         {
+            if (IsSingleAlternativeChoice(cursor))
+            {
+                cursor = ((ChoiceType)cursor).Components[0].Type;
+                continue;
+            }
+
+            if (cursor is not RefType reference)
+            {
+                break;
+            }
+
             var key = (reference.Module ?? currentModule.Name) + "::" + reference.Name;
             if (!visited.Add(key))
             {
@@ -1102,6 +1138,12 @@ public sealed class CSharpBackend : ILanguageBackend
         while (true)
         {
             explicitRepresentation ??= IrOptions.IntegerRepresentation(cursor.Options);
+
+            if (IsSingleAlternativeChoice(cursor))
+            {
+                cursor = ((ChoiceType)cursor).Components[0].Type;
+                continue;
+            }
 
             if (cursor is RefType reference)
             {
@@ -1377,47 +1419,64 @@ public sealed class CSharpBackend : ILanguageBackend
     };
 
     /// <summary>
-    /// Collapse typedef aliases to the underlying type used in generated C#.
-    /// Stops at constructed named types, named BIT STRING, and ENUMERATED (those keep a type).
+    /// Collapse typedef aliases and single-alternative CHOICE to the underlying type used in generated C#.
+    /// Stops at multi-alternative CHOICE / SEQUENCE / SET, named BIT STRING, and ENUMERATED (those keep a type).
     /// </summary>
     private TypeExpr UnwrapAliases(IrDocument document, IrModule module, TypeExpr type)
     {
         var visited = new HashSet<string>(StringComparer.Ordinal);
-        while (type is RefType reference)
+        while (true)
         {
-            var key = (reference.Module ?? module.Name) + "::" + reference.Name;
-            if (!visited.Add(key))
+            if (type is RefType reference)
             {
-                throw new NotSupportedException($"Circular type alias '{reference.Name}'.");
+                var key = (reference.Module ?? module.Name) + "::" + reference.Name;
+                if (!visited.Add(key))
+                {
+                    throw new NotSupportedException($"Circular type alias '{reference.Name}'.");
+                }
+
+                var found = FindWithModule(document, module, reference);
+                if (found is null)
+                {
+                    return type;
+                }
+
+                var inner = found.Value.Def.Type;
+                if (IsNamedBitString(inner) || NeedsNamedType(inner) || IsEnumerated(inner))
+                {
+                    return type;
+                }
+
+                var next = CloneType(inner);
+                if (type.Tag is not null && next.Tag is null)
+                {
+                    next.Tag = type.Tag;
+                }
+
+                next.Options = MergeIntegerRepresentationOptions(
+                    next.Options,
+                    type.Options,
+                    found.Value.Def.Options);
+
+                type = next;
+                continue;
             }
 
-            var found = FindWithModule(document, module, reference);
-            if (found is null)
+            if (IsSingleAlternativeChoice(type))
             {
-                return type;
+                var choice = (ChoiceType)type;
+                var next = CloneType(choice.Components[0].Type);
+                if (type.Tag is not null && next.Tag is null)
+                {
+                    next.Tag = type.Tag;
+                }
+
+                type = next;
+                continue;
             }
 
-            var inner = found.Value.Def.Type;
-            if (IsNamedBitString(inner) || NeedsNamedType(inner) || IsEnumerated(inner))
-            {
-                return type;
-            }
-
-            var next = CloneType(inner);
-            if (type.Tag is not null && next.Tag is null)
-            {
-                next.Tag = type.Tag;
-            }
-
-            next.Options = MergeIntegerRepresentationOptions(
-                next.Options,
-                type.Options,
-                found.Value.Def.Options);
-
-            type = next;
+            return type;
         }
-
-        return type;
     }
 
     private static JsonObject? MergeIntegerRepresentationOptions(
