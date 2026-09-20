@@ -119,10 +119,13 @@ public sealed class CSharpBackend : ILanguageBackend
         TypeExpr type,
         Queue<(string Name, TypeExpr Type)> queue)
     {
-        if (NeedsNamedType(type))
+        if (NeedsNamedType(type) || IsEnumerated(type))
         {
             queue.Enqueue((hint, WithoutTag(type)));
-            CollectNested(document, module, hint, WithoutTag(type), queue);
+            if (NeedsNamedType(type))
+            {
+                CollectNested(document, module, hint, WithoutTag(type), queue);
+            }
         }
         else if (type is RefType)
         {
@@ -147,9 +150,11 @@ public sealed class CSharpBackend : ILanguageBackend
     private static bool IsNamedBitString(TypeExpr type) =>
         type is BitStringType { NamedBits: { Count: > 0 } };
 
+    private static bool IsEnumerated(TypeExpr type) => type is EnumeratedType;
+
     /// <summary>Typedefs that must not get their own C# class (collapsed to the underlying type).</summary>
     private static bool IsCollapsibleAlias(TypeExpr type) =>
-        !NeedsNamedType(type) && !IsNamedBitString(type);
+        !NeedsNamedType(type) && !IsNamedBitString(type) && !IsEnumerated(type);
 
     private void EmitType(StringBuilder sb, IrDocument document, IrModule module, string typeName, TypeExpr type)
     {
@@ -173,6 +178,9 @@ public sealed class CSharpBackend : ILanguageBackend
                 break;
             case BitStringType bitString when IsNamedBitString(bitString):
                 EmitNamedBitString(sb, typeName, bitString);
+                break;
+            case EnumeratedType enumerated:
+                EmitEnumerated(sb, typeName, enumerated);
                 break;
             default:
                 throw new InvalidOperationException(
@@ -588,6 +596,41 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine("}");
     }
 
+    private void EmitEnumerated(StringBuilder sb, string typeName, EnumeratedType type)
+    {
+        var useLong = type.Values.Any(v => v.Value < int.MinValue || v.Value > int.MaxValue);
+        sb.Append("public enum ").Append(typeName);
+        if (useLong)
+        {
+            sb.Append(" : long");
+        }
+
+        sb.AppendLine();
+        sb.AppendLine("{");
+        for (var i = 0; i < type.Values.Count; i++)
+        {
+            var named = type.Values[i];
+            var member = SanitizeIdentifier(named.Name);
+            if (Keywords.Contains(member))
+            {
+                member += "Value";
+            }
+
+            var literal = named.Value.ToString(CultureInfo.InvariantCulture);
+            if (useLong && (named.Value < int.MinValue || named.Value > int.MaxValue))
+            {
+                literal += "L";
+            }
+
+            sb.AppendLine(
+                $"    /// <summary>ASN.1 enumerated {named.Name}({named.Value.ToString(CultureInfo.InvariantCulture)}).</summary>");
+            sb.Append($"    {member} = {literal}");
+            sb.AppendLine(i + 1 < type.Values.Count ? "," : "");
+        }
+
+        sb.AppendLine("}");
+    }
+
     private void EmitProperty(
         StringBuilder sb,
         IrDocument document,
@@ -705,9 +748,18 @@ public sealed class CSharpBackend : ILanguageBackend
     private bool IsValueOptionalWrapper(IrDocument document, IrModule module, TypeExpr type)
     {
         var unwrapped = UnwrapAliases(document, module, type);
-        return ResolvePrimitive(unwrapped) is TypeKinds.Boolean or TypeKinds.Integer or TypeKinds.Enumerated
+        if (IsEnumeratedRefOrType(document, module, unwrapped))
+        {
+            return true;
+        }
+
+        return ResolvePrimitive(unwrapped) is TypeKinds.Boolean or TypeKinds.Integer
             or TypeKinds.BitString or TypeKinds.Time or TypeKinds.Any;
     }
+
+    private bool IsEnumeratedRefOrType(IrDocument document, IrModule module, TypeExpr type) =>
+        type is EnumeratedType ||
+        (type is RefType reference && Find(document, module, reference)?.Type is EnumeratedType);
 
     private void EmitEncodeValue(
         StringBuilder sb,
@@ -749,6 +801,12 @@ public sealed class CSharpBackend : ILanguageBackend
         }
 
         var tag = forceTag ?? TagExpr(document, module, type);
+        if (IsEnumeratedRefOrType(document, module, type))
+        {
+            sb.AppendLine($"{indent}{writer}.WriteEnumerated({tag}, (BigInteger)(long){expr});");
+            return;
+        }
+
         var primitive = ResolvePrimitive(type);
         if (primitive is not null)
         {
@@ -876,6 +934,13 @@ public sealed class CSharpBackend : ILanguageBackend
         }
 
         var tag = forceTag ?? TagExpr(document, module, type);
+        if (IsEnumeratedRefOrType(document, module, type))
+        {
+            var enumName = NamedTypeName(document, module, owner, hint, type);
+            sb.Append($"({enumName})(long){reader}.ReadEnumerated({tag})");
+            return;
+        }
+
         var primitive = ResolvePrimitive(type);
         if (primitive is not null)
         {
@@ -903,7 +968,7 @@ public sealed class CSharpBackend : ILanguageBackend
             var mapped = primitive switch
             {
                 TypeKinds.Boolean => optional ? "bool?" : "bool",
-                TypeKinds.Integer or TypeKinds.Enumerated => optional ? "BigInteger?" : "BigInteger",
+                TypeKinds.Integer => optional ? "BigInteger?" : "BigInteger",
                 TypeKinds.OctetString => optional ? "byte[]?" : "byte[]",
                 TypeKinds.Null => optional ? "bool?" : "bool",
                 TypeKinds.Oid => optional ? "string?" : "string",
@@ -942,7 +1007,7 @@ public sealed class CSharpBackend : ILanguageBackend
             return SanitizeIdentifier(reference.Name);
         }
 
-        if (NeedsNamedType(type))
+        if (NeedsNamedType(type) || IsEnumerated(type))
         {
             return owner + "_" + SanitizeIdentifier(hint);
         }
@@ -1000,7 +1065,8 @@ public sealed class CSharpBackend : ILanguageBackend
         return type switch
         {
             BooleanType => "Asn1Tag.Boolean",
-            IntegerType or EnumeratedType => "Asn1Tag.Integer",
+            IntegerType => "Asn1Tag.Integer",
+            EnumeratedType => "Asn1Tag.Enumerated",
             BitStringType => "Asn1Tag.BitString",
             OctetStringType => "Asn1Tag.OctetString",
             NullType => "Asn1Tag.Null",
@@ -1069,7 +1135,6 @@ public sealed class CSharpBackend : ILanguageBackend
     {
         BooleanType => TypeKinds.Boolean,
         IntegerType => TypeKinds.Integer,
-        EnumeratedType => TypeKinds.Enumerated,
         BitStringType => TypeKinds.BitString,
         OctetStringType => TypeKinds.OctetString,
         NullType => TypeKinds.Null,
@@ -1082,7 +1147,7 @@ public sealed class CSharpBackend : ILanguageBackend
 
     /// <summary>
     /// Collapse typedef aliases to the underlying type used in generated C#.
-    /// Stops at constructed named types and named BIT STRING (those keep a class).
+    /// Stops at constructed named types, named BIT STRING, and ENUMERATED (those keep a type).
     /// </summary>
     private TypeExpr UnwrapAliases(IrDocument document, IrModule module, TypeExpr type)
     {
@@ -1102,7 +1167,7 @@ public sealed class CSharpBackend : ILanguageBackend
             }
 
             var inner = found.Value.Def.Type;
-            if (IsNamedBitString(inner) || NeedsNamedType(inner))
+            if (IsNamedBitString(inner) || NeedsNamedType(inner) || IsEnumerated(inner))
             {
                 return type;
             }
@@ -1166,11 +1231,12 @@ public sealed class CSharpBackend : ILanguageBackend
     private int UniversalTagNumber(IrDocument document, IrModule module, TypeExpr type) => type switch
     {
         BooleanType => 1,
-        IntegerType or EnumeratedType => 2,
+        IntegerType => 2,
         BitStringType => 3,
         OctetStringType => 4,
         NullType => 5,
         OidType => 6,
+        EnumeratedType => 10,
         StringType stringType => StringFormTagNumber(stringType.Form),
         TimeType timeType => timeType.Form == TimeTypes.Utc ? 23 : 24,
         SequenceType or SequenceOfType => 16,
@@ -1249,7 +1315,7 @@ public sealed class CSharpBackend : ILanguageBackend
     private static string WriteCall(string writer, string tag, string expr, TypeExpr type) => type switch
     {
         BooleanType => $"{writer}.WriteBoolean({tag}, {expr})",
-        IntegerType or EnumeratedType => $"{writer}.WriteInteger({tag}, {expr})",
+        IntegerType => $"{writer}.WriteInteger({tag}, {expr})",
         BitStringType => $"{writer}.WriteBitString({tag}, {expr})",
         OctetStringType => $"{writer}.WriteOctetString({tag}, {expr})",
         NullType => $"{writer}.WriteNull({tag})",
@@ -1264,7 +1330,7 @@ public sealed class CSharpBackend : ILanguageBackend
     private static string ReadCall(string reader, string tag, TypeExpr type) => type switch
     {
         BooleanType => $"{reader}.ReadBoolean({tag})",
-        IntegerType or EnumeratedType => $"{reader}.ReadInteger({tag})",
+        IntegerType => $"{reader}.ReadInteger({tag})",
         BitStringType => $"{reader}.ReadBitString({tag})",
         OctetStringType => $"{reader}.ReadOctetString({tag})",
         NullType => $"{reader}.ReadNull({tag})",

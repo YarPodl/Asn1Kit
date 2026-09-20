@@ -52,6 +52,9 @@ public sealed class Asn1Writer
         WritePrimitive(tag.AsPrimitive(), EncodeInteger(value));
     }
 
+    /// <summary>ENUMERATED uses the same contents encoding as INTEGER (X.690).</summary>
+    public void WriteEnumerated(Asn1Tag tag, BigInteger value) => WriteInteger(tag, value);
+
     public void WriteOctetString(Asn1Tag tag, ReadOnlySpan<byte> value)
     {
         WritePrimitive(tag.AsPrimitive(), value);

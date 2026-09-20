@@ -10,6 +10,7 @@ public sealed class PrimitiveCodecTests
     public static IEnumerable<object[]> BooleanCases() => BerDerFixtures.AsTheoryData("runtime-csharp/fixtures/ber-der/boolean.json");
     public static IEnumerable<object[]> NullCases() => BerDerFixtures.AsTheoryData("runtime-csharp/fixtures/ber-der/null.json");
     public static IEnumerable<object[]> IntegerCases() => BerDerFixtures.AsTheoryData("runtime-csharp/fixtures/ber-der/integer.json");
+    public static IEnumerable<object[]> EnumeratedCases() => BerDerFixtures.AsTheoryData("runtime-csharp/fixtures/ber-der/enumerated.json");
     public static IEnumerable<object[]> OctetCases() => BerDerFixtures.AsTheoryData("runtime-csharp/fixtures/ber-der/octet-string.json");
     public static IEnumerable<object[]> OidCases() => BerDerFixtures.AsTheoryData("runtime-csharp/fixtures/ber-der/oid.json");
     public static IEnumerable<object[]> BitStringCases() => BerDerFixtures.AsTheoryData("runtime-csharp/fixtures/ber-der/bit-string.json");
@@ -27,6 +28,10 @@ public sealed class PrimitiveCodecTests
     [Theory]
     [MemberData(nameof(IntegerCases))]
     public void Integer_Fixture(BerDerCase c) => Run(c, EncodeInteger, DecodeInteger);
+
+    [Theory]
+    [MemberData(nameof(EnumeratedCases))]
+    public void Enumerated_Fixture(BerDerCase c) => Run(c, EncodeEnumerated, DecodeEnumerated);
 
     [Theory]
     [MemberData(nameof(OctetCases))]
@@ -55,11 +60,13 @@ public sealed class PrimitiveCodecTests
         Asn1Boolean.Encode(writer, true);
         Asn1Null.Encode(writer);
         Asn1Integer.Encode(writer, 42);
+        Asn1Enumerated.Encode(writer, 3);
         var bytes = writer.Encode();
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
         Assert.True(Asn1Boolean.Decode(reader));
         Assert.True(Asn1Null.Decode(reader));
         Assert.Equal(42, Asn1Integer.Decode(reader));
+        Assert.Equal(3, Asn1Enumerated.Decode(reader));
         Assert.True(reader.Eof);
     }
 
@@ -180,6 +187,18 @@ public sealed class PrimitiveCodecTests
     private static void DecodeInteger(BerDerCase c, Asn1Reader r, byte[] _)
     {
         var value = r.ReadInteger(Asn1Tag.Integer);
+        if (c.HasValue)
+        {
+            Assert.Equal(BerDerFixtures.GetInteger(c), value);
+        }
+    }
+
+    private static void EncodeEnumerated(BerDerCase c, Asn1Writer w) =>
+        w.WriteEnumerated(Asn1Tag.Enumerated, BerDerFixtures.GetInteger(c));
+
+    private static void DecodeEnumerated(BerDerCase c, Asn1Reader r, byte[] _)
+    {
+        var value = r.ReadEnumerated(Asn1Tag.Enumerated);
         if (c.HasValue)
         {
             Assert.Equal(BerDerFixtures.GetInteger(c), value);

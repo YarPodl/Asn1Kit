@@ -68,6 +68,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `TryReadOctetString` / `TryReadValue` | fit; short → false; BER constructed OCTET |
 | `WriteBoolean` / `ReadBoolean` | DER `00`/`FF`; BER nonzero-as-true |
 | `WriteInteger` / `ReadInteger` | `0`, `-1`, 127/128, длинный; empty reject; soft non-minimal accept + strict reject |
+| `WriteEnumerated` / `ReadEnumerated` | tag `0A`; contents как INTEGER; empty / wrong tag reject |
 | `WriteOctetString` / `ReadOctetString` | empty; long-form; BER constructed + indefinite; ROM overload |
 | `WriteNull` / `ReadNull` | empty OK; nonempty reject |
 | `WriteObjectIdentifier` / `ReadObjectIdentifier` | OID; arcs; rejects |

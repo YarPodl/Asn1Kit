@@ -519,6 +519,102 @@ END
         Assert.Equal(encoded, rewrite.Encode());
     }
 
+    [Fact]
+    public void GeneratedCSharp_Enumerated_EmitsEnumAndRoundTrips()
+    {
+        const string asn = @"
+EnumMod DEFINITIONS EXPLICIT TAGS ::= BEGIN
+Reason ::= ENUMERATED {
+  ok(0),
+  bad(1),
+  worse(10)
+}
+Big ::= ENUMERATED { tiny(0), huge(2147483648) }
+Entry ::= SEQUENCE {
+  reason Reason,
+  note UTF8String OPTIONAL,
+  inline ENUMERATED { a(0), b(2) }
+}
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+
+        Assert.Contains("public enum Reason", source);
+        Assert.Contains("Ok = 0", source);
+        Assert.Contains("Bad = 1", source);
+        Assert.Contains("Worse = 10", source);
+        Assert.Contains("public enum Big : long", source);
+        Assert.Contains("Huge = 2147483648L", source);
+        Assert.Contains("public enum Entry_Inline", source);
+        Assert.Contains("WriteEnumerated", source);
+        Assert.Contains("ReadEnumerated", source);
+        Assert.Contains("Asn1Tag.Enumerated", source);
+        Assert.DoesNotContain("class Reason", source);
+
+        var assembly = CompileGenerated(source);
+        var reasonType = assembly.GetType("EnumMod.Reason")!;
+        Assert.True(reasonType.IsEnum);
+        var entryType = assembly.GetType("EnumMod.Entry")!;
+        var inlineType = assembly.GetType("EnumMod.Entry_Inline")!;
+        Assert.True(inlineType.IsEnum);
+
+        Assert.Equal(reasonType, entryType.GetProperty("Reason")!.PropertyType);
+        Assert.Equal(typeof(string), entryType.GetProperty("Note")!.PropertyType);
+        Assert.Equal(inlineType, entryType.GetProperty("Inline")!.PropertyType);
+
+        var bad = Enum.Parse(reasonType, "Bad");
+        var inlineB = Enum.Parse(inlineType, "B");
+        var entry = Activator.CreateInstance(entryType)!;
+        entryType.GetProperty("Reason")!.SetValue(entry, bad);
+        entryType.GetProperty("Inline")!.SetValue(entry, inlineB);
+
+        var expectedWithoutOptional = new byte[]
+        {
+            0x30, 0x06,
+            0x0A, 0x01, 0x01,
+            0x0A, 0x01, 0x02
+        };
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        entryType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(entry, new object[] { writer });
+        Assert.Equal(expectedWithoutOptional, writer.Encode());
+
+        var decoded = entryType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(expectedWithoutOptional, Asn1Encoding.Der) })!;
+        Assert.Equal(bad, entryType.GetProperty("Reason")!.GetValue(decoded));
+        Assert.Null(entryType.GetProperty("Note")!.GetValue(decoded));
+        Assert.Equal(inlineB, entryType.GetProperty("Inline")!.GetValue(decoded));
+
+        var rewrite = new Asn1Writer(Asn1Encoding.Der);
+        entryType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(decoded, new object[] { rewrite });
+        Assert.Equal(expectedWithoutOptional, rewrite.Encode());
+
+        entryType.GetProperty("Note")!.SetValue(entry, "X");
+        var withOptional = new Asn1Writer(Asn1Encoding.Der);
+        entryType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(entry, new object[] { withOptional });
+        var encodedOptional = withOptional.Encode();
+        Assert.Equal(
+            new byte[] { 0x30, 0x09, 0x0A, 0x01, 0x01, 0x0C, 0x01, 0x58, 0x0A, 0x01, 0x02 },
+            encodedOptional);
+
+        var decodedOptional = entryType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(encodedOptional, Asn1Encoding.Der) })!;
+        Assert.Equal("X", entryType.GetProperty("Note")!.GetValue(decodedOptional));
+
+        // Soft: unknown enumerated number is accepted via cast.
+        var unknown = new byte[] { 0x30, 0x06, 0x0A, 0x01, 0x07, 0x0A, 0x01, 0x00 };
+        var decodedUnknown = entryType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(unknown, Asn1Encoding.Der) })!;
+        Assert.Equal(7, Convert.ToInt32(entryType.GetProperty("Reason")!.GetValue(decodedUnknown)));
+
+        var wrongTag = new byte[] { 0x30, 0x06, 0x02, 0x01, 0x01, 0x0A, 0x01, 0x00 };
+        var ex = Assert.Throws<TargetInvocationException>(() =>
+            entryType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+                .Invoke(null, new object[] { new Asn1Reader(wrongTag, Asn1Encoding.Der) }));
+        Assert.IsType<Asn1Exception>(ex.InnerException);
+    }
+
     private static Assembly CompileGenerated(string source)
     {
         var tpa = (string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!;

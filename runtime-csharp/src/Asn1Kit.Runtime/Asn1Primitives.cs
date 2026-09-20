@@ -22,6 +22,15 @@ public static class Asn1Integer
         reader.ReadInteger(tag ?? Asn1Tag.Integer);
 }
 
+public static class Asn1Enumerated
+{
+    public static void Encode(Asn1Writer writer, BigInteger value, Asn1Tag? tag = null) =>
+        writer.WriteEnumerated(tag ?? Asn1Tag.Enumerated, value);
+
+    public static BigInteger Decode(Asn1Reader reader, Asn1Tag? tag = null) =>
+        reader.ReadEnumerated(tag ?? Asn1Tag.Enumerated);
+}
+
 public static class Asn1OctetString
 {
     public static void Encode(Asn1Writer writer, ReadOnlySpan<byte> value, Asn1Tag? tag = null) =>

@@ -1,0 +1,58 @@
+[
+  {
+    "name": "enumerated-0",
+    "rules": "der",
+    "op": "enumerated",
+    "bytes": "0A0100",
+    "value": "0"
+  },
+  {
+    "name": "enumerated-1",
+    "rules": "der",
+    "op": "enumerated",
+    "bytes": "0A0101",
+    "value": "1"
+  },
+  {
+    "name": "enumerated-10",
+    "rules": "der",
+    "op": "enumerated",
+    "bytes": "0A010A",
+    "value": "10"
+  },
+  {
+    "name": "enumerated-127",
+    "rules": "der",
+    "op": "enumerated",
+    "bytes": "0A017F",
+    "value": "127"
+  },
+  {
+    "name": "enumerated-128",
+    "rules": "der",
+    "op": "enumerated",
+    "bytes": "0A020080",
+    "value": "128"
+  },
+  {
+    "name": "enumerated-minus-1",
+    "rules": "der",
+    "op": "enumerated",
+    "bytes": "0A01FF",
+    "value": "-1"
+  },
+  {
+    "name": "enumerated-empty-reject",
+    "rules": "der",
+    "op": "enumerated",
+    "bytes": "0A00",
+    "reject": true
+  },
+  {
+    "name": "enumerated-wrong-tag-reject",
+    "rules": "der",
+    "op": "enumerated",
+    "bytes": "020101",
+    "reject": true
+  }
+]

@@ -1387,6 +1387,30 @@ public sealed class IssuingDistributionPoint
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
+public enum CRLReason
+{
+    /// <summary>ASN.1 enumerated unspecified(0).</summary>
+    Unspecified = 0,
+    /// <summary>ASN.1 enumerated keyCompromise(1).</summary>
+    KeyCompromise = 1,
+    /// <summary>ASN.1 enumerated cACompromise(2).</summary>
+    CACompromise = 2,
+    /// <summary>ASN.1 enumerated affiliationChanged(3).</summary>
+    AffiliationChanged = 3,
+    /// <summary>ASN.1 enumerated superseded(4).</summary>
+    Superseded = 4,
+    /// <summary>ASN.1 enumerated cessationOfOperation(5).</summary>
+    CessationOfOperation = 5,
+    /// <summary>ASN.1 enumerated certificateHold(6).</summary>
+    CertificateHold = 6,
+    /// <summary>ASN.1 enumerated removeFromCRL(8).</summary>
+    RemoveFromCRL = 8,
+    /// <summary>ASN.1 enumerated privilegeWithdrawn(9).</summary>
+    PrivilegeWithdrawn = 9,
+    /// <summary>ASN.1 enumerated aACompromise(10).</summary>
+    AACompromise = 10
+}
+
 public sealed class PolicyInformation_PolicyQualifiers
 {
     public List<PolicyQualifierInfo> Items { get; set; } = new List<PolicyQualifierInfo>();

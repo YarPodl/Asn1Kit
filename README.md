@@ -48,7 +48,7 @@ Value assignments (`id-pkix OBJECT IDENTIFIER ::= { … }`, `ub-name INTEGER ::=
 
 Вне профиля (явная ошибка): information object classes (`CLASS`), `COMPONENTS OF`, параметризованные типы, `REAL`, `EXTERNAL`.
 
-C# backend генерирует `sequence` / `choice` / `sequenceOf` / `set` / `setOf`, примитивы (`boolean`, `integer`, `enumerated`, `octetString`, `oid`, `bitString`, `string`, `time`, `any` → `Asn1Any`).
+C# backend генерирует `sequence` / `choice` / `sequenceOf` / `set` / `setOf`, `enumerated` → C# `enum`, примитивы (`boolean`, `integer`, `octetString`, `oid`, `bitString`, `string`, `time`, `any` → `Asn1Any`).
 
 Кодировки runtime: BER (в том числе indefinite length на чтении) и DER (каноническая запись).
 

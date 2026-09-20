@@ -118,6 +118,9 @@ public sealed class Asn1Reader
         return new BigInteger(copy);
     }
 
+    /// <summary>ENUMERATED uses the same contents encoding as INTEGER (X.690).</summary>
+    public BigInteger ReadEnumerated(Asn1Tag expected) => ReadInteger(expected);
+
     public byte[] ReadOctetString(Asn1Tag expected)
     {
         var (tag, contents, constructed) = ReadTlv();

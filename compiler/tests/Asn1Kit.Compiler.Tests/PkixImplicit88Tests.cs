@@ -59,6 +59,21 @@ public sealed class PkixImplicit88Tests
             "1.3.6.1.5.5.7.3.1",
             Assert.IsType<IrOidValue>(values["id-kp-serverAuth"].Value).Value);
 
-        Assert.IsType<EnumeratedType>(types["CRLReason"].Type);
+        var crlReason = Assert.IsType<EnumeratedType>(types["CRLReason"].Type);
+        Assert.Equal(
+            new (string Name, long Value)[]
+            {
+                ("unspecified", 0),
+                ("keyCompromise", 1),
+                ("cACompromise", 2),
+                ("affiliationChanged", 3),
+                ("superseded", 4),
+                ("cessationOfOperation", 5),
+                ("certificateHold", 6),
+                ("removeFromCRL", 8),
+                ("privilegeWithdrawn", 9),
+                ("aACompromise", 10)
+            },
+            crlReason.Values.Select(v => (v.Name, v.Value)).ToArray());
     }
 }

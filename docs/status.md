@@ -4,23 +4,25 @@
 
 ## Типы IR
 
-| `kind` | Компилятор | C# backend | Покрытие тестами |
-| --- | --- | --- | --- |
-| `boolean` | да | да → `bool` | `ParserTests`, `PrimitiveCodecTests`, `PrimitiveOracleTests` |
-| `integer` | да, с `namedValues` | да → `BigInteger` | `CompilerTests`, `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RoundTripTests` |
-| `enumerated` | да, с `values` | да → `BigInteger` (как INTEGER) | `PkixImplicit88Tests` |
-| `bitString` | да, с `namedBits` | без имён → `Asn1BitString`; с `namedBits` → класс + `[Flags]` enum (`ToFlags`/`FromFlags`) | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*`, `RoundTripTests.GeneratedCSharp_CollapsesAliases*` |
-| `octetString` | да | да → `byte[]` | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RoundTripTests`, `RuntimeTests` |
-| `oid` | да, dotted-строка; первый subidentifier — base-128 (в т.ч. `2.999…`) | да → `string` | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RuntimeTests.ObjectIdentifier_*` |
-| `string` (12 форм `stringType`) | да | да → `string` + `Asn1StringForm` | `PrimitiveCodecTests` (все 12), `PrimitiveOracleTests` (BCL-совместимые), `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*` |
-| `time` (`utc` / `generalized`) | да; `fractionDigits` 0…7 (default 3) для `generalized` | да → `DateTimeOffset` + `Asn1TimeForm`; запись с округлением | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*` |
-| `any` (+ `definedBy`) | да, с проверкой sibling-компонента | да → `Asn1Any` (Tag + Contents; `definedBy` не резолвится); typedef `Name ::= ANY` сворачивается | `ParserTests`, `RuntimeTests.Any_*`, `RoundTripTests.GeneratedCSharp_Any_*`, `ValueResolutionTests.RejectsAnyDefinedByUnknownField` |
-| `sequence` | да, `extensible` | да → класс с `Encode` / `Decode` | `RoundTripTests`, `PkixExplicit88Tests`, `PkixImplicit88Tests`, `PkixGeneratedCodeTests` |
-| `set` | да | да → класс с `Encode` / `Decode` (DER: порядок по тегу; decode по тегу) | `RoundTripTests`, `ParserTests`, `RuntimeTests` |
-| `choice` | да | да → класс + enum `…Kind` | `ParserTests`, `PkixExplicit88Tests`, `PkixGeneratedCodeTests` |
-| `sequenceOf` | да | да → класс с `List<T> Items` | `ParserTests`, `PkixGeneratedCodeTests` |
-| `setOf` | да | да → класс с `List<T> Items` (DER: сортировка TLV в `WriteSetOf`) | `RoundTripTests`, `ParserTests`, `RuntimeTests` |
-| `ref` | да, с резолвом через модули и `IMPORTS` | да; алиасы на примитивы/другие имена **сворачиваются** (класс не эмитится, `/// <summary>` на поле); cross-module → квалифицированное имя | `PkixExplicit88Tests`, `PkixImplicit88Tests`, `ImportResolutionTests`, `PkixGeneratedCodeTests`, `RoundTripTests.GeneratedCSharp_CollapsesAliases*` |
+
+| `kind`                          | Компилятор                                                           | C# backend                                                                                                                                | Покрытие тестами                                                                                                                                    |
+| ------------------------------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `boolean`                       | да                                                                   | да → `bool`                                                                                                                               | `ParserTests`, `PrimitiveCodecTests`, `PrimitiveOracleTests`                                                                                        |
+| `integer`                       | да, с `namedValues`                                                  | да → `BigInteger`                                                                                                                         | `CompilerTests`, `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RoundTripTests`                                                                    |
+| `enumerated`                    | да, с `values`                                                       | да → C# `enum` (tag 10); inline → `Owner_Field`                                                                                           | `PkixImplicit88Tests`, `RoundTripTests.GeneratedCSharp_Enumerated_*`, `PrimitiveCodecTests`                                                         |
+| `bitString`                     | да, с `namedBits`                                                    | без имён → `Asn1BitString`; с `namedBits` → класс + `[Flags]` enum (`ToFlags`/`FromFlags`)                                                | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*`, `RoundTripTests.GeneratedCSharp_CollapsesAliases*` |
+| `octetString`                   | да                                                                   | да → `byte[]`                                                                                                                             | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RoundTripTests`, `RuntimeTests`                                                                     |
+| `oid`                           | да, dotted-строка; первый subidentifier — base-128 (в т.ч. `2.999…`) | да → `string`                                                                                                                             | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RuntimeTests.ObjectIdentifier_*`                                                                    |
+| `string` (12 форм `stringType`) | да                                                                   | да → `string` + `Asn1StringForm`                                                                                                          | `PrimitiveCodecTests` (все 12), `PrimitiveOracleTests` (BCL-совместимые), `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*`                          |
+| `time` (`utc` / `generalized`)  | да; `fractionDigits` 0…7 (default 3) для `generalized`               | да → `DateTimeOffset` + `Asn1TimeForm`; запись с округлением                                                                              | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*`                                                     |
+| `any` (+ `definedBy`)           | да, с проверкой sibling-компонента                                   | да → `Asn1Any` (Tag + Contents; `definedBy` не резолвится); typedef `Name ::= ANY` сворачивается                                          | `ParserTests`, `RuntimeTests.Any_*`, `RoundTripTests.GeneratedCSharp_Any_*`, `ValueResolutionTests.RejectsAnyDefinedByUnknownField`                 |
+| `sequence`                      | да, `extensible`                                                     | да → класс с `Encode` / `Decode`                                                                                                          | `RoundTripTests`, `PkixExplicit88Tests`, `PkixImplicit88Tests`, `PkixGeneratedCodeTests`                                                            |
+| `set`                           | да                                                                   | да → класс с `Encode` / `Decode` (DER: порядок по тегу; decode по тегу)                                                                   | `RoundTripTests`, `ParserTests`, `RuntimeTests`                                                                                                     |
+| `choice`                        | да                                                                   | да → класс + enum `…Kind`                                                                                                                 | `ParserTests`, `PkixExplicit88Tests`, `PkixGeneratedCodeTests`                                                                                      |
+| `sequenceOf`                    | да                                                                   | да → класс с `List<T> Items`                                                                                                              | `ParserTests`, `PkixGeneratedCodeTests`                                                                                                             |
+| `setOf`                         | да                                                                   | да → класс с `List<T> Items` (DER: сортировка TLV в `WriteSetOf`)                                                                         | `RoundTripTests`, `ParserTests`, `RuntimeTests`                                                                                                     |
+| `ref`                           | да, с резолвом через модули и `IMPORTS`                              | да; алиасы на примитивы/другие имена **сворачиваются** (класс не эмитится, `/// <summary>` на поле); cross-module → квалифицированное имя | `PkixExplicit88Tests`, `PkixImplicit88Tests`, `ImportResolutionTests`, `PkixGeneratedCodeTests`, `RoundTripTests.GeneratedCSharp_CollapsesAliases`* |
+
 
 Неподдержанные бэкендом kind отсекает `CSharpBackend.EnsureBackendSupport` с текстом `C# backend does not support kind '<kind>' yet.` — рекурсивно, включая вложенные компоненты и элементы `SEQUENCE OF` / `SET OF`.
 
@@ -38,32 +40,39 @@
 - `SIZE` сразу после `SEQUENCE` / `SET` без `OF` и `MIN` как конкретная граница — явный отказ.
 - Остальные формы (например `FROM`, union `|`) сохраняются строкой в `constraint.unsupported`.
 
+
+
 ## Runtime BER/DER
 
-| Операция | `Asn1Writer` | `Asn1Reader` |
-| --- | --- | --- |
-| BOOLEAN | `WriteBoolean` | `ReadBoolean` |
-| INTEGER | `WriteInteger` (`BigInteger`) | `ReadInteger` |
-| BIT STRING | `WriteBitString` (`Asn1BitString`) | `ReadBitString` (BER: constructed и indefinite length склеиваются) |
-| OCTET STRING | `WriteOctetString` (`ReadOnlySpan`) | `ReadOctetString` → `byte[]`; `TryReadOctetString(Span)` copy-out (BER: constructed и indefinite склеиваются) |
-| NULL | `WriteNull` | `ReadNull` |
-| OBJECT IDENTIFIER | `WriteObjectIdentifier` (dotted) | `ReadObjectIdentifier` |
-| STRING (12 форм) | `WriteString` + `Asn1StringForm` | `ReadString` (BER: constructed склеивается) |
-| TIME (`utc` / `generalized`) | `WriteTime` (`DateTimeOffset`, `fractionDigits` для generalized) | `ReadTime` (дробь 1…7, хвостовые нули ок) |
-| SEQUENCE / SET / constructed | `WriteSequence`, `WriteSet` | `ReadSequence`, `ReadSet`, `TryPeekTag`, `Eof` |
-| SET OF (DER sort) | `WriteSetOf(Action)` | через `ReadSet` |
-| EXPLICIT-обёртка | `WriteExplicit` | через `ReadSequence` |
-| Готовый TLV | `WriteRaw`; `Encode` / `EncodedLength` / `TryEncode` | `ReadValue` / `TryReadValue` / `ReadTlv` |
-| ANY | `WriteAny` (`Asn1Any`) | `ReadAny` (с ожидаемым тегом или без) |
+
+| Операция                     | `Asn1Writer`                                                     | `Asn1Reader`                                                                                                  |
+| ---------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| BOOLEAN                      | `WriteBoolean`                                                   | `ReadBoolean`                                                                                                 |
+| INTEGER                      | `WriteInteger` (`BigInteger`)                                    | `ReadInteger`                                                                                                 |
+| ENUMERATED                   | `WriteEnumerated` (`BigInteger`, contents как INTEGER)           | `ReadEnumerated`                                                                                              |
+| BIT STRING                   | `WriteBitString` (`Asn1BitString`)                               | `ReadBitString` (BER: constructed и indefinite length склеиваются)                                            |
+| OCTET STRING                 | `WriteOctetString` (`ReadOnlySpan`)                              | `ReadOctetString` → `byte[]`; `TryReadOctetString(Span)` copy-out (BER: constructed и indefinite склеиваются) |
+| NULL                         | `WriteNull`                                                      | `ReadNull`                                                                                                    |
+| OBJECT IDENTIFIER            | `WriteObjectIdentifier` (dotted)                                 | `ReadObjectIdentifier`                                                                                        |
+| STRING (12 форм)             | `WriteString` + `Asn1StringForm`                                 | `ReadString` (BER: constructed склеивается)                                                                   |
+| TIME (`utc` / `generalized`) | `WriteTime` (`DateTimeOffset`, `fractionDigits` для generalized) | `ReadTime` (дробь 1…7, хвостовые нули ок)                                                                     |
+| SEQUENCE / SET / constructed | `WriteSequence`, `WriteSet`                                      | `ReadSequence`, `ReadSet`, `TryPeekTag`, `Eof`                                                                |
+| SET OF (DER sort)            | `WriteSetOf(Action)`                                             | через `ReadSet`                                                                                               |
+| EXPLICIT-обёртка             | `WriteExplicit`                                                  | через `ReadSequence`                                                                                          |
+| Готовый TLV                  | `WriteRaw`; `Encode` / `EncodedLength` / `TryEncode`             | `ReadValue` / `TryReadValue` / `ReadTlv`                                                                      |
+| ANY                          | `WriteAny` (`Asn1Any`)                                           | `ReadAny` (с ожидаемым тегом или без)                                                                         |
+
 
 **Запись (всегда канон):** definite length; BOOLEAN `0x00` / `0xFF`; BIT STRING с нулевыми хвостовыми битами; время с секундами и суффиксом `Z` (GeneralizedTime: `fractionDigits` 0…7, default 3; без хвостовых нулей дроби); INTEGER через `BigInteger.ToByteArray` (минимальная форма).
 
 **Чтение — soft-profile (см. [decisions.md](decisions.md) «мягкое чтение»):** часть запретов DER/X.690 по умолчанию **не** роняет decode; строгий reject — через опции reader’а (ещё не введены; backlog ниже). Уже зафиксированные soft-accept по умолчанию:
 
-| Форма | Default | Строгая опция (план) |
-| --- | --- | --- |
-| Non-minimal INTEGER contents (`02 02 00 01`, …) | accept | reject when enabled |
-| BIT STRING nonzero trailing bits (в т.ч. под DER) | accept | reject when enabled |
+
+| Форма                                             | Default | Строгая опция (план) |
+| ------------------------------------------------- | ------- | -------------------- |
+| Non-minimal INTEGER contents (`02 02 00 01`, …)   | accept  | reject when enabled  |
+| BIT STRING nonzero trailing bits (в т.ч. под DER) | accept  | reject when enabled  |
+
 
 Сейчас код **уже** принимает non-minimal INTEGER; BIT STRING trailing bits под DER **ещё отвергает** — это расхождение с решением, чинится вместе с опциями. BER: indefinite length, constructed строки/BIT STRING, время без секунд и `±hhmm`; дробь 1…7 с хвостовыми нулями допускается и в DER.
 
@@ -75,26 +84,44 @@
 
 Явный `CompileException` с позицией: `CLASS` и information object classes, `COMPONENTS OF`, `REAL`, `EXTERNAL`, параметризованные типы.
 
-## Ближайшие пробелы
+## Backlog
 
-1. C++ backend (`compiler/src/Asn1Kit.Codegen.Cpp`) и C++ runtime (`runtime-cpp/`) — см. [compiler/docs/playbooks/new-backend.md](../compiler/docs/playbooks/new-backend.md).
-2. Резолв `ANY DEFINED BY` в конкретный тип по значению sibling-компонента (сейчас `Asn1Any` остаётся сырым TLV).
-3. Encode/decode тесты на golden-либе [`runtime-csharp/generated/Asn1Kit.Pkix`](../runtime-csharp/generated/Asn1Kit.Pkix/) (сама либа и сверка `PkixGeneratedCodeTests` уже есть; мелкий round-trip через Roslyn — в `compiler/tests`).
+
+
+### Текущие задачи
+
+1. Для CHOICE типов дать способ формировать его кодом (сейчас все свойства private set)
+2. Добавить **XML-документацию для public API Runtime**
+3. Классы, созданные для SEQUENCE OF слишком похожи, может сделать шаблоном?
+4. Для INTEGER в рантайме добавить тип обертку, который содержит и позволяет отдать/задать значение как байты, а также позволяет
+5. Для составных типов и отдельных значений в сгенерированном коде в комментарих писать копию их описания в ASN.1. Возможно еще туда же захватывать комментарий из ASN.1 модуля
+6. Резолв `ANY DEFINED BY` в конкретный тип по значению sibling-компонента (сейчас `Asn1Any` остаётся сырым TLV).
+7. Encode/decode тесты на golden-либе `[runtime-csharp/generated/Asn1Kit.Pkix](../runtime-csharp/generated/Asn1Kit.Pkix/)` (сама либа и сверка `PkixGeneratedCodeTests` уже есть; мелкий round-trip через Roslyn — в `compiler/tests`).
+
+
+
+### Крупные задачи
+
+1. C++backend (++`compiler/src/Asn1Kit.Codegen.Cpp`++) и C++ runtime (`runtime-cpp/`) — см. [compiler/docs/playbooks/new-backend.md](../compiler/docs/playbooks/new-backend.md).
+
+
 
 ## Backlog: тесты примитивов
 
 Стратегия (матрица + oracle `System.Formats.Asn1` + external) уже внедрена. Политика soft-read + strict options — [decisions.md](decisions.md). Чеклист API — [runtime-csharp/docs/runtime-api.md](../runtime-csharp/docs/runtime-api.md) § «Чеклист RuntimeTests». Развёрнутый план — canvas `runtime-test-backlog`.
 
-| Приоритет | Задача | Заметки |
-| --- | --- | --- |
-| высокий | Reader options + soft defaults: non-minimal INTEGER accept; BIT trailing nonzero accept (в т.ч. DER); strict → reject | Документировать в status/runtime-api; тесты default+strict; сейчас BIT DER reject — выровнять |
-| высокий | Fixture/тесты soft INTEGER (`02 02 00 01` …) + strict reject | Default: decode OK; encode по-прежнему минимальный |
-| высокий | Fixture/тесты BIT trailing nonzero: default accept под DER; strict reject | Обновить `bitstring-der-rejects-trailing-bits` |
-| высокий | Oracle: `UniversalString`; UTCTime year pivot | Сейчас pivot только в `RuntimeTests` |
-| средний | Решить+документировать+опция: non-minimal length, OID overlong base-128 | Не включать в default soft без записи в status |
-| средний | Негативы всегда-reject: BOOLEAN length≠1/constructed; truncated EOC; empty INTEGER | Не soft |
-| средний | Oracle GeneralizedTime с дробью; чеклист API → fixtures; external INTEGER RFC 8017 | |
-| низкий | Второй oracle — BouncyCastle | Только при расхождении с BCL |
+
+| Приоритет | Задача                                                                                                                | Заметки                                                                                       |
+| --------- | --------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| высокий   | Reader options + soft defaults: non-minimal INTEGER accept; BIT trailing nonzero accept (в т.ч. DER); strict → reject | Документировать в status/runtime-api; тесты default+strict; сейчас BIT DER reject — выровнять |
+| высокий   | Fixture/тесты soft INTEGER (`02 02 00 01` …) + strict reject                                                          | Default: decode OK; encode по-прежнему минимальный                                            |
+| высокий   | Fixture/тесты BIT trailing nonzero: default accept под DER; strict reject                                             | Обновить `bitstring-der-rejects-trailing-bits`                                                |
+| высокий   | Oracle: `UniversalString`; UTCTime year pivot                                                                         | Сейчас pivot только в `RuntimeTests`                                                          |
+| средний   | Решить+документировать+опция: non-minimal length, OID overlong base-128                                               | Не включать в default soft без записи в status                                                |
+| средний   | Негативы всегда-reject: BOOLEAN length≠1/constructed; truncated EOC; empty INTEGER                                    | Не soft                                                                                       |
+| средний   | Oracle GeneralizedTime с дробью; чеклист API → fixtures; external INTEGER RFC 8017                                    |                                                                                               |
+| низкий    | Второй oracle — BouncyCastle                                                                                          | Только при расхождении с BCL                                                                  |
+
 
 Не делать: subprocess (openssl/pyasn1) как gate `dotnet test`; копирование чужих сьютов целиком; CER в oracle.
 
@@ -102,10 +129,13 @@
 
 Внутренние аллокации; публичный API не меняется. Контракт Writer/Reader — [runtime-api.md](../runtime-csharp/docs/runtime-api.md).
 
-| Приоритет | Задача | Заметки |
-| --- | --- | --- |
-| средний | Nested write: один буфер / резерв длины вместо `new Asn1Writer` + `Encode()` на уровень | Горячий путь SEQUENCE/SET |
-| средний | Nested read: срез `(offset, end)` без `ReadValue`→copy | Публичный `ReadTlv` остаётся allocating-обёрткой |
-| низкий | Constructed OCTET / BIT / string (BER): без `List<byte>` + `AddRange` | |
-| низкий | OID encode: без `Split` + `List` + `Stack` на коротких OID | |
-| низкий | Scratch: high-tag / length; reverse в `ReadInteger`; `TryRead*` без промежуточного `byte[]` когда destination достаточен | |
+
+| Приоритет | Задача                                                                                                                   | Заметки                                          |
+| --------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ |
+| средний   | Nested write: один буфер / резерв длины вместо `new Asn1Writer` + `Encode()` на уровень                                  | Горячий путь SEQUENCE/SET                        |
+| средний   | Nested read: срез `(offset, end)` без `ReadValue`→copy                                                                   | Публичный `ReadTlv` остаётся allocating-обёрткой |
+| низкий    | Constructed OCTET / BIT / string (BER): без `List<byte>` + `AddRange`                                                    |                                                  |
+| низкий    | OID encode: без `Split` + `List` + `Stack` на коротких OID                                                               |                                                  |
+| низкий    | Scratch: high-tag / length; reverse в `ReadInteger`; `TryRead*` без промежуточного `byte[]` когда destination достаточен |                                                  |
+
+
