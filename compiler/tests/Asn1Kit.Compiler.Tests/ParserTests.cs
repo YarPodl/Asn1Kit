@@ -105,6 +105,7 @@ END
         const string asn = @"
 M DEFINITIONS ::= BEGIN
 S ::= ANY
+Holder ::= SEQUENCE { v S }
 END
 ";
         var document = new Asn1Compiler().CompileText(asn);
@@ -112,6 +113,8 @@ END
         Assert.Contains("Asn1Any", source);
         Assert.Contains("WriteAny", source);
         Assert.Contains("ReadAny", source);
+        Assert.Contains("ASN.1 alias S ::= ANY.", source);
+        Assert.DoesNotContain("class S", source);
         Assert.DoesNotContain("does not support kind 'any'", source);
     }
 

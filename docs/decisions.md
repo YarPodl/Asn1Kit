@@ -95,6 +95,12 @@
   2. reject nonzero trailing bits BIT STRING при чтении в DER (X.690 §11.2).
 - Прочие кандидаты (non-minimal length, overlong OID base-128, …) подключаются тем же паттерном только после явной записи в status/runtime-api.
 
+## C# codegen — typedef-алиасы сворачиваются
+
+**Причина.** Имена вроде `AttributeType ::= OBJECT IDENTIFIER` и `DistinguishedName ::= RDNSequence` порождали sealed-обёртки с единственным `Value`, дублируя CLR-тип без пользы. В C# 10 / net6.0 нет публичных type alias уровня языка (`using` — только внутри файла).
+
+**Последствие.** C# backend не эмитит класс для typedef, чей RHS — не constructed и не `BIT STRING` с `namedBits`: в полях подставляется исходный тип (`string`, `Asn1Any`, `RDNSequence`, …), имя алиаса остаётся в `/// <summary>ASN.1 alias …</summary>`. Исключение — named BIT STRING: класс с `Asn1BitString Value`, `[Flags]` enum `{Name}Flags` и `ToFlags` / `FromFlags` / свойство `Flags`. IR не меняется.
+
 ## C++ — ещё один бэкенд, а не форк фронтенда
 
 **Причина.** Компилятор не знает целевой язык, поэтому второй язык не требует изменений в разборе ASN.1 и в IR.

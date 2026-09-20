@@ -154,7 +154,9 @@ public sealed class RoundTripTests
         var document = new Asn1Compiler().CompileFiles(new[] { TestData.RepoPath("compiler/fixtures/asn1/primitives.asn") });
         IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
         var source = new CSharpBackend().Generate(document).Single().Contents;
-        Assert.Contains("Bit_DigitalSignature", source);
+        Assert.Contains("KeyUsageFlags", source);
+        Assert.Contains("[Flags]", source);
+        Assert.DoesNotContain("Bit_DigitalSignature", source);
         Assert.Contains("WriteString", source);
         Assert.Contains("WriteTime", source);
         Assert.Contains("Asn1TimeForm.Generalized, 3)", source);
@@ -164,7 +166,8 @@ public sealed class RoundTripTests
         var assembly = CompileGenerated(source);
         var sampleType = assembly.GetType("PrimitivesModule.Sample")!;
         var keyUsageType = assembly.GetType("PrimitivesModule.KeyUsage")!;
-        Assert.Equal(0, keyUsageType.GetField("Bit_DigitalSignature")!.GetValue(null));
+        var flagsEnum = assembly.GetType("PrimitivesModule.KeyUsageFlags")!;
+        Assert.Equal(1, Convert.ToInt32(Enum.Parse(flagsEnum, "DigitalSignature")));
 
         var utc = new DateTimeOffset(2017, 1, 2, 3, 4, 5, TimeSpan.Zero);
         var sample = Activator.CreateInstance(sampleType)!;
@@ -341,11 +344,13 @@ END
         Assert.Contains("Asn1Any", source);
         Assert.Contains("if (!inner.Eof)", source);
         Assert.Contains("WriteAny", source);
+        Assert.DoesNotContain("class AttributeValue", source);
+        Assert.Contains("ASN.1 alias AttributeValue ::= ANY.", source);
 
         var assembly = CompileGenerated(source);
         var algType = assembly.GetType("AnyMod.AlgorithmIdentifier")!;
         var attrType = assembly.GetType("AnyMod.AttributeTypeAndValue")!;
-        var valueType = assembly.GetType("AnyMod.AttributeValue")!;
+        Assert.Null(assembly.GetType("AnyMod.AttributeValue"));
 
         // OID 1.2.840.113549.1.1.1 = rsaEncryption, no parameters
         var alg = Activator.CreateInstance(algType)!;
@@ -389,12 +394,10 @@ END
         algType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(decodedWith, new object[] { rewrite });
         Assert.Equal(expectedWithNull, rewrite.Encode());
 
-        // Named ANY alias via AttributeTypeAndValue
+        // Collapsed ANY alias: Value is Asn1Any directly
         var attr = Activator.CreateInstance(attrType)!;
         attrType.GetProperty("Type")!.SetValue(attr, "2.5.4.3");
-        var attrValue = Activator.CreateInstance(valueType)!;
-        valueType.GetProperty("Value")!.SetValue(attrValue, new Asn1Any(Asn1Tag.Utf8String, Encoding.UTF8.GetBytes("Ann")));
-        attrType.GetProperty("Value")!.SetValue(attr, attrValue);
+        attrType.GetProperty("Value")!.SetValue(attr, new Asn1Any(Asn1Tag.Utf8String, Encoding.UTF8.GetBytes("Ann")));
 
         var expectedAttr = new byte[]
         {
@@ -408,8 +411,7 @@ END
 
         var decodedAttr = attrType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
             .Invoke(null, new object[] { new Asn1Reader(expectedAttr, Asn1Encoding.Der) })!;
-        var decodedValueWrapper = attrType.GetProperty("Value")!.GetValue(decodedAttr)!;
-        var decodedAny = (Asn1Any)valueType.GetProperty("Value")!.GetValue(decodedValueWrapper)!;
+        var decodedAny = (Asn1Any)attrType.GetProperty("Value")!.GetValue(decodedAttr)!;
         Assert.Equal(Asn1Tag.Utf8String, decodedAny.Tag);
         Assert.Equal("Ann", Encoding.UTF8.GetString(decodedAny.Contents));
 
@@ -418,6 +420,103 @@ END
             algType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
                 .Invoke(null, new object[] { new Asn1Reader(broken, Asn1Encoding.Der) }));
         Assert.IsType<Asn1Exception>(ex.InnerException);
+    }
+
+    [Fact]
+    public void GeneratedCSharp_CollapsesAliasesAndKeepsNamedBitStringFlags()
+    {
+        const string asn = @"
+AliasMod DEFINITIONS EXPLICIT TAGS ::= BEGIN
+AttributeType ::= OBJECT IDENTIFIER
+Serial ::= INTEGER
+Rdn ::= SEQUENCE { attr AttributeType }
+Name ::= Rdn
+KeyUsage ::= BIT STRING {
+  digitalSignature(0),
+  keyEncipherment(2)
+}
+Holder ::= SEQUENCE {
+  type AttributeType,
+  id Serial,
+  who Name,
+  usage KeyUsage
+}
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+
+        Assert.DoesNotContain("class AttributeType", source);
+        Assert.DoesNotContain("class Serial", source);
+        Assert.DoesNotContain("class Name", source);
+        Assert.Contains("class Rdn", source);
+        Assert.Contains("class KeyUsage", source);
+        Assert.Contains("enum KeyUsageFlags", source);
+        Assert.Contains("ASN.1 alias AttributeType ::= OBJECT IDENTIFIER.", source);
+        Assert.Contains("ASN.1 alias Serial ::= INTEGER.", source);
+        Assert.Contains("ASN.1 alias Name ::= Rdn.", source);
+        Assert.Contains("DigitalSignature = 1 << 0", source);
+        Assert.Contains("KeyEncipherment = 1 << 2", source);
+        Assert.DoesNotContain("Bit_DigitalSignature", source);
+
+        var assembly = CompileGenerated(source);
+        Assert.Null(assembly.GetType("AliasMod.AttributeType"));
+        Assert.Null(assembly.GetType("AliasMod.Serial"));
+        Assert.Null(assembly.GetType("AliasMod.Name"));
+
+        var holderType = assembly.GetType("AliasMod.Holder")!;
+        var rdnType = assembly.GetType("AliasMod.Rdn")!;
+        var keyUsageType = assembly.GetType("AliasMod.KeyUsage")!;
+        var flagsEnum = assembly.GetType("AliasMod.KeyUsageFlags")!;
+
+        Assert.Equal(typeof(string), holderType.GetProperty("Type")!.PropertyType);
+        Assert.Equal(typeof(BigInteger), holderType.GetProperty("Id")!.PropertyType);
+        Assert.Equal(rdnType, holderType.GetProperty("Who")!.PropertyType);
+        Assert.Equal(keyUsageType, holderType.GetProperty("Usage")!.PropertyType);
+
+        var digital = Enum.Parse(flagsEnum, "DigitalSignature");
+        var encipher = Enum.Parse(flagsEnum, "KeyEncipherment");
+        var combined = Enum.ToObject(flagsEnum, Convert.ToInt32(digital) | Convert.ToInt32(encipher));
+
+        var fromFlags = keyUsageType.GetMethod("FromFlags")!.Invoke(null, new[] { combined })!;
+        var bits = (Asn1BitString)fromFlags;
+        Assert.True(bits[0]);
+        Assert.True(bits[2]);
+        Assert.Equal(3, bits.BitLength);
+
+        var toFlags = keyUsageType.GetMethod("ToFlags")!.Invoke(null, new object[] { bits })!;
+        Assert.Equal(combined, toFlags);
+
+        var usage = Activator.CreateInstance(keyUsageType)!;
+        keyUsageType.GetProperty("Flags")!.SetValue(usage, combined);
+        Assert.Equal(bits, keyUsageType.GetProperty("Value")!.GetValue(usage));
+
+        var rdn = Activator.CreateInstance(rdnType)!;
+        rdnType.GetProperty("Attr")!.SetValue(rdn, "2.5.4.3");
+
+        var holder = Activator.CreateInstance(holderType)!;
+        holderType.GetProperty("Type")!.SetValue(holder, "1.2.3");
+        holderType.GetProperty("Id")!.SetValue(holder, new BigInteger(7));
+        holderType.GetProperty("Who")!.SetValue(holder, rdn);
+        holderType.GetProperty("Usage")!.SetValue(holder, usage);
+
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        holderType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(holder, new object[] { writer });
+        var encoded = writer.Encode();
+
+        var decoded = holderType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(encoded, Asn1Encoding.Der) })!;
+        Assert.Equal("1.2.3", holderType.GetProperty("Type")!.GetValue(decoded));
+        Assert.Equal(new BigInteger(7), holderType.GetProperty("Id")!.GetValue(decoded));
+        var decodedRdn = holderType.GetProperty("Who")!.GetValue(decoded)!;
+        Assert.Equal("2.5.4.3", rdnType.GetProperty("Attr")!.GetValue(decodedRdn));
+        var decodedUsage = holderType.GetProperty("Usage")!.GetValue(decoded)!;
+        Assert.Equal(combined, keyUsageType.GetProperty("Flags")!.GetValue(decodedUsage));
+
+        var rewrite = new Asn1Writer(Asn1Encoding.Der);
+        holderType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(decoded, new object[] { rewrite });
+        Assert.Equal(encoded, rewrite.Encode());
     }
 
     private static Assembly CompileGenerated(string source)

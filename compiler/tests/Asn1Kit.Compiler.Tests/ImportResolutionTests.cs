@@ -84,7 +84,7 @@ END
     {
         const string provider = @"
 Provider DEFINITIONS EXPLICIT TAGS ::= BEGIN
-Shared ::= INTEGER
+Shared ::= SEQUENCE { n INTEGER }
 END
 ";
         const string consumer = @"
@@ -111,7 +111,7 @@ END
     {
         const string provider = @"
 Provider DEFINITIONS EXPLICIT TAGS ::= BEGIN
-Shared ::= INTEGER
+Shared ::= SEQUENCE { n INTEGER }
 END
 ";
         const string consumer = @"

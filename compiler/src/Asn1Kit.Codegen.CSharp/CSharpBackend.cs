@@ -41,6 +41,11 @@ public sealed class CSharpBackend : ILanguageBackend
                 continue;
             }
 
+            if (IsCollapsibleAlias(type.Type))
+            {
+                continue;
+            }
+
             var typeName = IrOptions.CSharpTypeName(type.Options) ?? SanitizeIdentifier(type.Name);
             queue.Enqueue((typeName, type.Type));
         }
@@ -139,6 +144,13 @@ public sealed class CSharpBackend : ILanguageBackend
     private static bool NeedsNamedType(TypeExpr type) =>
         type is SequenceType or SetType or ChoiceType or SequenceOfType or SetOfType;
 
+    private static bool IsNamedBitString(TypeExpr type) =>
+        type is BitStringType { NamedBits: { Count: > 0 } };
+
+    /// <summary>Typedefs that must not get their own C# class (collapsed to the underlying type).</summary>
+    private static bool IsCollapsibleAlias(TypeExpr type) =>
+        !NeedsNamedType(type) && !IsNamedBitString(type);
+
     private void EmitType(StringBuilder sb, IrDocument document, IrModule module, string typeName, TypeExpr type)
     {
         EnsureBackendSupport(type);
@@ -159,9 +171,12 @@ public sealed class CSharpBackend : ILanguageBackend
             case SetOfType setOf:
                 EmitSetOf(sb, document, module, typeName, setOf);
                 break;
-            default:
-                EmitAlias(sb, document, module, typeName, type);
+            case BitStringType bitString when IsNamedBitString(bitString):
+                EmitNamedBitString(sb, typeName, bitString);
                 break;
+            default:
+                throw new InvalidOperationException(
+                    $"C# backend refused to emit collapsible alias '{typeName}' (kind '{type.Kind}').");
         }
     }
 
@@ -205,9 +220,7 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine("{");
         foreach (var field in type.Components)
         {
-            var prop = PropertyName(field, typeName);
-            var csType = CsType(document, module, typeName, field.Name, field.Type, field.Optional);
-            sb.AppendLine($"    public {csType} {prop} {{ get; set; }}{Initializer(field.Type, field.Optional)}");
+            EmitProperty(sb, document, module, typeName, field, field.Optional, privateSetter: false);
         }
 
         sb.AppendLine();
@@ -250,9 +263,7 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine("{");
         foreach (var field in type.Components)
         {
-            var prop = PropertyName(field, typeName);
-            var csType = CsType(document, module, typeName, field.Name, field.Type, field.Optional);
-            sb.AppendLine($"    public {csType} {prop} {{ get; set; }}{Initializer(field.Type, field.Optional)}");
+            EmitProperty(sb, document, module, typeName, field, field.Optional, privateSetter: false);
         }
 
         sb.AppendLine();
@@ -348,9 +359,7 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine($"    public {typeName}Kind Kind {{ get; private set; }}");
         foreach (var field in type.Components)
         {
-            var prop = PropertyName(field, typeName);
-            var csType = CsType(document, module, typeName, field.Name, field.Type, optional: true);
-            sb.AppendLine($"    public {csType} {prop} {{ get; private set; }}");
+            EmitProperty(sb, document, module, typeName, field, optional: true, privateSetter: true);
         }
 
         sb.AppendLine();
@@ -362,7 +371,16 @@ public sealed class CSharpBackend : ILanguageBackend
         {
             var prop = PropertyName(field, typeName);
             sb.AppendLine($"            case {typeName}Kind.{prop}:");
-            EmitEncodeValue(sb, document, module, typeName, field.Name, field.Type, "                ", "writer", UnwrapOptional(field.Type, prop));
+            EmitEncodeValue(
+                sb,
+                document,
+                module,
+                typeName,
+                field.Name,
+                field.Type,
+                "                ",
+                "writer",
+                UnwrapOptional(document, module, field.Type, prop));
             sb.AppendLine("                break;");
         }
 
@@ -473,67 +491,172 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine("}");
     }
 
-    private void EmitAlias(StringBuilder sb, IrDocument document, IrModule module, string typeName, TypeExpr type)
+    private void EmitNamedBitString(StringBuilder sb, string typeName, BitStringType type)
     {
-        if (type is AnyType)
+        var namedBits = type.NamedBits!;
+        var maxIndex = namedBits.Max(b => b.Value);
+        if (maxIndex > 62)
         {
-            EmitAnyAlias(sb, typeName);
-            return;
+            throw new NotSupportedException(
+                $"Named BIT STRING '{typeName}' bit index {maxIndex} exceeds Flags enum limit (62).");
         }
 
-        var csType = CsType(document, module, typeName, "Value", type, optional: false);
+        var useLong = maxIndex > 30;
+        var enumName = typeName + "Flags";
+        var shiftSuffix = useLong ? "L" : "";
+
+        sb.AppendLine("[Flags]");
+        sb.Append("public enum ").Append(enumName);
+        if (useLong)
+        {
+            sb.Append(" : long");
+        }
+
+        sb.AppendLine();
+        sb.AppendLine("{");
+        sb.AppendLine("    None = 0,");
+        for (var i = 0; i < namedBits.Count; i++)
+        {
+            var bit = namedBits[i];
+            var member = SanitizeIdentifier(bit.Name);
+            sb.AppendLine(
+                $"    /// <summary>ASN.1 named bit {bit.Name}({bit.Value.ToString(CultureInfo.InvariantCulture)}).</summary>");
+            sb.Append($"    {member} = 1{shiftSuffix} << {bit.Value.ToString(CultureInfo.InvariantCulture)}");
+            sb.AppendLine(i + 1 < namedBits.Count ? "," : "");
+        }
+
+        sb.AppendLine("}");
+        sb.AppendLine();
         sb.AppendLine($"public sealed class {typeName}");
         sb.AppendLine("{");
-        if (type is BitStringType { NamedBits: { Count: > 0 } namedBits })
+        sb.AppendLine("    public Asn1BitString Value { get; set; }");
+        sb.AppendLine();
+        sb.AppendLine($"    public {enumName} Flags");
+        sb.AppendLine("    {");
+        sb.AppendLine("        get => ToFlags(Value);");
+        sb.AppendLine("        set => Value = FromFlags(value);");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        sb.AppendLine($"    public static {enumName} ToFlags(Asn1BitString bits)");
+        sb.AppendLine("    {");
+        sb.AppendLine($"        var flags = {enumName}.None;");
+        foreach (var bit in namedBits)
         {
-            foreach (var bit in namedBits)
-            {
-                sb.AppendLine(
-                    $"    public const int Bit_{SanitizeIdentifier(bit.Name)} = {bit.Value.ToString(CultureInfo.InvariantCulture)};");
-            }
-
-            sb.AppendLine();
+            var member = SanitizeIdentifier(bit.Name);
+            var index = bit.Value.ToString(CultureInfo.InvariantCulture);
+            sb.AppendLine(
+                $"        if (bits.BitLength > {index} && bits[{index}]) flags |= {enumName}.{member};");
         }
 
-        sb.AppendLine($"    public {csType} Value {{ get; set; }}{Initializer(type, false)}");
+        sb.AppendLine("        return flags;");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        sb.AppendLine($"    public static Asn1BitString FromFlags({enumName} flags)");
+        sb.AppendLine("    {");
+        var length = ((int)maxIndex + 1).ToString(CultureInfo.InvariantCulture);
+        sb.AppendLine($"        var bits = new bool[{length}];");
+        foreach (var bit in namedBits)
+        {
+            var member = SanitizeIdentifier(bit.Name);
+            var index = bit.Value.ToString(CultureInfo.InvariantCulture);
+            sb.AppendLine(
+                $"        if ((flags & {enumName}.{member}) != 0) bits[{index}] = true;");
+        }
+
+        sb.AppendLine("        var length = bits.Length;");
+        sb.AppendLine("        while (length > 0 && !bits[length - 1])");
+        sb.AppendLine("        {");
+        sb.AppendLine("            length--;");
+        sb.AppendLine("        }");
+        sb.AppendLine("        return Asn1BitString.FromBits(bits.AsSpan(0, length));");
+        sb.AppendLine("    }");
         sb.AppendLine();
         sb.AppendLine("    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);");
         sb.AppendLine();
         sb.AppendLine("    public void Encode(Asn1Writer writer, Asn1Tag tag)");
         sb.AppendLine("    {");
-        var untagged = CloneUntagged(type);
-        EmitEncodeValue(sb, document, module, typeName, "Value", untagged, "        ", "writer", "Value", forceTag: "tag");
+        sb.AppendLine("        writer.WriteBitString(tag, Value);");
         sb.AppendLine("    }");
         sb.AppendLine();
         sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader) => Decode(reader, DefaultTag);");
         sb.AppendLine();
         sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader, Asn1Tag tag)");
         sb.AppendLine("    {");
-        sb.AppendLine($"        var value = new {typeName}();");
-        EmitDecodeAssign(sb, document, module, typeName, "Value", untagged, "        ", "reader", "value.Value", forceTag: "tag");
-        sb.AppendLine("        return value;");
+        sb.AppendLine($"        return new {typeName} {{ Value = reader.ReadBitString(tag) }};");
         sb.AppendLine("    }");
-        EmitDefaultTag(sb, type, IsConstructed(document, module, type), UniversalFallback(document, module, type));
+        EmitDefaultTag(sb, type, constructed: false, fallback: "Asn1Tag.BitString");
         sb.AppendLine("}");
     }
 
-    private static void EmitAnyAlias(StringBuilder sb, string typeName)
+    private void EmitProperty(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string typeName,
+        IrComponent field,
+        bool optional,
+        bool privateSetter)
     {
-        sb.AppendLine($"public sealed class {typeName}");
-        sb.AppendLine("{");
-        sb.AppendLine("    public Asn1Any Value { get; set; }");
-        sb.AppendLine();
-        sb.AppendLine("    public void Encode(Asn1Writer writer) => writer.WriteAny(Value);");
-        sb.AppendLine();
-        sb.AppendLine("    public void Encode(Asn1Writer writer, Asn1Tag tag) => writer.WriteAny(tag, Value);");
-        sb.AppendLine();
-        sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader) =>");
-        sb.AppendLine($"        new {typeName} {{ Value = reader.ReadAny() }};");
-        sb.AppendLine();
-        sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader, Asn1Tag tag) =>");
-        sb.AppendLine($"        new {typeName} {{ Value = reader.ReadAny(tag) }};");
-        sb.AppendLine("}");
+        var prop = PropertyName(field, typeName);
+        EmitCollapsedAliasDoc(sb, document, module, field.Type);
+        var csType = CsType(document, module, typeName, field.Name, field.Type, optional);
+        var effective = UnwrapAliases(document, module, field.Type);
+        var setter = privateSetter ? "private set" : "set";
+        var initializer = privateSetter ? "" : Initializer(effective, optional);
+        sb.AppendLine($"    public {csType} {prop} {{ get; {setter}; }}{initializer}");
     }
+
+    private void EmitCollapsedAliasDoc(StringBuilder sb, IrDocument document, IrModule module, TypeExpr type)
+    {
+        if (type is not RefType reference)
+        {
+            return;
+        }
+
+        var found = Find(document, module, reference);
+        if (found is null || !IsCollapsibleAlias(found.Type))
+        {
+            return;
+        }
+
+        sb.AppendLine($"    /// <summary>ASN.1 alias {reference.Name} ::= {FormatAliasRhs(found.Type)}.</summary>");
+    }
+
+    private static string FormatAliasRhs(TypeExpr type) => type switch
+    {
+        BooleanType => "BOOLEAN",
+        IntegerType => "INTEGER",
+        EnumeratedType => "ENUMERATED",
+        BitStringType => "BIT STRING",
+        OctetStringType => "OCTET STRING",
+        NullType => "NULL",
+        OidType => "OBJECT IDENTIFIER",
+        StringType stringType => stringType.Form switch
+        {
+            StringTypes.Utf8 => "UTF8String",
+            StringTypes.Numeric => "NumericString",
+            StringTypes.Printable => "PrintableString",
+            StringTypes.Teletex => "TeletexString",
+            StringTypes.T61 => "T61String",
+            StringTypes.Videotex => "VideotexString",
+            StringTypes.Ia5 => "IA5String",
+            StringTypes.Graphic => "GraphicString",
+            StringTypes.Visible => "VisibleString",
+            StringTypes.General => "GeneralString",
+            StringTypes.Universal => "UniversalString",
+            StringTypes.Bmp => "BMPString",
+            _ => "String"
+        },
+        TimeType timeType => timeType.Form == TimeTypes.Utc ? "UTCTime" : "GeneralizedTime",
+        AnyType => "ANY",
+        RefType reference => reference.Name,
+        SequenceType => "SEQUENCE",
+        SetType => "SET",
+        ChoiceType => "CHOICE",
+        SequenceOfType => "SEQUENCE OF",
+        SetOfType => "SET OF",
+        _ => type.Kind
+    };
 
     private static void EmitDefaultTag(StringBuilder sb, TypeExpr type, bool constructed, string fallback)
     {
@@ -556,7 +679,16 @@ public sealed class CSharpBackend : ILanguageBackend
         {
             sb.AppendLine($"{indent}if ({prop} != null)");
             sb.AppendLine($"{indent}{{");
-            EmitEncodeValue(sb, document, module, owner, field.Name, field.Type, indent + "    ", writer, UnwrapOptional(field.Type, prop));
+            EmitEncodeValue(
+                sb,
+                document,
+                module,
+                owner,
+                field.Name,
+                field.Type,
+                indent + "    ",
+                writer,
+                UnwrapOptional(document, module, field.Type, prop));
             sb.AppendLine($"{indent}}}");
         }
         else
@@ -565,14 +697,17 @@ public sealed class CSharpBackend : ILanguageBackend
         }
     }
 
-    private string UnwrapOptional(TypeExpr type, string expr)
+    private string UnwrapOptional(IrDocument document, IrModule module, TypeExpr type, string expr)
     {
-        return IsValueOptionalWrapper(type) ? expr + ".Value" : expr;
+        return IsValueOptionalWrapper(document, module, type) ? expr + ".Value" : expr;
     }
 
-    private bool IsValueOptionalWrapper(TypeExpr type) =>
-        ResolvePrimitive(type) is TypeKinds.Boolean or TypeKinds.Integer or TypeKinds.Enumerated
+    private bool IsValueOptionalWrapper(IrDocument document, IrModule module, TypeExpr type)
+    {
+        var unwrapped = UnwrapAliases(document, module, type);
+        return ResolvePrimitive(unwrapped) is TypeKinds.Boolean or TypeKinds.Integer or TypeKinds.Enumerated
             or TypeKinds.BitString or TypeKinds.Time or TypeKinds.Any;
+    }
 
     private void EmitEncodeValue(
         StringBuilder sb,
@@ -586,6 +721,8 @@ public sealed class CSharpBackend : ILanguageBackend
         string expr,
         string? forceTag = null)
     {
+        type = UnwrapAliases(document, module, type);
+
         if (type.Tag?.Mode == TagModes.Explicit && forceTag is null)
         {
             sb.AppendLine($"{indent}{writer}.WriteExplicit({TagFromIr(type.Tag, constructed: true)}, nested =>");
@@ -613,7 +750,7 @@ public sealed class CSharpBackend : ILanguageBackend
 
         var tag = forceTag ?? TagExpr(document, module, type);
         var primitive = ResolvePrimitive(type);
-        if (primitive is not null && type is not RefType)
+        if (primitive is not null)
         {
             sb.AppendLine($"{indent}{WriteCall(writer, tag, expr, type)};");
             return;
@@ -680,12 +817,8 @@ public sealed class CSharpBackend : ILanguageBackend
             return false;
         }
 
-        if (type is AnyType)
-        {
-            return true;
-        }
-
-        return type is RefType reference && Find(document, module, reference)?.Type is AnyType { Tag: null };
+        var unwrapped = UnwrapAliases(document, module, type);
+        return unwrapped is AnyType { Tag: null };
     }
 
     private void EmitDecodeAssign(
@@ -717,6 +850,8 @@ public sealed class CSharpBackend : ILanguageBackend
         string reader,
         string? forceTag = null)
     {
+        type = UnwrapAliases(document, module, type);
+
         if (type.Tag?.Mode == TagModes.Explicit && forceTag is null)
         {
             sb.Append($"{reader}.ReadSequence({TagFromIr(type.Tag, constructed: true)}, nested => ");
@@ -742,7 +877,7 @@ public sealed class CSharpBackend : ILanguageBackend
 
         var tag = forceTag ?? TagExpr(document, module, type);
         var primitive = ResolvePrimitive(type);
-        if (primitive is not null && type is not RefType)
+        if (primitive is not null)
         {
             sb.Append(ReadCall(reader, tag, type));
             return;
@@ -761,8 +896,9 @@ public sealed class CSharpBackend : ILanguageBackend
 
     private string CsType(IrDocument document, IrModule module, string owner, string hint, TypeExpr type, bool optional)
     {
+        type = UnwrapAliases(document, module, type);
         var primitive = ResolvePrimitive(type);
-        if (primitive is not null && type is not RefType)
+        if (primitive is not null)
         {
             var mapped = primitive switch
             {
@@ -836,6 +972,7 @@ public sealed class CSharpBackend : ILanguageBackend
 
     private string TagExpr(IrDocument document, IrModule module, TypeExpr type)
     {
+        type = UnwrapAliases(document, module, type);
         if (type.Tag is not null)
         {
             var constructed = type.Tag.Mode == TagModes.Explicit || IsConstructed(document, module, type);
@@ -943,6 +1080,52 @@ public sealed class CSharpBackend : ILanguageBackend
         _ => null
     };
 
+    /// <summary>
+    /// Collapse typedef aliases to the underlying type used in generated C#.
+    /// Stops at constructed named types and named BIT STRING (those keep a class).
+    /// </summary>
+    private TypeExpr UnwrapAliases(IrDocument document, IrModule module, TypeExpr type)
+    {
+        var visited = new HashSet<string>(StringComparer.Ordinal);
+        while (type is RefType reference)
+        {
+            var key = (reference.Module ?? module.Name) + "::" + reference.Name;
+            if (!visited.Add(key))
+            {
+                throw new NotSupportedException($"Circular type alias '{reference.Name}'.");
+            }
+
+            var found = FindWithModule(document, module, reference);
+            if (found is null)
+            {
+                return type;
+            }
+
+            var inner = found.Value.Def.Type;
+            if (IsNamedBitString(inner) || NeedsNamedType(inner))
+            {
+                return type;
+            }
+
+            var next = CloneType(inner);
+            if (type.Tag is not null && next.Tag is null)
+            {
+                next.Tag = type.Tag;
+            }
+
+            type = next;
+        }
+
+        return type;
+    }
+
+    private static TypeExpr CloneType(TypeExpr type)
+    {
+        var clone = CloneUntagged(type);
+        clone.Tag = type.Tag;
+        return clone;
+    }
+
     private bool IsConstructed(IrDocument document, IrModule module, TypeExpr type) => type switch
     {
         SequenceType or SetType or SequenceOfType or SetOfType or ChoiceType => true,
@@ -963,6 +1146,7 @@ public sealed class CSharpBackend : ILanguageBackend
 
     private (int TagClass, int Number) ComponentTagSortKey(IrDocument document, IrModule module, TypeExpr type)
     {
+        type = UnwrapAliases(document, module, type);
         if (type.Tag is not null)
         {
             return (TagClassOrdinal(type.Tag.Class), type.Tag.Number);

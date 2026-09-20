@@ -9,9 +9,11 @@ namespace Asn1Kit.Pkix;
 
 public sealed class AuthorityKeyIdentifier
 {
-    public KeyIdentifier? KeyIdentifier { get; set; }
+    /// <summary>ASN.1 alias KeyIdentifier ::= OCTET STRING.</summary>
+    public byte[]? KeyIdentifier { get; set; }
     public GeneralNames? AuthorityCertIssuer { get; set; }
-    public CertificateSerialNumber? AuthorityCertSerialNumber { get; set; }
+    /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
+    public BigInteger? AuthorityCertSerialNumber { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -21,7 +23,7 @@ public sealed class AuthorityKeyIdentifier
         {
             if (KeyIdentifier != null)
             {
-                KeyIdentifier.Encode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
+                inner.WriteOctetString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), KeyIdentifier);
             }
             if (AuthorityCertIssuer != null)
             {
@@ -29,7 +31,7 @@ public sealed class AuthorityKeyIdentifier
             }
             if (AuthorityCertSerialNumber != null)
             {
-                AuthorityCertSerialNumber.Encode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false));
+                inner.WriteInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false), AuthorityCertSerialNumber.Value);
             }
         });
     }
@@ -43,7 +45,7 @@ public sealed class AuthorityKeyIdentifier
             var value = new AuthorityKeyIdentifier();
             if (inner.TryPeekTag(out var tag_KeyIdentifier) && tag_KeyIdentifier.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false)))
             {
-                value.KeyIdentifier = KeyIdentifier.Decode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
+                value.KeyIdentifier = inner.ReadOctetString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
             }
             if (inner.TryPeekTag(out var tag_AuthorityCertIssuer) && tag_AuthorityCertIssuer.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
             {
@@ -51,7 +53,7 @@ public sealed class AuthorityKeyIdentifier
             }
             if (inner.TryPeekTag(out var tag_AuthorityCertSerialNumber) && tag_AuthorityCertSerialNumber.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false)))
             {
-                value.AuthorityCertSerialNumber = CertificateSerialNumber.Decode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false));
+                value.AuthorityCertSerialNumber = inner.ReadInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false));
             }
             return value;
         });
@@ -60,65 +62,74 @@ public sealed class AuthorityKeyIdentifier
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class KeyIdentifier
+[Flags]
+public enum KeyUsageFlags
 {
-    public byte[] Value { get; set; } = Array.Empty<byte>();
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
-    {
-        writer.WriteOctetString(tag, Value);
-    }
-
-    public static KeyIdentifier Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static KeyIdentifier Decode(Asn1Reader reader, Asn1Tag tag)
-    {
-        var value = new KeyIdentifier();
-        value.Value = reader.ReadOctetString(tag);
-        return value;
-    }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.OctetString;
-}
-
-public sealed class SubjectKeyIdentifier
-{
-    public KeyIdentifier Value { get; set; }
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
-    {
-        Value.Encode(writer, tag);
-    }
-
-    public static SubjectKeyIdentifier Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static SubjectKeyIdentifier Decode(Asn1Reader reader, Asn1Tag tag)
-    {
-        var value = new SubjectKeyIdentifier();
-        value.Value = KeyIdentifier.Decode(reader, tag);
-        return value;
-    }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.OctetString;
+    None = 0,
+    /// <summary>ASN.1 named bit digitalSignature(0).</summary>
+    DigitalSignature = 1 << 0,
+    /// <summary>ASN.1 named bit nonRepudiation(1).</summary>
+    NonRepudiation = 1 << 1,
+    /// <summary>ASN.1 named bit keyEncipherment(2).</summary>
+    KeyEncipherment = 1 << 2,
+    /// <summary>ASN.1 named bit dataEncipherment(3).</summary>
+    DataEncipherment = 1 << 3,
+    /// <summary>ASN.1 named bit keyAgreement(4).</summary>
+    KeyAgreement = 1 << 4,
+    /// <summary>ASN.1 named bit keyCertSign(5).</summary>
+    KeyCertSign = 1 << 5,
+    /// <summary>ASN.1 named bit cRLSign(6).</summary>
+    CRLSign = 1 << 6,
+    /// <summary>ASN.1 named bit encipherOnly(7).</summary>
+    EncipherOnly = 1 << 7,
+    /// <summary>ASN.1 named bit decipherOnly(8).</summary>
+    DecipherOnly = 1 << 8
 }
 
 public sealed class KeyUsage
 {
-    public const int Bit_DigitalSignature = 0;
-    public const int Bit_NonRepudiation = 1;
-    public const int Bit_KeyEncipherment = 2;
-    public const int Bit_DataEncipherment = 3;
-    public const int Bit_KeyAgreement = 4;
-    public const int Bit_KeyCertSign = 5;
-    public const int Bit_CRLSign = 6;
-    public const int Bit_EncipherOnly = 7;
-    public const int Bit_DecipherOnly = 8;
-
     public Asn1BitString Value { get; set; }
+
+    public KeyUsageFlags Flags
+    {
+        get => ToFlags(Value);
+        set => Value = FromFlags(value);
+    }
+
+    public static KeyUsageFlags ToFlags(Asn1BitString bits)
+    {
+        var flags = KeyUsageFlags.None;
+        if (bits.BitLength > 0 && bits[0]) flags |= KeyUsageFlags.DigitalSignature;
+        if (bits.BitLength > 1 && bits[1]) flags |= KeyUsageFlags.NonRepudiation;
+        if (bits.BitLength > 2 && bits[2]) flags |= KeyUsageFlags.KeyEncipherment;
+        if (bits.BitLength > 3 && bits[3]) flags |= KeyUsageFlags.DataEncipherment;
+        if (bits.BitLength > 4 && bits[4]) flags |= KeyUsageFlags.KeyAgreement;
+        if (bits.BitLength > 5 && bits[5]) flags |= KeyUsageFlags.KeyCertSign;
+        if (bits.BitLength > 6 && bits[6]) flags |= KeyUsageFlags.CRLSign;
+        if (bits.BitLength > 7 && bits[7]) flags |= KeyUsageFlags.EncipherOnly;
+        if (bits.BitLength > 8 && bits[8]) flags |= KeyUsageFlags.DecipherOnly;
+        return flags;
+    }
+
+    public static Asn1BitString FromFlags(KeyUsageFlags flags)
+    {
+        var bits = new bool[9];
+        if ((flags & KeyUsageFlags.DigitalSignature) != 0) bits[0] = true;
+        if ((flags & KeyUsageFlags.NonRepudiation) != 0) bits[1] = true;
+        if ((flags & KeyUsageFlags.KeyEncipherment) != 0) bits[2] = true;
+        if ((flags & KeyUsageFlags.DataEncipherment) != 0) bits[3] = true;
+        if ((flags & KeyUsageFlags.KeyAgreement) != 0) bits[4] = true;
+        if ((flags & KeyUsageFlags.KeyCertSign) != 0) bits[5] = true;
+        if ((flags & KeyUsageFlags.CRLSign) != 0) bits[6] = true;
+        if ((flags & KeyUsageFlags.EncipherOnly) != 0) bits[7] = true;
+        if ((flags & KeyUsageFlags.DecipherOnly) != 0) bits[8] = true;
+        var length = bits.Length;
+        while (length > 0 && !bits[length - 1])
+        {
+            length--;
+        }
+        return Asn1BitString.FromBits(bits.AsSpan(0, length));
+    }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -131,9 +142,7 @@ public sealed class KeyUsage
 
     public static KeyUsage Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        var value = new KeyUsage();
-        value.Value = reader.ReadBitString(tag);
-        return value;
+        return new KeyUsage { Value = reader.ReadBitString(tag) };
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.BitString;
@@ -220,7 +229,8 @@ public sealed class CertificatePolicies
 
 public sealed class PolicyInformation
 {
-    public CertPolicyId PolicyIdentifier { get; set; }
+    /// <summary>ASN.1 alias CertPolicyId ::= OBJECT IDENTIFIER.</summary>
+    public string PolicyIdentifier { get; set; } = "";
     public PolicyInformation_PolicyQualifiers? PolicyQualifiers { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -229,7 +239,7 @@ public sealed class PolicyInformation
     {
         writer.WriteSequence(tag, inner =>
         {
-            PolicyIdentifier.Encode(inner, Asn1Tag.ObjectIdentifier);
+            inner.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, PolicyIdentifier);
             if (PolicyQualifiers != null)
             {
                 PolicyQualifiers.Encode(inner, Asn1Tag.Sequence);
@@ -244,7 +254,7 @@ public sealed class PolicyInformation
         return reader.ReadSequence(tag, inner =>
         {
             var value = new PolicyInformation();
-            value.PolicyIdentifier = CertPolicyId.Decode(inner, Asn1Tag.ObjectIdentifier);
+            value.PolicyIdentifier = inner.ReadObjectIdentifier(Asn1Tag.ObjectIdentifier);
             if (inner.TryPeekTag(out var tag_PolicyQualifiers) && tag_PolicyQualifiers.MatchesIgnoreConstructed(Asn1Tag.Sequence))
             {
                 value.PolicyQualifiers = PolicyInformation_PolicyQualifiers.Decode(inner, Asn1Tag.Sequence);
@@ -256,32 +266,10 @@ public sealed class PolicyInformation
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class CertPolicyId
-{
-    public string Value { get; set; } = "";
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
-    {
-        writer.WriteObjectIdentifier(tag, Value);
-    }
-
-    public static CertPolicyId Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static CertPolicyId Decode(Asn1Reader reader, Asn1Tag tag)
-    {
-        var value = new CertPolicyId();
-        value.Value = reader.ReadObjectIdentifier(tag);
-        return value;
-    }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.ObjectIdentifier;
-}
-
 public sealed class PolicyQualifierInfo
 {
-    public PolicyQualifierId PolicyQualifierId { get; set; }
+    /// <summary>ASN.1 alias PolicyQualifierId ::= OBJECT IDENTIFIER.</summary>
+    public string PolicyQualifierId { get; set; } = "";
     public Asn1Any Qualifier { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -290,7 +278,7 @@ public sealed class PolicyQualifierInfo
     {
         writer.WriteSequence(tag, inner =>
         {
-            PolicyQualifierId.Encode(inner, Asn1Tag.ObjectIdentifier);
+            inner.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, PolicyQualifierId);
             inner.WriteAny(Qualifier);
         });
     }
@@ -302,59 +290,13 @@ public sealed class PolicyQualifierInfo
         return reader.ReadSequence(tag, inner =>
         {
             var value = new PolicyQualifierInfo();
-            value.PolicyQualifierId = PolicyQualifierId.Decode(inner, Asn1Tag.ObjectIdentifier);
+            value.PolicyQualifierId = inner.ReadObjectIdentifier(Asn1Tag.ObjectIdentifier);
             value.Qualifier = inner.ReadAny();
             return value;
         });
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
-}
-
-public sealed class PolicyQualifierId
-{
-    public string Value { get; set; } = "";
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
-    {
-        writer.WriteObjectIdentifier(tag, Value);
-    }
-
-    public static PolicyQualifierId Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static PolicyQualifierId Decode(Asn1Reader reader, Asn1Tag tag)
-    {
-        var value = new PolicyQualifierId();
-        value.Value = reader.ReadObjectIdentifier(tag);
-        return value;
-    }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.ObjectIdentifier;
-}
-
-public sealed class CPSuri
-{
-    public string Value { get; set; } = "";
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
-    {
-        writer.WriteString(tag, Value, Asn1StringForm.Ia5);
-    }
-
-    public static CPSuri Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static CPSuri Decode(Asn1Reader reader, Asn1Tag tag)
-    {
-        var value = new CPSuri();
-        value.Value = reader.ReadString(tag, Asn1StringForm.Ia5);
-        return value;
-    }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Ia5String;
 }
 
 public sealed class UserNotice
@@ -528,29 +470,6 @@ public sealed class PolicyMappings
             }
             return value;
         });
-    }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
-}
-
-public sealed class SubjectAltName
-{
-    public GeneralNames Value { get; set; }
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
-    {
-        Value.Encode(writer, tag);
-    }
-
-    public static SubjectAltName Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static SubjectAltName Decode(Asn1Reader reader, Asn1Tag tag)
-    {
-        var value = new SubjectAltName();
-        value.Value = GeneralNames.Decode(reader, tag);
-        return value;
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
@@ -779,29 +698,6 @@ public sealed class EDIPartyName
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class IssuerAltName
-{
-    public GeneralNames Value { get; set; }
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
-    {
-        Value.Encode(writer, tag);
-    }
-
-    public static IssuerAltName Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static IssuerAltName Decode(Asn1Reader reader, Asn1Tag tag)
-    {
-        var value = new IssuerAltName();
-        value.Value = GeneralNames.Decode(reader, tag);
-        return value;
-    }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
-}
-
 public sealed class SubjectDirectoryAttributes
 {
     public List<Attribute> Items { get; set; } = new List<Attribute>();
@@ -963,8 +859,10 @@ public sealed class GeneralSubtrees
 public sealed class GeneralSubtree
 {
     public GeneralName Base { get; set; }
-    public BaseDistance? Minimum { get; set; }
-    public BaseDistance? Maximum { get; set; }
+    /// <summary>ASN.1 alias BaseDistance ::= INTEGER.</summary>
+    public BigInteger? Minimum { get; set; }
+    /// <summary>ASN.1 alias BaseDistance ::= INTEGER.</summary>
+    public BigInteger? Maximum { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -975,11 +873,11 @@ public sealed class GeneralSubtree
             Base.Encode(inner);
             if (Minimum != null)
             {
-                Minimum.Encode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
+                inner.WriteInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), Minimum.Value);
             }
             if (Maximum != null)
             {
-                Maximum.Encode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
+                inner.WriteInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), Maximum.Value);
             }
         });
     }
@@ -994,11 +892,11 @@ public sealed class GeneralSubtree
             value.Base = GeneralName.Decode(inner);
             if (inner.TryPeekTag(out var tag_Minimum) && tag_Minimum.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false)))
             {
-                value.Minimum = BaseDistance.Decode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
+                value.Minimum = inner.ReadInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
             }
             if (inner.TryPeekTag(out var tag_Maximum) && tag_Maximum.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
             {
-                value.Maximum = BaseDistance.Decode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
+                value.Maximum = inner.ReadInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
             }
             return value;
         });
@@ -1007,33 +905,12 @@ public sealed class GeneralSubtree
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class BaseDistance
-{
-    public BigInteger Value { get; set; }
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
-    {
-        writer.WriteInteger(tag, Value);
-    }
-
-    public static BaseDistance Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static BaseDistance Decode(Asn1Reader reader, Asn1Tag tag)
-    {
-        var value = new BaseDistance();
-        value.Value = reader.ReadInteger(tag);
-        return value;
-    }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Integer;
-}
-
 public sealed class PolicyConstraints
 {
-    public SkipCerts? RequireExplicitPolicy { get; set; }
-    public SkipCerts? InhibitPolicyMapping { get; set; }
+    /// <summary>ASN.1 alias SkipCerts ::= INTEGER.</summary>
+    public BigInteger? RequireExplicitPolicy { get; set; }
+    /// <summary>ASN.1 alias SkipCerts ::= INTEGER.</summary>
+    public BigInteger? InhibitPolicyMapping { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1043,11 +920,11 @@ public sealed class PolicyConstraints
         {
             if (RequireExplicitPolicy != null)
             {
-                RequireExplicitPolicy.Encode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
+                inner.WriteInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), RequireExplicitPolicy.Value);
             }
             if (InhibitPolicyMapping != null)
             {
-                InhibitPolicyMapping.Encode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
+                inner.WriteInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), InhibitPolicyMapping.Value);
             }
         });
     }
@@ -1061,40 +938,17 @@ public sealed class PolicyConstraints
             var value = new PolicyConstraints();
             if (inner.TryPeekTag(out var tag_RequireExplicitPolicy) && tag_RequireExplicitPolicy.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false)))
             {
-                value.RequireExplicitPolicy = SkipCerts.Decode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
+                value.RequireExplicitPolicy = inner.ReadInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
             }
             if (inner.TryPeekTag(out var tag_InhibitPolicyMapping) && tag_InhibitPolicyMapping.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
             {
-                value.InhibitPolicyMapping = SkipCerts.Decode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
+                value.InhibitPolicyMapping = inner.ReadInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
             }
             return value;
         });
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
-}
-
-public sealed class SkipCerts
-{
-    public BigInteger Value { get; set; }
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
-    {
-        writer.WriteInteger(tag, Value);
-    }
-
-    public static SkipCerts Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static SkipCerts Decode(Asn1Reader reader, Asn1Tag tag)
-    {
-        var value = new SkipCerts();
-        value.Value = reader.ReadInteger(tag);
-        return value;
-    }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Integer;
 }
 
 public sealed class CRLDistributionPoints
@@ -1230,19 +1084,74 @@ public sealed class DistributionPointName
     }
 }
 
+[Flags]
+public enum ReasonFlagsFlags
+{
+    None = 0,
+    /// <summary>ASN.1 named bit unused(0).</summary>
+    Unused = 1 << 0,
+    /// <summary>ASN.1 named bit keyCompromise(1).</summary>
+    KeyCompromise = 1 << 1,
+    /// <summary>ASN.1 named bit cACompromise(2).</summary>
+    CACompromise = 1 << 2,
+    /// <summary>ASN.1 named bit affiliationChanged(3).</summary>
+    AffiliationChanged = 1 << 3,
+    /// <summary>ASN.1 named bit superseded(4).</summary>
+    Superseded = 1 << 4,
+    /// <summary>ASN.1 named bit cessationOfOperation(5).</summary>
+    CessationOfOperation = 1 << 5,
+    /// <summary>ASN.1 named bit certificateHold(6).</summary>
+    CertificateHold = 1 << 6,
+    /// <summary>ASN.1 named bit privilegeWithdrawn(7).</summary>
+    PrivilegeWithdrawn = 1 << 7,
+    /// <summary>ASN.1 named bit aACompromise(8).</summary>
+    AACompromise = 1 << 8
+}
+
 public sealed class ReasonFlags
 {
-    public const int Bit_Unused = 0;
-    public const int Bit_KeyCompromise = 1;
-    public const int Bit_CACompromise = 2;
-    public const int Bit_AffiliationChanged = 3;
-    public const int Bit_Superseded = 4;
-    public const int Bit_CessationOfOperation = 5;
-    public const int Bit_CertificateHold = 6;
-    public const int Bit_PrivilegeWithdrawn = 7;
-    public const int Bit_AACompromise = 8;
-
     public Asn1BitString Value { get; set; }
+
+    public ReasonFlagsFlags Flags
+    {
+        get => ToFlags(Value);
+        set => Value = FromFlags(value);
+    }
+
+    public static ReasonFlagsFlags ToFlags(Asn1BitString bits)
+    {
+        var flags = ReasonFlagsFlags.None;
+        if (bits.BitLength > 0 && bits[0]) flags |= ReasonFlagsFlags.Unused;
+        if (bits.BitLength > 1 && bits[1]) flags |= ReasonFlagsFlags.KeyCompromise;
+        if (bits.BitLength > 2 && bits[2]) flags |= ReasonFlagsFlags.CACompromise;
+        if (bits.BitLength > 3 && bits[3]) flags |= ReasonFlagsFlags.AffiliationChanged;
+        if (bits.BitLength > 4 && bits[4]) flags |= ReasonFlagsFlags.Superseded;
+        if (bits.BitLength > 5 && bits[5]) flags |= ReasonFlagsFlags.CessationOfOperation;
+        if (bits.BitLength > 6 && bits[6]) flags |= ReasonFlagsFlags.CertificateHold;
+        if (bits.BitLength > 7 && bits[7]) flags |= ReasonFlagsFlags.PrivilegeWithdrawn;
+        if (bits.BitLength > 8 && bits[8]) flags |= ReasonFlagsFlags.AACompromise;
+        return flags;
+    }
+
+    public static Asn1BitString FromFlags(ReasonFlagsFlags flags)
+    {
+        var bits = new bool[9];
+        if ((flags & ReasonFlagsFlags.Unused) != 0) bits[0] = true;
+        if ((flags & ReasonFlagsFlags.KeyCompromise) != 0) bits[1] = true;
+        if ((flags & ReasonFlagsFlags.CACompromise) != 0) bits[2] = true;
+        if ((flags & ReasonFlagsFlags.AffiliationChanged) != 0) bits[3] = true;
+        if ((flags & ReasonFlagsFlags.Superseded) != 0) bits[4] = true;
+        if ((flags & ReasonFlagsFlags.CessationOfOperation) != 0) bits[5] = true;
+        if ((flags & ReasonFlagsFlags.CertificateHold) != 0) bits[6] = true;
+        if ((flags & ReasonFlagsFlags.PrivilegeWithdrawn) != 0) bits[7] = true;
+        if ((flags & ReasonFlagsFlags.AACompromise) != 0) bits[8] = true;
+        var length = bits.Length;
+        while (length > 0 && !bits[length - 1])
+        {
+            length--;
+        }
+        return Asn1BitString.FromBits(bits.AsSpan(0, length));
+    }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1255,9 +1164,7 @@ public sealed class ReasonFlags
 
     public static ReasonFlags Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        var value = new ReasonFlags();
-        value.Value = reader.ReadBitString(tag);
-        return value;
+        return new ReasonFlags { Value = reader.ReadBitString(tag) };
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.BitString;
@@ -1265,7 +1172,7 @@ public sealed class ReasonFlags
 
 public sealed class ExtKeyUsageSyntax
 {
-    public List<KeyPurposeId> Items { get; set; } = new List<KeyPurposeId>();
+    public List<string> Items { get; set; } = new List<string>();
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1275,7 +1182,7 @@ public sealed class ExtKeyUsageSyntax
         {
             foreach (var item in Items)
             {
-                item.Encode(inner, Asn1Tag.ObjectIdentifier);
+                inner.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, item);
             }
         });
     }
@@ -1289,79 +1196,10 @@ public sealed class ExtKeyUsageSyntax
             var value = new ExtKeyUsageSyntax();
             while (!inner.Eof)
             {
-                value.Items.Add(KeyPurposeId.Decode(inner, Asn1Tag.ObjectIdentifier));
+                value.Items.Add(inner.ReadObjectIdentifier(Asn1Tag.ObjectIdentifier));
             }
             return value;
         });
-    }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
-}
-
-public sealed class KeyPurposeId
-{
-    public string Value { get; set; } = "";
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
-    {
-        writer.WriteObjectIdentifier(tag, Value);
-    }
-
-    public static KeyPurposeId Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static KeyPurposeId Decode(Asn1Reader reader, Asn1Tag tag)
-    {
-        var value = new KeyPurposeId();
-        value.Value = reader.ReadObjectIdentifier(tag);
-        return value;
-    }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.ObjectIdentifier;
-}
-
-public sealed class InhibitAnyPolicy
-{
-    public SkipCerts Value { get; set; }
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
-    {
-        Value.Encode(writer, tag);
-    }
-
-    public static InhibitAnyPolicy Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static InhibitAnyPolicy Decode(Asn1Reader reader, Asn1Tag tag)
-    {
-        var value = new InhibitAnyPolicy();
-        value.Value = SkipCerts.Decode(reader, tag);
-        return value;
-    }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Integer;
-}
-
-public sealed class FreshestCRL
-{
-    public CRLDistributionPoints Value { get; set; }
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
-    {
-        Value.Encode(writer, tag);
-    }
-
-    public static FreshestCRL Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static FreshestCRL Decode(Asn1Reader reader, Asn1Tag tag)
-    {
-        var value = new FreshestCRL();
-        value.Value = CRLDistributionPoints.Decode(reader, tag);
-        return value;
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
@@ -1469,29 +1307,6 @@ public sealed class SubjectInfoAccessSyntax
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class CRLNumber
-{
-    public BigInteger Value { get; set; }
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
-    {
-        writer.WriteInteger(tag, Value);
-    }
-
-    public static CRLNumber Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static CRLNumber Decode(Asn1Reader reader, Asn1Tag tag)
-    {
-        var value = new CRLNumber();
-        value.Value = reader.ReadInteger(tag);
-        return value;
-    }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Integer;
-}
-
 public sealed class IssuingDistributionPoint
 {
     public DistributionPointName? DistributionPoint { get; set; }
@@ -1572,121 +1387,6 @@ public sealed class IssuingDistributionPoint
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class BaseCRLNumber
-{
-    public CRLNumber Value { get; set; }
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
-    {
-        Value.Encode(writer, tag);
-    }
-
-    public static BaseCRLNumber Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static BaseCRLNumber Decode(Asn1Reader reader, Asn1Tag tag)
-    {
-        var value = new BaseCRLNumber();
-        value.Value = CRLNumber.Decode(reader, tag);
-        return value;
-    }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Integer;
-}
-
-public sealed class CRLReason
-{
-    public BigInteger Value { get; set; }
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
-    {
-        writer.WriteInteger(tag, Value);
-    }
-
-    public static CRLReason Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static CRLReason Decode(Asn1Reader reader, Asn1Tag tag)
-    {
-        var value = new CRLReason();
-        value.Value = reader.ReadInteger(tag);
-        return value;
-    }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Integer;
-}
-
-public sealed class CertificateIssuer
-{
-    public GeneralNames Value { get; set; }
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
-    {
-        Value.Encode(writer, tag);
-    }
-
-    public static CertificateIssuer Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static CertificateIssuer Decode(Asn1Reader reader, Asn1Tag tag)
-    {
-        var value = new CertificateIssuer();
-        value.Value = GeneralNames.Decode(reader, tag);
-        return value;
-    }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
-}
-
-public sealed class HoldInstructionCode
-{
-    public string Value { get; set; } = "";
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
-    {
-        writer.WriteObjectIdentifier(tag, Value);
-    }
-
-    public static HoldInstructionCode Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static HoldInstructionCode Decode(Asn1Reader reader, Asn1Tag tag)
-    {
-        var value = new HoldInstructionCode();
-        value.Value = reader.ReadObjectIdentifier(tag);
-        return value;
-    }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.ObjectIdentifier;
-}
-
-public sealed class InvalidityDate
-{
-    public DateTimeOffset Value { get; set; }
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
-    {
-        writer.WriteTime(tag, Value, Asn1TimeForm.Generalized, 3);
-    }
-
-    public static InvalidityDate Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static InvalidityDate Decode(Asn1Reader reader, Asn1Tag tag)
-    {
-        var value = new InvalidityDate();
-        value.Value = reader.ReadTime(tag, Asn1TimeForm.Generalized);
-        return value;
-    }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.GeneralizedTime;
-}
-
 public sealed class PolicyInformation_PolicyQualifiers
 {
     public List<PolicyQualifierInfo> Items { get; set; } = new List<PolicyQualifierInfo>();
@@ -1759,8 +1459,10 @@ public sealed class NoticeReference_NoticeNumbers
 
 public sealed class PolicyMappings_Item
 {
-    public CertPolicyId IssuerDomainPolicy { get; set; }
-    public CertPolicyId SubjectDomainPolicy { get; set; }
+    /// <summary>ASN.1 alias CertPolicyId ::= OBJECT IDENTIFIER.</summary>
+    public string IssuerDomainPolicy { get; set; } = "";
+    /// <summary>ASN.1 alias CertPolicyId ::= OBJECT IDENTIFIER.</summary>
+    public string SubjectDomainPolicy { get; set; } = "";
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1768,8 +1470,8 @@ public sealed class PolicyMappings_Item
     {
         writer.WriteSequence(tag, inner =>
         {
-            IssuerDomainPolicy.Encode(inner, Asn1Tag.ObjectIdentifier);
-            SubjectDomainPolicy.Encode(inner, Asn1Tag.ObjectIdentifier);
+            inner.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, IssuerDomainPolicy);
+            inner.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, SubjectDomainPolicy);
         });
     }
 
@@ -1780,8 +1482,8 @@ public sealed class PolicyMappings_Item
         return reader.ReadSequence(tag, inner =>
         {
             var value = new PolicyMappings_Item();
-            value.IssuerDomainPolicy = CertPolicyId.Decode(inner, Asn1Tag.ObjectIdentifier);
-            value.SubjectDomainPolicy = CertPolicyId.Decode(inner, Asn1Tag.ObjectIdentifier);
+            value.IssuerDomainPolicy = inner.ReadObjectIdentifier(Asn1Tag.ObjectIdentifier);
+            value.SubjectDomainPolicy = inner.ReadObjectIdentifier(Asn1Tag.ObjectIdentifier);
             return value;
         });
     }
