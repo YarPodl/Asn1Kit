@@ -9,7 +9,7 @@ Files `*.g.cs` are **auto-generated** — do not edit by hand. Diffs here are re
 ```powershell
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate `
   -i compiler/fixtures/ir/pkix1-implicit88.json --lang csharp `
-  --csharp-namespace Asn1Kit.Pkix `
+  -O csharp.namespace=Asn1Kit.Pkix `
   -o runtime-csharp/generated/Asn1Kit.Pkix
 ```
 

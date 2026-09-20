@@ -20,13 +20,15 @@ internal static class Program
         {
             IsRequired = true
         };
+        var compileOptions = CreateOptionOverrides();
 
         var compile = new Command("compile", "Compile ASN.1 modules to JSON IR")
         {
             compileInputs,
-            compileOutput
+            compileOutput,
+            compileOptions
         };
-        compile.SetHandler(Compile, compileInputs, compileOutput);
+        compile.SetHandler(Compile, compileInputs, compileOutput, compileOptions);
 
         var generateInput = new Option<FileInfo>(new[] { "--input", "-i" }, "JSON IR or ASN.1 module")
         {
@@ -40,16 +42,16 @@ internal static class Program
         {
             IsRequired = true
         };
-        var csharpNamespace = new Option<string?>("--csharp-namespace", "Override options.csharp.namespace on every module");
+        var generateOptions = CreateOptionOverrides();
 
         var generate = new Command("generate", "Generate code from JSON IR or ASN.1")
         {
             generateInput,
             language,
             generateOutput,
-            csharpNamespace
+            generateOptions
         };
-        generate.SetHandler(Generate, generateInput, language, generateOutput, csharpNamespace);
+        generate.SetHandler(Generate, generateInput, language, generateOutput, generateOptions);
 
         var root = new RootCommand("Asn1Kit — compile ASN.1 and generate codecs")
         {
@@ -60,7 +62,13 @@ internal static class Program
         return root.Invoke(args);
     }
 
-    private static void Compile(FileInfo[] inputs, FileInfo output)
+    private static Option<string[]> CreateOptionOverrides() =>
+        new(new[] { "--option", "-O" }, "Set module options as path=value (e.g. csharp.namespace=Asn1Kit.Pkix). Repeatable.")
+        {
+            Arity = ArgumentArity.ZeroOrMore
+        };
+
+    private static void Compile(FileInfo[] inputs, FileInfo output, string[] optionOverrides)
     {
         var missing = inputs.FirstOrDefault(i => !i.Exists);
         if (missing is not null)
@@ -69,12 +77,13 @@ internal static class Program
         }
 
         var document = new Asn1Compiler().CompileFiles(inputs.Select(i => i.FullName));
+        IrOptions.ApplyToModules(document, optionOverrides ?? Array.Empty<string>());
         output.Directory?.Create();
         IrSerializer.Save(document, output.FullName);
         Console.WriteLine($"Wrote {output.FullName}");
     }
 
-    private static void Generate(FileInfo input, string language, DirectoryInfo output, string? csharpNamespace)
+    private static void Generate(FileInfo input, string language, DirectoryInfo output, string[] optionOverrides)
     {
         if (!input.Exists)
         {
@@ -82,10 +91,7 @@ internal static class Program
         }
 
         var document = LoadDocument(input);
-        if (!string.IsNullOrWhiteSpace(csharpNamespace))
-        {
-            ApplyCSharpNamespace(document, csharpNamespace);
-        }
+        IrOptions.ApplyToModules(document, optionOverrides ?? Array.Empty<string>());
 
         var generator = new CodeGenerator(new ILanguageBackend[] { new CSharpBackend() });
         var files = generator.Generate(document, language);
@@ -101,14 +107,6 @@ internal static class Program
 
             File.WriteAllText(path, file.Contents);
             Console.WriteLine($"Wrote {path}");
-        }
-    }
-
-    private static void ApplyCSharpNamespace(IrDocument document, string csharpNamespace)
-    {
-        foreach (var module in document.Modules)
-        {
-            module.Options = IrOptions.SetCSharp(module.Options, "namespace", csharpNamespace);
         }
     }
 

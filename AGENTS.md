@@ -42,7 +42,7 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/as
 dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/pkix1-explicit88.asn -i compiler/fixtures/asn1/pkix1-implicit88.asn -o compiler/fixtures/ir/pkix1-implicit88.json
 
 # пересборка golden C# (после правок генератора или IR)
-dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/ir/pkix1-implicit88.json --lang csharp --csharp-namespace Asn1Kit.Pkix -o runtime-csharp/generated/Asn1Kit.Pkix
+dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/ir/pkix1-implicit88.json --lang csharp -O csharp.namespace=Asn1Kit.Pkix -o runtime-csharp/generated/Asn1Kit.Pkix
 ```
 
 Полный прогон тестов — секунды, отдельная «быстрая» цель не нужна: гоняй `dotnet test Asn1Kit.sln` целиком.
@@ -55,7 +55,7 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/i
 | [compiler/src/Asn1Kit.Ir/TypeExprConverter.cs](compiler/src/Asn1Kit.Ir/TypeExprConverter.cs) | `switch` по `kind` при чтении/записи JSON |
 | [compiler/src/Asn1Kit.Ir/IrValidator.cs](compiler/src/Asn1Kit.Ir/IrValidator.cs) | Семантические проверки поверх схемы |
 | [compiler/src/Asn1Kit.Ir/IrSerializer.cs](compiler/src/Asn1Kit.Ir/IrSerializer.cs) | `ToJson` / `FromJson` / `Load` / `Save` / `ValidateSchema` |
-| [compiler/src/Asn1Kit.Ir/IrOptions.cs](compiler/src/Asn1Kit.Ir/IrOptions.cs) | Чтение `options.csharp.*` и `options.generate` |
+| [compiler/src/Asn1Kit.Ir/IrOptions.cs](compiler/src/Asn1Kit.Ir/IrOptions.cs) | Чтение `options.csharp.*` / `options.generate`; CLI `-O path=value` |
 | [schemas/asn1kit-ir-v1.json](schemas/asn1kit-ir-v1.json) | JSON Schema Draft 2020-12, единственный контракт IR |
 | [compiler/src/Asn1Kit.Compiler/Asn1Lexer.cs](compiler/src/Asn1Kit.Compiler/Asn1Lexer.cs) | Токены, ключевые слова |
 | [compiler/src/Asn1Kit.Compiler/Asn1Parser.cs](compiler/src/Asn1Kit.Compiler/Asn1Parser.cs) | Парсер X.680, отказы «вне профиля» |
@@ -73,7 +73,7 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/i
 
 - [compiler/fixtures/ir/pkix1-explicit88.json](compiler/fixtures/ir/pkix1-explicit88.json) — **golden-артефакт**: генерируется CLI из `.asn`, руками не правится.
 - [compiler/fixtures/ir/pkix1-implicit88.json](compiler/fixtures/ir/pkix1-implicit88.json) — **golden**: Explicit88 + Implicit88 (multi-module `IMPORTS`), руками не правится.
-- [runtime-csharp/generated/Asn1Kit.Pkix/](runtime-csharp/generated/Asn1Kit.Pkix/) — **golden C#**: из `pkix1-implicit88.json` через `generate --csharp-namespace Asn1Kit.Pkix`, руками не править `*.g.cs`.
+- [runtime-csharp/generated/Asn1Kit.Pkix/](runtime-csharp/generated/Asn1Kit.Pkix/) — **golden C#**: из `pkix1-implicit88.json` через `generate -O csharp.namespace=Asn1Kit.Pkix`, руками не править `*.g.cs`.
 - [compiler/fixtures/ir/example.json](compiler/fixtures/ir/example.json) — **ручная** фикстура с правками `options`; компилятором не воспроизводится.
 - [runtime-csharp/fixtures/ber-der/](runtime-csharp/fixtures/ber-der/) — hex-векторы runtime.
 
