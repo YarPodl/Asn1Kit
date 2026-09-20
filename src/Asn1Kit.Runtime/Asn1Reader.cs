@@ -175,32 +175,60 @@ public sealed class Asn1Reader
             throw new Asn1Exception("OBJECT IDENTIFIER is empty.");
         }
 
-        var first = contents[0];
+        var i = 0;
+        var first = ReadOidArc(contents, ref i);
+        int arc0;
+        int arc1;
+        if (first < 40)
+        {
+            arc0 = 0;
+            arc1 = first;
+        }
+        else if (first < 80)
+        {
+            arc0 = 1;
+            arc1 = first - 40;
+        }
+        else
+        {
+            arc0 = 2;
+            arc1 = first - 80;
+        }
+
         var builder = new StringBuilder();
-        builder.Append(first / 40);
+        builder.Append(arc0);
         builder.Append('.');
-        builder.Append(first % 40);
-        var i = 1;
+        builder.Append(arc1);
         while (i < contents.Length)
         {
-            var value = 0;
-            byte b;
-            do
-            {
-                if (i >= contents.Length)
-                {
-                    throw new Asn1Exception("Truncated OID.");
-                }
-
-                b = contents[i++];
-                value = (value << 7) | (b & 0x7F);
-            } while ((b & 0x80) != 0);
-
             builder.Append('.');
-            builder.Append(value);
+            builder.Append(ReadOidArc(contents, ref i));
         }
 
         return builder.ToString();
+    }
+
+    private static int ReadOidArc(byte[] contents, ref int i)
+    {
+        var value = 0;
+        byte b;
+        do
+        {
+            if (i >= contents.Length)
+            {
+                throw new Asn1Exception("Truncated OID.");
+            }
+
+            b = contents[i++];
+            if (value > (int.MaxValue >> 7))
+            {
+                throw new Asn1Exception("OID arc is too large.");
+            }
+
+            value = (value << 7) | (b & 0x7F);
+        } while ((b & 0x80) != 0);
+
+        return value;
     }
 
     public Asn1BitString ReadBitString(Asn1Tag expected)

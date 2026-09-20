@@ -1,0 +1,30 @@
+[
+  {
+    "name": "oid-rsa",
+    "rules": "der",
+    "op": "oid",
+    "bytes": "06092A864886F70D010101",
+    "value": "1.2.840.113549.1.1.1"
+  },
+  {
+    "name": "oid-short",
+    "rules": "der",
+    "op": "oid",
+    "bytes": "06022A03",
+    "value": "1.2.3"
+  },
+  {
+    "name": "oid-rejects-empty",
+    "rules": "der",
+    "op": "oid",
+    "bytes": "0600",
+    "reject": true
+  },
+  {
+    "name": "oid-rejects-truncated",
+    "rules": "der",
+    "op": "oid",
+    "bytes": "06032A86",
+    "reject": true
+  }
+]

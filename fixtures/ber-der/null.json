@@ -1,0 +1,22 @@
+[
+  {
+    "name": "null-der",
+    "rules": "der",
+    "op": "null",
+    "bytes": "0500"
+  },
+  {
+    "name": "null-rejects-nonempty",
+    "rules": "der",
+    "op": "null",
+    "bytes": "050100",
+    "reject": true
+  },
+  {
+    "name": "null-rejects-wrong-tag",
+    "rules": "der",
+    "op": "null",
+    "bytes": "010100",
+    "reject": true
+  }
+]

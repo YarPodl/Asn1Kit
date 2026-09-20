@@ -86,7 +86,24 @@ public static class Asn1ObjectIdentifier
     public static byte[] EncodeContents(string oid)
     {
         var parts = ParseArcs(oid);
-        var output = new List<byte> { (byte)(40 * parts[0] + parts[1]) };
+        if (parts[0] > 2)
+        {
+            throw new Asn1Exception($"OID '{oid}' first arc must be 0, 1, or 2.");
+        }
+
+        if (parts[0] < 2 && parts[1] >= 40)
+        {
+            throw new Asn1Exception($"OID '{oid}' second arc must be in 0..39 when first arc is {parts[0]}.");
+        }
+
+        long first = 40L * parts[0] + parts[1];
+        if (first > int.MaxValue)
+        {
+            throw new Asn1Exception($"OID '{oid}' first subidentifier is too large.");
+        }
+
+        var output = new List<byte>();
+        EncodeBase128(output, (int)first);
         for (var i = 2; i < parts.Length; i++)
         {
             EncodeBase128(output, parts[i]);
@@ -97,6 +114,11 @@ public static class Asn1ObjectIdentifier
 
     private static void EncodeBase128(List<byte> output, int value)
     {
+        if (value < 0)
+        {
+            throw new Asn1Exception("OID arc must not be negative.");
+        }
+
         var stack = new Stack<byte>();
         stack.Push((byte)(value & 0x7F));
         value >>= 7;

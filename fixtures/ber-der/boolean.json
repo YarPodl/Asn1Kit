@@ -1,0 +1,45 @@
+[
+  {
+    "name": "boolean-false-der",
+    "rules": "der",
+    "op": "boolean",
+    "bytes": "010100",
+    "value": false
+  },
+  {
+    "name": "boolean-true-der",
+    "rules": "der",
+    "op": "boolean",
+    "bytes": "0101FF",
+    "value": true
+  },
+  {
+    "name": "boolean-ber-nonzero-true",
+    "rules": "ber",
+    "op": "boolean",
+    "bytes": "010101",
+    "value": true,
+    "encode": false
+  },
+  {
+    "name": "boolean-der-rejects-nonzero",
+    "rules": "der",
+    "op": "boolean",
+    "bytes": "010101",
+    "reject": true
+  },
+  {
+    "name": "boolean-rejects-empty",
+    "rules": "der",
+    "op": "boolean",
+    "bytes": "0100",
+    "reject": true
+  },
+  {
+    "name": "boolean-rejects-wrong-tag",
+    "rules": "der",
+    "op": "boolean",
+    "bytes": "020100",
+    "reject": true
+  }
+]

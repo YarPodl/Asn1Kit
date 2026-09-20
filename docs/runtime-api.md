@@ -9,7 +9,7 @@
 
 ```text
 1. Этот обзор → решение по правкам API (если нужны)
-2. Полная матрица RuntimeTests по чеклисту ниже (уже по выбранным сигнатурам)
+2. Полная матрица RuntimeTests по чеклисту ниже — `PrimitiveCodecTests` + `fixtures/ber-der/` + oracle `PrimitiveOracleTests`
 3. Внутренние оптимизации по backlog
 ```
 
@@ -74,7 +74,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 
 ## Чеклист RuntimeTests
 
-Писать в `RuntimeTests` ([tests/Asn1Kit.Tests/Asn1KitTests.cs](../tests/Asn1Kit.Tests/Asn1KitTests.cs)) на байтовых векторах.
+Писать в `PrimitiveCodecTests` / `PrimitiveOracleTests` / `ExternalVectorTests` (и точечно в `RuntimeTests`) на байтовых векторах из [fixtures/ber-der/](../fixtures/ber-der/). Round-trip через Roslyn — дополнение, не замена.
 
 На каждый примитив из status § Runtime: DER encode/decode, BER где применимо, round-trip, границы, отказы (чужой тег, truncated, DER indefinite, BOOLEAN не `00`/`FF`, BIT trailing bits).
 

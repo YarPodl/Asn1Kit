@@ -50,7 +50,11 @@ ReadOnlySpan<byte> contents = _data.AsSpan(_offset, length);
 
 ## Тесты
 
-Пишутся в классе `RuntimeTests` в [tests/Asn1Kit.Tests/Asn1KitTests.cs](../../tests/Asn1Kit.Tests/Asn1KitTests.cs) — на байтовых векторах, а не через сгенерированные типы.
+Три слоя (см. [fixtures/ber-der/README.md](../../fixtures/ber-der/README.md)):
+
+1. **Своя матрица** — hex JSON в `fixtures/ber-der/`, прогон в `PrimitiveCodecTests` (и точечные кейсы в `RuntimeTests`).
+2. **Oracle** — `PrimitiveOracleTests` + `DotnetAsnOracle` против `System.Formats.Asn1` (DER байт-в-байт; BER — по значению).
+3. **Внешние векторы** — `fixtures/ber-der/external/` + `ExternalVectorTests` (поле `source` обязательно).
 
 Обязательный набор на каждый тип:
 

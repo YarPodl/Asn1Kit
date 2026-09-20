@@ -1,0 +1,79 @@
+[
+  {
+    "name": "integer-0",
+    "rules": "der",
+    "op": "integer",
+    "bytes": "020100",
+    "value": "0"
+  },
+  {
+    "name": "integer-1",
+    "rules": "der",
+    "op": "integer",
+    "bytes": "020101",
+    "value": "1"
+  },
+  {
+    "name": "integer-127",
+    "rules": "der",
+    "op": "integer",
+    "bytes": "02017F",
+    "value": "127"
+  },
+  {
+    "name": "integer-128",
+    "rules": "der",
+    "op": "integer",
+    "bytes": "02020080",
+    "value": "128"
+  },
+  {
+    "name": "integer-minus-1",
+    "rules": "der",
+    "op": "integer",
+    "bytes": "0201FF",
+    "value": "-1"
+  },
+  {
+    "name": "integer-minus-128",
+    "rules": "der",
+    "op": "integer",
+    "bytes": "020180",
+    "value": "-128"
+  },
+  {
+    "name": "integer-minus-129",
+    "rules": "der",
+    "op": "integer",
+    "bytes": "0202FF7F",
+    "value": "-129"
+  },
+  {
+    "name": "integer-255",
+    "rules": "der",
+    "op": "integer",
+    "bytes": "020200FF",
+    "value": "255"
+  },
+  {
+    "name": "integer-2pow127",
+    "rules": "der",
+    "op": "integer",
+    "bytes": "02110080000000000000000000000000000000",
+    "value": "170141183460469231731687303715884105728"
+  },
+  {
+    "name": "integer-rejects-empty",
+    "rules": "der",
+    "op": "integer",
+    "bytes": "0200",
+    "reject": true
+  },
+  {
+    "name": "integer-rejects-truncated",
+    "rules": "der",
+    "op": "integer",
+    "bytes": "020201",
+    "reject": true
+  }
+]

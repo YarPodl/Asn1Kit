@@ -1,0 +1,54 @@
+[
+  {
+    "name": "time-utc-der",
+    "rules": "der",
+    "op": "time",
+    "form": "Utc",
+    "bytes": "170D3137303130323033303430355A",
+    "value": "2017-01-02T03:04:05Z"
+  },
+  {
+    "name": "time-generalized-der-no-fraction",
+    "rules": "der",
+    "op": "time",
+    "form": "Generalized",
+    "bytes": "180F32303137303130323033303430355A",
+    "value": "2017-01-02T03:04:05Z",
+    "fractionDigits": 0
+  },
+  {
+    "name": "time-generalized-der-fraction",
+    "rules": "der",
+    "op": "time",
+    "form": "Generalized",
+    "bytes": "181232303137303130323033303430352E31325A",
+    "value": "2017-01-02T03:04:05.120Z",
+    "fractionDigits": 3
+  },
+  {
+    "name": "time-utc-ber-offset",
+    "rules": "ber",
+    "op": "time",
+    "form": "Utc",
+    "bytes": "170F313730313032303330342B30353030",
+    "value": "2017-01-01T22:04:00Z",
+    "encode": false
+  },
+  {
+    "name": "time-generalized-ber-no-seconds",
+    "rules": "ber",
+    "op": "time",
+    "form": "Generalized",
+    "bytes": "180D3230313730313032303330345A",
+    "value": "2017-01-02T03:04:00Z",
+    "encode": false
+  },
+  {
+    "name": "time-utc-der-rejects-offset",
+    "rules": "der",
+    "op": "time",
+    "form": "Utc",
+    "bytes": "170F313730313032303330342B30353030",
+    "reject": true
+  }
+]

@@ -6,14 +6,14 @@
 
 | `kind` | Компилятор | C# backend | Покрытие тестами |
 | --- | --- | --- | --- |
-| `boolean` | да | да → `bool` | `ParserTests`, `RuntimeTests` |
-| `integer` | да, с `namedValues` | да → `BigInteger` | `CompilerTests`, `RoundTripTests` |
+| `boolean` | да | да → `bool` | `ParserTests`, `PrimitiveCodecTests`, `PrimitiveOracleTests` |
+| `integer` | да, с `namedValues` | да → `BigInteger` | `CompilerTests`, `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RoundTripTests` |
 | `enumerated` | да, с `values` | да → `BigInteger` (как INTEGER) | — |
-| `bitString` | да, с `namedBits` | да → `Asn1BitString`; `namedBits` → `Bit_*` константы | `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*` |
-| `octetString` | да | да → `byte[]` | `RoundTripTests`, `RuntimeTests` |
-| `oid` | да, dotted-строка | да → `string` | `RuntimeTests.ObjectIdentifier_*` |
-| `string` (12 форм `stringType`) | да | да → `string` + `Asn1StringForm` | `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*` |
-| `time` (`utc` / `generalized`) | да; `fractionDigits` 0…7 (default 3) для `generalized` | да → `DateTimeOffset` + `Asn1TimeForm`; запись с округлением | `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*` |
+| `bitString` | да, с `namedBits` | да → `Asn1BitString`; `namedBits` → `Bit_*` константы | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*` |
+| `octetString` | да | да → `byte[]` | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RoundTripTests`, `RuntimeTests` |
+| `oid` | да, dotted-строка; первый subidentifier — base-128 (в т.ч. `2.999…`) | да → `string` | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RuntimeTests.ObjectIdentifier_*` |
+| `string` (12 форм `stringType`) | да | да → `string` + `Asn1StringForm` | `PrimitiveCodecTests` (все 12), `PrimitiveOracleTests` (BCL-совместимые), `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*` |
+| `time` (`utc` / `generalized`) | да; `fractionDigits` 0…7 (default 3) для `generalized` | да → `DateTimeOffset` + `Asn1TimeForm`; запись с округлением | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*` |
 | `any` (+ `definedBy`) | да, с проверкой sibling-компонента | да → `Asn1Any` (Tag + Contents; `definedBy` не резолвится) | `ParserTests`, `RuntimeTests.Any_*`, `RoundTripTests.GeneratedCSharp_Any_*`, `ValueResolutionTests.RejectsAnyDefinedByUnknownField` |
 | `sequence` | да, `extensible` | да → класс с `Encode` / `Decode` | `RoundTripTests`, `PkixExplicit88Tests` |
 | `set` | да | да → класс с `Encode` / `Decode` (DER: порядок по тегу; decode по тегу) | `RoundTripTests`, `ParserTests`, `RuntimeTests` |
@@ -56,6 +56,8 @@
 | ANY | `WriteAny` (`Asn1Any`) | `ReadAny` (с ожидаемым тегом или без) |
 
 DER: только definite length, BOOLEAN `0x00` / `0xFF`, BIT STRING с нулевыми хвостовыми битами, время только с секундами и суффиксом `Z` (GeneralizedTime: `fractionDigits` 0…7, default 3; на записи без хвостовых нулей дроби). INTEGER на записи идёт через `BigInteger.ToByteArray` (минимальная форма на выходе). BER на чтении принимает indefinite length, constructed строки/BIT STRING, время без секунд и со смещением `±hhmm`; дробь 1…7 цифр с хвостовыми нулями допускается и в DER.
+
+Примитивы runtime: матрица hex в [fixtures/ber-der/](../fixtures/ber-der/) (`PrimitiveCodecTests`), перекрёстный oracle с `System.Formats.Asn1` (`PrimitiveOracleTests`; Teletex/T61/Videotex/Graphic/General — только свои векторы, Latin-1), внешние фрагменты RFC/X.690 — `ExternalVectorTests`.
 
 Ревью API Writer/Reader (кандидаты на смену до тестов, backlog оптимизаций) — [runtime-api.md](runtime-api.md).
 

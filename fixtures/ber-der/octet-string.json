@@ -1,0 +1,39 @@
+[
+  {
+    "name": "octet-empty",
+    "rules": "der",
+    "op": "octetString",
+    "bytes": "0400",
+    "value": ""
+  },
+  {
+    "name": "octet-ann",
+    "rules": "der",
+    "op": "octetString",
+    "bytes": "0403416E6E",
+    "value": "416E6E"
+  },
+  {
+    "name": "octet-ber-constructed-indefinite",
+    "rules": "ber",
+    "op": "octetString",
+    "bytes": "24800403416E6E0000",
+    "value": "416E6E",
+    "encode": false
+  },
+  {
+    "name": "octet-ber-constructed-definite",
+    "rules": "ber",
+    "op": "octetString",
+    "bytes": "24050403416E6E",
+    "value": "416E6E",
+    "encode": false
+  },
+  {
+    "name": "octet-der-rejects-indefinite",
+    "rules": "der",
+    "op": "octetString",
+    "bytes": "24800403416E6E0000",
+    "reject": true
+  }
+]

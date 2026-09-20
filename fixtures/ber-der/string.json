@@ -1,0 +1,115 @@
+[
+  {
+    "name": "string-utf8",
+    "rules": "der",
+    "op": "string",
+    "form": "Utf8",
+    "bytes": "0C0548656C6C6F",
+    "value": "Hello"
+  },
+  {
+    "name": "string-printable",
+    "rules": "der",
+    "op": "string",
+    "form": "Printable",
+    "bytes": "13054142433132",
+    "value": "ABC12"
+  },
+  {
+    "name": "string-ia5",
+    "rules": "der",
+    "op": "string",
+    "form": "Ia5",
+    "bytes": "16056140622E63",
+    "value": "a@b.c"
+  },
+  {
+    "name": "string-numeric",
+    "rules": "der",
+    "op": "string",
+    "form": "Numeric",
+    "bytes": "12053132332034",
+    "value": "123 4"
+  },
+  {
+    "name": "string-visible",
+    "rules": "der",
+    "op": "string",
+    "form": "Visible",
+    "bytes": "1A03416263",
+    "value": "Abc"
+  },
+  {
+    "name": "string-teletex-latin1",
+    "rules": "der",
+    "op": "string",
+    "form": "Teletex",
+    "bytes": "1401E9",
+    "value": "é"
+  },
+  {
+    "name": "string-t61-latin1",
+    "rules": "der",
+    "op": "string",
+    "form": "T61",
+    "bytes": "140141",
+    "value": "A"
+  },
+  {
+    "name": "string-general-latin1",
+    "rules": "der",
+    "op": "string",
+    "form": "General",
+    "bytes": "1B0142",
+    "value": "B"
+  },
+  {
+    "name": "string-graphic-latin1",
+    "rules": "der",
+    "op": "string",
+    "form": "Graphic",
+    "bytes": "190143",
+    "value": "C"
+  },
+  {
+    "name": "string-videotex-latin1",
+    "rules": "der",
+    "op": "string",
+    "form": "Videotex",
+    "bytes": "150144",
+    "value": "D"
+  },
+  {
+    "name": "string-bmp",
+    "rules": "der",
+    "op": "string",
+    "form": "Bmp",
+    "bytes": "1E0400410042",
+    "value": "AB"
+  },
+  {
+    "name": "string-universal",
+    "rules": "der",
+    "op": "string",
+    "form": "Universal",
+    "bytes": "1C080000004100000042",
+    "value": "AB"
+  },
+  {
+    "name": "string-utf8-ber-constructed",
+    "rules": "ber",
+    "op": "string",
+    "form": "Utf8",
+    "bytes": "2C070C0548656C6C6F",
+    "value": "Hello",
+    "encode": false
+  },
+  {
+    "name": "string-printable-rejects-at",
+    "rules": "der",
+    "op": "string",
+    "form": "Printable",
+    "bytes": "130140",
+    "reject": true
+  }
+]

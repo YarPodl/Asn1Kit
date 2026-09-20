@@ -1,0 +1,109 @@
+[
+  {
+    "name": "pkcs1-rsaEncryption-oid",
+    "rules": "der",
+    "op": "oid",
+    "bytes": "06092A864886F70D010101",
+    "value": "1.2.840.113549.1.1.1",
+    "source": "RFC 8017 Appendix C (rsaEncryption)"
+  },
+  {
+    "name": "pkcs1-sha256WithRSAEncryption-oid",
+    "rules": "der",
+    "op": "oid",
+    "bytes": "06092A864886F70D01010B",
+    "value": "1.2.840.113549.1.1.11",
+    "source": "RFC 8017 Appendix C (sha256WithRSAEncryption)"
+  },
+  {
+    "name": "pkix-algorithmIdentifier-sha256-null",
+    "rules": "der",
+    "op": "rawDecode",
+    "bytes": "300D06096086480165030402010500",
+    "value": {
+      "kind": "algorithmIdentifier",
+      "oid": "2.16.840.1.101.3.4.2.1",
+      "paramsTag": "null"
+    },
+    "source": "RFC 5754 / SHA-256 AlgorithmIdentifier with NULL parameters"
+  },
+  {
+    "name": "pkix-algorithmIdentifier-rsa-null",
+    "rules": "der",
+    "op": "rawDecode",
+    "bytes": "300D06092A864886F70D0101010500",
+    "value": {
+      "kind": "algorithmIdentifier",
+      "oid": "1.2.840.113549.1.1.1",
+      "paramsTag": "null"
+    },
+    "source": "RFC 5280 AlgorithmIdentifier pattern (rsaEncryption + NULL)"
+  },
+  {
+    "name": "pkix-utctime-notBefore-sample",
+    "rules": "der",
+    "op": "time",
+    "form": "Utc",
+    "bytes": "170D3135303432313138353835305A",
+    "value": "2015-04-21T18:58:50Z",
+    "source": "RFC 5280 UTCTime form (YYMMDDHHMMSSZ); synthetic sample"
+  },
+  {
+    "name": "pkix-generalizedtime-sample",
+    "rules": "der",
+    "op": "time",
+    "form": "Generalized",
+    "bytes": "180F32303530303130313030303030305A",
+    "value": "2050-01-01T00:00:00Z",
+    "fractionDigits": 0,
+    "source": "RFC 5280 GeneralizedTime form; synthetic sample past UTCTime pivot"
+  },
+  {
+    "name": "x690-boolean-true",
+    "rules": "der",
+    "op": "boolean",
+    "bytes": "0101FF",
+    "value": true,
+    "source": "X.690 DER BOOLEAN true encoding"
+  },
+  {
+    "name": "x690-null",
+    "rules": "der",
+    "op": "null",
+    "bytes": "0500",
+    "source": "X.690 NULL"
+  },
+  {
+    "name": "x690-integer-zero",
+    "rules": "der",
+    "op": "integer",
+    "bytes": "020100",
+    "value": "0",
+    "source": "X.690 INTEGER zero"
+  },
+  {
+    "name": "x690-octet-empty",
+    "rules": "der",
+    "op": "octetString",
+    "bytes": "0400",
+    "value": "",
+    "source": "X.690 empty OCTET STRING"
+  },
+  {
+    "name": "dotnet-bitstring-named-bits-style",
+    "rules": "der",
+    "op": "bitString",
+    "bytes": "03020780",
+    "value": "80",
+    "unusedBits": 7,
+    "source": "Regenerated via System.Formats.Asn1 AsnWriter (single high bit)"
+  },
+  {
+    "name": "dotnet-oid-joint-iso-itu",
+    "rules": "der",
+    "op": "oid",
+    "bytes": "0603883703",
+    "value": "2.999.3",
+    "source": "Regenerated via System.Formats.Asn1 (example OID under 2.999)"
+  }
+]
