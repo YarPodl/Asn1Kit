@@ -1,0 +1,27 @@
+﻿TrustAnchorRootCertificate.crt
+SerialNumber=01
+NotBeforeUtc=2010-01-01T08:30:00.0000000Z
+NotAfterUtc=2030-12-31T08:30:00.0000000Z
+Subject=CN=Trust Anchor, O=Test Certificates 2011, C=US
+Issuer=CN=Trust Anchor, O=Test Certificates 2011, C=US
+SignatureAlgorithm=1.2.840.113549.1.1.11
+Version=3
+ExtensionCount=3
+ExtOid=2.5.29.14 Critical=False
+ExtOid=2.5.29.15 Critical=True
+ExtOid=2.5.29.19 Critical=True
+---
+GoodCACert.crt
+SerialNumber=02
+NotBeforeUtc=2010-01-01T08:30:00.0000000Z
+NotAfterUtc=2030-12-31T08:30:00.0000000Z
+Subject=CN=Good CA, O=Test Certificates 2011, C=US
+Issuer=CN=Trust Anchor, O=Test Certificates 2011, C=US
+SignatureAlgorithm=1.2.840.113549.1.1.11
+Version=3
+ExtensionCount=5
+ExtOid=2.5.29.35 Critical=False
+ExtOid=2.5.29.14 Critical=False
+ExtOid=2.5.29.15 Critical=True
+ExtOid=2.5.29.32 Critical=False
+ExtOid=2.5.29.19 Critical=True

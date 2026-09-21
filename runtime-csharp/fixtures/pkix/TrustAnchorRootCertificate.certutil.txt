@@ -1,0 +1,97 @@
+﻿X509 Certificate:
+Version: 3
+Serial Number: 01
+Signature Algorithm:
+    Algorithm ObjectId: 1.2.840.113549.1.1.11 sha256RSA
+    Algorithm Parameters:
+    05 00
+Issuer:
+    CN=Trust Anchor
+    O=Test Certificates 2011
+    C=US
+  Name Hash(sha1): 7353f8c27e2a7273daa3e1507f1013c5ee1f41f1
+  Name Hash(md5): 8c7f749e5d525a39b18af0f0b7867aa9
+
+ NotBefore: 01.01.2010 11:30
+ NotAfter: 31.12.2030 11:30
+
+Subject:
+    CN=Trust Anchor
+    O=Test Certificates 2011
+    C=US
+  Name Hash(sha1): 7353f8c27e2a7273daa3e1507f1013c5ee1f41f1
+  Name Hash(md5): 8c7f749e5d525a39b18af0f0b7867aa9
+
+Public Key Algorithm:
+    Algorithm ObjectId: 1.2.840.113549.1.1.1 RSA
+    Algorithm Parameters:
+    05 00
+Public Key Length: 2048 bits
+Public Key: UnusedBits = 0
+    0000  30 82 01 0a 02 82 01 01  00 b9 99 51 89 11 47 e0
+    0010  cd 45 b9 84 27 82 13 02  16 cd 44 39 aa ac db 09
+    0020  c3 de e2 2c 4e db a4 57  9f 94 35 28 35 c2 6b 64
+    0030  f6 5b 0b 6d 3c 6c 6f a0  e4 cd 00 4f 35 74 bc ea
+    0040  a0 f3 c0 ec d7 f1 63 14  32 b5 a0 f2 2d aa c8 83
+    0050  22 62 48 ab 4c 5b fd eb  79 c3 bd 96 34 fc 47 56
+    0060  b7 2c af b0 29 e8 31 df  77 02 e9 34 c9 dc aa dc
+    0070  d7 f7 68 54 fe 21 95 1c  b1 3f c3 f3 82 5b 00 08
+    0080  21 b4 c7 6b 17 6b 18 c5  06 ec 39 09 27 a8 88 ee
+    0090  6c ea a5 cc 8f bf 20 00  a3 d3 b7 48 78 c9 af eb
+    00a0  b0 e6 f4 ab 1d 1a de b6  75 76 ba 7d 1b a2 1b c6
+    00b0  b2 53 7a e0 c6 3f 50 88  91 9c f1 70 77 68 03 ef
+    00c0  a6 f2 0f 3a 0c d6 2a 32  2d 10 a5 95 f0 49 e6 c4
+    00d0  43 cf dc 6b 50 73 62 81  30 14 76 56 e5 6f ac ab
+    00e0  9c db 4d 26 69 2b 44 e6  2f 92 1e ac 2c 44 d4 87
+    00f0  d1 18 87 40 2b fb de 1f  65 55 df 19 58 b9 ed 2c
+    0100  3b c7 58 f2 00 d4 e5 03  8d 02 03 01 00 01
+Certificate Extensions: 3
+    2.5.29.14: Flags = 0, Length = 16
+    Subject Key Identifier
+        e47d5fd15c9586082c05aebe75b665a7d95da866
+
+    2.5.29.15: Flags = 1(Critical), Length = 4
+    Key Usage
+        Certificate Signing, Off-line CRL Signing, CRL Signing (06)
+
+    2.5.29.19: Flags = 1(Critical), Length = 5
+    Basic Constraints
+        Subject Type=CA
+        Path Length Constraint=None
+
+Signature Algorithm:
+    Algorithm ObjectId: 1.2.840.113549.1.1.11 sha256RSA
+    Algorithm Parameters:
+    05 00
+Signature: UnusedBits=0
+    0000  c5 7c a5 fd 9f 95 61 72  cf b3 96 0c 4b 3a 2f 37
+    0010  6c 50 06 49 35 fd 70 b5  f3 cc 79 75 26 29 ae d2
+    0020  66 7b d1 84 0a ee 0b 35  0e 33 41 87 9f f8 19 0b
+    0030  b3 21 0a 0c 08 73 3e 58  e6 32 13 bf e3 f0 b9 e1
+    0040  c9 dd fe ef ab 29 22 14  cd 59 fe 51 5a 6a da 56
+    0050  b3 a0 c2 e8 8d 21 b2 e1  e1 c6 b0 03 1e a3 5a 2a
+    0060  6b c1 73 f6 57 a3 a1 cf  03 2e 9c 3c 4e db 26 63
+    0070  5a 9f ea 72 31 10 5c 6d  d8 f8 0f b5 c2 c6 f1 8a
+    0080  ba 1e 19 8b 3e 2e d6 ab  4d b0 48 81 e5 d4 18 e2
+    0090  0d 58 10 cf 03 3a be 65  b8 5e b1 14 d6 80 d4 07
+    00a0  c9 b5 95 94 8c 58 86 a8  5c 09 c5 e9 9a ce 63 23
+    00b0  8a e3 27 ff 3e be 41 c2  72 d6 bd a3 5e 40 41 01
+    00c0  20 54 05 29 6f 49 aa ac  0e a8 a9 aa 67 0a 33 78
+    00d0  6b e0 82 73 4c e7 08 fd  5a c5 0b 5e fe b1 c8 95
+    00e0  05 90 9a 13 30 94 08 65  a6 de 71 c7 67 ff ae 1e
+    00f0  17 88 84 e2 23 c3 29 39  25 4a 9e 47 6e af a1 98
+Signature matches Public Key
+Root Certificate: Subject matches Issuer
+Key Id Hash(rfc-sha1): e47d5fd15c9586082c05aebe75b665a7d95da866
+Key Id Hash(sha1): 166b91a88aca9dad26e59dfb11d5165d811ca210
+Key Id Hash(bcrypt-sha1): d19a308cfb3735f30f96725ca8b27238dd4f1b89
+Key Id Hash(bcrypt-sha256): 0f6358e3b188bdebbf1a23a7eded0c84ef10b35bac9f45beaabbc66cdcf72184
+Key Id Hash(md5): 392c1568f7df76d722439e3208239c9c
+Key Id Hash(sha256): ed3f039f7e306d8e80c0a94447a0999b8e58d111d9d09b1b27488fc24206a31c
+Key Id Hash(pin-sha256): gpOL1II1KQdAf43Otry9na8ZKsjvIzPuE2XgtMK6mQ8=
+Key Id Hash(pin-sha256-hex): 82938bd482352907407f8dceb6bcbd9daf192ac8ef2333ee1365e0b4c2ba990f
+Cert Hash(md5): 55445471f77f6d52af15d04ed06b9325
+Cert Hash(sha1): 9d70f8166a1acc2b9f0f39e989c41834f2c45c06
+Cert Hash(sha256): 87d1dfcc73f979bb348bb4f159d9115c40ab0a9afc4b21d77e6ddf20c7782b89
+Signature Hash: cf4207b01ac643b8a09a36a55ad4993cb8c0799ec61a1de8139da3516be852bd
+CertUtil: -dump command completed successfully.

@@ -1,0 +1,65 @@
+﻿X509 Certificate Revocation List:
+Version: 2
+Signature Algorithm:
+    Algorithm ObjectId: 1.2.840.113549.1.1.11 sha256RSA
+    Algorithm Parameters:
+    05 00
+Issuer:
+    CN=Good CA
+    O=Test Certificates 2011
+    C=US
+  Name Hash(sha1): 5715ee484b77c67427b766581fdb6ff81bf19fb6
+  Name Hash(md5): aef70cef5426b8d3f59852e6f560518b
+
+ ThisUpdate: 01.01.2010 11:30
+ NextUpdate: 31.12.2030 11:30
+CRL Entries: 2
+  Serial Number: 0e
+   Revocation Date: 01.01.2010 11:30
+  Extensions: 1
+    2.5.29.21: Flags = 0, Length = 3
+    CRL Reason Code
+        Key Compromise (1)
+
+  Serial Number: 0f
+   Revocation Date: 01.01.2010 11:30
+  Extensions: 1
+    2.5.29.21: Flags = 0, Length = 3
+    CRL Reason Code
+        Key Compromise (1)
+
+CRL Extensions: 2
+    2.5.29.35: Flags = 0, Length = 18
+    Authority Key Identifier
+        KeyID=580184241bbc2b52944a3da510721451f5af3ac9
+
+    2.5.29.20: Flags = 0, Length = 3
+    CRL Number
+        CRL Number=01
+
+Signature Algorithm:
+    Algorithm ObjectId: 1.2.840.113549.1.1.11 sha256RSA
+    Algorithm Parameters:
+    05 00
+Signature: UnusedBits=0
+    0000  44 56 d3 e3 4b 30 49 48  b2 49 16 42 ea b3 cb 94
+    0010  85 e3 d8 ab 9b 4b 85 bc  0c e7 1e 50 10 ef f5 b4
+    0020  67 43 42 2c 5f 67 b0 df  75 27 ad 60 22 b7 92 4d
+    0030  06 ad c5 02 a6 e6 45 e4  26 2f 56 61 91 ae 95 47
+    0040  31 4f ae f0 cb b2 8a a2  13 16 50 48 32 56 07 15
+    0050  13 34 f7 28 f5 f5 b2 19  db 39 65 68 2f 7f 3b 78
+    0060  6d 6f ca ed af 9f 06 ab  89 8e 05 b2 85 1e e6 e4
+    0070  7a 1a ce de 55 bf 47 37  c7 a8 04 3d 2c fe 79 4e
+    0080  e5 c0 a4 39 cd 94 50 86  46 38 5f 93 4d ab 08 b6
+    0090  15 e1 d6 05 7a 04 96 2b  a5 21 a5 e3 6d 26 e1 fa
+    00a0  6b ef 51 b3 9e 32 01 dc  e9 bf cf a3 8f d4 32 59
+    00b0  4e fa fe ed d9 0a 81 f0  b9 c0 6c 14 6f f3 e5 c7
+    00c0  6d 49 ed 0d 03 4a 1a 6d  3e 07 94 33 10 88 0c 6a
+    00d0  36 83 4d da d5 ea 68 e4  d8 97 1c 75 05 55 be 76
+    00e0  78 ff 03 ac 41 b9 9e 4a  7c 3c 8b 53 8b d3 4a 8d
+    00f0  f6 c4 bb ec 84 6a c5 6e  f0 c3 29 8a 0b f3 bc 3d
+CRL Hash(md5): 77638e8c6f7bc06fd14d30960d01ebcb
+CRL Hash(sha1): dd3db63c50f4c4a13e090f14053227cb1011a5ad
+CRL Hash(sha256): d78e5eca421f082f55bf1c25ddf697111be3eeee0d395e339f1b97711ee2b496
+Signature Hash: 7e32943817c6ad88d282f946a30e7d106fb863f317598ef3f69459cdbb7e4eae
+CertUtil: -dump command completed successfully.

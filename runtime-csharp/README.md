@@ -2,7 +2,7 @@
 
 Библиотека кодека: `Asn1Writer` / `Asn1Reader` и примитивы. Не знает про ASN.1-модули и IR — только TLV и правила кодирования.
 
-Рядом лежит эталонный сгенерированный код PKIX ([generated/Asn1Kit.Pkix](generated/Asn1Kit.Pkix/)) — golden артефакт C# backend. Encode/decode тесты на нём ещё не написаны; мелкий round-trip через Roslyn остаётся в `compiler/tests`.
+Рядом лежит эталонный сгенерированный код PKIX ([generated/Asn1Kit.Pkix](generated/Asn1Kit.Pkix/)) — golden артефакт C# backend. Encode/decode на нём — в [tests/Asn1Kit.Pkix.Tests](tests/Asn1Kit.Pkix.Tests/) с фикстурами [fixtures/pkix/](fixtures/pkix/) (NIST PKITS). Мелкий round-trip через Roslyn остаётся в `compiler/tests`.
 
 ## Проекты
 
@@ -11,10 +11,13 @@
 | `src/Asn1Kit.Runtime` | Теги, writer/reader, примитивы |
 | `generated/Asn1Kit.Pkix` | Golden C# из PKIX1Explicit88 + PKIX1Implicit88; `*.g.cs` руками не править |
 | `tests/Asn1Kit.Runtime.Tests` | Матрица hex, oracle BCL, внешние векторы, `RuntimeTests` |
+| `tests/Asn1Kit.Pkix.Tests` | Encode/decode `Certificate` / `CertificateList` на NIST PKITS |
 
 ## Фикстуры
 
 `fixtures/ber-der/` — hex-матрица и `external/` (см. [fixtures/ber-der/README.md](fixtures/ber-der/README.md)).
+
+`fixtures/pkix/` — DER сертификатов/СОС NIST PKITS + `expected.json` из certutil/BCL (см. [fixtures/pkix/README.md](fixtures/pkix/README.md)).
 
 Слои тестов:
 

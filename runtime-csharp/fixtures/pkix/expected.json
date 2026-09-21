@@ -1,0 +1,56 @@
+{
+  "source": "NIST PKITS via boringssl pki/testdata/nist-pkits; expected from certutil + X509Certificate2 (see README.md)",
+  "certificates": {
+    "TrustAnchorRootCertificate.crt": {
+      "asn1Version": 2,
+      "serialNumber": 1,
+      "signatureAlgorithm": "1.2.840.113549.1.1.11",
+      "notBeforeUtc": "2010-01-01T08:30:00Z",
+      "notAfterUtc": "2030-12-31T08:30:00Z",
+      "subject": [
+        { "oid": "2.5.4.6", "value": "US" },
+        { "oid": "2.5.4.10", "value": "Test Certificates 2011" },
+        { "oid": "2.5.4.3", "value": "Trust Anchor" }
+      ],
+      "issuer": [
+        { "oid": "2.5.4.6", "value": "US" },
+        { "oid": "2.5.4.10", "value": "Test Certificates 2011" },
+        { "oid": "2.5.4.3", "value": "Trust Anchor" }
+      ],
+      "extensionOids": [ "2.5.29.14", "2.5.29.15", "2.5.29.19" ]
+    },
+    "GoodCACert.crt": {
+      "asn1Version": 2,
+      "serialNumber": 2,
+      "signatureAlgorithm": "1.2.840.113549.1.1.11",
+      "notBeforeUtc": "2010-01-01T08:30:00Z",
+      "notAfterUtc": "2030-12-31T08:30:00Z",
+      "subject": [
+        { "oid": "2.5.4.6", "value": "US" },
+        { "oid": "2.5.4.10", "value": "Test Certificates 2011" },
+        { "oid": "2.5.4.3", "value": "Good CA" }
+      ],
+      "issuer": [
+        { "oid": "2.5.4.6", "value": "US" },
+        { "oid": "2.5.4.10", "value": "Test Certificates 2011" },
+        { "oid": "2.5.4.3", "value": "Trust Anchor" }
+      ],
+      "extensionOids": [ "2.5.29.35", "2.5.29.14", "2.5.29.15", "2.5.29.32", "2.5.29.19" ]
+    }
+  },
+  "crls": {
+    "GoodCACRL.crl": {
+      "asn1Version": 1,
+      "signatureAlgorithm": "1.2.840.113549.1.1.11",
+      "thisUpdateUtc": "2010-01-01T08:30:00Z",
+      "nextUpdateUtc": "2030-12-31T08:30:00Z",
+      "issuer": [
+        { "oid": "2.5.4.6", "value": "US" },
+        { "oid": "2.5.4.10", "value": "Test Certificates 2011" },
+        { "oid": "2.5.4.3", "value": "Good CA" }
+      ],
+      "revokedSerialNumbers": [ 14, 15 ],
+      "crlExtensionOids": [ "2.5.29.35", "2.5.29.20" ]
+    }
+  }
+}
