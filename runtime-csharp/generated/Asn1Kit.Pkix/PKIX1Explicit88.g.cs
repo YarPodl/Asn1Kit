@@ -1403,7 +1403,7 @@ public sealed class TBSCertList
             value.Signature = AlgorithmIdentifier.Decode(inner, Asn1Tag.Sequence);
             value.Issuer = inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => AttributeTypeAndValue.Decode(inner, Asn1Tag.Sequence)));
             value.ThisUpdate = Time.Decode(inner);
-            if (inner.TryPeekTag(out var tag_NextUpdate) && tag_NextUpdate.MatchesIgnoreConstructed(Asn1Tag.Sequence))
+            if (inner.TryPeekTag(out var tag_NextUpdate) && (tag_NextUpdate.MatchesIgnoreConstructed(Asn1Tag.UtcTime) || tag_NextUpdate.MatchesIgnoreConstructed(Asn1Tag.GeneralizedTime)))
             {
                 value.NextUpdate = Time.Decode(inner);
             }

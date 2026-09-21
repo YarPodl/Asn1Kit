@@ -304,7 +304,7 @@ public sealed class UserNotice
             {
                 value.NoticeRef = NoticeReference.Decode(inner, Asn1Tag.Sequence);
             }
-            if (inner.TryPeekTag(out var tag_ExplicitText) && tag_ExplicitText.MatchesIgnoreConstructed(Asn1Tag.Sequence))
+            if (inner.TryPeekTag(out var tag_ExplicitText) && (tag_ExplicitText.MatchesIgnoreConstructed(Asn1Tag.Ia5String) || tag_ExplicitText.MatchesIgnoreConstructed(Asn1Tag.VisibleString) || tag_ExplicitText.MatchesIgnoreConstructed(Asn1Tag.BmpString) || tag_ExplicitText.MatchesIgnoreConstructed(Asn1Tag.Utf8String)))
             {
                 value.ExplicitText = DisplayText.Decode(inner);
             }

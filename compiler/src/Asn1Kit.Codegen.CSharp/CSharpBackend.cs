@@ -346,7 +346,7 @@ public sealed class CSharpBackend : ILanguageBackend
             var prop = PropertyName(field, typeName);
             var cond = first ? "if" : "else if";
             first = false;
-            sb.AppendLine($"                {cond} (peeked.MatchesIgnoreConstructed({TagExpr(document, module, field.Type)}))");
+            sb.AppendLine($"                {cond} ({PeekMatchExpr(document, module, field.Type, "peeked")})");
             sb.AppendLine("                {");
             if (!field.Optional)
             {
@@ -938,7 +938,8 @@ public sealed class CSharpBackend : ILanguageBackend
             else
             {
                 var peekTag = "tag_" + SanitizeIdentifier(field.Name);
-                sb.AppendLine($"{indent}if ({reader}.TryPeekTag(out var {peekTag}) && {peekTag}.MatchesIgnoreConstructed({TagExpr(document, module, field.Type)}))");
+                sb.AppendLine(
+                    $"{indent}if ({reader}.TryPeekTag(out var {peekTag}) && {PeekMatchExpr(document, module, field.Type, peekTag)})");
                 sb.AppendLine($"{indent}{{");
                 EmitDecodeAssign(sb, document, module, owner, field.Name, field.Type, indent + "    ", reader, $"{target}.{prop}");
                 sb.AppendLine($"{indent}}}");
@@ -948,6 +949,65 @@ public sealed class CSharpBackend : ILanguageBackend
         {
             EmitDecodeAssign(sb, document, module, owner, field.Name, field.Type, indent, reader, $"{target}.{prop}");
         }
+    }
+
+    /// <summary>
+    /// Optional SEQUENCE/SET fields peek a single universal tag; untagged multi-alternative CHOICE
+    /// (including named refs like Time) must match any alternative tag, not Sequence.
+    /// </summary>
+    private string PeekMatchExpr(IrDocument document, IrModule module, TypeExpr type, string peekedVar)
+    {
+        if (TryGetUntaggedMultiAltChoice(document, module, type, out var choice))
+        {
+            var alts = choice.Components
+                .Select(c => $"{peekedVar}.MatchesIgnoreConstructed({TagExpr(document, module, c.Type)})");
+            return "(" + string.Join(" || ", alts) + ")";
+        }
+
+        return $"{peekedVar}.MatchesIgnoreConstructed({TagExpr(document, module, type)})";
+    }
+
+    private bool TryGetUntaggedMultiAltChoice(
+        IrDocument document,
+        IrModule module,
+        TypeExpr type,
+        out ChoiceType choice)
+    {
+        choice = null!;
+        if (type.Tag is not null)
+        {
+            return false;
+        }
+
+        var cursor = UnwrapAliases(document, module, type);
+        if (cursor.Tag is not null)
+        {
+            return false;
+        }
+
+        if (cursor is RefType reference)
+        {
+            var found = Find(document, module, reference);
+            if (found?.Type is ChoiceType named &&
+                !IsSingleAlternativeChoice(named) &&
+                named.Tag is null)
+            {
+                choice = named;
+                return true;
+            }
+
+            return false;
+        }
+
+        if (cursor is ChoiceType inline &&
+            !IsSingleAlternativeChoice(inline) &&
+            inline.Tag is null)
+        {
+            choice = inline;
+            return true;
+        }
+
+        return false;
     }
 
     private bool IsUntaggedAny(IrDocument document, IrModule module, TypeExpr type)
