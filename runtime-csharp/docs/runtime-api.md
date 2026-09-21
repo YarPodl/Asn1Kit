@@ -24,7 +24,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 ```
 
 Статические `Asn1Boolean` / `Asn1Enumerated` / … — warm convenience; codegen их не эмитит.
-`Asn1Integer` — **hot** value type (DER contents как `ReadOnlyMemory`; из reader — view) для codegen при `representation=der`; статические `Encode(BigInteger)` / `DecodeBigInteger` — warm.
+`Asn1Integer` — **hot** value type (DER contents как `ReadOnlyMemory`; из reader — view) для codegen при `representation=der`; `default` / `Zero` = 0; статические `Encode(BigInteger)` / `DecodeBigInteger` — warm.
 
 Непублично: `Asn1TextCodec` (`internal`), `Asn1Writer.EncodeInteger` (`internal`), `WriteTag` / `WriteLength` / `WriteTlv` / `WritePrimitive` (`private`).
 
@@ -94,4 +94,4 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `WriteRaw` | append TLV |
 | `ReadValue` / `ReadTlv` | view; wrong tag |
 | Wrappers | smoke |
-| `Asn1BitString` / `Asn1Any` / `Asn1Integer` / `Asn1Null` | Memory/ContentsMemory alias source; `ToArray` detach; equality; `Asn1Integer` numeric accessors; `Asn1Null` singleton value |
+| `Asn1BitString` / `Asn1Any` / `Asn1Integer` / `Asn1Null` | Memory/ContentsMemory alias source; `ToArray` detach; equality; `Asn1Integer` numeric accessors + `Zero`/`default`=0; `Asn1Null` singleton value |

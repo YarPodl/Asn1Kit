@@ -111,7 +111,7 @@ BER: indefinite length, constructed строки/BIT STRING, время без �
    - **6d.** парсер/IR для `CLASS`, object sets, parameterized `AlgorithmIdentifier{…}` — полноценный RFC 5912 (as published не компилируется: вне профиля)
 7. ~~Encode/decode тесты на golden-либе `[runtime-csharp/generated/Asn1Kit.Pkix](../runtime-csharp/generated/Asn1Kit.Pkix/)`~~ — `Asn1Kit.Pkix.Tests` + NIST PKITS фикстуры в `runtime-csharp/fixtures/pkix/` (сама либа и сверка `PkixGeneratedCodeTests` уже есть; мелкий round-trip через Roslyn — в `compiler/tests`).
 8. ~~Убрать лишний алиас для CHOICE из одного варианта~~ — `Name ::= CHOICE { rdnSequence RDNSequence }` сворачивается в underlying (как typedef-алиас)
-9. Для Asn1Integer создать дефотный вариант (например пустой конструктор), чтобы оптимизировать места по типу public Asn1Integer UserCertificate { get; set; } = Asn1Integer.FromInt32(0);
+9. ~~Для Asn1Integer создать дефолтный вариант (например пустой конструктор), чтобы оптимизировать места по типу public Asn1Integer UserCertificate { get; set; } = Asn1Integer.FromInt32(0);~~ — `default` / `Asn1Integer.Zero` = 0; codegen без initializer
 10. ~~Все таки подумать над логикой API, слишком много byte[], можно лучше. В Decode не принимать владение.~~ — decode zero-copy `ReadOnlyMemory` / structs с Memory на буфер reader; detach — `ToArray`/`Clone`. Follow-up: `List<T>` → массивы в `ReadSequenceOf` / `Array.Empty`.
 11. ~~Оптимизация API для Time и строк (например оптимизация Choice для случая, если все элементы мапятся в один тип)~~ — однотипные альты → `Kind` + `Value`
 12. Добавить опцию Lazy, чтобы откладывать разбор структуры

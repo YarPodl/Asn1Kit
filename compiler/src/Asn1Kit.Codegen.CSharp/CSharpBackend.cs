@@ -1827,10 +1827,7 @@ public sealed class CSharpBackend : ILanguageBackend
             return "";
         }
 
-        if (TryResolveIntegerRepresentation(document, module, type) == IrOptions.IntegerRepresentations.Der)
-        {
-            return " = Asn1Integer.FromInt32(0);";
-        }
+        // Asn1Integer defaults to 0 (see Asn1Integer.Zero); no property initializer needed.
 
         var unwrapped = UnwrapAliases(document, module, type);
         return unwrapped switch

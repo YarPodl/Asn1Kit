@@ -6,9 +6,12 @@ namespace Asn1Kit.Runtime;
 /// INTEGER value holding DER contents (big-endian, without TLV).
 /// Numeric factories produce canonical contents; <see cref="FromContents"/> wraps Memory without copy;
 /// <see cref="CopyFrom"/> copies a Span.
+/// <c>default</c> and <see cref="Zero"/> are the integer 0 (canonical contents <c>0x00</c>).
 /// </summary>
 public readonly struct Asn1Integer : IEquatable<Asn1Integer>
 {
+    private static readonly byte[] ZeroContents = { 0x00 };
+
     private readonly ReadOnlyMemory<byte> _bytes;
 
     private Asn1Integer(ReadOnlyMemory<byte> bytes)
@@ -16,13 +19,19 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
         _bytes = bytes;
     }
 
-    public ReadOnlySpan<byte> Span => _bytes.Span;
+    /// <summary>Integer 0; same as <c>default</c> / <see cref="FromInt32"/>(0).</summary>
+    public static Asn1Integer Zero => default;
+
+    public ReadOnlySpan<byte> Span => CanonicalMemory.Span;
 
     /// <summary>DER contents as memory (may alias an <see cref="Asn1Reader"/> buffer).</summary>
-    public ReadOnlyMemory<byte> Memory => _bytes;
+    public ReadOnlyMemory<byte> Memory => CanonicalMemory;
+
+    private ReadOnlyMemory<byte> CanonicalMemory =>
+        _bytes.Length == 0 ? ZeroContents : _bytes;
 
     /// <summary>Detaches DER contents into a new array.</summary>
-    public byte[] ToArray() => _bytes.ToArray();
+    public byte[] ToArray() => CanonicalMemory.ToArray();
 
     /// <summary>Returns a copy that does not alias an external buffer.</summary>
     public Asn1Integer Clone() => new(ToArray());
@@ -50,9 +59,10 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
     }
 
     public static Asn1Integer FromBigInteger(BigInteger value) =>
-        new(Asn1Writer.EncodeInteger(value));
+        value.IsZero ? Zero : new(Asn1Writer.EncodeInteger(value));
 
-    public static Asn1Integer FromInt32(int value) => FromBigInteger(value);
+    public static Asn1Integer FromInt32(int value) =>
+        value == 0 ? Zero : FromBigInteger(value);
 
     public static Asn1Integer FromUInt32(uint value) => FromBigInteger(value);
 

@@ -138,6 +138,20 @@ public sealed class PrimitiveCodecTests
     }
 
     [Fact]
+    public void IntegerValue_DefaultAndZero_AreCanonicalZero()
+    {
+        Assert.Equal(default(Asn1Integer), Asn1Integer.FromInt32(0));
+        Assert.Equal(Asn1Integer.Zero, Asn1Integer.FromInt32(0));
+        Assert.Equal(Asn1Integer.Zero, Asn1Integer.FromBigInteger(0));
+        Assert.Equal(new byte[] { 0x00 }, Asn1Integer.Zero.Span.ToArray());
+        Assert.Equal(0, Asn1Integer.Zero.GetInt32());
+
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteInteger(Asn1Tag.Integer, default(Asn1Integer));
+        Assert.Equal(new byte[] { 0x02, 0x01, 0x00 }, writer.Encode());
+    }
+
+    [Fact]
     public void ReadInt32_RejectsOutOfRange()
     {
         var writer = new Asn1Writer(Asn1Encoding.Der);

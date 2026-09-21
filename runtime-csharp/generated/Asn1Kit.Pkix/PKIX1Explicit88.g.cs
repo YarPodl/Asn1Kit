@@ -1026,7 +1026,7 @@ public sealed class TBSCertificate
 {
     public int? Version { get; set; }
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
-    public Asn1Integer SerialNumber { get; set; } = Asn1Integer.FromInt32(0);
+    public Asn1Integer SerialNumber { get; set; }
     public AlgorithmIdentifier Signature { get; set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
     public List<List<AttributeTypeAndValue>> Issuer { get; set; } = new();
@@ -2419,7 +2419,7 @@ public sealed class TeletexDomainDefinedAttribute
 public sealed class TBSCertList_RevokedCertificates_Item
 {
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
-    public Asn1Integer UserCertificate { get; set; } = Asn1Integer.FromInt32(0);
+    public Asn1Integer UserCertificate { get; set; }
     public Time RevocationDate { get; set; }
     /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
     public List<Extension>? CrlEntryExtensions { get; set; }

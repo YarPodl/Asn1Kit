@@ -996,7 +996,8 @@ END
         var source = new CSharpBackend().Generate(document).Single().Contents;
         Assert.Contains("public int A { get; set; }", source);
         Assert.Contains("public uint B { get; set; }", source);
-        Assert.Contains("public Asn1Integer C { get; set; } = Asn1Integer.FromInt32(0);", source);
+        Assert.Contains("public Asn1Integer C { get; set; }", source);
+        Assert.DoesNotContain("Asn1Integer.FromInt32(0)", source);
         Assert.Contains("ReadInt32", source);
         Assert.Contains("ReadUInt32", source);
         Assert.Contains("ReadIntegerValue", source);
@@ -1045,7 +1046,8 @@ END
         document.Modules[0].Types.Single(t => t.Name == "Version").Options =
             IrOptions.SetIntegerRepresentation(null, IrOptions.IntegerRepresentations.Der);
         var overridden = new CSharpBackend().Generate(document).Single().Contents;
-        Assert.Contains("public Asn1Integer Version { get; set; } = Asn1Integer.FromInt32(0);", overridden);
+        Assert.Contains("public Asn1Integer Version { get; set; }", overridden);
+        Assert.DoesNotContain("Asn1Integer.FromInt32(0)", overridden);
         Assert.Contains("public const int V1 = 0;", overridden);
     }
 
