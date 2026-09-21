@@ -22,14 +22,50 @@ public sealed class CertificateListCodecTests
         Assert.NotNull(tbs.NextUpdate);
         Assert.Equal(expected.NextUpdateUtc, tbs.NextUpdate!.Value);
         AssertDn(expected.Issuer, tbs.Issuer);
+        Assert.Equal(expected.SignatureUnusedBits, crl.Signature.UnusedBits);
+        Assert.Equal(expected.SignatureByteLength, crl.Signature.Span.Length);
 
         Assert.NotNull(tbs.RevokedCertificates);
-        Assert.Equal(
-            expected.RevokedSerialNumbers.Select(Asn1Integer.FromInt32).ToList(),
-            tbs.RevokedCertificates!.Select(e => e.UserCertificate).ToList());
+        Assert.Equal(expected.RevokedCertificates.Count, tbs.RevokedCertificates!.Count);
+        for (var i = 0; i < expected.RevokedCertificates.Count; i++)
+        {
+            var want = expected.RevokedCertificates[i];
+            var got = tbs.RevokedCertificates[i];
+            Assert.Equal(Asn1Integer.FromInt32(want.SerialNumber), got.UserCertificate);
+            Assert.Equal(want.RevocationDateUtc, got.RevocationDate.Value);
+            Assert.NotNull(got.CrlEntryExtensions);
+            var reasonExt = PkixFixtures.RequireExtension(got.CrlEntryExtensions!, "2.5.29.21");
+            Assert.False(reasonExt.Critical ?? false);
+            var reason = (CRLReason)(int)PkixFixtures.ExtnValueReader(reasonExt).ReadEnumerated(Asn1Tag.Enumerated);
+            Assert.Equal(PkixFixtures.ParseCrlReason(want.CrlReason!), reason);
+            PkixFixtures.AssertExtnValueRoundTrip(reasonExt, writer =>
+            {
+                writer.WriteEnumerated(Asn1Tag.Enumerated, (int)reason);
+            });
+        }
 
         Assert.NotNull(tbs.CrlExtensions);
         Assert.Equal(expected.CrlExtensionOids, tbs.CrlExtensions!.Select(e => e.ExtnID).ToList());
+        foreach (var expectedExt in expected.CrlExtensions)
+        {
+            var extension = PkixFixtures.RequireExtension(tbs.CrlExtensions!, expectedExt.Oid);
+            Assert.Equal(expectedExt.Critical, extension.Critical ?? false);
+            if (expectedExt.Oid == "2.5.29.35")
+            {
+                var aki = AuthorityKeyIdentifier.Decode(PkixFixtures.ExtnValueReader(extension));
+                Assert.Equal(expectedExt.AuthorityKeyIdentifierHex, PkixFixtures.ToHex(aki.KeyIdentifier!.Value.Span));
+                PkixFixtures.AssertExtnValueRoundTrip(extension, aki.Encode);
+            }
+            else if (expectedExt.Oid == "2.5.29.20")
+            {
+                var number = PkixFixtures.ExtnValueReader(extension).ReadIntegerValue(Asn1Tag.Integer);
+                Assert.Equal(expectedExt.CrlNumber, number.GetInt32());
+                PkixFixtures.AssertExtnValueRoundTrip(extension, writer =>
+                {
+                    writer.WriteInteger(Asn1Tag.Integer, number);
+                });
+            }
+        }
 
         var writer = new Asn1Writer(Asn1Encoding.Der);
         crl.Encode(writer);

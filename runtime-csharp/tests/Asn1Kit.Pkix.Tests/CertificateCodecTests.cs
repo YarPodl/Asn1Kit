@@ -9,6 +9,8 @@ public sealed class CertificateCodecTests
     [Theory]
     [InlineData("TrustAnchorRootCertificate.crt")]
     [InlineData("GoodCACert.crt")]
+    [InlineData("ValidCertificatePathTest1EE.crt")]
+    [InlineData("nameConstraintsDNS1CACert.crt")]
     public void Decode_MatchesExternalExpectedAndRoundTrips(string fileName)
     {
         var der = PkixFixtures.ReadDer(fileName);
@@ -25,8 +27,26 @@ public sealed class CertificateCodecTests
         Assert.Equal(expected.NotAfterUtc, tbs.Validity.NotAfter.Value);
         AssertDn(expected.Subject, tbs.Subject);
         AssertDn(expected.Issuer, tbs.Issuer);
+
+        Assert.Equal(expected.SubjectPublicKeyAlgorithm, tbs.SubjectPublicKeyInfo.Algorithm.Algorithm);
+        if (expected.SubjectPublicKeyParametersNull)
+        {
+            Assert.NotNull(tbs.SubjectPublicKeyInfo.Algorithm.Parameters);
+            Assert.NotNull(tbs.SubjectPublicKeyInfo.Algorithm.Parameters!.Null);
+        }
+
+        Assert.Equal(expected.SubjectPublicKeyUnusedBits, tbs.SubjectPublicKeyInfo.SubjectPublicKey.UnusedBits);
+        Assert.Equal(expected.SubjectPublicKeyByteLength, tbs.SubjectPublicKeyInfo.SubjectPublicKey.Span.Length);
+        Assert.Equal(expected.SignatureUnusedBits, certificate.Signature.UnusedBits);
+        Assert.Equal(expected.SignatureByteLength, certificate.Signature.Span.Length);
+
         Assert.NotNull(tbs.Extensions);
         Assert.Equal(expected.ExtensionOids, tbs.Extensions!.Select(e => e.ExtnID).ToList());
+        foreach (var expectedExt in expected.Extensions)
+        {
+            var actual = PkixFixtures.RequireExtension(tbs.Extensions!, expectedExt.Oid);
+            Assert.Equal(expectedExt.Critical, actual.Critical ?? false);
+        }
 
         using (var bcl = new X509Certificate2(der))
         {
@@ -35,6 +55,8 @@ public sealed class CertificateCodecTests
             Assert.Equal(expected.NotAfterUtc, bcl.NotAfter.ToUniversalTime());
             Assert.Equal(expected.SignatureAlgorithm, bcl.SignatureAlgorithm.Value);
             Assert.Equal(expected.Asn1Version + 1, bcl.Version);
+            Assert.Equal(expected.SubjectPublicKeyAlgorithm, bcl.PublicKey.Oid.Value);
+            Assert.Equal(expected.SubjectPublicKeyByteLength, bcl.PublicKey.EncodedKeyValue.RawData.Length);
         }
 
         var writer = new Asn1Writer(Asn1Encoding.Der);
@@ -45,6 +67,7 @@ public sealed class CertificateCodecTests
         var again = Certificate.Decode(new Asn1Reader(encoded, Asn1Encoding.Der));
         Assert.Equal(certificate.SignatureAlgorithm.Algorithm, again.SignatureAlgorithm.Algorithm);
         Assert.Equal(tbs.SerialNumber, again.TbsCertificate.SerialNumber);
+        Assert.Equal(tbs.SubjectPublicKeyInfo.SubjectPublicKey.Span.Length, again.TbsCertificate.SubjectPublicKeyInfo.SubjectPublicKey.Span.Length);
     }
 
     private static void AssertDn(List<ExpectedDnAttribute> expected, List<List<AttributeTypeAndValue>> actual)

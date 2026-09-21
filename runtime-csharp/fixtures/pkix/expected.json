@@ -1,5 +1,5 @@
 {
-  "source": "NIST PKITS via boringssl pki/testdata/nist-pkits; expected from certutil + X509Certificate2 (see README.md)",
+  "source": "NIST PKITS via boringssl pki/testdata/nist-pkits; expected from certutil + X509Certificate2 / System.Formats.Asn1 (see README.md)",
   "certificates": {
     "TrustAnchorRootCertificate.crt": {
       "asn1Version": 2,
@@ -17,7 +17,30 @@
         { "oid": "2.5.4.10", "value": "Test Certificates 2011" },
         { "oid": "2.5.4.3", "value": "Trust Anchor" }
       ],
-      "extensionOids": [ "2.5.29.14", "2.5.29.15", "2.5.29.19" ]
+      "subjectPublicKeyAlgorithm": "1.2.840.113549.1.1.1",
+      "subjectPublicKeyParametersNull": true,
+      "subjectPublicKeyUnusedBits": 0,
+      "subjectPublicKeyByteLength": 270,
+      "signatureUnusedBits": 0,
+      "signatureByteLength": 256,
+      "extensionOids": [ "2.5.29.14", "2.5.29.15", "2.5.29.19" ],
+      "extensions": [
+        {
+          "oid": "2.5.29.14",
+          "critical": false,
+          "subjectKeyIdentifierHex": "e47d5fd15c9586082c05aebe75b665a7d95da866"
+        },
+        {
+          "oid": "2.5.29.15",
+          "critical": true,
+          "keyUsage": [ "keyCertSign", "cRLSign" ]
+        },
+        {
+          "oid": "2.5.29.19",
+          "critical": true,
+          "basicConstraints": { "ca": true, "pathLenPresent": false }
+        }
+      ]
     },
     "GoodCACert.crt": {
       "asn1Version": 2,
@@ -35,7 +58,264 @@
         { "oid": "2.5.4.10", "value": "Test Certificates 2011" },
         { "oid": "2.5.4.3", "value": "Trust Anchor" }
       ],
-      "extensionOids": [ "2.5.29.35", "2.5.29.14", "2.5.29.15", "2.5.29.32", "2.5.29.19" ]
+      "subjectPublicKeyAlgorithm": "1.2.840.113549.1.1.1",
+      "subjectPublicKeyParametersNull": true,
+      "subjectPublicKeyUnusedBits": 0,
+      "subjectPublicKeyByteLength": 270,
+      "signatureUnusedBits": 0,
+      "signatureByteLength": 256,
+      "extensionOids": [ "2.5.29.35", "2.5.29.14", "2.5.29.15", "2.5.29.32", "2.5.29.19" ],
+      "extensions": [
+        {
+          "oid": "2.5.29.35",
+          "critical": false,
+          "authorityKeyIdentifierHex": "e47d5fd15c9586082c05aebe75b665a7d95da866"
+        },
+        {
+          "oid": "2.5.29.14",
+          "critical": false,
+          "subjectKeyIdentifierHex": "580184241bbc2b52944a3da510721451f5af3ac9"
+        },
+        {
+          "oid": "2.5.29.15",
+          "critical": true,
+          "keyUsage": [ "keyCertSign", "cRLSign" ]
+        },
+        {
+          "oid": "2.5.29.32",
+          "critical": false,
+          "certificatePolicies": [ "2.16.840.1.101.3.2.1.48.1" ]
+        },
+        {
+          "oid": "2.5.29.19",
+          "critical": true,
+          "basicConstraints": { "ca": true, "pathLenPresent": false }
+        }
+      ]
+    },
+    "ValidCertificatePathTest1EE.crt": {
+      "asn1Version": 2,
+      "serialNumber": 1,
+      "signatureAlgorithm": "1.2.840.113549.1.1.11",
+      "notBeforeUtc": "2010-01-01T08:30:00Z",
+      "notAfterUtc": "2030-12-31T08:30:00Z",
+      "subject": [
+        { "oid": "2.5.4.6", "value": "US" },
+        { "oid": "2.5.4.10", "value": "Test Certificates 2011" },
+        { "oid": "2.5.4.3", "value": "Valid EE Certificate Test1" }
+      ],
+      "issuer": [
+        { "oid": "2.5.4.6", "value": "US" },
+        { "oid": "2.5.4.10", "value": "Test Certificates 2011" },
+        { "oid": "2.5.4.3", "value": "Good CA" }
+      ],
+      "subjectPublicKeyAlgorithm": "1.2.840.113549.1.1.1",
+      "subjectPublicKeyParametersNull": true,
+      "subjectPublicKeyUnusedBits": 0,
+      "subjectPublicKeyByteLength": 270,
+      "signatureUnusedBits": 0,
+      "signatureByteLength": 256,
+      "extensionOids": [ "2.5.29.35", "2.5.29.14", "2.5.29.15", "2.5.29.32" ],
+      "extensions": [
+        {
+          "oid": "2.5.29.35",
+          "critical": false,
+          "authorityKeyIdentifierHex": "580184241bbc2b52944a3da510721451f5af3ac9"
+        },
+        {
+          "oid": "2.5.29.14",
+          "critical": false,
+          "subjectKeyIdentifierHex": "a83c099d67f6d847baa2d0fc18725688406d9595"
+        },
+        {
+          "oid": "2.5.29.15",
+          "critical": true,
+          "keyUsage": [ "digitalSignature", "nonRepudiation", "keyEncipherment", "dataEncipherment" ]
+        },
+        {
+          "oid": "2.5.29.32",
+          "critical": false,
+          "certificatePolicies": [ "2.16.840.1.101.3.2.1.48.1" ]
+        }
+      ]
+    },
+    "nameConstraintsDNS1CACert.crt": {
+      "asn1Version": 2,
+      "serialNumber": 70,
+      "signatureAlgorithm": "1.2.840.113549.1.1.11",
+      "notBeforeUtc": "2010-01-01T08:30:00Z",
+      "notAfterUtc": "2030-12-31T08:30:00Z",
+      "subject": [
+        { "oid": "2.5.4.6", "value": "US" },
+        { "oid": "2.5.4.10", "value": "Test Certificates 2011" },
+        { "oid": "2.5.4.3", "value": "nameConstraints DNS1 CA" }
+      ],
+      "issuer": [
+        { "oid": "2.5.4.6", "value": "US" },
+        { "oid": "2.5.4.10", "value": "Test Certificates 2011" },
+        { "oid": "2.5.4.3", "value": "Trust Anchor" }
+      ],
+      "subjectPublicKeyAlgorithm": "1.2.840.113549.1.1.1",
+      "subjectPublicKeyParametersNull": true,
+      "subjectPublicKeyUnusedBits": 0,
+      "subjectPublicKeyByteLength": 270,
+      "signatureUnusedBits": 0,
+      "signatureByteLength": 256,
+      "extensionOids": [ "2.5.29.35", "2.5.29.14", "2.5.29.15", "2.5.29.32", "2.5.29.19", "2.5.29.30" ],
+      "extensions": [
+        {
+          "oid": "2.5.29.35",
+          "critical": false,
+          "authorityKeyIdentifierHex": "e47d5fd15c9586082c05aebe75b665a7d95da866"
+        },
+        {
+          "oid": "2.5.29.14",
+          "critical": false,
+          "subjectKeyIdentifierHex": "b1aa17f0e3cfccd2a789a68307ddff6eda07e349"
+        },
+        {
+          "oid": "2.5.29.15",
+          "critical": true,
+          "keyUsage": [ "keyCertSign", "cRLSign" ]
+        },
+        {
+          "oid": "2.5.29.32",
+          "critical": false,
+          "certificatePolicies": [ "2.16.840.1.101.3.2.1.48.1" ]
+        },
+        {
+          "oid": "2.5.29.19",
+          "critical": true,
+          "basicConstraints": { "ca": true, "pathLenPresent": false }
+        },
+        {
+          "oid": "2.5.29.30",
+          "critical": true,
+          "nameConstraints": {
+            "permittedDns": [ "testcertificates.gov" ],
+            "excludedPresent": false
+          }
+        }
+      ]
+    },
+    "ValidDNSnameConstraintsTest30EE.crt": {
+      "asn1Version": 2,
+      "serialNumber": 1,
+      "signatureAlgorithm": "1.2.840.113549.1.1.11",
+      "notBeforeUtc": "2010-01-01T08:30:00Z",
+      "notAfterUtc": "2030-12-31T08:30:00Z",
+      "subject": [
+        { "oid": "2.5.4.6", "value": "US" },
+        { "oid": "2.5.4.10", "value": "Test Certificates 2011" },
+        { "oid": "2.5.4.3", "value": "Valid DNS nameConstraints EE Certificate Test30" }
+      ],
+      "issuer": [
+        { "oid": "2.5.4.6", "value": "US" },
+        { "oid": "2.5.4.10", "value": "Test Certificates 2011" },
+        { "oid": "2.5.4.3", "value": "nameConstraints DNS1 CA" }
+      ],
+      "subjectPublicKeyAlgorithm": "1.2.840.113549.1.1.1",
+      "subjectPublicKeyParametersNull": true,
+      "subjectPublicKeyUnusedBits": 0,
+      "subjectPublicKeyByteLength": 270,
+      "signatureUnusedBits": 0,
+      "signatureByteLength": 256,
+      "extensionOids": [ "2.5.29.35", "2.5.29.14", "2.5.29.15", "2.5.29.32", "2.5.29.17" ],
+      "extensions": [
+        {
+          "oid": "2.5.29.35",
+          "critical": false,
+          "authorityKeyIdentifierHex": "b1aa17f0e3cfccd2a789a68307ddff6eda07e349"
+        },
+        {
+          "oid": "2.5.29.14",
+          "critical": false,
+          "subjectKeyIdentifierHex": "4592cf6f1393b56e3682e9a3a1c4413a71b07220"
+        },
+        {
+          "oid": "2.5.29.15",
+          "critical": true,
+          "keyUsage": [ "digitalSignature", "nonRepudiation", "keyEncipherment", "dataEncipherment" ]
+        },
+        {
+          "oid": "2.5.29.32",
+          "critical": false,
+          "certificatePolicies": [ "2.16.840.1.101.3.2.1.48.1" ]
+        },
+        {
+          "oid": "2.5.29.17",
+          "critical": false,
+          "subjectAltName": [
+            { "kind": "dNSName", "value": "testserver.testcertificates.gov" }
+          ]
+        }
+      ]
+    },
+    "ValidRFC822nameConstraintsTest21EE.crt": {
+      "asn1Version": 2,
+      "serialNumber": 1,
+      "signatureAlgorithm": "1.2.840.113549.1.1.11",
+      "notBeforeUtc": "2010-01-01T08:30:00Z",
+      "notAfterUtc": "2030-12-31T08:30:00Z",
+      "subject": [
+        { "oid": "2.5.4.6", "value": "US" },
+        { "oid": "2.5.4.10", "value": "Test Certificates 2011" },
+        { "oid": "2.5.4.3", "value": "Valid RFC822 nameConstraints EE Certificate Test21" }
+      ],
+      "issuer": [
+        { "oid": "2.5.4.6", "value": "US" },
+        { "oid": "2.5.4.10", "value": "Test Certificates 2011" },
+        { "oid": "2.5.4.3", "value": "nameConstraints RFC822 CA1" }
+      ],
+      "subjectPublicKeyAlgorithm": "1.2.840.113549.1.1.1",
+      "subjectPublicKeyParametersNull": true,
+      "subjectPublicKeyUnusedBits": 0,
+      "subjectPublicKeyByteLength": 270,
+      "signatureUnusedBits": 0,
+      "signatureByteLength": 256,
+      "extensionOids": [ "2.5.29.35", "2.5.29.14", "2.5.29.15", "2.5.29.32", "2.5.29.17" ],
+      "extensions": [
+        {
+          "oid": "2.5.29.17",
+          "critical": false,
+          "subjectAltName": [
+            { "kind": "rfc822Name", "value": "Test21EE@mailserver.testcertificates.gov" }
+          ]
+        }
+      ]
+    },
+    "ValidURInameConstraintsTest34EE.crt": {
+      "asn1Version": 2,
+      "serialNumber": 1,
+      "signatureAlgorithm": "1.2.840.113549.1.1.11",
+      "notBeforeUtc": "2010-01-01T08:30:00Z",
+      "notAfterUtc": "2030-12-31T08:30:00Z",
+      "subject": [
+        { "oid": "2.5.4.6", "value": "US" },
+        { "oid": "2.5.4.10", "value": "Test Certificates 2011" },
+        { "oid": "2.5.4.3", "value": "Valid URI nameConstraints EE Certificate Test34" }
+      ],
+      "issuer": [
+        { "oid": "2.5.4.6", "value": "US" },
+        { "oid": "2.5.4.10", "value": "Test Certificates 2011" },
+        { "oid": "2.5.4.3", "value": "nameConstraints URI1 CA" }
+      ],
+      "subjectPublicKeyAlgorithm": "1.2.840.113549.1.1.1",
+      "subjectPublicKeyParametersNull": true,
+      "subjectPublicKeyUnusedBits": 0,
+      "subjectPublicKeyByteLength": 270,
+      "signatureUnusedBits": 0,
+      "signatureByteLength": 256,
+      "extensionOids": [ "2.5.29.35", "2.5.29.14", "2.5.29.15", "2.5.29.32", "2.5.29.17" ],
+      "extensions": [
+        {
+          "oid": "2.5.29.17",
+          "critical": false,
+          "subjectAltName": [
+            { "kind": "uniformResourceIdentifier", "value": "http://testserver.testcertificates.gov/index.html" }
+          ]
+        }
+      ]
     }
   },
   "crls": {
@@ -49,8 +329,50 @@
         { "oid": "2.5.4.10", "value": "Test Certificates 2011" },
         { "oid": "2.5.4.3", "value": "Good CA" }
       ],
-      "revokedSerialNumbers": [ 14, 15 ],
-      "crlExtensionOids": [ "2.5.29.35", "2.5.29.20" ]
+      "signatureUnusedBits": 0,
+      "signatureByteLength": 256,
+      "revokedCertificates": [
+        {
+          "serialNumber": 14,
+          "revocationDateUtc": "2010-01-01T08:30:00Z",
+          "crlReason": "keyCompromise"
+        },
+        {
+          "serialNumber": 15,
+          "revocationDateUtc": "2010-01-01T08:30:01Z",
+          "crlReason": "keyCompromise"
+        }
+      ],
+      "crlExtensionOids": [ "2.5.29.35", "2.5.29.20" ],
+      "crlExtensions": [
+        {
+          "oid": "2.5.29.35",
+          "critical": false,
+          "authorityKeyIdentifierHex": "580184241bbc2b52944a3da510721451f5af3ac9"
+        },
+        {
+          "oid": "2.5.29.20",
+          "critical": false,
+          "crlNumber": 1
+        }
+      ]
     }
+  },
+  "generalNames": {
+    "source": "System.Formats.Asn1 DER writers (not Asn1Kit); context-specific tags per RFC 5280 GeneralName",
+    "cases": [
+      {
+        "name": "iPAddress-v4",
+        "hex": "870401020304",
+        "kind": "iPAddress",
+        "ipAddressHex": "01020304"
+      },
+      {
+        "name": "registeredID",
+        "hex": "88042B060105",
+        "kind": "registeredID",
+        "oid": "1.3.6.1.5"
+      }
+    ]
   }
 }
