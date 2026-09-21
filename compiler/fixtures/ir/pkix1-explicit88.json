@@ -1368,7 +1368,39 @@
                 "name": "parameters",
                 "type": {
                   "kind": "any",
-                  "definedBy": "algorithm"
+                  "definedBy": "algorithm",
+                  "bindings": [
+                    {
+                      "key": "1.2.840.113549.1.1.1",
+                      "type": {
+                        "kind": "null"
+                      }
+                    },
+                    {
+                      "key": "1.2.840.113549.1.1.5",
+                      "type": {
+                        "kind": "null"
+                      }
+                    },
+                    {
+                      "key": "1.2.840.113549.1.1.11",
+                      "type": {
+                        "kind": "null"
+                      }
+                    },
+                    {
+                      "key": "1.2.840.113549.1.1.12",
+                      "type": {
+                        "kind": "null"
+                      }
+                    },
+                    {
+                      "key": "1.2.840.113549.1.1.13",
+                      "type": {
+                        "kind": "null"
+                      }
+                    }
+                  ]
                 },
                 "optional": true
               }

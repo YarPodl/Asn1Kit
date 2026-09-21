@@ -28,6 +28,7 @@ public sealed class CSharpBackend : ILanguageBackend
         builder.AppendLine("#nullable enable");
         builder.AppendLine("using System;");
         builder.AppendLine("using System.Collections.Generic;");
+        builder.AppendLine("using System.Globalization;");
         builder.AppendLine("using System.Numerics;");
         builder.AppendLine("using Asn1Kit.Runtime;");
         builder.AppendLine();
@@ -89,6 +90,12 @@ public sealed class CSharpBackend : ILanguageBackend
             case SequenceType sequence:
                 foreach (var component in sequence.Components)
                 {
+                    var fieldType = UnwrapAliases(document, module, component.Type);
+                    if (IsOpenType(fieldType))
+                    {
+                        queue.Enqueue((owner + "_" + SanitizeIdentifier(component.Name), WithoutTag(fieldType)));
+                    }
+
                     OfferNested(document, module, owner + "_" + SanitizeIdentifier(component.Name), component.Type, queue);
                 }
 
@@ -96,6 +103,12 @@ public sealed class CSharpBackend : ILanguageBackend
             case SetType set:
                 foreach (var component in set.Components)
                 {
+                    var fieldType = UnwrapAliases(document, module, component.Type);
+                    if (IsOpenType(fieldType))
+                    {
+                        queue.Enqueue((owner + "_" + SanitizeIdentifier(component.Name), WithoutTag(fieldType)));
+                    }
+
                     OfferNested(document, module, owner + "_" + SanitizeIdentifier(component.Name), component.Type, queue);
                 }
 
@@ -163,7 +176,11 @@ public sealed class CSharpBackend : ILanguageBackend
 
     private static bool NeedsNamedType(TypeExpr type) =>
         type is SequenceType or SetType
-        || (type is ChoiceType && !IsSingleAlternativeChoice(type));
+        || (type is ChoiceType && !IsSingleAlternativeChoice(type))
+        || IsOpenType(type);
+
+    private static bool IsOpenType(TypeExpr type) =>
+        type is AnyType { Bindings.Count: > 0 };
 
     /// <summary>
     /// CHOICE with one alternative encodes as that alternative; collapse like a typedef alias.
@@ -198,6 +215,9 @@ public sealed class CSharpBackend : ILanguageBackend
                 break;
             case ChoiceType choice:
                 EmitChoice(sb, document, module, typeName, choice);
+                break;
+            case AnyType any when IsOpenType(any):
+                EmitOpenType(sb, document, module, typeName, any);
                 break;
             case SequenceOfType:
             case SetOfType:
@@ -249,6 +269,13 @@ public sealed class CSharpBackend : ILanguageBackend
             case SetOfType setOf:
                 EnsureBackendSupport(setOf.Element);
                 break;
+            case AnyType any when any.Bindings is { Count: > 0 }:
+                foreach (var binding in any.Bindings)
+                {
+                    EnsureBackendSupport(binding.Type);
+                }
+
+                break;
         }
     }
 
@@ -285,7 +312,8 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine($"            var value = new {typeName}();");
         foreach (var field in type.Components)
         {
-            EmitDecodeField(sb, document, module, typeName, field, "            ", "inner", "value");
+            EmitDecodeField(
+                sb, document, module, typeName, field, type.Components, "            ", "inner", "value");
         }
 
         sb.AppendLine("            return value;");
@@ -359,7 +387,18 @@ public sealed class CSharpBackend : ILanguageBackend
                 sb.AppendLine($"                    if (value.{prop} != null) throw new Asn1Exception(\"Duplicate SET component '{field.Name}'.\");");
             }
 
-            EmitDecodeAssign(sb, document, module, typeName, field.Name, field.Type, "                    ", "inner", $"value.{prop}");
+            EmitDecodeAssign(
+                sb,
+                document,
+                module,
+                typeName,
+                field.Name,
+                field.Type,
+                type.Components,
+                "                    ",
+                "inner",
+                $"value.{prop}",
+                targetObject: "value");
             sb.AppendLine("                }");
         }
 
@@ -469,7 +508,17 @@ public sealed class CSharpBackend : ILanguageBackend
             sb.AppendLine($"        {cond} (peeked.MatchesIgnoreConstructed({TagExpr(document, module, field.Type)}))");
             sb.AppendLine("        {");
             sb.AppendLine($"            value.Kind = {typeName}Kind.{prop};");
-            EmitDecodeAssign(sb, document, module, typeName, field.Name, field.Type, "            ", "reader", assignTarget);
+            EmitDecodeAssign(
+                sb,
+                document,
+                module,
+                typeName,
+                field.Name,
+                field.Type,
+                ownerComponents: null,
+                "            ",
+                "reader",
+                assignTarget);
             sb.AppendLine("        }");
         }
 
@@ -791,12 +840,17 @@ public sealed class CSharpBackend : ILanguageBackend
     private bool IsValueOptionalWrapper(IrDocument document, IrModule module, TypeExpr type)
     {
         var unwrapped = UnwrapAliases(document, module, type);
+        if (IsOpenType(unwrapped))
+        {
+            return false;
+        }
+
         if (IsEnumeratedRefOrType(document, module, unwrapped))
         {
             return true;
         }
 
-        return ResolvePrimitive(unwrapped) is TypeKinds.Boolean or TypeKinds.Integer
+        return ResolvePrimitive(unwrapped) is TypeKinds.Boolean or TypeKinds.Integer or TypeKinds.Null
             or TypeKinds.OctetString or TypeKinds.BitString or TypeKinds.Time or TypeKinds.Any;
     }
 
@@ -844,8 +898,14 @@ public sealed class CSharpBackend : ILanguageBackend
             return;
         }
 
-        if (type is AnyType)
+        if (type is AnyType any)
         {
+            if (IsOpenType(any))
+            {
+                sb.AppendLine($"{indent}{expr}.Encode({writer});");
+                return;
+            }
+
             if (forceTag is not null || type.Tag is not null)
             {
                 var anyTag = forceTag ?? TagExpr(document, module, type);
@@ -921,6 +981,7 @@ public sealed class CSharpBackend : ILanguageBackend
         IrModule module,
         string owner,
         IrComponent field,
+        IReadOnlyList<IrComponent> ownerComponents,
         string indent,
         string reader,
         string target)
@@ -932,7 +993,18 @@ public sealed class CSharpBackend : ILanguageBackend
             {
                 sb.AppendLine($"{indent}if (!{reader}.Eof)");
                 sb.AppendLine($"{indent}{{");
-                EmitDecodeAssign(sb, document, module, owner, field.Name, field.Type, indent + "    ", reader, $"{target}.{prop}");
+                EmitDecodeAssign(
+                    sb,
+                    document,
+                    module,
+                    owner,
+                    field.Name,
+                    field.Type,
+                    ownerComponents,
+                    indent + "    ",
+                    reader,
+                    $"{target}.{prop}",
+                    targetObject: target);
                 sb.AppendLine($"{indent}}}");
             }
             else
@@ -941,13 +1013,35 @@ public sealed class CSharpBackend : ILanguageBackend
                 sb.AppendLine(
                     $"{indent}if ({reader}.TryPeekTag(out var {peekTag}) && {PeekMatchExpr(document, module, field.Type, peekTag)})");
                 sb.AppendLine($"{indent}{{");
-                EmitDecodeAssign(sb, document, module, owner, field.Name, field.Type, indent + "    ", reader, $"{target}.{prop}");
+                EmitDecodeAssign(
+                    sb,
+                    document,
+                    module,
+                    owner,
+                    field.Name,
+                    field.Type,
+                    ownerComponents,
+                    indent + "    ",
+                    reader,
+                    $"{target}.{prop}",
+                    targetObject: target);
                 sb.AppendLine($"{indent}}}");
             }
         }
         else
         {
-            EmitDecodeAssign(sb, document, module, owner, field.Name, field.Type, indent, reader, $"{target}.{prop}");
+            EmitDecodeAssign(
+                sb,
+                document,
+                module,
+                owner,
+                field.Name,
+                field.Type,
+                ownerComponents,
+                indent,
+                reader,
+                $"{target}.{prop}",
+                targetObject: target);
         }
     }
 
@@ -1028,15 +1122,18 @@ public sealed class CSharpBackend : ILanguageBackend
         string owner,
         string hint,
         TypeExpr type,
+        IReadOnlyList<IrComponent>? ownerComponents,
         string indent,
         string reader,
         string target,
-        string? forceTag = null)
+        string? forceTag = null,
+        string? targetObject = null)
     {
         sb.Append(indent);
         sb.Append(target);
         sb.Append(" = ");
-        EmitDecodeExpr(sb, document, module, owner, hint, type, reader, forceTag);
+        var openKey = TryBuildOpenTypeKeyExpr(document, module, owner, type, ownerComponents, targetObject);
+        EmitDecodeExpr(sb, document, module, owner, hint, type, reader, forceTag, openKey);
         sb.AppendLine(";");
     }
 
@@ -1048,7 +1145,8 @@ public sealed class CSharpBackend : ILanguageBackend
         string hint,
         TypeExpr type,
         string reader,
-        string? forceTag = null)
+        string? forceTag = null,
+        string? openTypeKeyExpr = null)
     {
         var integerRepresentation = TryResolveIntegerRepresentation(document, module, type);
         var original = type;
@@ -1064,7 +1162,7 @@ public sealed class CSharpBackend : ILanguageBackend
             }
             else
             {
-                EmitDecodeExpr(sb, document, module, owner, hint, inner, "nested");
+                EmitDecodeExpr(sb, document, module, owner, hint, inner, "nested", openTypeKeyExpr: openTypeKeyExpr);
             }
 
             sb.Append(')');
@@ -1077,8 +1175,30 @@ public sealed class CSharpBackend : ILanguageBackend
             return;
         }
 
-        if (type is AnyType)
+        if (type is AnyType any)
         {
+            if (IsOpenType(any))
+            {
+                if (openTypeKeyExpr is null)
+                {
+                    throw new InvalidOperationException(
+                        $"Open-type ANY '{owner}.{hint}' requires a DEFINED BY sibling key expression.");
+                }
+
+                var openName = OpenTypeTypeName(owner, hint);
+                if (forceTag is not null || any.Tag is not null)
+                {
+                    var anyTag = forceTag ?? TagExpr(document, module, any);
+                    sb.Append($"{openName}.Decode({reader}, {openTypeKeyExpr}, {anyTag})");
+                }
+                else
+                {
+                    sb.Append($"{openName}.Decode({reader}, {openTypeKeyExpr})");
+                }
+
+                return;
+            }
+
             if (forceTag is not null || type.Tag is not null)
             {
                 var anyTag = forceTag ?? TagExpr(document, module, type);
@@ -1118,6 +1238,294 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.Append($"{typeName}.Decode({reader}, {decodeTag})");
     }
 
+    private void EmitOpenType(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string typeName,
+        AnyType any)
+    {
+        var alts = BuildOpenTypeAlternatives(document, module, typeName, any);
+        var soft = ResolveOpenTypeSoft(document, module, any);
+        var kindName = typeName + "Kind";
+
+        sb.AppendLine($"public enum {kindName}");
+        sb.AppendLine("{");
+        foreach (var alt in alts)
+        {
+            sb.AppendLine($"    {alt.KindMember},");
+        }
+
+        sb.AppendLine("    Unknown,");
+        sb.AppendLine("}");
+        sb.AppendLine();
+        sb.AppendLine($"public sealed class {typeName}");
+        sb.AppendLine("{");
+        sb.AppendLine($"    public {kindName} Kind {{ get; private set; }}");
+        foreach (var alt in alts)
+        {
+            var propType = CsType(document, module, typeName, alt.KindMember, alt.Type, optional: true);
+            sb.AppendLine($"    public {propType} {alt.KindMember} {{ get; private set; }}");
+        }
+
+        sb.AppendLine("    public Asn1Any? Unknown { get; private set; }");
+        sb.AppendLine();
+
+        foreach (var alt in alts)
+        {
+            var csType = CsType(document, module, typeName, alt.KindMember, alt.Type, optional: false);
+            var param = CamelCaseIdentifier(alt.KindMember);
+            if (UnwrapAliases(document, module, alt.Type) is NullType)
+            {
+                sb.AppendLine(
+                    $"    public static {typeName} From{alt.KindMember}(Asn1Null {param} = default) => new {typeName}");
+            }
+            else
+            {
+                sb.AppendLine($"    public static {typeName} From{alt.KindMember}({csType} {param}) => new {typeName}");
+            }
+
+            sb.AppendLine("    {");
+            sb.AppendLine($"        Kind = {kindName}.{alt.KindMember},");
+            sb.AppendLine($"        {alt.KindMember} = {param},");
+            sb.AppendLine("    };");
+            sb.AppendLine();
+        }
+
+        sb.AppendLine($"    public static {typeName} FromUnknown(Asn1Any value) => new {typeName}");
+        sb.AppendLine("    {");
+        sb.AppendLine($"        Kind = {kindName}.Unknown,");
+        sb.AppendLine("        Unknown = value,");
+        sb.AppendLine("    };");
+        sb.AppendLine();
+
+        sb.AppendLine("    public void Encode(Asn1Writer writer)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        switch (Kind)");
+        sb.AppendLine("        {");
+        foreach (var alt in alts)
+        {
+            sb.AppendLine($"            case {kindName}.{alt.KindMember}:");
+            var propExpr = UnwrapAliases(document, module, alt.Type) is NullType
+                ? "Asn1Null.Value"
+                : IsValueOptionalWrapper(document, module, alt.Type)
+                    ? alt.KindMember + ".Value"
+                    : alt.KindMember + "!";
+            EmitEncodeValue(
+                sb,
+                document,
+                module,
+                typeName,
+                alt.KindMember,
+                alt.Type,
+                "                ",
+                "writer",
+                propExpr);
+            sb.AppendLine("                break;");
+        }
+
+        sb.AppendLine($"            case {kindName}.Unknown:");
+        sb.AppendLine("                writer.WriteAny(Unknown!.Value);");
+        sb.AppendLine("                break;");
+        sb.AppendLine("            default: throw new Asn1Exception(\"Open type has no alternative.\");");
+        sb.AppendLine("        }");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+
+        sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader, string definedByKey) =>");
+        sb.AppendLine("        Decode(reader, definedByKey, expectedTag: null);");
+        sb.AppendLine();
+        sb.AppendLine(
+            $"    public static {typeName} Decode(Asn1Reader reader, string definedByKey, Asn1Tag expectedTag) =>");
+        sb.AppendLine("        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);");
+        sb.AppendLine();
+        sb.AppendLine(
+            $"    private static {typeName} Decode(Asn1Reader reader, string definedByKey, Asn1Tag? expectedTag)");
+        sb.AppendLine("    {");
+        sb.AppendLine(
+            "        var raw = expectedTag is null ? reader.ReadAny() : reader.ReadAny(expectedTag.Value);");
+        sb.AppendLine("        switch (definedByKey)");
+        sb.AppendLine("        {");
+        foreach (var alt in alts)
+        {
+            foreach (var key in alt.Keys)
+            {
+                sb.AppendLine($"            case \"{EscapeCSharpString(key)}\":");
+            }
+
+            sb.AppendLine("            {");
+            sb.AppendLine("                try");
+            sb.AppendLine("                {");
+            sb.AppendLine("                    var probe = raw.CreateReader(reader.Encoding, reader.Options);");
+            sb.Append("                    var decoded = ");
+            EmitDecodeExpr(sb, document, module, typeName, alt.KindMember, alt.Type, "probe");
+            sb.AppendLine(";");
+            sb.AppendLine("                    if (probe.Eof)");
+            sb.AppendLine("                    {");
+            sb.AppendLine($"                        return From{alt.KindMember}(decoded);");
+            sb.AppendLine("                    }");
+            sb.AppendLine("                }");
+            sb.AppendLine("                catch (Asn1Exception)");
+            sb.AppendLine("                {");
+            sb.AppendLine("                }");
+            if (soft)
+            {
+                sb.AppendLine("                return FromUnknown(raw);");
+            }
+            else
+            {
+                sb.AppendLine(
+                    $"                throw new Asn1Exception(\"Open-type content for key '\" + definedByKey + \"' does not match bound type '{EscapeCSharpString(alt.KindMember)}'.\");");
+            }
+
+            sb.AppendLine("            }");
+        }
+
+        sb.AppendLine("            default:");
+        sb.AppendLine("                return FromUnknown(raw);");
+        sb.AppendLine("        }");
+        sb.AppendLine("    }");
+        sb.AppendLine("}");
+    }
+
+    private sealed class OpenTypeAlternative
+    {
+        public string KindMember { get; init; } = "";
+        public TypeExpr Type { get; init; } = null!;
+        public List<string> Keys { get; init; } = new();
+        public string ClrTypeKey { get; init; } = "";
+    }
+
+    private List<OpenTypeAlternative> BuildOpenTypeAlternatives(
+        IrDocument document,
+        IrModule module,
+        string typeName,
+        AnyType any)
+    {
+        var alts = new List<OpenTypeAlternative>();
+        var usedNames = new HashSet<string>(StringComparer.Ordinal) { "Unknown" };
+        foreach (var binding in any.Bindings!)
+        {
+            var clrKey = CsType(document, module, typeName, "binding", binding.Type, optional: false);
+            var existing = alts.FirstOrDefault(a => a.ClrTypeKey == clrKey);
+            if (existing is not null)
+            {
+                existing.Keys.Add(binding.Key);
+                continue;
+            }
+
+            var kindMember = OpenTypeKindMemberName(document, module, binding.Type);
+            if (!usedNames.Add(kindMember))
+            {
+                var suffix = 2;
+                while (!usedNames.Add(kindMember + suffix))
+                {
+                    suffix++;
+                }
+
+                kindMember += suffix;
+            }
+
+            alts.Add(new OpenTypeAlternative
+            {
+                KindMember = kindMember,
+                Type = binding.Type,
+                Keys = new List<string> { binding.Key },
+                ClrTypeKey = clrKey
+            });
+        }
+
+        return alts;
+    }
+
+    private string OpenTypeKindMemberName(IrDocument document, IrModule module, TypeExpr type)
+    {
+        if (type is RefType reference)
+        {
+            return SanitizeIdentifier(reference.Name);
+        }
+
+        var unwrapped = UnwrapAliases(document, module, type);
+        return unwrapped switch
+        {
+            NullType => "Null",
+            RefType innerRef => SanitizeIdentifier(innerRef.Name),
+            StringType stringType => SanitizeIdentifier(stringType.Form),
+            _ => SanitizeIdentifier(unwrapped.Kind)
+        };
+    }
+
+    private static string OpenTypeTypeName(string owner, string hint) =>
+        owner + "_" + SanitizeIdentifier(hint);
+
+    private static bool ResolveOpenTypeSoft(IrDocument document, IrModule module, AnyType any)
+    {
+        foreach (var options in new[] { any.Options, module.Options, document.Options })
+        {
+            if (options is null)
+            {
+                continue;
+            }
+
+            // OpenTypeMismatch throws on unknown; only return when openType present or default.
+            if (options["openType"] is not null)
+            {
+                return IrOptions.OpenTypeMismatch(options) == IrOptions.OpenTypeMismatchModes.Soft;
+            }
+        }
+
+        return true;
+    }
+
+    private string? TryBuildOpenTypeKeyExpr(
+        IrDocument document,
+        IrModule module,
+        string owner,
+        TypeExpr type,
+        IReadOnlyList<IrComponent>? ownerComponents,
+        string? targetObject)
+    {
+        var unwrapped = UnwrapAliases(document, module, type);
+        if (unwrapped is not AnyType { Bindings.Count: > 0, DefinedBy: { } definedBy })
+        {
+            return null;
+        }
+
+        if (ownerComponents is null || targetObject is null)
+        {
+            throw new InvalidOperationException(
+                $"Open-type ANY on '{owner}' requires owner components to resolve DEFINED BY '{definedBy}'.");
+        }
+
+        var sibling = ownerComponents.FirstOrDefault(c => c.Name == definedBy)
+            ?? throw new InvalidOperationException(
+                $"Open-type ANY on '{owner}' DEFINED BY '{definedBy}' has no sibling component.");
+        var siblingProp = PropertyName(sibling, owner);
+        var access = $"{targetObject}.{siblingProp}";
+        var siblingType = UnwrapAliases(document, module, sibling.Type);
+        if (siblingType is OidType ||
+            (siblingType is RefType oidRef && Find(document, module, oidRef)?.Type is OidType))
+        {
+            return access;
+        }
+
+        if (siblingType is IntegerType ||
+            (siblingType is RefType intRef && Find(document, module, intRef)?.Type is IntegerType))
+        {
+            var representation = TryResolveIntegerRepresentation(document, module, sibling.Type)
+                ?? IrOptions.IntegerRepresentations.Der;
+            return representation == IrOptions.IntegerRepresentations.Der
+                ? $"{access}.GetInt32().ToString(CultureInfo.InvariantCulture)"
+                : $"{access}.ToString(CultureInfo.InvariantCulture)";
+        }
+
+        throw new NotSupportedException(
+            $"Open-type DEFINED BY sibling '{definedBy}' on '{owner}' must be OBJECT IDENTIFIER or INTEGER.");
+    }
+
+    private static string EscapeCSharpString(string value) =>
+        value.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal);
+
     private void EmitOfDecodeExpr(
         StringBuilder sb,
         IrDocument document,
@@ -1144,6 +1552,12 @@ public sealed class CSharpBackend : ILanguageBackend
         var original = type;
         type = UnwrapAliases(document, module, type);
 
+        if (type is AnyType { Bindings.Count: > 0 } || IsOpenType(type))
+        {
+            var openName = OpenTypeTypeName(owner, hint);
+            return optional ? openName + "?" : openName;
+        }
+
         if (type is SequenceOfType or SetOfType)
         {
             ResolveOfItemNaming(document, module, original, owner, hint, out var itemOwner, out var itemHint);
@@ -1162,7 +1576,7 @@ public sealed class CSharpBackend : ILanguageBackend
                     integerRepresentation ?? IrOptions.IntegerRepresentations.Der,
                     optional),
                 TypeKinds.OctetString => optional ? "ReadOnlyMemory<byte>?" : "ReadOnlyMemory<byte>",
-                TypeKinds.Null => optional ? "bool?" : "bool",
+                TypeKinds.Null => optional ? "Asn1Null?" : "Asn1Null",
                 TypeKinds.Oid => optional ? "string?" : "string",
                 TypeKinds.BitString => optional ? "Asn1BitString?" : "Asn1BitString",
                 TypeKinds.String => optional ? "string?" : "string",
@@ -1730,7 +2144,7 @@ public sealed class CSharpBackend : ILanguageBackend
             BitStringType bitString => new BitStringType { NamedBits = bitString.NamedBits },
             StringType stringType => new StringType { Form = stringType.Form },
             TimeType timeType => new TimeType { Form = timeType.Form, FractionDigits = timeType.FractionDigits },
-            AnyType any => new AnyType { DefinedBy = any.DefinedBy },
+            AnyType any => new AnyType { DefinedBy = any.DefinedBy, Bindings = any.Bindings },
             SequenceType sequence => new SequenceType { Components = sequence.Components },
             SetType set => new SetType { Components = set.Components, Extensible = set.Extensible },
             ChoiceType choice => new ChoiceType { Components = choice.Components },
@@ -1773,7 +2187,7 @@ public sealed class CSharpBackend : ILanguageBackend
         IntegerType => IntegerReadCall(reader, tag, integerRepresentation),
         BitStringType => $"{reader}.ReadBitString({tag})",
         OctetStringType => $"{reader}.ReadOctetString({tag})",
-        NullType => $"{reader}.ReadNull({tag})",
+        NullType => $"Asn1Null.Decode({reader}, {tag})",
         OidType => $"{reader}.ReadObjectIdentifier({tag})",
         StringType stringType => $"{reader}.ReadString({tag}, {StringFormEnum(stringType.Form)})",
         TimeType timeType => $"{reader}.ReadTime({tag}, {TimeFormEnum(timeType.Form)})",

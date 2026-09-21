@@ -21,14 +21,16 @@ internal static class Program
             IsRequired = true
         };
         var compileOptions = CreateOptionOverrides();
+        var compileBindings = new Option<FileInfo?>("--bindings", "Open-type bindings JSON (Module.Type.field → bindings)");
 
         var compile = new Command("compile", "Compile ASN.1 modules to JSON IR")
         {
             compileInputs,
             compileOutput,
-            compileOptions
+            compileOptions,
+            compileBindings
         };
-        compile.SetHandler(Compile, compileInputs, compileOutput, compileOptions);
+        compile.SetHandler(Compile, compileInputs, compileOutput, compileOptions, compileBindings);
 
         var generateInput = new Option<FileInfo>(new[] { "--input", "-i" }, "JSON IR or ASN.1 module")
         {
@@ -43,15 +45,17 @@ internal static class Program
             IsRequired = true
         };
         var generateOptions = CreateOptionOverrides();
+        var generateBindings = new Option<FileInfo?>("--bindings", "Open-type bindings JSON applied before generate");
 
         var generate = new Command("generate", "Generate code from JSON IR or ASN.1")
         {
             generateInput,
             language,
             generateOutput,
-            generateOptions
+            generateOptions,
+            generateBindings
         };
-        generate.SetHandler(Generate, generateInput, language, generateOutput, generateOptions);
+        generate.SetHandler(Generate, generateInput, language, generateOutput, generateOptions, generateBindings);
 
         var root = new RootCommand("Asn1Kit — compile ASN.1 and generate codecs")
         {
@@ -68,7 +72,7 @@ internal static class Program
             Arity = ArgumentArity.ZeroOrMore
         };
 
-    private static void Compile(FileInfo[] inputs, FileInfo output, string[] optionOverrides)
+    private static void Compile(FileInfo[] inputs, FileInfo output, string[] optionOverrides, FileInfo? bindings)
     {
         var missing = inputs.FirstOrDefault(i => !i.Exists);
         if (missing is not null)
@@ -78,12 +82,22 @@ internal static class Program
 
         var document = new Asn1Compiler().CompileFiles(inputs.Select(i => i.FullName));
         IrOptions.ApplyToModules(document, optionOverrides ?? Array.Empty<string>());
+        if (bindings is not null)
+        {
+            OpenTypeBindings.ApplyFile(document, bindings.FullName);
+        }
+
         output.Directory?.Create();
         IrSerializer.Save(document, output.FullName);
         Console.WriteLine($"Wrote {output.FullName}");
     }
 
-    private static void Generate(FileInfo input, string language, DirectoryInfo output, string[] optionOverrides)
+    private static void Generate(
+        FileInfo input,
+        string language,
+        DirectoryInfo output,
+        string[] optionOverrides,
+        FileInfo? bindings)
     {
         if (!input.Exists)
         {
@@ -92,6 +106,10 @@ internal static class Program
 
         var document = LoadDocument(input);
         IrOptions.ApplyToModules(document, optionOverrides ?? Array.Empty<string>());
+        if (bindings is not null)
+        {
+            OpenTypeBindings.ApplyFile(document, bindings.FullName);
+        }
 
         var generator = new CodeGenerator(new ILanguageBackend[] { new CSharpBackend() });
         var files = generator.Generate(document, language);

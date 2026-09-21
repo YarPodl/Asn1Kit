@@ -15,7 +15,7 @@
 | `oid`                           | да, dotted-строка; первый subidentifier — base-128 (в т.ч. `2.999…`) | да → `string`                                                                                                                             | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RuntimeTests.ObjectIdentifier_*`                                                                    |
 | `string` (12 форм `stringType`) | да                                                                   | да → `string` + `Asn1StringForm`                                                                                                          | `PrimitiveCodecTests` (все 12), `PrimitiveOracleTests` (BCL charset + UniversalString UTF-32BE reference; Teletex/… — только свои векторы), `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*` |
 | `time` (`utc` / `generalized`)  | да; `fractionDigits` 0…7 (default 3) для `generalized`               | да → `DateTimeOffset` + `Asn1TimeForm`; запись с округлением                                                                              | `PrimitiveCodecTests` (UTCTime pivot), `PrimitiveOracleTests` (pivot + GeneralizedTime fraction), `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*` |
-| `any` (+ `definedBy`)           | да, с проверкой sibling-компонента                                   | да → `Asn1Any` (Tag + ContentsMemory; `definedBy` не резолвится); typedef `Name ::= ANY` сворачивается                                    | `ParserTests`, `RuntimeTests.Any_*`, `RoundTripTests.GeneratedCSharp_Any_*`, `ValueResolutionTests.RejectsAnyDefinedByUnknownField`                 |
+| `any` (+ `definedBy`)           | да, с проверкой sibling-компонента; `bindings` (OID/INTEGER → тип) через overlay после compile | без `bindings`: `Asn1Any`; с `bindings`: CHOICE-like `Owner_Field` (`…Kind`, `From…`, `Unknown`); mismatch — `options.openType.mismatch` `soft` (default) / `strict`; typedef `Name ::= ANY` сворачивается | `ParserTests`, `OpenTypeBindingsTests`, `RuntimeTests.Any_*`, `RoundTripTests.GeneratedCSharp_Any_*`, `GeneratedCSharp_OpenTypeBindings_*`, `ValueResolutionTests.RejectsAnyDefinedByUnknownField`                 |
 | `sequence`                      | да, `extensible`                                                     | да → класс с `Encode` / `Decode`                                                                                                          | `RoundTripTests`, `PkixExplicit88Tests`, `PkixImplicit88Tests`, `PkixGeneratedCodeTests`, `Asn1Kit.Pkix.Tests`                                      |
 | `set`                           | да                                                                   | да → класс с `Encode` / `Decode` (DER: порядок по тегу; decode по тегу)                                                                   | `RoundTripTests`, `ParserTests`, `RuntimeTests`                                                                                                     |
 | `choice`                        | да                                                                   | да → класс + enum `…Kind` + `From…`; однотипные альты → `Kind`+`Value`; **один** вариант → алиас                                      | `ParserTests`, `PkixExplicit88Tests`, `PkixGeneratedCodeTests`, `RoundTripTests.GeneratedCSharp_Collapses*Choice`, `Asn1Kit.Pkix.Tests`            |
@@ -36,6 +36,7 @@
 
 - `EXPLICIT` / `IMPLICIT` / `AUTOMATIC TAGS`; `AUTOMATIC` раскрывается в явные `tag` на компонентах, для `CHOICE` тег остаётся `explicit`.
 - `IMPORTS … FROM Module` между переданными файлами: символы проверяются в модуле-источнике (`ImportResolutionTests`, golden PKIX1Implicit88).
+- Open-type `bindings` на `any`: CLI `--bindings` / `OpenTypeBindings.Apply*` после compile; ключи `Module.Type.field` (`OpenTypeBindingsTests`, golden PKIX).
 - `SIZE` и диапазоны значений → `constraint.size` / `constraint.value`; `MAX` кодируется отсутствующим `max`.
 - `SIZE` сразу после `SEQUENCE` / `SET` без `OF` и `MIN` как конкретная граница — явный отказ.
 - Остальные формы (например `FROM`, union `|`) сохраняются строкой в `constraint.unsupported`.
@@ -104,7 +105,10 @@ BER: indefinite length, constructed строки/BIT STRING, время без �
 3. ~~Классы, созданные для SEQUENCE OF слишком похожи, может сделать шаблоном?~~ — `List<T>` + `WriteSequenceOf` / `ReadSequenceOf` (SET OF аналогично)
 4. ~~Для INTEGER в рантайме добавить тип обёртку~~ — `Asn1Integer` (DER contents + `ToBigInteger` / `GetInt32`…)
 5. Для составных типов и отдельных значений в сгенерированном коде в комментарих писать копию их описания в ASN.1. Возможно еще туда же захватывать комментарий из ASN.1 модуля
-6. Резолв `ANY DEFINED BY` в конкретный тип по значению sibling-компонента (сейчас `Asn1Any` остаётся сырым TLV).
+6. ~~Резолв `ANY DEFINED BY` в конкретный тип по значению sibling-компонента~~ — IR `bindings` + overlay; C# CHOICE-like `Owner_Field` + `Asn1Null`; `options.openType.mismatch` soft/strict. Follow-up:
+   - **6b.** остальные PKIX ANY (`AnotherName`, `ExtensionAttribute`, DN `AttributeValue`) через overlay
+   - **6c.** curated `.asn` с конкретными типами параметров алгоритмов из RFC 5912 (без `CLASS`) + bindings
+   - **6d.** парсер/IR для `CLASS`, object sets, parameterized `AlgorithmIdentifier{…}` — полноценный RFC 5912 (as published не компилируется: вне профиля)
 7. ~~Encode/decode тесты на golden-либе `[runtime-csharp/generated/Asn1Kit.Pkix](../runtime-csharp/generated/Asn1Kit.Pkix/)`~~ — `Asn1Kit.Pkix.Tests` + NIST PKITS фикстуры в `runtime-csharp/fixtures/pkix/` (сама либа и сверка `PkixGeneratedCodeTests` уже есть; мелкий round-trip через Roslyn — в `compiler/tests`).
 8. ~~Убрать лишний алиас для CHOICE из одного варианта~~ — `Name ::= CHOICE { rdnSequence RDNSequence }` сворачивается в underlying (как typedef-алиас)
 9. Для Asn1Integer создать дефотный вариант (например пустой конструктор), чтобы оптимизировать места по типу public Asn1Integer UserCertificate { get; set; } = Asn1Integer.FromInt32(0);
@@ -115,6 +119,7 @@ BER: indefinite length, constructed строки/BIT STRING, время без �
 14. Пул массивов, где нужны временные (constructed BER concat, DER SET OF sort).
 15. ~~В Encode оптимизировать, не выделять каждый раз на contents примитивов~~ — `Write*` без temp-`byte[]` на типичном размере; остаётся рост `MemoryStream` / `Encode()→ToArray` (RecyclableMemoryStream — отдельно).
 16. Второй oracle — BouncyCastle (только при расхождении с BCL; не gate `dotnet test`).
+17. Новые модуля ASN.1 (CMS, DVCS)
 
 
 ### Крупные задачи

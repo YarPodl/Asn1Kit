@@ -65,6 +65,15 @@
         }
       }
     },
+    "openTypeBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "type"],
+      "properties": {
+        "key": { "type": "string", "minLength": 1 },
+        "type": { "$ref": "#/$defs/typeExpr" }
+      }
+    },
     "typeDef": {
       "type": "object",
       "additionalProperties": false,
@@ -341,6 +350,10 @@
           "properties": {
             "kind": { "const": "any" },
             "definedBy": { "type": "string", "minLength": 1 },
+            "bindings": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/openTypeBinding" }
+            },
             "tag": { "$ref": "#/$defs/tag" },
             "constraint": { "$ref": "#/$defs/constraint" },
             "options": { "$ref": "#/$defs/options" }

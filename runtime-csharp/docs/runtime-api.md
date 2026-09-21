@@ -94,4 +94,4 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `WriteRaw` | append TLV |
 | `ReadValue` / `ReadTlv` | view; wrong tag |
 | Wrappers | smoke |
-| `Asn1BitString` / `Asn1Any` / `Asn1Integer` | Memory/ContentsMemory alias source; `ToArray` detach; equality; `Asn1Integer` numeric accessors |
+| `Asn1BitString` / `Asn1Any` / `Asn1Integer` / `Asn1Null` | Memory/ContentsMemory alias source; `ToArray` detach; equality; `Asn1Integer` numeric accessors; `Asn1Null` singleton value |

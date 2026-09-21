@@ -17,6 +17,7 @@ public sealed class PkixImplicit88Tests
         var paths = AsnPaths.Select(TestData.RepoPath).ToArray();
         var goldenPath = TestData.RepoPath("compiler/fixtures/ir/pkix1-implicit88.json");
         var document = new Asn1Compiler().CompileFiles(paths);
+        OpenTypeBindings.ApplyFile(document, TestData.RepoPath("compiler/fixtures/opentype/pkix-bindings.json"));
         var actual = IrSerializer.ToJson(document);
         IrSerializer.ValidateSchema(actual);
 

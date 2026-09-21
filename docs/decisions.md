@@ -82,11 +82,15 @@
 
 **Последствие.** `Asn1Reader` держит `_data`; `Source` и значения из `Read*` (`ReadOnlyMemory`, `Asn1Any` / `Asn1BitString` / `Asn1Integer`) по возможности **алиасят** этот массив. Lifetime views = lifetime буфера (или reader’а). Мутация буфера после decode — UB. Constructed BER (конкатенация сегментов) и materialize (`string` / `BigInteger` / `DateTimeOffset`) аллоцируют. Отвязка — `ToArray` / `Clone` на value-types. Codegen: OCTET STRING → `ReadOnlyMemory<byte>`.
 
-## ANY — `Asn1Any` (тег + contents), без резолва `DEFINED BY`
+## ANY — `Asn1Any` или open-type (CHOICE-like) + `bindings`
 
-**Причина.** В PKIX `parameters ANY DEFINED BY algorithm` и `AttributeValue ::= ANY` встречаются постоянно, а полноценный open-type (таблица OID → тип) требует information object classes, которые вне профиля компилятора. Нужен способ пропустить чужой TLV без молчаливой потери байтов.
+**Причина.** В PKIX `parameters ANY DEFINED BY algorithm` и `AttributeValue ::= ANY` встречаются постоянно. Полноценный open-type в ASN.1 1994+ — information object classes (`CLASS`, object sets), которые вне профиля компилятора. Без таблицы OID → тип нельзя честно выбрать concrete decode; молчаливый пропуск TLV недопустим. Представлять open-type как `object` неудобно; `bool` для NULL — ещё хуже.
 
-**Последствие.** Runtime хранит `Asn1Tag` и октеты содержимого; encode/decode пишут и читают полный TLV. Поле `definedBy` в IR остаётся информационным — генератор его не использует. Разбор содержимого в конкретный тип — ответственность вызывающего кода.
+**Последствие.**
+- Без `bindings`: runtime хранит `Asn1Tag` + октеты (`Asn1Any`); поле `definedBy` в IR информационное.
+- С `bindings` (sidecar `Module.Type.field` → `{ key, type }[]`): C# эмитит тип `Owner_Field` по образцу CHOICE — enum `…Kind`, фабрики `From…` / `FromUnknown`, свойства на альтернативу; ASN.1 NULL → `Asn1Null`.
+- Несовпадение TLV с типом из таблицы: `options.openType.mismatch` = `soft` (default, → `Unknown`/`Asn1Any`) или `strict` (→ `Asn1Exception`). Неизвестный ключ всегда → `Unknown`.
+- RFC 5912 as published по-прежнему вне профиля (беклог 6c/6d).
 
 ## Runtime: мягкое чтение неканоничных форм + опции строгости
 

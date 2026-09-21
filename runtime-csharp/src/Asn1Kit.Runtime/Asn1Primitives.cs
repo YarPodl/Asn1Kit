@@ -38,15 +38,6 @@ public static class Asn1OctetString
         reader.TryReadOctetString(tag ?? Asn1Tag.OctetString, destination, out bytesWritten);
 }
 
-public static class Asn1Null
-{
-    public static void Encode(Asn1Writer writer, Asn1Tag? tag = null) =>
-        writer.WriteNull(tag ?? Asn1Tag.Null);
-
-    public static bool Decode(Asn1Reader reader, Asn1Tag? tag = null) =>
-        reader.ReadNull(tag ?? Asn1Tag.Null);
-}
-
 public static class Asn1ObjectIdentifier
 {
     public static void Encode(Asn1Writer writer, string oid, Asn1Tag? tag = null) =>

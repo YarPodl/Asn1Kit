@@ -39,8 +39,8 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/as
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/ir/example.json --lang csharp -o ./generated
 
 # пересборка golden-фикстур (после любых правок компилятора или IR)
-dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/pkix1-explicit88.asn -o compiler/fixtures/ir/pkix1-explicit88.json
-dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/pkix1-explicit88.asn -i compiler/fixtures/asn1/pkix1-implicit88.asn -o compiler/fixtures/ir/pkix1-implicit88.json
+dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/pkix1-explicit88.asn -o compiler/fixtures/ir/pkix1-explicit88.json --bindings compiler/fixtures/opentype/pkix-bindings.json
+dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/pkix1-explicit88.asn -i compiler/fixtures/asn1/pkix1-implicit88.asn -o compiler/fixtures/ir/pkix1-implicit88.json --bindings compiler/fixtures/opentype/pkix-bindings.json
 
 # пересборка golden C# (после правок генератора или IR)
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/ir/pkix1-implicit88.json --lang csharp -O csharp.namespace=Asn1Kit.Pkix -o runtime-csharp/generated/Asn1Kit.Pkix

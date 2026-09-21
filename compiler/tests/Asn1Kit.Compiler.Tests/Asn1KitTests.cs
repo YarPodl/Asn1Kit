@@ -485,6 +485,144 @@ END
     }
 
     [Fact]
+    public void GeneratedCSharp_OpenTypeBindings_ResolveNullAndFallbackToAsn1Any()
+    {
+        const string asn = @"
+OpenMod DEFINITIONS EXPLICIT TAGS ::= BEGIN
+CPSuri ::= IA5String
+PolicyQualifierInfo ::= SEQUENCE {
+  policyQualifierId OBJECT IDENTIFIER,
+  qualifier ANY DEFINED BY policyQualifierId
+}
+AlgorithmIdentifier ::= SEQUENCE {
+  algorithm OBJECT IDENTIFIER,
+  parameters ANY DEFINED BY algorithm OPTIONAL
+}
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        OpenTypeBindings.ApplyJson(document, @"{
+  ""OpenMod.AlgorithmIdentifier.parameters"": [
+    { ""key"": ""1.2.840.113549.1.1.11"", ""type"": { ""kind"": ""null"" } }
+  ],
+  ""OpenMod.PolicyQualifierInfo.qualifier"": [
+    { ""key"": ""1.3.6.1.5.5.7.2.1"", ""type"": { ""kind"": ""ref"", ""name"": ""CPSuri"" } }
+  ]
+}");
+        IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+        Assert.Contains("AlgorithmIdentifier_Parameters", source);
+        Assert.Contains("FromNull", source);
+        Assert.Contains("FromUnknown", source);
+        Assert.Contains("1.2.840.113549.1.1.11", source);
+
+        var assembly = CompileGenerated(source);
+        var algType = assembly.GetType("OpenMod.AlgorithmIdentifier")!;
+        var paramsType = assembly.GetType("OpenMod.AlgorithmIdentifier_Parameters")!;
+        var pqiType = assembly.GetType("OpenMod.PolicyQualifierInfo")!;
+        var qualifierType = assembly.GetType("OpenMod.PolicyQualifierInfo_Qualifier")!;
+
+        var withNull = new byte[]
+        {
+            0x30, 0x0D,
+            0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0B,
+            0x05, 0x00
+        };
+        var decodedAlg = algType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(withNull, Asn1Encoding.Der) })!;
+        Assert.Equal("1.2.840.113549.1.1.11", algType.GetProperty("Algorithm")!.GetValue(decodedAlg));
+        var parameters = algType.GetProperty("Parameters")!.GetValue(decodedAlg)!;
+        Assert.Equal(
+            Enum.Parse(paramsType.GetNestedType("AlgorithmIdentifier_ParametersKind")
+                ?? assembly.GetType("OpenMod.AlgorithmIdentifier_ParametersKind")!, "Null"),
+            parameters.GetType().GetProperty("Kind")!.GetValue(parameters));
+        Assert.Equal(Asn1Null.Value, parameters.GetType().GetProperty("Null")!.GetValue(parameters));
+
+        var rewrite = new Asn1Writer(Asn1Encoding.Der);
+        algType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(decodedAlg, new object[] { rewrite });
+        Assert.Equal(withNull, rewrite.Encode());
+
+        var unknownOid = new byte[]
+        {
+            0x30, 0x0D,
+            0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01,
+            0x05, 0x00
+        };
+        var decodedUnknown = algType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(unknownOid, Asn1Encoding.Der) })!;
+        var unknownParams = algType.GetProperty("Parameters")!.GetValue(decodedUnknown)!;
+        Assert.Equal(
+            Enum.Parse(assembly.GetType("OpenMod.AlgorithmIdentifier_ParametersKind")!, "Unknown"),
+            unknownParams.GetType().GetProperty("Kind")!.GetValue(unknownParams));
+        var unknownAny = Assert.IsType<Asn1Any>(unknownParams.GetType().GetProperty("Unknown")!.GetValue(unknownParams)!);
+        Assert.Equal(Asn1Tag.Null, unknownAny.Tag);
+
+        // Soft mismatch: known OID but content is INTEGER, not NULL
+        var mismatch = new byte[]
+        {
+            0x30, 0x0E,
+            0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0B,
+            0x02, 0x01, 0x01
+        };
+        var softDecoded = algType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(mismatch, Asn1Encoding.Der) })!;
+        var softParams = algType.GetProperty("Parameters")!.GetValue(softDecoded)!;
+        Assert.Equal(
+            Enum.Parse(assembly.GetType("OpenMod.AlgorithmIdentifier_ParametersKind")!, "Unknown"),
+            softParams.GetType().GetProperty("Kind")!.GetValue(softParams));
+
+        var cps = new byte[]
+        {
+            0x30, 0x12,
+            0x06, 0x08, 0x2B, 0x06, 0x01, 0x05, 0x05, 0x07, 0x02, 0x01,
+            0x16, 0x06, 0x68, 0x74, 0x74, 0x70, 0x73, 0x3A
+        };
+        var decodedPqi = pqiType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(cps, Asn1Encoding.Der) })!;
+        Assert.Equal("1.3.6.1.5.5.7.2.1", pqiType.GetProperty("PolicyQualifierId")!.GetValue(decodedPqi));
+        var qualifier = pqiType.GetProperty("Qualifier")!.GetValue(decodedPqi)!;
+        Assert.Equal(
+            Enum.Parse(assembly.GetType("OpenMod.PolicyQualifierInfo_QualifierKind")!, "CPSuri"),
+            qualifier.GetType().GetProperty("Kind")!.GetValue(qualifier));
+        Assert.Equal("https:", qualifier.GetType().GetProperty("CPSuri")!.GetValue(qualifier));
+        Assert.NotNull(qualifierType);
+    }
+
+    [Fact]
+    public void GeneratedCSharp_OpenTypeBindings_StrictMismatchThrows()
+    {
+        const string asn = @"
+StrictMod DEFINITIONS EXPLICIT TAGS ::= BEGIN
+AlgorithmIdentifier ::= SEQUENCE {
+  algorithm OBJECT IDENTIFIER,
+  parameters ANY DEFINED BY algorithm OPTIONAL
+}
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        document.Modules[0].Options = IrOptions.SetOpenTypeMismatch(document.Modules[0].Options, "strict");
+        OpenTypeBindings.ApplyJson(document, @"{
+  ""StrictMod.AlgorithmIdentifier.parameters"": [
+    { ""key"": ""1.2.840.113549.1.1.11"", ""type"": { ""kind"": ""null"" } }
+  ]
+}");
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+        var assembly = CompileGenerated(source);
+        var algType = assembly.GetType("StrictMod.AlgorithmIdentifier")!;
+        var mismatch = new byte[]
+        {
+            0x30, 0x0E,
+            0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0B,
+            0x02, 0x01, 0x01
+        };
+        var ex = Assert.Throws<TargetInvocationException>(() =>
+            algType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+                .Invoke(null, new object[] { new Asn1Reader(mismatch, Asn1Encoding.Der) }));
+        Assert.IsType<Asn1Exception>(ex.InnerException);
+        Assert.Contains("does not match bound type", ex.InnerException!.Message);
+    }
+
+    [Fact]
     public void GeneratedCSharp_CollapsesAliasesAndKeepsNamedBitStringFlags()
     {
         const string asn = @"

@@ -65,7 +65,7 @@ public sealed class PrimitiveCodecTests
         var bytes = writer.Encode();
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
         Assert.True(Asn1Boolean.Decode(reader));
-        Assert.True(Asn1Null.Decode(reader));
+        Assert.Equal(Asn1Null.Value, Asn1Null.Decode(reader));
         Assert.Equal(42, Asn1Integer.Decode(reader).GetInt32());
         Assert.Equal(3, Asn1Enumerated.Decode(reader));
         Assert.True(reader.Eof);

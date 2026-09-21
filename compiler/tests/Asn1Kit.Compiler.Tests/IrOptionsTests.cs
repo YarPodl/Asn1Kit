@@ -74,4 +74,16 @@ public sealed class IrOptionsTests
         Assert.Equal("Shared.Ns", IrOptions.CSharpNamespace(document.Modules[1].Options));
         Assert.Equal("Keep", IrOptions.CSharpTypeName(document.Modules[1].Options));
     }
+
+    [Fact]
+    public void OpenTypeMismatch_DefaultsToSoft_AndAcceptsStrict()
+    {
+        Assert.Equal(IrOptions.OpenTypeMismatchModes.Soft, IrOptions.OpenTypeMismatch(null));
+        var soft = IrOptions.SetOpenTypeMismatch(null, "soft");
+        Assert.Equal(IrOptions.OpenTypeMismatchModes.Soft, IrOptions.OpenTypeMismatch(soft));
+        var strict = IrOptions.SetOpenTypeMismatch(null, "strict");
+        Assert.Equal(IrOptions.OpenTypeMismatchModes.Strict, IrOptions.OpenTypeMismatch(strict));
+        Assert.Throws<IrException>(() =>
+            IrOptions.OpenTypeMismatch(IrOptions.SetOpenTypeMismatch(null, "nope")));
+    }
 }

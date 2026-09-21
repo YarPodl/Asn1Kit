@@ -1369,7 +1369,39 @@
                 "name": "parameters",
                 "type": {
                   "kind": "any",
-                  "definedBy": "algorithm"
+                  "definedBy": "algorithm",
+                  "bindings": [
+                    {
+                      "key": "1.2.840.113549.1.1.1",
+                      "type": {
+                        "kind": "null"
+                      }
+                    },
+                    {
+                      "key": "1.2.840.113549.1.1.5",
+                      "type": {
+                        "kind": "null"
+                      }
+                    },
+                    {
+                      "key": "1.2.840.113549.1.1.11",
+                      "type": {
+                        "kind": "null"
+                      }
+                    },
+                    {
+                      "key": "1.2.840.113549.1.1.12",
+                      "type": {
+                        "kind": "null"
+                      }
+                    },
+                    {
+                      "key": "1.2.840.113549.1.1.13",
+                      "type": {
+                        "kind": "null"
+                      }
+                    }
+                  ]
                 },
                 "optional": true
               }
@@ -3718,7 +3750,23 @@
                 "name": "qualifier",
                 "type": {
                   "kind": "any",
-                  "definedBy": "policyQualifierId"
+                  "definedBy": "policyQualifierId",
+                  "bindings": [
+                    {
+                      "key": "1.3.6.1.5.5.7.2.1",
+                      "type": {
+                        "kind": "ref",
+                        "name": "CPSuri"
+                      }
+                    },
+                    {
+                      "key": "1.3.6.1.5.5.7.2.2",
+                      "type": {
+                        "kind": "ref",
+                        "name": "UserNotice"
+                      }
+                    }
+                  ]
                 },
                 "optional": false
               }

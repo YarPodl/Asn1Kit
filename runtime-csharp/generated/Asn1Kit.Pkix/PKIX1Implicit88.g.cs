@@ -2,6 +2,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Numerics;
 using Asn1Kit.Runtime;
 
@@ -242,7 +243,7 @@ public sealed class PolicyQualifierInfo
 {
     /// <summary>ASN.1 alias PolicyQualifierId ::= OBJECT IDENTIFIER.</summary>
     public string PolicyQualifierId { get; set; } = "";
-    public Asn1Any Qualifier { get; set; }
+    public PolicyQualifierInfo_Qualifier Qualifier { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -251,7 +252,7 @@ public sealed class PolicyQualifierInfo
         writer.WriteSequence(tag, inner =>
         {
             inner.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, PolicyQualifierId);
-            inner.WriteAny(Qualifier);
+            Qualifier.Encode(inner);
         });
     }
 
@@ -263,7 +264,7 @@ public sealed class PolicyQualifierInfo
         {
             var value = new PolicyQualifierInfo();
             value.PolicyQualifierId = inner.ReadObjectIdentifier(Asn1Tag.ObjectIdentifier);
-            value.Qualifier = inner.ReadAny();
+            value.Qualifier = PolicyQualifierInfo_Qualifier.Decode(inner, value.PolicyQualifierId);
             return value;
         });
     }
@@ -1252,5 +1253,103 @@ public enum CRLReason
     PrivilegeWithdrawn = 9,
     /// <summary>ASN.1 enumerated aACompromise(10).</summary>
     AACompromise = 10
+}
+
+public enum PolicyQualifierInfo_QualifierKind
+{
+    CPSuri,
+    UserNotice,
+    Unknown,
+}
+
+public sealed class PolicyQualifierInfo_Qualifier
+{
+    public PolicyQualifierInfo_QualifierKind Kind { get; private set; }
+    public string? CPSuri { get; private set; }
+    public UserNotice? UserNotice { get; private set; }
+    public Asn1Any? Unknown { get; private set; }
+
+    public static PolicyQualifierInfo_Qualifier FromCPSuri(string cPSuri) => new PolicyQualifierInfo_Qualifier
+    {
+        Kind = PolicyQualifierInfo_QualifierKind.CPSuri,
+        CPSuri = cPSuri,
+    };
+
+    public static PolicyQualifierInfo_Qualifier FromUserNotice(UserNotice userNotice) => new PolicyQualifierInfo_Qualifier
+    {
+        Kind = PolicyQualifierInfo_QualifierKind.UserNotice,
+        UserNotice = userNotice,
+    };
+
+    public static PolicyQualifierInfo_Qualifier FromUnknown(Asn1Any value) => new PolicyQualifierInfo_Qualifier
+    {
+        Kind = PolicyQualifierInfo_QualifierKind.Unknown,
+        Unknown = value,
+    };
+
+    public void Encode(Asn1Writer writer)
+    {
+        switch (Kind)
+        {
+            case PolicyQualifierInfo_QualifierKind.CPSuri:
+                writer.WriteString(Asn1Tag.Ia5String, CPSuri!, Asn1StringForm.Ia5);
+                break;
+            case PolicyQualifierInfo_QualifierKind.UserNotice:
+                UserNotice!.Encode(writer, Asn1Tag.Sequence);
+                break;
+            case PolicyQualifierInfo_QualifierKind.Unknown:
+                writer.WriteAny(Unknown!.Value);
+                break;
+            default: throw new Asn1Exception("Open type has no alternative.");
+        }
+    }
+
+    public static PolicyQualifierInfo_Qualifier Decode(Asn1Reader reader, string definedByKey) =>
+        Decode(reader, definedByKey, expectedTag: null);
+
+    public static PolicyQualifierInfo_Qualifier Decode(Asn1Reader reader, string definedByKey, Asn1Tag expectedTag) =>
+        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
+
+    private static PolicyQualifierInfo_Qualifier Decode(Asn1Reader reader, string definedByKey, Asn1Tag? expectedTag)
+    {
+        var raw = expectedTag is null ? reader.ReadAny() : reader.ReadAny(expectedTag.Value);
+        switch (definedByKey)
+        {
+            case "1.3.6.1.5.5.7.2.1":
+            {
+                try
+                {
+                    var probe = raw.CreateReader(reader.Encoding, reader.Options);
+                    var decoded = probe.ReadString(Asn1Tag.Ia5String, Asn1StringForm.Ia5);
+                    if (probe.Eof)
+                    {
+                        return FromCPSuri(decoded);
+                    }
+                }
+                catch (Asn1Exception)
+                {
+                }
+                return FromUnknown(raw);
+            }
+            case "1.3.6.1.5.5.7.2.2":
+            {
+                try
+                {
+                    var probe = raw.CreateReader(reader.Encoding, reader.Options);
+                    var decoded = UserNotice.Decode(probe, Asn1Tag.Sequence);
+                    if (probe.Eof)
+                    {
+                        return FromUserNotice(decoded);
+                    }
+                }
+                catch (Asn1Exception)
+                {
+                }
+                return FromUnknown(raw);
+            }
+            default:
+                return FromUnknown(raw);
+        }
+    }
 }
 

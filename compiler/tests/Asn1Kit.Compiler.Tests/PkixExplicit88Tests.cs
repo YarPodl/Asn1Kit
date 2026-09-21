@@ -11,6 +11,7 @@ public sealed class PkixExplicit88Tests
         var asnPath = TestData.RepoPath("compiler/fixtures/asn1/pkix1-explicit88.asn");
         var goldenPath = TestData.RepoPath("compiler/fixtures/ir/pkix1-explicit88.json");
         var document = new Asn1Compiler().CompileFiles(new[] { asnPath });
+        OpenTypeBindings.ApplyFile(document, TestData.RepoPath("compiler/fixtures/opentype/pkix-bindings.json"));
         var actual = IrSerializer.ToJson(document);
         IrSerializer.ValidateSchema(actual);
 
@@ -48,8 +49,10 @@ public sealed class PkixExplicit88Tests
 
         var algorithm = Assert.IsType<SequenceType>(types["AlgorithmIdentifier"].Type);
         var parameters = algorithm.Components.Single(c => c.Name == "parameters");
-        Assert.Equal("algorithm", Assert.IsType<AnyType>(parameters.Type).DefinedBy);
+        var parametersAny = Assert.IsType<AnyType>(parameters.Type);
+        Assert.Equal("algorithm", parametersAny.DefinedBy);
         Assert.True(parameters.Optional);
+        Assert.Null(parametersAny.Bindings);
 
         var attribute = Assert.IsType<SequenceType>(types["Attribute"].Type);
         Assert.IsType<SetOfType>(attribute.Components.Single(c => c.Name == "values").Type);

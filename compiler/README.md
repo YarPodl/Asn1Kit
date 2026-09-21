@@ -24,9 +24,10 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/as
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/ir/example.json --lang csharp -o ./generated
 
 # -O / --option path=value — override module.options (repeatable); same flag on compile
+# --bindings — open-type overlay (Module.Type.field → OID/INTEGER → type); нужен для golden PKIX
 # пересборка golden-фикстур
-dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/pkix1-explicit88.asn -o compiler/fixtures/ir/pkix1-explicit88.json
-dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/pkix1-explicit88.asn -i compiler/fixtures/asn1/pkix1-implicit88.asn -o compiler/fixtures/ir/pkix1-implicit88.json
+dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/pkix1-explicit88.asn -o compiler/fixtures/ir/pkix1-explicit88.json --bindings compiler/fixtures/opentype/pkix-bindings.json
+dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/pkix1-explicit88.asn -i compiler/fixtures/asn1/pkix1-implicit88.asn -o compiler/fixtures/ir/pkix1-implicit88.json --bindings compiler/fixtures/opentype/pkix-bindings.json
 
 # пересборка golden C# (PKIX)
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/ir/pkix1-implicit88.json --lang csharp -O csharp.namespace=Asn1Kit.Pkix -o runtime-csharp/generated/Asn1Kit.Pkix
@@ -37,8 +38,9 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/i
 | Путь | Назначение |
 | --- | --- |
 | `fixtures/asn1/` | Входные модули ASN.1 |
-| `fixtures/ir/pkix1-explicit88.json` | **Golden**: только через CLI, руками не править |
-| `fixtures/ir/pkix1-implicit88.json` | **Golden**: Explicit + Implicit (оба `-i`), руками не править |
+| `fixtures/opentype/pkix-bindings.json` | Sidecar open-type bindings для golden PKIX |
+| `fixtures/ir/pkix1-explicit88.json` | **Golden**: только через CLI (+ `--bindings`), руками не править |
+| `fixtures/ir/pkix1-implicit88.json` | **Golden**: Explicit + Implicit (оба `-i`) + `--bindings`, руками не править |
 | `fixtures/ir/example.json` | **Ручная**: `options.csharp.*`; компилятором не пересобирать |
 | `../runtime-csharp/generated/Asn1Kit.Pkix/*.g.cs` | **Golden C#**: из Implicit88 IR, руками не править |
 

@@ -241,6 +241,17 @@ public sealed class AnyType : TypeExpr
     public override string Kind => TypeKinds.Any;
 
     public string? DefinedBy { get; set; }
+
+    /// <summary>Open-type table: sibling OID/INTEGER key → concrete type (from overlay or hand-authored IR).</summary>
+    public List<IrOpenTypeBinding>? Bindings { get; set; }
+}
+
+public sealed class IrOpenTypeBinding
+{
+    /// <summary>Dotted OID or decimal INTEGER string matching the DEFINED BY sibling value.</summary>
+    public string Key { get; set; } = "";
+
+    public TypeExpr Type { get; set; } = null!;
 }
 
 public sealed class SequenceType : TypeExpr

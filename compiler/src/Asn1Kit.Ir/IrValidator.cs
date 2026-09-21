@@ -199,6 +199,44 @@ public static class IrValidator
                     }
                 }
 
+                if (any.Bindings is { Count: > 0 })
+                {
+                    if (string.IsNullOrWhiteSpace(any.DefinedBy))
+                    {
+                        throw new IrException(
+                            $"ANY bindings in '{context}' require definedBy naming a sibling component.");
+                    }
+
+                    var keys = new HashSet<string>(StringComparer.Ordinal);
+                    for (var i = 0; i < any.Bindings.Count; i++)
+                    {
+                        var binding = any.Bindings[i];
+                        if (string.IsNullOrWhiteSpace(binding.Key))
+                        {
+                            throw new IrException($"ANY binding[{i}] in '{context}' has an empty key.");
+                        }
+
+                        if (!keys.Add(binding.Key))
+                        {
+                            throw new IrException(
+                                $"ANY binding key '{binding.Key}' is duplicated in '{context}'.");
+                        }
+
+                        if (binding.Type is null)
+                        {
+                            throw new IrException(
+                                $"ANY binding '{binding.Key}' in '{context}' is missing a type.");
+                        }
+
+                        ValidateExpr(
+                            document,
+                            module,
+                            binding.Type,
+                            $"{context}.bindings[{binding.Key}]",
+                            ownerComponents: null);
+                    }
+                }
+
                 break;
             case BooleanType:
             case NullType:

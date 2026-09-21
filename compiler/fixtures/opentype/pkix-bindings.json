@@ -1,0 +1,13 @@
+{
+  "PKIX1Explicit88.AlgorithmIdentifier.parameters": [
+    { "key": "1.2.840.113549.1.1.1", "type": { "kind": "null" } },
+    { "key": "1.2.840.113549.1.1.5", "type": { "kind": "null" } },
+    { "key": "1.2.840.113549.1.1.11", "type": { "kind": "null" } },
+    { "key": "1.2.840.113549.1.1.12", "type": { "kind": "null" } },
+    { "key": "1.2.840.113549.1.1.13", "type": { "kind": "null" } }
+  ],
+  "PKIX1Implicit88.PolicyQualifierInfo.qualifier": [
+    { "key": "1.3.6.1.5.5.7.2.1", "type": { "kind": "ref", "name": "CPSuri" } },
+    { "key": "1.3.6.1.5.5.7.2.2", "type": { "kind": "ref", "name": "UserNotice" } }
+  ]
+}

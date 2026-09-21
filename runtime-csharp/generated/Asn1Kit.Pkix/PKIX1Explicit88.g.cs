@@ -2,6 +2,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Numerics;
 using Asn1Kit.Runtime;
 
@@ -1425,7 +1426,7 @@ public sealed class TBSCertList
 public sealed class AlgorithmIdentifier
 {
     public string Algorithm { get; set; } = "";
-    public Asn1Any? Parameters { get; set; }
+    public AlgorithmIdentifier_Parameters? Parameters { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1436,7 +1437,7 @@ public sealed class AlgorithmIdentifier
             inner.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, Algorithm);
             if (Parameters != null)
             {
-                inner.WriteAny(Parameters.Value);
+                Parameters.Encode(inner);
             }
         });
     }
@@ -1451,7 +1452,7 @@ public sealed class AlgorithmIdentifier
             value.Algorithm = inner.ReadObjectIdentifier(Asn1Tag.ObjectIdentifier);
             if (!inner.Eof)
             {
-                value.Parameters = inner.ReadAny();
+                value.Parameters = AlgorithmIdentifier_Parameters.Decode(inner, value.Algorithm);
             }
             return value;
         });
@@ -2459,6 +2460,81 @@ public sealed class TBSCertList_RevokedCertificates_Item
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
+}
+
+public enum AlgorithmIdentifier_ParametersKind
+{
+    Null,
+    Unknown,
+}
+
+public sealed class AlgorithmIdentifier_Parameters
+{
+    public AlgorithmIdentifier_ParametersKind Kind { get; private set; }
+    public Asn1Null? Null { get; private set; }
+    public Asn1Any? Unknown { get; private set; }
+
+    public static AlgorithmIdentifier_Parameters FromNull(Asn1Null @null = default) => new AlgorithmIdentifier_Parameters
+    {
+        Kind = AlgorithmIdentifier_ParametersKind.Null,
+        Null = @null,
+    };
+
+    public static AlgorithmIdentifier_Parameters FromUnknown(Asn1Any value) => new AlgorithmIdentifier_Parameters
+    {
+        Kind = AlgorithmIdentifier_ParametersKind.Unknown,
+        Unknown = value,
+    };
+
+    public void Encode(Asn1Writer writer)
+    {
+        switch (Kind)
+        {
+            case AlgorithmIdentifier_ParametersKind.Null:
+                writer.WriteNull(Asn1Tag.Null);
+                break;
+            case AlgorithmIdentifier_ParametersKind.Unknown:
+                writer.WriteAny(Unknown!.Value);
+                break;
+            default: throw new Asn1Exception("Open type has no alternative.");
+        }
+    }
+
+    public static AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, string definedByKey) =>
+        Decode(reader, definedByKey, expectedTag: null);
+
+    public static AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, string definedByKey, Asn1Tag expectedTag) =>
+        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
+
+    private static AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, string definedByKey, Asn1Tag? expectedTag)
+    {
+        var raw = expectedTag is null ? reader.ReadAny() : reader.ReadAny(expectedTag.Value);
+        switch (definedByKey)
+        {
+            case "1.2.840.113549.1.1.1":
+            case "1.2.840.113549.1.1.5":
+            case "1.2.840.113549.1.1.11":
+            case "1.2.840.113549.1.1.12":
+            case "1.2.840.113549.1.1.13":
+            {
+                try
+                {
+                    var probe = raw.CreateReader(reader.Encoding, reader.Options);
+                    var decoded = Asn1Null.Decode(probe, Asn1Tag.Null);
+                    if (probe.Eof)
+                    {
+                        return FromNull(decoded);
+                    }
+                }
+                catch (Asn1Exception)
+                {
+                }
+                return FromUnknown(raw);
+            }
+            default:
+                return FromUnknown(raw);
+        }
+    }
 }
 
 public sealed class ExtendedNetworkAddress_E1634Address
