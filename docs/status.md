@@ -13,8 +13,8 @@
 | `bitString`                     | да, с `namedBits`                                                    | без имён → `Asn1BitString`; с `namedBits` → класс + `[Flags]` enum (`ToFlags`/`FromFlags`)                                                | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*`, `RoundTripTests.GeneratedCSharp_CollapsesAliases*` |
 | `octetString`                   | да                                                                   | да → `ReadOnlyMemory<byte>`                                                                                                               | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RoundTripTests`, `RuntimeTests`                                                                     |
 | `oid`                           | да, dotted-строка; первый subidentifier — base-128 (в т.ч. `2.999…`) | да → `string`                                                                                                                             | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RuntimeTests.ObjectIdentifier_*`                                                                    |
-| `string` (12 форм `stringType`) | да                                                                   | да → `string` + `Asn1StringForm`                                                                                                          | `PrimitiveCodecTests` (все 12), `PrimitiveOracleTests` (BCL-совместимые), `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*`                          |
-| `time` (`utc` / `generalized`)  | да; `fractionDigits` 0…7 (default 3) для `generalized`               | да → `DateTimeOffset` + `Asn1TimeForm`; запись с округлением                                                                              | `PrimitiveCodecTests`, `PrimitiveOracleTests`, `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*`                                                     |
+| `string` (12 форм `stringType`) | да                                                                   | да → `string` + `Asn1StringForm`                                                                                                          | `PrimitiveCodecTests` (все 12), `PrimitiveOracleTests` (BCL charset + UniversalString UTF-32BE reference; Teletex/… — только свои векторы), `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*` |
+| `time` (`utc` / `generalized`)  | да; `fractionDigits` 0…7 (default 3) для `generalized`               | да → `DateTimeOffset` + `Asn1TimeForm`; запись с округлением                                                                              | `PrimitiveCodecTests` (UTCTime pivot), `PrimitiveOracleTests` (pivot + GeneralizedTime fraction), `RuntimeTests`, `RoundTripTests.PrimitivesAsn_*` |
 | `any` (+ `definedBy`)           | да, с проверкой sibling-компонента                                   | да → `Asn1Any` (Tag + ContentsMemory; `definedBy` не резолвится); typedef `Name ::= ANY` сворачивается                                    | `ParserTests`, `RuntimeTests.Any_*`, `RoundTripTests.GeneratedCSharp_Any_*`, `ValueResolutionTests.RejectsAnyDefinedByUnknownField`                 |
 | `sequence`                      | да, `extensible`                                                     | да → класс с `Encode` / `Decode`                                                                                                          | `RoundTripTests`, `PkixExplicit88Tests`, `PkixImplicit88Tests`, `PkixGeneratedCodeTests`                                                            |
 | `set`                           | да                                                                   | да → класс с `Encode` / `Decode` (DER: порядок по тегу; decode по тегу)                                                                   | `RoundTripTests`, `ParserTests`, `RuntimeTests`                                                                                                     |
@@ -65,18 +65,27 @@
 
 **Запись (всегда канон):** definite length; BOOLEAN `0x00` / `0xFF`; BIT STRING с нулевыми хвостовыми битами; время с секундами и суффиксом `Z` (GeneralizedTime: `fractionDigits` 0…7, default 3; без хвостовых нулей дроби); INTEGER — минимальная signed big-endian форма (`BigInteger.TryWriteBytes` / прямой encode для `int`…`ulong`). На типичном размере contents примитивов пишутся без промежуточного `byte[]` (stackalloc / прямой write в буфер); oversized INTEGER/строки — heap.
 
-**Чтение — soft-profile (см. [decisions.md](decisions.md) «мягкое чтение»):** часть запретов DER/X.690 по умолчанию **не** роняет decode; строгий reject — через опции reader’а (ещё не введены; backlog ниже). Уже зафиксированные soft-accept по умолчанию:
+**Чтение — soft-profile (см. [decisions.md](decisions.md) «мягкое чтение»):** часть запретов DER/X.690 по умолчанию **не** роняет decode; строгий reject — через `Asn1ReaderOptions`. Зафиксированные soft-accept по умолчанию:
 
 
-| Форма                                             | Default | Строгая опция (план) |
-| ------------------------------------------------- | ------- | -------------------- |
-| Non-minimal INTEGER contents (`02 02 00 01`, …)   | accept  | reject when enabled  |
-| BIT STRING nonzero trailing bits (в т.ч. под DER) | accept  | reject when enabled  |
+| Форма                                             | Default | Строгая опция |
+| ------------------------------------------------- | ------- | ------------- |
+| Non-minimal INTEGER contents (`02 02 00 01`, …)   | accept  | `RejectNonMinimalInteger` |
+| BIT STRING nonzero trailing bits (в т.ч. под DER) | accept  | `RejectBitStringTrailingBits` |
 
 
-Сейчас код **уже** принимает non-minimal INTEGER; BIT STRING trailing bits под DER **ещё отвергает** — это расхождение с решением, чинится вместе с опциями. BER: indefinite length, constructed строки/BIT STRING, время без секунд и `±hhmm`; дробь 1…7 с хвостовыми нулями допускается и в DER.
+Не в soft-profile (по умолчанию **reject**; ослабление только явным профилем):
 
-Примитивы runtime: матрица hex в [runtime-csharp/fixtures/ber-der/](../runtime-csharp/fixtures/ber-der/) (`PrimitiveCodecTests`), перекрёстный oracle с `System.Formats.Asn1` (`PrimitiveOracleTests`; Teletex/T61/Videotex/Graphic/General — только свои векторы, Latin-1), внешние фрагменты RFC/X.690 — `ExternalVectorTests`.
+| Форма | Default | Опция ослабления |
+| --- | --- | --- |
+| Non-minimal definite length (`02 81 01 01`, …) | reject | `RejectNonMinimalLength = false` (`AllowNonMinimalLength`) |
+| OID overlong base-128 (`… 80 01 …`) | reject | `RejectOverlongOidBase128 = false` (`AllowOverlongOidBase128`) |
+
+Всегда reject (не soft): BOOLEAN length≠1 / constructed; empty INTEGER; truncated EOC; indefinite в DER.
+
+BER: indefinite length, constructed строки/BIT STRING, время без секунд и `±hhmm`; дробь 1…7 с хвостовыми нулями допускается и в DER.
+
+Примитивы runtime: матрица hex в [runtime-csharp/fixtures/ber-der/](../runtime-csharp/fixtures/ber-der/) (`PrimitiveCodecTests`), перекрёстный oracle с `System.Formats.Asn1` (`PrimitiveOracleTests`; Teletex/T61/Videotex/Graphic/General — только свои векторы, Latin-1; UniversalString и UTCTime year pivot — в oracle), внешние фрагменты RFC/X.690 — `ExternalVectorTests`.
 
 Публичный API Writer/Reader — [runtime-csharp/docs/runtime-api.md](../runtime-csharp/docs/runtime-api.md).
 
@@ -105,6 +114,7 @@
 13. Добавить опцию сохранения исходного (и неизменного) закодированного представления в поле класса
 14. Пул массивов, где нужны временные (constructed BER concat, DER SET OF sort).
 15. ~~В Encode оптимизировать, не выделять каждый раз на contents примитивов~~ — `Write*` без temp-`byte[]` на типичном размере; остаётся рост `MemoryStream` / `Encode()→ToArray` (RecyclableMemoryStream — отдельно).
+16. Второй oracle — BouncyCastle (только при расхождении с BCL; не gate `dotnet test`).
 
 
 ### Крупные задачи
@@ -114,22 +124,5 @@
 
 
 
-## Backlog: тесты примитивов
 
-Стратегия (матрица + oracle `System.Formats.Asn1` + external) уже внедрена. Политика soft-read + strict options — [decisions.md](decisions.md). Чеклист API — [runtime-csharp/docs/runtime-api.md](../runtime-csharp/docs/runtime-api.md) § «Чеклист RuntimeTests». Развёрнутый план — canvas `runtime-test-backlog`.
-
-
-| Приоритет | Задача                                                                                                                | Заметки                                                                                       |
-| --------- | --------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| высокий   | Reader options + soft defaults: non-minimal INTEGER accept; BIT trailing nonzero accept (в т.ч. DER); strict → reject | Документировать в status/runtime-api; тесты default+strict; сейчас BIT DER reject — выровнять |
-| высокий   | Fixture/тесты soft INTEGER (`02 02 00 01` …) + strict reject                                                          | Default: decode OK; encode по-прежнему минимальный                                            |
-| высокий   | Fixture/тесты BIT trailing nonzero: default accept под DER; strict reject                                             | Обновить `bitstring-der-rejects-trailing-bits`                                                |
-| высокий   | Oracle: `UniversalString`; UTCTime year pivot                                                                         | Сейчас pivot только в `RuntimeTests`                                                          |
-| средний   | Решить+документировать+опция: non-minimal length, OID overlong base-128                                               | Не включать в default soft без записи в status                                                |
-| средний   | Негативы всегда-reject: BOOLEAN length≠1/constructed; truncated EOC; empty INTEGER                                    | Не soft                                                                                       |
-| средний   | Oracle GeneralizedTime с дробью; чеклист API → fixtures; external INTEGER RFC 8017                                    |                                                                                               |
-| низкий    | Второй oracle — BouncyCastle                                                                                          | Только при расхождении с BCL                                                                  |
-
-
-Не делать: subprocess (openssl/pyasn1) как gate `dotnet test`; копирование чужих сьютов целиком; CER в oracle.
 

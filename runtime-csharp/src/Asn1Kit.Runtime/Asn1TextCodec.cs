@@ -167,7 +167,7 @@ internal static class Asn1TextCodec
         var mask = (byte)((1 << unusedBits) - 1);
         if ((bytes[^1] & mask) != 0)
         {
-            throw new Asn1Exception("DER BIT STRING trailing bits must be zero.");
+            throw new Asn1Exception("BIT STRING trailing bits must be zero.");
         }
     }
 

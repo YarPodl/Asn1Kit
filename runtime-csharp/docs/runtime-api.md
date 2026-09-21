@@ -38,7 +38,8 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `WriteOctetString(ReadOnlySpan)` / `WriteRaw(ReadOnlySpan)` | hot/cold | borrow |
 | `WriteSequence` / `WriteSet` / `WriteSetOf` / `WriteSequenceOf<T>` / `WriteSetOf<T>` / `WriteExplicit(Action)` | hot | callback |
 | `ReadSequenceOf<T>` / `ReadSetOf<T>` | hot | owned `List<T>` |
-| `Asn1Reader(byte[]\|offset/length\|ReadOnlyMemory)` / `Source` | hot | срез без копии на входе; `Source` якорит lifetime |
+| `Asn1Reader(byte[]\|offset/length\|ReadOnlyMemory, encoding, options?)` / `Source` / `Options` | hot | срез без копии на входе; `Source` якорит lifetime; `Options` наследуются nested |
+| `Asn1ReaderOptions` (`Default` / `Strict` / `AllowNonMinimalLength` / `AllowOverlongOidBase128`) | warm | immutable flags |
 | `ReadOctetString → ReadOnlyMemory` / `TryReadOctetString(Span)` | hot | view / copy-out (Try всегда продвигает reader); constructed BER — owned |
 | `ReadValue → ReadOnlyMemory` / `TryReadValue(Span)` / `ReadTlv` | cold/warm | view / copy-out |
 | `Asn1Any.ContentsMemory` / `ToArray` | hot | view (из reader) / detach |
@@ -57,10 +58,13 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 Политика: [docs/decisions.md](../../docs/decisions.md) «мягкое чтение»; инвентарь soft-accept — [docs/status.md](../../docs/status.md) § Runtime.
 
 - **Encode** всегда канонический (минимальный INTEGER, нулевые trailing bits BIT STRING, …).
-- **Decode** по умолчанию принимает зафиксированные неканоничные формы; строгий reject — опциями reader’а (план/backlog; API опций ещё не введён).
-- Soft по умолчанию (reject выключен): non-minimal INTEGER contents; BIT STRING nonzero trailing bits (включая режим DER).
+- **Decode** по умолчанию принимает soft-формы; строгий reject — `Asn1ReaderOptions` на конструкторе reader’а (`Default` / `Strict` / точечные профили).
+- Soft по умолчанию (`Reject* = false`): non-minimal INTEGER contents; BIT STRING nonzero trailing bits (включая режим DER).
+- Не soft (default reject): non-minimal length (`RejectNonMinimalLength`); OID overlong base-128 (`RejectOverlongOidBase128`).
 - Новый soft-accept без строки в status + этой секции — не допускается.
-- В фикстурах: default-кейс = `encode: false` + успешный decode; strict-кейс = `reject: true` при включённой опции (когда опции появятся).
+- В фикстурах: default-кейс = `encode: false` + успешный decode; strict-кейс = `reject: true` + `readerProfile: "strict"` (или `allowNonMinimalLength` / `allowOverlongOid`).
+
+`Asn1Reader` / nested readers наследуют `Options` родителя.
 
 ## Чеклист RuntimeTests
 

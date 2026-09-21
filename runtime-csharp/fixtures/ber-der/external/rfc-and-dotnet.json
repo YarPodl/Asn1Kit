@@ -105,5 +105,13 @@
     "bytes": "0603883703",
     "value": "2.999.3",
     "source": "Regenerated via System.Formats.Asn1 (example OID under 2.999)"
+  },
+  {
+    "name": "pkcs1-public-exponent-65537",
+    "rules": "der",
+    "op": "integer",
+    "bytes": "0203010001",
+    "value": "65537",
+    "source": "RFC 8017 §A.1.1 RSAPublicKey.publicExponent (common F4 value 65537)"
   }
 ]

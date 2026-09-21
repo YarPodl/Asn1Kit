@@ -97,9 +97,12 @@
 - На **чтении** отдельные проверки X.690/DER могут быть **выключены по умолчанию**: значение читается успешно. Каждое такое послабление явно перечислено в [status.md](status.md) § Runtime и в [runtime-api.md](../runtime-csharp/docs/runtime-api.md); новый soft-accept без записи в эти файлы — регрессия процесса.
 - Предпочтительный механизм — опции reader’а (вкл/выкл строгую проверку), а не ветвление по `Asn1Encoding` в одиночку. Строгий режим должен отвергать те же векторы, что ожидают BoringSSL/BCL/BC.
 - Зафиксировано по умолчанию **выключено** (accept):
-  1. reject non-minimal INTEGER contents (X.690 §8.3.2);
-  2. reject nonzero trailing bits BIT STRING при чтении в DER (X.690 §11.2).
-- Прочие кандидаты (non-minimal length, overlong OID base-128, …) подключаются тем же паттерном только после явной записи в status/runtime-api.
+  1. reject non-minimal INTEGER contents (X.690 §8.3.2) — флаг `Asn1ReaderOptions.RejectNonMinimalInteger`;
+  2. reject nonzero trailing bits BIT STRING при чтении (в т.ч. DER, X.690 §11.2) — флаг `RejectBitStringTrailingBits`.
+- Кандидаты **не** в soft-profile (по умолчанию reject; ослабление только явным профилем):
+  1. non-minimal definite length — `RejectNonMinimalLength` (default true; профиль `AllowNonMinimalLength`);
+  2. overlong OID base-128 — `RejectOverlongOidBase128` (default true; профиль `AllowOverlongOidBase128`).
+- Готовый профиль аудита: `Asn1ReaderOptions.Strict` (все optional rejects включены).
 
 ## C# codegen — typedef-алиасы сворачиваются
 

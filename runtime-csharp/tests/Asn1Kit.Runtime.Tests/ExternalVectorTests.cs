@@ -86,7 +86,7 @@ public sealed class ExternalVectorTests
             Assert.Equal(Hex.Format(bytes), Hex.Format(writer.Encode()));
         }
 
-        var reader = new Asn1Reader(bytes, c.Encoding);
+        var reader = new Asn1Reader(bytes, c.Encoding, c.GetReaderOptions());
         decode(reader);
         Assert.True(reader.Eof);
     }

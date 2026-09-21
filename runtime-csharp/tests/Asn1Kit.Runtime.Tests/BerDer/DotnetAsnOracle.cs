@@ -1,5 +1,6 @@
 using System.Formats.Asn1;
 using System.Numerics;
+using System.Text;
 using Asn1Kit.Runtime;
 
 namespace Asn1Kit.Tests;
@@ -10,6 +11,7 @@ namespace Asn1Kit.Tests;
 /// </summary>
 internal static class DotnetAsnOracle
 {
+    private static readonly Encoding Utf32Be = new UTF32Encoding(bigEndian: true, byteOrderMark: false, throwOnInvalidCharacters: true);
     public static byte[] EncodeBoolean(bool value, AsnEncodingRules rules = AsnEncodingRules.DER)
     {
         var writer = new AsnWriter(rules);
@@ -173,7 +175,45 @@ internal static class DotnetAsnOracle
         Asn1StringForm.Ia5 => UniversalTagNumber.IA5String,
         Asn1StringForm.Visible => UniversalTagNumber.VisibleString,
         Asn1StringForm.Bmp => UniversalTagNumber.BMPString,
+        // UniversalString: BCL charset API unsupported on net6 — see EncodeUniversalStringUtf32Be.
         // Teletex/T61/Videotex/Graphic/General: Asn1Kit uses Latin-1; BCL charset differs — exclude from oracle.
         _ => null
     };
+
+    /// <summary>
+    /// Reference UniversalString DER (tag 28 + UTF-32BE). BCL WriteCharacterString does not accept UniversalString on net6.
+    /// </summary>
+    public static byte[] EncodeUniversalStringUtf32Be(string value)
+    {
+        var contents = Utf32Be.GetBytes(value);
+        if (contents.Length > 127)
+        {
+            throw new InvalidOperationException("Test helper supports short-form length only.");
+        }
+
+        var result = new byte[2 + contents.Length];
+        result[0] = 0x1C;
+        result[1] = (byte)contents.Length;
+        contents.CopyTo(result.AsSpan(2));
+        return result;
+    }
+
+    public static string DecodeUniversalStringUtf32Be(ReadOnlyMemory<byte> encoded)
+    {
+        var span = encoded.Span;
+        if (span.Length < 2 || span[0] != 0x1C || (span[1] & 0x80) != 0)
+        {
+            throw new InvalidOperationException("Expected short-form UniversalString TLV.");
+        }
+
+        var length = span[1];
+        if (span.Length != 2 + length)
+        {
+            throw new InvalidOperationException("UniversalString TLV length mismatch.");
+        }
+
+        return Utf32Be.GetString(span.Slice(2, length));
+    }
 }
+
+

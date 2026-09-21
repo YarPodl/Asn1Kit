@@ -84,6 +84,53 @@ public sealed class PrimitiveCodecTests
     }
 
     [Fact]
+    public void SoftInteger_DefaultAccepts_StrictRejects_EncodeStaysMinimal()
+    {
+        var softBytes = Hex.Parse("02020001");
+        Assert.Equal(1, new Asn1Reader(softBytes, Asn1Encoding.Der).ReadInteger(Asn1Tag.Integer));
+        Assert.Throws<Asn1Exception>(() =>
+            new Asn1Reader(softBytes, Asn1Encoding.Der, Asn1ReaderOptions.Strict).ReadInteger(Asn1Tag.Integer));
+
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteInteger(Asn1Tag.Integer, 1);
+        Assert.Equal(Hex.Parse("020101"), writer.Encode());
+    }
+
+    [Fact]
+    public void SoftBitStringTrailing_DefaultAccepts_StrictRejects()
+    {
+        var softBytes = Hex.Parse("030203A9");
+        var decoded = new Asn1Reader(softBytes, Asn1Encoding.Der).ReadBitString(Asn1Tag.BitString);
+        Assert.Equal(3, decoded.UnusedBits);
+        Assert.Equal(new byte[] { 0xA9 }, decoded.Span.ToArray());
+
+        Assert.Throws<Asn1Exception>(() =>
+            new Asn1Reader(softBytes, Asn1Encoding.Der, Asn1ReaderOptions.Strict)
+                .ReadBitString(Asn1Tag.BitString));
+    }
+
+    [Fact]
+    public void NonMinimalLength_DefaultRejects_AllowProfileAccepts()
+    {
+        var bytes = Hex.Parse("02810101");
+        Assert.Throws<Asn1Exception>(() =>
+            new Asn1Reader(bytes, Asn1Encoding.Der).ReadInteger(Asn1Tag.Integer));
+        Assert.Equal(1, new Asn1Reader(bytes, Asn1Encoding.Der, Asn1ReaderOptions.AllowNonMinimalLength)
+            .ReadInteger(Asn1Tag.Integer));
+    }
+
+    [Fact]
+    public void OverlongOid_DefaultRejects_AllowProfileAccepts()
+    {
+        var bytes = Hex.Parse("06032A8001");
+        Assert.Throws<Asn1Exception>(() =>
+            new Asn1Reader(bytes, Asn1Encoding.Der).ReadObjectIdentifier(Asn1Tag.ObjectIdentifier));
+        Assert.Equal("1.2.1",
+            new Asn1Reader(bytes, Asn1Encoding.Der, Asn1ReaderOptions.AllowOverlongOidBase128)
+                .ReadObjectIdentifier(Asn1Tag.ObjectIdentifier));
+    }
+
+    [Fact]
     public void IntegerValue_FromBigInteger_IsCanonical()
     {
         var value = Asn1Integer.FromBigInteger(1);
@@ -201,9 +248,10 @@ public sealed class PrimitiveCodecTests
     private static void Run(BerDerCase c, Action<BerDerCase, Asn1Writer> encode, Action<BerDerCase, Asn1Reader, byte[]> decode)
     {
         var expected = c.GetBytes();
+        var options = c.GetReaderOptions();
         if (c.Reject)
         {
-            var reader = new Asn1Reader(expected, c.Encoding);
+            var reader = new Asn1Reader(expected, c.Encoding, options);
             Assert.Throws<Asn1Exception>(() => decode(c, reader, expected));
             return;
         }
@@ -220,7 +268,7 @@ public sealed class PrimitiveCodecTests
             Assert.Equal(encoded, roundTrip.Encode());
         }
 
-        var decodeReader = new Asn1Reader(expected, c.Encoding);
+        var decodeReader = new Asn1Reader(expected, c.Encoding, options);
         decode(c, decodeReader, expected);
         Assert.True(decodeReader.Eof);
     }

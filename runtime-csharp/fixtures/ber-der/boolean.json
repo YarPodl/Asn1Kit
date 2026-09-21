@@ -36,6 +36,20 @@
     "reject": true
   },
   {
+    "name": "boolean-rejects-length-2",
+    "rules": "der",
+    "op": "boolean",
+    "bytes": "01020000",
+    "reject": true
+  },
+  {
+    "name": "boolean-rejects-constructed",
+    "rules": "ber",
+    "op": "boolean",
+    "bytes": "21030101FF",
+    "reject": true
+  },
+  {
     "name": "boolean-rejects-wrong-tag",
     "rules": "der",
     "op": "boolean",

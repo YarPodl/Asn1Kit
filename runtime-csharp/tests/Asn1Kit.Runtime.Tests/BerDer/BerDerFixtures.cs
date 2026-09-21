@@ -39,10 +39,41 @@ public sealed class BerDerCase
     public int? FractionDigits { get; set; }
     public string? Source { get; set; }
 
+    /// <summary>
+    /// Reader options profile: default | strict | allowNonMinimalLength | allowOverlongOid.
+    /// </summary>
+    public string? ReaderProfile { get; set; }
+
     public Asn1Kit.Runtime.Asn1Encoding Encoding =>
         string.Equals(Rules, "ber", StringComparison.OrdinalIgnoreCase)
             ? Asn1Kit.Runtime.Asn1Encoding.Ber
             : Asn1Kit.Runtime.Asn1Encoding.Der;
+
+    public Asn1Kit.Runtime.Asn1ReaderOptions GetReaderOptions()
+    {
+        if (string.IsNullOrWhiteSpace(ReaderProfile)
+            || string.Equals(ReaderProfile, "default", StringComparison.OrdinalIgnoreCase))
+        {
+            return Asn1Kit.Runtime.Asn1ReaderOptions.Default;
+        }
+
+        if (string.Equals(ReaderProfile, "strict", StringComparison.OrdinalIgnoreCase))
+        {
+            return Asn1Kit.Runtime.Asn1ReaderOptions.Strict;
+        }
+
+        if (string.Equals(ReaderProfile, "allowNonMinimalLength", StringComparison.OrdinalIgnoreCase))
+        {
+            return Asn1Kit.Runtime.Asn1ReaderOptions.AllowNonMinimalLength;
+        }
+
+        if (string.Equals(ReaderProfile, "allowOverlongOid", StringComparison.OrdinalIgnoreCase))
+        {
+            return Asn1Kit.Runtime.Asn1ReaderOptions.AllowOverlongOidBase128;
+        }
+
+        throw new InvalidOperationException($"Unknown readerProfile '{ReaderProfile}'.");
+    }
 
     public byte[] GetBytes() => Hex.Parse(Bytes);
 

@@ -26,5 +26,21 @@
     "op": "oid",
     "bytes": "06032A86",
     "reject": true
+  },
+  {
+    "name": "oid-rejects-overlong-base128",
+    "rules": "der",
+    "op": "oid",
+    "bytes": "06032A8001",
+    "reject": true
+  },
+  {
+    "name": "oid-allows-overlong-base128",
+    "rules": "der",
+    "op": "oid",
+    "bytes": "06032A8001",
+    "value": "1.2.1",
+    "encode": false,
+    "readerProfile": "allowOverlongOid"
   }
 ]

@@ -33,10 +33,20 @@
     "encode": false
   },
   {
-    "name": "bitstring-der-rejects-trailing-bits",
+    "name": "bitstring-soft-trailing-bits",
     "rules": "der",
     "op": "bitString",
     "bytes": "030203A9",
-    "reject": true
+    "value": "A9",
+    "unusedBits": 3,
+    "encode": false
+  },
+  {
+    "name": "bitstring-strict-rejects-trailing-bits",
+    "rules": "der",
+    "op": "bitString",
+    "bytes": "030203A9",
+    "reject": true,
+    "readerProfile": "strict"
   }
 ]

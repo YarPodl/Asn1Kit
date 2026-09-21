@@ -11,12 +11,17 @@ public sealed class Asn1Reader
     private readonly int _end;
     private readonly int _start;
 
-    public Asn1Reader(byte[] data, Asn1Encoding encoding = Asn1Encoding.Ber)
-        : this(data, 0, data is null ? 0 : data.Length, encoding)
+    public Asn1Reader(byte[] data, Asn1Encoding encoding = Asn1Encoding.Ber, Asn1ReaderOptions? options = null)
+        : this(data, 0, data is null ? 0 : data.Length, encoding, options)
     {
     }
 
-    public Asn1Reader(byte[] data, int offset, int length, Asn1Encoding encoding = Asn1Encoding.Ber)
+    public Asn1Reader(
+        byte[] data,
+        int offset,
+        int length,
+        Asn1Encoding encoding = Asn1Encoding.Ber,
+        Asn1ReaderOptions? options = null)
     {
         if (data is null)
         {
@@ -33,9 +38,10 @@ public sealed class Asn1Reader
         _offset = offset;
         _end = offset + length;
         Encoding = encoding;
+        Options = options ?? Asn1ReaderOptions.Default;
     }
 
-    public Asn1Reader(ReadOnlyMemory<byte> data, Asn1Encoding encoding = Asn1Encoding.Ber)
+    public Asn1Reader(ReadOnlyMemory<byte> data, Asn1Encoding encoding = Asn1Encoding.Ber, Asn1ReaderOptions? options = null)
     {
         if (MemoryMarshal.TryGetArray(data, out ArraySegment<byte> segment) && segment.Array is not null)
         {
@@ -53,9 +59,13 @@ public sealed class Asn1Reader
         }
 
         Encoding = encoding;
+        Options = options ?? Asn1ReaderOptions.Default;
     }
 
     public Asn1Encoding Encoding { get; }
+
+    /// <summary>Strictness flags for this reader (and nested readers created from it).</summary>
+    public Asn1ReaderOptions Options { get; }
 
     /// <summary>Window into the underlying buffer this reader was constructed over (lifetime anchor for views).</summary>
     public ReadOnlyMemory<byte> Source => _data.AsMemory(_start, _end - _start);
@@ -79,7 +89,7 @@ public sealed class Asn1Reader
     public T ReadSequence<T>(Asn1Tag expected, Func<Asn1Reader, T> read)
     {
         var contents = ReadValue(expected, allowConstructed: true);
-        var inner = new Asn1Reader(contents, Encoding);
+        var inner = new Asn1Reader(contents, Encoding, Options);
         return read(inner);
     }
 
@@ -142,6 +152,7 @@ public sealed class Asn1Reader
     public Asn1Integer ReadIntegerValue(Asn1Tag expected)
     {
         var contents = ReadValue(expected, allowConstructed: false);
+        EnsureMinimalIntegerContents(contents.Span);
         return Asn1Integer.FromContents(contents);
     }
 
@@ -192,8 +203,46 @@ public sealed class Asn1Reader
     /// <summary>ENUMERATED uses the same contents encoding as INTEGER (X.690).</summary>
     public BigInteger ReadEnumerated(Asn1Tag expected) => ReadSignedIntegerContents(expected);
 
-    private BigInteger ReadSignedIntegerContents(Asn1Tag expected) =>
-        Asn1Integer.ToBigInteger(ReadValue(expected, allowConstructed: false).Span);
+    private BigInteger ReadSignedIntegerContents(Asn1Tag expected)
+    {
+        var contents = ReadValue(expected, allowConstructed: false).Span;
+        EnsureMinimalIntegerContents(contents);
+        return Asn1Integer.ToBigInteger(contents);
+    }
+
+    private void EnsureMinimalIntegerContents(ReadOnlySpan<byte> contents)
+    {
+        if (!Options.RejectNonMinimalInteger)
+        {
+            return;
+        }
+
+        if (!IsMinimalIntegerContents(contents))
+        {
+            throw new Asn1Exception("INTEGER contents are not minimally encoded.");
+        }
+    }
+
+    /// <summary>X.690 §8.3.2 — no unnecessary leading 0x00 / 0xFF octets.</summary>
+    internal static bool IsMinimalIntegerContents(ReadOnlySpan<byte> contents)
+    {
+        if (contents.Length <= 1)
+        {
+            return true;
+        }
+
+        if (contents[0] == 0x00 && (contents[1] & 0x80) == 0)
+        {
+            return false;
+        }
+
+        if (contents[0] == 0xFF && (contents[1] & 0x80) != 0)
+        {
+            return false;
+        }
+
+        return true;
+    }
 
     public ReadOnlyMemory<byte> ReadOctetString(Asn1Tag expected)
     {
@@ -288,9 +337,10 @@ public sealed class Asn1Reader
         return builder.ToString();
     }
 
-    private static int ReadOidArc(ReadOnlySpan<byte> contents, ref int i)
+    private int ReadOidArc(ReadOnlySpan<byte> contents, ref int i)
     {
         var value = 0;
+        var first = true;
         byte b;
         do
         {
@@ -300,6 +350,16 @@ public sealed class Asn1Reader
             }
 
             b = contents[i++];
+            if (first)
+            {
+                if (Options.RejectOverlongOidBase128 && b == 0x80)
+                {
+                    throw new Asn1Exception("OID base-128 encoding is overlong.");
+                }
+
+                first = false;
+            }
+
             if (value > (int.MaxValue >> 7))
             {
                 throw new Asn1Exception("OID arc is too large.");
@@ -321,10 +381,10 @@ public sealed class Asn1Reader
 
         if (!constructed)
         {
-            return ParsePrimitiveBitString(contents, Encoding == Asn1Encoding.Der);
+            return ParsePrimitiveBitString(contents, Options.RejectBitStringTrailingBits);
         }
 
-        var nested = new Asn1Reader(contents, Encoding);
+        var nested = new Asn1Reader(contents, Encoding, Options);
         var segments = new List<Asn1BitString>();
         var unusedBits = 0;
         while (!nested.Eof)
@@ -359,7 +419,7 @@ public sealed class Asn1Reader
         }
 
         var value = new Asn1BitString(concatenated, unusedBits);
-        if (Encoding == Asn1Encoding.Der)
+        if (Options.RejectBitStringTrailingBits)
         {
             Asn1TextCodec.EnsureTrailingBitsZero(value.Span, value.UnusedBits);
         }
@@ -516,10 +576,20 @@ public sealed class Asn1Reader
         }
 
         EnsureAvailable(count);
+        if (Options.RejectNonMinimalLength && _data[_offset] == 0x00)
+        {
+            throw new Asn1Exception("Non-minimal length encoding.");
+        }
+
         var length = 0;
         for (var i = 0; i < count; i++)
         {
             length = (length << 8) | _data[_offset++];
+        }
+
+        if (Options.RejectNonMinimalLength && length < 128)
+        {
+            throw new Asn1Exception("Non-minimal length encoding.");
         }
 
         return (length, false);
@@ -585,7 +655,7 @@ public sealed class Asn1Reader
         Asn1Tag segmentTag,
         out int totalLength)
     {
-        var nested = new Asn1Reader(constructedContents, Encoding);
+        var nested = new Asn1Reader(constructedContents, Encoding, Options);
         var segments = new List<ReadOnlyMemory<byte>>();
         totalLength = 0;
         while (!nested.Eof)
@@ -608,7 +678,7 @@ public sealed class Asn1Reader
         }
     }
 
-    private static Asn1BitString ParsePrimitiveBitString(ReadOnlyMemory<byte> contents, bool derStrict)
+    private static Asn1BitString ParsePrimitiveBitString(ReadOnlyMemory<byte> contents, bool rejectTrailingBits)
     {
         if (contents.Length == 0)
         {
@@ -632,7 +702,7 @@ public sealed class Asn1Reader
         }
 
         var bytes = contents.Slice(1);
-        if (derStrict)
+        if (rejectTrailingBits)
         {
             Asn1TextCodec.EnsureTrailingBitsZero(bytes.Span, unusedBits);
         }

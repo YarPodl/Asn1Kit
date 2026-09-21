@@ -8,6 +8,22 @@
     "value": "2017-01-02T03:04:05Z"
   },
   {
+    "name": "time-utc-pivot-49",
+    "rules": "der",
+    "op": "time",
+    "form": "Utc",
+    "bytes": "170D3439303130323033303430355A",
+    "value": "2049-01-02T03:04:05Z"
+  },
+  {
+    "name": "time-utc-pivot-50",
+    "rules": "der",
+    "op": "time",
+    "form": "Utc",
+    "bytes": "170D3530303130323033303430355A",
+    "value": "1950-01-02T03:04:05Z"
+  },
+  {
     "name": "time-generalized-der-no-fraction",
     "rules": "der",
     "op": "time",

@@ -35,5 +35,12 @@
     "op": "octetString",
     "bytes": "24800403416E6E0000",
     "reject": true
+  },
+  {
+    "name": "octet-rejects-truncated-eoc",
+    "rules": "ber",
+    "op": "octetString",
+    "bytes": "24800403416E6E00",
+    "reject": true
   }
 ]

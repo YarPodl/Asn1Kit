@@ -49,6 +49,22 @@
     "reject": true
   },
   {
+    "name": "enumerated-soft-non-minimal",
+    "rules": "der",
+    "op": "enumerated",
+    "bytes": "0A020001",
+    "value": "1",
+    "encode": false
+  },
+  {
+    "name": "enumerated-strict-rejects-non-minimal",
+    "rules": "der",
+    "op": "enumerated",
+    "bytes": "0A020001",
+    "reject": true,
+    "readerProfile": "strict"
+  },
+  {
     "name": "enumerated-wrong-tag-reject",
     "rules": "der",
     "op": "enumerated",

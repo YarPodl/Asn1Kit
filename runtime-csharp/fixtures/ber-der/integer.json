@@ -63,6 +63,54 @@
     "value": "170141183460469231731687303715884105728"
   },
   {
+    "name": "integer-soft-non-minimal-1",
+    "rules": "der",
+    "op": "integer",
+    "bytes": "02020001",
+    "value": "1",
+    "encode": false
+  },
+  {
+    "name": "integer-soft-non-minimal-minus-1",
+    "rules": "der",
+    "op": "integer",
+    "bytes": "0202FFFF",
+    "value": "-1",
+    "encode": false
+  },
+  {
+    "name": "integer-strict-rejects-non-minimal-1",
+    "rules": "der",
+    "op": "integer",
+    "bytes": "02020001",
+    "reject": true,
+    "readerProfile": "strict"
+  },
+  {
+    "name": "integer-strict-rejects-non-minimal-minus-1",
+    "rules": "der",
+    "op": "integer",
+    "bytes": "0202FFFF",
+    "reject": true,
+    "readerProfile": "strict"
+  },
+  {
+    "name": "integer-rejects-non-minimal-length",
+    "rules": "der",
+    "op": "integer",
+    "bytes": "02810101",
+    "reject": true
+  },
+  {
+    "name": "integer-allows-non-minimal-length",
+    "rules": "der",
+    "op": "integer",
+    "bytes": "02810101",
+    "value": "1",
+    "encode": false,
+    "readerProfile": "allowNonMinimalLength"
+  },
+  {
     "name": "integer-rejects-empty",
     "rules": "der",
     "op": "integer",

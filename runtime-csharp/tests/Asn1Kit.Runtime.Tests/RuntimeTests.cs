@@ -504,9 +504,14 @@ public sealed class RuntimeTests
             Asn1BitString.Encode(writer, trailingBits);
         });
 
-        var berTrailing = new byte[] { 0x03, 0x02, 0x05, 0xA1 };
+        var softTrailing = new byte[] { 0x03, 0x02, 0x05, 0xA1 };
+        var softDecoded = new Asn1Reader(softTrailing, Asn1Encoding.Der).ReadBitString(Asn1Tag.BitString);
+        Assert.Equal(5, softDecoded.UnusedBits);
+        Assert.Equal(new byte[] { 0xA1 }, softDecoded.Span.ToArray());
+
         Assert.Throws<Asn1Exception>(() =>
-            new Asn1Reader(berTrailing, Asn1Encoding.Der).ReadBitString(Asn1Tag.BitString));
+            new Asn1Reader(softTrailing, Asn1Encoding.Der, Asn1ReaderOptions.Strict)
+                .ReadBitString(Asn1Tag.BitString));
     }
 
     [Fact]

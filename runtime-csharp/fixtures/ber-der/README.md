@@ -28,6 +28,7 @@ Each JSON file is an array of cases:
 | `form` | For `string` / `time`: form name (`Utf8`, `Utc`, …) |
 | `unusedBits` | For `bitString` |
 | `fractionDigits` | For GeneralizedTime encode |
+| `readerProfile` | `default` (omit), `strict`, `allowNonMinimalLength`, `allowOverlongOid` |
 | `source` | Provenance for layer-3 external vectors |
 
 ## Layers
@@ -43,6 +44,8 @@ Some encodings forbidden by strict DER/X.690 are accepted on decode by default (
 For each soft form, prefer a pair of cases:
 
 - default: successful decode (`encode: false` when bytes are non-canonical);
-- strict: `reject: true` when the corresponding reader option is enabled (once options exist).
+- strict: `reject: true` + `readerProfile: "strict"`.
 
-Soft by default today (planned / partially landed): non-minimal INTEGER; BIT STRING nonzero trailing bits under DER.
+Soft by default: non-minimal INTEGER; BIT STRING nonzero trailing bits under DER.
+
+Not soft (default reject; optional allow profiles): non-minimal length; OID overlong base-128.

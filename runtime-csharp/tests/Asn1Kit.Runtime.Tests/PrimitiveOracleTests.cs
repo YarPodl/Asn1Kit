@@ -56,6 +56,12 @@ public sealed class PrimitiveOracleTests
         yield return new object[] { Asn1StringForm.Bmp, "AB" };
     }
 
+    public static IEnumerable<object[]> UtcTimePivots()
+    {
+        yield return new object[] { new DateTimeOffset(2049, 1, 2, 3, 4, 5, TimeSpan.Zero) };
+        yield return new object[] { new DateTimeOffset(1950, 1, 2, 3, 4, 5, TimeSpan.Zero) };
+    }
+
     [Theory]
     [MemberData(nameof(Booleans))]
     public void Boolean_Der_BothDirections(bool value)
@@ -147,9 +153,40 @@ public sealed class PrimitiveOracleTests
     }
 
     [Fact]
+    public void UniversalString_Der_MatchesUtf32BeReference_AndBclRawTlv()
+    {
+        // System.Formats.Asn1 (net6) has no UniversalString charset; oracle against X.690 UTF-32BE
+        // contents and BCL raw TLV round-trip via ReadEncodedValue.
+        const string value = "AB";
+        var us = EncodeUs(w => w.WriteString(Asn1Tag.UniversalString, value, Asn1StringForm.Universal));
+        var reference = DotnetAsnOracle.EncodeUniversalStringUtf32Be(value);
+        Assert.Equal(Hex.Format(reference), Hex.Format(us));
+
+        Assert.Equal(value, new Asn1Reader(us, Asn1Encoding.Der)
+            .ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal));
+        Assert.Equal(value, DotnetAsnOracle.DecodeUniversalStringUtf32Be(us));
+
+        var bclReader = new AsnReader(us, AsnEncodingRules.DER);
+        var raw = bclReader.ReadEncodedValue();
+        bclReader.ThrowIfNotEmpty();
+        Assert.Equal(Hex.Format(us), Hex.Format(raw.Span));
+    }
+
+    [Fact]
     public void UtcTime_Der_BothDirections()
     {
         var value = new DateTimeOffset(2017, 1, 2, 3, 4, 5, TimeSpan.Zero);
+        CrossDer(
+            () => EncodeUs(w => w.WriteTime(Asn1Tag.UtcTime, value, Asn1TimeForm.Utc)),
+            () => DotnetAsnOracle.EncodeUtcTime(value),
+            bytes => Assert.Equal(value, new Asn1Reader(bytes, Asn1Encoding.Der).ReadTime(Asn1Tag.UtcTime, Asn1TimeForm.Utc)),
+            bytes => Assert.Equal(value, DotnetAsnOracle.DecodeUtcTime(bytes)));
+    }
+
+    [Theory]
+    [MemberData(nameof(UtcTimePivots))]
+    public void UtcTime_Der_YearPivot_BothDirections(DateTimeOffset value)
+    {
         CrossDer(
             () => EncodeUs(w => w.WriteTime(Asn1Tag.UtcTime, value, Asn1TimeForm.Utc)),
             () => DotnetAsnOracle.EncodeUtcTime(value),
@@ -164,6 +201,18 @@ public sealed class PrimitiveOracleTests
         CrossDer(
             () => EncodeUs(w => w.WriteTime(Asn1Tag.GeneralizedTime, value, Asn1TimeForm.Generalized, fractionDigits: 0)),
             () => DotnetAsnOracle.EncodeGeneralizedTime(value, omitFractionalSeconds: true),
+            bytes => Assert.Equal(value, new Asn1Reader(bytes, Asn1Encoding.Der).ReadTime(Asn1Tag.GeneralizedTime, Asn1TimeForm.Generalized)),
+            bytes => Assert.Equal(value, DotnetAsnOracle.DecodeGeneralizedTime(bytes)));
+    }
+
+    [Fact]
+    public void GeneralizedTime_Der_BothDirections_WithFraction()
+    {
+        // BCL WriteGeneralizedTime keeps up to millisecond precision; match with fractionDigits=3.
+        var value = new DateTimeOffset(2017, 1, 2, 3, 4, 5, 120, TimeSpan.Zero);
+        CrossDer(
+            () => EncodeUs(w => w.WriteTime(Asn1Tag.GeneralizedTime, value, Asn1TimeForm.Generalized, fractionDigits: 3)),
+            () => DotnetAsnOracle.EncodeGeneralizedTime(value, omitFractionalSeconds: false),
             bytes => Assert.Equal(value, new Asn1Reader(bytes, Asn1Encoding.Der).ReadTime(Asn1Tag.GeneralizedTime, Asn1TimeForm.Generalized)),
             bytes => Assert.Equal(value, DotnetAsnOracle.DecodeGeneralizedTime(bytes)));
     }
