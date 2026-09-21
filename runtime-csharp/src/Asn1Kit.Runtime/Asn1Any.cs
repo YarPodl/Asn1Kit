@@ -37,14 +37,6 @@ public readonly struct Asn1Any : IEquatable<Asn1Any>
 
     public static Asn1Any Decode(Asn1Reader reader, Asn1Tag tag) => reader.ReadAny(tag);
 
-    /// <summary>Re-parses this TLV as a fresh reader (owned full TLV copy).</summary>
-    public Asn1Reader CreateReader(Asn1Encoding encoding = Asn1Encoding.Der, Asn1ReaderOptions? options = null)
-    {
-        var writer = new Asn1Writer(encoding);
-        writer.WriteAny(this);
-        return new Asn1Reader(writer.Encode(), encoding, options);
-    }
-
     public bool Equals(Asn1Any other) =>
         Tag.Equals(other.Tag) && Span.SequenceEqual(other.Span);
 

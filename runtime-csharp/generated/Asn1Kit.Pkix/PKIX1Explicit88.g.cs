@@ -2462,42 +2462,32 @@ public sealed class TBSCertList_RevokedCertificates_Item
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public enum AlgorithmIdentifier_ParametersKind
-{
-    Null,
-    Unknown,
-}
-
 public sealed class AlgorithmIdentifier_Parameters
 {
-    public AlgorithmIdentifier_ParametersKind Kind { get; private set; }
     public Asn1Null? Null { get; private set; }
     public Asn1Any? Unknown { get; private set; }
 
     public static AlgorithmIdentifier_Parameters FromNull(Asn1Null @null = default) => new AlgorithmIdentifier_Parameters
     {
-        Kind = AlgorithmIdentifier_ParametersKind.Null,
         Null = @null,
     };
 
     public static AlgorithmIdentifier_Parameters FromUnknown(Asn1Any value) => new AlgorithmIdentifier_Parameters
     {
-        Kind = AlgorithmIdentifier_ParametersKind.Unknown,
         Unknown = value,
     };
 
     public void Encode(Asn1Writer writer)
     {
-        switch (Kind)
+        if (Null != null)
         {
-            case AlgorithmIdentifier_ParametersKind.Null:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case AlgorithmIdentifier_ParametersKind.Unknown:
-                writer.WriteAny(Unknown!.Value);
-                break;
-            default: throw new Asn1Exception("Open type has no alternative.");
+            writer.WriteNull(Asn1Tag.Null);
         }
+        else if (Unknown != null)
+        {
+            writer.WriteAny(Unknown.Value);
+        }
+        else throw new Asn1Exception("Open type has no alternative.");
     }
 
     public static AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, string definedByKey) =>
@@ -2508,7 +2498,6 @@ public sealed class AlgorithmIdentifier_Parameters
 
     private static AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, string definedByKey, Asn1Tag? expectedTag)
     {
-        var raw = expectedTag is null ? reader.ReadAny() : reader.ReadAny(expectedTag.Value);
         switch (definedByKey)
         {
             case "1.2.840.113549.1.1.1":
@@ -2517,22 +2506,24 @@ public sealed class AlgorithmIdentifier_Parameters
             case "1.2.840.113549.1.1.12":
             case "1.2.840.113549.1.1.13":
             {
-                try
+                if (expectedTag is null)
                 {
-                    var probe = raw.CreateReader(reader.Encoding, reader.Options);
-                    var decoded = Asn1Null.Decode(probe, Asn1Tag.Null);
-                    if (probe.Eof)
+                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Null))
                     {
-                        return FromNull(decoded);
+                        return FromNull(Asn1Null.Decode(reader, Asn1Tag.Null));
                     }
                 }
-                catch (Asn1Exception)
+                else
                 {
+                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
+                    {
+                        return FromNull(Asn1Null.Decode(reader, expectedTag.Value));
+                    }
                 }
-                return FromUnknown(raw);
+                return FromUnknown(reader.ReadAny());
             }
             default:
-                return FromUnknown(raw);
+                return FromUnknown(reader.ReadAny());
         }
     }
 }

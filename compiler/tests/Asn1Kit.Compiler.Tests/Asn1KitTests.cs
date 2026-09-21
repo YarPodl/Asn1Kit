@@ -514,6 +514,7 @@ END
         Assert.Contains("AlgorithmIdentifier_Parameters", source);
         Assert.Contains("FromNull", source);
         Assert.Contains("FromUnknown", source);
+        Assert.DoesNotContain("ParametersKind", source);
         Assert.Contains("1.2.840.113549.1.1.11", source);
 
         var assembly = CompileGenerated(source);
@@ -521,6 +522,8 @@ END
         var paramsType = assembly.GetType("OpenMod.AlgorithmIdentifier_Parameters")!;
         var pqiType = assembly.GetType("OpenMod.PolicyQualifierInfo")!;
         var qualifierType = assembly.GetType("OpenMod.PolicyQualifierInfo_Qualifier")!;
+        Assert.Null(assembly.GetType("OpenMod.AlgorithmIdentifier_ParametersKind"));
+        Assert.Null(assembly.GetType("OpenMod.PolicyQualifierInfo_QualifierKind"));
 
         var withNull = new byte[]
         {
@@ -532,11 +535,8 @@ END
             .Invoke(null, new object[] { new Asn1Reader(withNull, Asn1Encoding.Der) })!;
         Assert.Equal("1.2.840.113549.1.1.11", algType.GetProperty("Algorithm")!.GetValue(decodedAlg));
         var parameters = algType.GetProperty("Parameters")!.GetValue(decodedAlg)!;
-        Assert.Equal(
-            Enum.Parse(paramsType.GetNestedType("AlgorithmIdentifier_ParametersKind")
-                ?? assembly.GetType("OpenMod.AlgorithmIdentifier_ParametersKind")!, "Null"),
-            parameters.GetType().GetProperty("Kind")!.GetValue(parameters));
         Assert.Equal(Asn1Null.Value, parameters.GetType().GetProperty("Null")!.GetValue(parameters));
+        Assert.Null(parameters.GetType().GetProperty("Unknown")!.GetValue(parameters));
 
         var rewrite = new Asn1Writer(Asn1Encoding.Der);
         algType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(decodedAlg, new object[] { rewrite });
@@ -551,9 +551,7 @@ END
         var decodedUnknown = algType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
             .Invoke(null, new object[] { new Asn1Reader(unknownOid, Asn1Encoding.Der) })!;
         var unknownParams = algType.GetProperty("Parameters")!.GetValue(decodedUnknown)!;
-        Assert.Equal(
-            Enum.Parse(assembly.GetType("OpenMod.AlgorithmIdentifier_ParametersKind")!, "Unknown"),
-            unknownParams.GetType().GetProperty("Kind")!.GetValue(unknownParams));
+        Assert.Null(unknownParams.GetType().GetProperty("Null")!.GetValue(unknownParams));
         var unknownAny = Assert.IsType<Asn1Any>(unknownParams.GetType().GetProperty("Unknown")!.GetValue(unknownParams)!);
         Assert.Equal(Asn1Tag.Null, unknownAny.Tag);
 
@@ -567,9 +565,8 @@ END
         var softDecoded = algType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
             .Invoke(null, new object[] { new Asn1Reader(mismatch, Asn1Encoding.Der) })!;
         var softParams = algType.GetProperty("Parameters")!.GetValue(softDecoded)!;
-        Assert.Equal(
-            Enum.Parse(assembly.GetType("OpenMod.AlgorithmIdentifier_ParametersKind")!, "Unknown"),
-            softParams.GetType().GetProperty("Kind")!.GetValue(softParams));
+        Assert.Null(softParams.GetType().GetProperty("Null")!.GetValue(softParams));
+        Assert.NotNull(softParams.GetType().GetProperty("Unknown")!.GetValue(softParams));
 
         var cps = new byte[]
         {
@@ -581,10 +578,9 @@ END
             .Invoke(null, new object[] { new Asn1Reader(cps, Asn1Encoding.Der) })!;
         Assert.Equal("1.3.6.1.5.5.7.2.1", pqiType.GetProperty("PolicyQualifierId")!.GetValue(decodedPqi));
         var qualifier = pqiType.GetProperty("Qualifier")!.GetValue(decodedPqi)!;
-        Assert.Equal(
-            Enum.Parse(assembly.GetType("OpenMod.PolicyQualifierInfo_QualifierKind")!, "CPSuri"),
-            qualifier.GetType().GetProperty("Kind")!.GetValue(qualifier));
         Assert.Equal("https:", qualifier.GetType().GetProperty("CPSuri")!.GetValue(qualifier));
+        Assert.Null(qualifier.GetType().GetProperty("Unknown")!.GetValue(qualifier));
+        Assert.NotNull(paramsType);
         Assert.NotNull(qualifierType);
     }
 

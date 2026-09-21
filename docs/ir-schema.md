@@ -37,7 +37,7 @@
 - `bitString` — опционально `namedBits: [{ name, value }]`
 - `string` — обязательно `stringType`: `utf8` \| `printable` \| `teletex` \| `t61` \| `ia5` \| `numeric` \| `visible` \| `bmp` \| `universal` \| `general` \| `graphic` \| `videotex`
 - `time` — обязательно `timeType`: `utc` \| `generalized`; опционально `fractionDigits` `0…7` (только `generalized`; отсутствие = 3 при записи)
-- `any` — опционально `definedBy` (имя sibling-компонента); опционально `bindings: [{ key, type }]` — таблица open-type (ключ — dotted OID или десятичный INTEGER); заполняется overlay после compile, не парсером ASN.1 1988. C# при `bindings` эмитит CHOICE-like тип; `options.openType.mismatch`: `soft` \| `strict` (default `soft`).
+- `any` — опционально `definedBy` (имя sibling-компонента); опционально `bindings: [{ key, type }]` — таблица open-type (ключ — dotted OID или десятичный INTEGER); заполняется overlay после compile, не парсером ASN.1 1988. C# при `bindings` эмитит `Owner_Field` с `From…`/`Unknown` (без enum `Kind`); `options.openType.mismatch`: `soft` \| `strict` (default `soft`).
 - `sequence` / `set` / `choice` — `components[]`, опционально `extensible`
 - `sequenceOf` / `setOf` — `element`
 - `ref` — `name`, опционально `module`
@@ -104,7 +104,7 @@
 | `options.csharp.propertyName` | поле | Имя свойства |
 | `options.generate` | тип | `false` — не генерировать |
 | `options.integer.representation` | тип / модуль | Представление INTEGER: `int32` \| `uint32` \| `int64` \| `uint64` \| `bigint` \| `der`. На типе перекрывает модуль. Если не задано, C# backend выводит: при `namedValues` → `int32` (или `int64` при метке вне `int`); иначе из полного `constraint.value`; иначе `der`. |
-| `options.openType.mismatch` | модуль / документ / тип `any` | При известном ключе bindings, если TLV не совпал с типом: `soft` (default) → альтернатива `Unknown`/`Asn1Any`; `strict` → `Asn1Exception`. |
+| `options.openType.mismatch` | модуль / документ / тип `any` | При известном ключе bindings, если **тег** TLV не совпал с типом: `soft` (default) → `Unknown`/`Asn1Any`; `strict` → `Asn1Exception`. |
 
 ## Примеры
 

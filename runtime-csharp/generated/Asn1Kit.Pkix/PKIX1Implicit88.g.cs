@@ -1255,53 +1255,42 @@ public enum CRLReason
     AACompromise = 10
 }
 
-public enum PolicyQualifierInfo_QualifierKind
-{
-    CPSuri,
-    UserNotice,
-    Unknown,
-}
-
 public sealed class PolicyQualifierInfo_Qualifier
 {
-    public PolicyQualifierInfo_QualifierKind Kind { get; private set; }
     public string? CPSuri { get; private set; }
     public UserNotice? UserNotice { get; private set; }
     public Asn1Any? Unknown { get; private set; }
 
     public static PolicyQualifierInfo_Qualifier FromCPSuri(string cPSuri) => new PolicyQualifierInfo_Qualifier
     {
-        Kind = PolicyQualifierInfo_QualifierKind.CPSuri,
         CPSuri = cPSuri,
     };
 
     public static PolicyQualifierInfo_Qualifier FromUserNotice(UserNotice userNotice) => new PolicyQualifierInfo_Qualifier
     {
-        Kind = PolicyQualifierInfo_QualifierKind.UserNotice,
         UserNotice = userNotice,
     };
 
     public static PolicyQualifierInfo_Qualifier FromUnknown(Asn1Any value) => new PolicyQualifierInfo_Qualifier
     {
-        Kind = PolicyQualifierInfo_QualifierKind.Unknown,
         Unknown = value,
     };
 
     public void Encode(Asn1Writer writer)
     {
-        switch (Kind)
+        if (CPSuri != null)
         {
-            case PolicyQualifierInfo_QualifierKind.CPSuri:
-                writer.WriteString(Asn1Tag.Ia5String, CPSuri!, Asn1StringForm.Ia5);
-                break;
-            case PolicyQualifierInfo_QualifierKind.UserNotice:
-                UserNotice!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case PolicyQualifierInfo_QualifierKind.Unknown:
-                writer.WriteAny(Unknown!.Value);
-                break;
-            default: throw new Asn1Exception("Open type has no alternative.");
+            writer.WriteString(Asn1Tag.Ia5String, CPSuri!, Asn1StringForm.Ia5);
         }
+        else if (UserNotice != null)
+        {
+            UserNotice!.Encode(writer, Asn1Tag.Sequence);
+        }
+        else if (Unknown != null)
+        {
+            writer.WriteAny(Unknown.Value);
+        }
+        else throw new Asn1Exception("Open type has no alternative.");
     }
 
     public static PolicyQualifierInfo_Qualifier Decode(Asn1Reader reader, string definedByKey) =>
@@ -1312,43 +1301,46 @@ public sealed class PolicyQualifierInfo_Qualifier
 
     private static PolicyQualifierInfo_Qualifier Decode(Asn1Reader reader, string definedByKey, Asn1Tag? expectedTag)
     {
-        var raw = expectedTag is null ? reader.ReadAny() : reader.ReadAny(expectedTag.Value);
         switch (definedByKey)
         {
             case "1.3.6.1.5.5.7.2.1":
             {
-                try
+                if (expectedTag is null)
                 {
-                    var probe = raw.CreateReader(reader.Encoding, reader.Options);
-                    var decoded = probe.ReadString(Asn1Tag.Ia5String, Asn1StringForm.Ia5);
-                    if (probe.Eof)
+                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Ia5String))
                     {
-                        return FromCPSuri(decoded);
+                        return FromCPSuri(reader.ReadString(Asn1Tag.Ia5String, Asn1StringForm.Ia5));
                     }
                 }
-                catch (Asn1Exception)
+                else
                 {
+                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
+                    {
+                        return FromCPSuri(reader.ReadString(expectedTag.Value, Asn1StringForm.Ia5));
+                    }
                 }
-                return FromUnknown(raw);
+                return FromUnknown(reader.ReadAny());
             }
             case "1.3.6.1.5.5.7.2.2":
             {
-                try
+                if (expectedTag is null)
                 {
-                    var probe = raw.CreateReader(reader.Encoding, reader.Options);
-                    var decoded = UserNotice.Decode(probe, Asn1Tag.Sequence);
-                    if (probe.Eof)
+                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
                     {
-                        return FromUserNotice(decoded);
+                        return FromUserNotice(UserNotice.Decode(reader, Asn1Tag.Sequence));
                     }
                 }
-                catch (Asn1Exception)
+                else
                 {
+                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
+                    {
+                        return FromUserNotice(UserNotice.Decode(reader, expectedTag.Value));
+                    }
                 }
-                return FromUnknown(raw);
+                return FromUnknown(reader.ReadAny());
             }
             default:
-                return FromUnknown(raw);
+                return FromUnknown(reader.ReadAny());
         }
     }
 }

@@ -1247,25 +1247,13 @@ public sealed class CSharpBackend : ILanguageBackend
     {
         var alts = BuildOpenTypeAlternatives(document, module, typeName, any);
         var soft = ResolveOpenTypeSoft(document, module, any);
-        var kindName = typeName + "Kind";
 
-        sb.AppendLine($"public enum {kindName}");
-        sb.AppendLine("{");
-        foreach (var alt in alts)
-        {
-            sb.AppendLine($"    {alt.KindMember},");
-        }
-
-        sb.AppendLine("    Unknown,");
-        sb.AppendLine("}");
-        sb.AppendLine();
         sb.AppendLine($"public sealed class {typeName}");
         sb.AppendLine("{");
-        sb.AppendLine($"    public {kindName} Kind {{ get; private set; }}");
         foreach (var alt in alts)
         {
-            var propType = CsType(document, module, typeName, alt.KindMember, alt.Type, optional: true);
-            sb.AppendLine($"    public {propType} {alt.KindMember} {{ get; private set; }}");
+            var propType = CsType(document, module, typeName, alt.PropName, alt.Type, optional: true);
+            sb.AppendLine($"    public {propType} {alt.PropName} {{ get; private set; }}");
         }
 
         sb.AppendLine("    public Asn1Any? Unknown { get; private set; }");
@@ -1273,62 +1261,62 @@ public sealed class CSharpBackend : ILanguageBackend
 
         foreach (var alt in alts)
         {
-            var csType = CsType(document, module, typeName, alt.KindMember, alt.Type, optional: false);
-            var param = CamelCaseIdentifier(alt.KindMember);
+            var csType = CsType(document, module, typeName, alt.PropName, alt.Type, optional: false);
+            var param = CamelCaseIdentifier(alt.PropName);
             if (UnwrapAliases(document, module, alt.Type) is NullType)
             {
                 sb.AppendLine(
-                    $"    public static {typeName} From{alt.KindMember}(Asn1Null {param} = default) => new {typeName}");
+                    $"    public static {typeName} From{alt.PropName}(Asn1Null {param} = default) => new {typeName}");
             }
             else
             {
-                sb.AppendLine($"    public static {typeName} From{alt.KindMember}({csType} {param}) => new {typeName}");
+                sb.AppendLine($"    public static {typeName} From{alt.PropName}({csType} {param}) => new {typeName}");
             }
 
             sb.AppendLine("    {");
-            sb.AppendLine($"        Kind = {kindName}.{alt.KindMember},");
-            sb.AppendLine($"        {alt.KindMember} = {param},");
+            sb.AppendLine($"        {alt.PropName} = {param},");
             sb.AppendLine("    };");
             sb.AppendLine();
         }
 
         sb.AppendLine($"    public static {typeName} FromUnknown(Asn1Any value) => new {typeName}");
         sb.AppendLine("    {");
-        sb.AppendLine($"        Kind = {kindName}.Unknown,");
         sb.AppendLine("        Unknown = value,");
         sb.AppendLine("    };");
         sb.AppendLine();
 
         sb.AppendLine("    public void Encode(Asn1Writer writer)");
         sb.AppendLine("    {");
-        sb.AppendLine("        switch (Kind)");
-        sb.AppendLine("        {");
+        var first = true;
         foreach (var alt in alts)
         {
-            sb.AppendLine($"            case {kindName}.{alt.KindMember}:");
+            var cond = first ? "if" : "else if";
+            first = false;
+            sb.AppendLine($"        {cond} ({alt.PropName} != null)");
+            sb.AppendLine("        {");
             var propExpr = UnwrapAliases(document, module, alt.Type) is NullType
                 ? "Asn1Null.Value"
                 : IsValueOptionalWrapper(document, module, alt.Type)
-                    ? alt.KindMember + ".Value"
-                    : alt.KindMember + "!";
+                    ? alt.PropName + ".Value"
+                    : alt.PropName + "!";
             EmitEncodeValue(
                 sb,
                 document,
                 module,
                 typeName,
-                alt.KindMember,
+                alt.PropName,
                 alt.Type,
-                "                ",
+                "            ",
                 "writer",
                 propExpr);
-            sb.AppendLine("                break;");
+            sb.AppendLine("        }");
         }
 
-        sb.AppendLine($"            case {kindName}.Unknown:");
-        sb.AppendLine("                writer.WriteAny(Unknown!.Value);");
-        sb.AppendLine("                break;");
-        sb.AppendLine("            default: throw new Asn1Exception(\"Open type has no alternative.\");");
+        sb.AppendLine($"        {(first ? "if" : "else if")} (Unknown != null)");
+        sb.AppendLine("        {");
+        sb.AppendLine("            writer.WriteAny(Unknown.Value);");
         sb.AppendLine("        }");
+        sb.AppendLine("        else throw new Asn1Exception(\"Open type has no alternative.\");");
         sb.AppendLine("    }");
         sb.AppendLine();
 
@@ -1342,8 +1330,6 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine(
             $"    private static {typeName} Decode(Asn1Reader reader, string definedByKey, Asn1Tag? expectedTag)");
         sb.AppendLine("    {");
-        sb.AppendLine(
-            "        var raw = expectedTag is null ? reader.ReadAny() : reader.ReadAny(expectedTag.Value);");
         sb.AppendLine("        switch (definedByKey)");
         sb.AppendLine("        {");
         foreach (var alt in alts)
@@ -1354,35 +1340,49 @@ public sealed class CSharpBackend : ILanguageBackend
             }
 
             sb.AppendLine("            {");
-            sb.AppendLine("                try");
+            sb.AppendLine("                if (expectedTag is null)");
             sb.AppendLine("                {");
-            sb.AppendLine("                    var probe = raw.CreateReader(reader.Encoding, reader.Options);");
-            sb.Append("                    var decoded = ");
-            EmitDecodeExpr(sb, document, module, typeName, alt.KindMember, alt.Type, "probe");
-            sb.AppendLine(";");
-            sb.AppendLine("                    if (probe.Eof)");
+            sb.AppendLine(
+                $"                    if (reader.TryPeekTag(out var peeked) && {PeekMatchExpr(document, module, alt.Type, "peeked")})");
             sb.AppendLine("                    {");
-            sb.AppendLine($"                        return From{alt.KindMember}(decoded);");
+            sb.Append("                        return From" + alt.PropName + "(");
+            EmitDecodeExpr(sb, document, module, typeName, alt.PropName, alt.Type, "reader");
+            sb.AppendLine(");");
             sb.AppendLine("                    }");
             sb.AppendLine("                }");
-            sb.AppendLine("                catch (Asn1Exception)");
+            sb.AppendLine("                else");
             sb.AppendLine("                {");
+            sb.AppendLine(
+                "                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))");
+            sb.AppendLine("                    {");
+            sb.Append("                        return From" + alt.PropName + "(");
+            EmitDecodeExpr(
+                sb,
+                document,
+                module,
+                typeName,
+                alt.PropName,
+                alt.Type,
+                "reader",
+                forceTag: "expectedTag.Value");
+            sb.AppendLine(");");
+            sb.AppendLine("                    }");
             sb.AppendLine("                }");
             if (soft)
             {
-                sb.AppendLine("                return FromUnknown(raw);");
+                sb.AppendLine("                return FromUnknown(reader.ReadAny());");
             }
             else
             {
                 sb.AppendLine(
-                    $"                throw new Asn1Exception(\"Open-type content for key '\" + definedByKey + \"' does not match bound type '{EscapeCSharpString(alt.KindMember)}'.\");");
+                    $"                throw new Asn1Exception(\"Open-type content for key '\" + definedByKey + \"' does not match bound type '{EscapeCSharpString(alt.PropName)}'.\");");
             }
 
             sb.AppendLine("            }");
         }
 
         sb.AppendLine("            default:");
-        sb.AppendLine("                return FromUnknown(raw);");
+        sb.AppendLine("                return FromUnknown(reader.ReadAny());");
         sb.AppendLine("        }");
         sb.AppendLine("    }");
         sb.AppendLine("}");
@@ -1390,7 +1390,7 @@ public sealed class CSharpBackend : ILanguageBackend
 
     private sealed class OpenTypeAlternative
     {
-        public string KindMember { get; init; } = "";
+        public string PropName { get; init; } = "";
         public TypeExpr Type { get; init; } = null!;
         public List<string> Keys { get; init; } = new();
         public string ClrTypeKey { get; init; } = "";
@@ -1414,21 +1414,21 @@ public sealed class CSharpBackend : ILanguageBackend
                 continue;
             }
 
-            var kindMember = OpenTypeKindMemberName(document, module, binding.Type);
-            if (!usedNames.Add(kindMember))
+            var propName = OpenTypePropName(document, module, binding.Type);
+            if (!usedNames.Add(propName))
             {
                 var suffix = 2;
-                while (!usedNames.Add(kindMember + suffix))
+                while (!usedNames.Add(propName + suffix))
                 {
                     suffix++;
                 }
 
-                kindMember += suffix;
+                propName += suffix;
             }
 
             alts.Add(new OpenTypeAlternative
             {
-                KindMember = kindMember,
+                PropName = propName,
                 Type = binding.Type,
                 Keys = new List<string> { binding.Key },
                 ClrTypeKey = clrKey
@@ -1438,7 +1438,7 @@ public sealed class CSharpBackend : ILanguageBackend
         return alts;
     }
 
-    private string OpenTypeKindMemberName(IrDocument document, IrModule module, TypeExpr type)
+    private string OpenTypePropName(IrDocument document, IrModule module, TypeExpr type)
     {
         if (type is RefType reference)
         {

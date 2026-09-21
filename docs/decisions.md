@@ -82,14 +82,14 @@
 
 **Последствие.** `Asn1Reader` держит `_data`; `Source` и значения из `Read*` (`ReadOnlyMemory`, `Asn1Any` / `Asn1BitString` / `Asn1Integer`) по возможности **алиасят** этот массив. Lifetime views = lifetime буфера (или reader’а). Мутация буфера после decode — UB. Constructed BER (конкатенация сегментов) и materialize (`string` / `BigInteger` / `DateTimeOffset`) аллоцируют. Отвязка — `ToArray` / `Clone` на value-types. Codegen: OCTET STRING → `ReadOnlyMemory<byte>`.
 
-## ANY — `Asn1Any` или open-type (CHOICE-like) + `bindings`
+## ANY — `Asn1Any` или open-type + `bindings`
 
 **Причина.** В PKIX `parameters ANY DEFINED BY algorithm` и `AttributeValue ::= ANY` встречаются постоянно. Полноценный open-type в ASN.1 1994+ — information object classes (`CLASS`, object sets), которые вне профиля компилятора. Без таблицы OID → тип нельзя честно выбрать concrete decode; молчаливый пропуск TLV недопустим. Представлять open-type как `object` неудобно; `bool` для NULL — ещё хуже.
 
 **Последствие.**
 - Без `bindings`: runtime хранит `Asn1Tag` + октеты (`Asn1Any`); поле `definedBy` в IR информационное.
-- С `bindings` (sidecar `Module.Type.field` → `{ key, type }[]`): C# эмитит тип `Owner_Field` по образцу CHOICE — enum `…Kind`, фабрики `From…` / `FromUnknown`, свойства на альтернативу; ASN.1 NULL → `Asn1Null`.
-- Несовпадение TLV с типом из таблицы: `options.openType.mismatch` = `soft` (default, → `Unknown`/`Asn1Any`) или `strict` (→ `Asn1Exception`). Неизвестный ключ всегда → `Unknown`.
+- С `bindings` (sidecar `Module.Type.field` → `{ key, type }[]`): C# эмитит тип `Owner_Field` — фабрики `From…` / `FromUnknown` и nullable-свойства на альтернативу (дискриминант — какое свойство задано; отдельного `Kind` нет); ASN.1 NULL → `Asn1Null`.
+- Несовпадение **тега** TLV с ожидаемым для типа из таблицы: `options.openType.mismatch` = `soft` (default, → `Unknown`/`Asn1Any`) или `strict` (→ `Asn1Exception`). Содержимое при совпавшем теге разбирается обычным decode (ошибки длины и т.п. не глотаются). Неизвестный ключ всегда → `Unknown`.
 - RFC 5912 as published по-прежнему вне профиля (беклог 6c/6d).
 
 ## Runtime: мягкое чтение неканоничных форм + опции строгости
