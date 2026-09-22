@@ -261,20 +261,25 @@ public sealed class Asn1Writer
         _buffer.Write(tlv);
     }
 
-    /// <summary>Writes ANY as a complete TLV using the tag and contents from <paramref name="value"/>.</summary>
-    public void WriteAny(Asn1Any value)
-    {
-        WriteTlv(value.Tag, value.ContentsMemory.Span, definiteOnly: Encoding == Asn1Encoding.Der);
-    }
+    /// <summary>Writes ANY by appending the stored TLV as-is (bit-exact).</summary>
+    public void WriteAny(Asn1Any value) => WriteRaw(value.EncodedMemory.Span);
 
     /// <summary>
     /// Writes ANY with an IMPLICIT outer tag: class/number from <paramref name="tag"/>,
-    /// constructed flag preserved from <paramref name="value"/>.
+    /// constructed flag preserved from <paramref name="value"/>; value octets taken from the stored TLV.
     /// </summary>
     public void WriteAny(Asn1Tag tag, Asn1Any value)
     {
         var wire = new Asn1Tag(tag.TagClass, tag.Number, value.Tag.Constructed);
         WriteTlv(wire, value.ContentsMemory.Span, definiteOnly: Encoding == Asn1Encoding.Der);
+    }
+
+    /// <summary>Builds a minimal definite-length TLV into a new array.</summary>
+    internal static byte[] EncodeDefiniteTlv(Asn1Tag tag, ReadOnlySpan<byte> contents)
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteTlv(tag, contents, definiteOnly: true);
+        return writer.Encode();
     }
 
     private void WriteConstructed(Asn1Tag tag, Action<Asn1Writer> content, bool sortDerSetOf)

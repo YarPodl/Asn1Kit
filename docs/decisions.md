@@ -87,7 +87,7 @@
 **Причина.** В PKIX `parameters ANY DEFINED BY algorithm` и `AttributeValue ::= ANY` встречаются постоянно. Полноценный open-type в ASN.1 1994+ — information object classes (`CLASS`, object sets), которые вне профиля компилятора. Без таблицы OID → тип нельзя честно выбрать concrete decode; молчаливый пропуск TLV недопустим. Представлять open-type как `object` неудобно; `bool` для NULL — ещё хуже.
 
 **Последствие.**
-- Без `bindings`: runtime хранит `Asn1Tag` + октеты (`Asn1Any`); поле `definedBy` в IR информационное.
+- Без `bindings`: runtime хранит полный TLV (`Asn1Any.EncodedMemory`); поле `definedBy` в IR информационное. `WriteAny` пишет байты as-is (`WriteRaw`); IMPLICIT-перегрузка снимает value-октеты и собирает новый TLV.
 - С `bindings` (sidecar `Module.Type.field` → `{ key, type }[]`): C# эмитит тип `Owner_Field` — фабрики `From…` / `FromUnknown` и nullable-свойства на альтернативу (дискриминант — какое свойство задано; отдельного `Kind` нет); ASN.1 NULL → `Asn1Null`.
 - Несовпадение **тега** TLV с ожидаемым для типа из таблицы: `options.openType.mismatch` = `soft` (default, → `Unknown`/`Asn1Any`) или `strict` (→ `Asn1Exception`). Содержимое при совпавшем теге разбирается обычным decode (ошибки длины и т.п. не глотаются). Неизвестный ключ всегда → `Unknown`.
 - RFC 5912 as published по-прежнему вне профиля (беклог 6c/6d).

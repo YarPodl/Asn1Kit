@@ -172,6 +172,7 @@ public sealed class RuntimeTests
         AssertSameArray(data, bits.Memory, expectedOffset: 11);
 
         var any = reader.ReadAny();
+        AssertSameArray(data, any.EncodedMemory, expectedOffset: 12);
         AssertSameArray(data, any.ContentsMemory, expectedOffset: 14);
         Assert.True(reader.Eof);
         Assert.True(MemoryMarshal.TryGetArray(reader.Source, out ArraySegment<byte> source));
@@ -274,8 +275,9 @@ public sealed class RuntimeTests
         ReadOnlyMemory<byte> payload = new byte[] { 0x01, 0x02 };
         var writer = new Asn1Writer(Asn1Encoding.Der);
         writer.WriteOctetString(Asn1Tag.OctetString, payload.Span);
-        var any = new Asn1Any(Asn1Tag.OctetString, payload);
+        var any = Asn1Any.FromTagAndContents(Asn1Tag.OctetString, payload.Span);
         Assert.Equal(payload.ToArray(), any.ContentsMemory.ToArray());
+        Assert.Equal(new byte[] { 0x04, 0x02, 0x01, 0x02 }, any.ToArray());
 
         var rewrite = new Asn1Writer(Asn1Encoding.Der);
         rewrite.WriteAny(any);
@@ -361,7 +363,7 @@ public sealed class RuntimeTests
     [Fact]
     public void Any_DerRoundTripsTagAndContents()
     {
-        var value = new Asn1Any(Asn1Tag.Integer, new byte[] { 0x05 });
+        var value = Asn1Any.FromTagAndContents(Asn1Tag.Integer, new byte[] { 0x05 });
         var writer = new Asn1Writer(Asn1Encoding.Der);
         writer.WriteAny(value);
         var bytes = writer.Encode();
@@ -370,7 +372,8 @@ public sealed class RuntimeTests
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
         var decoded = reader.ReadAny();
         Assert.Equal(Asn1Tag.Integer, decoded.Tag);
-        Assert.Equal(new byte[] { 0x05 }, decoded.ToArray());
+        Assert.Equal(new byte[] { 0x02, 0x01, 0x05 }, decoded.ToArray());
+        Assert.Equal(new byte[] { 0x05 }, decoded.ContentsMemory.ToArray());
         Assert.True(reader.Eof);
 
         var rewrite = new Asn1Writer(Asn1Encoding.Der);
@@ -390,7 +393,7 @@ public sealed class RuntimeTests
     [Fact]
     public void Any_ImplicitTag_RoundTrips()
     {
-        var value = new Asn1Any(Asn1Tag.Null, Array.Empty<byte>());
+        var value = Asn1Any.FromTagAndContents(Asn1Tag.Null, Array.Empty<byte>());
         var context = new Asn1Tag(Asn1TagClass.ContextSpecific, 0);
         var writer = new Asn1Writer(Asn1Encoding.Der);
         writer.WriteAny(context, value);
@@ -400,7 +403,8 @@ public sealed class RuntimeTests
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
         var decoded = reader.ReadAny(context);
         Assert.Equal(context, decoded.Tag);
-        Assert.Equal(0, decoded.Span.Length);
+        Assert.Equal(new byte[] { 0x80, 0x00 }, decoded.ToArray());
+        Assert.Equal(0, decoded.ContentsMemory.Length);
     }
 
     [Fact]
@@ -411,8 +415,34 @@ public sealed class RuntimeTests
         var reader = new Asn1Reader(ber, Asn1Encoding.Ber);
         var decoded = reader.ReadAny();
         Assert.Equal(Asn1Tag.Sequence, decoded.Tag);
-        Assert.Equal(new byte[] { 0x02, 0x01, 0x01 }, decoded.ToArray());
+        Assert.Equal(ber, decoded.ToArray());
+        Assert.Equal(new byte[] { 0x02, 0x01, 0x01 }, decoded.ContentsMemory.ToArray());
         Assert.True(reader.Eof);
+
+        var rewrite = new Asn1Writer(Asn1Encoding.Ber);
+        rewrite.WriteAny(decoded);
+        Assert.Equal(ber, rewrite.Encode());
+    }
+
+    [Fact]
+    public void Any_PreservesNonMinimalLengthOnRewrite()
+    {
+        var encoded = new byte[] { 0x02, 0x81, 0x01, 0x05 };
+        var reader = new Asn1Reader(encoded, Asn1Encoding.Ber, Asn1ReaderOptions.AllowNonMinimalLength);
+        var decoded = reader.ReadAny();
+        Assert.Equal(encoded, decoded.ToArray());
+
+        var rewrite = new Asn1Writer(Asn1Encoding.Der);
+        rewrite.WriteAny(decoded);
+        Assert.Equal(encoded, rewrite.Encode());
+    }
+
+    [Fact]
+    public void Any_Ctor_RejectsTrailingOctets()
+    {
+        var bytes = new byte[] { 0x05, 0x00, 0x05, 0x00 };
+        var ex = Assert.Throws<Asn1Exception>(() => new Asn1Any(bytes));
+        Assert.Contains("single complete TLV", ex.Message);
     }
 
     [Fact]

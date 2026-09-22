@@ -434,7 +434,7 @@ END
         Assert.Null(algType.GetProperty("Parameters")!.GetValue(decodedNoParams));
 
         // With NULL parameters
-        var nullAny = new Asn1Any(Asn1Tag.Null, Array.Empty<byte>());
+        var nullAny = Asn1Any.FromTagAndContents(Asn1Tag.Null, Array.Empty<byte>());
         algType.GetProperty("Parameters")!.SetValue(alg, nullAny);
         var expectedWithNull = new byte[]
         {
@@ -450,7 +450,8 @@ END
             .Invoke(null, new object[] { new Asn1Reader(expectedWithNull, Asn1Encoding.Der) })!;
         var parameters = (Asn1Any)algType.GetProperty("Parameters")!.GetValue(decodedWith)!;
         Assert.Equal(Asn1Tag.Null, parameters.Tag);
-        Assert.Equal(0, parameters.Span.Length);
+        Assert.Equal(0, parameters.ContentsMemory.Length);
+        Assert.Equal(new byte[] { 0x05, 0x00 }, parameters.ToArray());
 
         var rewrite = new Asn1Writer(Asn1Encoding.Der);
         algType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(decodedWith, new object[] { rewrite });
@@ -459,7 +460,7 @@ END
         // Collapsed ANY alias: Value is Asn1Any directly
         var attr = Activator.CreateInstance(attrType)!;
         attrType.GetProperty("Type")!.SetValue(attr, "2.5.4.3");
-        attrType.GetProperty("Value")!.SetValue(attr, new Asn1Any(Asn1Tag.Utf8String, Encoding.UTF8.GetBytes("Ann")));
+        attrType.GetProperty("Value")!.SetValue(attr, Asn1Any.FromTagAndContents(Asn1Tag.Utf8String, Encoding.UTF8.GetBytes("Ann")));
 
         var expectedAttr = new byte[]
         {
@@ -475,7 +476,7 @@ END
             .Invoke(null, new object[] { new Asn1Reader(expectedAttr, Asn1Encoding.Der) })!;
         var decodedAny = (Asn1Any)attrType.GetProperty("Value")!.GetValue(decodedAttr)!;
         Assert.Equal(Asn1Tag.Utf8String, decodedAny.Tag);
-        Assert.Equal("Ann", Encoding.UTF8.GetString(decodedAny.Span));
+        Assert.Equal("Ann", Encoding.UTF8.GetString(decodedAny.ContentsMemory.Span));
 
         var broken = new byte[] { 0x30, 0x02, 0x05, 0x00 };
         var ex = Assert.Throws<TargetInvocationException>(() =>

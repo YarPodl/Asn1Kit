@@ -470,23 +470,27 @@ public sealed class Asn1Reader
         return true;
     }
 
-    /// <summary>Reads the next complete TLV as ANY (tag + value octets).</summary>
+    /// <summary>Reads the next complete TLV as ANY (full encoded TLV including tag and length).</summary>
     public Asn1Any ReadAny()
     {
+        var start = _offset;
         var (tag, contents, _) = ReadTlv();
-        return new Asn1Any(tag, contents);
+        var encoded = _data.AsMemory(start, _offset - start);
+        return Asn1Any.Wrap(tag, encoded, contents);
     }
 
-    /// <summary>Reads ANY expecting a specific tag (IMPLICIT); returns the wire tag and contents.</summary>
+    /// <summary>Reads ANY expecting a specific tag (IMPLICIT); stores the wire TLV as-is.</summary>
     public Asn1Any ReadAny(Asn1Tag expected)
     {
+        var start = _offset;
         var (tag, contents, _) = ReadTlv();
         if (!tag.MatchesIgnoreConstructed(expected))
         {
             throw new Asn1Exception($"Expected tag {expected}, found {tag}.");
         }
 
-        return new Asn1Any(tag, contents);
+        var encoded = _data.AsMemory(start, _offset - start);
+        return Asn1Any.Wrap(tag, encoded, contents);
     }
 
     public (Asn1Tag Tag, ReadOnlyMemory<byte> Contents, bool Constructed) ReadTlv()

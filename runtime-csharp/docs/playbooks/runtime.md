@@ -10,7 +10,7 @@
 | [Asn1Writer.cs](../../src/Asn1Kit.Runtime/Asn1Writer.cs) | Публичные `Write*` / `Encode` / `WriteRaw`; внутри (`private`) `WriteTag` / `WriteLength` / `WriteTlv` / `WritePrimitive` / `WriteConstructed` (один буфер + резерв длины) |
 | [Asn1Reader.cs](../../src/Asn1Kit.Runtime/Asn1Reader.cs) | Чтение TLV, definite и indefinite length, `TryPeekTag`, `Eof`, публичные `ReadValue` / `ReadTlv`, ctors: `byte[]`, `(byte[], offset, length)`, `ReadOnlyMemory<byte>` |
 | [Asn1BitString.cs](../../src/Asn1Kit.Runtime/Asn1BitString.cs) | `Asn1BitString` (Memory wrap / `CopyFrom`), `UnusedBits`, indexer MSB-first, `FromBits` |
-| [Asn1Any.cs](../../src/Asn1Kit.Runtime/Asn1Any.cs) | `Asn1Any` (`Tag` + `ContentsMemory`); Memory wrap / `CopyFrom` |
+| [Asn1Any.cs](../../src/Asn1Kit.Runtime/Asn1Any.cs) | `Asn1Any` (полный TLV `EncodedMemory` + `ContentsMemory`; `FromTagAndContents` / `CopyFrom`) |
 | [Asn1TextCodec.cs](../../src/Asn1Kit.Runtime/Asn1TextCodec.cs) | `internal`: encode/decode строк и времени (наборы символов, DER/BER-формы) |
 | [Asn1Integer.cs](../../src/Asn1Kit.Runtime/Asn1Integer.cs) | Value type: DER contents as Memory (view from reader); `Zero`/`default`=0; `FromContents` / `CopyFrom` / `FromBigInteger` / `GetInt32`…; hot для codegen `der` |
 | [Asn1Primitives.cs](../../src/Asn1Kit.Runtime/Asn1Primitives.cs) | `Asn1Boolean` / `Asn1Enumerated` / `Asn1OctetString` / … — warm обёртки; **C# backend эмитит `writer.Write*` / `reader.Read*` напрямую** |
