@@ -1,5 +1,5 @@
 using System.Security.Cryptography.X509Certificates;
-using Asn1Kit.Pkix;
+using Asn1Kit.Pkix.Bench;
 using Asn1Kit.Runtime;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;

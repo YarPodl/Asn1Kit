@@ -1,12 +1,12 @@
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
-using Asn1Kit.Pkix;
+using Asn1Kit.Pkix.Bench;
 using Asn1Kit.Runtime;
 using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Asn1.X509;
-using Asn1KitContentInfo = Asn1Kit.Cms.ContentInfo;
+using Asn1KitContentInfo = Asn1Kit.Cms.Bench.ContentInfo;
 using BcContentInfo = Org.BouncyCastle.Asn1.Cms.ContentInfo;
 using BcCertificateList = Org.BouncyCastle.Asn1.X509.CertificateList;
+using BcCertificateStructure = Org.BouncyCastle.Asn1.X509.X509CertificateStructure;
 
 namespace Asn1Kit.Pkix.Benchmarks;
 
@@ -24,7 +24,7 @@ internal static class Smoke
             _ = bcl.Thumbprint;
         }
 
-        _ = X509CertificateStructure.GetInstance(Asn1Object.FromByteArray(certDer));
+        _ = BcCertificateStructure.GetInstance(Asn1Object.FromByteArray(certDer));
 
         _ = CertificateList.Decode(new Asn1Reader(crlDer, Asn1Encoding.Der));
         _ = BcCertificateList.GetInstance(Asn1Object.FromByteArray(crlDer));

@@ -53,7 +53,15 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- compile `
 # пересборка golden C# (после правок генератора или IR; namespaces уже в cms-2004.json)
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/ir/cms-2004.json --lang csharp -o runtime-csharp/generated/Asn1Kit.Pkix
 
-# бенчмарки Certificate / CRL / CMS vs BCL и BouncyCastle (не входят в dotnet test)
+# bench IR + C# (options из cms-2004-bench.patch.json; namespaces *.Bench, lazy CertificateChoices.certificate)
+dotnet run --project compiler/src/Asn1Kit.Cli -- generate `
+  -i compiler/fixtures/ir/cms-2004.json `
+  --patch compiler/fixtures/ir/cms-2004-bench.patch.json `
+  --ir-output compiler/fixtures/ir/cms-2004-bench.json `
+  --lang csharp `
+  -o runtime-csharp/generated/Asn1Kit.Pkix.Bench
+
+# бенчмарки Certificate / CRL / CMS vs BCL и BouncyCastle (не входят в dotnet test; ссылаются на Asn1Kit.Pkix.Bench)
 dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks
 ```
 
@@ -68,6 +76,7 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 | [compiler/src/Asn1Kit.Ir/IrValidator.cs](compiler/src/Asn1Kit.Ir/IrValidator.cs) | Семантические проверки поверх схемы |
 | [compiler/src/Asn1Kit.Ir/IrSerializer.cs](compiler/src/Asn1Kit.Ir/IrSerializer.cs) | `ToJson` / `FromJson` / `Load` / `Save` / `ValidateSchema` |
 | [compiler/src/Asn1Kit.Ir/IrOptions.cs](compiler/src/Asn1Kit.Ir/IrOptions.cs) | Чтение `options.csharp.*` / `options.generate`; CLI `-O path=value` |
+| [compiler/src/Asn1Kit.Ir/IrOptionsPatch.cs](compiler/src/Asn1Kit.Ir/IrOptionsPatch.cs) | Sidecar options-patch (`modules` / `fields`); CLI `--patch` |
 | [schemas/asn1kit-ir-v1.json](schemas/asn1kit-ir-v1.json) | JSON Schema Draft 2020-12, единственный контракт IR |
 | [compiler/src/Asn1Kit.Compiler/Asn1Lexer.cs](compiler/src/Asn1Kit.Compiler/Asn1Lexer.cs) | Токены, ключевые слова |
 | [compiler/src/Asn1Kit.Compiler/Asn1Parser.cs](compiler/src/Asn1Kit.Compiler/Asn1Parser.cs) | Парсер X.680, отказы «вне профиля» |
@@ -77,6 +86,7 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 | [compiler/src/Asn1Kit.Codegen.CSharp/CSharpBackend.cs](compiler/src/Asn1Kit.Codegen.CSharp/CSharpBackend.cs) | Генерация `.g.cs`, `EnsureBackendSupport` |
 | [runtime-csharp/src/Asn1Kit.Runtime/](runtime-csharp/src/Asn1Kit.Runtime/) | `Asn1Tag`, `Asn1Writer`, `Asn1Reader`, `Asn1Primitives` |
 | [runtime-csharp/generated/Asn1Kit.Pkix/](runtime-csharp/generated/Asn1Kit.Pkix/) | Golden C# PKIX + CMS; руками не править `*.g.cs` |
+| [runtime-csharp/generated/Asn1Kit.Pkix.Bench/](runtime-csharp/generated/Asn1Kit.Pkix.Bench/) | Bench C# (`Asn1Kit.Pkix.Bench` / `Asn1Kit.Cms.Bench`); из patch; руками не править `*.g.cs` |
 | [compiler/src/Asn1Kit.Cli/Program.cs](compiler/src/Asn1Kit.Cli/Program.cs) | Команды `compile` и `generate` |
 | [compiler/tests/Asn1Kit.Compiler.Tests/](compiler/tests/Asn1Kit.Compiler.Tests/) | IR, компилятор, codegen round-trip |
 | [runtime-csharp/tests/Asn1Kit.Runtime.Tests/](runtime-csharp/tests/Asn1Kit.Runtime.Tests/) | BER/DER матрица, oracle, `RuntimeTests` |
@@ -87,7 +97,10 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 - [compiler/fixtures/ir/pkix1-explicit88.json](compiler/fixtures/ir/pkix1-explicit88.json) — **golden-артефакт**: генерируется CLI из `.asn`, руками не правится.
 - [compiler/fixtures/ir/pkix1-implicit88.json](compiler/fixtures/ir/pkix1-implicit88.json) — **golden**: Explicit88 + Implicit88 (multi-module `IMPORTS`), руками не правится.
 - [compiler/fixtures/ir/cms-2004.json](compiler/fixtures/ir/cms-2004.json) — **golden**: Explicit + Implicit + CMS; namespaces `Asn1Kit.Pkix` / `Asn1Kit.Cms` в `options`.
+- [compiler/fixtures/ir/cms-2004-bench.patch.json](compiler/fixtures/ir/cms-2004-bench.patch.json) — **source of truth** bench options (`*.Bench` namespaces, `lazy` на `CertificateChoices.certificate`).
+- [compiler/fixtures/ir/cms-2004-bench.json](compiler/fixtures/ir/cms-2004-bench.json) — **производный** IR: golden + patch; не в `MatchesGoldenIr`.
 - [runtime-csharp/generated/Asn1Kit.Pkix/](runtime-csharp/generated/Asn1Kit.Pkix/) — **golden C#**: из `cms-2004.json` (`Asn1Kit.Pkix` + `Asn1Kit.Cms`), руками не править `*.g.cs`.
+- [runtime-csharp/generated/Asn1Kit.Pkix.Bench/](runtime-csharp/generated/Asn1Kit.Pkix.Bench/) — **bench C#**: из `cms-2004-bench.json`, руками не править `*.g.cs`.
 - [compiler/fixtures/ir/example.json](compiler/fixtures/ir/example.json) — **ручная** фикстура с правками `options`; компилятором не воспроизводится.
 - [runtime-csharp/fixtures/ber-der/](runtime-csharp/fixtures/ber-der/) — hex-векторы runtime.
 - [runtime-csharp/fixtures/cms/](runtime-csharp/fixtures/cms/) — attached SignedData для бенчмарков.

@@ -21,20 +21,24 @@ internal static class Program
             IsRequired = true
         };
         var compileOptions = CreateOptionOverrides();
-        var compileBindings = new Option<FileInfo[]>("--bindings", "Open-type bindings JSON (Module.Type.field → bindings). Repeatable.")
-        {
-            Arity = ArgumentArity.ZeroOrMore,
-            AllowMultipleArgumentsPerToken = true
-        };
+        var compileBindings = CreateBindingsOption();
+        var compilePatches = CreatePatchOption();
 
         var compile = new Command("compile", "Compile ASN.1 modules to JSON IR")
         {
             compileInputs,
             compileOutput,
             compileOptions,
-            compileBindings
+            compileBindings,
+            compilePatches
         };
-        compile.SetHandler(Compile, compileInputs, compileOutput, compileOptions, compileBindings);
+        compile.SetHandler(
+            Compile,
+            compileInputs,
+            compileOutput,
+            compileOptions,
+            compileBindings,
+            compilePatches);
 
         var generateInput = new Option<FileInfo>(new[] { "--input", "-i" }, "JSON IR or ASN.1 module")
         {
@@ -49,11 +53,9 @@ internal static class Program
             IsRequired = true
         };
         var generateOptions = CreateOptionOverrides();
-        var generateBindings = new Option<FileInfo[]>("--bindings", "Open-type bindings JSON applied before generate. Repeatable.")
-        {
-            Arity = ArgumentArity.ZeroOrMore,
-            AllowMultipleArgumentsPerToken = true
-        };
+        var generateBindings = CreateBindingsOption();
+        var generatePatches = CreatePatchOption();
+        var irOutput = new Option<FileInfo?>("--ir-output", "Write IR JSON after bindings/patch (optional)");
 
         var generate = new Command("generate", "Generate code from JSON IR or ASN.1")
         {
@@ -61,9 +63,19 @@ internal static class Program
             language,
             generateOutput,
             generateOptions,
-            generateBindings
+            generateBindings,
+            generatePatches,
+            irOutput
         };
-        generate.SetHandler(Generate, generateInput, language, generateOutput, generateOptions, generateBindings);
+        generate.SetHandler(
+            Generate,
+            generateInput,
+            language,
+            generateOutput,
+            generateOptions,
+            generateBindings,
+            generatePatches,
+            irOutput);
 
         var root = new RootCommand("Asn1Kit — compile ASN.1 and generate codecs")
         {
@@ -80,7 +92,26 @@ internal static class Program
             Arity = ArgumentArity.ZeroOrMore
         };
 
-    private static void Compile(FileInfo[] inputs, FileInfo output, string[] optionOverrides, FileInfo[]? bindings)
+    private static Option<FileInfo[]> CreateBindingsOption() =>
+        new("--bindings", "Open-type bindings JSON (Module.Type.field → bindings). Repeatable.")
+        {
+            Arity = ArgumentArity.ZeroOrMore,
+            AllowMultipleArgumentsPerToken = true
+        };
+
+    private static Option<FileInfo[]> CreatePatchOption() =>
+        new("--patch", "Options patch JSON (modules / fields Module.Type.field). Repeatable.")
+        {
+            Arity = ArgumentArity.ZeroOrMore,
+            AllowMultipleArgumentsPerToken = true
+        };
+
+    private static void Compile(
+        FileInfo[] inputs,
+        FileInfo output,
+        string[] optionOverrides,
+        FileInfo[]? bindings,
+        FileInfo[]? patches)
     {
         var missing = inputs.FirstOrDefault(i => !i.Exists);
         if (missing is not null)
@@ -91,6 +122,7 @@ internal static class Program
         var document = new Asn1Compiler().CompileFiles(inputs.Select(i => i.FullName));
         IrOptions.ApplyToModules(document, optionOverrides ?? Array.Empty<string>());
         ApplyBindings(document, bindings);
+        ApplyPatches(document, patches);
 
         output.Directory?.Create();
         IrSerializer.Save(document, output.FullName);
@@ -102,7 +134,9 @@ internal static class Program
         string language,
         DirectoryInfo output,
         string[] optionOverrides,
-        FileInfo[]? bindings)
+        FileInfo[]? bindings,
+        FileInfo[]? patches,
+        FileInfo? irOutput)
     {
         if (!input.Exists)
         {
@@ -112,6 +146,14 @@ internal static class Program
         var document = LoadDocument(input);
         IrOptions.ApplyToModules(document, optionOverrides ?? Array.Empty<string>());
         ApplyBindings(document, bindings);
+        ApplyPatches(document, patches);
+
+        if (irOutput is not null)
+        {
+            irOutput.Directory?.Create();
+            IrSerializer.Save(document, irOutput.FullName);
+            Console.WriteLine($"Wrote {irOutput.FullName}");
+        }
 
         var generator = new CodeGenerator(new ILanguageBackend[] { new CSharpBackend() });
         var files = generator.Generate(document, language);
@@ -145,6 +187,24 @@ internal static class Program
             }
 
             OpenTypeBindings.ApplyFile(document, file.FullName);
+        }
+    }
+
+    private static void ApplyPatches(IrDocument document, FileInfo[]? patches)
+    {
+        if (patches is null)
+        {
+            return;
+        }
+
+        foreach (var file in patches)
+        {
+            if (!file.Exists)
+            {
+                throw new FileNotFoundException($"Options patch file not found: {file.FullName}");
+            }
+
+            IrOptionsPatch.ApplyFile(document, file.FullName);
         }
     }
 

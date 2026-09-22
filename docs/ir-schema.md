@@ -107,7 +107,10 @@
 | `options.openType.mismatch` | модуль / документ / тип `any` | При известном ключе bindings, если **тег** TLV не совпал с типом: `soft` (default) → `Unknown`/`Asn1Any`; `strict` → `Asn1Exception`. |
 | `options.lazy` | поле / тип / модуль | `true` — отложенный разбор SEQUENCE/SET и SEQUENCE OF/SET OF (C#: `Asn1Lazy<T>` / `Asn1Lazy<List<T>>`). Разрешение: component → TypeExpr → typedef → module; default `false`. |
 
+Sidecar options-patch (CLI `--patch`, API `IrOptionsPatch`): JSON `{ "modules": { "<Module>": { … } }, "fields": { "<Module>.<Type>.<field>": { … } } }` — deep-merge в `options`. Неизвестный module/type/field → ошибка. Пример: [cms-2004-bench.patch.json](../compiler/fixtures/ir/cms-2004-bench.patch.json).
+
 ## Примеры
 
 - [compiler/fixtures/ir/example.json](../compiler/fixtures/ir/example.json) — минимальный SEQUENCE
 - [compiler/fixtures/ir/pkix1-explicit88.json](../compiler/fixtures/ir/pkix1-explicit88.json) — RFC 5280 Appendix A.1
+- [compiler/fixtures/ir/cms-2004-bench.json](../compiler/fixtures/ir/cms-2004-bench.json) — производный bench IR (golden + patch)

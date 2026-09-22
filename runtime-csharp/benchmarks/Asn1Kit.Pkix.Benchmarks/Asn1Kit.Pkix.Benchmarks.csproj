@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\generated\Asn1Kit.Pkix\Asn1Kit.Pkix.csproj" />
+    <ProjectReference Include="..\..\generated\Asn1Kit.Pkix.Bench\Asn1Kit.Pkix.Bench.csproj" />
   </ItemGroup>
 
 </Project>

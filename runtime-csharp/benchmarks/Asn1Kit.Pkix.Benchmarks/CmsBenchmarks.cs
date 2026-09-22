@@ -3,7 +3,7 @@ using Asn1Kit.Runtime;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using Org.BouncyCastle.Asn1;
-using Asn1KitContentInfo = Asn1Kit.Cms.ContentInfo;
+using Asn1KitContentInfo = Asn1Kit.Cms.Bench.ContentInfo;
 using BcContentInfo = Org.BouncyCastle.Asn1.Cms.ContentInfo;
 
 namespace Asn1Kit.Pkix.Benchmarks;

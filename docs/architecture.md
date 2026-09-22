@@ -44,7 +44,7 @@ C++ планируется как backend в `compiler/` и runtime в `runtime-
 
 Единственный контракт — JSON со схемой `schemas/asn1kit-ir-v1.json`. Поле `irVersion`. Словари `options` расширяемы. Генератор читает `options.csharp.*` и `options.generate`.
 
-`asn1kit compile` перезаписывает IR из ASN.1. Правки `options` вносите в JSON перед `generate`, либо не пересобирайте IR.
+`asn1kit compile` перезаписывает IR из ASN.1. Правки `options` вносите в JSON перед `generate`, либо не пересобирайте IR. Альтернатива — sidecar options-patch (`IrOptionsPatch` / CLI `--patch`): deep-merge в `module.Options` и в `IrComponent.Options` у SEQUENCE/SET/CHOICE (`Module.Type.field`). На `generate` можно записать результат через `--ir-output` (так собирается bench IR).
 
 Компилятор делает двухфазный резолв значений: сначала собирает все type/value assignments модулей, затем разворачивает OID-цепочки, подставляет `ub-*` в constraints и `DEFAULT`. Это нужно, потому что в реальных модулях (например PKIX1Explicit88) upper bounds объявлены в конце файла.
 

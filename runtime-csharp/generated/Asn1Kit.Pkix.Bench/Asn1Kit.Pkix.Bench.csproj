@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Asn1Kit.Pkix.Bench</RootNamespace>
+    <!-- Generated codecs: non-nullable props filled by Decode; suppress until backend emits initializers. -->
+    <NoWarn>$(NoWarn);CS8618;CS8602;CS8604;CS8629</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Asn1Kit.Runtime\Asn1Kit.Runtime.csproj" />
+  </ItemGroup>
+
+</Project>

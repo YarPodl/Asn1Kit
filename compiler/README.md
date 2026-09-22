@@ -25,6 +25,7 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/i
 
 # -O / --option path=value — override module.options (repeatable); same flag on compile
 # --bindings — open-type overlay (Module.Type.field → OID/INTEGER → type); repeatable
+# --patch — options overlay (modules / fields Module.Type.field); repeatable; generate also has --ir-output
 # пересборка golden-фикстур
 dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/pkix1-explicit88.asn -o compiler/fixtures/ir/pkix1-explicit88.json --bindings compiler/fixtures/opentype/pkix-bindings.json
 dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/pkix1-explicit88.asn -i compiler/fixtures/asn1/pkix1-implicit88.asn -o compiler/fixtures/ir/pkix1-implicit88.json --bindings compiler/fixtures/opentype/pkix-bindings.json
@@ -39,6 +40,14 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- compile `
 
 # пересборка golden C# (PKIX + CMS)
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/ir/cms-2004.json --lang csharp -o runtime-csharp/generated/Asn1Kit.Pkix
+
+# bench IR + C# (patch → namespaces *.Bench + options.lazy)
+dotnet run --project compiler/src/Asn1Kit.Cli -- generate `
+  -i compiler/fixtures/ir/cms-2004.json `
+  --patch compiler/fixtures/ir/cms-2004-bench.patch.json `
+  --ir-output compiler/fixtures/ir/cms-2004-bench.json `
+  --lang csharp `
+  -o runtime-csharp/generated/Asn1Kit.Pkix.Bench
 ```
 
 ## Фикстуры
@@ -51,10 +60,13 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/i
 | `fixtures/ir/pkix1-explicit88.json` | **Golden**: только через CLI (+ `--bindings`), руками не править |
 | `fixtures/ir/pkix1-implicit88.json` | **Golden**: Explicit + Implicit (оба `-i`) + `--bindings`, руками не править |
 | `fixtures/ir/cms-2004.json` | **Golden**: Explicit + Implicit + CMS + оба bindings; namespaces в `options` |
+| `fixtures/ir/cms-2004-bench.patch.json` | Bench options overlay (`*.Bench`, `lazy` на `CertificateChoices.certificate`) |
+| `fixtures/ir/cms-2004-bench.json` | **Производный**: golden + patch; не в `MatchesGoldenIr` |
 | `fixtures/ir/example.json` | **Ручная**: `options.csharp.*`; компилятором не пересобирать |
 | `../runtime-csharp/generated/Asn1Kit.Pkix/*.g.cs` | **Golden C#**: из `cms-2004.json`, руками не править |
+| `../runtime-csharp/generated/Asn1Kit.Pkix.Bench/*.g.cs` | **Bench C#**: из patch / `cms-2004-bench.json`, руками не править |
 
-Golden IR сверяют `PkixExplicit88Tests` / `PkixImplicit88Tests` / `Cms2004Tests`; golden C# — `PkixGeneratedCodeTests`. Diff фикстуры — часть ревью.
+Golden IR сверяют `PkixExplicit88Tests` / `PkixImplicit88Tests` / `Cms2004Tests`; golden C# — `PkixGeneratedCodeTests`; bench IR — `Cms2004BenchTests` / `IrOptionsPatchTests`. Diff фикстуры — часть ревью.
 
 ## Плейбуки
 

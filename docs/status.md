@@ -31,6 +31,7 @@
 - Значения IR: `integer`, `boolean`, `null`, `oid`, `string`, `bitString`, `ref` (в скомпилированном IR обычно раскрыт).
 - `EXPLICIT` / `IMPLICIT` / `AUTOMATIC TAGS`; `IMPORTS` между переданными файлами.
 - Open-type `bindings`: CLI `--bindings` / overlay; ключи `Module.Type.field`.
+- Options patch: CLI `--patch` / `IrOptionsPatch`; `modules` и `fields` (`Module.Type.field`, в т.ч. CHOICE); bench — [cms-2004-bench.patch.json](../compiler/fixtures/ir/cms-2004-bench.patch.json).
 - `SIZE` / диапазоны → `constraint.size` / `constraint.value`; прочее → `constraint.unsupported`.
 - Вне профиля (явный `CompileException`): `CLASS`/IOC, `COMPONENTS OF`, `REAL`, `EXTERNAL`, параметризованные типы.
 
@@ -49,7 +50,7 @@
 
 ## Бенчмарки PKIX/CMS
 
-[runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks](../runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks/) — BenchmarkDotNet Decode/Encode для `Certificate`, `CertificateList`, CMS `ContentInfo` (attached SignedData). Сравнение: Asn1Kit, BCL (`X509Certificate2` / `SignedCms`), BouncyCastle. Не в gate `dotnet test`.
+[runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks](../runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks/) — BenchmarkDotNet Decode/Encode для `Certificate`, `CertificateList`, CMS `ContentInfo` (attached SignedData). Типы из [Asn1Kit.Pkix.Bench](../runtime-csharp/generated/Asn1Kit.Pkix.Bench/) (`Asn1Kit.Pkix.Bench` / `Asn1Kit.Cms.Bench`), собранного из golden `cms-2004.json` + [cms-2004-bench.patch.json](../compiler/fixtures/ir/cms-2004-bench.patch.json) (в т.ч. `options.lazy` на `CertificateChoices.certificate`). Сравнение: Asn1Kit, BCL (`X509Certificate2` / `SignedCms`), BouncyCastle. Не в gate `dotnet test`.
 
 ```powershell
 dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks
