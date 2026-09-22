@@ -2,14 +2,14 @@
 
 Библиотека кодека: `Asn1Writer` / `Asn1Reader` и примитивы. Не знает про ASN.1-модули и IR — только TLV и правила кодирования.
 
-Рядом лежит эталонный сгенерированный код PKIX ([generated/Asn1Kit.Pkix](generated/Asn1Kit.Pkix/)) — golden артефакт C# backend. Encode/decode на нём — в [tests/Asn1Kit.Pkix.Tests](tests/Asn1Kit.Pkix.Tests/) с фикстурами [fixtures/pkix/](fixtures/pkix/) (NIST PKITS). Мелкий round-trip через Roslyn остаётся в `compiler/tests`.
+Рядом лежит эталонный сгенерированный код PKIX/CMS ([generated/Asn1Kit.Pkix](generated/Asn1Kit.Pkix/)) — golden артефакт C# backend (`Asn1Kit.Pkix` + `Asn1Kit.Cms`). Encode/decode на PKIX — в [tests/Asn1Kit.Pkix.Tests](tests/Asn1Kit.Pkix.Tests/) с фикстурами [fixtures/pkix/](fixtures/pkix/) (NIST PKITS). Мелкий round-trip через Roslyn остаётся в `compiler/tests`.
 
 ## Проекты
 
 | Проект | Роль |
 | --- | --- |
 | `src/Asn1Kit.Runtime` | Теги, writer/reader, примитивы |
-| `generated/Asn1Kit.Pkix` | Golden C# из PKIX1Explicit88 + PKIX1Implicit88; `*.g.cs` руками не править |
+| `generated/Asn1Kit.Pkix` | Golden C# PKIX1Explicit88 + PKIX1Implicit88 + CryptographicMessageSyntax2004; `*.g.cs` руками не править |
 | `tests/Asn1Kit.Runtime.Tests` | Матрица hex, oracle BCL, внешние векторы, `RuntimeTests` |
 | `tests/Asn1Kit.Pkix.Tests` | Encode/decode `Certificate` / `CertificateList` на NIST PKITS |
 

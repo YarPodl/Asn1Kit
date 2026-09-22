@@ -24,27 +24,37 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/as
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/ir/example.json --lang csharp -o ./generated
 
 # -O / --option path=value — override module.options (repeatable); same flag on compile
-# --bindings — open-type overlay (Module.Type.field → OID/INTEGER → type); нужен для golden PKIX
+# --bindings — open-type overlay (Module.Type.field → OID/INTEGER → type); repeatable
 # пересборка golden-фикстур
 dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/pkix1-explicit88.asn -o compiler/fixtures/ir/pkix1-explicit88.json --bindings compiler/fixtures/opentype/pkix-bindings.json
 dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/pkix1-explicit88.asn -i compiler/fixtures/asn1/pkix1-implicit88.asn -o compiler/fixtures/ir/pkix1-implicit88.json --bindings compiler/fixtures/opentype/pkix-bindings.json
+dotnet run --project compiler/src/Asn1Kit.Cli -- compile `
+  -i compiler/fixtures/asn1/pkix1-explicit88.asn `
+  -i compiler/fixtures/asn1/pkix1-implicit88.asn `
+  -i compiler/fixtures/asn1/cms-2004.asn `
+  -o compiler/fixtures/ir/cms-2004.json `
+  --bindings compiler/fixtures/opentype/pkix-bindings.json `
+  --bindings compiler/fixtures/opentype/cms-bindings.json
+# затем csharp.namespace: PKIX* → Asn1Kit.Pkix, CMS → Asn1Kit.Cms
 
-# пересборка golden C# (PKIX)
-dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/ir/pkix1-implicit88.json --lang csharp -O csharp.namespace=Asn1Kit.Pkix -o runtime-csharp/generated/Asn1Kit.Pkix
+# пересборка golden C# (PKIX + CMS)
+dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/ir/cms-2004.json --lang csharp -o runtime-csharp/generated/Asn1Kit.Pkix
 ```
 
 ## Фикстуры
 
 | Путь | Назначение |
 | --- | --- |
-| `fixtures/asn1/` | Входные модули ASN.1 |
+| `fixtures/asn1/` | Входные модули ASN.1 (в т.ч. `cms-2004.asn`) |
 | `fixtures/opentype/pkix-bindings.json` | Sidecar open-type bindings для golden PKIX |
+| `fixtures/opentype/cms-bindings.json` | Bindings `ContentInfo.content` для CMS |
 | `fixtures/ir/pkix1-explicit88.json` | **Golden**: только через CLI (+ `--bindings`), руками не править |
 | `fixtures/ir/pkix1-implicit88.json` | **Golden**: Explicit + Implicit (оба `-i`) + `--bindings`, руками не править |
+| `fixtures/ir/cms-2004.json` | **Golden**: Explicit + Implicit + CMS + оба bindings; namespaces в `options` |
 | `fixtures/ir/example.json` | **Ручная**: `options.csharp.*`; компилятором не пересобирать |
-| `../runtime-csharp/generated/Asn1Kit.Pkix/*.g.cs` | **Golden C#**: из Implicit88 IR, руками не править |
+| `../runtime-csharp/generated/Asn1Kit.Pkix/*.g.cs` | **Golden C#**: из `cms-2004.json`, руками не править |
 
-Golden IR сверяют `PkixExplicit88Tests` / `PkixImplicit88Tests`; golden C# — `PkixGeneratedCodeTests`. Diff фикстуры — часть ревью.
+Golden IR сверяют `PkixExplicit88Tests` / `PkixImplicit88Tests` / `Cms2004Tests`; golden C# — `PkixGeneratedCodeTests`. Diff фикстуры — часть ревью.
 
 ## Плейбуки
 

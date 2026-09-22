@@ -5,21 +5,14 @@ namespace Asn1Kit.Tests;
 
 public sealed class PkixGeneratedCodeTests
 {
-    private const string CSharpNamespace = "Asn1Kit.Pkix";
-
     private static readonly string GoldenDir = "runtime-csharp/generated/Asn1Kit.Pkix";
 
     [Fact]
     public void GenerateMatchesCommittedGoldenSources()
     {
-        var document = IrSerializer.Load(TestData.RepoPath("compiler/fixtures/ir/pkix1-implicit88.json"));
-        foreach (var module in document.Modules)
-        {
-            module.Options = IrOptions.SetCSharp(module.Options, "namespace", CSharpNamespace);
-        }
-
+        var document = IrSerializer.Load(TestData.RepoPath("compiler/fixtures/ir/cms-2004.json"));
         var generated = new CSharpBackend().Generate(document);
-        Assert.Equal(2, generated.Count);
+        Assert.Equal(3, generated.Count);
 
         foreach (var file in generated)
         {

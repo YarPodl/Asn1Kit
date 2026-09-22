@@ -122,9 +122,10 @@
 
 ---
 
-## CMS / PKCS#7 (модуль status.md #17; тесты закладываем заранее)
+## CMS / PKCS#7 (модуль status.md #17 — ASN.1/IR/C# **добавлены**; codec-кейсы ниже — вторая половина)
 
-Ориентиры: BouncyCastle `cms/test`, OpenSSL `80-test_cms.t`, .NET `SignedCms` / `EnvelopedCms`.
+Ориентиры: BouncyCastle `cms/test`, OpenSSL `80-test_cms.t`, .NET `SignedCms` / `EnvelopedCms`.  
+Типы: `Asn1Kit.Cms` из [cms-2004.asn](../compiler/fixtures/asn1/cms-2004.asn) / golden [cms-2004.json](../compiler/fixtures/ir/cms-2004.json).
 
 ### ContentInfo + общие
 
@@ -185,6 +186,6 @@
 ## Рекомендуемый порядок
 
 1. ~~P0 typed extensions + SPKI/CRL entries + GeneralName на внешних `.crt`/`.crl`.~~
-2. Каркас CMS-тестов параллельно с модулем (RFC 4134).
+2. Каркас CMS-тестов на модуле `Asn1Kit.Cms` (RFC 4134).
 3. CSR/OCSP — когда появятся ASN.1 модули.
 4. Не тащить path validation / verify / decrypt в `Asn1Kit.Pkix.Tests`.

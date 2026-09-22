@@ -15,7 +15,7 @@ alwaysApply: false
 - Если тест упал — сначала убедись, что новый вывод правильный, затем пересобери фикстуру и посмотри diff глазами:
 
 ```powershell
-dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/pkix1-explicit88.asn -o compiler/fixtures/ir/pkix1-explicit88.json
+dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/pkix1-explicit88.asn -o compiler/fixtures/ir/pkix1-explicit88.json --bindings compiler/fixtures/opentype/pkix-bindings.json
 ```
 
 Diff фикстуры — часть ревью изменения. Неожиданные строки в нём означают регрессию, а не «фикстура протухла».
@@ -29,7 +29,23 @@ Diff фикстуры — часть ревью изменения. Неожид
 dotnet run --project compiler/src/Asn1Kit.Cli -- compile `
   -i compiler/fixtures/asn1/pkix1-explicit88.asn `
   -i compiler/fixtures/asn1/pkix1-implicit88.asn `
-  -o compiler/fixtures/ir/pkix1-implicit88.json
+  -o compiler/fixtures/ir/pkix1-implicit88.json `
+  --bindings compiler/fixtures/opentype/pkix-bindings.json
+```
+
+## Golden-артефакт: `compiler/fixtures/ir/cms-2004.json`
+
+- Explicit88 + Implicit88 + [cms-2004.asn](../../compiler/fixtures/asn1/cms-2004.asn) (RFC 5652 §12.1 curated). Руками не правится, кроме `options.csharp.namespace` после compile: PKIX → `Asn1Kit.Pkix`, CMS → `Asn1Kit.Cms`.
+- Bindings: [pkix-bindings.json](../../compiler/fixtures/opentype/pkix-bindings.json) + [cms-bindings.json](../../compiler/fixtures/opentype/cms-bindings.json). Сверяется в `Cms2004Tests`; golden C# — `PkixGeneratedCodeTests`.
+
+```powershell
+dotnet run --project compiler/src/Asn1Kit.Cli -- compile `
+  -i compiler/fixtures/asn1/pkix1-explicit88.asn `
+  -i compiler/fixtures/asn1/pkix1-implicit88.asn `
+  -i compiler/fixtures/asn1/cms-2004.asn `
+  -o compiler/fixtures/ir/cms-2004.json `
+  --bindings compiler/fixtures/opentype/pkix-bindings.json `
+  --bindings compiler/fixtures/opentype/cms-bindings.json
 ```
 
 ## Ручная фикстура: `compiler/fixtures/ir/example.json`

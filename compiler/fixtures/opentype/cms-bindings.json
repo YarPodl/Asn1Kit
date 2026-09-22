@@ -1,0 +1,10 @@
+{
+  "CryptographicMessageSyntax2004.ContentInfo.content": [
+    { "key": "1.2.840.113549.1.7.1", "type": { "kind": "octetString" } },
+    { "key": "1.2.840.113549.1.7.2", "type": { "kind": "ref", "name": "SignedData" } },
+    { "key": "1.2.840.113549.1.7.3", "type": { "kind": "ref", "name": "EnvelopedData" } },
+    { "key": "1.2.840.113549.1.7.5", "type": { "kind": "ref", "name": "DigestedData" } },
+    { "key": "1.2.840.113549.1.7.6", "type": { "kind": "ref", "name": "EncryptedData" } },
+    { "key": "1.2.840.113549.1.9.16.1.2", "type": { "kind": "ref", "name": "AuthenticatedData" } }
+  ]
+}

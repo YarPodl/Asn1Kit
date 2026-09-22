@@ -136,4 +136,34 @@ END
         Assert.Contains("public Shared Value", consumerSource);
         Assert.DoesNotContain("public Same.Ns.Shared Value", consumerSource);
     }
+
+    [Fact]
+    public void AllowsSameTypeNameInDifferentModules()
+    {
+        const string provider = @"
+Provider DEFINITIONS EXPLICIT TAGS ::= BEGIN
+Attribute ::= SEQUENCE { type OBJECT IDENTIFIER, values SET OF INTEGER }
+Shared ::= INTEGER
+END
+";
+        const string consumer = @"
+Consumer DEFINITIONS IMPLICIT TAGS ::= BEGIN
+IMPORTS Shared FROM Provider;
+Attribute ::= SEQUENCE { attrType OBJECT IDENTIFIER, attrValues SET OF OCTET STRING }
+Wrapped ::= SEQUENCE { value Shared, local Attribute }
+END
+";
+        var document = new Asn1Compiler().CompileTexts(new (string Text, string? FileName)[]
+        {
+            (provider, "provider.asn"),
+            (consumer, "consumer.asn")
+        });
+
+        Assert.Equal(2, document.Modules.Count);
+        Assert.All(document.Modules, m => Assert.Contains(m.Types, t => t.Name == "Attribute"));
+
+        var consumerAttribute = Assert.IsType<SequenceType>(
+            document.Modules.Single(m => m.Name == "Consumer").Types.Single(t => t.Name == "Attribute").Type);
+        Assert.Equal("attrType", consumerAttribute.Components[0].Name);
+    }
 }

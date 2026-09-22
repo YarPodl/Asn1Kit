@@ -120,6 +120,12 @@
 
 **Последствие.** Если у всех альтернатив одинаковый non-nullable `CsType`, класс имеет одно свойство `Value` и фабрики `From…`, которые выставляют `Kind` + `Value`. `Kind` сохраняется: encode/decode выбирают тег и `Asn1StringForm` / `Asn1TimeForm` по нему, без эвристик. Смешанные CHOICE (`GeneralName` и т.п.) остаются с отдельным свойством на альтернативу.
 
+## CMS — RFC 5652 §12.1 curated; C# namespace `Asn1Kit.Cms`
+
+**Причина.** As-published RFC 5911/6268 CMS использует `CLASS` и parameterized types — вне профиля. RFC 5652 §12.1 (`CryptographicMessageSyntax2004`) — ASN.1:1988 с `ANY DEFINED BY`, как PKIX Explicit88. Полный `CertificateChoices` тянет `AttributeCertificate` / `AttributeCertificateV1` (модулей нет; RFC 5755 ещё и импортирует `ContentInfo` из CMS → цикл). Имена `Attribute`, `Time`, `AttributeValue`, `SubjectKeyIdentifier` совпадают с PKIX, но формы другие — общий C# namespace дал бы коллизии типов.
+
+**Последствие.** Фикстура [cms-2004.asn](../compiler/fixtures/asn1/cms-2004.asn): IMPORTS только из PKIX1Explicit88; в `CertificateChoices` оставлены `certificate` / `extendedCertificate` / `other` (ветки `[1]`/`[2]` attr-cert отложены). Golden IR [cms-2004.json](../compiler/fixtures/ir/cms-2004.json) — Explicit + Implicit + CMS; C# CMS в `Asn1Kit.Cms`, PKIX в `Asn1Kit.Pkix` (тот же csproj). Open-type `ContentInfo.content` — [cms-bindings.json](../compiler/fixtures/opentype/cms-bindings.json). IrBuilder резолвит типы/значения **по модулю** (одно имя в разных модулях допустимо).
+
 ## C++ — ещё один бэкенд, а не форк фронтенда
 
 **Причина.** Компилятор не знает целевой язык, поэтому второй язык не требует изменений в разборе ASN.1 и в IR.

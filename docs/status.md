@@ -119,7 +119,7 @@ BER: indefinite length, constructed строки/BIT STRING, время без �
 14. Пул массивов, где нужны временные (constructed BER concat, DER SET OF sort).
 15. ~~В Encode оптимизировать, не выделять каждый раз на contents примитивов~~ — `Write*` без temp-`byte[]` на типичном размере; остаётся рост `MemoryStream` / `Encode()→ToArray` (RecyclableMemoryStream — отдельно).
 16. Второй oracle — BouncyCastle (только при расхождении с BCL; не gate `dotnet test`).
-17. Новые модуля ASN.1 (CMS, DVCS)
+17. ~~Новые модуля ASN.1 (CMS)~~ — `CryptographicMessageSyntax2004` (RFC 5652 §12.1 curated) → [compiler/fixtures/asn1/cms-2004.asn](../compiler/fixtures/asn1/cms-2004.asn), golden IR [cms-2004.json](../compiler/fixtures/ir/cms-2004.json), C# `Asn1Kit.Cms` в [Asn1Kit.Pkix](../runtime-csharp/generated/Asn1Kit.Pkix/). Codec-тесты — [pkix-test-backlog.md](pkix-test-backlog.md). Осталось: **DVCS**.
 
 
 ### Крупные задачи

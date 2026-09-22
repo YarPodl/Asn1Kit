@@ -5,21 +5,33 @@ namespace Asn1Kit.Compiler;
 internal sealed class IrBuilder
 {
     private readonly List<ModuleAst> _modules;
-    private readonly Dictionary<string, ValueAssignmentAst> _valuesByName;
-    private readonly Dictionary<string, TypeAssignmentAst> _typesByName;
+    private readonly Dictionary<string, ModuleAst> _modulesByName;
+    private readonly Dictionary<string, Dictionary<string, TypeAssignmentAst>> _typesByModule;
+    private readonly Dictionary<string, Dictionary<string, ValueAssignmentAst>> _valuesByModule;
     private readonly HashSet<string> _resolvingOids = new(StringComparer.Ordinal);
+    private string _currentModule = "";
 
     public IrBuilder(List<ModuleAst> modules)
     {
         _modules = modules;
-        _valuesByName = new Dictionary<string, ValueAssignmentAst>(StringComparer.Ordinal);
-        _typesByName = new Dictionary<string, TypeAssignmentAst>(StringComparer.Ordinal);
+        _modulesByName = new Dictionary<string, ModuleAst>(StringComparer.Ordinal);
+        _typesByModule = new Dictionary<string, Dictionary<string, TypeAssignmentAst>>(StringComparer.Ordinal);
+        _valuesByModule = new Dictionary<string, Dictionary<string, ValueAssignmentAst>>(StringComparer.Ordinal);
 
         foreach (var module in modules)
         {
+            if (!_modulesByName.TryAdd(module.Name, module))
+            {
+                throw new CompileException(
+                    $"Duplicate module '{module.Name}'.",
+                    module.Line,
+                    module.Column);
+            }
+
+            var types = new Dictionary<string, TypeAssignmentAst>(StringComparer.Ordinal);
             foreach (var type in module.TypeAssignments)
             {
-                if (!_typesByName.TryAdd(type.Name, type))
+                if (!types.TryAdd(type.Name, type))
                 {
                     throw new CompileException(
                         $"Duplicate type '{type.Name}'.",
@@ -28,9 +40,12 @@ internal sealed class IrBuilder
                 }
             }
 
+            _typesByModule[module.Name] = types;
+
+            var values = new Dictionary<string, ValueAssignmentAst>(StringComparer.Ordinal);
             foreach (var value in module.ValueAssignments)
             {
-                if (!_valuesByName.TryAdd(value.Name, value))
+                if (!values.TryAdd(value.Name, value))
                 {
                     throw new CompileException(
                         $"Duplicate value '{value.Name}'.",
@@ -38,28 +53,18 @@ internal sealed class IrBuilder
                         value.Column);
                 }
             }
+
+            _valuesByModule[module.Name] = values;
         }
     }
 
     public IrDocument Build()
     {
-        var modulesByName = new Dictionary<string, ModuleAst>(StringComparer.Ordinal);
-        foreach (var module in _modules)
-        {
-            if (!modulesByName.TryAdd(module.Name, module))
-            {
-                throw new CompileException(
-                    $"Duplicate module '{module.Name}'.",
-                    module.Line,
-                    module.Column);
-            }
-        }
-
         foreach (var module in _modules)
         {
             foreach (var import in module.Imports)
             {
-                if (!modulesByName.TryGetValue(import.Module, out var source))
+                if (!_modulesByName.TryGetValue(import.Module, out var source))
                 {
                     throw new CompileException(
                         $"Imported module '{import.Module}' was not found among compiled modules.",
@@ -108,6 +113,7 @@ internal sealed class IrBuilder
 
     private IrModule BuildModule(ModuleAst ast)
     {
+        _currentModule = ast.Name;
         var ir = new IrModule
         {
             Name = ast.Name,
@@ -154,11 +160,97 @@ internal sealed class IrBuilder
             {
                 Name = assignment.Name,
                 Type = ConvertType(assignment.Type, ir.TagDefault, assignedName: null, ownerFields: null),
-                Value = ResolveValue(assignment.Value, assignment.Type)
+                Value = ResolveValue(assignment.Value, assignment.Type, _currentModule)
             });
         }
 
         return ir;
+    }
+
+    private bool TryResolveType(
+        string scopeModule,
+        string name,
+        string? explicitModule,
+        out TypeAssignmentAst assignment,
+        out string definingModule)
+    {
+        if (!string.IsNullOrEmpty(explicitModule))
+        {
+            definingModule = explicitModule!;
+            if (_typesByModule.TryGetValue(explicitModule!, out var typed) &&
+                typed.TryGetValue(name, out assignment!))
+            {
+                return true;
+            }
+
+            assignment = null!;
+            return false;
+        }
+
+        if (_typesByModule.TryGetValue(scopeModule, out var local) &&
+            local.TryGetValue(name, out assignment!))
+        {
+            definingModule = scopeModule;
+            return true;
+        }
+
+        if (_modulesByName.TryGetValue(scopeModule, out var scope))
+        {
+            foreach (var import in scope.Imports)
+            {
+                if (!import.Types.Contains(name))
+                {
+                    continue;
+                }
+
+                if (_typesByModule.TryGetValue(import.Module, out var imported) &&
+                    imported.TryGetValue(name, out assignment!))
+                {
+                    definingModule = import.Module;
+                    return true;
+                }
+            }
+        }
+
+        assignment = null!;
+        definingModule = "";
+        return false;
+    }
+
+    private bool TryResolveValue(
+        string scopeModule,
+        string name,
+        out ValueAssignmentAst assignment,
+        out string definingModule)
+    {
+        if (_valuesByModule.TryGetValue(scopeModule, out var local) &&
+            local.TryGetValue(name, out assignment!))
+        {
+            definingModule = scopeModule;
+            return true;
+        }
+
+        if (_modulesByName.TryGetValue(scopeModule, out var scope))
+        {
+            foreach (var import in scope.Imports)
+            {
+                if (!import.Values.Contains(name))
+                {
+                    continue;
+                }
+
+                if (_valuesByModule.TryGetValue(import.Module, out var imported) &&
+                    imported.TryGetValue(name, out assignment!))
+                {
+                    definingModule = import.Module;
+                    return true;
+                }
+            }
+        }
+
+        assignment = null!;
+        definingModule = "";
+        return false;
     }
 
     private TypeExpr ConvertType(TypeAst type, string tagDefault, string? assignedName, List<FieldAst>? ownerFields)
@@ -342,7 +434,7 @@ internal sealed class IrBuilder
             throw new CompileException("Constraint bound is empty.", bound.Line, bound.Column);
         }
 
-        if (!_valuesByName.TryGetValue(bound.Reference, out var assignment))
+        if (!TryResolveValue(_currentModule, bound.Reference, out var assignment, out var definingModule))
         {
             throw new CompileException(
                 $"Unknown value reference '{bound.Reference}' in constraint.",
@@ -350,7 +442,7 @@ internal sealed class IrBuilder
                 bound.Column);
         }
 
-        var resolved = ResolveValue(assignment.Value, assignment.Type);
+        var resolved = ResolveValue(assignment.Value, assignment.Type, definingModule);
         if (resolved is IrIntegerValue integer)
         {
             return integer.Value;
@@ -372,9 +464,9 @@ internal sealed class IrBuilder
                 return new IrIntegerValue { Value = named.Value };
             }
 
-            if (_valuesByName.TryGetValue(reference.Name, out var assignment))
+            if (TryResolveValue(_currentModule, reference.Name, out var assignment, out var definingModule))
             {
-                return ResolveValue(assignment.Value, assignment.Type);
+                return ResolveValue(assignment.Value, assignment.Type, definingModule);
             }
 
             throw new CompileException(
@@ -383,7 +475,7 @@ internal sealed class IrBuilder
                 reference.Column);
         }
 
-        return ResolveValue(value, fieldType);
+        return ResolveValue(value, fieldType, _currentModule);
     }
 
     private NamedNumberAst? FindNamedNumber(TypeAst type, string name)
@@ -395,7 +487,8 @@ internal sealed class IrBuilder
                 named.FirstOrDefault(n => n.Name == name),
             EnumeratedTypeAst enumerated =>
                 enumerated.Values.FirstOrDefault(n => n.Name == name),
-            TypeReferenceAst reference when _typesByName.TryGetValue(reference.Name, out var assignment) =>
+            TypeReferenceAst reference when TryResolveType(
+                _currentModule, reference.Name, reference.Module, out var assignment, out _) =>
                 FindNamedNumber(assignment.Type, name),
             _ => null
         };
@@ -404,7 +497,7 @@ internal sealed class IrBuilder
     private static TypeAst UnwrapTagged(TypeAst type) =>
         type is TaggedTypeAst tagged ? UnwrapTagged(tagged.Inner) : type;
 
-    private IrValue ResolveValue(ValueAst value, TypeAst declaredType)
+    private IrValue ResolveValue(ValueAst value, TypeAst declaredType, string scopeModule)
     {
         return value switch
         {
@@ -414,13 +507,13 @@ internal sealed class IrBuilder
             CStringValueAst cstring => new IrStringValue { Value = cstring.Value },
             BStringValueAst bstring => new IrBitStringValue { Bits = bstring.Bits },
             HStringValueAst hstring => new IrBitStringValue { Hex = hstring.Hex },
-            OidValueAst oid => new IrOidValue { Value = FormatOid(ResolveOidArcs(oid))! },
-            ValueReferenceAst reference => ResolveValueReference(reference, declaredType),
+            OidValueAst oid => new IrOidValue { Value = FormatOid(ResolveOidArcs(oid, scopeModule))! },
+            ValueReferenceAst reference => ResolveValueReference(reference, declaredType, scopeModule),
             _ => throw new CompileException("Unsupported value form.", value.Line, value.Column)
         };
     }
 
-    private IrValue ResolveValueReference(ValueReferenceAst reference, TypeAst declaredType)
+    private IrValue ResolveValueReference(ValueReferenceAst reference, TypeAst declaredType, string scopeModule)
     {
         var named = FindNamedNumber(declaredType, reference.Name);
         if (named is not null)
@@ -428,7 +521,7 @@ internal sealed class IrBuilder
             return new IrIntegerValue { Value = named.Value };
         }
 
-        if (!_valuesByName.TryGetValue(reference.Name, out var assignment))
+        if (!TryResolveValue(scopeModule, reference.Name, out var assignment, out var definingModule))
         {
             throw new CompileException(
                 $"Unknown value reference '{reference.Name}'.",
@@ -436,17 +529,17 @@ internal sealed class IrBuilder
                 reference.Column);
         }
 
-        return ResolveValue(assignment.Value, assignment.Type);
+        return ResolveValue(assignment.Value, assignment.Type, definingModule);
     }
 
-    private List<int> ResolveOidArcs(OidValueAst oid)
+    private List<int> ResolveOidArcs(OidValueAst oid, string scopeModule)
     {
         var arcs = new List<int>();
         var index = 0;
         if (oid.Arcs.Count > 0 && oid.Arcs[0].Name is not null && oid.Arcs[0].Number is null)
         {
             var head = oid.Arcs[0];
-            if (!_valuesByName.TryGetValue(head.Name!, out var assignment))
+            if (!TryResolveValue(scopeModule, head.Name!, out var assignment, out var definingModule))
             {
                 throw new CompileException(
                     $"Unknown OID value reference '{head.Name}'.",
@@ -454,7 +547,8 @@ internal sealed class IrBuilder
                     head.Column);
             }
 
-            if (!_resolvingOids.Add(head.Name!))
+            var cycleKey = definingModule + "::" + head.Name!;
+            if (!_resolvingOids.Add(cycleKey))
             {
                 throw new CompileException(
                     $"Cyclic OBJECT IDENTIFIER value '{head.Name}'.",
@@ -464,7 +558,7 @@ internal sealed class IrBuilder
 
             try
             {
-                var resolved = ResolveValue(assignment.Value, assignment.Type);
+                var resolved = ResolveValue(assignment.Value, assignment.Type, definingModule);
                 if (resolved is not IrOidValue parent)
                 {
                     throw new CompileException(
@@ -477,7 +571,7 @@ internal sealed class IrBuilder
             }
             finally
             {
-                _resolvingOids.Remove(head.Name!);
+                _resolvingOids.Remove(cycleKey);
             }
 
             index = 1;
