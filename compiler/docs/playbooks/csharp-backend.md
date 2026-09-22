@@ -22,7 +22,7 @@
 ## Требования к сгенерированному коду
 
 - Только вызовы runtime: байтов тегов, длин и правил DER в шаблоне быть не должно.
-- `options.csharp.namespace` / `typeName` / `propertyName`, `options.generate: false` и `options.integer.representation` уважаются (читаются через `IrOptions`). Для INTEGER без опции: `namedValues` → `int32` (или `int64`, если метка вне `int`); иначе полный `constraint.value` → наименьший подходящий `int32`→`uint32`→`int64`→`uint64`; иначе `der` (`Asn1Integer`).
+- `options.csharp.namespace` / `typeName` / `propertyName`, `options.generate: false`, `options.integer.representation` и `options.lazy` уважаются (читаются через `IrOptions`). Для INTEGER без опции: `namedValues` → `int32` (или `int64`, если метка вне `int`); иначе полный `constraint.value` → наименьший подходящий `int32`→`uint32`→`int64`→`uint64`; иначе `der` (`Asn1Integer`). `options.lazy: true` на поле/типе/модуле оборачивает SEQUENCE/SET в `Asn1Lazy<T>`, SEQUENCE OF/SET OF — в `Asn1Lazy<List<T>>` (`ReadLazy` / `HasEncoded` → `WriteRaw`).
 - Никаких лишних аллокаций: без промежуточных `MemoryStream` на поле, без `Func` на элемент `SEQUENCE OF`, коллекции с известной ёмкостью, где размер известен.
 - Ломаный вход падает `Asn1Exception` (чужой тег, неизвестная альтернатива `CHOICE`, лишние байты) — это обеспечивает runtime, задача шаблона его не обходить.
 

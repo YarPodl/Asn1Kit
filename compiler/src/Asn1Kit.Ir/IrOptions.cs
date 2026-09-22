@@ -96,6 +96,33 @@ public static class IrOptions
         return true;
     }
 
+    /// <summary>
+    /// When true, SEQUENCE/SET and SEQUENCE OF/SET OF usages are wrapped in a deferred-decode container
+    /// (C#: <c>Asn1Lazy&lt;T&gt;</c>). Default is false (eager decode).
+    /// </summary>
+    public static bool IsLazy(JsonObject? options)
+    {
+        if (options is null || !options.TryGetPropertyValue("lazy", out var node) || node is null)
+        {
+            return false;
+        }
+
+        if (node is JsonValue value)
+        {
+            if (value.TryGetValue<bool>(out var flag))
+            {
+                return flag;
+            }
+
+            if (value.TryGetValue<string>(out var text))
+            {
+                return string.Equals(text, "true", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        return false;
+    }
+
     public static JsonObject SetCSharp(JsonObject? options, string key, string value) =>
         Set(options, "csharp." + key, JsonValue.Create(value)!);
 
@@ -104,6 +131,9 @@ public static class IrOptions
 
     public static JsonObject SetOpenTypeMismatch(JsonObject? options, string value) =>
         Set(options, "openType.mismatch", JsonValue.Create(value)!);
+
+    public static JsonObject SetLazy(JsonObject? options, bool value) =>
+        Set(options, "lazy", JsonValue.Create(value)!);
 
     public static JsonObject Set(JsonObject? options, string path, JsonNode value)
     {

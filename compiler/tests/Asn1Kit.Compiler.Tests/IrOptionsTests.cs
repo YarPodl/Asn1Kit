@@ -86,4 +86,25 @@ public sealed class IrOptionsTests
         Assert.Throws<IrException>(() =>
             IrOptions.OpenTypeMismatch(IrOptions.SetOpenTypeMismatch(null, "nope")));
     }
+
+    [Fact]
+    public void Lazy_DefaultsFalse_AndAcceptsBoolOrString()
+    {
+        Assert.False(IrOptions.IsLazy(null));
+        Assert.True(IrOptions.IsLazy(IrOptions.SetLazy(null, true)));
+        Assert.False(IrOptions.IsLazy(IrOptions.SetLazy(null, false)));
+        Assert.True(IrOptions.IsLazy(IrOptions.Set(null, "lazy", JsonValue.Create("true")!)));
+        Assert.False(IrOptions.IsLazy(IrOptions.Set(null, "lazy", JsonValue.Create("false")!)));
+    }
+
+    [Fact]
+    public void ApplyToModules_SetsLazy()
+    {
+        var document = new IrDocument
+        {
+            Modules = { new IrModule { Name = "M" } }
+        };
+        IrOptions.ApplyToModules(document, new[] { "lazy=true" });
+        Assert.True(IrOptions.IsLazy(document.Modules[0].Options));
+    }
 }

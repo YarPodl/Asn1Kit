@@ -1052,6 +1052,196 @@ END
         Assert.Contains("public const int V1 = 0;", overridden);
     }
 
+    [Fact]
+    public void GeneratedCSharp_Lazy_NestedSequence_DefersDecodeAndRoundTrips()
+    {
+        const string asn = @"
+LazySeqMod DEFINITIONS ::= BEGIN
+Inner ::= SEQUENCE { n INTEGER }
+Outer ::= SEQUENCE {
+  payload Inner,
+  maybe Inner OPTIONAL,
+  wrapped [0] EXPLICIT Inner
+}
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        document.Modules[0].Types.Single(t => t.Name == "Inner").Options = IrOptions.SetLazy(null, true);
+        IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
+
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+        Assert.Contains("public Asn1Lazy<Inner> Payload { get; set; }", source);
+        Assert.Contains("public Asn1Lazy<Inner>? Maybe { get; set; }", source);
+        Assert.Contains("public Asn1Lazy<Inner> Wrapped { get; set; }", source);
+        Assert.Contains("ReadLazy(static r =>", source);
+        Assert.Contains("HasEncoded", source);
+        Assert.DoesNotContain("value.Payload = Inner.Decode(", source);
+
+        var assembly = CompileGenerated(source);
+        var outerType = assembly.GetType("LazySeqMod.Outer")!;
+        var innerType = assembly.GetType("LazySeqMod.Inner")!;
+        var lazyInnerType = typeof(Asn1Lazy<>).MakeGenericType(innerType);
+
+        object MakeInner(int n)
+        {
+            var inner = Activator.CreateInstance(innerType)!;
+            innerType.GetProperty("N")!.SetValue(inner, Asn1Integer.FromInt32(n));
+            return lazyInnerType.GetMethod("FromValue")!.Invoke(null, new[] { inner })!;
+        }
+
+        var outer = Activator.CreateInstance(outerType)!;
+        outerType.GetProperty("Payload")!.SetValue(outer, MakeInner(1));
+        outerType.GetProperty("Maybe")!.SetValue(outer, MakeInner(2));
+        outerType.GetProperty("Wrapped")!.SetValue(outer, MakeInner(3));
+
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        outerType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(outer, new object[] { writer });
+        var encoded = writer.Encode();
+
+        var decoded = outerType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(encoded, Asn1Encoding.Der) })!;
+        var lazyInner = outerType.GetProperty("Payload")!.GetValue(decoded)!;
+        Assert.False((bool)lazyInnerType.GetProperty("IsMaterialized")!.GetValue(lazyInner)!);
+        Assert.True((bool)lazyInnerType.GetProperty("HasEncoded")!.GetValue(lazyInner)!);
+
+        var material = lazyInnerType.GetProperty("Value")!.GetValue(lazyInner)!;
+        Assert.Equal(Asn1Integer.FromInt32(1), innerType.GetProperty("N")!.GetValue(material));
+        Assert.True((bool)lazyInnerType.GetProperty("IsMaterialized")!.GetValue(lazyInner)!);
+
+        var rewrite = new Asn1Writer(Asn1Encoding.Der);
+        outerType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(decoded, new object[] { rewrite });
+        Assert.Equal(encoded, rewrite.Encode());
+
+        // Corrupt nested TLV: outer decode succeeds; Value throws.
+        var corrupt = (byte[])encoded.Clone();
+        var firstSeq = Array.IndexOf(corrupt, (byte)0x30, 2);
+        Assert.True(firstSeq >= 0);
+        var intAt = Array.IndexOf(corrupt, (byte)0x02, firstSeq + 2);
+        Assert.True(intAt >= 0 && intAt + 2 < corrupt.Length);
+        corrupt[intAt + 1] = 0x00; // INTEGER with empty contents — rejected
+
+        var corruptDecoded = outerType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(corrupt, Asn1Encoding.Der) })!;
+        var corruptLazy = outerType.GetProperty("Payload")!.GetValue(corruptDecoded)!;
+        var valueGetter = lazyInnerType.GetProperty("Value")!;
+        var ex = Assert.Throws<TargetInvocationException>(() => valueGetter.GetValue(corruptLazy));
+        Assert.IsType<Asn1Exception>(ex.InnerException);
+    }
+
+    [Fact]
+    public void GeneratedCSharp_Lazy_SequenceOf_ContainerAndElements()
+    {
+        const string asn = @"
+LazyOfMod DEFINITIONS ::= BEGIN
+Item ::= SEQUENCE { n INTEGER }
+Bag ::= SEQUENCE {
+  bag SEQUENCE OF Item,
+  bagLazy SEQUENCE OF Item
+}
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        var bag = ((SequenceType)document.Modules[0].Types.Single(t => t.Name == "Bag").Type)
+            .Components.Single(c => c.Name == "bag");
+        var bagLazy = ((SequenceType)document.Modules[0].Types.Single(t => t.Name == "Bag").Type)
+            .Components.Single(c => c.Name == "bagLazy");
+        document.Modules[0].Types.Single(t => t.Name == "Item").Options = IrOptions.SetLazy(null, true);
+        bagLazy.Options = IrOptions.SetLazy(null, true);
+        // bag: only element lazy → List<Asn1Lazy<Item>>
+        // bagLazy: container + element → Asn1Lazy<List<Asn1Lazy<Item>>>
+
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+        Assert.Contains("public List<Asn1Lazy<Item>> BagValue { get; set; } = new();", source);
+        Assert.Contains("public Asn1Lazy<List<Asn1Lazy<Item>>> BagLazy { get; set; }", source);
+        Assert.Contains("ReadLazy(static r =>", source);
+
+        var assembly = CompileGenerated(source);
+        var bagType = assembly.GetType("LazyOfMod.Bag")!;
+        var itemType = assembly.GetType("LazyOfMod.Item")!;
+        var lazyItemType = typeof(Asn1Lazy<>).MakeGenericType(itemType);
+        var listLazyItemType = typeof(List<>).MakeGenericType(lazyItemType);
+        var lazyListType = typeof(Asn1Lazy<>).MakeGenericType(listLazyItemType);
+
+        object MakeItem(int n)
+        {
+            var item = Activator.CreateInstance(itemType)!;
+            itemType.GetProperty("N")!.SetValue(item, Asn1Integer.FromInt32(n));
+            return lazyItemType.GetMethod("FromValue")!.Invoke(null, new[] { item })!;
+        }
+
+        var bagList = Activator.CreateInstance(listLazyItemType)!;
+        listLazyItemType.GetMethod("Add")!.Invoke(bagList, new[] { MakeItem(10) });
+        var bagLazyList = Activator.CreateInstance(listLazyItemType)!;
+        listLazyItemType.GetMethod("Add")!.Invoke(bagLazyList, new[] { MakeItem(20) });
+        var bagLazyWrap = lazyListType.GetMethod("FromValue")!.Invoke(null, new[] { bagLazyList })!;
+
+        var holder = Activator.CreateInstance(bagType)!;
+        bagType.GetProperty("BagValue")!.SetValue(holder, bagList);
+        bagType.GetProperty("BagLazy")!.SetValue(holder, bagLazyWrap);
+
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        bagType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(holder, new object[] { writer });
+        var encoded = writer.Encode();
+
+        var decoded = bagType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(encoded, Asn1Encoding.Der) })!;
+        var decodedBag = bagType.GetProperty("BagValue")!.GetValue(decoded)!;
+        Assert.Equal(1, (int)listLazyItemType.GetProperty("Count")!.GetValue(decodedBag)!);
+        var first = listLazyItemType.GetProperty("Item")!.GetValue(decodedBag, new object[] { 0 })!;
+        Assert.False((bool)lazyItemType.GetProperty("IsMaterialized")!.GetValue(first)!);
+        Assert.Equal(
+            Asn1Integer.FromInt32(10),
+            itemType.GetProperty("N")!.GetValue(lazyItemType.GetProperty("Value")!.GetValue(first)!)!);
+
+        var decodedBagLazy = bagType.GetProperty("BagLazy")!.GetValue(decoded)!;
+        Assert.False((bool)lazyListType.GetProperty("IsMaterialized")!.GetValue(decodedBagLazy)!);
+        var listValue = lazyListType.GetProperty("Value")!.GetValue(decodedBagLazy)!;
+        var lazyElem = listLazyItemType.GetProperty("Item")!.GetValue(listValue, new object[] { 0 })!;
+        Assert.Equal(
+            Asn1Integer.FromInt32(20),
+            itemType.GetProperty("N")!.GetValue(lazyItemType.GetProperty("Value")!.GetValue(lazyElem)!)!);
+
+        var rewrite = new Asn1Writer(Asn1Encoding.Der);
+        bagType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(decoded, new object[] { rewrite });
+        Assert.Equal(encoded, rewrite.Encode());
+    }
+
+    [Fact]
+    public void GeneratedCSharp_Lazy_SetOf_Container()
+    {
+        const string asn = @"
+LazySetOfMod DEFINITIONS ::= BEGIN
+Bag ::= SEQUENCE { values SET OF INTEGER }
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        var values = ((SequenceType)document.Modules[0].Types.Single(t => t.Name == "Bag").Type)
+            .Components.Single(c => c.Name == "values");
+        values.Options = IrOptions.SetLazy(null, true);
+
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+        Assert.Contains("public Asn1Lazy<List<Asn1Integer>> Values { get; set; }", source);
+
+        var assembly = CompileGenerated(source);
+        var bagType = assembly.GetType("LazySetOfMod.Bag")!;
+        var lazyListType = typeof(Asn1Lazy<>).MakeGenericType(typeof(List<Asn1Integer>));
+        var list = new List<Asn1Integer> { Asn1Integer.FromInt32(2), Asn1Integer.FromInt32(1) };
+        var wrap = lazyListType.GetMethod("FromValue")!.Invoke(null, new object[] { list })!;
+        var holder = Activator.CreateInstance(bagType)!;
+        bagType.GetProperty("Values")!.SetValue(holder, wrap);
+
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        bagType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(holder, new object[] { writer });
+        var encoded = writer.Encode();
+
+        var decoded = bagType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(encoded, Asn1Encoding.Der) })!;
+        var lazy = bagType.GetProperty("Values")!.GetValue(decoded)!;
+        Assert.False((bool)lazyListType.GetProperty("IsMaterialized")!.GetValue(lazy)!);
+        var value = (List<Asn1Integer>)lazyListType.GetProperty("Value")!.GetValue(lazy)!;
+        Assert.Equal(new[] { Asn1Integer.FromInt32(1), Asn1Integer.FromInt32(2) }, value);
+    }
+
     private static Assembly CompileGenerated(string source)
     {
         var tpa = (string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!;

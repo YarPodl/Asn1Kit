@@ -17,11 +17,11 @@
 | `string` (12 форм) | да | `string` + `Asn1StringForm` | `Primitive*` (все 12), `RuntimeTests`, `RoundTripTests` |
 | `time` (`utc` / `generalized`) | да; `fractionDigits` 0…7 | `DateTimeOffset` + `Asn1TimeForm` | `Primitive*`, `RuntimeTests`, `RoundTripTests` |
 | `any` (+ `definedBy`) | да; `bindings` через overlay | `Asn1Any` или `Owner_Field`; mismatch soft/strict | `OpenTypeBindingsTests`, `RuntimeTests`, `RoundTripTests` |
-| `sequence` | да, `extensible` | класс `Encode`/`Decode` | `RoundTripTests`, `Pkix*`, `Asn1Kit.Pkix.Tests` |
-| `set` | да | класс; DER-порядок по тегу | `RoundTripTests`, `ParserTests`, `RuntimeTests` |
+| `sequence` | да, `extensible` | класс `Encode`/`Decode`; при `options.lazy` — `Asn1Lazy<T>` на внешнем использовании | `RoundTripTests`, `Pkix*`, `Asn1Kit.Pkix.Tests` |
+| `set` | да | класс; DER-порядок по тегу; `options.lazy` → `Asn1Lazy<T>` | `RoundTripTests`, `ParserTests`, `RuntimeTests` |
 | `choice` | да | `…Kind` + `From…`; однотипные → `Kind`+`Value`; один вариант → алиас | `ParserTests`, `Pkix*`, `RoundTripTests`, `Asn1Kit.Pkix.Tests` |
-| `sequenceOf` | да | `List<T>` (typedef сворачивается) | `ParserTests`, `RoundTripTests`, `PkixGeneratedCodeTests`, `RuntimeTests` |
-| `setOf` | да | `List<T>` + DER-сортировка в runtime | `RoundTripTests`, `ParserTests`, `RuntimeTests` |
+| `sequenceOf` | да | `List<T>` (typedef сворачивается); `options.lazy` на OF → `Asn1Lazy<List<T>>` | `ParserTests`, `RoundTripTests`, `PkixGeneratedCodeTests`, `RuntimeTests` |
+| `setOf` | да | `List<T>` + DER-сортировка в runtime; `options.lazy` на OF → `Asn1Lazy<List<T>>` | `RoundTripTests`, `ParserTests`, `RuntimeTests` |
 | `ref` | да (`IMPORTS`) | алиасы сворачиваются; cross-module → квалиф. имя | `Pkix*`, `ImportResolutionTests`, `RoundTripTests` |
 
 Неподдержанный kind → отказ до генерации (`EnsureBackendSupport`).
@@ -65,12 +65,11 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
    - **3a.** остальные PKIX ANY (`AnotherName`, `ExtensionAttribute`, DN `AttributeValue`) через overlay
    - **3b.** curated `.asn` параметров алгоритмов из RFC 5912 (без `CLASS`) + bindings
    - **3c.** парсер/IR для `CLASS`, object sets, parameterized `AlgorithmIdentifier{…}`
-4. Опция Lazy — откладывать разбор структуры
-5. Опция сохранения исходного закодированного представления
-6. Пул массивов (constructed BER concat, DER SET OF sort)
-7. Второй oracle — BouncyCastle (не gate `dotnet test`)
-8. Модуль **DVCS** (CMS уже: [cms-2004.asn](../compiler/fixtures/asn1/cms-2004.asn) → `Asn1Kit.Cms`; codec-кейсы — [pkix-test-backlog.md](pkix-test-backlog.md))
-9. Follow-up zero-copy: `List<T>` → массивы в `ReadSequenceOf` / `Array.Empty`
+4. Опция сохранения исходного закодированного представления
+5. Пул массивов (constructed BER concat, DER SET OF sort)
+6. Второй oracle — BouncyCastle (не gate `dotnet test`)
+7. Модуль **DVCS** (CMS уже: [cms-2004.asn](../compiler/fixtures/asn1/cms-2004.asn) → `Asn1Kit.Cms`; codec-кейсы — [pkix-test-backlog.md](pkix-test-backlog.md))
+8. Follow-up zero-copy: `List<T>` → массивы в `ReadSequenceOf` / `Array.Empty`
 
 ### Крупные
 

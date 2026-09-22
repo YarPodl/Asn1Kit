@@ -470,6 +470,23 @@ public sealed class Asn1Reader
         return true;
     }
 
+    /// <summary>
+    /// Consumes the next complete TLV without decoding its contents; materialization runs
+    /// <paramref name="decode"/> on first <see cref="Asn1Lazy{T}.Value"/> access.
+    /// </summary>
+    public Asn1Lazy<T> ReadLazy<T>(Func<Asn1Reader, T> decode)
+    {
+        if (decode is null)
+        {
+            throw new ArgumentNullException(nameof(decode));
+        }
+
+        var start = _offset;
+        _ = ReadTlv();
+        var encoded = _data.AsMemory(start, _offset - start);
+        return Asn1Lazy<T>.Wrap(encoded, Encoding, Options, decode);
+    }
+
     /// <summary>Reads the next complete TLV as ANY (full encoded TLV including tag and length).</summary>
     public Asn1Any ReadAny()
     {

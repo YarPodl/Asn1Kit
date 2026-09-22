@@ -108,6 +108,12 @@
   2. overlong OID base-128 — `RejectOverlongOidBase128` (default true; профиль `AllowOverlongOidBase128`).
 - Готовый профиль аудита: `Asn1ReaderOptions.Strict` (все optional rejects включены).
 
+## Decode — `options.lazy` и `Asn1Lazy<T>`
+
+**Причина.** Глубокие PKIX/CMS деревья (например `Certificate` → `TBSCertificate`) часто нужны лишь частично; полный eager-decode платит за неиспользуемые ветки. Отдельная опция «хранить encoded у каждого поля» (backlog) пересекается с этим, но lazy нужен именно как контракт свойства.
+
+**Последствие.** `options.lazy: true` на поле / typedef / модуле (разрешение: component → TypeExpr → typedef → module) заставляет C# backend обернуть внешнее использование SEQUENCE/SET в `Asn1Lazy<T>`, а SEQUENCE OF/SET OF — в `Asn1Lazy<List<T>>`. `Asn1Reader.ReadLazy` захватывает полный TLV без разбора contents; `.Value` вызывает переданный decoder. Encode предпочитает `WriteRaw(EncodedMemory)` при наличии TLV (`HasEncoded`), иначе кодирует `.Value`. Собственный `T.Decode` типа с lazy по-прежнему жадный по своим полям. CHOICE и примитивы не оборачиваются.
+
 ## C# codegen — typedef-алиасы сворачиваются
 
 **Причина.** Имена вроде `AttributeType ::= OBJECT IDENTIFIER` и `DistinguishedName ::= RDNSequence` порождали sealed-обёртки с единственным `Value`, дублируя CLR-тип без пользы. В C# 10 / net6.0 нет публичных type alias уровня языка (`using` — только внутри файла). То же для `Name ::= CHOICE { rdnSequence RDNSequence }` — CHOICE с одним вариантом на проводе неотличим от альтернативы, а `NameKind` + обёртка только мешают API.

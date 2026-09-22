@@ -728,4 +728,100 @@ public sealed class RuntimeTests
         writer.WriteString(tag, text, Asn1StringForm.Visible);
         return writer.Encode();
     }
+
+    [Fact]
+    public void ReadLazy_DefersDecode_UntilValueAccess()
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteSequence(Asn1Tag.Sequence, inner =>
+        {
+            Asn1Integer.Encode(inner, 7);
+            Asn1Integer.Encode(inner, 9);
+        });
+        var bytes = writer.Encode();
+
+        var decodedCalls = 0;
+        var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
+        var lazy = reader.ReadLazy(r =>
+        {
+            decodedCalls++;
+            return r.ReadSequence(Asn1Tag.Sequence, inner =>
+            {
+                var a = Asn1Integer.Decode(inner).GetInt32();
+                var b = Asn1Integer.Decode(inner).GetInt32();
+                return (a, b);
+            });
+        });
+
+        Assert.True(reader.Eof);
+        Assert.Equal(0, decodedCalls);
+        Assert.False(lazy.IsMaterialized);
+        Assert.True(lazy.HasEncoded);
+        AssertSameArray(bytes, lazy.EncodedMemory, expectedOffset: 0);
+
+        Assert.Equal((7, 9), lazy.Value);
+        Assert.Equal(1, decodedCalls);
+        Assert.True(lazy.IsMaterialized);
+        Assert.Equal((7, 9), lazy.Value);
+        Assert.Equal(1, decodedCalls);
+    }
+
+    [Fact]
+    public void ReadLazy_CorruptTlv_FailsOnlyOnValue()
+    {
+        // SEQUENCE with truncated INTEGER contents after a valid outer TLV header is hard;
+        // use a complete TLV whose decoder rejects the payload.
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteOctetString(Asn1Tag.OctetString, new byte[] { 0x01 });
+        var bytes = writer.Encode();
+
+        var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
+        var lazy = reader.ReadLazy(r =>
+        {
+            _ = r.ReadBoolean(Asn1Tag.Boolean);
+            return true;
+        });
+
+        Assert.True(reader.Eof);
+        Assert.Throws<Asn1Exception>(() => _ = lazy.Value);
+    }
+
+    [Fact]
+    public void Lazy_WriteTo_PreservesEncodedBytes()
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        Asn1Integer.Encode(writer, 42);
+        var bytes = writer.Encode();
+
+        var lazy = new Asn1Reader(bytes, Asn1Encoding.Der).ReadLazy(r => Asn1Integer.Decode(r).GetInt32());
+        var rewrite = new Asn1Writer(Asn1Encoding.Der);
+        lazy.WriteTo(rewrite);
+        Assert.Equal(bytes, rewrite.Encode());
+        Assert.Equal(42, lazy.Value);
+    }
+
+    [Fact]
+    public void Lazy_FromValue_HasNoEncoded_WriteToThrows()
+    {
+        var lazy = Asn1Lazy<int>.FromValue(3);
+        Assert.True(lazy.IsMaterialized);
+        Assert.False(lazy.HasEncoded);
+        Assert.Equal(3, lazy.Value);
+        Assert.Throws<InvalidOperationException>(() => lazy.WriteTo(new Asn1Writer(Asn1Encoding.Der)));
+        Assert.Throws<InvalidOperationException>(() => _ = lazy.EncodedMemory);
+    }
+
+    [Fact]
+    public void Lazy_Clone_DetachesFromSourceBuffer()
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        Asn1Integer.Encode(writer, 5);
+        var bytes = writer.Encode();
+        var lazy = new Asn1Reader(bytes, Asn1Encoding.Der).ReadLazy(r => Asn1Integer.Decode(r).GetInt32());
+        var clone = lazy.Clone();
+        Assert.Equal(bytes, clone.EncodedMemory.ToArray());
+        Assert.True(MemoryMarshal.TryGetArray(clone.EncodedMemory, out ArraySegment<byte> segment));
+        Assert.NotSame(bytes, segment.Array);
+        Assert.Equal(5, clone.Value);
+    }
 }

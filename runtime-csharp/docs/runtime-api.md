@@ -20,7 +20,7 @@
 
 ```text
 CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
-              → Asn1Tag, Asn1BitString, Asn1Any, Asn1Exception
+              → Asn1Tag, Asn1BitString, Asn1Any, Asn1Lazy<T>, Asn1Exception
 ```
 
 Статические `Asn1Boolean` / `Asn1Enumerated` / … — warm convenience; codegen их не эмитит.
@@ -43,6 +43,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `ReadOctetString → ReadOnlyMemory` / `TryReadOctetString(Span)` | hot | view / copy-out (Try всегда продвигает reader); constructed BER — owned |
 | `ReadValue → ReadOnlyMemory` / `TryReadValue(Span)` / `ReadTlv` | cold/warm | view / copy-out |
 | `Asn1Any.EncodedMemory` / `ContentsMemory` / `ToArray` | hot | view полного TLV / срез V / detach |
+| `Asn1Lazy<T>` / `ReadLazy` / `HasEncoded` / `Value` / `WriteTo` | hot | отложенный decode полного TLV (`options.lazy`); view до `.Value` |
 | `Asn1BitString.Span` / `Memory` / `ToArray` | hot | view (из reader) / detach |
 | `Asn1Integer.Span` / `Memory` / `ToArray` | hot | view DER contents / detach |
 | `Asn1Primitives` wrappers (+ `Asn1OctetString.TryDecode`) | warm | делегируют |
@@ -91,6 +92,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `WriteSequenceOf<T>` / `ReadSequenceOf<T>` / `ReadSetOf<T>` | list round-trip; empty list |
 | `WriteExplicit` | constructed wrapper |
 | `WriteAny` / `ReadAny` | IMPLICIT peel; EncodedMemory bit-exact |
+| `ReadLazy` / `Asn1Lazy<T>` | defer decode; Value materialize; WriteTo raw TLV |
 | `WriteRaw` | append TLV |
 | `ReadValue` / `ReadTlv` | view; wrong tag |
 | Wrappers | smoke |
