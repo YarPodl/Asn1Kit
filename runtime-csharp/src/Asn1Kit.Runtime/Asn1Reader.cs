@@ -116,7 +116,9 @@ public sealed class Asn1Reader
 
         return ReadSequence(expected, inner =>
         {
-            var items = new List<T>();
+            // Heuristic capacity: remaining content octets / rough min TLV size (tag+length).
+            var capacity = Math.Max(4, inner.Source.Length / 4);
+            var items = new List<T>(capacity);
             while (!inner.Eof)
             {
                 items.Add(decodeItem(inner));

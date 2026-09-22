@@ -34,7 +34,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 
 | Символ | Роль | Ownership |
 | --- | --- | --- |
-| `Asn1Writer.EncodedLength` / `TryEncode(Span)` / `Encode() → byte[]` | hot | snapshot / copy-out |
+| `Asn1Writer.EncodedLength` / `TryEncode(Span)` / `Encode() → byte[]` / `Reset()` | hot | snapshot / copy-out; `Reset` reuse without shrinking capacity |
 | `WriteOctetString(ReadOnlySpan)` / `WriteRaw(ReadOnlySpan)` | hot/cold | borrow |
 | `WriteSequence` / `WriteSet` / `WriteSetOf` / `WriteSequenceOf<T>` / `WriteSetOf<T>` / `WriteExplicit(Action)` | hot | callback |
 | `ReadSequenceOf<T>` / `ReadSetOf<T>` | hot | owned `List<T>` |
@@ -51,7 +51,8 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 ## Заметки
 
 - `definiteOnly` в private `WriteTlv` игнорируется; indefinite на записи не эмитится.
-- `WriteSequence` / `WriteSet` / `WriteSetOf` / `WriteExplicit` пишут nested contents в тот же буфер writer’а (callback получает outer `Asn1Writer`); length — резерв + patch/compact.
+- `WriteSequence` / `WriteSet` / `WriteSetOf` / `WriteExplicit` пишут nested contents в тот же буфер writer’а (callback получает outer `Asn1Writer`); length — резерв + patch/compact. Внутренний буфер — `byte[]` (не `MemoryStream`); `Reset()` обнуляет длину без освобождения capacity.
+- `ReadSequenceOf` / `ReadSetOf` создают `List<T>` с эвристической capacity по длине contents.
 - `TryReadOctetString` / `TryReadValue` при нехватке destination возвращают `false`, но TLV уже потреблён.
 
 ## Soft-read и строгие опции

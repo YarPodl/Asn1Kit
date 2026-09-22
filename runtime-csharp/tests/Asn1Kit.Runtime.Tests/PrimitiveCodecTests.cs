@@ -201,6 +201,20 @@ public sealed class PrimitiveCodecTests
     }
 
     [Fact]
+    public void Writer_Reset_ReusesCapacityAndClearsOutput()
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteInteger(Asn1Tag.Integer, 1);
+        var first = writer.Encode();
+        Assert.Equal(new byte[] { 0x02, 0x01, 0x01 }, first);
+
+        writer.Reset();
+        Assert.Equal(0, writer.EncodedLength);
+        writer.WriteInteger(Asn1Tag.Integer, 2);
+        Assert.Equal(new byte[] { 0x02, 0x01, 0x02 }, writer.Encode());
+    }
+
+    [Fact]
     public void OctetString_LongFormLength_RoundTrips()
     {
         var payload = new byte[128];

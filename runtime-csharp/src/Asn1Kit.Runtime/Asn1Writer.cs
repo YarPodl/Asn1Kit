@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Numerics;
 
@@ -11,38 +12,42 @@ public sealed class Asn1Writer
     /// <summary>INTEGER / string contents larger than this use a heap buffer instead of stackalloc.</summary>
     private const int StackEncodeThreshold = 64;
 
-    private readonly MemoryStream _buffer = new();
+    private const int DefaultCapacity = 256;
+
+    private byte[] _buffer;
+    private int _length;
 
     public Asn1Writer(Asn1Encoding encoding = Asn1Encoding.Der)
     {
         Encoding = encoding;
+        _buffer = new byte[DefaultCapacity];
+        _length = 0;
     }
 
     public Asn1Encoding Encoding { get; }
 
-    public int EncodedLength => checked((int)_buffer.Length);
+    public int EncodedLength => _length;
 
-    public byte[] Encode() => _buffer.ToArray();
+    /// <summary>Clears written bytes so the writer can be reused without reallocating the backing store.</summary>
+    public void Reset() => _length = 0;
+
+    public byte[] Encode()
+    {
+        var result = new byte[_length];
+        Buffer.BlockCopy(_buffer, 0, result, 0, _length);
+        return result;
+    }
 
     public bool TryEncode(Span<byte> destination, out int bytesWritten)
     {
-        var length = EncodedLength;
-        if (destination.Length < length)
+        if (destination.Length < _length)
         {
             bytesWritten = 0;
             return false;
         }
 
-        if (_buffer.TryGetBuffer(out var segment))
-        {
-            segment.AsSpan(0, length).CopyTo(destination);
-        }
-        else
-        {
-            _buffer.ToArray().AsSpan(0, length).CopyTo(destination);
-        }
-
-        bytesWritten = length;
+        _buffer.AsSpan(0, _length).CopyTo(destination);
+        bytesWritten = _length;
         return true;
     }
 
@@ -148,8 +153,10 @@ public sealed class Asn1Writer
         var payload = value.Span;
         WriteTag(tag.AsPrimitive());
         WriteLength(1 + payload.Length, definiteOnly: true);
-        _buffer.WriteByte((byte)value.UnusedBits);
-        _buffer.Write(payload);
+        Ensure(1 + payload.Length);
+        _buffer[_length++] = (byte)value.UnusedBits;
+        payload.CopyTo(_buffer.AsSpan(_length));
+        _length += payload.Length;
     }
 
     public void WriteString(Asn1Tag tag, string value, Asn1StringForm form)
@@ -258,7 +265,9 @@ public sealed class Asn1Writer
 
     public void WriteRaw(ReadOnlySpan<byte> tlv)
     {
-        _buffer.Write(tlv);
+        Ensure(tlv.Length);
+        tlv.CopyTo(_buffer.AsSpan(_length));
+        _length += tlv.Length;
     }
 
     /// <summary>Writes ANY by appending the stored TLV as-is (bit-exact).</summary>
@@ -285,15 +294,14 @@ public sealed class Asn1Writer
     private void WriteConstructed(Asn1Tag tag, Action<Asn1Writer> content, bool sortDerSetOf)
     {
         WriteTag(tag);
-        var lengthPos = checked((int)_buffer.Position);
-        Span<byte> reserved = stackalloc byte[MaxDefiniteLengthBytes];
-        reserved.Clear();
-        _buffer.Write(reserved);
+        var lengthPos = _length;
+        Ensure(MaxDefiniteLengthBytes);
+        _buffer.AsSpan(_length, MaxDefiniteLengthBytes).Clear();
+        _length += MaxDefiniteLengthBytes;
 
-        var contentStart = checked((int)_buffer.Position);
+        var contentStart = _length;
         content(this);
-        var contentEnd = checked((int)_buffer.Position);
-        var contentLength = contentEnd - contentStart;
+        var contentLength = _length - contentStart;
 
         if (sortDerSetOf)
         {
@@ -304,7 +312,7 @@ public sealed class Asn1Writer
     }
 
     /// <summary>
-    /// Patches the reserved length field at <paramref name="lengthPos"/> and compacts the stream when
+    /// Patches the reserved length field at <paramref name="lengthPos"/> and compacts the buffer when
     /// the minimal definite-length encoding uses fewer than <see cref="MaxDefiniteLengthBytes"/> octets.
     /// </summary>
     private void FinishDefiniteLength(int lengthPos, int contentStart, int contentLength)
@@ -314,28 +322,19 @@ public sealed class Asn1Writer
         var shift = MaxDefiniteLengthBytes - lengthSize;
         var contentEnd = contentStart + contentLength;
 
-        if (!_buffer.TryGetBuffer(out var segment))
-        {
-            throw new Asn1Exception("Writer buffer is not accessible.");
-        }
-
-        var array = segment.Array!;
-        var origin = segment.Offset;
-        encoded.Slice(0, lengthSize).CopyTo(array.AsSpan(origin + lengthPos, lengthSize));
+        encoded.Slice(0, lengthSize).CopyTo(_buffer.AsSpan(lengthPos, lengthSize));
 
         if (shift != 0 && contentLength > 0)
         {
             Buffer.BlockCopy(
-                array,
-                origin + contentStart,
-                array,
-                origin + contentStart - shift,
+                _buffer,
+                contentStart,
+                _buffer,
+                contentStart - shift,
                 contentLength);
         }
 
-        var newEnd = contentEnd - shift;
-        _buffer.SetLength(newEnd);
-        _buffer.Position = newEnd;
+        _length = contentEnd - shift;
     }
 
     /// <summary>Writes a minimal definite-length encoding into <paramref name="destination"/>; returns octet count (1…5).</summary>
@@ -368,18 +367,13 @@ public sealed class Asn1Writer
             return;
         }
 
-        if (!_buffer.TryGetBuffer(out var segment))
-        {
-            throw new Asn1Exception("Writer buffer is not accessible.");
-        }
-
-        SortDerSetOfContents(segment.Array!, segment.Offset + contentStart, contentLength);
+        SortDerSetOfContents(_buffer, contentStart, contentLength);
     }
 
     private static void SortDerSetOfContents(byte[] data, int start, int length)
     {
         var end = start + length;
-        var ranges = new List<(int Start, int Length)>();
+        var ranges = new List<(int Start, int Length)>(8);
         var offset = start;
         while (offset < end)
         {
@@ -412,15 +406,22 @@ public sealed class Asn1Writer
             return;
         }
 
-        var sorted = new byte[length];
-        var writeOffset = 0;
-        foreach (var (tlvStart, tlvLength) in ranges)
+        var rented = ArrayPool<byte>.Shared.Rent(length);
+        try
         {
-            Buffer.BlockCopy(data, tlvStart, sorted, writeOffset, tlvLength);
-            writeOffset += tlvLength;
-        }
+            var writeOffset = 0;
+            foreach (var (tlvStart, tlvLength) in ranges)
+            {
+                Buffer.BlockCopy(data, tlvStart, rented, writeOffset, tlvLength);
+                writeOffset += tlvLength;
+            }
 
-        Buffer.BlockCopy(sorted, 0, data, start, length);
+            Buffer.BlockCopy(rented, 0, data, start, length);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(rented);
+        }
     }
 
     /// <summary>Returns the index just past one complete TLV starting at <paramref name="offset"/> (bounded by <paramref name="end"/>).</summary>
@@ -494,7 +495,9 @@ public sealed class Asn1Writer
     {
         WriteTag(tag);
         WriteLength(contents.Length, definiteOnly);
-        _buffer.Write(contents);
+        Ensure(contents.Length);
+        contents.CopyTo(_buffer.AsSpan(_length));
+        _length += contents.Length;
     }
 
     private void WriteTag(Asn1Tag tag)
@@ -502,11 +505,13 @@ public sealed class Asn1Writer
         var first = (byte)(((int)tag.TagClass << 6) | (tag.Constructed ? 0x20 : 0));
         if (tag.Number < 31)
         {
-            _buffer.WriteByte((byte)(first | tag.Number));
+            Ensure(1);
+            _buffer[_length++] = (byte)(first | tag.Number);
             return;
         }
 
-        _buffer.WriteByte((byte)(first | 0x1F));
+        Ensure(1 + 5);
+        _buffer[_length++] = (byte)(first | 0x1F);
         var number = tag.Number;
         Span<byte> temp = stackalloc byte[5];
         var count = 0;
@@ -520,7 +525,7 @@ public sealed class Asn1Writer
 
         for (var i = count - 1; i >= 0; i--)
         {
-            _buffer.WriteByte(temp[i]);
+            _buffer[_length++] = temp[i];
         }
     }
 
@@ -529,7 +534,26 @@ public sealed class Asn1Writer
         _ = definiteOnly;
         Span<byte> encoded = stackalloc byte[MaxDefiniteLengthBytes];
         var size = EncodeDefiniteLength(length, encoded);
-        _buffer.Write(encoded[..size]);
+        Ensure(size);
+        encoded[..size].CopyTo(_buffer.AsSpan(_length));
+        _length += size;
+    }
+
+    private void Ensure(int additional)
+    {
+        var required = _length + additional;
+        if (required <= _buffer.Length)
+        {
+            return;
+        }
+
+        var newSize = _buffer.Length;
+        while (newSize < required)
+        {
+            newSize = newSize < 1024 ? newSize * 2 : newSize + (newSize / 2);
+        }
+
+        Array.Resize(ref _buffer, newSize);
     }
 
     internal static byte[] EncodeInteger(BigInteger value)

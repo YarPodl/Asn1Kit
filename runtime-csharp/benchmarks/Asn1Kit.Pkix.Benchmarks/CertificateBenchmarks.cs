@@ -17,6 +17,7 @@ public class CertificateBenchmarks
     private Certificate _asn1Kit = null!;
     private X509CertificateStructure _bouncyCastle = null!;
     private byte[] _bclRaw = null!;
+    private Asn1Writer _encodeWriter = null!;
 
     [GlobalSetup]
     public void Setup()
@@ -26,6 +27,7 @@ public class CertificateBenchmarks
         _bouncyCastle = X509CertificateStructure.GetInstance(Asn1Object.FromByteArray(_der));
         using var bcl = new X509Certificate2(_der);
         _bclRaw = bcl.RawData;
+        _encodeWriter = new Asn1Writer(Asn1Encoding.Der);
     }
 
     [Benchmark(Baseline = true)]
@@ -46,9 +48,9 @@ public class CertificateBenchmarks
     [BenchmarkCategory("Encode", "Certificate")]
     public byte[] Asn1Kit_Encode()
     {
-        var writer = new Asn1Writer(Asn1Encoding.Der);
-        _asn1Kit.Encode(writer);
-        return writer.Encode();
+        _encodeWriter.Reset();
+        _asn1Kit.Encode(_encodeWriter);
+        return _encodeWriter.Encode();
     }
 
     /// <summary>BCL has no structural re-encode of Certificate; RawData is an identity copy of the input DER.</summary>

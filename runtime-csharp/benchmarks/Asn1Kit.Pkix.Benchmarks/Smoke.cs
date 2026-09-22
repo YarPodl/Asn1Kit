@@ -3,7 +3,8 @@ using System.Security.Cryptography.X509Certificates;
 using Asn1Kit.Pkix.Bench;
 using Asn1Kit.Runtime;
 using Org.BouncyCastle.Asn1;
-using Asn1KitContentInfo = Asn1Kit.Cms.Bench.ContentInfo;
+using BenchContentInfo = Asn1Kit.Cms.Bench.ContentInfo;
+using EagerContentInfo = Asn1Kit.Cms.ContentInfo;
 using BcContentInfo = Org.BouncyCastle.Asn1.Cms.ContentInfo;
 using BcCertificateList = Org.BouncyCastle.Asn1.X509.CertificateList;
 using BcCertificateStructure = Org.BouncyCastle.Asn1.X509.X509CertificateStructure;
@@ -29,12 +30,44 @@ internal static class Smoke
         _ = CertificateList.Decode(new Asn1Reader(crlDer, Asn1Encoding.Der));
         _ = BcCertificateList.GetInstance(Asn1Object.FromByteArray(crlDer));
 
-        _ = Asn1KitContentInfo.Decode(new Asn1Reader(cmsDer, Asn1Encoding.Der));
+        var bench = BenchContentInfo.Decode(new Asn1Reader(cmsDer, Asn1Encoding.Der));
+        var lazyCert = bench.Content.SignedData!.Certificates!
+            .Single(c => c.Certificate is not null)
+            .Certificate!;
+        if (!lazyCert.HasEncoded)
+        {
+            throw new InvalidOperationException("Bench CMS decode did not retain certificate TLV.");
+        }
+
+        if (lazyCert.IsMaterialized)
+        {
+            throw new InvalidOperationException("Bench CMS decode materialized certificate unexpectedly.");
+        }
+
+        var lazyWriter = new Asn1Writer(Asn1Encoding.Der);
+        bench.Encode(lazyWriter);
+        var lazyEncoded = lazyWriter.Encode();
+        if (lazyEncoded.Length == 0)
+        {
+            throw new InvalidOperationException("Bench CMS lazy encode produced empty output.");
+        }
+
+        // Touch .Value once — encode must still succeed (HasEncoded path).
+        _ = lazyCert.Value.TbsCertificate.SerialNumber;
+        if (!lazyCert.IsMaterialized)
+        {
+            throw new InvalidOperationException("Expected certificate materialization after .Value.");
+        }
+
+        _ = EagerContentInfo.Decode(new Asn1Reader(cmsDer, Asn1Encoding.Der));
+
         var signedCms = new SignedCms();
         signedCms.Decode(cmsDer);
         _ = signedCms.Encode();
+        _ = signedCms.Certificates.Count;
         _ = BcContentInfo.GetInstance(Asn1Object.FromByteArray(cmsDer));
 
-        Console.WriteLine("Smoke OK: Certificate, CRL, CMS fixtures decode under Asn1Kit / BCL / BouncyCastle.");
+        Console.WriteLine(
+            "Smoke OK: Certificate, CRL, CMS (Bench lazy + Eager golden) under Asn1Kit / BCL / BouncyCastle.");
     }
 }

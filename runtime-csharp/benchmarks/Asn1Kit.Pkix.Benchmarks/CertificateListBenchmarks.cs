@@ -15,6 +15,7 @@ public class CertificateListBenchmarks
     private byte[] _der = null!;
     private CertificateList _asn1Kit = null!;
     private BcCertificateList _bouncyCastle = null!;
+    private Asn1Writer _encodeWriter = null!;
 
     [GlobalSetup]
     public void Setup()
@@ -22,6 +23,7 @@ public class CertificateListBenchmarks
         _der = FixtureLoader.ReadPkix("GoodCACRL.crl");
         _asn1Kit = CertificateList.Decode(new Asn1Reader(_der, Asn1Encoding.Der));
         _bouncyCastle = BcCertificateList.GetInstance(Asn1Object.FromByteArray(_der));
+        _encodeWriter = new Asn1Writer(Asn1Encoding.Der);
     }
 
     [Benchmark(Baseline = true)]
@@ -38,9 +40,9 @@ public class CertificateListBenchmarks
     [BenchmarkCategory("Encode", "CRL")]
     public byte[] Asn1Kit_Encode()
     {
-        var writer = new Asn1Writer(Asn1Encoding.Der);
-        _asn1Kit.Encode(writer);
-        return writer.Encode();
+        _encodeWriter.Reset();
+        _asn1Kit.Encode(_encodeWriter);
+        return _encodeWriter.Encode();
     }
 
     [Benchmark]
