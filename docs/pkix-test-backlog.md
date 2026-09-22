@@ -122,7 +122,7 @@
 
 ---
 
-## CMS / PKCS#7 (модуль status.md #17 — ASN.1/IR/C# **добавлены**; codec-кейсы ниже — вторая половина)
+## CMS / PKCS#7 (ASN.1/IR/C# **добавлены**; codec-кейсы ниже — вторая половина; DVCS — [status.md](status.md) backlog)
 
 Ориентиры: BouncyCastle `cms/test`, OpenSSL `80-test_cms.t`, .NET `SignedCms` / `EnvelopedCms`.  
 Типы: `Asn1Kit.Cms` из [cms-2004.asn](../compiler/fixtures/asn1/cms-2004.asn) / golden [cms-2004.json](../compiler/fixtures/ir/cms-2004.json).

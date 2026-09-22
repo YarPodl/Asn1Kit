@@ -98,7 +98,7 @@
 
 **Последствие.**
 - На **записи** runtime по-прежнему эмитит канонический DER (минимальный INTEGER, нулевые trailing bits BIT STRING, definite length, BOOLEAN `00`/`FF`, …).
-- На **чтении** отдельные проверки X.690/DER могут быть **выключены по умолчанию**: значение читается успешно. Каждое такое послабление явно перечислено в [status.md](status.md) § Runtime и в [runtime-api.md](../runtime-csharp/docs/runtime-api.md); новый soft-accept без записи в эти файлы — регрессия процесса.
+- На **чтении** отдельные проверки X.690/DER могут быть **выключены по умолчанию**: значение читается успешно. Инвентарь soft-accept и флагов — в [runtime-api.md](../runtime-csharp/docs/runtime-api.md) (краткий срез — [status.md](status.md) § Runtime); новый soft-accept без записи туда — регрессия процесса.
 - Предпочтительный механизм — опции reader’а (вкл/выкл строгую проверку), а не ветвление по `Asn1Encoding` в одиночку. Строгий режим должен отвергать те же векторы, что ожидают BoringSSL/BCL/BC.
 - Зафиксировано по умолчанию **выключено** (accept):
   1. reject non-minimal INTEGER contents (X.690 §8.3.2) — флаг `Asn1ReaderOptions.RejectNonMinimalInteger`;

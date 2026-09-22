@@ -30,7 +30,7 @@
 ## Правила, которые нельзя нарушать
 
 - **Запись DER:** только definite length, BOOLEAN строго `0x00` / `0xFF`, BIT STRING с нулевыми хвостовыми битами, минимальный INTEGER из чисел. `WriteInteger(Asn1Integer)` пишет сохранённые contents as-is (владение проводом). Encode из числовых типов не ослабляется soft-profile.
-- **Чтение:** soft-accept для зафиксированных неканоничных форм (см. [decisions.md](../../../docs/decisions.md), [status.md](../../../docs/status.md), [runtime-api.md](../runtime-api.md)). Строгий reject — `Asn1ReaderOptions` (`Default` / `Strict` / точечные профили), не через молчаливое ужесточение default. Новый soft-accept без записи в status/runtime-api — запрещён.
+- **Чтение:** soft-accept для зафиксированных неканоничных форм (см. [decisions.md](../../../docs/decisions.md), [runtime-api.md](../runtime-api.md); срез в [status.md](../../../docs/status.md)). Строгий reject — `Asn1ReaderOptions` (`Default` / `Strict` / точечные профили), не через молчаливое ужесточение default. Новый soft-accept без записи в runtime-api (и status) — запрещён.
 - **BER на чтении:** definite и indefinite length, constructed `OCTET STRING` склеивается. На записи indefinite length не порождается (`definiteOnly` в private `WriteTlv` сейчас не используется — поведение то же).
 - Ошибка ввода (вне soft-списка) — всегда `Asn1Exception` с внятным текстом: чужой тег, обрезанный TLV, лишние байты, невалидная строка OID.
 - Runtime ничего не знает про ASN.1-модули, имена типов и IR.

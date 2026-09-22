@@ -39,7 +39,7 @@ Each JSON file is an array of cases:
 
 ## Soft-read vs strict
 
-Some encodings forbidden by strict DER/X.690 are accepted on decode by default (encode stays canonical). Policy: [docs/decisions.md](../../../docs/decisions.md), inventory: [docs/status.md](../../../docs/status.md) § Runtime, API notes: [docs/runtime-api.md](../../docs/runtime-api.md).
+Some encodings forbidden by strict DER/X.690 are accepted on decode by default (encode stays canonical). Policy: [docs/decisions.md](../../../docs/decisions.md); inventory: [docs/runtime-api.md](../../docs/runtime-api.md); summary: [docs/status.md](../../../docs/status.md) § Runtime.
 
 For each soft form, prefer a pair of cases:
 

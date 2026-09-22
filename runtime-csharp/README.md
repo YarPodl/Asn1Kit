@@ -29,7 +29,7 @@
 
 - [Публичный API](docs/runtime-api.md)
 - [Плейбук runtime](docs/playbooks/runtime.md)
-- Матрица поддержки — [docs/status.md](../docs/status.md) § Runtime BER/DER
+- Матрица поддержки — [docs/status.md](../docs/status.md); API Writer/Reader — [docs/runtime-api.md](docs/runtime-api.md)
 
 ```powershell
 dotnet test Asn1Kit.sln --filter FullyQualifiedName~Asn1Kit.Runtime.Tests

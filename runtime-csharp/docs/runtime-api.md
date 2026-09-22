@@ -3,7 +3,7 @@
 Контракт Writer/Reader: ownership буферов, горячий путь codegen и инвентарь символов.
 
 Реализация — [`src/Asn1Kit.Runtime`](../src/Asn1Kit.Runtime). Как править кодек — [playbooks/runtime.md](playbooks/runtime.md).
-Что уже поддержано по типам — [status.md](../../docs/status.md) § Runtime BER/DER.
+Матрица kind / слоёв — [status.md](../../docs/status.md).
 
 ## Политика Memory / Span
 
@@ -55,13 +55,13 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 
 ## Soft-read и строгие опции
 
-Политика: [docs/decisions.md](../../docs/decisions.md) «мягкое чтение»; инвентарь soft-accept — [docs/status.md](../../docs/status.md) § Runtime.
+Политика: [docs/decisions.md](../../docs/decisions.md) «мягкое чтение». Ниже — инвентарь soft-accept; краткий срез также в [docs/status.md](../../docs/status.md) § Runtime.
 
 - **Encode** всегда канонический (минимальный INTEGER, нулевые trailing bits BIT STRING, …).
 - **Decode** по умолчанию принимает soft-формы; строгий reject — `Asn1ReaderOptions` на конструкторе reader’а (`Default` / `Strict` / точечные профили).
 - Soft по умолчанию (`Reject* = false`): non-minimal INTEGER contents; BIT STRING nonzero trailing bits (включая режим DER).
 - Не soft (default reject): non-minimal length (`RejectNonMinimalLength`); OID overlong base-128 (`RejectOverlongOidBase128`).
-- Новый soft-accept без строки в status + этой секции — не допускается.
+- Новый soft-accept без строки в этой секции (+ краткий срез в status) — не допускается.
 - В фикстурах: default-кейс = `encode: false` + успешный decode; strict-кейс = `reject: true` + `readerProfile: "strict"` (или `allowNonMinimalLength` / `allowOverlongOid`).
 
 `Asn1Reader` / nested readers наследуют `Options` родителя.

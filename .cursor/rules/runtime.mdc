@@ -13,7 +13,7 @@ alwaysApply: false
 - Тестируй **весь** публичный API `Asn1Reader` / `Asn1Writer` / примитивов.
 - Для каждого типа: BER и DER, definite length; на чтении BER — indefinite length и constructed `OCTET STRING`.
 - DER на **записи**: канон (definite length, BOOLEAN `0x00`/`0xFF`, нулевые trailing bits BIT STRING, минимальный INTEGER).
-- DER на **чтении**: soft-accept для форм из [docs/status.md](docs/status.md) / [runtime-api.md](runtime-csharp/docs/runtime-api.md); строгий reject — опциями reader’а. Новый soft без записи в docs — запрещён. Всегда reject: indefinite length, BOOLEAN не `00`/`FF`, чужой тег, truncated.
+- DER на **чтении**: soft-accept для форм из [runtime-api.md](runtime-csharp/docs/runtime-api.md) (срез в [docs/status.md](docs/status.md)); строгий reject — опциями reader’а. Новый soft без записи в docs — запрещён. Всегда reject: indefinite length, BOOLEAN не `00`/`FF`, чужой тег, truncated.
 - Границы: пустой INTEGER, `0`, `-1`, длинный `BigInteger`, вложенные SEQUENCE/CHOICE, OPTIONAL отсутствует/присутствует, EOF, чужой тег, обрезанный TLV.
 - Round-trip: encode → decode → encode даёт те же DER-байты.
 - Soft-формы: пара тестов default-accept / strict-reject.
