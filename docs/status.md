@@ -47,6 +47,14 @@
 
 Не soft (default reject): non-minimal length, OID overlong base-128. Всегда reject: BOOLEAN length≠1 / constructed; empty INTEGER; truncated EOC; indefinite в DER. BER: indefinite, constructed строки/BIT STRING, время без секунд / `±hhmm`.
 
+## Бенчмарки PKIX/CMS
+
+[runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks](../runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks/) — BenchmarkDotNet Decode/Encode для `Certificate`, `CertificateList`, CMS `ContentInfo` (attached SignedData). Сравнение: Asn1Kit, BCL (`X509Certificate2` / `SignedCms`), BouncyCastle. Не в gate `dotnet test`.
+
+```powershell
+dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks
+```
+
 ## Backlog
 
 ### Открыто

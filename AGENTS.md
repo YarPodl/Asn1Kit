@@ -52,6 +52,9 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- compile `
 
 # пересборка golden C# (после правок генератора или IR; namespaces уже в cms-2004.json)
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/ir/cms-2004.json --lang csharp -o runtime-csharp/generated/Asn1Kit.Pkix
+
+# бенчмарки Certificate / CRL / CMS vs BCL и BouncyCastle (не входят в dotnet test)
+dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks
 ```
 
 Полный прогон тестов — секунды, отдельная «быстрая» цель не нужна: гоняй `dotnet test Asn1Kit.sln` целиком.
@@ -77,6 +80,7 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/i
 | [compiler/src/Asn1Kit.Cli/Program.cs](compiler/src/Asn1Kit.Cli/Program.cs) | Команды `compile` и `generate` |
 | [compiler/tests/Asn1Kit.Compiler.Tests/](compiler/tests/Asn1Kit.Compiler.Tests/) | IR, компилятор, codegen round-trip |
 | [runtime-csharp/tests/Asn1Kit.Runtime.Tests/](runtime-csharp/tests/Asn1Kit.Runtime.Tests/) | BER/DER матрица, oracle, `RuntimeTests` |
+| [runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks/](runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks/) | BenchmarkDotNet Cert/CRL/CMS vs BCL и BouncyCastle |
 
 ## Фикстуры
 
@@ -86,6 +90,7 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/i
 - [runtime-csharp/generated/Asn1Kit.Pkix/](runtime-csharp/generated/Asn1Kit.Pkix/) — **golden C#**: из `cms-2004.json` (`Asn1Kit.Pkix` + `Asn1Kit.Cms`), руками не править `*.g.cs`.
 - [compiler/fixtures/ir/example.json](compiler/fixtures/ir/example.json) — **ручная** фикстура с правками `options`; компилятором не воспроизводится.
 - [runtime-csharp/fixtures/ber-der/](runtime-csharp/fixtures/ber-der/) — hex-векторы runtime.
+- [runtime-csharp/fixtures/cms/](runtime-csharp/fixtures/cms/) — attached SignedData для бенчмарков.
 
 Подробнее — [compiler/README.md](compiler/README.md), [runtime-csharp/README.md](runtime-csharp/README.md).
 
