@@ -151,8 +151,8 @@ public sealed class CertificateExtensionCodecTests
         Assert.NotNull(expected.SubjectAltName);
         var names = PkixFixtures.ExtnValueReader(extension)
             .ReadSequenceOf(Asn1Tag.Sequence, static reader => GeneralName.Decode(reader));
-        Assert.Equal(expected.SubjectAltName!.Count, names.Count);
-        for (var i = 0; i < names.Count; i++)
+        Assert.Equal(expected.SubjectAltName!.Count, names.Length);
+        for (var i = 0; i < names.Length; i++)
         {
             var want = expected.SubjectAltName[i];
             var got = names[i];

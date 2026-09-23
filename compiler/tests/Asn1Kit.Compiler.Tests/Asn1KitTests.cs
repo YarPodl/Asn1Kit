@@ -252,7 +252,7 @@ END
         Assert.Contains("Asn1Tag.Set", source);
         Assert.DoesNotContain("class List", source);
         Assert.Contains("ASN.1 alias List ::= SET OF INTEGER.", source);
-        Assert.Contains("List<Asn1Integer> Items", source);
+        Assert.Contains("Asn1Integer[] Items", source);
 
         var assembly = CompileGenerated(source);
         var bagType = assembly.GetType("SetMod.Bag")!;
@@ -309,7 +309,7 @@ END
         Assert.IsType<Asn1Exception>(unknownEx.InnerException);
 
         var holder = Activator.CreateInstance(holderType)!;
-        var items = new List<Asn1Integer>
+        var items = new[]
         {
             Asn1Integer.FromInt32(2),
             Asn1Integer.FromInt32(1),
@@ -327,8 +327,8 @@ END
 
         var decodedHolder = holderType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
             .Invoke(null, new object[] { new Asn1Reader(expectedHolder, Asn1Encoding.Der) })!;
-        var decodedItems = (List<Asn1Integer>)holderType.GetProperty("Items")!.GetValue(decodedHolder)!;
-        Assert.Equal(2, decodedItems.Count);
+        var decodedItems = (Asn1Integer[])holderType.GetProperty("Items")!.GetValue(decodedHolder)!;
+        Assert.Equal(2, decodedItems.Length);
         Assert.Equal(Asn1Integer.FromInt32(1), decodedItems[0]);
         Assert.Equal(Asn1Integer.FromInt32(2), decodedItems[1]);
 
@@ -338,7 +338,7 @@ END
     }
 
     [Fact]
-    public void GeneratedCSharp_CollapsesSequenceOfAliasToList()
+    public void GeneratedCSharp_CollapsesSequenceOfAliasToArray()
     {
         const string asn = @"
 OfMod DEFINITIONS EXPLICIT TAGS ::= BEGIN
@@ -354,7 +354,7 @@ END
 
         Assert.DoesNotContain("class Seq", source);
         Assert.Contains("ASN.1 alias Seq ::= SEQUENCE OF INTEGER.", source);
-        Assert.Contains("List<Asn1Integer> Values", source);
+        Assert.Contains("Asn1Integer[] Values", source);
         Assert.Contains("WriteSequenceOf", source);
         Assert.Contains("ReadSequenceOf", source);
 
@@ -365,7 +365,7 @@ END
         var holder = Activator.CreateInstance(holderType)!;
         holderType.GetProperty("Values")!.SetValue(
             holder,
-            new List<Asn1Integer> { Asn1Integer.FromInt32(1), Asn1Integer.FromInt32(2) });
+            new[] { Asn1Integer.FromInt32(1), Asn1Integer.FromInt32(2) });
 
         var expected = new byte[]
         {
@@ -378,8 +378,8 @@ END
 
         var decoded = holderType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
             .Invoke(null, new object[] { new Asn1Reader(expected, Asn1Encoding.Der) })!;
-        var values = (List<Asn1Integer>)holderType.GetProperty("Values")!.GetValue(decoded)!;
-        Assert.Equal(2, values.Count);
+        var values = (Asn1Integer[])holderType.GetProperty("Values")!.GetValue(decoded)!;
+        Assert.Equal(2, values.Length);
         Assert.Equal(Asn1Integer.FromInt32(1), values[0]);
         Assert.Equal(Asn1Integer.FromInt32(2), values[1]);
     }
@@ -746,7 +746,7 @@ END
         Assert.DoesNotContain("class Name", source);
         Assert.DoesNotContain("NameKind", source);
         Assert.Contains("ASN.1 alias Name ::= CHOICE { rdnSequence RdnSequence }.", source);
-        Assert.Contains("List<Relative> Who", source);
+        Assert.Contains("Relative[] Who", source);
         Assert.Contains("class Multi", source);
         Assert.Contains("enum MultiKind", source);
         Assert.Contains("public static Multi FromA(Asn1Integer a) => new Multi", source);
@@ -761,13 +761,13 @@ END
 
         var holderType = assembly.GetType("ChoiceMod.Holder")!;
         var relativeType = assembly.GetType("ChoiceMod.Relative")!;
-        Assert.Equal(typeof(List<>).MakeGenericType(relativeType), holderType.GetProperty("Who")!.PropertyType);
+        Assert.Equal(relativeType.MakeArrayType(), holderType.GetProperty("Who")!.PropertyType);
 
         var relative = Activator.CreateInstance(relativeType)!;
         relativeType.GetProperty("Id")!.SetValue(relative, Asn1Integer.FromInt32(7));
 
-        var who = Activator.CreateInstance(typeof(List<>).MakeGenericType(relativeType))!;
-        typeof(List<>).MakeGenericType(relativeType).GetMethod("Add")!.Invoke(who, new[] { relative });
+        var who = Array.CreateInstance(relativeType, 1);
+        who.SetValue(relative, 0);
 
         var multiType = assembly.GetType("ChoiceMod.Multi")!;
         var multiKind = assembly.GetType("ChoiceMod.MultiKind")!;
@@ -801,9 +801,9 @@ END
 
         var decoded = holderType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
             .Invoke(null, new object[] { new Asn1Reader(expected, Asn1Encoding.Der) })!;
-        var decodedWho = (System.Collections.IList)holderType.GetProperty("Who")!.GetValue(decoded)!;
-        Assert.Equal(1, decodedWho.Count);
-        Assert.Equal(Asn1Integer.FromInt32(7), relativeType.GetProperty("Id")!.GetValue(decodedWho[0]));
+        var decodedWho = (Array)holderType.GetProperty("Who")!.GetValue(decoded)!;
+        Assert.Equal(1, decodedWho.Length);
+        Assert.Equal(Asn1Integer.FromInt32(7), relativeType.GetProperty("Id")!.GetValue(decodedWho.GetValue(0))!);
         var decodedPick = holderType.GetProperty("Pick")!.GetValue(decoded)!;
         Assert.Equal(Enum.Parse(multiKind, "A"), multiType.GetProperty("Kind")!.GetValue(decodedPick));
         Assert.Equal(Asn1Integer.FromInt32(7), multiType.GetProperty("A")!.GetValue(decodedPick));
@@ -1155,20 +1155,20 @@ END
             .Components.Single(c => c.Name == "bagLazy");
         document.Modules[0].Types.Single(t => t.Name == "Item").Options = IrOptions.SetLazy(null, true);
         bagLazy.Options = IrOptions.SetLazy(null, true);
-        // bag: only element lazy → List<Asn1Lazy<Item>>
-        // bagLazy: container + element → Asn1Lazy<List<Asn1Lazy<Item>>>
+        // bag: only element lazy → Asn1Lazy<Item>[]
+        // bagLazy: container + element → Asn1Lazy<Asn1Lazy<Item>[]>
 
         var source = new CSharpBackend().Generate(document).Single().Contents;
-        Assert.Contains("public List<Asn1Lazy<Item>> BagValue { get; set; } = new();", source);
-        Assert.Contains("public Asn1Lazy<List<Asn1Lazy<Item>>> BagLazy { get; set; }", source);
+        Assert.Contains("public Asn1Lazy<Item>[] BagValue { get; set; } = Array.Empty<Asn1Lazy<Item>>();", source);
+        Assert.Contains("public Asn1Lazy<Asn1Lazy<Item>[]> BagLazy { get; set; }", source);
         Assert.Contains("ReadLazy(r =>", source);
 
         var assembly = CompileGenerated(source);
         var bagType = assembly.GetType("LazyOfMod.Bag")!;
         var itemType = assembly.GetType("LazyOfMod.Item")!;
         var lazyItemType = typeof(Asn1Lazy<>).MakeGenericType(itemType);
-        var listLazyItemType = typeof(List<>).MakeGenericType(lazyItemType);
-        var lazyListType = typeof(Asn1Lazy<>).MakeGenericType(listLazyItemType);
+        var arrayLazyItemType = lazyItemType.MakeArrayType();
+        var lazyArrayType = typeof(Asn1Lazy<>).MakeGenericType(arrayLazyItemType);
 
         object MakeItem(int n)
         {
@@ -1177,11 +1177,11 @@ END
             return lazyItemType.GetMethod("FromValue")!.Invoke(null, new[] { item })!;
         }
 
-        var bagList = Activator.CreateInstance(listLazyItemType)!;
-        listLazyItemType.GetMethod("Add")!.Invoke(bagList, new[] { MakeItem(10) });
-        var bagLazyList = Activator.CreateInstance(listLazyItemType)!;
-        listLazyItemType.GetMethod("Add")!.Invoke(bagLazyList, new[] { MakeItem(20) });
-        var bagLazyWrap = lazyListType.GetMethod("FromValue")!.Invoke(null, new[] { bagLazyList })!;
+        var bagList = Array.CreateInstance(lazyItemType, 1);
+        bagList.SetValue(MakeItem(10), 0);
+        var bagLazyList = Array.CreateInstance(lazyItemType, 1);
+        bagLazyList.SetValue(MakeItem(20), 0);
+        var bagLazyWrap = lazyArrayType.GetMethod("FromValue")!.Invoke(null, new object[] { bagLazyList })!;
 
         var holder = Activator.CreateInstance(bagType)!;
         bagType.GetProperty("BagValue")!.SetValue(holder, bagList);
@@ -1193,18 +1193,18 @@ END
 
         var decoded = bagType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
             .Invoke(null, new object[] { new Asn1Reader(encoded, Asn1Encoding.Der) })!;
-        var decodedBag = bagType.GetProperty("BagValue")!.GetValue(decoded)!;
-        Assert.Equal(1, (int)listLazyItemType.GetProperty("Count")!.GetValue(decodedBag)!);
-        var first = listLazyItemType.GetProperty("Item")!.GetValue(decodedBag, new object[] { 0 })!;
+        var decodedBag = (Array)bagType.GetProperty("BagValue")!.GetValue(decoded)!;
+        Assert.Equal(1, decodedBag.Length);
+        var first = decodedBag.GetValue(0)!;
         Assert.False((bool)lazyItemType.GetProperty("IsMaterialized")!.GetValue(first)!);
         Assert.Equal(
             Asn1Integer.FromInt32(10),
             itemType.GetProperty("N")!.GetValue(lazyItemType.GetProperty("Value")!.GetValue(first)!)!);
 
         var decodedBagLazy = bagType.GetProperty("BagLazy")!.GetValue(decoded)!;
-        Assert.False((bool)lazyListType.GetProperty("IsMaterialized")!.GetValue(decodedBagLazy)!);
-        var listValue = lazyListType.GetProperty("Value")!.GetValue(decodedBagLazy)!;
-        var lazyElem = listLazyItemType.GetProperty("Item")!.GetValue(listValue, new object[] { 0 })!;
+        Assert.False((bool)lazyArrayType.GetProperty("IsMaterialized")!.GetValue(decodedBagLazy)!);
+        var listValue = (Array)lazyArrayType.GetProperty("Value")!.GetValue(decodedBagLazy)!;
+        var lazyElem = listValue.GetValue(0)!;
         Assert.Equal(
             Asn1Integer.FromInt32(20),
             itemType.GetProperty("N")!.GetValue(lazyItemType.GetProperty("Value")!.GetValue(lazyElem)!)!);
@@ -1228,13 +1228,13 @@ END
         values.Options = IrOptions.SetLazy(null, true);
 
         var source = new CSharpBackend().Generate(document).Single().Contents;
-        Assert.Contains("public Asn1Lazy<List<Asn1Integer>> Values { get; set; }", source);
+        Assert.Contains("public Asn1Lazy<Asn1Integer[]> Values { get; set; }", source);
 
         var assembly = CompileGenerated(source);
         var bagType = assembly.GetType("LazySetOfMod.Bag")!;
-        var lazyListType = typeof(Asn1Lazy<>).MakeGenericType(typeof(List<Asn1Integer>));
-        var list = new List<Asn1Integer> { Asn1Integer.FromInt32(2), Asn1Integer.FromInt32(1) };
-        var wrap = lazyListType.GetMethod("FromValue")!.Invoke(null, new object[] { list })!;
+        var lazyArrayType = typeof(Asn1Lazy<>).MakeGenericType(typeof(Asn1Integer[]));
+        var list = new[] { Asn1Integer.FromInt32(2), Asn1Integer.FromInt32(1) };
+        var wrap = lazyArrayType.GetMethod("FromValue")!.Invoke(null, new object[] { list })!;
         var holder = Activator.CreateInstance(bagType)!;
         bagType.GetProperty("Values")!.SetValue(holder, wrap);
 
@@ -1245,8 +1245,8 @@ END
         var decoded = bagType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
             .Invoke(null, new object[] { new Asn1Reader(encoded, Asn1Encoding.Der) })!;
         var lazy = bagType.GetProperty("Values")!.GetValue(decoded)!;
-        Assert.False((bool)lazyListType.GetProperty("IsMaterialized")!.GetValue(lazy)!);
-        var value = (List<Asn1Integer>)lazyListType.GetProperty("Value")!.GetValue(lazy)!;
+        Assert.False((bool)lazyArrayType.GetProperty("IsMaterialized")!.GetValue(lazy)!);
+        var value = (Asn1Integer[])lazyArrayType.GetProperty("Value")!.GetValue(lazy)!;
         Assert.Equal(new[] { Asn1Integer.FromInt32(1), Asn1Integer.FromInt32(2) }, value);
     }
 

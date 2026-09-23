@@ -70,7 +70,7 @@ public sealed class CertificateCodecTests
         Assert.Equal(tbs.SubjectPublicKeyInfo.SubjectPublicKey.Span.Length, again.TbsCertificate.SubjectPublicKeyInfo.SubjectPublicKey.Span.Length);
     }
 
-    private static void AssertDn(List<ExpectedDnAttribute> expected, List<List<AttributeTypeAndValue>> actual)
+    private static void AssertDn(List<ExpectedDnAttribute> expected, AttributeTypeAndValue[][] actual)
     {
         var flat = PkixFixtures.FlattenName(actual);
         Assert.Equal(expected.Count, flat.Count);

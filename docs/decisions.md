@@ -112,7 +112,7 @@
 
 **Причина.** Глубокие PKIX/CMS деревья (например `Certificate` → `TBSCertificate`) часто нужны лишь частично; полный eager-decode платит за неиспользуемые ветки.
 
-**Последствие.** `options.lazy: true` на поле / typedef / модуле (разрешение: component → TypeExpr → typedef → module) заставляет C# backend обернуть внешнее использование SEQUENCE/SET в `Asn1Lazy<T>`, а SEQUENCE OF/SET OF — в `Asn1Lazy<List<T>>`. `Asn1Reader.ReadLazy` захватывает полный TLV без разбора contents; `.Value` вызывает переданный decoder. Encode предпочитает `WriteRaw(EncodedMemory)` при наличии TLV (`HasEncoded`), иначе кодирует `.Value`. Собственный `T.Decode` типа с lazy по-прежнему жадный по своим полям. CHOICE и примитивы не оборачиваются.
+**Последствие.** `options.lazy: true` на поле / typedef / модуле (разрешение: component → TypeExpr → typedef → module) заставляет C# backend обернуть внешнее использование SEQUENCE/SET в `Asn1Lazy<T>`, а SEQUENCE OF/SET OF — в `Asn1Lazy<T[]>`. `Asn1Reader.ReadLazy` захватывает полный TLV без разбора contents; `.Value` вызывает переданный decoder. Encode предпочитает `WriteRaw(EncodedMemory)` при наличии TLV (`HasEncoded`), иначе кодирует `.Value`. Собственный `T.Decode` типа с lazy по-прежнему жадный по своим полям. CHOICE и примитивы не оборачиваются.
 
 ## Decode — `options.retainEncoded` и `Asn1Retained<T>`
 
@@ -124,7 +124,7 @@
 
 **Причина.** Имена вроде `AttributeType ::= OBJECT IDENTIFIER` и `DistinguishedName ::= RDNSequence` порождали sealed-обёртки с единственным `Value`, дублируя CLR-тип без пользы. В C# 10 / net6.0 нет публичных type alias уровня языка (`using` — только внутри файла). То же для `Name ::= CHOICE { rdnSequence RDNSequence }` — CHOICE с одним вариантом на проводе неотличим от альтернативы, а `NameKind` + обёртка только мешают API.
 
-**Последствие.** C# backend не эмитит класс для typedef, чей RHS — не constructed (кроме single-alternative CHOICE) и не `BIT STRING` с `namedBits`: в полях подставляется исходный тип (`string`, `Asn1Any`, `List<…>`, …), имя алиаса остаётся в `/// <summary>ASN.1 alias …</summary>`. CHOICE с одним вариантом сворачивается в тип альтернативы (тег CHOICE, если есть, переносится на неё); если и CHOICE, и альтернатива уже с тегами — класс CHOICE сохраняется. Исключение — named BIT STRING: класс с `Asn1BitString Value`, `[Flags]` enum `{Name}Flags` и `ToFlags` / `FromFlags` / свойство `Flags`. IR не меняется.
+**Последствие.** C# backend не эмитит класс для typedef, чей RHS — не constructed (кроме single-alternative CHOICE) и не `BIT STRING` с `namedBits`: в полях подставляется исходный тип (`string`, `Asn1Any`, `T[]`, …), имя алиаса остаётся в `/// <summary>ASN.1 alias …</summary>`. CHOICE с одним вариантом сворачивается в тип альтернативы (тег CHOICE, если есть, переносится на неё); если и CHOICE, и альтернатива уже с тегами — класс CHOICE сохраняется. Исключение — named BIT STRING: класс с `Asn1BitString Value`, `[Flags]` enum `{Name}Flags` и `ToFlags` / `FromFlags` / свойство `Flags`. IR не меняется.
 
 ## C# codegen — однотипный CHOICE → `Kind` + `Value`
 

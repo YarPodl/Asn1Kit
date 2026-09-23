@@ -46,7 +46,7 @@ public sealed class CSharpBackend : ILanguageBackend
             var typeName = IrOptions.CSharpTypeName(type.Options) ?? SanitizeIdentifier(type.Name);
             if (IsCollapsibleAlias(type.Type))
             {
-                // SEQUENCE OF / SET OF aliases collapse to List<T>, but nested element types
+                // SEQUENCE OF / SET OF aliases collapse to T[], but nested element types
                 // (e.g. SEQUENCE OF SEQUENCE {…}) must still be emitted as Owner_Item.
                 CollectNested(document, module, typeName, type.Type, queue);
                 continue;
@@ -222,7 +222,7 @@ public sealed class CSharpBackend : ILanguageBackend
             case SequenceOfType:
             case SetOfType:
                 throw new NotSupportedException(
-                    $"C# backend does not emit a named type for '{type.Kind}'; use List<T> via field encode/decode.");
+                    $"C# backend does not emit a named type for '{type.Kind}'; use T[] via field encode/decode.");
             case BitStringType bitString when IsNamedBitString(bitString):
                 EmitNamedBitString(sb, typeName, bitString);
                 break;
@@ -494,7 +494,8 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine($"    public {typeName}Kind Kind {{ get; private set; }}");
         if (homogeneousCsType is not null)
         {
-            var valueInit = Initializer(document, module, type.Components[0].Type, optional: false);
+            var valueInit = Initializer(
+                document, module, typeName, type.Components[0].Name, type.Components[0].Type, optional: false);
             sb.AppendLine($"    public {homogeneousCsType} Value {{ get; private set; }}{valueInit}");
         }
         else
@@ -794,7 +795,7 @@ public sealed class CSharpBackend : ILanguageBackend
         var setter = privateSetter ? "private set" : "set";
         var initializer = privateSetter
             ? ""
-            : Initializer(document, module, field.Type, optional, field.Options);
+            : Initializer(document, module, typeName, field.Name, field.Type, optional, field.Options);
         sb.AppendLine($"    public {csType} {prop} {{ get; {setter}; }}{initializer}");
     }
 
@@ -1904,7 +1905,7 @@ public sealed class CSharpBackend : ILanguageBackend
             ResolveOfItemNaming(document, module, original, owner, hint, out var itemOwner, out var itemHint);
             var element = type is SetOfType setOf ? setOf.Element : ((SequenceOfType)type).Element;
             var itemType = CsType(document, module, itemOwner, itemHint, element, optional: false, element.Options);
-            var listType = $"List<{itemType}>";
+            var listType = $"{itemType}[]";
             var wrapped = useLazy
                 ? $"Asn1Lazy<{listType}>"
                 : useRetain
@@ -2398,6 +2399,8 @@ public sealed class CSharpBackend : ILanguageBackend
     private string Initializer(
         IrDocument document,
         IrModule module,
+        string owner,
+        string hint,
         TypeExpr type,
         bool optional,
         JsonObject? fieldOptions = null)
@@ -2416,11 +2419,18 @@ public sealed class CSharpBackend : ILanguageBackend
         // Asn1Integer defaults to 0 (see Asn1Integer.Zero); no property initializer needed.
 
         var unwrapped = UnwrapAliases(document, module, type);
+        if (unwrapped is SequenceOfType or SetOfType)
+        {
+            ResolveOfItemNaming(document, module, type, owner, hint, out var itemOwner, out var itemHint);
+            var element = unwrapped is SetOfType setOf ? setOf.Element : ((SequenceOfType)unwrapped).Element;
+            var itemType = CsType(document, module, itemOwner, itemHint, element, optional: false, element.Options);
+            return $" = Array.Empty<{itemType}>();";
+        }
+
         return unwrapped switch
         {
             OidType => "",
             StringType => " = \"\";",
-            SequenceOfType or SetOfType => " = new();",
             _ => ""
         };
     }

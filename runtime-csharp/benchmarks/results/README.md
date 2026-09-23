@@ -10,8 +10,11 @@ Dated folders under this path are **checked-in baselines** for comparing optimiz
 Полный suite (`--filter *`) — при смене машины, SDK/runtime, фикстур или peer-библиотек.
 
 ```powershell
-# типичный прогон после правок Asn1Kit (та же машина)
-dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *Asn1Kit*
+# типичный прогон после правок Asn1Kit (та же машина; `_` отсекает peers и SequenceOfFill)
+dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *Asn1Kit_*
+
+# микробенч Fill-стратегий SEQUENCE OF
+dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *SequenceOfFill*
 
 # полный suite (peers + Asn1Kit)
 dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *
@@ -36,4 +39,5 @@ Update the “current baseline” section in [../Asn1Kit.Pkix.Benchmarks/README.
 
 | Folder | Git | Notes |
 | --- | --- | --- |
-| [2026-09-23](2026-09-23/) | `7d281d1` | Полный suite (peers + Asn1Kit); эталон BCL/BC для `*Asn1Kit*`-прогонов на этой машине |
+| [2026-09-23](2026-09-23/) | `7d281d1` | Полный suite (peers + Asn1Kit); эталон BCL/BC для `*Asn1Kit_*`-прогонов на этой машине |
+| [2026-09-23-of-arrays](2026-09-23-of-arrays/) | working tree | `ReadSequenceOf` → `T[]` / ArrayPool; backlog §8; Asn1Kit Alloc↓ |

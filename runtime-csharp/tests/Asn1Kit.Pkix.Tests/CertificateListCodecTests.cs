@@ -26,7 +26,7 @@ public sealed class CertificateListCodecTests
         Assert.Equal(expected.SignatureByteLength, crl.Signature.Span.Length);
 
         Assert.NotNull(tbs.RevokedCertificates);
-        Assert.Equal(expected.RevokedCertificates.Count, tbs.RevokedCertificates!.Count);
+        Assert.Equal(expected.RevokedCertificates.Count, tbs.RevokedCertificates!.Length);
         for (var i = 0; i < expected.RevokedCertificates.Count; i++)
         {
             var want = expected.RevokedCertificates[i];
@@ -79,7 +79,7 @@ public sealed class CertificateListCodecTests
             again.TbsCertList.RevokedCertificates!.Select(e => e.UserCertificate).ToList());
     }
 
-    private static void AssertDn(List<ExpectedDnAttribute> expected, List<List<AttributeTypeAndValue>> actual)
+    private static void AssertDn(List<ExpectedDnAttribute> expected, AttributeTypeAndValue[][] actual)
     {
         var flat = PkixFixtures.FlattenName(actual);
         Assert.Equal(expected.Count, flat.Count);

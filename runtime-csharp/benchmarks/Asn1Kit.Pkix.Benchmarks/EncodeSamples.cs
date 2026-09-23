@@ -70,15 +70,15 @@ internal static class EncodeSamples
                 Version = PkixVersion.V3,
                 SerialNumber = Asn1Integer.FromInt32(1),
                 Signature = signatureAlgorithm,
-                Issuer = Asn1Retained<List<List<AttributeTypeAndValue>>>.FromValue(name),
+                Issuer = Asn1Retained<AttributeTypeAndValue[][]>.FromValue(name),
                 Validity = new Validity
                 {
                     NotBefore = Time.FromUtcTime(NotBefore),
                     NotAfter = Time.FromUtcTime(NotAfter),
                 },
-                Subject = Asn1Retained<List<List<AttributeTypeAndValue>>>.FromValue(CloneName(name)),
+                Subject = Asn1Retained<AttributeTypeAndValue[][]>.FromValue(CloneName(name)),
                 SubjectPublicKeyInfo = Asn1Retained<SubjectPublicKeyInfo>.FromValue(CreateSpki()),
-                Extensions = Asn1Retained<List<Extension>>.FromValue(new List<Extension>
+                Extensions = Asn1Retained<Extension[]>.FromValue(new Extension[]
                 {
                     Ext(OidSubjectKeyIdentifier, critical: false, EncodeSki(SubjectKeyId)),
                     Ext(OidKeyUsage, critical: true, EncodeKeyUsage(KeyUsageFlags.KeyCertSign | KeyUsageFlags.CRLSign)),
@@ -102,12 +102,12 @@ internal static class EncodeSamples
                 Issuer = GoodCaName(),
                 ThisUpdate = Time.FromUtcTime(NotBefore),
                 NextUpdate = Time.FromUtcTime(NotAfter),
-                RevokedCertificates = new List<TBSCertList_RevokedCertificates_Item>
+                RevokedCertificates = new[]
                 {
                     Revoked(0x0E, NotBefore),
                     Revoked(0x0F, NotBefore),
                 },
-                CrlExtensions = new List<Extension>
+                CrlExtensions = new[]
                 {
                     Ext(OidAuthorityKeyIdentifier, critical: false, EncodeAki(AuthorityKeyId)),
                     Ext(OidCrlNumber, critical: false, EncodeCrlNumber(1)),
@@ -169,40 +169,57 @@ internal static class EncodeSamples
             new DerBitString(SignatureBytes)));
     }
 
-    private static List<List<AttributeTypeAndValue>> TrustAnchorName() => Name(
+    private static AttributeTypeAndValue[][] TrustAnchorName() => Name(
         ("US", OidCountryName),
         ("Test Certificates 2011", OidOrganizationName),
         ("Trust Anchor", OidCommonName));
 
-    private static List<List<AttributeTypeAndValue>> GoodCaName() => Name(
+    private static AttributeTypeAndValue[][] GoodCaName() => Name(
         ("US", OidCountryName),
         ("Test Certificates 2011", OidOrganizationName),
         ("Good CA", OidCommonName));
 
-    private static List<List<AttributeTypeAndValue>> Name(params (string Value, Asn1Oid Type)[] rdns)
+    private static AttributeTypeAndValue[][] Name(params (string Value, Asn1Oid Type)[] rdns)
     {
-        var result = new List<List<AttributeTypeAndValue>>(rdns.Length);
-        foreach (var (value, type) in rdns)
+        var result = new AttributeTypeAndValue[rdns.Length][];
+        for (var i = 0; i < rdns.Length; i++)
         {
-            result.Add(new List<AttributeTypeAndValue>
+            var (value, type) = rdns[i];
+            result[i] = new[]
             {
-                new()
+                new AttributeTypeAndValue
                 {
                     Type = type.Clone(),
                     Value = PrintableStringAny(value),
                 },
-            });
+            };
         }
 
         return result;
     }
 
-    private static List<List<AttributeTypeAndValue>> CloneName(List<List<AttributeTypeAndValue>> src) =>
-        src.Select(rdn => rdn.Select(atv => new AttributeTypeAndValue
+    private static AttributeTypeAndValue[][] CloneName(AttributeTypeAndValue[][] src)
+    {
+        var result = new AttributeTypeAndValue[src.Length][];
+        for (var i = 0; i < src.Length; i++)
         {
-            Type = atv.Type.Clone(),
-            Value = Asn1Any.CopyFrom(atv.Value.EncodedMemory.Span),
-        }).ToList()).ToList();
+            var rdn = src[i];
+            var copy = new AttributeTypeAndValue[rdn.Length];
+            for (var j = 0; j < rdn.Length; j++)
+            {
+                var atv = rdn[j];
+                copy[j] = new AttributeTypeAndValue
+                {
+                    Type = atv.Type.Clone(),
+                    Value = Asn1Any.CopyFrom(atv.Value.EncodedMemory.Span),
+                };
+            }
+
+            result[i] = copy;
+        }
+
+        return result;
+    }
 
     private static Asn1Any PrintableStringAny(string value) =>
         Asn1Any.FromTagAndContents(Asn1Tag.PrintableString, Encoding.ASCII.GetBytes(value));
@@ -227,7 +244,7 @@ internal static class EncodeSamples
     {
         UserCertificate = Asn1Integer.FromInt32(serial),
         RevocationDate = Time.FromUtcTime(when),
-        CrlEntryExtensions = new List<Extension>
+        CrlEntryExtensions = new[]
         {
             Ext(OidCrlReason, critical: false, EncodeCrlReason(CRLReason.KeyCompromise)),
         },

@@ -334,7 +334,33 @@ public sealed class RuntimeTests
 
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
         var decoded = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Integer.Decode(inner));
-        Assert.Equal(2, decoded.Count);
+        Assert.Equal(2, decoded.Length);
+        Assert.Equal(1, decoded[0].GetInt32());
+        Assert.Equal(2, decoded[1].GetInt32());
+        Assert.True(reader.Eof);
+    }
+
+    [Fact]
+    public void ReadSequenceOf_Empty_ReturnsArrayEmpty()
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteSequenceOf(Asn1Tag.Sequence, Array.Empty<Asn1Integer>(), static (w, item) => Asn1Integer.Encode(w, item));
+        var bytes = writer.Encode();
+
+        var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
+        var decoded = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Integer.Decode(inner));
+        Assert.Same(Array.Empty<Asn1Integer>(), decoded);
+        Assert.True(reader.Eof);
+    }
+
+    [Fact]
+    public void ReadSequenceOf_BerIndefinite_RoundTripsItems()
+    {
+        // 30 80 02 01 01 02 01 02 00 00
+        var bytes = new byte[] { 0x30, 0x80, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02, 0x00, 0x00 };
+        var reader = new Asn1Reader(bytes, Asn1Encoding.Ber);
+        var decoded = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Integer.Decode(inner));
+        Assert.Equal(2, decoded.Length);
         Assert.Equal(1, decoded[0].GetInt32());
         Assert.Equal(2, decoded[1].GetInt32());
         Assert.True(reader.Eof);
@@ -355,7 +381,7 @@ public sealed class RuntimeTests
 
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
         var decoded = reader.ReadSetOf(Asn1Tag.Set, static inner => Asn1Integer.Decode(inner));
-        Assert.Equal(2, decoded.Count);
+        Assert.Equal(2, decoded.Length);
         Assert.Equal(1, decoded[0].GetInt32());
         Assert.Equal(2, decoded[1].GetInt32());
     }

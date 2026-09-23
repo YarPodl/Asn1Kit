@@ -12,7 +12,7 @@ public sealed class Attribute
 {
     /// <summary>ASN.1 alias AttributeType ::= OBJECT IDENTIFIER.</summary>
     public Asn1Oid Type { get; set; }
-    public List<Asn1Any> Values { get; set; } = new();
+    public Asn1Any[] Values { get; set; } = Array.Empty<Asn1Any>();
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1029,17 +1029,17 @@ public sealed class TBSCertificate
     public Asn1Integer SerialNumber { get; set; }
     public AlgorithmIdentifier Signature { get; set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
-    public List<List<AttributeTypeAndValue>> Issuer { get; set; } = new();
+    public AttributeTypeAndValue[][] Issuer { get; set; } = Array.Empty<AttributeTypeAndValue[]>();
     public Validity Validity { get; set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
-    public List<List<AttributeTypeAndValue>> Subject { get; set; } = new();
+    public AttributeTypeAndValue[][] Subject { get; set; } = Array.Empty<AttributeTypeAndValue[]>();
     public SubjectPublicKeyInfo SubjectPublicKeyInfo { get; set; }
     /// <summary>ASN.1 alias UniqueIdentifier ::= BIT STRING.</summary>
     public Asn1BitString? IssuerUniqueID { get; set; }
     /// <summary>ASN.1 alias UniqueIdentifier ::= BIT STRING.</summary>
     public Asn1BitString? SubjectUniqueID { get; set; }
     /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
-    public List<Extension>? Extensions { get; set; }
+    public Extension[]? Extensions { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1340,12 +1340,12 @@ public sealed class TBSCertList
     public int? Version { get; set; }
     public AlgorithmIdentifier Signature { get; set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
-    public List<List<AttributeTypeAndValue>> Issuer { get; set; } = new();
+    public AttributeTypeAndValue[][] Issuer { get; set; } = Array.Empty<AttributeTypeAndValue[]>();
     public Time ThisUpdate { get; set; }
     public Time? NextUpdate { get; set; }
-    public List<TBSCertList_RevokedCertificates_Item>? RevokedCertificates { get; set; }
+    public TBSCertList_RevokedCertificates_Item[]? RevokedCertificates { get; set; }
     /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
-    public List<Extension>? CrlExtensions { get; set; }
+    public Extension[]? CrlExtensions { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1465,9 +1465,9 @@ public sealed class ORAddress
 {
     public BuiltInStandardAttributes BuiltInStandardAttributes { get; set; }
     /// <summary>ASN.1 alias BuiltInDomainDefinedAttributes ::= SEQUENCE OF BuiltInDomainDefinedAttribute.</summary>
-    public List<BuiltInDomainDefinedAttribute>? BuiltInDomainDefinedAttributes { get; set; }
+    public BuiltInDomainDefinedAttribute[]? BuiltInDomainDefinedAttributes { get; set; }
     /// <summary>ASN.1 alias ExtensionAttributes ::= SET OF ExtensionAttribute.</summary>
-    public List<ExtensionAttribute>? ExtensionAttributes { get; set; }
+    public ExtensionAttribute[]? ExtensionAttributes { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1531,7 +1531,7 @@ public sealed class BuiltInStandardAttributes
     public string? NumericUserIdentifier { get; set; }
     public PersonalName? PersonalName { get; set; }
     /// <summary>ASN.1 alias OrganizationalUnitNames ::= SEQUENCE OF OrganizationalUnitName.</summary>
-    public List<string>? OrganizationalUnitNames { get; set; }
+    public string[]? OrganizationalUnitNames { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -2131,7 +2131,7 @@ public sealed class PostalCode
 
 public sealed class UnformattedPostalAddress
 {
-    public List<string>? PrintableAddress { get; set; }
+    public string[]? PrintableAddress { get; set; }
     public string? TeletexString { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -2302,7 +2302,7 @@ public sealed class PresentationAddress
     public ReadOnlyMemory<byte>? PSelector { get; set; }
     public ReadOnlyMemory<byte>? SSelector { get; set; }
     public ReadOnlyMemory<byte>? TSelector { get; set; }
-    public List<ReadOnlyMemory<byte>> NAddresses { get; set; } = new();
+    public ReadOnlyMemory<byte>[] NAddresses { get; set; } = Array.Empty<ReadOnlyMemory<byte>>();
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -2422,7 +2422,7 @@ public sealed class TBSCertList_RevokedCertificates_Item
     public Asn1Integer UserCertificate { get; set; }
     public Time RevocationDate { get; set; }
     /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
-    public List<Extension>? CrlEntryExtensions { get; set; }
+    public Extension[]? CrlEntryExtensions { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 

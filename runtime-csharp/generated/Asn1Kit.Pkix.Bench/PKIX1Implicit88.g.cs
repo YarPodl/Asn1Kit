@@ -13,7 +13,7 @@ public sealed class AuthorityKeyIdentifier
     /// <summary>ASN.1 alias KeyIdentifier ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte>? KeyIdentifier { get; set; }
     /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName.</summary>
-    public List<GeneralName>? AuthorityCertIssuer { get; set; }
+    public GeneralName[]? AuthorityCertIssuer { get; set; }
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
     public Asn1Integer? AuthorityCertSerialNumber { get; set; }
 
@@ -201,7 +201,7 @@ public sealed class PolicyInformation
 {
     /// <summary>ASN.1 alias CertPolicyId ::= OBJECT IDENTIFIER.</summary>
     public Asn1Oid PolicyIdentifier { get; set; }
-    public List<PolicyQualifierInfo>? PolicyQualifiers { get; set; }
+    public PolicyQualifierInfo[]? PolicyQualifiers { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -319,7 +319,7 @@ public sealed class UserNotice
 public sealed class NoticeReference
 {
     public DisplayText Organization { get; set; }
-    public List<Asn1Integer> NoticeNumbers { get; set; } = new();
+    public Asn1Integer[] NoticeNumbers { get; set; } = Array.Empty<Asn1Integer>();
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -492,7 +492,7 @@ public sealed class GeneralName
     public string? DNSName { get; private set; }
     public ORAddress? X400Address { get; private set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
-    public List<List<AttributeTypeAndValue>>? DirectoryName { get; private set; }
+    public AttributeTypeAndValue[][]? DirectoryName { get; private set; }
     public EDIPartyName? EdiPartyName { get; private set; }
     public string? UniformResourceIdentifier { get; private set; }
     public ReadOnlyMemory<byte>? IPAddress { get; private set; }
@@ -522,7 +522,7 @@ public sealed class GeneralName
         X400Address = x400Address,
     };
 
-    public static GeneralName FromDirectoryName(List<List<AttributeTypeAndValue>> directoryName) => new GeneralName
+    public static GeneralName FromDirectoryName(AttributeTypeAndValue[][] directoryName) => new GeneralName
     {
         Kind = GeneralNameKind.DirectoryName,
         DirectoryName = directoryName,
@@ -767,9 +767,9 @@ public sealed class BasicConstraints
 public sealed class NameConstraints
 {
     /// <summary>ASN.1 alias GeneralSubtrees ::= SEQUENCE OF GeneralSubtree.</summary>
-    public List<GeneralSubtree>? PermittedSubtrees { get; set; }
+    public GeneralSubtree[]? PermittedSubtrees { get; set; }
     /// <summary>ASN.1 alias GeneralSubtrees ::= SEQUENCE OF GeneralSubtree.</summary>
-    public List<GeneralSubtree>? ExcludedSubtrees { get; set; }
+    public GeneralSubtree[]? ExcludedSubtrees { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -916,7 +916,7 @@ public sealed class DistributionPoint
     public DistributionPointName? DistributionPointValue { get; set; }
     public ReasonFlags? Reasons { get; set; }
     /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName.</summary>
-    public List<GeneralName>? CRLIssuer { get; set; }
+    public GeneralName[]? CRLIssuer { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -978,17 +978,17 @@ public sealed class DistributionPointName
 {
     public DistributionPointNameKind Kind { get; private set; }
     /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName.</summary>
-    public List<GeneralName>? FullName { get; private set; }
+    public GeneralName[]? FullName { get; private set; }
     /// <summary>ASN.1 alias RelativeDistinguishedName ::= SET OF AttributeTypeAndValue.</summary>
-    public List<AttributeTypeAndValue>? NameRelativeToCRLIssuer { get; private set; }
+    public AttributeTypeAndValue[]? NameRelativeToCRLIssuer { get; private set; }
 
-    public static DistributionPointName FromFullName(List<GeneralName> fullName) => new DistributionPointName
+    public static DistributionPointName FromFullName(GeneralName[] fullName) => new DistributionPointName
     {
         Kind = DistributionPointNameKind.FullName,
         FullName = fullName,
     };
 
-    public static DistributionPointName FromNameRelativeToCRLIssuer(List<AttributeTypeAndValue> nameRelativeToCRLIssuer) => new DistributionPointName
+    public static DistributionPointName FromNameRelativeToCRLIssuer(AttributeTypeAndValue[] nameRelativeToCRLIssuer) => new DistributionPointName
     {
         Kind = DistributionPointNameKind.NameRelativeToCRLIssuer,
         NameRelativeToCRLIssuer = nameRelativeToCRLIssuer,

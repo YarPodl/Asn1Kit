@@ -134,7 +134,7 @@ END
 ";
         var document = new Asn1Compiler().CompileText(asn);
         var source = new Asn1Kit.Codegen.CSharp.CSharpBackend().Generate(document).Single().Contents;
-        Assert.Contains("List<PolicyMappings_Item>", source);
+        Assert.Contains("PolicyMappings_Item[]", source);
         Assert.Contains("public sealed class PolicyMappings_Item", source);
         Assert.DoesNotContain("class PolicyMappingsItem", source);
         Assert.DoesNotContain("class PolicyMappings\n{", source.Replace("\r\n", "\n", StringComparison.Ordinal));

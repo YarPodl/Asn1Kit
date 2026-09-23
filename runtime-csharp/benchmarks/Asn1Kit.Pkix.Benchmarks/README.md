@@ -26,7 +26,13 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 **Сравнение оптимизаций на той же машине** — только Asn1Kit (BCL/BouncyCastle не гоняй: их Mean/Allocated стабильны относительно peer’ов; цифры peers — из полного baseline в [results/](../results/)):
 
 ```powershell
-dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *Asn1Kit*
+dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *Asn1Kit_*
+```
+
+Микробенч стратегий заполнения SEQUENCE OF (`List` / `ArrayPool` / pre-count):
+
+```powershell
+dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *SequenceOfFill*
 ```
 
 Полный suite (Asn1Kit + BCL + BouncyCastle) — при смене машины/SDK или обновлении peer’ов:
@@ -52,9 +58,9 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 
 Полный typed `Certificate.Decode` **не обязан** быть быстрее `X509Certificate2` (BCL не строит ASN-граф). Цель typed path — сравняться с BouncyCastle; Lazy/retainEncoded — peer BCL shell.
 
-## Current baseline (2026-09-23, `7d281d1`)
+## Current baseline (2026-09-23, OF→arrays)
 
-Полный Release-прогон (`--filter *`). Сырые отчёты: [results/2026-09-23](../results/2026-09-23/). История снимков: [results/](../results/).
+Снимок после `ReadSequenceOf`/`ReadSetOf` → `T[]` (ArrayPool grow; empty → `Array.Empty`; один элемент без pool). Сырые заметки: [results/2026-09-23-of-arrays](../results/2026-09-23-of-arrays/). Peers BCL/BC — из [results/2026-09-23](../results/2026-09-23/) (`7d281d1`).
 
 ### Certificate Decode history (Asn1Kit vs self)
 
@@ -64,30 +70,32 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 | --- | ---: | ---: |
 | Baseline (before decode opts) | 4.246 µs | 6.16 KB |
 | After Int32/Time + OID open-type + OF capacity | 3.436 µs | 2.84 KB |
-| **2026-09-23** (`7d281d1`, full suite) | **3.352 µs** | **2912 B** |
+| 2026-09-23 (`7d281d1`, full suite) | 3.352 µs | 2912 B |
+| **2026-09-23 OF→arrays** | **3.774 µs** | **2600 B** |
 
-### Certificate / CRL / CMS (2026-09-23)
+### Certificate / CRL / CMS Asn1Kit (2026-09-23 OF→arrays)
 
-| Method | Mean | Allocated |
-| --- | ---: | ---: |
-| Cert Asn1Kit_Decode | 3.352 µs | 2912 B |
-| Cert Bcl_Decode | 2.624 µs | 328 B |
-| Cert BouncyCastle_Decode | 9.521 µs | 13280 B |
-| Cert Asn1Kit_Encode | 2.353 µs | 4232 B |
-| Cert BouncyCastle_Encode | 2.679 µs | 4792 B |
-| CRL Asn1Kit_Decode | 2.634 µs | 2.31 KB |
-| CRL BouncyCastle_Decode | 7.325 µs | 10.45 KB |
-| CRL Asn1Kit_Encode | 2.089 µs | 2.82 KB |
-| CRL BouncyCastle_Encode | 2.169 µs | 4.01 KB |
-| CMS Asn1Kit_Lazy_Decode | 1.649 µs | 2.1 KB |
-| CMS Asn1Kit_Lazy_Materialize_Decode | 4.059 µs | 4.05 KB |
-| CMS Asn1Kit_Eager_Decode | 3.710 µs | 3.88 KB |
-| CMS Bcl_Decode | 1.599 µs | 3.45 KB |
-| CMS Bcl_Materialize_Decode | 8.676 µs | 4.68 KB |
-| CMS BouncyCastle_Decode | 7.538 µs | 13.59 KB |
-| CMS Asn1Kit_Lazy_Encode | 1.285 µs | 2.96 KB |
-| CMS Asn1Kit_Eager_Encode | 2.764 µs | 4.45 KB |
-| CMS Bcl_Encode | 1.967 µs | 8.85 KB |
-| CMS BouncyCastle_Encode | 2.647 µs | 5.11 KB |
+| Method | Mean | Allocated | vs `7d281d1` Alloc |
+| --- | ---: | ---: | ---: |
+| Cert Asn1Kit_Decode | 3.774 µs | 2600 B | −11% |
+| Cert Asn1Kit_Encode | 2.464 µs | 4232 B | 0% |
+| CRL Asn1Kit_Decode | 3.010 µs | 2.01 KB | −13% |
+| CRL Asn1Kit_Encode | 2.190 µs | 2.82 KB | 0% |
+| CMS Asn1Kit_Lazy_Decode | 1.664 µs | 1.46 KB | −30% |
+| CMS Asn1Kit_Lazy_Materialize_Decode | 4.123 µs | 3.22 KB | −20% |
+| CMS Asn1Kit_Eager_Decode | 3.749 µs | 2.99 KB | −23% |
+| CMS Asn1Kit_Lazy_Encode | 1.367 µs | 2.96 KB | 0% |
+| CMS Asn1Kit_Eager_Encode | 2.849 µs | 4.45 KB | 0% |
 
-Lazy CMS Decode ≈ peer BCL shell (−3% Mean); ≈2.3× быстрее Eager; Allocated Lazy Decode 2.1 KB vs BCL 3.45 KB.
+Peers (unchanged эталон `7d281d1`): Cert Bcl 2.624 µs / 328 B; Cert BC Decode 9.521 µs / 13280 B; CMS Bcl Decode 1.599 µs / 3.45 KB.
+
+Decode Allocated↓ (нет обёрток `List` + точный `T[]`); Encode без изменений. Mean Decode на этом прогоне чуть выше — главный эффект §8 по аллокациям.
+
+### SequenceOf fill (A List / B ArrayPool / C pre-count)
+
+| Category | Winner | Note |
+| --- | --- | --- |
+| Many16 / Indefinite8 | **B ArrayPool** | Alloc ~0.37–0.48× vs List; быстрее pre-count |
+| Empty / One | B меньше Alloc; List чуть быстрее Mean | prod: `Array.Empty` / `new T[1]` без pool |
+
+Прод: B + fast paths empty/single (см. [SUMMARY](../results/2026-09-23-of-arrays/SUMMARY.md)).

@@ -54,7 +54,7 @@ internal static class PkixFixtures
         return DirectoryString.Decode(new Asn1Reader(writer.Encode(), Asn1Encoding.Der)).Value;
     }
 
-    public static List<(string Oid, string Value)> FlattenName(List<List<AttributeTypeAndValue>> name)
+    public static List<(string Oid, string Value)> FlattenName(AttributeTypeAndValue[][] name)
     {
         var result = new List<(string, string)>();
         foreach (var rdn in name)

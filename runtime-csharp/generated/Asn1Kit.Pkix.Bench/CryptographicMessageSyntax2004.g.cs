@@ -48,14 +48,14 @@ public sealed class SignedData
 {
     public int Version { get; set; }
     /// <summary>ASN.1 alias DigestAlgorithmIdentifiers ::= SET OF DigestAlgorithmIdentifier.</summary>
-    public List<Asn1Kit.Pkix.Bench.AlgorithmIdentifier> DigestAlgorithms { get; set; } = new();
+    public Asn1Kit.Pkix.Bench.AlgorithmIdentifier[] DigestAlgorithms { get; set; } = Array.Empty<Asn1Kit.Pkix.Bench.AlgorithmIdentifier>();
     public EncapsulatedContentInfo EncapContentInfo { get; set; }
     /// <summary>ASN.1 alias CertificateSet ::= SET OF CertificateChoices.</summary>
-    public List<CertificateChoices>? Certificates { get; set; }
+    public CertificateChoices[]? Certificates { get; set; }
     /// <summary>ASN.1 alias RevocationInfoChoices ::= SET OF RevocationInfoChoice.</summary>
-    public List<RevocationInfoChoice>? Crls { get; set; }
+    public RevocationInfoChoice[]? Crls { get; set; }
     /// <summary>ASN.1 alias SignerInfos ::= SET OF SignerInfo.</summary>
-    public List<SignerInfo> SignerInfos { get; set; } = new();
+    public SignerInfo[] SignerInfos { get; set; } = Array.Empty<SignerInfo>();
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -165,13 +165,13 @@ public sealed class SignerInfo
     /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
     public Asn1Kit.Pkix.Bench.AlgorithmIdentifier DigestAlgorithm { get; set; }
     /// <summary>ASN.1 alias SignedAttributes ::= SET OF Attribute.</summary>
-    public List<Attribute>? SignedAttrs { get; set; }
+    public Attribute[]? SignedAttrs { get; set; }
     /// <summary>ASN.1 alias SignatureAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
     public Asn1Kit.Pkix.Bench.AlgorithmIdentifier SignatureAlgorithm { get; set; }
     /// <summary>ASN.1 alias SignatureValue ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> Signature { get; set; }
     /// <summary>ASN.1 alias UnsignedAttributes ::= SET OF Attribute.</summary>
-    public List<Attribute>? UnsignedAttrs { get; set; }
+    public Attribute[]? UnsignedAttrs { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -289,7 +289,7 @@ public sealed class SignerIdentifier
 public sealed class Attribute
 {
     public Asn1Oid AttrType { get; set; }
-    public List<Asn1Any> AttrValues { get; set; } = new();
+    public Asn1Any[] AttrValues { get; set; } = Array.Empty<Asn1Any>();
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -326,10 +326,10 @@ public sealed class EnvelopedData
     public int Version { get; set; }
     public OriginatorInfo? OriginatorInfo { get; set; }
     /// <summary>ASN.1 alias RecipientInfos ::= SET OF RecipientInfo.</summary>
-    public List<RecipientInfo> RecipientInfos { get; set; } = new();
+    public RecipientInfo[] RecipientInfos { get; set; } = Array.Empty<RecipientInfo>();
     public EncryptedContentInfo EncryptedContentInfo { get; set; }
     /// <summary>ASN.1 alias UnprotectedAttributes ::= SET OF Attribute.</summary>
-    public List<Attribute>? UnprotectedAttrs { get; set; }
+    public Attribute[]? UnprotectedAttrs { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -385,9 +385,9 @@ public sealed class EnvelopedData
 public sealed class OriginatorInfo
 {
     /// <summary>ASN.1 alias CertificateSet ::= SET OF CertificateChoices.</summary>
-    public List<CertificateChoices>? Certs { get; set; }
+    public CertificateChoices[]? Certs { get; set; }
     /// <summary>ASN.1 alias RevocationInfoChoices ::= SET OF RevocationInfoChoice.</summary>
-    public List<RevocationInfoChoice>? Crls { get; set; }
+    public RevocationInfoChoice[]? Crls { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -690,7 +690,7 @@ public sealed class KeyAgreeRecipientInfo
     /// <summary>ASN.1 alias KeyEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
     public Asn1Kit.Pkix.Bench.AlgorithmIdentifier KeyEncryptionAlgorithm { get; set; }
     /// <summary>ASN.1 alias RecipientEncryptedKeys ::= SEQUENCE OF RecipientEncryptedKey.</summary>
-    public List<RecipientEncryptedKey> RecipientEncryptedKeys { get; set; } = new();
+    public RecipientEncryptedKey[] RecipientEncryptedKeys { get; set; } = Array.Empty<RecipientEncryptedKey>();
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1195,7 +1195,7 @@ public sealed class EncryptedData
     public int Version { get; set; }
     public EncryptedContentInfo EncryptedContentInfo { get; set; }
     /// <summary>ASN.1 alias UnprotectedAttributes ::= SET OF Attribute.</summary>
-    public List<Attribute>? UnprotectedAttrs { get; set; }
+    public Attribute[]? UnprotectedAttrs { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1240,18 +1240,18 @@ public sealed class AuthenticatedData
     public int Version { get; set; }
     public OriginatorInfo? OriginatorInfo { get; set; }
     /// <summary>ASN.1 alias RecipientInfos ::= SET OF RecipientInfo.</summary>
-    public List<RecipientInfo> RecipientInfos { get; set; } = new();
+    public RecipientInfo[] RecipientInfos { get; set; } = Array.Empty<RecipientInfo>();
     /// <summary>ASN.1 alias MessageAuthenticationCodeAlgorithm ::= AlgorithmIdentifier.</summary>
     public Asn1Kit.Pkix.Bench.AlgorithmIdentifier MacAlgorithm { get; set; }
     /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
     public Asn1Kit.Pkix.Bench.AlgorithmIdentifier? DigestAlgorithm { get; set; }
     public EncapsulatedContentInfo EncapContentInfo { get; set; }
     /// <summary>ASN.1 alias AuthAttributes ::= SET OF Attribute.</summary>
-    public List<Attribute>? AuthAttrs { get; set; }
+    public Attribute[]? AuthAttrs { get; set; }
     /// <summary>ASN.1 alias MessageAuthenticationCode ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> Mac { get; set; }
     /// <summary>ASN.1 alias UnauthAttributes ::= SET OF Attribute.</summary>
-    public List<Attribute>? UnauthAttrs { get; set; }
+    public Attribute[]? UnauthAttrs { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1531,7 +1531,7 @@ public sealed class OtherCertificateFormat
 public sealed class IssuerAndSerialNumber
 {
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
-    public List<List<Asn1Kit.Pkix.Bench.AttributeTypeAndValue>> Issuer { get; set; } = new();
+    public Asn1Kit.Pkix.Bench.AttributeTypeAndValue[][] Issuer { get; set; } = Array.Empty<Asn1Kit.Pkix.Bench.AttributeTypeAndValue[]>();
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
     public Asn1Integer SerialNumber { get; set; }
 
@@ -1777,7 +1777,7 @@ public sealed class ExtendedCertificateInfo
     public int Version { get; set; }
     public Asn1Kit.Pkix.Bench.Certificate Certificate { get; set; }
     /// <summary>ASN.1 alias UnauthAttributes ::= SET OF Attribute.</summary>
-    public List<Attribute> Attributes { get; set; } = new();
+    public Attribute[] Attributes { get; set; } = Array.Empty<Attribute>();
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 

@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Numerics;
 using System.Text;
@@ -187,9 +188,10 @@ public sealed class Asn1Reader
     }
 
     /// <summary>
-    /// Reads a SEQUENCE OF into a new <see cref="List{T}"/>, decoding elements until the contents are exhausted.
+    /// Reads a SEQUENCE OF into a new array, decoding elements until the contents are exhausted.
+    /// Empty OF returns <see cref="Array.Empty{T}"/>.
     /// </summary>
-    public List<T> ReadSequenceOf<T>(Asn1Tag expected, Func<Asn1Reader, T> decodeItem)
+    public T[] ReadSequenceOf<T>(Asn1Tag expected, Func<Asn1Reader, T> decodeItem)
     {
         if (decodeItem is null)
         {
@@ -198,27 +200,49 @@ public sealed class Asn1Reader
 
         return ReadSequence(expected, inner =>
         {
-            var remaining = inner._end - inner._offset;
-            if (remaining == 0)
+            if (inner.Eof)
             {
-                return new List<T>();
+                return Array.Empty<T>();
             }
 
-            // Prefer tight capacity for small OF (RDN SET OF often has one AVA).
-            // Cap growth so a large blob does not pre-size a huge unused array.
-            var capacity = remaining <= 32 ? 1 : Math.Min(32, Math.Max(2, remaining / 16));
-            var items = new List<T>(capacity);
-            while (!inner.Eof)
+            // Common OF size is 1 (RDN SET OF AVA): avoid pool round-trip.
+            var first = decodeItem(inner);
+            if (inner.Eof)
             {
-                items.Add(decodeItem(inner));
+                return new[] { first };
             }
 
-            return items;
+            var rented = ArrayPool<T>.Shared.Rent(8);
+            var count = 0;
+            try
+            {
+                rented[count++] = first;
+                while (!inner.Eof)
+                {
+                    if (count == rented.Length)
+                    {
+                        var grown = ArrayPool<T>.Shared.Rent(rented.Length * 2);
+                        Array.Copy(rented, grown, count);
+                        ArrayPool<T>.Shared.Return(rented, clearArray: true);
+                        rented = grown;
+                    }
+
+                    rented[count++] = decodeItem(inner);
+                }
+
+                var result = new T[count];
+                Array.Copy(rented, result, count);
+                return result;
+            }
+            finally
+            {
+                ArrayPool<T>.Shared.Return(rented, clearArray: true);
+            }
         });
     }
 
     /// <summary>Reads a SET OF; same as <see cref="ReadSequenceOf{T}"/> (order is wire order).</summary>
-    public List<T> ReadSetOf<T>(Asn1Tag expected, Func<Asn1Reader, T> decodeItem) =>
+    public T[] ReadSetOf<T>(Asn1Tag expected, Func<Asn1Reader, T> decodeItem) =>
         ReadSequenceOf(expected, decodeItem);
 
     public bool ReadBoolean(Asn1Tag expected)
