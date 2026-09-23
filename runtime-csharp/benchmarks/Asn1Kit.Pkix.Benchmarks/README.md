@@ -23,29 +23,22 @@
 dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks
 ```
 
-**Сравнение оптимизаций на той же машине** — только Asn1Kit (BCL/BouncyCastle не гоняй: их Mean/Allocated стабильны относительно peer’ов; цифры peers — из полного baseline в [results/](../results/)):
+**Краткий прогон** (по умолчанию после правок runtime/codegen на той же машине) — Cert/CRL `Asn1Kit_Decode` + CMS `Asn1Kit_Lazy_Decode`:
+
+```powershell
+dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *Asn1Kit_Decode|*Asn1Kit_Lazy_Decode
+```
+
+**Asn1Kit полный** (все 9 методов, без peers; peers — из [results/](../results/)):
 
 ```powershell
 dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *Asn1Kit_*
 ```
 
-Микробенч стратегий заполнения SEQUENCE OF (`List` / `ArrayPool` / pre-count):
-
-```powershell
-dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *SequenceOfFill*
-```
-
-Полный suite (Asn1Kit + BCL + BouncyCastle) — при смене машины/SDK или обновлении peer’ов:
+**Полный suite** (Asn1Kit + BCL + BouncyCastle) — при смене машины/SDK или обновлении peer’ов:
 
 ```powershell
 dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *
-```
-
-Точечно:
-
-```powershell
-dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *Cms*Asn1Kit*
-dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *CertificateBenchmarks.Asn1Kit_Decode*
 ```
 
 | Library | Certificate | CRL | CMS |
@@ -58,9 +51,13 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 
 Полный typed `Certificate.Decode` **не обязан** быть быстрее `X509Certificate2` (BCL не строит ASN-граф). Цель typed path — сравняться с BouncyCastle; Lazy/retainEncoded — peer BCL shell.
 
+История: выбор стратегии заполнения SEQUENCE OF (`List` / ArrayPool / pre-count) закрыт микробенчем; прод — ArrayPool + empty/single. Снимок — [results/2026-09-23-of-arrays](../results/2026-09-23-of-arrays/).
+
 ## Current baseline (2026-09-23, OF→arrays)
 
 Снимок после `ReadSequenceOf`/`ReadSetOf` → `T[]` (ArrayPool grow; empty → `Array.Empty`; один элемент без pool). Сырые заметки: [results/2026-09-23-of-arrays](../results/2026-09-23-of-arrays/). Peers BCL/BC — из [results/2026-09-23](../results/2026-09-23/) (`7d281d1`).
+
+Краткий набор для сравнения после правок отмечен ★.
 
 ### Certificate Decode history (Asn1Kit vs self)
 
@@ -77,11 +74,11 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 
 | Method | Mean | Allocated | vs `7d281d1` Alloc |
 | --- | ---: | ---: | ---: |
-| Cert Asn1Kit_Decode | 3.774 µs | 2600 B | −11% |
+| ★ Cert Asn1Kit_Decode | 3.774 µs | 2600 B | −11% |
 | Cert Asn1Kit_Encode | 2.464 µs | 4232 B | 0% |
-| CRL Asn1Kit_Decode | 3.010 µs | 2.01 KB | −13% |
+| ★ CRL Asn1Kit_Decode | 3.010 µs | 2.01 KB | −13% |
 | CRL Asn1Kit_Encode | 2.190 µs | 2.82 KB | 0% |
-| CMS Asn1Kit_Lazy_Decode | 1.664 µs | 1.46 KB | −30% |
+| ★ CMS Asn1Kit_Lazy_Decode | 1.664 µs | 1.46 KB | −30% |
 | CMS Asn1Kit_Lazy_Materialize_Decode | 4.123 µs | 3.22 KB | −20% |
 | CMS Asn1Kit_Eager_Decode | 3.749 µs | 2.99 KB | −23% |
 | CMS Asn1Kit_Lazy_Encode | 1.367 µs | 2.96 KB | 0% |
@@ -90,12 +87,3 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 Peers (unchanged эталон `7d281d1`): Cert Bcl 2.624 µs / 328 B; Cert BC Decode 9.521 µs / 13280 B; CMS Bcl Decode 1.599 µs / 3.45 KB.
 
 Decode Allocated↓ (нет обёрток `List` + точный `T[]`); Encode без изменений. Mean Decode на этом прогоне чуть выше — главный эффект §8 по аллокациям.
-
-### SequenceOf fill (A List / B ArrayPool / C pre-count)
-
-| Category | Winner | Note |
-| --- | --- | --- |
-| Many16 / Indefinite8 | **B ArrayPool** | Alloc ~0.37–0.48× vs List; быстрее pre-count |
-| Empty / One | B меньше Alloc; List чуть быстрее Mean | prod: `Array.Empty` / `new T[1]` без pool |
-
-Прод: B + fast paths empty/single (см. [SUMMARY](../results/2026-09-23-of-arrays/SUMMARY.md)).
