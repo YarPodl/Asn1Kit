@@ -23,15 +23,22 @@
 dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks
 ```
 
-Точечно (после smoke):
+**Сравнение оптимизаций на той же машине** — только Asn1Kit (BCL/BouncyCastle не гоняй: их Mean/Allocated стабильны относительно peer’ов; цифры peers — из полного baseline в [results/](../results/)):
 
 ```powershell
-dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *Cms*
+dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *Asn1Kit*
 ```
 
-Только Asn1Kit Cert Decode:
+Полный suite (Asn1Kit + BCL + BouncyCastle) — при смене машины/SDK или обновлении peer’ов:
 
 ```powershell
+dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *
+```
+
+Точечно:
+
+```powershell
+dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *Cms*Asn1Kit*
 dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *CertificateBenchmarks.Asn1Kit_Decode*
 ```
 
@@ -45,32 +52,42 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 
 Полный typed `Certificate.Decode` **не обязан** быть быстрее `X509Certificate2` (BCL не строит ASN-граф). Цель typed path — сравняться с BouncyCastle; Lazy/retainEncoded — peer BCL shell.
 
-## Certificate Decode snapshot (Asn1Kit vs self)
+## Current baseline (2026-09-23, `7d281d1`)
 
-Release, `*CertificateBenchmarks.Asn1Kit_Decode*`, фикстура `TrustAnchorRootCertificate.crt` (Bench + retainEncoded).
+Полный Release-прогон (`--filter *`). Сырые отчёты: [results/2026-09-23](../results/2026-09-23/). История снимков: [results/](../results/).
+
+### Certificate Decode history (Asn1Kit vs self)
+
+Фикстура `TrustAnchorRootCertificate.crt` (Bench + retainEncoded).
 
 | Stage | Mean | Allocated |
 | --- | ---: | ---: |
 | Baseline (before decode opts) | 4.246 µs | 6.16 KB |
 | After Int32/Time + OID open-type + OF capacity | 3.436 µs | 2.84 KB |
+| **2026-09-23** (`7d281d1`, full suite) | **3.352 µs** | **2912 B** |
 
-≈19% быстрее Mean, ≈54% меньше Allocated.
-
-## CMS snapshot (local, after lazy Bench + writer buffer)
-
-Representative run on this machine (Release, `*Cms*`). Baseline = `Asn1Kit_Lazy_*`.
+### Certificate / CRL / CMS (2026-09-23)
 
 | Method | Mean | Allocated |
 | --- | ---: | ---: |
-| Asn1Kit_Lazy_Decode | 2.07 µs | 6.1 KB |
-| Asn1Kit_Lazy_Materialize_Decode | 4.80 µs | 10.6 KB |
-| Asn1Kit_Eager_Decode | 4.70 µs | 10.5 KB |
-| Bcl_Decode | 1.61 µs | 3.5 KB |
-| Bcl_Materialize_Decode | 8.93 µs | 4.7 KB |
-| BouncyCastle_Decode | 7.58 µs | 13.6 KB |
-| Asn1Kit_Lazy_Encode | 2.15 µs | 2.9 KB |
-| Asn1Kit_Eager_Encode | 4.37 µs | 4.5 KB |
-| Bcl_Encode | 1.91 µs | 8.9 KB |
-| BouncyCastle_Encode | 2.52 µs | 5.1 KB |
+| Cert Asn1Kit_Decode | 3.352 µs | 2912 B |
+| Cert Bcl_Decode | 2.624 µs | 328 B |
+| Cert BouncyCastle_Decode | 9.521 µs | 13280 B |
+| Cert Asn1Kit_Encode | 2.353 µs | 4232 B |
+| Cert BouncyCastle_Encode | 2.679 µs | 4792 B |
+| CRL Asn1Kit_Decode | 2.634 µs | 2.31 KB |
+| CRL BouncyCastle_Decode | 7.325 µs | 10.45 KB |
+| CRL Asn1Kit_Encode | 2.089 µs | 2.82 KB |
+| CRL BouncyCastle_Encode | 2.169 µs | 4.01 KB |
+| CMS Asn1Kit_Lazy_Decode | 1.649 µs | 2.1 KB |
+| CMS Asn1Kit_Lazy_Materialize_Decode | 4.059 µs | 4.05 KB |
+| CMS Asn1Kit_Eager_Decode | 3.710 µs | 3.88 KB |
+| CMS Bcl_Decode | 1.599 µs | 3.45 KB |
+| CMS Bcl_Materialize_Decode | 8.676 µs | 4.68 KB |
+| CMS BouncyCastle_Decode | 7.538 µs | 13.59 KB |
+| CMS Asn1Kit_Lazy_Encode | 1.285 µs | 2.96 KB |
+| CMS Asn1Kit_Eager_Encode | 2.764 µs | 4.45 KB |
+| CMS Bcl_Encode | 1.967 µs | 8.85 KB |
+| CMS BouncyCastle_Encode | 2.647 µs | 5.11 KB |
 
-Lazy decode ≈ 2.3× быстрее Eager на той же фикстуре; Lazy encode ≈ 2× быстрее Eager (WriteRaw cert TLV). vs BCL shell Lazy всё ещё чуть медленнее на Decode, но заметно дешевле BCL+materialize.
+Lazy CMS Decode ≈ peer BCL shell (−3% Mean); ≈2.3× быстрее Eager; Allocated Lazy Decode 2.1 KB vs BCL 3.45 KB.
