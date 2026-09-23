@@ -30,7 +30,7 @@ END
         var source = new CSharpBackend().Generate(document).Single().Contents;
 
         Assert.Contains(
-            "if (inner.TryPeekTag(out var tag_NextUpdate) && (tag_NextUpdate.MatchesIgnoreConstructed(Asn1Tag.UtcTime) || tag_NextUpdate.MatchesIgnoreConstructed(Asn1Tag.GeneralizedTime)))",
+            "if (reader.TryPeekTag(out var tag_NextUpdate) && (tag_NextUpdate.MatchesIgnoreConstructed(Asn1Tag.UtcTime) || tag_NextUpdate.MatchesIgnoreConstructed(Asn1Tag.GeneralizedTime)))",
             source);
         Assert.DoesNotContain(
             "tag_NextUpdate.MatchesIgnoreConstructed(Asn1Tag.Sequence)",

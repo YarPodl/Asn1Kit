@@ -100,6 +100,19 @@ public sealed class Asn1Reader
             return 0;
         });
 
+    /// <summary>
+    /// Consumes a constructed SEQUENCE/SET TLV and restricts this reader to its contents.
+    /// Restore the previous window via <see cref="Asn1ReaderCursor.Dispose"/> (or <c>using</c>).
+    /// </summary>
+    public Asn1ReaderCursor EnterSequence(Asn1Tag expected)
+    {
+        var contents = ReadValue(expected, allowConstructed: true);
+        return PushContentsWindow(contents);
+    }
+
+    /// <summary>Same as <see cref="EnterSequence"/> (SET is wire-identical to SEQUENCE for nesting).</summary>
+    public Asn1ReaderCursor EnterSet(Asn1Tag expected) => EnterSequence(expected);
+
     public T ReadSet<T>(Asn1Tag expected, Func<Asn1Reader, T> read) => ReadSequence(expected, read);
 
     public void ReadSet(Asn1Tag expected, Action<Asn1Reader> read) => ReadSequence(expected, read);
@@ -198,47 +211,46 @@ public sealed class Asn1Reader
             throw new ArgumentNullException(nameof(decodeItem));
         }
 
-        return ReadSequence(expected, inner =>
+        // EnterSequence (not ReadSequence+lambda) avoids a per-call closure capturing decodeItem.
+        using var cursor = EnterSequence(expected);
+        if (Eof)
         {
-            if (inner.Eof)
-            {
-                return Array.Empty<T>();
-            }
+            return Array.Empty<T>();
+        }
 
-            // Common OF size is 1 (RDN SET OF AVA): avoid pool round-trip.
-            var first = decodeItem(inner);
-            if (inner.Eof)
-            {
-                return new[] { first };
-            }
+        // Common OF size is 1 (RDN SET OF AVA): avoid pool round-trip.
+        var first = decodeItem(this);
+        if (Eof)
+        {
+            return new[] { first };
+        }
 
-            var rented = ArrayPool<T>.Shared.Rent(8);
-            var count = 0;
-            try
+        var rented = ArrayPool<T>.Shared.Rent(8);
+        var count = 0;
+        try
+        {
+            rented[count++] = first;
+            while (!Eof)
             {
-                rented[count++] = first;
-                while (!inner.Eof)
+                if (count == rented.Length)
                 {
-                    if (count == rented.Length)
-                    {
-                        var grown = ArrayPool<T>.Shared.Rent(rented.Length * 2);
-                        Array.Copy(rented, grown, count);
-                        ArrayPool<T>.Shared.Return(rented, clearArray: true);
-                        rented = grown;
-                    }
-
-                    rented[count++] = decodeItem(inner);
+                    var grown = ArrayPool<T>.Shared.Rent(rented.Length * 2);
+                    Array.Copy(rented, grown, count);
+                    ArrayPool<T>.Shared.Return(rented, clearArray: true);
+                    rented = grown;
                 }
 
-                var result = new T[count];
-                Array.Copy(rented, result, count);
-                return result;
+                rented[count++] = decodeItem(this);
             }
-            finally
-            {
-                ArrayPool<T>.Shared.Return(rented, clearArray: true);
-            }
-        });
+
+            var result = new T[count];
+            Array.Copy(rented, result, count);
+            return result;
+        }
+        finally
+        {
+            ArrayPool<T>.Shared.Return(rented, clearArray: true);
+        }
     }
 
     /// <summary>Reads a SET OF; same as <see cref="ReadSequenceOf{T}"/> (order is wire order).</summary>

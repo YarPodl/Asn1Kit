@@ -41,3 +41,4 @@ Update the “current baseline” section in [../Asn1Kit.Pkix.Benchmarks/README.
 | --- | --- | --- |
 | [2026-09-23](2026-09-23/) | `7d281d1` | Полный suite (peers + Asn1Kit); эталон BCL/BC для Asn1Kit-прогонов на этой машине |
 | [2026-09-23-of-arrays](2026-09-23-of-arrays/) | working tree | `ReadSequenceOf` → `T[]` / ArrayPool; backlog §8; Asn1Kit Alloc↓; микробенч Fill A/B/C (архив) |
+| [2026-09-24-sequence-lambda](2026-09-24-sequence-lambda/) | working tree | `EnterSequence`; OF без capturing-лямбды; микробенч Nest/Of; Decode Alloc↓ ~30% |

@@ -2,7 +2,7 @@ namespace Asn1Kit.Runtime;
 
 /// <summary>
 /// Nested decode window over an <see cref="Asn1Reader"/> buffer without allocating a nested reader.
-/// Prefer <see cref="Asn1Reader.ReadSequence{T}"/> which already uses the same push/pop technique.
+/// Prefer <see cref="Asn1Reader.EnterSequence"/> / <see cref="Asn1Reader.ReadSequence{T}"/> which use the same push/pop.
 /// </summary>
 public ref struct Asn1ReaderCursor
 {

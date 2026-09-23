@@ -52,10 +52,11 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 Полный typed `Certificate.Decode` **не обязан** быть быстрее `X509Certificate2` (BCL не строит ASN-граф). Цель typed path — сравняться с BouncyCastle; Lazy/retainEncoded — peer BCL shell.
 
 История: выбор стратегии заполнения SEQUENCE OF (`List` / ArrayPool / pre-count) закрыт микробенчем; прод — ArrayPool + empty/single. Снимок — [results/2026-09-23-of-arrays](../results/2026-09-23-of-arrays/).
+Гипотеза лямбд в `ReadSequence`: выигрыш Alloc — от устранения capturing-обёртки в `ReadSequenceOf` (+ codegen `EnterSequence`); Nest Func→cursor почти не режет Alloc. Снимок — [results/2026-09-24-sequence-lambda](../results/2026-09-24-sequence-lambda/).
 
-## Current baseline (2026-09-23, OF→arrays)
+## Current baseline (2026-09-24, sequence-lambda)
 
-Снимок после `ReadSequenceOf`/`ReadSetOf` → `T[]` (ArrayPool grow; empty → `Array.Empty`; один элемент без pool). Сырые заметки: [results/2026-09-23-of-arrays](../results/2026-09-23-of-arrays/). Peers BCL/BC — из [results/2026-09-23](../results/2026-09-23/) (`7d281d1`).
+Снимок после `EnterSequence` / OF без capturing-лямбды вокруг `decodeItem`. Сырые заметки: [results/2026-09-24-sequence-lambda](../results/2026-09-24-sequence-lambda/). Peers BCL/BC — из [results/2026-09-23](../results/2026-09-23/) (`7d281d1`).
 
 Краткий набор для сравнения после правок отмечен ★.
 
@@ -68,22 +69,15 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 | Baseline (before decode opts) | 4.246 µs | 6.16 KB |
 | After Int32/Time + OID open-type + OF capacity | 3.436 µs | 2.84 KB |
 | 2026-09-23 (`7d281d1`, full suite) | 3.352 µs | 2912 B |
-| **2026-09-23 OF→arrays** | **3.774 µs** | **2600 B** |
+| 2026-09-23 OF→arrays | 3.774 µs | 2600 B |
+| **2026-09-24 sequence-lambda** | **3.258 µs** | **1.77 KB** |
 
-### Certificate / CRL / CMS Asn1Kit (2026-09-23 OF→arrays)
+### Certificate / CRL / CMS Asn1Kit (2026-09-24 sequence-lambda + codegen)
 
-| Method | Mean | Allocated | vs `7d281d1` Alloc |
+| Method | Mean | Allocated | vs of-arrays Alloc |
 | --- | ---: | ---: | ---: |
-| ★ Cert Asn1Kit_Decode | 3.774 µs | 2600 B | −11% |
-| Cert Asn1Kit_Encode | 2.464 µs | 4232 B | 0% |
-| ★ CRL Asn1Kit_Decode | 3.010 µs | 2.01 KB | −13% |
-| CRL Asn1Kit_Encode | 2.190 µs | 2.82 KB | 0% |
-| ★ CMS Asn1Kit_Lazy_Decode | 1.664 µs | 1.46 KB | −30% |
-| CMS Asn1Kit_Lazy_Materialize_Decode | 4.123 µs | 3.22 KB | −20% |
-| CMS Asn1Kit_Eager_Decode | 3.749 µs | 2.99 KB | −23% |
-| CMS Asn1Kit_Lazy_Encode | 1.367 µs | 2.96 KB | 0% |
-| CMS Asn1Kit_Eager_Encode | 2.849 µs | 4.45 KB | 0% |
+| ★ Cert Asn1Kit_Decode | 3.258 µs | 1.77 KB | −30% |
+| ★ CRL Asn1Kit_Decode | 2.459 µs | 1.32 KB | −34% |
+| ★ CMS Asn1Kit_Lazy_Decode | 1.387 µs | 1.03 KB | −29% |
 
-Peers (unchanged эталон `7d281d1`): Cert Bcl 2.624 µs / 328 B; Cert BC Decode 9.521 µs / 13280 B; CMS Bcl Decode 1.599 µs / 3.45 KB.
-
-Decode Allocated↓ (нет обёрток `List` + точный `T[]`); Encode без изменений. Mean Decode на этом прогоне чуть выше — главный эффект §8 по аллокациям.
+Encode не перезамерялся на этом прогоне (ожидается без изменений — Write-путь не трогали). Decode Allocated↓ за счёт OF без closure; Mean↓ после codegen `EnterSequence`.

@@ -335,17 +335,17 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine();
         sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader, Asn1Tag tag)");
         sb.AppendLine("    {");
-        sb.AppendLine("        return reader.ReadSequence(tag, inner =>");
+        sb.AppendLine("        using (reader.EnterSequence(tag))");
         sb.AppendLine("        {");
         sb.AppendLine($"            var value = new {typeName}();");
         foreach (var field in type.Components)
         {
             EmitDecodeField(
-                sb, document, module, typeName, field, type.Components, "            ", "inner", "value");
+                sb, document, module, typeName, field, type.Components, "            ", "reader", "value");
         }
 
         sb.AppendLine("            return value;");
-        sb.AppendLine("        });");
+        sb.AppendLine("        }");
         sb.AppendLine("    }");
         EmitDefaultTag(sb, type, constructed: true, fallback: "Asn1Tag.Sequence");
         sb.AppendLine("}");
@@ -407,7 +407,7 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine();
         sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader, Asn1Tag tag)");
         sb.AppendLine("    {");
-        sb.AppendLine("        return reader.ReadSet(tag, inner =>");
+        sb.AppendLine("        using (reader.EnterSet(tag))");
         sb.AppendLine("        {");
         sb.AppendLine($"            var value = new {typeName}();");
         foreach (var field in type.Components)
@@ -418,9 +418,9 @@ public sealed class CSharpBackend : ILanguageBackend
             }
         }
 
-        sb.AppendLine("            while (!inner.Eof)");
+        sb.AppendLine("            while (!reader.Eof)");
         sb.AppendLine("            {");
-        sb.AppendLine("                if (!inner.TryPeekTag(out var peeked))");
+        sb.AppendLine("                if (!reader.TryPeekTag(out var peeked))");
         sb.AppendLine("                {");
         sb.AppendLine("                    break;");
         sb.AppendLine("                }");
@@ -452,7 +452,7 @@ public sealed class CSharpBackend : ILanguageBackend
                 field.Type,
                 type.Components,
                 "                    ",
-                "inner",
+                "reader",
                 $"value.{prop}",
                 targetObject: "value");
             sb.AppendLine("                }");
@@ -470,7 +470,7 @@ public sealed class CSharpBackend : ILanguageBackend
         }
 
         sb.AppendLine("            return value;");
-        sb.AppendLine("        });");
+        sb.AppendLine("        }");
         sb.AppendLine("    }");
         EmitDefaultTag(sb, type, constructed: true, fallback: "Asn1Tag.Set");
         sb.AppendLine("}");

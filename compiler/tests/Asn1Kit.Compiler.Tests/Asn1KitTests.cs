@@ -404,7 +404,7 @@ END
         IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
         var source = new CSharpBackend().Generate(document).Single().Contents;
         Assert.Contains("Asn1Any", source);
-        Assert.Contains("if (!inner.Eof)", source);
+        Assert.Contains("if (!reader.Eof)", source);
         Assert.Contains("WriteAny", source);
         Assert.DoesNotContain("class AttributeValue", source);
         Assert.Contains("ASN.1 alias AttributeValue ::= ANY.", source);

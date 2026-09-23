@@ -32,13 +32,13 @@ public sealed class Attribute
 
     public static Attribute Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        return reader.ReadSequence(tag, inner =>
+        using (reader.EnterSequence(tag))
         {
             var value = new Attribute();
-            value.Type = inner.ReadOid(Asn1Tag.ObjectIdentifier);
-            value.Values = inner.ReadSetOf(Asn1Tag.Set, static inner => inner.ReadAny());
+            value.Type = reader.ReadOid(Asn1Tag.ObjectIdentifier);
+            value.Values = reader.ReadSetOf(Asn1Tag.Set, static inner => inner.ReadAny());
             return value;
-        });
+        }
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
@@ -66,13 +66,13 @@ public sealed class AttributeTypeAndValue
 
     public static AttributeTypeAndValue Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        return reader.ReadSequence(tag, inner =>
+        using (reader.EnterSequence(tag))
         {
             var value = new AttributeTypeAndValue();
-            value.Type = inner.ReadOid(Asn1Tag.ObjectIdentifier);
-            value.Value = inner.ReadAny();
+            value.Type = reader.ReadOid(Asn1Tag.ObjectIdentifier);
+            value.Value = reader.ReadAny();
             return value;
-        });
+        }
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
@@ -1009,14 +1009,14 @@ public sealed class Certificate
 
     public static Certificate Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        return reader.ReadSequence(tag, inner =>
+        using (reader.EnterSequence(tag))
         {
             var value = new Certificate();
-            value.TbsCertificate = Asn1Kit.Pkix.TBSCertificate.Decode(inner, Asn1Tag.Sequence);
-            value.SignatureAlgorithm = Asn1Kit.Pkix.AlgorithmIdentifier.Decode(inner, Asn1Tag.Sequence);
-            value.Signature = inner.ReadBitString(Asn1Tag.BitString);
+            value.TbsCertificate = Asn1Kit.Pkix.TBSCertificate.Decode(reader, Asn1Tag.Sequence);
+            value.SignatureAlgorithm = Asn1Kit.Pkix.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
+            value.Signature = reader.ReadBitString(Asn1Tag.BitString);
             return value;
-        });
+        }
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
@@ -1097,33 +1097,33 @@ public sealed class TBSCertificate
 
     public static TBSCertificate Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        return reader.ReadSequence(tag, inner =>
+        using (reader.EnterSequence(tag))
         {
             var value = new TBSCertificate();
-            if (inner.TryPeekTag(out var tag_Version) && tag_Version.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            if (reader.TryPeekTag(out var tag_Version) && tag_Version.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
-                value.Version = inner.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested => nested.ReadInt32(Asn1Tag.Integer));
+                value.Version = reader.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested => nested.ReadInt32(Asn1Tag.Integer));
             }
-            value.SerialNumber = inner.ReadIntegerValue(Asn1Tag.Integer);
-            value.Signature = Asn1Kit.Pkix.AlgorithmIdentifier.Decode(inner, Asn1Tag.Sequence);
-            value.Issuer = inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Pkix.AttributeTypeAndValue.Decode(inner, Asn1Tag.Sequence)));
-            value.Validity = Asn1Kit.Pkix.Validity.Decode(inner, Asn1Tag.Sequence);
-            value.Subject = inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Pkix.AttributeTypeAndValue.Decode(inner, Asn1Tag.Sequence)));
-            value.SubjectPublicKeyInfo = Asn1Kit.Pkix.SubjectPublicKeyInfo.Decode(inner, Asn1Tag.Sequence);
-            if (inner.TryPeekTag(out var tag_IssuerUniqueID) && tag_IssuerUniqueID.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
+            value.SerialNumber = reader.ReadIntegerValue(Asn1Tag.Integer);
+            value.Signature = Asn1Kit.Pkix.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
+            value.Issuer = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Pkix.AttributeTypeAndValue.Decode(inner, Asn1Tag.Sequence)));
+            value.Validity = Asn1Kit.Pkix.Validity.Decode(reader, Asn1Tag.Sequence);
+            value.Subject = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Pkix.AttributeTypeAndValue.Decode(inner, Asn1Tag.Sequence)));
+            value.SubjectPublicKeyInfo = Asn1Kit.Pkix.SubjectPublicKeyInfo.Decode(reader, Asn1Tag.Sequence);
+            if (reader.TryPeekTag(out var tag_IssuerUniqueID) && tag_IssuerUniqueID.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
             {
-                value.IssuerUniqueID = inner.ReadBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
+                value.IssuerUniqueID = reader.ReadBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
             }
-            if (inner.TryPeekTag(out var tag_SubjectUniqueID) && tag_SubjectUniqueID.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false)))
+            if (reader.TryPeekTag(out var tag_SubjectUniqueID) && tag_SubjectUniqueID.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false)))
             {
-                value.SubjectUniqueID = inner.ReadBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false));
+                value.SubjectUniqueID = reader.ReadBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false));
             }
-            if (inner.TryPeekTag(out var tag_Extensions) && tag_Extensions.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
+            if (reader.TryPeekTag(out var tag_Extensions) && tag_Extensions.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
             {
-                value.Extensions = inner.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true), nested => nested.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.Extension.Decode(inner, Asn1Tag.Sequence)));
+                value.Extensions = reader.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true), nested => nested.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.Extension.Decode(inner, Asn1Tag.Sequence)));
             }
             return value;
-        });
+        }
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
@@ -1159,13 +1159,13 @@ public sealed class Validity
 
     public static Validity Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        return reader.ReadSequence(tag, inner =>
+        using (reader.EnterSequence(tag))
         {
             var value = new Validity();
-            value.NotBefore = Asn1Kit.Pkix.Time.Decode(inner);
-            value.NotAfter = Asn1Kit.Pkix.Time.Decode(inner);
+            value.NotBefore = Asn1Kit.Pkix.Time.Decode(reader);
+            value.NotAfter = Asn1Kit.Pkix.Time.Decode(reader);
             return value;
-        });
+        }
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
@@ -1247,13 +1247,13 @@ public sealed class SubjectPublicKeyInfo
 
     public static SubjectPublicKeyInfo Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        return reader.ReadSequence(tag, inner =>
+        using (reader.EnterSequence(tag))
         {
             var value = new SubjectPublicKeyInfo();
-            value.Algorithm = Asn1Kit.Pkix.AlgorithmIdentifier.Decode(inner, Asn1Tag.Sequence);
-            value.SubjectPublicKey = inner.ReadBitString(Asn1Tag.BitString);
+            value.Algorithm = Asn1Kit.Pkix.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
+            value.SubjectPublicKey = reader.ReadBitString(Asn1Tag.BitString);
             return value;
-        });
+        }
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
@@ -1284,17 +1284,17 @@ public sealed class Extension
 
     public static Extension Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        return reader.ReadSequence(tag, inner =>
+        using (reader.EnterSequence(tag))
         {
             var value = new Extension();
-            value.ExtnID = inner.ReadOid(Asn1Tag.ObjectIdentifier);
-            if (inner.TryPeekTag(out var tag_Critical) && tag_Critical.MatchesIgnoreConstructed(Asn1Tag.Boolean))
+            value.ExtnID = reader.ReadOid(Asn1Tag.ObjectIdentifier);
+            if (reader.TryPeekTag(out var tag_Critical) && tag_Critical.MatchesIgnoreConstructed(Asn1Tag.Boolean))
             {
-                value.Critical = inner.ReadBoolean(Asn1Tag.Boolean);
+                value.Critical = reader.ReadBoolean(Asn1Tag.Boolean);
             }
-            value.ExtnValue = inner.ReadOctetString(Asn1Tag.OctetString);
+            value.ExtnValue = reader.ReadOctetString(Asn1Tag.OctetString);
             return value;
-        });
+        }
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
@@ -1322,14 +1322,14 @@ public sealed class CertificateList
 
     public static CertificateList Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        return reader.ReadSequence(tag, inner =>
+        using (reader.EnterSequence(tag))
         {
             var value = new CertificateList();
-            value.TbsCertList = Asn1Kit.Pkix.TBSCertList.Decode(inner, Asn1Tag.Sequence);
-            value.SignatureAlgorithm = Asn1Kit.Pkix.AlgorithmIdentifier.Decode(inner, Asn1Tag.Sequence);
-            value.Signature = inner.ReadBitString(Asn1Tag.BitString);
+            value.TbsCertList = Asn1Kit.Pkix.TBSCertList.Decode(reader, Asn1Tag.Sequence);
+            value.SignatureAlgorithm = Asn1Kit.Pkix.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
+            value.Signature = reader.ReadBitString(Asn1Tag.BitString);
             return value;
-        });
+        }
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
@@ -1394,30 +1394,30 @@ public sealed class TBSCertList
 
     public static TBSCertList Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        return reader.ReadSequence(tag, inner =>
+        using (reader.EnterSequence(tag))
         {
             var value = new TBSCertList();
-            if (inner.TryPeekTag(out var tag_Version) && tag_Version.MatchesIgnoreConstructed(Asn1Tag.Integer))
+            if (reader.TryPeekTag(out var tag_Version) && tag_Version.MatchesIgnoreConstructed(Asn1Tag.Integer))
             {
-                value.Version = inner.ReadInt32(Asn1Tag.Integer);
+                value.Version = reader.ReadInt32(Asn1Tag.Integer);
             }
-            value.Signature = Asn1Kit.Pkix.AlgorithmIdentifier.Decode(inner, Asn1Tag.Sequence);
-            value.Issuer = inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Pkix.AttributeTypeAndValue.Decode(inner, Asn1Tag.Sequence)));
-            value.ThisUpdate = Asn1Kit.Pkix.Time.Decode(inner);
-            if (inner.TryPeekTag(out var tag_NextUpdate) && (tag_NextUpdate.MatchesIgnoreConstructed(Asn1Tag.UtcTime) || tag_NextUpdate.MatchesIgnoreConstructed(Asn1Tag.GeneralizedTime)))
+            value.Signature = Asn1Kit.Pkix.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
+            value.Issuer = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Pkix.AttributeTypeAndValue.Decode(inner, Asn1Tag.Sequence)));
+            value.ThisUpdate = Asn1Kit.Pkix.Time.Decode(reader);
+            if (reader.TryPeekTag(out var tag_NextUpdate) && (tag_NextUpdate.MatchesIgnoreConstructed(Asn1Tag.UtcTime) || tag_NextUpdate.MatchesIgnoreConstructed(Asn1Tag.GeneralizedTime)))
             {
-                value.NextUpdate = Asn1Kit.Pkix.Time.Decode(inner);
+                value.NextUpdate = Asn1Kit.Pkix.Time.Decode(reader);
             }
-            if (inner.TryPeekTag(out var tag_RevokedCertificates) && tag_RevokedCertificates.MatchesIgnoreConstructed(Asn1Tag.Sequence))
+            if (reader.TryPeekTag(out var tag_RevokedCertificates) && tag_RevokedCertificates.MatchesIgnoreConstructed(Asn1Tag.Sequence))
             {
-                value.RevokedCertificates = inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.TBSCertList_RevokedCertificates_Item.Decode(inner, Asn1Tag.Sequence));
+                value.RevokedCertificates = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.TBSCertList_RevokedCertificates_Item.Decode(inner, Asn1Tag.Sequence));
             }
-            if (inner.TryPeekTag(out var tag_CrlExtensions) && tag_CrlExtensions.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            if (reader.TryPeekTag(out var tag_CrlExtensions) && tag_CrlExtensions.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
-                value.CrlExtensions = inner.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested => nested.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.Extension.Decode(inner, Asn1Tag.Sequence)));
+                value.CrlExtensions = reader.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested => nested.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.Extension.Decode(inner, Asn1Tag.Sequence)));
             }
             return value;
-        });
+        }
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
@@ -1446,16 +1446,16 @@ public sealed class AlgorithmIdentifier
 
     public static AlgorithmIdentifier Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        return reader.ReadSequence(tag, inner =>
+        using (reader.EnterSequence(tag))
         {
             var value = new AlgorithmIdentifier();
-            value.Algorithm = inner.ReadOid(Asn1Tag.ObjectIdentifier);
-            if (!inner.Eof)
+            value.Algorithm = reader.ReadOid(Asn1Tag.ObjectIdentifier);
+            if (!reader.Eof)
             {
-                value.Parameters = AlgorithmIdentifier_Parameters.Decode(inner, value.Algorithm);
+                value.Parameters = AlgorithmIdentifier_Parameters.Decode(reader, value.Algorithm);
             }
             return value;
-        });
+        }
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
@@ -1497,20 +1497,20 @@ public sealed class ORAddress
 
     public static ORAddress Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        return reader.ReadSequence(tag, inner =>
+        using (reader.EnterSequence(tag))
         {
             var value = new ORAddress();
-            value.BuiltInStandardAttributes = Asn1Kit.Pkix.BuiltInStandardAttributes.Decode(inner, Asn1Tag.Sequence);
-            if (inner.TryPeekTag(out var tag_BuiltInDomainDefinedAttributes) && tag_BuiltInDomainDefinedAttributes.MatchesIgnoreConstructed(Asn1Tag.Sequence))
+            value.BuiltInStandardAttributes = Asn1Kit.Pkix.BuiltInStandardAttributes.Decode(reader, Asn1Tag.Sequence);
+            if (reader.TryPeekTag(out var tag_BuiltInDomainDefinedAttributes) && tag_BuiltInDomainDefinedAttributes.MatchesIgnoreConstructed(Asn1Tag.Sequence))
             {
-                value.BuiltInDomainDefinedAttributes = inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.BuiltInDomainDefinedAttribute.Decode(inner, Asn1Tag.Sequence));
+                value.BuiltInDomainDefinedAttributes = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.BuiltInDomainDefinedAttribute.Decode(inner, Asn1Tag.Sequence));
             }
-            if (inner.TryPeekTag(out var tag_ExtensionAttributes) && tag_ExtensionAttributes.MatchesIgnoreConstructed(Asn1Tag.Set))
+            if (reader.TryPeekTag(out var tag_ExtensionAttributes) && tag_ExtensionAttributes.MatchesIgnoreConstructed(Asn1Tag.Set))
             {
-                value.ExtensionAttributes = inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Pkix.ExtensionAttribute.Decode(inner, Asn1Tag.Sequence));
+                value.ExtensionAttributes = reader.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Pkix.ExtensionAttribute.Decode(inner, Asn1Tag.Sequence));
             }
             return value;
-        });
+        }
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
@@ -1588,47 +1588,47 @@ public sealed class BuiltInStandardAttributes
 
     public static BuiltInStandardAttributes Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        return reader.ReadSequence(tag, inner =>
+        using (reader.EnterSequence(tag))
         {
             var value = new BuiltInStandardAttributes();
-            if (inner.TryPeekTag(out var tag_CountryName) && tag_CountryName.MatchesIgnoreConstructed(Asn1Tag.Sequence))
+            if (reader.TryPeekTag(out var tag_CountryName) && tag_CountryName.MatchesIgnoreConstructed(Asn1Tag.Sequence))
             {
-                value.CountryName = Asn1Kit.Pkix.CountryName.Decode(inner);
+                value.CountryName = Asn1Kit.Pkix.CountryName.Decode(reader);
             }
-            if (inner.TryPeekTag(out var tag_AdministrationDomainName) && tag_AdministrationDomainName.MatchesIgnoreConstructed(Asn1Tag.Sequence))
+            if (reader.TryPeekTag(out var tag_AdministrationDomainName) && tag_AdministrationDomainName.MatchesIgnoreConstructed(Asn1Tag.Sequence))
             {
-                value.AdministrationDomainName = Asn1Kit.Pkix.AdministrationDomainName.Decode(inner);
+                value.AdministrationDomainName = Asn1Kit.Pkix.AdministrationDomainName.Decode(reader);
             }
-            if (inner.TryPeekTag(out var tag_NetworkAddress) && tag_NetworkAddress.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false)))
+            if (reader.TryPeekTag(out var tag_NetworkAddress) && tag_NetworkAddress.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false)))
             {
-                value.NetworkAddress = inner.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), Asn1StringForm.Numeric);
+                value.NetworkAddress = reader.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), Asn1StringForm.Numeric);
             }
-            if (inner.TryPeekTag(out var tag_TerminalIdentifier) && tag_TerminalIdentifier.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
+            if (reader.TryPeekTag(out var tag_TerminalIdentifier) && tag_TerminalIdentifier.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
             {
-                value.TerminalIdentifier = inner.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), Asn1StringForm.Printable);
+                value.TerminalIdentifier = reader.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), Asn1StringForm.Printable);
             }
-            if (inner.TryPeekTag(out var tag_PrivateDomainName) && tag_PrivateDomainName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
+            if (reader.TryPeekTag(out var tag_PrivateDomainName) && tag_PrivateDomainName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
             {
-                value.PrivateDomainName = inner.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), nested => Asn1Kit.Pkix.PrivateDomainName.Decode(nested));
+                value.PrivateDomainName = reader.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), nested => Asn1Kit.Pkix.PrivateDomainName.Decode(nested));
             }
-            if (inner.TryPeekTag(out var tag_OrganizationName) && tag_OrganizationName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false)))
+            if (reader.TryPeekTag(out var tag_OrganizationName) && tag_OrganizationName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false)))
             {
-                value.OrganizationName = inner.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false), Asn1StringForm.Printable);
+                value.OrganizationName = reader.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false), Asn1StringForm.Printable);
             }
-            if (inner.TryPeekTag(out var tag_NumericUserIdentifier) && tag_NumericUserIdentifier.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, false)))
+            if (reader.TryPeekTag(out var tag_NumericUserIdentifier) && tag_NumericUserIdentifier.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, false)))
             {
-                value.NumericUserIdentifier = inner.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, false), Asn1StringForm.Numeric);
+                value.NumericUserIdentifier = reader.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, false), Asn1StringForm.Numeric);
             }
-            if (inner.TryPeekTag(out var tag_PersonalName) && tag_PersonalName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 5, true)))
+            if (reader.TryPeekTag(out var tag_PersonalName) && tag_PersonalName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 5, true)))
             {
-                value.PersonalName = Asn1Kit.Pkix.PersonalName.Decode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 5, true));
+                value.PersonalName = Asn1Kit.Pkix.PersonalName.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 5, true));
             }
-            if (inner.TryPeekTag(out var tag_OrganizationalUnitNames) && tag_OrganizationalUnitNames.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 6, true)))
+            if (reader.TryPeekTag(out var tag_OrganizationalUnitNames) && tag_OrganizationalUnitNames.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 6, true)))
             {
-                value.OrganizationalUnitNames = inner.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 6, true), static inner => inner.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable));
+                value.OrganizationalUnitNames = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 6, true), static inner => inner.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable));
             }
             return value;
-        });
+        }
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
@@ -1835,13 +1835,13 @@ public sealed class PersonalName
 
     public static PersonalName Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        return reader.ReadSet(tag, inner =>
+        using (reader.EnterSet(tag))
         {
             var value = new PersonalName();
             var seen_Surname = false;
-            while (!inner.Eof)
+            while (!reader.Eof)
             {
-                if (!inner.TryPeekTag(out var peeked))
+                if (!reader.TryPeekTag(out var peeked))
                 {
                     break;
                 }
@@ -1849,28 +1849,28 @@ public sealed class PersonalName
                 {
                     if (seen_Surname) throw new Asn1Exception("Duplicate SET component 'surname'.");
                     seen_Surname = true;
-                    value.Surname = inner.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), Asn1StringForm.Printable);
+                    value.Surname = reader.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), Asn1StringForm.Printable);
                 }
                 else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
                 {
                     if (value.GivenName != null) throw new Asn1Exception("Duplicate SET component 'given-name'.");
-                    value.GivenName = inner.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), Asn1StringForm.Printable);
+                    value.GivenName = reader.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), Asn1StringForm.Printable);
                 }
                 else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false)))
                 {
                     if (value.Initials != null) throw new Asn1Exception("Duplicate SET component 'initials'.");
-                    value.Initials = inner.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false), Asn1StringForm.Printable);
+                    value.Initials = reader.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false), Asn1StringForm.Printable);
                 }
                 else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false)))
                 {
                     if (value.GenerationQualifier != null) throw new Asn1Exception("Duplicate SET component 'generation-qualifier'.");
-                    value.GenerationQualifier = inner.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false), Asn1StringForm.Printable);
+                    value.GenerationQualifier = reader.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false), Asn1StringForm.Printable);
                 }
                 else throw new Asn1Exception("Unknown SET component.");
             }
             if (!seen_Surname) throw new Asn1Exception("Missing SET component 'surname'.");
             return value;
-        });
+        }
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Set;
@@ -1896,13 +1896,13 @@ public sealed class BuiltInDomainDefinedAttribute
 
     public static BuiltInDomainDefinedAttribute Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        return reader.ReadSequence(tag, inner =>
+        using (reader.EnterSequence(tag))
         {
             var value = new BuiltInDomainDefinedAttribute();
-            value.Type = inner.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
-            value.Value = inner.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
+            value.Type = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
+            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
             return value;
-        });
+        }
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
@@ -1931,13 +1931,13 @@ public sealed class ExtensionAttribute
 
     public static ExtensionAttribute Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        return reader.ReadSequence(tag, inner =>
+        using (reader.EnterSequence(tag))
         {
             var value = new ExtensionAttribute();
-            value.ExtensionAttributeType = inner.ReadInt32(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
-            value.ExtensionAttributeValue = inner.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), nested => nested.ReadAny());
+            value.ExtensionAttributeType = reader.ReadInt32(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
+            value.ExtensionAttributeValue = reader.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), nested => nested.ReadAny());
             return value;
-        });
+        }
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
@@ -1976,13 +1976,13 @@ public sealed class TeletexPersonalName
 
     public static TeletexPersonalName Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        return reader.ReadSet(tag, inner =>
+        using (reader.EnterSet(tag))
         {
             var value = new TeletexPersonalName();
             var seen_Surname = false;
-            while (!inner.Eof)
+            while (!reader.Eof)
             {
-                if (!inner.TryPeekTag(out var peeked))
+                if (!reader.TryPeekTag(out var peeked))
                 {
                     break;
                 }
@@ -1990,28 +1990,28 @@ public sealed class TeletexPersonalName
                 {
                     if (seen_Surname) throw new Asn1Exception("Duplicate SET component 'surname'.");
                     seen_Surname = true;
-                    value.Surname = inner.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), Asn1StringForm.Teletex);
+                    value.Surname = reader.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), Asn1StringForm.Teletex);
                 }
                 else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
                 {
                     if (value.GivenName != null) throw new Asn1Exception("Duplicate SET component 'given-name'.");
-                    value.GivenName = inner.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), Asn1StringForm.Teletex);
+                    value.GivenName = reader.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), Asn1StringForm.Teletex);
                 }
                 else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false)))
                 {
                     if (value.Initials != null) throw new Asn1Exception("Duplicate SET component 'initials'.");
-                    value.Initials = inner.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false), Asn1StringForm.Teletex);
+                    value.Initials = reader.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false), Asn1StringForm.Teletex);
                 }
                 else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false)))
                 {
                     if (value.GenerationQualifier != null) throw new Asn1Exception("Duplicate SET component 'generation-qualifier'.");
-                    value.GenerationQualifier = inner.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false), Asn1StringForm.Teletex);
+                    value.GenerationQualifier = reader.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false), Asn1StringForm.Teletex);
                 }
                 else throw new Asn1Exception("Unknown SET component.");
             }
             if (!seen_Surname) throw new Asn1Exception("Missing SET component 'surname'.");
             return value;
-        });
+        }
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Set;
@@ -2158,29 +2158,29 @@ public sealed class UnformattedPostalAddress
 
     public static UnformattedPostalAddress Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        return reader.ReadSet(tag, inner =>
+        using (reader.EnterSet(tag))
         {
             var value = new UnformattedPostalAddress();
-            while (!inner.Eof)
+            while (!reader.Eof)
             {
-                if (!inner.TryPeekTag(out var peeked))
+                if (!reader.TryPeekTag(out var peeked))
                 {
                     break;
                 }
                 if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
                 {
                     if (value.PrintableAddress != null) throw new Asn1Exception("Duplicate SET component 'printable-address'.");
-                    value.PrintableAddress = inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable));
+                    value.PrintableAddress = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable));
                 }
                 else if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
                 {
                     if (value.TeletexString != null) throw new Asn1Exception("Duplicate SET component 'teletex-string'.");
-                    value.TeletexString = inner.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
+                    value.TeletexString = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
                 }
                 else throw new Asn1Exception("Unknown SET component.");
             }
             return value;
-        });
+        }
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Set;
@@ -2212,29 +2212,29 @@ public sealed class PDSParameter
 
     public static PDSParameter Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        return reader.ReadSet(tag, inner =>
+        using (reader.EnterSet(tag))
         {
             var value = new PDSParameter();
-            while (!inner.Eof)
+            while (!reader.Eof)
             {
-                if (!inner.TryPeekTag(out var peeked))
+                if (!reader.TryPeekTag(out var peeked))
                 {
                     break;
                 }
                 if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
                 {
                     if (value.PrintableString != null) throw new Asn1Exception("Duplicate SET component 'printable-string'.");
-                    value.PrintableString = inner.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
+                    value.PrintableString = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
                 }
                 else if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
                 {
                     if (value.TeletexString != null) throw new Asn1Exception("Duplicate SET component 'teletex-string'.");
-                    value.TeletexString = inner.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
+                    value.TeletexString = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
                 }
                 else throw new Asn1Exception("Unknown SET component.");
             }
             return value;
-        });
+        }
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Set;
@@ -2345,24 +2345,24 @@ public sealed class PresentationAddress
 
     public static PresentationAddress Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        return reader.ReadSequence(tag, inner =>
+        using (reader.EnterSequence(tag))
         {
             var value = new PresentationAddress();
-            if (inner.TryPeekTag(out var tag_PSelector) && tag_PSelector.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            if (reader.TryPeekTag(out var tag_PSelector) && tag_PSelector.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
-                value.PSelector = inner.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested => nested.ReadOctetString(Asn1Tag.OctetString));
+                value.PSelector = reader.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested => nested.ReadOctetString(Asn1Tag.OctetString));
             }
-            if (inner.TryPeekTag(out var tag_SSelector) && tag_SSelector.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            if (reader.TryPeekTag(out var tag_SSelector) && tag_SSelector.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
             {
-                value.SSelector = inner.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), nested => nested.ReadOctetString(Asn1Tag.OctetString));
+                value.SSelector = reader.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), nested => nested.ReadOctetString(Asn1Tag.OctetString));
             }
-            if (inner.TryPeekTag(out var tag_TSelector) && tag_TSelector.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
+            if (reader.TryPeekTag(out var tag_TSelector) && tag_TSelector.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
             {
-                value.TSelector = inner.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), nested => nested.ReadOctetString(Asn1Tag.OctetString));
+                value.TSelector = reader.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), nested => nested.ReadOctetString(Asn1Tag.OctetString));
             }
-            value.NAddresses = inner.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true), nested => nested.ReadSetOf(Asn1Tag.Set, static inner => inner.ReadOctetString(Asn1Tag.OctetString)));
+            value.NAddresses = reader.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true), nested => nested.ReadSetOf(Asn1Tag.Set, static inner => inner.ReadOctetString(Asn1Tag.OctetString)));
             return value;
-        });
+        }
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
@@ -2404,13 +2404,13 @@ public sealed class TeletexDomainDefinedAttribute
 
     public static TeletexDomainDefinedAttribute Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        return reader.ReadSequence(tag, inner =>
+        using (reader.EnterSequence(tag))
         {
             var value = new TeletexDomainDefinedAttribute();
-            value.Type = inner.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
-            value.Value = inner.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
+            value.Type = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
+            value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
             return value;
-        });
+        }
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
@@ -2446,17 +2446,17 @@ public sealed class TBSCertList_RevokedCertificates_Item
 
     public static TBSCertList_RevokedCertificates_Item Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        return reader.ReadSequence(tag, inner =>
+        using (reader.EnterSequence(tag))
         {
             var value = new TBSCertList_RevokedCertificates_Item();
-            value.UserCertificate = inner.ReadIntegerValue(Asn1Tag.Integer);
-            value.RevocationDate = Asn1Kit.Pkix.Time.Decode(inner);
-            if (inner.TryPeekTag(out var tag_CrlEntryExtensions) && tag_CrlEntryExtensions.MatchesIgnoreConstructed(Asn1Tag.Sequence))
+            value.UserCertificate = reader.ReadIntegerValue(Asn1Tag.Integer);
+            value.RevocationDate = Asn1Kit.Pkix.Time.Decode(reader);
+            if (reader.TryPeekTag(out var tag_CrlEntryExtensions) && tag_CrlEntryExtensions.MatchesIgnoreConstructed(Asn1Tag.Sequence))
             {
-                value.CrlEntryExtensions = inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.Extension.Decode(inner, Asn1Tag.Sequence));
+                value.CrlEntryExtensions = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.Extension.Decode(inner, Asn1Tag.Sequence));
             }
             return value;
-        });
+        }
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
@@ -2551,16 +2551,16 @@ public sealed class ExtendedNetworkAddress_E1634Address
 
     public static ExtendedNetworkAddress_E1634Address Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        return reader.ReadSequence(tag, inner =>
+        using (reader.EnterSequence(tag))
         {
             var value = new ExtendedNetworkAddress_E1634Address();
-            value.Number = inner.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), Asn1StringForm.Numeric);
-            if (inner.TryPeekTag(out var tag_SubAddress) && tag_SubAddress.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
+            value.Number = reader.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), Asn1StringForm.Numeric);
+            if (reader.TryPeekTag(out var tag_SubAddress) && tag_SubAddress.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
             {
-                value.SubAddress = inner.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), Asn1StringForm.Numeric);
+                value.SubAddress = reader.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), Asn1StringForm.Numeric);
             }
             return value;
-        });
+        }
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;

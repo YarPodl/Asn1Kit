@@ -925,4 +925,124 @@ public sealed class RuntimeTests
         Assert.Equal(3, sum);
         Assert.True(reader.Eof);
     }
+
+    [Fact]
+    public void EnterSequence_RoundTripsNestedContents()
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteSequence(Asn1Tag.Sequence, inner =>
+        {
+            inner.WriteInteger(Asn1Tag.Integer, 1);
+            inner.WriteSequence(Asn1Tag.Sequence, nested => nested.WriteInteger(Asn1Tag.Integer, 2));
+        });
+        var bytes = writer.Encode();
+
+        var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
+        int a;
+        int b;
+        using (reader.EnterSequence(Asn1Tag.Sequence))
+        {
+            a = reader.ReadInt32(Asn1Tag.Integer);
+            using (reader.EnterSequence(Asn1Tag.Sequence))
+            {
+                b = reader.ReadInt32(Asn1Tag.Integer);
+                Assert.True(reader.Eof);
+            }
+        }
+
+        Assert.Equal(1, a);
+        Assert.Equal(2, b);
+        Assert.True(reader.Eof);
+    }
+
+    [Fact]
+    public void ReadSequenceOf_NoCapturingClosure_AllocatesLessThanLegacyWrap()
+    {
+        var items = new List<Asn1Integer>();
+        for (var i = 0; i < 16; i++)
+        {
+            items.Add(Asn1Integer.FromInt32(i));
+        }
+
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteSequenceOf(Asn1Tag.Sequence, items, static (w, item) => Asn1Integer.Encode(w, item));
+        var bytes = writer.Encode();
+
+        static T[] LegacyCapturingOf<T>(Asn1Reader reader, Asn1Tag expected, Func<Asn1Reader, T> decodeItem) =>
+            reader.ReadSequence(expected, inner =>
+            {
+                if (inner.Eof)
+                {
+                    return Array.Empty<T>();
+                }
+
+                var first = decodeItem(inner);
+                if (inner.Eof)
+                {
+                    return new[] { first };
+                }
+
+                var rented = System.Buffers.ArrayPool<T>.Shared.Rent(8);
+                var count = 0;
+                try
+                {
+                    rented[count++] = first;
+                    while (!inner.Eof)
+                    {
+                        if (count == rented.Length)
+                        {
+                            var grown = System.Buffers.ArrayPool<T>.Shared.Rent(rented.Length * 2);
+                            Array.Copy(rented, grown, count);
+                            System.Buffers.ArrayPool<T>.Shared.Return(rented, clearArray: true);
+                            rented = grown;
+                        }
+
+                        rented[count++] = decodeItem(inner);
+                    }
+
+                    var result = new T[count];
+                    Array.Copy(rented, result, count);
+                    return result;
+                }
+                finally
+                {
+                    System.Buffers.ArrayPool<T>.Shared.Return(rented, clearArray: true);
+                }
+            });
+
+        // Warmup pools + delegate caches.
+        for (var i = 0; i < 8; i++)
+        {
+            _ = new Asn1Reader(bytes, Asn1Encoding.Der).ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Integer.Decode(inner));
+            _ = LegacyCapturingOf(new Asn1Reader(bytes, Asn1Encoding.Der), Asn1Tag.Sequence, static inner => Asn1Integer.Decode(inner));
+        }
+
+        const int iterations = 200;
+
+        var beforeLegacy = GC.GetAllocatedBytesForCurrentThread();
+        for (var i = 0; i < iterations; i++)
+        {
+            var decoded = LegacyCapturingOf(new Asn1Reader(bytes, Asn1Encoding.Der), Asn1Tag.Sequence, static inner => Asn1Integer.Decode(inner));
+            Assert.Equal(16, decoded.Length);
+        }
+
+        var legacyAlloc = GC.GetAllocatedBytesForCurrentThread() - beforeLegacy;
+
+        var beforeCurrent = GC.GetAllocatedBytesForCurrentThread();
+        for (var i = 0; i < iterations; i++)
+        {
+            var decoded = new Asn1Reader(bytes, Asn1Encoding.Der).ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Integer.Decode(inner));
+            Assert.Equal(16, decoded.Length);
+        }
+
+        var currentAlloc = GC.GetAllocatedBytesForCurrentThread() - beforeCurrent;
+
+        // Legacy wrap allocates one closure per call (~40–64 B); production EnterSequence path does not.
+        Assert.True(
+            currentAlloc < legacyAlloc,
+            $"Expected production Alloc ({currentAlloc}) < legacy capturing Alloc ({legacyAlloc}).");
+        Assert.True(
+            legacyAlloc - currentAlloc >= iterations * 24,
+            $"Expected ≥24 B closure savings per call; delta={legacyAlloc - currentAlloc}, iterations={iterations}.");
+    }
 }
