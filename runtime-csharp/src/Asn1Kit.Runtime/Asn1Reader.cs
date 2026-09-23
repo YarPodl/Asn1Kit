@@ -1,5 +1,5 @@
-using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Numerics;
 using System.Text;
 
 namespace Asn1Kit.Runtime;
@@ -8,8 +8,8 @@ public sealed class Asn1Reader
 {
     private readonly byte[] _data;
     private int _offset;
-    private readonly int _end;
-    private readonly int _start;
+    private int _end;
+    private int _start;
 
     public Asn1Reader(byte[] data, Asn1Encoding encoding = Asn1Encoding.Ber, Asn1ReaderOptions? options = null)
         : this(data, 0, data is null ? 0 : data.Length, encoding, options)
@@ -89,8 +89,7 @@ public sealed class Asn1Reader
     public T ReadSequence<T>(Asn1Tag expected, Func<Asn1Reader, T> read)
     {
         var contents = ReadValue(expected, allowConstructed: true);
-        var inner = new Asn1Reader(contents, Encoding, Options);
-        return read(inner);
+        return WithContents(contents, read);
     }
 
     public void ReadSequence(Asn1Tag expected, Action<Asn1Reader> read) =>
@@ -103,6 +102,89 @@ public sealed class Asn1Reader
     public T ReadSet<T>(Asn1Tag expected, Func<Asn1Reader, T> read) => ReadSequence(expected, read);
 
     public void ReadSet(Asn1Tag expected, Action<Asn1Reader> read) => ReadSequence(expected, read);
+
+    /// <summary>
+    /// Consumes the next complete TLV, eagerly decodes it, and retains the TLV for bit-exact re-encode.
+    /// </summary>
+    public Asn1Retained<T> ReadRetained<T>(Func<Asn1Reader, T> decode)
+    {
+        if (decode is null)
+        {
+            throw new ArgumentNullException(nameof(decode));
+        }
+
+        var start = _offset;
+        _ = ReadTlv();
+        var encoded = _data.AsMemory(start, _offset - start);
+        var value = WithContents(encoded, decode);
+        return Asn1Retained<T>.Wrap(encoded, value);
+    }
+
+    /// <summary>
+    /// Restricts this reader to <paramref name="contents"/> when it aliases the backing buffer.
+    /// Restore via <see cref="Asn1ReaderCursor.Dispose"/> or <see cref="PopContentsWindow"/>.
+    /// </summary>
+    internal Asn1ReaderCursor PushContentsWindow(ReadOnlyMemory<byte> contents)
+    {
+        if (!TryGetAliasedRange(contents, out var contentStart, out var contentEnd))
+        {
+            throw new Asn1Exception("Contents window must alias the reader buffer.");
+        }
+
+        var cursor = Asn1ReaderCursor.Create(this, _start, _offset, _end);
+        _start = contentStart;
+        _offset = contentStart;
+        _end = contentEnd;
+        return cursor;
+    }
+
+    internal void PopContentsWindow(int savedStart, int savedOffset, int savedEnd)
+    {
+        _start = savedStart;
+        _offset = savedOffset;
+        _end = savedEnd;
+    }
+
+    private T WithContents<T>(ReadOnlyMemory<byte> contents, Func<Asn1Reader, T> read)
+    {
+        if (!TryGetAliasedRange(contents, out var contentStart, out var contentEnd))
+        {
+            var nested = new Asn1Reader(contents, Encoding, Options);
+            return read(nested);
+        }
+
+        var savedStart = _start;
+        var savedOffset = _offset;
+        var savedEnd = _end;
+        _start = contentStart;
+        _offset = contentStart;
+        _end = contentEnd;
+        try
+        {
+            return read(this);
+        }
+        finally
+        {
+            _start = savedStart;
+            _offset = savedOffset;
+            _end = savedEnd;
+        }
+    }
+
+    private bool TryGetAliasedRange(ReadOnlyMemory<byte> contents, out int start, out int end)
+    {
+        if (MemoryMarshal.TryGetArray(contents, out ArraySegment<byte> segment) &&
+            ReferenceEquals(segment.Array, _data))
+        {
+            start = segment.Offset;
+            end = segment.Offset + segment.Count;
+            return true;
+        }
+
+        start = 0;
+        end = 0;
+        return false;
+    }
 
     /// <summary>
     /// Reads a SEQUENCE OF into a new <see cref="List{T}"/>, decoding elements until the contents are exhausted.
@@ -298,46 +380,26 @@ public sealed class Asn1Reader
         return true;
     }
 
-    public string ReadObjectIdentifier(Asn1Tag expected)
+    public Asn1Oid ReadOid(Asn1Tag expected)
     {
-        var contents = ReadValue(expected, allowConstructed: false).Span;
+        var contents = ReadValue(expected, allowConstructed: false);
         if (contents.Length == 0)
         {
             throw new Asn1Exception("OBJECT IDENTIFIER is empty.");
         }
 
+        // Validate base-128 arcs (including overlong reject) without building a string.
+        var span = contents.Span;
         var i = 0;
-        var first = ReadOidArc(contents, ref i);
-        int arc0;
-        int arc1;
-        if (first < 40)
+        while (i < span.Length)
         {
-            arc0 = 0;
-            arc1 = first;
-        }
-        else if (first < 80)
-        {
-            arc0 = 1;
-            arc1 = first - 40;
-        }
-        else
-        {
-            arc0 = 2;
-            arc1 = first - 80;
+            _ = ReadOidArc(span, ref i);
         }
 
-        var builder = new StringBuilder();
-        builder.Append(arc0);
-        builder.Append('.');
-        builder.Append(arc1);
-        while (i < contents.Length)
-        {
-            builder.Append('.');
-            builder.Append(ReadOidArc(contents, ref i));
-        }
-
-        return builder.ToString();
+        return Asn1Oid.FromContents(contents);
     }
+
+    public string ReadObjectIdentifier(Asn1Tag expected) => ReadOid(expected).ToString();
 
     private int ReadOidArc(ReadOnlySpan<byte> contents, ref int i)
     {
@@ -386,26 +448,33 @@ public sealed class Asn1Reader
             return ParsePrimitiveBitString(contents, Options.RejectBitStringTrailingBits);
         }
 
-        var nested = new Asn1Reader(contents, Encoding, Options);
-        var segments = new List<Asn1BitString>();
-        var unusedBits = 0;
-        while (!nested.Eof)
+        return WithContents(contents, nested =>
         {
-            var segment = nested.ReadBitString(Asn1Tag.BitString);
-            if (segments.Count > 0 && unusedBits != 0)
+            var segments = new List<Asn1BitString>();
+            var unusedBits = 0;
+            while (!nested.Eof)
             {
-                throw new Asn1Exception("Only the last BIT STRING segment may have unused bits.");
+                var segment = nested.ReadBitString(Asn1Tag.BitString);
+                if (segments.Count > 0 && unusedBits != 0)
+                {
+                    throw new Asn1Exception("Only the last BIT STRING segment may have unused bits.");
+                }
+
+                segments.Add(segment);
+                unusedBits = segment.UnusedBits;
             }
 
-            segments.Add(segment);
-            unusedBits = segment.UnusedBits;
-        }
+            if (segments.Count == 0)
+            {
+                throw new Asn1Exception("Constructed BIT STRING has no segments.");
+            }
 
-        if (segments.Count == 0)
-        {
-            throw new Asn1Exception("Constructed BIT STRING has no segments.");
-        }
+            return ConcatBitStringSegments(segments, unusedBits);
+        });
+    }
 
+    private Asn1BitString ConcatBitStringSegments(List<Asn1BitString> segments, int unusedBits)
+    {
         var total = 0;
         foreach (var segment in segments)
         {
@@ -678,16 +747,22 @@ public sealed class Asn1Reader
         Asn1Tag segmentTag,
         out int totalLength)
     {
-        var nested = new Asn1Reader(constructedContents, Encoding, Options);
-        var segments = new List<ReadOnlyMemory<byte>>();
-        totalLength = 0;
-        while (!nested.Eof)
+        var total = 0;
+        var segments = WithContents(constructedContents, nested =>
         {
-            var segment = nested.ReadOctetLike(segmentTag);
-            segments.Add(segment);
-            totalLength += segment.Length;
-        }
+            var list = new List<ReadOnlyMemory<byte>>();
+            var length = 0;
+            while (!nested.Eof)
+            {
+                var segment = nested.ReadOctetLike(segmentTag);
+                list.Add(segment);
+                length += segment.Length;
+            }
 
+            total = length;
+            return list;
+        });
+        totalLength = total;
         return segments;
     }
 

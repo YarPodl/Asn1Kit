@@ -21,14 +21,14 @@ public sealed class CertificateCodecTests
 
         Assert.Equal(expected.Asn1Version, tbs.Version);
         Assert.Equal(Asn1Integer.FromInt32(expected.SerialNumber), tbs.SerialNumber);
-        Assert.Equal(expected.SignatureAlgorithm, certificate.SignatureAlgorithm.Algorithm);
-        Assert.Equal(expected.SignatureAlgorithm, tbs.Signature.Algorithm);
+        Assert.Equal(expected.SignatureAlgorithm, certificate.SignatureAlgorithm.Algorithm.ToString());
+        Assert.Equal(expected.SignatureAlgorithm, tbs.Signature.Algorithm.ToString());
         Assert.Equal(expected.NotBeforeUtc, tbs.Validity.NotBefore.Value);
         Assert.Equal(expected.NotAfterUtc, tbs.Validity.NotAfter.Value);
         AssertDn(expected.Subject, tbs.Subject);
         AssertDn(expected.Issuer, tbs.Issuer);
 
-        Assert.Equal(expected.SubjectPublicKeyAlgorithm, tbs.SubjectPublicKeyInfo.Algorithm.Algorithm);
+        Assert.Equal(expected.SubjectPublicKeyAlgorithm, tbs.SubjectPublicKeyInfo.Algorithm.Algorithm.ToString());
         if (expected.SubjectPublicKeyParametersNull)
         {
             Assert.NotNull(tbs.SubjectPublicKeyInfo.Algorithm.Parameters);
@@ -41,7 +41,7 @@ public sealed class CertificateCodecTests
         Assert.Equal(expected.SignatureByteLength, certificate.Signature.Span.Length);
 
         Assert.NotNull(tbs.Extensions);
-        Assert.Equal(expected.ExtensionOids, tbs.Extensions!.Select(e => e.ExtnID).ToList());
+        Assert.Equal(expected.ExtensionOids, tbs.Extensions!.Select(e => e.ExtnID.ToString()).ToList());
         foreach (var expectedExt in expected.Extensions)
         {
             var actual = PkixFixtures.RequireExtension(tbs.Extensions!, expectedExt.Oid);

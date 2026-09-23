@@ -1,3 +1,4 @@
+using Asn1Kit.EncodeBench;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using Asn1Kit.Pkix.Bench;
@@ -9,7 +10,7 @@ using BcContentInfo = Org.BouncyCastle.Asn1.Cms.ContentInfo;
 using BcCertificateList = Org.BouncyCastle.Asn1.X509.CertificateList;
 using BcCertificateStructure = Org.BouncyCastle.Asn1.X509.X509CertificateStructure;
 
-namespace Asn1Kit.Pkix.Benchmarks;
+namespace Asn1Kit.Benchmarks;
 
 internal static class Smoke
 {
@@ -20,15 +21,33 @@ internal static class Smoke
         var cmsDer = FixtureLoader.ReadCms("attached-signeddata.p7m");
 
         _ = Certificate.Decode(new Asn1Reader(certDer, Asn1Encoding.Der));
+        var certEncode = EncodeSamples.CertificateFromFixture(certDer);
+        var certWriter = new Asn1Writer(Asn1Encoding.Der);
+        certEncode.Encode(certWriter);
+        if (certWriter.EncodedLength == 0)
+        {
+            throw new InvalidOperationException("Hand-built Certificate encode produced empty output.");
+        }
+
         using (var bcl = new X509Certificate2(certDer))
         {
             _ = bcl.Thumbprint;
         }
 
         _ = BcCertificateStructure.GetInstance(Asn1Object.FromByteArray(certDer));
+        _ = EncodeSamples.BouncyCastleCertificateFromFixture(certDer).GetEncoded();
 
         _ = CertificateList.Decode(new Asn1Reader(crlDer, Asn1Encoding.Der));
+        var crlEncode = EncodeSamples.CertificateListFromFixture(crlDer);
+        var crlWriter = new Asn1Writer(Asn1Encoding.Der);
+        crlEncode.Encode(crlWriter);
+        if (crlWriter.EncodedLength == 0)
+        {
+            throw new InvalidOperationException("Hand-built CertificateList encode produced empty output.");
+        }
+
         _ = BcCertificateList.GetInstance(Asn1Object.FromByteArray(crlDer));
+        _ = EncodeSamples.BouncyCastleCertificateListFromFixture(crlDer).GetEncoded();
 
         var bench = BenchContentInfo.Decode(new Asn1Reader(cmsDer, Asn1Encoding.Der));
         var lazyCert = bench.Content.SignedData!.Certificates!

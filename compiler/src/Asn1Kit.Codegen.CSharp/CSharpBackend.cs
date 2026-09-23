@@ -281,7 +281,8 @@ public sealed class CSharpBackend : ILanguageBackend
 
     private void EmitSequence(StringBuilder sb, IrDocument document, IrModule module, string typeName, SequenceType type)
     {
-        sb.AppendLine($"public sealed class {typeName}");
+        var typeKeyword = IsCSharpValueTypeEmit(module, typeName, type) ? "struct" : "sealed class";
+        sb.AppendLine($"public {typeKeyword} {typeName}");
         sb.AppendLine("{");
         foreach (var field in type.Components)
         {
@@ -293,11 +294,38 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine();
         sb.AppendLine("    public void Encode(Asn1Writer writer, Asn1Tag tag)");
         sb.AppendLine("    {");
+        if (IsCSharpValueTypeEmit(module, typeName, type))
+        {
+            foreach (var field in type.Components)
+            {
+                var prop = PropertyName(field, typeName);
+                var local = "enc_" + prop.TrimStart('@');
+                sb.AppendLine($"        var {local} = {prop};");
+            }
+        }
+
         sb.AppendLine("        writer.WriteSequence(tag, inner =>");
         sb.AppendLine("        {");
         foreach (var field in type.Components)
         {
-            EmitEncodeField(sb, document, module, typeName, field, "            ", "inner");
+            if (IsCSharpValueTypeEmit(module, typeName, type))
+            {
+                var prop = PropertyName(field, typeName);
+                var local = "enc_" + prop.TrimStart('@');
+                EmitEncodeFieldFromExpr(
+                    sb,
+                    document,
+                    module,
+                    typeName,
+                    field,
+                    "            ",
+                    "inner",
+                    local);
+            }
+            else
+            {
+                EmitEncodeField(sb, document, module, typeName, field, "            ", "inner");
+            }
         }
 
         sb.AppendLine("        });");
@@ -325,7 +353,8 @@ public sealed class CSharpBackend : ILanguageBackend
 
     private void EmitSet(StringBuilder sb, IrDocument document, IrModule module, string typeName, SetType type)
     {
-        sb.AppendLine($"public sealed class {typeName}");
+        var typeKeyword = IsCSharpValueTypeEmit(module, typeName, type) ? "struct" : "sealed class";
+        sb.AppendLine($"public {typeKeyword} {typeName}");
         sb.AppendLine("{");
         foreach (var field in type.Components)
         {
@@ -337,11 +366,38 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine();
         sb.AppendLine("    public void Encode(Asn1Writer writer, Asn1Tag tag)");
         sb.AppendLine("    {");
+        if (IsCSharpValueTypeEmit(module, typeName, type))
+        {
+            foreach (var field in type.Components)
+            {
+                var prop = PropertyName(field, typeName);
+                var local = "enc_" + prop.TrimStart('@');
+                sb.AppendLine($"        var {local} = {prop};");
+            }
+        }
+
         sb.AppendLine("        writer.WriteSet(tag, inner =>");
         sb.AppendLine("        {");
         foreach (var field in SortedSetComponents(document, module, type.Components))
         {
-            EmitEncodeField(sb, document, module, typeName, field, "            ", "inner");
+            if (IsCSharpValueTypeEmit(module, typeName, type))
+            {
+                var prop = PropertyName(field, typeName);
+                var local = "enc_" + prop.TrimStart('@');
+                EmitEncodeFieldFromExpr(
+                    sb,
+                    document,
+                    module,
+                    typeName,
+                    field,
+                    "            ",
+                    "inner",
+                    local);
+            }
+            else
+            {
+                EmitEncodeField(sb, document, module, typeName, field, "            ", "inner");
+            }
         }
 
         sb.AppendLine("        });");
@@ -813,10 +869,30 @@ public sealed class CSharpBackend : ILanguageBackend
         string indent,
         string writer)
     {
-        var prop = PropertyName(field, owner);
+        EmitEncodeFieldFromExpr(
+            sb,
+            document,
+            module,
+            owner,
+            field,
+            indent,
+            writer,
+            PropertyName(field, owner));
+    }
+
+    private void EmitEncodeFieldFromExpr(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string owner,
+        IrComponent field,
+        string indent,
+        string writer,
+        string expr)
+    {
         if (field.Optional)
         {
-            sb.AppendLine($"{indent}if ({prop} != null)");
+            sb.AppendLine($"{indent}if ({expr} != null)");
             sb.AppendLine($"{indent}{{");
             EmitEncodeValue(
                 sb,
@@ -827,7 +903,7 @@ public sealed class CSharpBackend : ILanguageBackend
                 field.Type,
                 indent + "    ",
                 writer,
-                UnwrapOptional(document, module, field.Type, prop),
+                UnwrapOptional(document, module, field.Type, expr),
                 fieldOptions: field.Options);
             sb.AppendLine($"{indent}}}");
         }
@@ -842,7 +918,7 @@ public sealed class CSharpBackend : ILanguageBackend
                 field.Type,
                 indent,
                 writer,
-                prop,
+                expr,
                 fieldOptions: field.Options);
         }
     }
@@ -866,7 +942,8 @@ public sealed class CSharpBackend : ILanguageBackend
         }
 
         return ResolvePrimitive(unwrapped) is TypeKinds.Boolean or TypeKinds.Integer or TypeKinds.Null
-            or TypeKinds.OctetString or TypeKinds.BitString or TypeKinds.Time or TypeKinds.Any;
+            or TypeKinds.OctetString or TypeKinds.BitString or TypeKinds.Time or TypeKinds.Any
+            or TypeKinds.Oid;
     }
 
     private bool IsEnumeratedRefOrType(IrDocument document, IrModule module, TypeExpr type) =>
@@ -888,6 +965,31 @@ public sealed class CSharpBackend : ILanguageBackend
         JsonObject? fieldOptions = null)
     {
         if (encodeLazyWrapper && ShouldEmitLazy(document, module, type, fieldOptions))
+        {
+            sb.AppendLine($"{indent}if ({expr}.HasEncoded)");
+            sb.AppendLine($"{indent}{{");
+            sb.AppendLine($"{indent}    {writer}.WriteRaw({expr}.EncodedMemory.Span);");
+            sb.AppendLine($"{indent}}}");
+            sb.AppendLine($"{indent}else");
+            sb.AppendLine($"{indent}{{");
+            EmitEncodeValue(
+                sb,
+                document,
+                module,
+                owner,
+                hint,
+                type,
+                indent + "    ",
+                writer,
+                $"{expr}.Value",
+                forceTag,
+                encodeLazyWrapper: false,
+                fieldOptions: null);
+            sb.AppendLine($"{indent}}}");
+            return;
+        }
+
+        if (encodeLazyWrapper && ShouldEmitRetainEncoded(document, module, type, fieldOptions))
         {
             sb.AppendLine($"{indent}if ({expr}.HasEncoded)");
             sb.AppendLine($"{indent}{{");
@@ -1209,7 +1311,26 @@ public sealed class CSharpBackend : ILanguageBackend
     {
         if (allowLazy && ShouldEmitLazy(document, module, type, fieldOptions))
         {
-            sb.Append($"{reader}.ReadLazy(static r => ");
+            sb.Append($"{reader}.ReadLazy(r => ");
+            EmitDecodeExpr(
+                sb,
+                document,
+                module,
+                owner,
+                hint,
+                type,
+                "r",
+                forceTag,
+                openTypeKeyExpr,
+                allowLazy: false,
+                fieldOptions: null);
+            sb.Append(')');
+            return;
+        }
+
+        if (allowLazy && ShouldEmitRetainEncoded(document, module, type, fieldOptions))
+        {
+            sb.Append($"{reader}.ReadRetained(r => ");
             EmitDecodeExpr(
                 sb,
                 document,
@@ -1315,6 +1436,12 @@ public sealed class CSharpBackend : ILanguageBackend
         }
 
         var typeName = NamedTypeName(document, module, owner, hint, type);
+        // Qualify same-module names so Decode calls do not bind to a same-named property on the owner.
+        if (!typeName.Contains('.', StringComparison.Ordinal))
+        {
+            typeName = ModuleNamespace(module) + "." + typeName;
+        }
+
         if (type is ChoiceType ||
             (type is RefType r && Find(document, module, r)?.Type is ChoiceType or AnyType))
         {
@@ -1593,7 +1720,7 @@ public sealed class CSharpBackend : ILanguageBackend
         if (siblingType is OidType ||
             (siblingType is RefType oidRef && Find(document, module, oidRef)?.Type is OidType))
         {
-            return access;
+            return $"{access}.ToString()";
         }
 
         if (siblingType is IntegerType ||
@@ -1651,6 +1778,7 @@ public sealed class CSharpBackend : ILanguageBackend
         JsonObject? fieldOptions = null)
     {
         var useLazy = ShouldEmitLazy(document, module, type, fieldOptions);
+        var useRetain = !useLazy && ShouldEmitRetainEncoded(document, module, type, fieldOptions);
         var integerRepresentation = TryResolveIntegerRepresentation(document, module, type);
         var original = type;
         type = UnwrapAliases(document, module, type);
@@ -1667,7 +1795,11 @@ public sealed class CSharpBackend : ILanguageBackend
             var element = type is SetOfType setOf ? setOf.Element : ((SequenceOfType)type).Element;
             var itemType = CsType(document, module, itemOwner, itemHint, element, optional: false, element.Options);
             var listType = $"List<{itemType}>";
-            var wrapped = useLazy ? $"Asn1Lazy<{listType}>" : listType;
+            var wrapped = useLazy
+                ? $"Asn1Lazy<{listType}>"
+                : useRetain
+                    ? $"Asn1Retained<{listType}>"
+                    : listType;
             return optional ? wrapped + "?" : wrapped;
         }
 
@@ -1682,7 +1814,7 @@ public sealed class CSharpBackend : ILanguageBackend
                     optional),
                 TypeKinds.OctetString => optional ? "ReadOnlyMemory<byte>?" : "ReadOnlyMemory<byte>",
                 TypeKinds.Null => optional ? "Asn1Null?" : "Asn1Null",
-                TypeKinds.Oid => optional ? "string?" : "string",
+                TypeKinds.Oid => optional ? "Asn1Oid?" : "Asn1Oid",
                 TypeKinds.BitString => optional ? "Asn1BitString?" : "Asn1BitString",
                 TypeKinds.String => optional ? "string?" : "string",
                 TypeKinds.Time => optional ? "DateTimeOffset?" : "DateTimeOffset",
@@ -1693,7 +1825,11 @@ public sealed class CSharpBackend : ILanguageBackend
         }
 
         var name = NamedTypeName(document, module, owner, hint, type);
-        var result = useLazy ? $"Asn1Lazy<{name}>" : name;
+        var result = useLazy
+            ? $"Asn1Lazy<{name}>"
+            : useRetain
+                ? $"Asn1Retained<{name}>"
+                : name;
         return optional ? result + "?" : result;
     }
 
@@ -1850,6 +1986,49 @@ public sealed class CSharpBackend : ILanguageBackend
         return ResolveLazyFlag(document, module, type, fieldOptions);
     }
 
+    /// <summary>
+    /// True when this type usage should be wrapped in <c>Asn1Retained&lt;T&gt;</c> (SEQUENCE/SET/OF only).
+    /// Lazy takes precedence when both flags are set.
+    /// </summary>
+    private bool ShouldEmitRetainEncoded(
+        IrDocument document,
+        IrModule module,
+        TypeExpr type,
+        JsonObject? fieldOptions)
+    {
+        if (!IsLazyEligible(document, module, type))
+        {
+            return false;
+        }
+
+        if (ShouldEmitLazy(document, module, type, fieldOptions))
+        {
+            return false;
+        }
+
+        return ResolveRetainEncodedFlag(document, module, type, fieldOptions);
+    }
+
+    private static bool IsCSharpValueTypeEmit(IrModule module, string typeName, TypeExpr type)
+    {
+        if (IrOptions.IsCSharpValueType(type.Options))
+        {
+            return true;
+        }
+
+        foreach (var assignment in module.Types)
+        {
+            var name = IrOptions.CSharpTypeName(assignment.Options) ?? SanitizeIdentifier(assignment.Name);
+            if (string.Equals(name, typeName, StringComparison.Ordinal)
+                && IrOptions.IsCSharpValueType(assignment.Options))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private bool IsLazyEligible(IrDocument document, IrModule module, TypeExpr type)
     {
         var unwrapped = UnwrapAliases(document, module, type);
@@ -1938,6 +2117,79 @@ public sealed class CSharpBackend : ILanguageBackend
         }
 
         return IrOptions.IsLazy(module.Options);
+    }
+
+    private bool ResolveRetainEncodedFlag(
+        IrDocument document,
+        IrModule module,
+        TypeExpr type,
+        JsonObject? fieldOptions)
+    {
+        if (IrOptions.IsRetainEncoded(fieldOptions) || IrOptions.IsRetainEncoded(type.Options))
+        {
+            return true;
+        }
+
+        var visited = new HashSet<string>(StringComparer.Ordinal);
+        var cursor = type;
+        var currentModule = module;
+        while (true)
+        {
+            if (IsSingleAlternativeChoice(cursor))
+            {
+                cursor = ((ChoiceType)cursor).Components[0].Type;
+                if (IrOptions.IsRetainEncoded(cursor.Options))
+                {
+                    return true;
+                }
+
+                continue;
+            }
+
+            if (cursor is not RefType reference)
+            {
+                break;
+            }
+
+            var key = (reference.Module ?? currentModule.Name) + "::" + reference.Name;
+            if (!visited.Add(key))
+            {
+                break;
+            }
+
+            var found = FindWithModule(document, currentModule, reference);
+            if (found is null)
+            {
+                break;
+            }
+
+            var (definingModule, def) = found.Value;
+            if (IrOptions.IsRetainEncoded(def.Options) || IrOptions.IsRetainEncoded(def.Type.Options))
+            {
+                return true;
+            }
+
+            var inner = def.Type;
+            if (IsNamedBitString(inner) || NeedsNamedType(inner) || IsEnumerated(inner))
+            {
+                break;
+            }
+
+            cursor = inner;
+            currentModule = definingModule;
+            if (IrOptions.IsRetainEncoded(cursor.Options))
+            {
+                return true;
+            }
+        }
+
+        var unwrapped = UnwrapAliases(document, module, type);
+        if (IrOptions.IsRetainEncoded(unwrapped.Options))
+        {
+            return true;
+        }
+
+        return IrOptions.IsRetainEncoded(module.Options);
     }
 
     private static string InferNamedIntegerRepresentation(IReadOnlyList<IrNamedNumber> namedValues)
@@ -2045,7 +2297,8 @@ public sealed class CSharpBackend : ILanguageBackend
             return "";
         }
 
-        if (ShouldEmitLazy(document, module, type, fieldOptions))
+        if (ShouldEmitLazy(document, module, type, fieldOptions)
+            || ShouldEmitRetainEncoded(document, module, type, fieldOptions))
         {
             return "";
         }
@@ -2055,7 +2308,7 @@ public sealed class CSharpBackend : ILanguageBackend
         var unwrapped = UnwrapAliases(document, module, type);
         return unwrapped switch
         {
-            OidType => " = \"\";",
+            OidType => "",
             StringType => " = \"\";",
             SequenceOfType or SetOfType => " = new();",
             _ => ""
@@ -2408,7 +2661,7 @@ public sealed class CSharpBackend : ILanguageBackend
         BitStringType => $"{reader}.ReadBitString({tag})",
         OctetStringType => $"{reader}.ReadOctetString({tag})",
         NullType => $"Asn1Null.Decode({reader}, {tag})",
-        OidType => $"{reader}.ReadObjectIdentifier({tag})",
+        OidType => $"{reader}.ReadOid({tag})",
         StringType stringType => $"{reader}.ReadString({tag}, {StringFormEnum(stringType.Form)})",
         TimeType timeType => $"{reader}.ReadTime({tag}, {TimeFormEnum(timeType.Form)})",
         _ => throw new InvalidOperationException(type.Kind)

@@ -1,3 +1,4 @@
+using Asn1Kit.EncodeBench;
 using System.Security.Cryptography.X509Certificates;
 using Asn1Kit.Pkix.Bench;
 using Asn1Kit.Runtime;
@@ -6,7 +7,7 @@ using BenchmarkDotNet.Configs;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
 
-namespace Asn1Kit.Pkix.Benchmarks;
+namespace Asn1Kit.Benchmarks;
 
 [MemoryDiagnoser]
 [CategoriesColumn]
@@ -14,20 +15,18 @@ namespace Asn1Kit.Pkix.Benchmarks;
 public class CertificateBenchmarks
 {
     private byte[] _der = null!;
-    private Certificate _asn1Kit = null!;
-    private X509CertificateStructure _bouncyCastle = null!;
-    private byte[] _bclRaw = null!;
+    private Certificate _asn1KitEncode = null!;
+    private X509CertificateStructure _bouncyCastleEncode = null!;
     private Asn1Writer _encodeWriter = null!;
 
     [GlobalSetup]
     public void Setup()
     {
         _der = FixtureLoader.ReadPkix("TrustAnchorRootCertificate.crt");
-        _asn1Kit = Certificate.Decode(new Asn1Reader(_der, Asn1Encoding.Der));
-        _bouncyCastle = X509CertificateStructure.GetInstance(Asn1Object.FromByteArray(_der));
-        using var bcl = new X509Certificate2(_der);
-        _bclRaw = bcl.RawData;
+        _asn1KitEncode = EncodeSamples.CertificateFromFixture(_der);
+        _bouncyCastleEncode = EncodeSamples.BouncyCastleCertificateFromFixture(_der);
         _encodeWriter = new Asn1Writer(Asn1Encoding.Der);
+        _encodeWriter.EnsureCapacity(_der.Length);
     }
 
     [Benchmark(Baseline = true)]
@@ -49,16 +48,11 @@ public class CertificateBenchmarks
     public byte[] Asn1Kit_Encode()
     {
         _encodeWriter.Reset();
-        _asn1Kit.Encode(_encodeWriter);
-        return _encodeWriter.Encode();
+        _asn1KitEncode.Encode(_encodeWriter);
+        return _encodeWriter.Encode(static encoded => encoded.ToArray());
     }
 
-    /// <summary>BCL has no structural re-encode of Certificate; RawData is an identity copy of the input DER.</summary>
     [Benchmark]
     [BenchmarkCategory("Encode", "Certificate")]
-    public byte[] Bcl_Encode_RawDataCopy() => (byte[])_bclRaw.Clone();
-
-    [Benchmark]
-    [BenchmarkCategory("Encode", "Certificate")]
-    public byte[] BouncyCastle_Encode() => _bouncyCastle.GetEncoded();
+    public byte[] BouncyCastle_Encode() => _bouncyCastleEncode.GetEncoded();
 }

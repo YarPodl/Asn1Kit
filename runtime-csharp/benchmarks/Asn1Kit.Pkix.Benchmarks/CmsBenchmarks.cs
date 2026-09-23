@@ -8,7 +8,7 @@ using BenchContentInfo = Asn1Kit.Cms.Bench.ContentInfo;
 using EagerContentInfo = Asn1Kit.Cms.ContentInfo;
 using BcContentInfo = Org.BouncyCastle.Asn1.Cms.ContentInfo;
 
-namespace Asn1Kit.Pkix.Benchmarks;
+namespace Asn1Kit.Benchmarks;
 
 [MemoryDiagnoser]
 [CategoriesColumn]
@@ -32,6 +32,7 @@ public class CmsBenchmarks
         _bcl.Decode(_der);
         _bouncyCastle = BcContentInfo.GetInstance(Asn1Object.FromByteArray(_der));
         _encodeWriter = new Asn1Writer(Asn1Encoding.Der);
+        _encodeWriter.EnsureCapacity(_der.Length);
 
         // Sanity: lazy path keeps cert TLV without materializing.
         var lazyCert = _asn1KitLazy.Content.SignedData!.Certificates!
@@ -92,7 +93,7 @@ public class CmsBenchmarks
     {
         _encodeWriter.Reset();
         _asn1KitLazy.Encode(_encodeWriter);
-        return _encodeWriter.Encode();
+        return _encodeWriter.Encode(static encoded => encoded.ToArray());
     }
 
     [Benchmark]
@@ -101,7 +102,7 @@ public class CmsBenchmarks
     {
         _encodeWriter.Reset();
         _asn1KitEager.Encode(_encodeWriter);
-        return _encodeWriter.Encode();
+        return _encodeWriter.Encode(static encoded => encoded.ToArray());
     }
 
     [Benchmark]

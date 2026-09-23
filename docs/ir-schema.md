@@ -106,6 +106,8 @@
 | `options.integer.representation` | тип / модуль | Представление INTEGER: `int32` \| `uint32` \| `int64` \| `uint64` \| `bigint` \| `der`. На типе перекрывает модуль. Если не задано, C# backend выводит: при `namedValues` → `int32` (или `int64` при метке вне `int`); иначе из полного `constraint.value`; иначе `der`. |
 | `options.openType.mismatch` | модуль / документ / тип `any` | При известном ключе bindings, если **тег** TLV не совпал с типом: `soft` (default) → `Unknown`/`Asn1Any`; `strict` → `Asn1Exception`. |
 | `options.lazy` | поле / тип / модуль | `true` — отложенный разбор SEQUENCE/SET и SEQUENCE OF/SET OF (C#: `Asn1Lazy<T>` / `Asn1Lazy<List<T>>`). Разрешение: component → TypeExpr → typedef → module; default `false`. |
+| `options.retainEncoded` | поле / тип / модуль | `true` — eager-разбор SEQUENCE/SET/OF с сохранением TLV для bit-exact encode (C#: `Asn1Retained<T>` / `Asn1Retained<List<T>>`). Игнорируется, если `lazy` уже включён. Та же цепочка разрешения, что у `lazy`; default `false`. |
+| `options.csharp.valueType` | typedef SEQUENCE/SET | `true` — эмит `struct` вместо `sealed class`. |
 
 Sidecar options-patch (CLI `--patch`, API `IrOptionsPatch`): JSON `{ "modules": { "<Module>": { … } }, "fields": { "<Module>.<Type>.<field>": { … } } }` — deep-merge в `options`. Неизвестный module/type/field → ошибка. Пример: [cms-2004-bench.patch.json](../compiler/fixtures/ir/cms-2004-bench.patch.json).
 

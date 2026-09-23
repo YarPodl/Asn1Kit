@@ -1,7 +1,7 @@
-﻿using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Running;
 
-namespace Asn1Kit.Pkix.Benchmarks;
+namespace Asn1Kit.Benchmarks;
 
 internal static class Program
 {

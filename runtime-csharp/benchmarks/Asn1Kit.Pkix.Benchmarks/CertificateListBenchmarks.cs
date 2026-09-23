@@ -1,3 +1,4 @@
+using Asn1Kit.EncodeBench;
 using Asn1Kit.Pkix.Bench;
 using Asn1Kit.Runtime;
 using BenchmarkDotNet.Attributes;
@@ -5,7 +6,7 @@ using BenchmarkDotNet.Configs;
 using Org.BouncyCastle.Asn1;
 using BcCertificateList = Org.BouncyCastle.Asn1.X509.CertificateList;
 
-namespace Asn1Kit.Pkix.Benchmarks;
+namespace Asn1Kit.Benchmarks;
 
 [MemoryDiagnoser]
 [CategoriesColumn]
@@ -13,17 +14,18 @@ namespace Asn1Kit.Pkix.Benchmarks;
 public class CertificateListBenchmarks
 {
     private byte[] _der = null!;
-    private CertificateList _asn1Kit = null!;
-    private BcCertificateList _bouncyCastle = null!;
+    private CertificateList _asn1KitEncode = null!;
+    private BcCertificateList _bouncyCastleEncode = null!;
     private Asn1Writer _encodeWriter = null!;
 
     [GlobalSetup]
     public void Setup()
     {
         _der = FixtureLoader.ReadPkix("GoodCACRL.crl");
-        _asn1Kit = CertificateList.Decode(new Asn1Reader(_der, Asn1Encoding.Der));
-        _bouncyCastle = BcCertificateList.GetInstance(Asn1Object.FromByteArray(_der));
+        _asn1KitEncode = EncodeSamples.CertificateListFromFixture(_der);
+        _bouncyCastleEncode = EncodeSamples.BouncyCastleCertificateListFromFixture(_der);
         _encodeWriter = new Asn1Writer(Asn1Encoding.Der);
+        _encodeWriter.EnsureCapacity(_der.Length);
     }
 
     [Benchmark(Baseline = true)]
@@ -41,11 +43,11 @@ public class CertificateListBenchmarks
     public byte[] Asn1Kit_Encode()
     {
         _encodeWriter.Reset();
-        _asn1Kit.Encode(_encodeWriter);
-        return _encodeWriter.Encode();
+        _asn1KitEncode.Encode(_encodeWriter);
+        return _encodeWriter.Encode(static encoded => encoded.ToArray());
     }
 
     [Benchmark]
     [BenchmarkCategory("Encode", "CRL")]
-    public byte[] BouncyCastle_Encode() => _bouncyCastle.GetEncoded();
+    public byte[] BouncyCastle_Encode() => _bouncyCastleEncode.GetEncoded();
 }

@@ -98,6 +98,24 @@ public sealed class IrOptionsTests
     }
 
     [Fact]
+    public void RetainEncoded_DefaultsFalse_AndAcceptsBoolOrString()
+    {
+        Assert.False(IrOptions.IsRetainEncoded(null));
+        Assert.True(IrOptions.IsRetainEncoded(IrOptions.SetRetainEncoded(null, true)));
+        Assert.False(IrOptions.IsRetainEncoded(IrOptions.SetRetainEncoded(null, false)));
+        Assert.True(IrOptions.IsRetainEncoded(IrOptions.Set(null, "retainEncoded", JsonValue.Create("true")!)));
+    }
+
+    [Fact]
+    public void CSharpValueType_AcceptsBoolOrString()
+    {
+        Assert.False(IrOptions.IsCSharpValueType(null));
+        Assert.True(IrOptions.IsCSharpValueType(IrOptions.SetCSharpValueType(null, true)));
+        Assert.True(IrOptions.IsCSharpValueType(
+            IrOptions.Set(null, "csharp.valueType", JsonValue.Create(true)!)));
+    }
+
+    [Fact]
     public void ApplyToModules_SetsLazy()
     {
         var document = new IrDocument

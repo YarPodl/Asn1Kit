@@ -19,6 +19,25 @@
   "fields": {
     "CryptographicMessageSyntax2004.CertificateChoices.certificate": {
       "lazy": true
+    },
+    "PKIX1Explicit88.TBSCertificate.issuer": {
+      "retainEncoded": true
+    },
+    "PKIX1Explicit88.TBSCertificate.subject": {
+      "retainEncoded": true
+    },
+    "PKIX1Explicit88.TBSCertificate.extensions": {
+      "retainEncoded": true
+    },
+    "PKIX1Explicit88.TBSCertificate.subjectPublicKeyInfo": {
+      "retainEncoded": true
+    }
+  },
+  "types": {
+    "PKIX1Explicit88.AttributeTypeAndValue": {
+      "csharp": {
+        "valueType": true
+      }
     }
   }
 }

@@ -824,4 +824,78 @@ public sealed class RuntimeTests
         Assert.NotSame(bytes, segment.Array);
         Assert.Equal(5, clone.Value);
     }
+
+    [Fact]
+    public void Retained_Decode_KeepsEncoded_UntilValueReplaced()
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        Asn1Integer.Encode(writer, 42);
+        var bytes = writer.Encode();
+
+        var retained = new Asn1Reader(bytes, Asn1Encoding.Der).ReadRetained(r => Asn1Integer.Decode(r));
+        Assert.True(retained.HasEncoded);
+        Assert.Equal(42, retained.Value.GetInt32());
+
+        var rewrite = new Asn1Writer(Asn1Encoding.Der);
+        retained.WriteTo(rewrite);
+        Assert.Equal(bytes, rewrite.Encode());
+
+        retained.Value = Asn1Integer.FromInt32(7);
+        Assert.False(retained.HasEncoded);
+        Assert.Throws<InvalidOperationException>(() => retained.WriteTo(new Asn1Writer(Asn1Encoding.Der)));
+    }
+
+    [Fact]
+    public void Writer_EncodeCallback_SeesInternalBuffer_WithoutCopy()
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteInteger(Asn1Tag.Integer, 1);
+        var viaCallback = writer.Encode(span => span.ToArray());
+        Assert.Equal(writer.Encode(), viaCallback);
+    }
+
+    [Fact]
+    public void Writer_EnsureCapacity_GrowsBuffer()
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.EnsureCapacity(4096);
+        writer.WriteInteger(Asn1Tag.Integer, 1);
+        Assert.True(writer.EncodedLength > 0);
+    }
+
+    [Fact]
+    public void Oid_RoundTripsContents_WithoutStringOnHotPath()
+    {
+        var oid = Asn1Oid.Parse("1.2.840.113549.1.1.11");
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, oid);
+        var bytes = writer.Encode();
+
+        var decoded = new Asn1Reader(bytes, Asn1Encoding.Der).ReadOid(Asn1Tag.ObjectIdentifier);
+        Assert.Equal(oid, decoded);
+        Assert.Equal("1.2.840.113549.1.1.11", decoded.ToString());
+        Assert.Equal("1.2.840.113549.1.1.11", new Asn1Reader(bytes, Asn1Encoding.Der).ReadObjectIdentifier(Asn1Tag.ObjectIdentifier));
+    }
+
+    [Fact]
+    public void Reader_NestedSequence_DoesNotRequireSeparateBufferOwner()
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteSequence(Asn1Tag.Sequence, inner =>
+        {
+            inner.WriteInteger(Asn1Tag.Integer, 1);
+            inner.WriteSequence(Asn1Tag.Sequence, nested => nested.WriteInteger(Asn1Tag.Integer, 2));
+        });
+        var bytes = writer.Encode();
+
+        var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
+        var sum = reader.ReadSequence(Asn1Tag.Sequence, outer =>
+        {
+            var a = outer.ReadInt32(Asn1Tag.Integer);
+            var b = outer.ReadSequence(Asn1Tag.Sequence, nested => nested.ReadInt32(Asn1Tag.Integer));
+            return a + b;
+        });
+        Assert.Equal(3, sum);
+        Assert.True(reader.Eof);
+    }
 }

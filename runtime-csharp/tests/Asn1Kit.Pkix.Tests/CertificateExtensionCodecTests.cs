@@ -117,7 +117,7 @@ public sealed class CertificateExtensionCodecTests
         Assert.NotNull(expected.CertificatePolicies);
         var policies = PkixFixtures.ExtnValueReader(extension)
             .ReadSequenceOf(Asn1Tag.Sequence, static reader => PolicyInformation.Decode(reader, Asn1Tag.Sequence));
-        Assert.Equal(expected.CertificatePolicies!, policies.Select(p => p.PolicyIdentifier).ToList());
+        Assert.Equal(expected.CertificatePolicies!, policies.Select(p => p.PolicyIdentifier.ToString()).ToList());
         PkixFixtures.AssertExtnValueRoundTrip(extension, writer =>
         {
             writer.WriteSequenceOf(Asn1Tag.Sequence, policies, static (inner, item) => item.Encode(inner, Asn1Tag.Sequence));

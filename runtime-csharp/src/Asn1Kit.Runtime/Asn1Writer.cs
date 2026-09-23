@@ -4,6 +4,12 @@ using System.Numerics;
 
 namespace Asn1Kit.Runtime;
 
+/// <summary>Callback that consumes encoded octets without allocating a copy.</summary>
+public delegate TReturn Asn1EncodeFunc<TReturn>(ReadOnlySpan<byte> encoded);
+
+/// <summary>Callback that consumes encoded octets without allocating a copy.</summary>
+public delegate void Asn1EncodeAction(ReadOnlySpan<byte> encoded);
+
 public sealed class Asn1Writer
 {
     /// <summary>Worst-case definite length encoding: long-form prefix + 4 length octets.</summary>
@@ -28,6 +34,22 @@ public sealed class Asn1Writer
 
     public int EncodedLength => _length;
 
+    /// <summary>Ensures the internal buffer can hold at least <paramref name="capacity"/> octets without further growth.</summary>
+    public void EnsureCapacity(int capacity)
+    {
+        if (capacity < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(capacity));
+        }
+
+        if (capacity <= _buffer.Length)
+        {
+            return;
+        }
+
+        Array.Resize(ref _buffer, capacity);
+    }
+
     /// <summary>Clears written bytes so the writer can be reused without reallocating the backing store.</summary>
     public void Reset() => _length = 0;
 
@@ -36,6 +58,28 @@ public sealed class Asn1Writer
         var result = new byte[_length];
         Buffer.BlockCopy(_buffer, 0, result, 0, _length);
         return result;
+    }
+
+    /// <summary>Provides the encoded representation to <paramref name="encodeCallback"/> without allocating a copy.</summary>
+    public T Encode<T>(Asn1EncodeFunc<T> encodeCallback)
+    {
+        if (encodeCallback is null)
+        {
+            throw new ArgumentNullException(nameof(encodeCallback));
+        }
+
+        return encodeCallback(_buffer.AsSpan(0, _length));
+    }
+
+    /// <summary>Provides the encoded representation to <paramref name="encodeCallback"/> without allocating a copy.</summary>
+    public void Encode(Asn1EncodeAction encodeCallback)
+    {
+        if (encodeCallback is null)
+        {
+            throw new ArgumentNullException(nameof(encodeCallback));
+        }
+
+        encodeCallback(_buffer.AsSpan(0, _length));
     }
 
     public bool TryEncode(Span<byte> destination, out int bytesWritten)
@@ -142,6 +186,9 @@ public sealed class Asn1Writer
         var written = Asn1ObjectIdentifier.EncodeContents(oid, scratch);
         WritePrimitive(tag.AsPrimitive(), scratch.Slice(0, written));
     }
+
+    public void WriteObjectIdentifier(Asn1Tag tag, Asn1Oid oid) =>
+        WritePrimitive(tag.AsPrimitive(), oid.Span);
 
     public void WriteBitString(Asn1Tag tag, Asn1BitString value)
     {

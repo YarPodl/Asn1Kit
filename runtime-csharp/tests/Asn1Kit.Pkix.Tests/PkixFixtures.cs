@@ -61,7 +61,7 @@ internal static class PkixFixtures
         {
             foreach (var atv in rdn)
             {
-                result.Add((atv.Type, ReadDirectoryString(atv.Value)));
+                result.Add((atv.Type.ToString(), ReadDirectoryString(atv.Value)));
             }
         }
 
@@ -70,7 +70,8 @@ internal static class PkixFixtures
 
     public static Extension RequireExtension(IEnumerable<Extension> extensions, string oid)
     {
-        return extensions.Single(e => e.ExtnID == oid);
+        var expected = Asn1Oid.Parse(oid);
+        return extensions.Single(e => e.ExtnID == expected);
     }
 
     public static Asn1Reader ExtnValueReader(Extension extension) =>

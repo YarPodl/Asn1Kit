@@ -16,8 +16,8 @@ public sealed class CertificateListCodecTests
         var tbs = crl.TbsCertList;
 
         Assert.Equal(expected.Asn1Version, tbs.Version);
-        Assert.Equal(expected.SignatureAlgorithm, crl.SignatureAlgorithm.Algorithm);
-        Assert.Equal(expected.SignatureAlgorithm, tbs.Signature.Algorithm);
+        Assert.Equal(expected.SignatureAlgorithm, crl.SignatureAlgorithm.Algorithm.ToString());
+        Assert.Equal(expected.SignatureAlgorithm, tbs.Signature.Algorithm.ToString());
         Assert.Equal(expected.ThisUpdateUtc, tbs.ThisUpdate.Value);
         Assert.NotNull(tbs.NextUpdate);
         Assert.Equal(expected.NextUpdateUtc, tbs.NextUpdate!.Value);
@@ -45,7 +45,7 @@ public sealed class CertificateListCodecTests
         }
 
         Assert.NotNull(tbs.CrlExtensions);
-        Assert.Equal(expected.CrlExtensionOids, tbs.CrlExtensions!.Select(e => e.ExtnID).ToList());
+        Assert.Equal(expected.CrlExtensionOids, tbs.CrlExtensions!.Select(e => e.ExtnID.ToString()).ToList());
         foreach (var expectedExt in expected.CrlExtensions)
         {
             var extension = PkixFixtures.RequireExtension(tbs.CrlExtensions!, expectedExt.Oid);

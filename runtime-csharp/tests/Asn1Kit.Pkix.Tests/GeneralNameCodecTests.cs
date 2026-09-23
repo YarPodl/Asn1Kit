@@ -24,7 +24,7 @@ public sealed class GeneralNameCodecTests
                     break;
                 case "registeredid":
                     Assert.Equal(GeneralNameKind.RegisteredID, name.Kind);
-                    Assert.Equal(testCase.Oid, name.RegisteredID);
+                    Assert.Equal(testCase.Oid, name.RegisteredID!.Value.ToString());
                     break;
                 default:
                     throw new Xunit.Sdk.XunitException($"Unhandled synthetic GeneralName kind '{testCase.Kind}'.");

@@ -43,8 +43,14 @@ public static class Asn1ObjectIdentifier
     public static void Encode(Asn1Writer writer, string oid, Asn1Tag? tag = null) =>
         writer.WriteObjectIdentifier(tag ?? Asn1Tag.ObjectIdentifier, oid);
 
+    public static void Encode(Asn1Writer writer, Asn1Oid oid, Asn1Tag? tag = null) =>
+        writer.WriteObjectIdentifier(tag ?? Asn1Tag.ObjectIdentifier, oid);
+
     public static string Decode(Asn1Reader reader, Asn1Tag? tag = null) =>
         reader.ReadObjectIdentifier(tag ?? Asn1Tag.ObjectIdentifier);
+
+    public static Asn1Oid DecodeOid(Asn1Reader reader, Asn1Tag? tag = null) =>
+        reader.ReadOid(tag ?? Asn1Tag.ObjectIdentifier);
 
     public static int[] ParseArcs(string oid)
     {

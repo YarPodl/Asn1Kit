@@ -34,16 +34,19 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 
 | Символ | Роль | Ownership |
 | --- | --- | --- |
-| `Asn1Writer.EncodedLength` / `TryEncode(Span)` / `Encode() → byte[]` / `Reset()` | hot | snapshot / copy-out; `Reset` reuse without shrinking capacity |
+| `Asn1Writer.EncodedLength` / `EnsureCapacity` / `TryEncode(Span)` / `Encode() → byte[]` / `Encode(Asn1EncodeFunc|Asn1EncodeAction)` / `Reset()` | hot | snapshot / copy-out / zero-copy callback; `Reset` reuse without shrinking capacity |
 | `WriteOctetString(ReadOnlySpan)` / `WriteRaw(ReadOnlySpan)` | hot/cold | borrow |
 | `WriteSequence` / `WriteSet` / `WriteSetOf` / `WriteSequenceOf<T>` / `WriteSetOf<T>` / `WriteExplicit(Action)` | hot | callback |
 | `ReadSequenceOf<T>` / `ReadSetOf<T>` | hot | owned `List<T>` |
-| `Asn1Reader(byte[]\|offset/length\|ReadOnlyMemory, encoding, options?)` / `Source` / `Options` | hot | срез без копии на входе; `Source` якорит lifetime; `Options` наследуются nested |
+| `Asn1Reader(byte[]\|offset/length\|ReadOnlyMemory, encoding, options?)` / `Source` / `Options` | hot | срез без копии на входе; `Source` якорит lifetime; `Options` наследуются nested; nested SEQUENCE — push/pop без `new Asn1Reader` когда contents alias буфер |
+| `Asn1ReaderCursor` | warm | явный push/pop окна contents |
 | `Asn1ReaderOptions` (`Default` / `Strict` / `AllowNonMinimalLength` / `AllowOverlongOidBase128`) | warm | immutable flags |
 | `ReadOctetString → ReadOnlyMemory` / `TryReadOctetString(Span)` | hot | view / copy-out (Try всегда продвигает reader); constructed BER — owned |
 | `ReadValue → ReadOnlyMemory` / `TryReadValue(Span)` / `ReadTlv` | cold/warm | view / copy-out |
 | `Asn1Any.EncodedMemory` / `ContentsMemory` / `ToArray` | hot | view полного TLV / срез V / detach |
 | `Asn1Lazy<T>` / `ReadLazy` / `HasEncoded` / `Value` / `WriteTo` | hot | отложенный decode полного TLV (`options.lazy`); view до `.Value` |
+| `Asn1Retained<T>` / `ReadRetained` / `HasEncoded` / `Value` / `WriteTo` | hot | eager decode + retain TLV (`options.retainEncoded`); мутация `.Value` сбрасывает TLV |
+| `Asn1Oid` / `ReadOid` / `WriteObjectIdentifier(Asn1Oid)` | hot | DER contents OID; dotted string — `ToString` / warm `ReadObjectIdentifier` |
 | `Asn1BitString.Span` / `Memory` / `ToArray` | hot | view (из reader) / detach |
 | `Asn1Integer.Span` / `Memory` / `ToArray` | hot | view DER contents / detach |
 | `Asn1Primitives` wrappers (+ `Asn1OctetString.TryDecode`) | warm | делегируют |

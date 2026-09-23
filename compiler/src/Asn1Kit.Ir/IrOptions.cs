@@ -123,6 +123,61 @@ public static class IrOptions
         return false;
     }
 
+    /// <summary>
+    /// When true, SEQUENCE/SET and SEQUENCE OF/SET OF usages are wrapped in an eager container that
+    /// retains the original TLV for bit-exact re-encode (C#: <c>Asn1Retained&lt;T&gt;</c>).
+    /// Ignored when <see cref="IsLazy"/> is true (lazy already retains the TLV). Default is false.
+    /// </summary>
+    public static bool IsRetainEncoded(JsonObject? options)
+    {
+        if (options is null || !options.TryGetPropertyValue("retainEncoded", out var node) || node is null)
+        {
+            return false;
+        }
+
+        if (node is JsonValue value)
+        {
+            if (value.TryGetValue<bool>(out var flag))
+            {
+                return flag;
+            }
+
+            if (value.TryGetValue<string>(out var text))
+            {
+                return string.Equals(text, "true", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>When true, SEQUENCE/SET types are emitted as C# <c>struct</c> instead of <c>sealed class</c>.</summary>
+    public static bool IsCSharpValueType(JsonObject? options)
+    {
+        if (options?["csharp"] is not JsonObject csharp
+            || !csharp.TryGetPropertyValue("valueType", out var node)
+            || node is null)
+        {
+            return false;
+        }
+
+        if (node is JsonValue value)
+        {
+            if (value.TryGetValue<bool>(out var flag))
+            {
+                return flag;
+            }
+
+            if (value.TryGetValue<string>(out var text))
+            {
+                return string.Equals(text, "true", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(text, "1", StringComparison.Ordinal);
+            }
+        }
+
+        return false;
+    }
+
     public static JsonObject SetCSharp(JsonObject? options, string key, string value) =>
         Set(options, "csharp." + key, JsonValue.Create(value)!);
 
@@ -134,6 +189,12 @@ public static class IrOptions
 
     public static JsonObject SetLazy(JsonObject? options, bool value) =>
         Set(options, "lazy", JsonValue.Create(value)!);
+
+    public static JsonObject SetRetainEncoded(JsonObject? options, bool value) =>
+        Set(options, "retainEncoded", JsonValue.Create(value)!);
+
+    public static JsonObject SetCSharpValueType(JsonObject? options, bool value) =>
+        SetCSharp(options, "valueType", value ? "true" : "false");
 
     public static JsonObject Set(JsonObject? options, string path, JsonNode value)
     {

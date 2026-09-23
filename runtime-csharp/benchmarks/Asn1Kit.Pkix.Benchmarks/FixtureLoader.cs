@@ -1,4 +1,4 @@
-namespace Asn1Kit.Pkix.Benchmarks;
+namespace Asn1Kit.Benchmarks;
 
 internal static class FixtureLoader
 {

@@ -76,6 +76,49 @@ public static class IrOptionsPatch
         {
             throw new IrException("Options patch 'fields' must be a JSON object.");
         }
+
+        if (patch["types"] is JsonObject types)
+        {
+            foreach (var property in types)
+            {
+                ApplyType(document, property.Key, property.Value);
+            }
+        }
+        else if (patch.ContainsKey("types") && patch["types"] is not null)
+        {
+            throw new IrException("Options patch 'types' must be a JSON object.");
+        }
+    }
+
+    private static void ApplyType(IrDocument document, string path, JsonNode? value)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            throw new IrException("Options patch type path is required.");
+        }
+
+        if (value is not JsonObject typePatch)
+        {
+            throw new IrException($"Options patch types['{path}'] must be a JSON object.");
+        }
+
+        var parts = path.Split('.');
+        if (parts.Length != 2 || parts.Any(string.IsNullOrWhiteSpace))
+        {
+            throw new IrException(
+                $"Options patch type path '{path}' must be Module.Type.");
+        }
+
+        var moduleName = parts[0];
+        var typeName = parts[1];
+
+        var module = document.Modules.FirstOrDefault(m => m.Name == moduleName)
+            ?? throw new IrException($"Options patch type '{path}': module '{moduleName}' not found.");
+
+        var typeDef = module.Types.FirstOrDefault(t => t.Name == typeName)
+            ?? throw new IrException($"Options patch type '{path}': type '{typeName}' not found.");
+
+        typeDef.Options = Merge(typeDef.Options, typePatch);
     }
 
     private static void ApplyField(IrDocument document, string path, JsonNode? value)

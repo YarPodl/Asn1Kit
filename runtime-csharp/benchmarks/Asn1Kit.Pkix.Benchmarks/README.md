@@ -12,8 +12,8 @@
 | CMS `Asn1Kit_Lazy_Materialize_*` | то же + обход `Certificate.Value` | BCL + `Certificates` / `SignerInfos` |
 | CMS `Asn1Kit_Eager_*` | golden `Asn1Kit.Cms` (полный typed `Certificate`) | полная глубина ASN.1 tree |
 | CMS BouncyCastle | `Asn1Object` tree + `ContentInfo` | общий ASN.1 codec |
-| Certificate / CRL Asn1Kit | полный typed decode/encode | lazy на CHOICE alt CMS **не** влияет |
-| Certificate BCL Encode | `RawData.Clone()` — не structural re-encode | не peer Asn1Kit Encode |
+| Certificate / CRL Decode | полный typed decode | BCL Cert = PAL+lazy (другая модель); peer typed — BouncyCastle |
+| Certificate / CRL Encode | **hand-built** object graph (не decode→encode) | BouncyCastle `GetEncoded` после сборки; BCL structural encode нет |
 
 Фикстуры: [fixtures/pkix](../../fixtures/pkix/), [fixtures/cms](../../fixtures/cms/).
 
@@ -31,9 +31,13 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 
 | Library | Certificate | CRL | CMS |
 | --- | --- | --- | --- |
-| Asn1Kit Bench / Eager | Decode + Encode | Decode + Encode | Lazy / Materialize / Eager |
-| BCL (`X509Certificate2` / `SignedCms`) | Decode; Encode = `RawData` copy | — | Decode ± materialize; Encode |
-| BouncyCastle | Decode + `GetEncoded` | Decode + `GetEncoded` | Decode + `GetEncoded` |
+| Asn1Kit Bench / Eager | Decode + Encode (hand-built) | Decode + Encode (hand-built) | Lazy / Materialize / Eager |
+| BCL (`X509Certificate2` / `SignedCms`) | Decode only | — | Decode ± materialize; Encode |
+| BouncyCastle | Decode + `GetEncoded` (hand-built) | Decode + `GetEncoded` (hand-built) | Decode + `GetEncoded` |
+
+**Encode:** объект собирается в `GlobalSetup` как свежий граф полей (значения с фикстуры); в `[Benchmark]` только structural encode. Так encode не смешивается с round-trip / `WriteRaw` retained TLV. CMS Lazy Encode по-прежнему идёт от decoded tree — это shell-сценарий с `WriteRaw` cert.
+
+Полный typed `Certificate.Decode` **не обязан** быть быстрее `X509Certificate2` (BCL не строит ASN-граф). Цель typed path — сравняться с BouncyCastle; Lazy/retainEncoded — peer BCL shell.
 
 ## CMS snapshot (local, after lazy Bench + writer buffer)
 

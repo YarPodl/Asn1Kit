@@ -416,7 +416,7 @@ END
 
         // OID 1.2.840.113549.1.1.1 = rsaEncryption, no parameters
         var alg = Activator.CreateInstance(algType)!;
-        algType.GetProperty("Algorithm")!.SetValue(alg, "1.2.840.113549.1.1.1");
+        algType.GetProperty("Algorithm")!.SetValue(alg, Asn1Oid.Parse("1.2.840.113549.1.1.1"));
         algType.GetProperty("Parameters")!.SetValue(alg, null);
 
         var expectedNoParams = new byte[]
@@ -430,7 +430,9 @@ END
 
         var decodedNoParams = algType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
             .Invoke(null, new object[] { new Asn1Reader(expectedNoParams, Asn1Encoding.Der) })!;
-        Assert.Equal("1.2.840.113549.1.1.1", algType.GetProperty("Algorithm")!.GetValue(decodedNoParams));
+        Assert.Equal(
+            Asn1Oid.Parse("1.2.840.113549.1.1.1"),
+            algType.GetProperty("Algorithm")!.GetValue(decodedNoParams));
         Assert.Null(algType.GetProperty("Parameters")!.GetValue(decodedNoParams));
 
         // With NULL parameters
@@ -459,7 +461,7 @@ END
 
         // Collapsed ANY alias: Value is Asn1Any directly
         var attr = Activator.CreateInstance(attrType)!;
-        attrType.GetProperty("Type")!.SetValue(attr, "2.5.4.3");
+        attrType.GetProperty("Type")!.SetValue(attr, Asn1Oid.Parse("2.5.4.3"));
         attrType.GetProperty("Value")!.SetValue(attr, Asn1Any.FromTagAndContents(Asn1Tag.Utf8String, Encoding.UTF8.GetBytes("Ann")));
 
         var expectedAttr = new byte[]
@@ -534,7 +536,9 @@ END
         };
         var decodedAlg = algType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
             .Invoke(null, new object[] { new Asn1Reader(withNull, Asn1Encoding.Der) })!;
-        Assert.Equal("1.2.840.113549.1.1.11", algType.GetProperty("Algorithm")!.GetValue(decodedAlg));
+        Assert.Equal(
+            Asn1Oid.Parse("1.2.840.113549.1.1.11"),
+            algType.GetProperty("Algorithm")!.GetValue(decodedAlg));
         var parameters = algType.GetProperty("Parameters")!.GetValue(decodedAlg)!;
         Assert.Equal(Asn1Null.Value, parameters.GetType().GetProperty("Null")!.GetValue(parameters));
         Assert.Null(parameters.GetType().GetProperty("Unknown")!.GetValue(parameters));
@@ -577,7 +581,9 @@ END
         };
         var decodedPqi = pqiType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
             .Invoke(null, new object[] { new Asn1Reader(cps, Asn1Encoding.Der) })!;
-        Assert.Equal("1.3.6.1.5.5.7.2.1", pqiType.GetProperty("PolicyQualifierId")!.GetValue(decodedPqi));
+        Assert.Equal(
+            Asn1Oid.Parse("1.3.6.1.5.5.7.2.1"),
+            pqiType.GetProperty("PolicyQualifierId")!.GetValue(decodedPqi));
         var qualifier = pqiType.GetProperty("Qualifier")!.GetValue(decodedPqi)!;
         Assert.Equal("https:", qualifier.GetType().GetProperty("CPSuri")!.GetValue(qualifier));
         Assert.Null(qualifier.GetType().GetProperty("Unknown")!.GetValue(qualifier));
@@ -667,7 +673,7 @@ END
         var keyUsageType = assembly.GetType("AliasMod.KeyUsage")!;
         var flagsEnum = assembly.GetType("AliasMod.KeyUsageFlags")!;
 
-        Assert.Equal(typeof(string), holderType.GetProperty("Type")!.PropertyType);
+        Assert.Equal(typeof(Asn1Oid), holderType.GetProperty("Type")!.PropertyType);
         Assert.Equal(typeof(Asn1Integer), holderType.GetProperty("Id")!.PropertyType);
         Assert.Equal(rdnType, holderType.GetProperty("Who")!.PropertyType);
         Assert.Equal(keyUsageType, holderType.GetProperty("Usage")!.PropertyType);
@@ -690,10 +696,10 @@ END
         Assert.Equal(bits, keyUsageType.GetProperty("Value")!.GetValue(usage));
 
         var rdn = Activator.CreateInstance(rdnType)!;
-        rdnType.GetProperty("Attr")!.SetValue(rdn, "2.5.4.3");
+        rdnType.GetProperty("Attr")!.SetValue(rdn, Asn1Oid.Parse("2.5.4.3"));
 
         var holder = Activator.CreateInstance(holderType)!;
-        holderType.GetProperty("Type")!.SetValue(holder, "1.2.3");
+        holderType.GetProperty("Type")!.SetValue(holder, Asn1Oid.Parse("1.2.3"));
         holderType.GetProperty("Id")!.SetValue(holder, Asn1Integer.FromInt32(7));
         holderType.GetProperty("Who")!.SetValue(holder, rdn);
         holderType.GetProperty("Usage")!.SetValue(holder, usage);
@@ -704,10 +710,10 @@ END
 
         var decoded = holderType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
             .Invoke(null, new object[] { new Asn1Reader(encoded, Asn1Encoding.Der) })!;
-        Assert.Equal("1.2.3", holderType.GetProperty("Type")!.GetValue(decoded));
+        Assert.Equal(Asn1Oid.Parse("1.2.3"), holderType.GetProperty("Type")!.GetValue(decoded));
         Assert.Equal(Asn1Integer.FromInt32(7), holderType.GetProperty("Id")!.GetValue(decoded));
         var decodedRdn = holderType.GetProperty("Who")!.GetValue(decoded)!;
-        Assert.Equal("2.5.4.3", rdnType.GetProperty("Attr")!.GetValue(decodedRdn));
+        Assert.Equal(Asn1Oid.Parse("2.5.4.3"), rdnType.GetProperty("Attr")!.GetValue(decodedRdn));
         var decodedUsage = holderType.GetProperty("Usage")!.GetValue(decoded)!;
         Assert.Equal(combined, keyUsageType.GetProperty("Flags")!.GetValue(decodedUsage));
 
@@ -1073,7 +1079,7 @@ END
         Assert.Contains("public Asn1Lazy<Inner> Payload { get; set; }", source);
         Assert.Contains("public Asn1Lazy<Inner>? Maybe { get; set; }", source);
         Assert.Contains("public Asn1Lazy<Inner> Wrapped { get; set; }", source);
-        Assert.Contains("ReadLazy(static r =>", source);
+        Assert.Contains("ReadLazy(r =>", source);
         Assert.Contains("HasEncoded", source);
         Assert.DoesNotContain("value.Payload = Inner.Decode(", source);
 
@@ -1153,7 +1159,7 @@ END
         var source = new CSharpBackend().Generate(document).Single().Contents;
         Assert.Contains("public List<Asn1Lazy<Item>> BagValue { get; set; } = new();", source);
         Assert.Contains("public Asn1Lazy<List<Asn1Lazy<Item>>> BagLazy { get; set; }", source);
-        Assert.Contains("ReadLazy(static r =>", source);
+        Assert.Contains("ReadLazy(r =>", source);
 
         var assembly = CompileGenerated(source);
         var bagType = assembly.GetType("LazyOfMod.Bag")!;

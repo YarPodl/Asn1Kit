@@ -113,6 +113,11 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "csharp": {
+              "valueType": true
+            }
           }
         },
         {
@@ -999,7 +1004,10 @@
                   "kind": "ref",
                   "name": "Name"
                 },
-                "optional": false
+                "optional": false,
+                "options": {
+                  "retainEncoded": true
+                }
               },
               {
                 "name": "validity",
@@ -1015,7 +1023,10 @@
                   "kind": "ref",
                   "name": "Name"
                 },
-                "optional": false
+                "optional": false,
+                "options": {
+                  "retainEncoded": true
+                }
               },
               {
                 "name": "subjectPublicKeyInfo",
@@ -1023,7 +1034,10 @@
                   "kind": "ref",
                   "name": "SubjectPublicKeyInfo"
                 },
-                "optional": false
+                "optional": false,
+                "options": {
+                  "retainEncoded": true
+                }
               },
               {
                 "name": "issuerUniqueID",
@@ -1062,7 +1076,10 @@
                     "mode": "explicit"
                   }
                 },
-                "optional": true
+                "optional": true,
+                "options": {
+                  "retainEncoded": true
+                }
               }
             ],
             "extensible": false
