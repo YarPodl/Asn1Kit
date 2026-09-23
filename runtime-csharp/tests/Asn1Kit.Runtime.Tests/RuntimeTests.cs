@@ -18,12 +18,12 @@ public sealed class RuntimeTests
         });
         var bytes = writer.Encode();
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
-        reader.ReadSequence(Asn1Tag.Sequence, inner =>
+        using (reader.EnterSequence(Asn1Tag.Sequence))
         {
-            Assert.Equal(42, Asn1Integer.Decode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 0)).GetInt32());
-            Assert.Equal("Ann", Encoding.UTF8.GetString(Asn1OctetString.Decode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 1)).Span));
-            Assert.True(inner.Eof);
-        });
+            Assert.Equal(42, Asn1Integer.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0)).GetInt32());
+            Assert.Equal("Ann", Encoding.UTF8.GetString(Asn1OctetString.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 1)).Span));
+            Assert.True(reader.Eof);
+        }
     }
 
     [Fact]
@@ -60,11 +60,11 @@ public sealed class RuntimeTests
         Assert.Equal(payload, bytes.AsSpan(6).ToArray());
 
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
-        reader.ReadSequence(Asn1Tag.Sequence, inner =>
+        using (reader.EnterSequence(Asn1Tag.Sequence))
         {
-            Assert.Equal(payload, inner.ReadOctetString(Asn1Tag.OctetString).ToArray());
-            Assert.True(inner.Eof);
-        });
+            Assert.Equal(payload, reader.ReadOctetString(Asn1Tag.OctetString).ToArray());
+            Assert.True(reader.Eof);
+        }
     }
 
     [Fact]
@@ -90,20 +90,22 @@ public sealed class RuntimeTests
             bytes);
 
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
-        reader.ReadSequence(Asn1Tag.Sequence, level1 =>
+        using (reader.EnterSequence(Asn1Tag.Sequence))
         {
-            level1.ReadSequence(Asn1Tag.Sequence, level2 =>
+            using (reader.EnterSequence(Asn1Tag.Sequence))
             {
-                level2.ReadSequence(Asn1Tag.Sequence, level3 =>
+                using (reader.EnterSequence(Asn1Tag.Sequence))
                 {
-                    Assert.Equal(7, Asn1Integer.Decode(level3).GetInt32());
-                    Assert.Equal(9, Asn1Integer.Decode(level3).GetInt32());
-                    Assert.True(level3.Eof);
-                });
-                Assert.True(level2.Eof);
-            });
-            Assert.True(level1.Eof);
-        });
+                    Assert.Equal(7, Asn1Integer.Decode(reader).GetInt32());
+                    Assert.Equal(9, Asn1Integer.Decode(reader).GetInt32());
+                    Assert.True(reader.Eof);
+                }
+
+                Assert.True(reader.Eof);
+            }
+
+            Assert.True(reader.Eof);
+        }
     }
 
     [Fact]
@@ -120,7 +122,7 @@ public sealed class RuntimeTests
     {
         var ber = new byte[] { 0x30, 0x80, 0x00, 0x00 };
         var reader = new Asn1Reader(ber, Asn1Encoding.Der);
-        Assert.Throws<Asn1Exception>(() => reader.ReadSequence(Asn1Tag.Sequence, _ => { }));
+        Assert.Throws<Asn1Exception>(() => reader.EnterSequence(Asn1Tag.Sequence).Dispose());
     }
 
     [Fact]
@@ -298,12 +300,12 @@ public sealed class RuntimeTests
         Assert.Equal(new byte[] { 0x31, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02 }, bytes);
 
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
-        reader.ReadSet(Asn1Tag.Set, inner =>
+        using (reader.EnterSet(Asn1Tag.Set))
         {
-            Assert.Equal(1, Asn1Integer.Decode(inner).GetInt32());
-            Assert.Equal(2, Asn1Integer.Decode(inner).GetInt32());
-            Assert.True(inner.Eof);
-        });
+            Assert.Equal(1, Asn1Integer.Decode(reader).GetInt32());
+            Assert.Equal(2, Asn1Integer.Decode(reader).GetInt32());
+            Assert.True(reader.Eof);
+        }
     }
 
     [Fact]
@@ -772,12 +774,12 @@ public sealed class RuntimeTests
         var lazy = reader.ReadLazy(r =>
         {
             decodedCalls++;
-            return r.ReadSequence(Asn1Tag.Sequence, inner =>
+            using (r.EnterSequence(Asn1Tag.Sequence))
             {
-                var a = Asn1Integer.Decode(inner).GetInt32();
-                var b = Asn1Integer.Decode(inner).GetInt32();
+                var a = Asn1Integer.Decode(r).GetInt32();
+                var b = Asn1Integer.Decode(r).GetInt32();
                 return (a, b);
-            });
+            }
         });
 
         Assert.True(reader.Eof);
@@ -916,13 +918,18 @@ public sealed class RuntimeTests
         var bytes = writer.Encode();
 
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
-        var sum = reader.ReadSequence(Asn1Tag.Sequence, outer =>
+        int a;
+        int b;
+        using (reader.EnterSequence(Asn1Tag.Sequence))
         {
-            var a = outer.ReadInt32(Asn1Tag.Integer);
-            var b = outer.ReadSequence(Asn1Tag.Sequence, nested => nested.ReadInt32(Asn1Tag.Integer));
-            return a + b;
-        });
-        Assert.Equal(3, sum);
+            a = reader.ReadInt32(Asn1Tag.Integer);
+            using (reader.EnterSequence(Asn1Tag.Sequence))
+            {
+                b = reader.ReadInt32(Asn1Tag.Integer);
+            }
+        }
+
+        Assert.Equal(3, a + b);
         Assert.True(reader.Eof);
     }
 
@@ -956,6 +963,26 @@ public sealed class RuntimeTests
     }
 
     [Fact]
+    public void EnterExplicit_RoundTripsWrappedInteger()
+    {
+        var tag = new Asn1Tag(Asn1TagClass.ContextSpecific, 0, constructed: true);
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteExplicit(tag, nested => nested.WriteInteger(Asn1Tag.Integer, 42));
+        var bytes = writer.Encode();
+
+        var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
+        int value;
+        using (reader.EnterExplicit(tag))
+        {
+            value = reader.ReadInt32(Asn1Tag.Integer);
+            Assert.True(reader.Eof);
+        }
+
+        Assert.Equal(42, value);
+        Assert.True(reader.Eof);
+    }
+
+    [Fact]
     public void ReadSequenceOf_NoCapturingClosure_AllocatesLessThanLegacyWrap()
     {
         var items = new List<Asn1Integer>();
@@ -968,8 +995,11 @@ public sealed class RuntimeTests
         writer.WriteSequenceOf(Asn1Tag.Sequence, items, static (w, item) => Asn1Integer.Encode(w, item));
         var bytes = writer.Encode();
 
-        static T[] LegacyCapturingOf<T>(Asn1Reader reader, Asn1Tag expected, Func<Asn1Reader, T> decodeItem) =>
-            reader.ReadSequence(expected, inner =>
+        // Legacy shape: EnterSequence + capturing Func body that closes over decodeItem.
+        static T[] LegacyCapturingOf<T>(Asn1Reader reader, Asn1Tag expected, Func<Asn1Reader, T> decodeItem)
+        {
+            using var cursor = reader.EnterSequence(expected);
+            Func<Asn1Reader, T[]> fill = inner =>
             {
                 if (inner.Eof)
                 {
@@ -1008,7 +1038,10 @@ public sealed class RuntimeTests
                 {
                     System.Buffers.ArrayPool<T>.Shared.Return(rented, clearArray: true);
                 }
-            });
+            };
+
+            return fill(reader);
+        }
 
         // Warmup pools + delegate caches.
         for (var i = 0; i < 8; i++)

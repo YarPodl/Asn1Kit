@@ -5,8 +5,8 @@ using BenchmarkDotNet.Configs;
 namespace Asn1Kit.Benchmarks;
 
 /// <summary>
-/// Isolates Func/closure cost for SEQUENCE nesting and SEQUENCE OF fill.
-/// A = legacy capturing OF wrap; B = EnterSequence nesting; C = production ReadSequenceOf (no OF closure).
+/// Isolates closure cost for SEQUENCE OF fill vs production ReadSequenceOf (EnterSequence, no capture).
+/// Nest path is EnterSequence-only (ReadSequence(Func) removed).
 /// </summary>
 [MemoryDiagnoser]
 [CategoriesColumn]
@@ -47,25 +47,9 @@ public class SequenceLambdaBenchmarks
         _ofOne = ofOneWriter.Encode();
     }
 
-    [Benchmark(Baseline = true)]
-    [BenchmarkCategory("Nest")]
-    public int A_Func_NestedSequence()
-    {
-        var reader = new Asn1Reader(_nested, Asn1Encoding.Der);
-        return reader.ReadSequence(Asn1Tag.Sequence, outer =>
-        {
-            var a = outer.ReadInt32(Asn1Tag.Integer);
-            return a + outer.ReadSequence(Asn1Tag.Sequence, mid =>
-            {
-                var b = mid.ReadInt32(Asn1Tag.Integer);
-                return b + mid.ReadSequence(Asn1Tag.Sequence, inner => inner.ReadInt32(Asn1Tag.Integer));
-            });
-        });
-    }
-
     [Benchmark]
     [BenchmarkCategory("Nest")]
-    public int B_Cursor_NestedSequence()
+    public int Cursor_NestedSequence()
     {
         var reader = new Asn1Reader(_nested, Asn1Encoding.Der);
         int a;
@@ -87,7 +71,7 @@ public class SequenceLambdaBenchmarks
         return a + b + c;
     }
 
-    /// <summary>Legacy pattern: ReadSequence lambda captures decodeItem (allocates every call).</summary>
+    /// <summary>Legacy pattern: capturing Func body closes over decodeItem (allocates every call).</summary>
     [Benchmark(Baseline = true)]
     [BenchmarkCategory("OfMany")]
     public int A_OfCapturing_Many16()
@@ -124,10 +108,11 @@ public class SequenceLambdaBenchmarks
         return items.Length + items[0].GetInt32();
     }
 
-    /// <summary>Pre-fix ReadSequenceOf: always allocates a closure capturing <paramref name="decodeItem"/>.</summary>
+    /// <summary>Pre-fix ReadSequenceOf shape: always allocates a closure capturing <paramref name="decodeItem"/>.</summary>
     private static T[] ReadSequenceOfCapturing<T>(Asn1Reader reader, Asn1Tag expected, Func<Asn1Reader, T> decodeItem)
     {
-        return reader.ReadSequence(expected, inner =>
+        using var cursor = reader.EnterSequence(expected);
+        Func<Asn1Reader, T[]> fill = inner =>
         {
             if (inner.Eof)
             {
@@ -166,6 +151,8 @@ public class SequenceLambdaBenchmarks
             {
                 System.Buffers.ArrayPool<T>.Shared.Return(rented, clearArray: true);
             }
-        });
+        };
+
+        return fill(reader);
     }
 }

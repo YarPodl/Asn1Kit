@@ -1289,11 +1289,215 @@ public sealed class CSharpBackend : ILanguageBackend
         string? targetObject = null,
         JsonObject? fieldOptions = null)
     {
+        var openKey = TryBuildOpenTypeKeyExpr(document, module, owner, type, ownerComponents, targetObject);
+
+        if (ShouldEmitLazy(document, module, type, fieldOptions))
+        {
+            EmitDeferredDecodeAssign(
+                sb,
+                document,
+                module,
+                owner,
+                hint,
+                type,
+                ownerComponents,
+                indent,
+                reader,
+                target,
+                forceTag,
+                targetObject,
+                openKey,
+                method: "ReadLazy");
+            return;
+        }
+
+        if (ShouldEmitRetainEncoded(document, module, type, fieldOptions))
+        {
+            EmitDeferredDecodeAssign(
+                sb,
+                document,
+                module,
+                owner,
+                hint,
+                type,
+                ownerComponents,
+                indent,
+                reader,
+                target,
+                forceTag,
+                targetObject,
+                openKey,
+                method: "ReadRetained");
+            return;
+        }
+
+        EmitDecodeAssignBody(
+            sb,
+            document,
+            module,
+            owner,
+            hint,
+            type,
+            ownerComponents,
+            indent,
+            reader,
+            target,
+            forceTag,
+            targetObject,
+            openKey,
+            fieldOptions);
+    }
+
+    private void EmitDeferredDecodeAssign(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string owner,
+        string hint,
+        TypeExpr type,
+        IReadOnlyList<IrComponent>? ownerComponents,
+        string indent,
+        string reader,
+        string target,
+        string? forceTag,
+        string? targetObject,
+        string? openKey,
+        string method)
+    {
+        sb.AppendLine($"{indent}{target} = {reader}.{method}(r =>");
+        sb.AppendLine($"{indent}{{");
+        EmitDecodeReturn(
+            sb,
+            document,
+            module,
+            owner,
+            hint,
+            type,
+            ownerComponents,
+            indent + "    ",
+            "r",
+            forceTag,
+            targetObject,
+            openKey,
+            fieldOptions: null);
+        sb.AppendLine($"{indent}}});");
+    }
+
+    private void EmitDecodeReturn(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string owner,
+        string hint,
+        TypeExpr type,
+        IReadOnlyList<IrComponent>? ownerComponents,
+        string indent,
+        string reader,
+        string? forceTag,
+        string? targetObject,
+        string? openKey,
+        JsonObject? fieldOptions)
+    {
+        var original = type;
+        var unwrapped = UnwrapAliases(document, module, type);
+        if (unwrapped.Tag?.Mode == TagModes.Explicit && forceTag is null)
+        {
+            var explicitTag = TagFromIr(unwrapped.Tag, constructed: true);
+            sb.AppendLine($"{indent}using ({reader}.EnterExplicit({explicitTag}))");
+            sb.AppendLine($"{indent}{{");
+            sb.Append($"{indent}    return ");
+            EmitDecodeExpr(
+                sb,
+                document,
+                module,
+                owner,
+                hint,
+                CloneUntagged(unwrapped),
+                reader,
+                forceTag: null,
+                openTypeKeyExpr: openKey,
+                allowLazy: false,
+                fieldOptions: fieldOptions,
+                originalForOf: original);
+            sb.AppendLine(";");
+            sb.AppendLine($"{indent}}}");
+            return;
+        }
+
+        sb.Append($"{indent}return ");
+        EmitDecodeExpr(
+            sb,
+            document,
+            module,
+            owner,
+            hint,
+            type,
+            reader,
+            forceTag,
+            openKey,
+            allowLazy: false,
+            fieldOptions);
+        sb.AppendLine(";");
+    }
+
+    private void EmitDecodeAssignBody(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string owner,
+        string hint,
+        TypeExpr type,
+        IReadOnlyList<IrComponent>? ownerComponents,
+        string indent,
+        string reader,
+        string target,
+        string? forceTag,
+        string? targetObject,
+        string? openKey,
+        JsonObject? fieldOptions)
+    {
+        var original = type;
+        var unwrapped = UnwrapAliases(document, module, type);
+        if (unwrapped.Tag?.Mode == TagModes.Explicit && forceTag is null)
+        {
+            var explicitTag = TagFromIr(unwrapped.Tag, constructed: true);
+            sb.AppendLine($"{indent}using ({reader}.EnterExplicit({explicitTag}))");
+            sb.AppendLine($"{indent}{{");
+            EmitDecodeAssignBody(
+                sb,
+                document,
+                module,
+                owner,
+                hint,
+                CloneUntagged(unwrapped),
+                ownerComponents,
+                indent + "    ",
+                reader,
+                target,
+                forceTag: null,
+                targetObject,
+                openKey,
+                fieldOptions);
+            sb.AppendLine($"{indent}}}");
+            return;
+        }
+
         sb.Append(indent);
         sb.Append(target);
         sb.Append(" = ");
-        var openKey = TryBuildOpenTypeKeyExpr(document, module, owner, type, ownerComponents, targetObject);
-        EmitDecodeExpr(sb, document, module, owner, hint, type, reader, forceTag, openKey, allowLazy: true, fieldOptions);
+        EmitDecodeExpr(
+            sb,
+            document,
+            module,
+            owner,
+            hint,
+            type,
+            reader,
+            forceTag,
+            openKey,
+            allowLazy: false,
+            fieldOptions,
+            originalForOf: original);
         sb.AppendLine(";");
     }
 
@@ -1308,7 +1512,8 @@ public sealed class CSharpBackend : ILanguageBackend
         string? forceTag = null,
         string? openTypeKeyExpr = null,
         bool allowLazy = true,
-        JsonObject? fieldOptions = null)
+        JsonObject? fieldOptions = null,
+        TypeExpr? originalForOf = null)
     {
         if (allowLazy && ShouldEmitLazy(document, module, type, fieldOptions))
         {
@@ -1349,33 +1554,13 @@ public sealed class CSharpBackend : ILanguageBackend
         }
 
         var integerRepresentation = TryResolveIntegerRepresentation(document, module, type);
-        var original = type;
+        var original = originalForOf ?? type;
         type = UnwrapAliases(document, module, type);
 
         if (type.Tag?.Mode == TagModes.Explicit && forceTag is null)
         {
-            sb.Append($"{reader}.ReadSequence({TagFromIr(type.Tag, constructed: true)}, nested => ");
-            var inner = CloneUntagged(type);
-            if (inner is SequenceOfType or SetOfType)
-            {
-                EmitOfDecodeExpr(sb, document, module, original, owner, hint, inner, "nested", forceTag: null);
-            }
-            else
-            {
-                EmitDecodeExpr(
-                    sb,
-                    document,
-                    module,
-                    owner,
-                    hint,
-                    inner,
-                    "nested",
-                    openTypeKeyExpr: openTypeKeyExpr,
-                    allowLazy: allowLazy);
-            }
-
-            sb.Append(')');
-            return;
+            throw new InvalidOperationException(
+                $"EXPLICIT decode for '{owner}.{hint}' must use EnterExplicit (statement form).");
         }
 
         if (type is SequenceOfType or SetOfType)
@@ -1653,9 +1838,7 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine(
             $"                if (reader.TryPeekTag(out var peeked) && {PeekMatchExpr(document, module, alt.Type, "peeked")})");
         sb.AppendLine("                {");
-        sb.Append("                    return From" + alt.PropName + "(");
-        EmitDecodeExpr(sb, document, module, typeName, alt.PropName, alt.Type, "reader");
-        sb.AppendLine(");");
+        EmitOpenTypeAltReturn(sb, document, module, typeName, alt, forceTag: null);
         sb.AppendLine("                }");
         sb.AppendLine("            }");
         sb.AppendLine("            else");
@@ -1663,17 +1846,7 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine(
             "                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))");
         sb.AppendLine("                {");
-        sb.Append("                    return From" + alt.PropName + "(");
-        EmitDecodeExpr(
-            sb,
-            document,
-            module,
-            typeName,
-            alt.PropName,
-            alt.Type,
-            "reader",
-            forceTag: "expectedTag.Value");
-        sb.AppendLine(");");
+        EmitOpenTypeAltReturn(sb, document, module, typeName, alt, forceTag: "expectedTag.Value");
         sb.AppendLine("                }");
         sb.AppendLine("            }");
         if (soft)
@@ -1685,6 +1858,47 @@ public sealed class CSharpBackend : ILanguageBackend
             sb.AppendLine(
                 $"            throw new Asn1Exception(\"Open-type content for key '\" + {definedByKeyExpr} + \"' does not match bound type '{EscapeCSharpString(alt.PropName)}'.\");");
         }
+    }
+
+    private void EmitOpenTypeAltReturn(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string typeName,
+        OpenTypeAlternative alt,
+        string? forceTag)
+    {
+        var unwrapped = UnwrapAliases(document, module, alt.Type);
+        if (unwrapped.Tag?.Mode == TagModes.Explicit && forceTag is null)
+        {
+            var explicitTag = TagFromIr(unwrapped.Tag, constructed: true);
+            sb.AppendLine($"                    using (reader.EnterExplicit({explicitTag}))");
+            sb.AppendLine("                    {");
+            sb.Append($"                        return From{alt.PropName}(");
+            EmitDecodeExpr(
+                sb,
+                document,
+                module,
+                typeName,
+                alt.PropName,
+                CloneUntagged(unwrapped),
+                "reader");
+            sb.AppendLine(");");
+            sb.AppendLine("                    }");
+            return;
+        }
+
+        sb.Append($"                    return From{alt.PropName}(");
+        EmitDecodeExpr(
+            sb,
+            document,
+            module,
+            typeName,
+            alt.PropName,
+            alt.Type,
+            "reader",
+            forceTag: forceTag);
+        sb.AppendLine(");");
     }
 
     private static bool LooksLikeOidBindingKey(string key) =>
@@ -1866,6 +2080,32 @@ public sealed class CSharpBackend : ILanguageBackend
         var readMethod = ofType is SetOfType ? "ReadSetOf" : "ReadSequenceOf";
         var tag = forceTag ?? TagExpr(document, module, ofType);
         var element = ofType is SetOfType setOf ? setOf.Element : ((SequenceOfType)ofType).Element;
+        var elementUnwrapped = UnwrapAliases(document, module, element);
+        if (elementUnwrapped.Tag?.Mode == TagModes.Explicit)
+        {
+            var explicitTag = TagFromIr(elementUnwrapped.Tag, constructed: true);
+            sb.AppendLine($"{reader}.{readMethod}({tag}, static inner =>");
+            sb.AppendLine($"{{");
+            sb.AppendLine($"    using (inner.EnterExplicit({explicitTag}))");
+            sb.AppendLine($"    {{");
+            sb.Append("        return ");
+            EmitDecodeExpr(
+                sb,
+                document,
+                module,
+                itemOwner,
+                itemHint,
+                CloneUntagged(elementUnwrapped),
+                "inner",
+                fieldOptions: element.Options);
+            sb.AppendLine(";");
+            sb.Append("    }");
+            sb.AppendLine();
+            sb.Append('}');
+            sb.Append(')');
+            return;
+        }
+
         sb.Append($"{reader}.{readMethod}({tag}, static inner => ");
         EmitDecodeExpr(
             sb,

@@ -674,7 +674,10 @@ public sealed class AnotherName
         {
             var value = new AnotherName();
             value.TypeId = reader.ReadOid(Asn1Tag.ObjectIdentifier);
-            value.Value = reader.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested => nested.ReadAny());
+            using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            {
+                value.Value = reader.ReadAny();
+            }
             return value;
         }
     }

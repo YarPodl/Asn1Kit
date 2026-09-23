@@ -98,16 +98,16 @@ public sealed class ExternalVectorTests
         var paramsTag = c.Value.GetProperty("paramsTag").GetString();
 
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
-        reader.ReadSequence(Asn1Tag.Sequence, inner =>
+        using (reader.EnterSequence(Asn1Tag.Sequence))
         {
-            Assert.Equal(expectedOid, inner.ReadObjectIdentifier(Asn1Tag.ObjectIdentifier));
+            Assert.Equal(expectedOid, reader.ReadObjectIdentifier(Asn1Tag.ObjectIdentifier));
             if (paramsTag == "null")
             {
-                Assert.True(inner.ReadNull(Asn1Tag.Null));
+                Assert.True(reader.ReadNull(Asn1Tag.Null));
             }
 
-            Assert.True(inner.Eof);
-        });
+            Assert.True(reader.Eof);
+        }
         Assert.True(reader.Eof);
     }
 }

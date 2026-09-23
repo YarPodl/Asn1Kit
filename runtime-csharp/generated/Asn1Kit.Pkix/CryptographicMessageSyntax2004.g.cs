@@ -36,7 +36,10 @@ public sealed class ContentInfo
         {
             var value = new ContentInfo();
             value.ContentType = reader.ReadOid(Asn1Tag.ObjectIdentifier);
-            value.Content = reader.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested => ContentInfo_Content.Decode(nested, value.ContentType));
+            using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            {
+                value.Content = ContentInfo_Content.Decode(reader, value.ContentType);
+            }
             return value;
         }
     }
@@ -149,7 +152,10 @@ public sealed class EncapsulatedContentInfo
             value.EContentType = reader.ReadOid(Asn1Tag.ObjectIdentifier);
             if (reader.TryPeekTag(out var tag_EContent) && tag_EContent.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
-                value.EContent = reader.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested => nested.ReadOctetString(Asn1Tag.OctetString));
+                using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+                {
+                    value.EContent = reader.ReadOctetString(Asn1Tag.OctetString);
+                }
             }
             return value;
         }
@@ -726,10 +732,16 @@ public sealed class KeyAgreeRecipientInfo
         {
             var value = new KeyAgreeRecipientInfo();
             value.Version = reader.ReadInt32(Asn1Tag.Integer);
-            value.Originator = reader.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested => Asn1Kit.Cms.OriginatorIdentifierOrKey.Decode(nested));
+            using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            {
+                value.Originator = Asn1Kit.Cms.OriginatorIdentifierOrKey.Decode(reader);
+            }
             if (reader.TryPeekTag(out var tag_Ukm) && tag_Ukm.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
             {
-                value.Ukm = reader.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), nested => nested.ReadOctetString(Asn1Tag.OctetString));
+                using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+                {
+                    value.Ukm = reader.ReadOctetString(Asn1Tag.OctetString);
+                }
             }
             value.KeyEncryptionAlgorithm = Asn1Kit.Pkix.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.RecipientEncryptedKeys = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Cms.RecipientEncryptedKey.Decode(inner, Asn1Tag.Sequence));

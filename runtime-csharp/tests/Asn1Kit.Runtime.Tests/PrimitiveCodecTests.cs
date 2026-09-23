@@ -303,7 +303,10 @@ public sealed class PrimitiveCodecTests
         Assert.Equal(new byte[] { 0xA0, 0x03, 0x02, 0x01, 0x01 }, bytes);
 
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
-        reader.ReadSequence(tag, inner => Assert.Equal(1, Asn1Integer.Decode(inner).GetInt32()));
+        using (reader.EnterExplicit(tag))
+        {
+            Assert.Equal(1, Asn1Integer.Decode(reader).GetInt32());
+        }
     }
 
     [Fact]

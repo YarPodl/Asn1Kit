@@ -87,19 +87,6 @@ public sealed class Asn1Reader
         return true;
     }
 
-    public T ReadSequence<T>(Asn1Tag expected, Func<Asn1Reader, T> read)
-    {
-        var contents = ReadValue(expected, allowConstructed: true);
-        return WithContents(contents, read);
-    }
-
-    public void ReadSequence(Asn1Tag expected, Action<Asn1Reader> read) =>
-        ReadSequence(expected, reader =>
-        {
-            read(reader);
-            return 0;
-        });
-
     /// <summary>
     /// Consumes a constructed SEQUENCE/SET TLV and restricts this reader to its contents.
     /// Restore the previous window via <see cref="Asn1ReaderCursor.Dispose"/> (or <c>using</c>).
@@ -113,9 +100,11 @@ public sealed class Asn1Reader
     /// <summary>Same as <see cref="EnterSequence"/> (SET is wire-identical to SEQUENCE for nesting).</summary>
     public Asn1ReaderCursor EnterSet(Asn1Tag expected) => EnterSequence(expected);
 
-    public T ReadSet<T>(Asn1Tag expected, Func<Asn1Reader, T> read) => ReadSequence(expected, read);
-
-    public void ReadSet(Asn1Tag expected, Action<Asn1Reader> read) => ReadSequence(expected, read);
+    /// <summary>
+    /// Consumes an EXPLICIT constructed wrapper TLV and restricts this reader to its contents.
+    /// Wire-identical to <see cref="EnterSequence"/>; named for symmetry with <c>WriteExplicit</c>.
+    /// </summary>
+    public Asn1ReaderCursor EnterExplicit(Asn1Tag expected) => EnterSequence(expected);
 
     /// <summary>
     /// Consumes the next complete TLV, eagerly decodes it, and retains the TLV for bit-exact re-encode.

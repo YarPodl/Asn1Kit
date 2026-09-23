@@ -53,10 +53,11 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 
 История: выбор стратегии заполнения SEQUENCE OF (`List` / ArrayPool / pre-count) закрыт микробенчем; прод — ArrayPool + empty/single. Снимок — [results/2026-09-23-of-arrays](../results/2026-09-23-of-arrays/).
 Гипотеза лямбд в `ReadSequence`: выигрыш Alloc — от устранения capturing-обёртки в `ReadSequenceOf` (+ codegen `EnterSequence`); Nest Func→cursor почти не режет Alloc. Снимок — [results/2026-09-24-sequence-lambda](../results/2026-09-24-sequence-lambda/).
+EXPLICIT без лямбд: `EnterExplicit` + удаление `ReadSequence(Func)`; Alloc на Cert/CRL без изменений (кэш делегата). Снимок — [results/2026-09-24-explicit-enter](../results/2026-09-24-explicit-enter/).
 
-## Current baseline (2026-09-24, sequence-lambda)
+## Current baseline (2026-09-24, explicit-enter)
 
-Снимок после `EnterSequence` / OF без capturing-лямбды вокруг `decodeItem`. Сырые заметки: [results/2026-09-24-sequence-lambda](../results/2026-09-24-sequence-lambda/). Peers BCL/BC — из [results/2026-09-23](../results/2026-09-23/) (`7d281d1`).
+Снимок после `EnterExplicit` / удаления публичных `ReadSequence`/`ReadSet` с делегатами. Сырые заметки: [results/2026-09-24-explicit-enter](../results/2026-09-24-explicit-enter/). Peers BCL/BC — из [results/2026-09-23](../results/2026-09-23/) (`7d281d1`).
 
 Краткий набор для сравнения после правок отмечен ★.
 
@@ -70,14 +71,17 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 | After Int32/Time + OID open-type + OF capacity | 3.436 µs | 2.84 KB |
 | 2026-09-23 (`7d281d1`, full suite) | 3.352 µs | 2912 B |
 | 2026-09-23 OF→arrays | 3.774 µs | 2600 B |
-| **2026-09-24 sequence-lambda** | **3.258 µs** | **1.77 KB** |
+| 2026-09-24 sequence-lambda | 3.258 µs | 1.77 KB |
+| **2026-09-24 explicit-enter** | **3.252 µs** | **1.77 KB** |
 
-### Certificate / CRL / CMS Asn1Kit (2026-09-24 sequence-lambda + codegen)
+### Certificate / CRL / CMS Asn1Kit (2026-09-24 explicit-enter)
 
-| Method | Mean | Allocated | vs of-arrays Alloc |
-| --- | ---: | ---: | ---: |
-| ★ Cert Asn1Kit_Decode | 3.258 µs | 1.77 KB | −30% |
-| ★ CRL Asn1Kit_Decode | 2.459 µs | 1.32 KB | −34% |
-| ★ CMS Asn1Kit_Lazy_Decode | 1.387 µs | 1.03 KB | −29% |
+Два прогона подряд (Alloc стабилен; Mean — шум):
 
-Encode не перезамерялся на этом прогоне (ожидается без изменений — Write-путь не трогали). Decode Allocated↓ за счёт OF без closure; Mean↓ после codegen `EnterSequence`.
+| Method | run 1 | run 2 | Allocated | vs sequence-lambda Alloc |
+| --- | ---: | ---: | ---: | ---: |
+| ★ Cert Asn1Kit_Decode | 3.252 µs | 3.344 µs | 1.77 KB | 0% |
+| ★ CRL Asn1Kit_Decode | 2.622 µs | 2.654 µs | 1.32 KB | 0% |
+| ★ CMS Asn1Kit_Lazy_Decode | 1.481 µs | 1.440 µs | 968 B | −6% |
+
+Encode не перезамерялся. EXPLICIT→`EnterExplicit` — API-чистка; Alloc на Cert/CRL без изменений. Mean CRL выше старого sequence-lambda снимка (~2.46), но стабилен между двумя прогонами этой сессии (~2.63) — межсессионный шум, не регрессия правки.

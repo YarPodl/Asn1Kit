@@ -271,11 +271,11 @@ public sealed class PrimitiveOracleTests
         Assert.Equal(Hex.Format(bcl), Hex.Format(us));
 
         var reader = new Asn1Reader(bcl, Asn1Encoding.Der);
-        reader.ReadSequence(Asn1Tag.Sequence, inner =>
+        using (reader.EnterSequence(Asn1Tag.Sequence))
         {
-            Assert.Equal(1, inner.ReadInteger(Asn1Tag.Integer));
-            Assert.Equal(2, inner.ReadInteger(Asn1Tag.Integer));
-        });
+            Assert.Equal(1, reader.ReadInteger(Asn1Tag.Integer));
+            Assert.Equal(2, reader.ReadInteger(Asn1Tag.Integer));
+        }
     }
 
     private static byte[] EncodeUs(Action<Asn1Writer> write)

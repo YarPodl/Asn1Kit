@@ -38,9 +38,9 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `WriteOctetString(ReadOnlySpan)` / `WriteRaw(ReadOnlySpan)` | hot/cold | borrow |
 | `WriteSequence` / `WriteSet` / `WriteSetOf` / `WriteSequenceOf<T>` / `WriteSetOf<T>` / `WriteExplicit(Action)` | hot | callback |
 | `ReadSequenceOf<T>` / `ReadSetOf<T>` | hot | owned `T[]` (`Array.Empty<T>` when empty); OF fill без capturing-лямбды вокруг `decodeItem` |
-| `EnterSequence` / `EnterSet` → `Asn1ReaderCursor` | hot | push/pop окна contents без `Func` (альтернатива `ReadSequence`) |
+| `EnterSequence` / `EnterSet` / `EnterExplicit` → `Asn1ReaderCursor` | hot | push/pop окна contents без `Func` (SEQUENCE/SET/EXPLICIT nesting) |
 | `Asn1Reader(byte[]\|offset/length\|ReadOnlyMemory, encoding, options?)` / `Source` / `Options` | hot | срез без копии на входе; `Source` якорит lifetime; `Options` наследуются nested; nested SEQUENCE — push/pop без `new Asn1Reader` когда contents alias буфер |
-| `Asn1ReaderCursor` | hot | явный push/pop окна contents (`EnterSequence` / `Push`) |
+| `Asn1ReaderCursor` | hot | явный push/pop окна contents (`EnterSequence` / `EnterExplicit` / `Push`) |
 | `Asn1ReaderOptions` (`Default` / `Strict` / `AllowNonMinimalLength` / `AllowOverlongOidBase128`) | warm | immutable flags |
 | `ReadOctetString → ReadOnlyMemory` / `TryReadOctetString(Span)` | hot | view / copy-out (Try всегда продвигает reader); constructed BER — owned |
 | `ReadValue → ReadOnlyMemory` / `TryReadValue(Span)` / `ReadTlv` | cold/warm | view / copy-out |
@@ -57,7 +57,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 - `definiteOnly` в private `WriteTlv` игнорируется; indefinite на записи не эмитится.
 - `WriteSequence` / `WriteSet` / `WriteSetOf` / `WriteExplicit` пишут nested contents в тот же буфер writer’а (callback получает outer `Asn1Writer`); length — резерв + patch/compact. Внутренний буфер — `byte[]` (не `MemoryStream`); `Reset()` обнуляет длину без освобождения capacity.
 - `ReadSequenceOf` / `ReadSetOf` возвращают `T[]`: пустой OF → `Array.Empty<T>()`; один элемент → `new T[1]` без pool; иначе grow через `ArrayPool<T>` и точный `T[count]`. Заполнение идёт через `EnterSequence` (без capturing-лямбды вокруг `decodeItem`).
-- `EnterSequence` / `EnterSet` — hot альтернатива `ReadSequence(Func)` для codegen/ручного decode без делегата.
+- `EnterSequence` / `EnterSet` / `EnterExplicit` — единственный публичный nesting API для codegen/ручного decode (без `Func`).
 - `ReadInt32` / `TryGetInt32` (и UInt32/Int64/UInt64) разбирают short contents без `BigInteger`.
 - `ReadTime` парсит UTCTime/GeneralizedTime из contents octets без промежуточной `string` (`Asn1TextCodec.ParseTime(span)`).
 - Open-type DEFINED BY OID: codegen передаёт `Asn1Oid` и сравнивает со статическими константами (без `Oid.ToString()` на hot path).
@@ -95,11 +95,11 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `WriteBitString` / `ReadBitString` | unusedBits; encode trailing-zero; soft nonzero trailing accept + strict reject; BER constructed |
 | `WriteString` / `ReadString` | 12 forms smoke; BER constructed UTF8 |
 | `WriteTime` / `ReadTime` | UTC + Generalized; fractionDigits; BER |
-| `WriteSequence` / `ReadSequence` | вложенность; OPTIONAL |
-| `WriteSet` / `ReadSet` | tag SET |
+| `WriteSequence` / `EnterSequence` | вложенность; OPTIONAL |
+| `WriteSet` / `EnterSet` | tag SET |
 | `WriteSetOf` / `WriteSetOf<T>` | DER sort; BER order |
 | `WriteSequenceOf<T>` / `ReadSequenceOf<T>` / `ReadSetOf<T>` | array round-trip; empty → `Array.Empty` |
-| `WriteExplicit` | constructed wrapper |
+| `WriteExplicit` / `EnterExplicit` | constructed wrapper |
 | `WriteAny` / `ReadAny` | IMPLICIT peel; EncodedMemory bit-exact |
 | `ReadLazy` / `Asn1Lazy<T>` | defer decode; Value materialize; WriteTo raw TLV |
 | `WriteRaw` | append TLV |
