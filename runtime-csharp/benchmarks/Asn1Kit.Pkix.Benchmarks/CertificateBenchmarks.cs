@@ -23,10 +23,10 @@ public class CertificateBenchmarks
     public void Setup()
     {
         _der = FixtureLoader.ReadPkix("TrustAnchorRootCertificate.crt");
-        _asn1KitEncode = EncodeSamples.CertificateFromFixture(_der);
-        _bouncyCastleEncode = EncodeSamples.BouncyCastleCertificateFromFixture(_der);
+        _asn1KitEncode = EncodeSamples.CreateCertificate();
+        _bouncyCastleEncode = EncodeSamples.CreateBouncyCastleCertificate();
         _encodeWriter = new Asn1Writer(Asn1Encoding.Der);
-        _encodeWriter.EnsureCapacity(_der.Length);
+        _encodeWriter.EnsureCapacity(2048);
     }
 
     [Benchmark(Baseline = true)]

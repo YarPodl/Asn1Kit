@@ -21,7 +21,7 @@ internal static class Smoke
         var cmsDer = FixtureLoader.ReadCms("attached-signeddata.p7m");
 
         _ = Certificate.Decode(new Asn1Reader(certDer, Asn1Encoding.Der));
-        var certEncode = EncodeSamples.CertificateFromFixture(certDer);
+        var certEncode = EncodeSamples.CreateCertificate();
         var certWriter = new Asn1Writer(Asn1Encoding.Der);
         certEncode.Encode(certWriter);
         if (certWriter.EncodedLength == 0)
@@ -35,10 +35,10 @@ internal static class Smoke
         }
 
         _ = BcCertificateStructure.GetInstance(Asn1Object.FromByteArray(certDer));
-        _ = EncodeSamples.BouncyCastleCertificateFromFixture(certDer).GetEncoded();
+        _ = EncodeSamples.CreateBouncyCastleCertificate().GetEncoded();
 
         _ = CertificateList.Decode(new Asn1Reader(crlDer, Asn1Encoding.Der));
-        var crlEncode = EncodeSamples.CertificateListFromFixture(crlDer);
+        var crlEncode = EncodeSamples.CreateCertificateList();
         var crlWriter = new Asn1Writer(Asn1Encoding.Der);
         crlEncode.Encode(crlWriter);
         if (crlWriter.EncodedLength == 0)
@@ -47,7 +47,7 @@ internal static class Smoke
         }
 
         _ = BcCertificateList.GetInstance(Asn1Object.FromByteArray(crlDer));
-        _ = EncodeSamples.BouncyCastleCertificateListFromFixture(crlDer).GetEncoded();
+        _ = EncodeSamples.CreateBouncyCastleCertificateList().GetEncoded();
 
         var bench = BenchContentInfo.Decode(new Asn1Reader(cmsDer, Asn1Encoding.Der));
         var lazyCert = bench.Content.SignedData!.Certificates!

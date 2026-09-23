@@ -13,7 +13,7 @@
 | CMS `Asn1Kit_Eager_*` | golden `Asn1Kit.Cms` (полный typed `Certificate`) | полная глубина ASN.1 tree |
 | CMS BouncyCastle | `Asn1Object` tree + `ContentInfo` | общий ASN.1 codec |
 | Certificate / CRL Decode | полный typed decode | BCL Cert = PAL+lazy (другая модель); peer typed — BouncyCastle |
-| Certificate / CRL Encode | **hand-built** object graph (не decode→encode) | BouncyCastle `GetEncoded` после сборки; BCL structural encode нет |
+| Certificate / CRL Encode | **hand-built** object graph (PKITS-scale test data, no Decode) | BouncyCastle `GetEncoded` after assembly; BCL structural encode нет |
 
 Фикстуры: [fixtures/pkix](../../fixtures/pkix/), [fixtures/cms](../../fixtures/cms/).
 
@@ -35,7 +35,7 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 | BCL (`X509Certificate2` / `SignedCms`) | Decode only | — | Decode ± materialize; Encode |
 | BouncyCastle | Decode + `GetEncoded` (hand-built) | Decode + `GetEncoded` (hand-built) | Decode + `GetEncoded` |
 
-**Encode:** объект собирается в `GlobalSetup` как свежий граф полей (значения с фикстуры); в `[Benchmark]` только structural encode. Так encode не смешивается с round-trip / `WriteRaw` retained TLV. CMS Lazy Encode по-прежнему идёт от decoded tree — это shell-сценарий с `WriteRaw` cert.
+**Encode:** Cert/CRL объект собирается в `GlobalSetup` как hand-built граф (масштаб PKITS Trust Anchor / GoodCACRL; без Decode). В `[Benchmark]` только structural encode — без `WriteRaw` retained TLV. CMS Lazy Encode по-прежнему идёт от decoded tree — это shell-сценарий с `WriteRaw` cert.
 
 Полный typed `Certificate.Decode` **не обязан** быть быстрее `X509Certificate2` (BCL не строит ASN-граф). Цель typed path — сравняться с BouncyCastle; Lazy/retainEncoded — peer BCL shell.
 

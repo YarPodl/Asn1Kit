@@ -1,7 +1,17 @@
+using System.Numerics;
+using System.Text;
 using Asn1Kit.Runtime;
 using Org.BouncyCastle.Asn1;
+using Org.BouncyCastle.Asn1.Pkcs;
 using Org.BouncyCastle.Asn1.X509;
+using BcAlgorithmIdentifier = Org.BouncyCastle.Asn1.X509.AlgorithmIdentifier;
+using BcAuthorityKeyIdentifier = Org.BouncyCastle.Asn1.X509.AuthorityKeyIdentifier;
+using BcBasicConstraints = Org.BouncyCastle.Asn1.X509.BasicConstraints;
 using BcCertificateList = Org.BouncyCastle.Asn1.X509.CertificateList;
+using BcKeyUsage = Org.BouncyCastle.Asn1.X509.KeyUsage;
+using BcSubjectKeyIdentifier = Org.BouncyCastle.Asn1.X509.SubjectKeyIdentifier;
+using BcSubjectPublicKeyInfo = Org.BouncyCastle.Asn1.X509.SubjectPublicKeyInfo;
+using BcTime = Org.BouncyCastle.Asn1.X509.Time;
 using Certificate = global::Asn1Kit.Pkix.Bench.Certificate;
 using CertificateList = global::Asn1Kit.Pkix.Bench.CertificateList;
 using TBSCertificate = global::Asn1Kit.Pkix.Bench.TBSCertificate;
@@ -14,165 +24,275 @@ using AttributeTypeAndValue = global::Asn1Kit.Pkix.Bench.AttributeTypeAndValue;
 using Extension = global::Asn1Kit.Pkix.Bench.Extension;
 using Validity = global::Asn1Kit.Pkix.Bench.Validity;
 using Time = global::Asn1Kit.Pkix.Bench.Time;
-using TimeKind = global::Asn1Kit.Pkix.Bench.TimeKind;
+using PkixVersion = global::Asn1Kit.Pkix.Bench.Version;
+using KitAuthorityKeyIdentifier = global::Asn1Kit.Pkix.Bench.AuthorityKeyIdentifier;
+using KitBasicConstraints = global::Asn1Kit.Pkix.Bench.BasicConstraints;
+using KitKeyUsage = global::Asn1Kit.Pkix.Bench.KeyUsage;
+using KeyUsageFlags = global::Asn1Kit.Pkix.Bench.KeyUsageFlags;
+using CRLReason = global::Asn1Kit.Pkix.Bench.CRLReason;
 
 namespace Asn1Kit.EncodeBench;
 
 /// <summary>
-/// Builds encode-bench samples as fresh object graphs (values taken from a decoded fixture).
-/// The encode path must not reuse the Decode result so retainEncoded / view aliases cannot
-/// turn structural encode into WriteRaw of the input DER.
+/// Hand-built encode-bench object graphs (PKITS Trust Anchor / GoodCACRL scale).
+/// No Decode: values are C# object initializers so retainEncoded cannot WriteRaw fixture TLV.
 /// </summary>
 internal static class EncodeSamples
 {
-    public static Certificate CertificateFromFixture(byte[] der)
-    {
-        var decoded = Certificate.Decode(new Asn1Reader(der, Asn1Encoding.Der));
-        return FreshCertificate(decoded);
-    }
+    private static readonly Asn1Oid OidCountryName = Asn1Oid.Parse("2.5.4.6");
+    private static readonly Asn1Oid OidOrganizationName = Asn1Oid.Parse("2.5.4.10");
+    private static readonly Asn1Oid OidCommonName = Asn1Oid.Parse("2.5.4.3");
+    private static readonly Asn1Oid OidSha256WithRsa = Asn1Oid.Parse("1.2.840.113549.1.1.11");
+    private static readonly Asn1Oid OidRsaEncryption = Asn1Oid.Parse("1.2.840.113549.1.1.1");
+    private static readonly Asn1Oid OidSubjectKeyIdentifier = Asn1Oid.Parse("2.5.29.14");
+    private static readonly Asn1Oid OidKeyUsage = Asn1Oid.Parse("2.5.29.15");
+    private static readonly Asn1Oid OidBasicConstraints = Asn1Oid.Parse("2.5.29.19");
+    private static readonly Asn1Oid OidAuthorityKeyIdentifier = Asn1Oid.Parse("2.5.29.35");
+    private static readonly Asn1Oid OidCrlNumber = Asn1Oid.Parse("2.5.29.20");
+    private static readonly Asn1Oid OidCrlReason = Asn1Oid.Parse("2.5.29.21");
 
-    public static CertificateList CertificateListFromFixture(byte[] der)
-    {
-        var decoded = CertificateList.Decode(new Asn1Reader(der, Asn1Encoding.Der));
-        return FreshCertificateList(decoded);
-    }
+    private static readonly DateTimeOffset NotBefore = new(2010, 1, 1, 8, 30, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset NotAfter = new(2030, 12, 31, 8, 30, 0, TimeSpan.Zero);
 
-    public static X509CertificateStructure BouncyCastleCertificateFromFixture(byte[] der)
-    {
-        var decoded = X509CertificateStructure.GetInstance(Asn1Object.FromByteArray(der));
-        return new X509CertificateStructure(
-            TbsCertificateStructure.GetInstance(Asn1Object.FromByteArray(decoded.TbsCertificate.GetDerEncoded())),
-            Org.BouncyCastle.Asn1.X509.AlgorithmIdentifier.GetInstance(
-                Asn1Object.FromByteArray(decoded.SignatureAlgorithm.GetDerEncoded())),
-            new DerBitString(decoded.Signature.GetBytes(), decoded.Signature.PadBits));
-    }
+    private static readonly byte[] SubjectKeyId = Filled(20, 0xE4);
+    private static readonly byte[] AuthorityKeyId = Filled(20, 0x58);
+    private static readonly byte[] SubjectPublicKeyBytes = Filled(270, 0x30);
+    private static readonly byte[] SignatureBytes = Filled(256, 0xC5);
 
-    public static BcCertificateList BouncyCastleCertificateListFromFixture(byte[] der)
+    public static Certificate CreateCertificate()
     {
-        var decoded = BcCertificateList.GetInstance(Asn1Object.FromByteArray(der));
-        return BcCertificateList.GetInstance(Asn1Object.FromByteArray(decoded.GetDerEncoded()));
-    }
-
-    private static Certificate FreshCertificate(Certificate src) => new()
-    {
-        TbsCertificate = FreshTbs(src.TbsCertificate),
-        SignatureAlgorithm = FreshAlgorithm(src.SignatureAlgorithm),
-        Signature = CloneBitString(src.Signature),
-    };
-
-    private static CertificateList FreshCertificateList(CertificateList src) => new()
-    {
-        TbsCertList = FreshTbsCertList(src.TbsCertList),
-        SignatureAlgorithm = FreshAlgorithm(src.SignatureAlgorithm),
-        Signature = CloneBitString(src.Signature),
-    };
-
-    private static TBSCertificate FreshTbs(TBSCertificate src)
-    {
-        Asn1Retained<List<List<AttributeTypeAndValue>>> retainedIssuer = src.Issuer;
-        Asn1Retained<List<List<AttributeTypeAndValue>>> retainedSubject = src.Subject;
-        Asn1Retained<SubjectPublicKeyInfo> retainedSpki = src.SubjectPublicKeyInfo;
-        Asn1Retained<List<Extension>>? retainedExtensions = src.Extensions;
-
-        return new TBSCertificate
+        var name = TrustAnchorName();
+        var signatureAlgorithm = Sha256WithRsa();
+        return new Certificate
         {
-            Version = src.Version,
-            SerialNumber = CloneInteger(src.SerialNumber),
-            Signature = FreshAlgorithm(src.Signature),
-            Issuer = Asn1Retained<List<List<AttributeTypeAndValue>>>.FromValue(FreshName(retainedIssuer.Value)),
-            Validity = FreshValidity(src.Validity),
-            Subject = Asn1Retained<List<List<AttributeTypeAndValue>>>.FromValue(FreshName(retainedSubject.Value)),
-            SubjectPublicKeyInfo = Asn1Retained<SubjectPublicKeyInfo>.FromValue(FreshSpki(retainedSpki.Value)),
-            IssuerUniqueID = src.IssuerUniqueID is { } iuid ? CloneBitString(iuid) : null,
-            SubjectUniqueID = src.SubjectUniqueID is { } suid ? CloneBitString(suid) : null,
-            Extensions = retainedExtensions is null
-                ? null
-                : Asn1Retained<List<Extension>>.FromValue(FreshExtensions(retainedExtensions.Value)),
+            TbsCertificate = new TBSCertificate
+            {
+                Version = PkixVersion.V3,
+                SerialNumber = Asn1Integer.FromInt32(1),
+                Signature = signatureAlgorithm,
+                Issuer = Asn1Retained<List<List<AttributeTypeAndValue>>>.FromValue(name),
+                Validity = new Validity
+                {
+                    NotBefore = Time.FromUtcTime(NotBefore),
+                    NotAfter = Time.FromUtcTime(NotAfter),
+                },
+                Subject = Asn1Retained<List<List<AttributeTypeAndValue>>>.FromValue(CloneName(name)),
+                SubjectPublicKeyInfo = Asn1Retained<SubjectPublicKeyInfo>.FromValue(CreateSpki()),
+                Extensions = Asn1Retained<List<Extension>>.FromValue(new List<Extension>
+                {
+                    Ext(OidSubjectKeyIdentifier, critical: false, EncodeSki(SubjectKeyId)),
+                    Ext(OidKeyUsage, critical: true, EncodeKeyUsage(KeyUsageFlags.KeyCertSign | KeyUsageFlags.CRLSign)),
+                    Ext(OidBasicConstraints, critical: true, EncodeBasicConstraintsCa()),
+                }),
+            },
+            SignatureAlgorithm = Sha256WithRsa(),
+            Signature = Asn1BitString.CopyFrom(SignatureBytes, unusedBits: 0),
         };
     }
 
-    private static TBSCertList FreshTbsCertList(TBSCertList src) => new()
+    public static CertificateList CreateCertificateList()
     {
-        Version = src.Version,
-        Signature = FreshAlgorithm(src.Signature),
-        Issuer = FreshName(src.Issuer),
-        ThisUpdate = FreshTime(src.ThisUpdate),
-        NextUpdate = src.NextUpdate is null ? null : FreshTime(src.NextUpdate),
-        RevokedCertificates = src.RevokedCertificates is null
-            ? null
-            : src.RevokedCertificates.Select(FreshRevoked).ToList(),
-        CrlExtensions = src.CrlExtensions is null ? null : FreshExtensions(src.CrlExtensions),
-    };
-
-    private static TBSCertList_RevokedCertificates_Item FreshRevoked(TBSCertList_RevokedCertificates_Item src) => new()
-    {
-        UserCertificate = CloneInteger(src.UserCertificate),
-        RevocationDate = FreshTime(src.RevocationDate),
-        CrlEntryExtensions = src.CrlEntryExtensions is null ? null : FreshExtensions(src.CrlEntryExtensions),
-    };
-
-    private static AlgorithmIdentifier FreshAlgorithm(AlgorithmIdentifier src) => new()
-    {
-        Algorithm = src.Algorithm.Clone(),
-        Parameters = src.Parameters is null ? null : FreshParameters(src.Parameters),
-    };
-
-    private static AlgorithmIdentifier_Parameters FreshParameters(AlgorithmIdentifier_Parameters src)
-    {
-        if (src.Null != null)
+        var signatureAlgorithm = Sha256WithRsa();
+        return new CertificateList
         {
-            return AlgorithmIdentifier_Parameters.FromNull();
-        }
-
-        if (src.Unknown != null)
-        {
-            return AlgorithmIdentifier_Parameters.FromUnknown(src.Unknown.Value.Clone());
-        }
-
-        throw new InvalidOperationException("AlgorithmIdentifier parameters has no alternative.");
+            TbsCertList = new TBSCertList
+            {
+                Version = PkixVersion.V2,
+                Signature = signatureAlgorithm,
+                Issuer = GoodCaName(),
+                ThisUpdate = Time.FromUtcTime(NotBefore),
+                NextUpdate = Time.FromUtcTime(NotAfter),
+                RevokedCertificates = new List<TBSCertList_RevokedCertificates_Item>
+                {
+                    Revoked(0x0E, NotBefore),
+                    Revoked(0x0F, NotBefore),
+                },
+                CrlExtensions = new List<Extension>
+                {
+                    Ext(OidAuthorityKeyIdentifier, critical: false, EncodeAki(AuthorityKeyId)),
+                    Ext(OidCrlNumber, critical: false, EncodeCrlNumber(1)),
+                },
+            },
+            SignatureAlgorithm = Sha256WithRsa(),
+            Signature = Asn1BitString.CopyFrom(SignatureBytes, unusedBits: 0),
+        };
     }
 
-    private static SubjectPublicKeyInfo FreshSpki(SubjectPublicKeyInfo src) => new()
+    public static X509CertificateStructure CreateBouncyCastleCertificate()
     {
-        Algorithm = FreshAlgorithm(src.Algorithm),
-        SubjectPublicKey = CloneBitString(src.SubjectPublicKey),
+        var name = BcName("Trust Anchor");
+        var signatureAlgorithm = BcSha256WithRsa();
+        var extensions = new X509ExtensionsGenerator();
+        extensions.AddExtension(X509Extensions.SubjectKeyIdentifier, false, new BcSubjectKeyIdentifier(SubjectKeyId));
+        extensions.AddExtension(X509Extensions.KeyUsage, true, new BcKeyUsage(BcKeyUsage.KeyCertSign | BcKeyUsage.CrlSign));
+        extensions.AddExtension(X509Extensions.BasicConstraints, true, new BcBasicConstraints(cA: true));
+
+        var tbsGen = new V3TbsCertificateGenerator();
+        tbsGen.SetSerialNumber(new DerInteger(1));
+        tbsGen.SetSignature(signatureAlgorithm);
+        tbsGen.SetIssuer(name);
+        tbsGen.SetStartDate(new BcTime(NotBefore.UtcDateTime));
+        tbsGen.SetEndDate(new BcTime(NotAfter.UtcDateTime));
+        tbsGen.SetSubject(name);
+        tbsGen.SetSubjectPublicKeyInfo(new BcSubjectPublicKeyInfo(BcRsaEncryption(), SubjectPublicKeyBytes));
+        tbsGen.SetExtensions(extensions.Generate());
+
+        return new X509CertificateStructure(
+            tbsGen.GenerateTbsCertificate(),
+            signatureAlgorithm,
+            new DerBitString(SignatureBytes));
+    }
+
+    public static BcCertificateList CreateBouncyCastleCertificateList()
+    {
+        var signatureAlgorithm = BcSha256WithRsa();
+        var reasonExtensions = new X509ExtensionsGenerator();
+        reasonExtensions.AddExtension(X509Extensions.ReasonCode, false, new CrlReason(CrlReason.KeyCompromise));
+        var entryExtensions = reasonExtensions.Generate();
+
+        var tbsGen = new V2TbsCertListGenerator();
+        tbsGen.SetSignature(signatureAlgorithm);
+        tbsGen.SetIssuer(BcName("Good CA"));
+        tbsGen.SetThisUpdate(new BcTime(NotBefore.UtcDateTime));
+        tbsGen.SetNextUpdate(new BcTime(NotAfter.UtcDateTime));
+        tbsGen.AddCrlEntry(new DerInteger(0x0E), new BcTime(NotBefore.UtcDateTime), entryExtensions);
+        tbsGen.AddCrlEntry(new DerInteger(0x0F), new BcTime(NotBefore.UtcDateTime), entryExtensions);
+
+        var crlExtensions = new X509ExtensionsGenerator();
+        crlExtensions.AddExtension(X509Extensions.AuthorityKeyIdentifier, false, new BcAuthorityKeyIdentifier(AuthorityKeyId));
+        crlExtensions.AddExtension(X509Extensions.CrlNumber, false, new CrlNumber(Org.BouncyCastle.Math.BigInteger.One));
+        tbsGen.SetExtensions(crlExtensions.Generate());
+
+        return BcCertificateList.GetInstance(new DerSequence(
+            tbsGen.GenerateTbsCertList(),
+            signatureAlgorithm,
+            new DerBitString(SignatureBytes)));
+    }
+
+    private static List<List<AttributeTypeAndValue>> TrustAnchorName() => Name(
+        ("US", OidCountryName),
+        ("Test Certificates 2011", OidOrganizationName),
+        ("Trust Anchor", OidCommonName));
+
+    private static List<List<AttributeTypeAndValue>> GoodCaName() => Name(
+        ("US", OidCountryName),
+        ("Test Certificates 2011", OidOrganizationName),
+        ("Good CA", OidCommonName));
+
+    private static List<List<AttributeTypeAndValue>> Name(params (string Value, Asn1Oid Type)[] rdns)
+    {
+        var result = new List<List<AttributeTypeAndValue>>(rdns.Length);
+        foreach (var (value, type) in rdns)
+        {
+            result.Add(new List<AttributeTypeAndValue>
+            {
+                new()
+                {
+                    Type = type.Clone(),
+                    Value = PrintableStringAny(value),
+                },
+            });
+        }
+
+        return result;
+    }
+
+    private static List<List<AttributeTypeAndValue>> CloneName(List<List<AttributeTypeAndValue>> src) =>
+        src.Select(rdn => rdn.Select(atv => new AttributeTypeAndValue
+        {
+            Type = atv.Type.Clone(),
+            Value = Asn1Any.CopyFrom(atv.Value.EncodedMemory.Span),
+        }).ToList()).ToList();
+
+    private static Asn1Any PrintableStringAny(string value) =>
+        Asn1Any.FromTagAndContents(Asn1Tag.PrintableString, Encoding.ASCII.GetBytes(value));
+
+    private static AlgorithmIdentifier Sha256WithRsa() => new()
+    {
+        Algorithm = OidSha256WithRsa.Clone(),
+        Parameters = AlgorithmIdentifier_Parameters.FromNull(),
     };
 
-    private static Validity FreshValidity(Validity src) => new()
+    private static SubjectPublicKeyInfo CreateSpki() => new()
     {
-        NotBefore = FreshTime(src.NotBefore),
-        NotAfter = FreshTime(src.NotAfter),
+        Algorithm = new AlgorithmIdentifier
+        {
+            Algorithm = OidRsaEncryption.Clone(),
+            Parameters = AlgorithmIdentifier_Parameters.FromNull(),
+        },
+        SubjectPublicKey = Asn1BitString.CopyFrom(SubjectPublicKeyBytes, unusedBits: 0),
     };
 
-    private static Time FreshTime(Time src) => src.Kind switch
+    private static TBSCertList_RevokedCertificates_Item Revoked(int serial, DateTimeOffset when) => new()
     {
-        TimeKind.UtcTime => Time.FromUtcTime(src.Value),
-        TimeKind.GeneralTime => Time.FromGeneralTime(src.Value),
-        _ => throw new InvalidOperationException($"Unknown TimeKind '{src.Kind}'."),
+        UserCertificate = Asn1Integer.FromInt32(serial),
+        RevocationDate = Time.FromUtcTime(when),
+        CrlEntryExtensions = new List<Extension>
+        {
+            Ext(OidCrlReason, critical: false, EncodeCrlReason(CRLReason.KeyCompromise)),
+        },
     };
 
-    private static List<List<AttributeTypeAndValue>> FreshName(List<List<AttributeTypeAndValue>> src) =>
-        src.Select(rdn => rdn.Select(FreshAtv).ToList()).ToList();
-
-    private static AttributeTypeAndValue FreshAtv(AttributeTypeAndValue src) => new()
+    private static Extension Ext(Asn1Oid oid, bool critical, byte[] extnValue) => new()
     {
-        Type = src.Type.Clone(),
-        Value = src.Value.Clone(),
+        ExtnID = oid.Clone(),
+        Critical = critical,
+        ExtnValue = extnValue,
     };
 
-    private static List<Extension> FreshExtensions(List<Extension> src) =>
-        src.Select(FreshExtension).ToList();
+    private static byte[] EncodeSki(byte[] keyId) =>
+        EncodeToBytes(w => w.WriteOctetString(Asn1Tag.OctetString, keyId));
 
-    private static Extension FreshExtension(Extension src) => new()
+    private static byte[] EncodeKeyUsage(KeyUsageFlags flags)
     {
-        ExtnID = src.ExtnID.Clone(),
-        Critical = src.Critical,
-        ExtnValue = src.ExtnValue.ToArray(),
-    };
+        var usage = new KitKeyUsage { Flags = flags };
+        return EncodeToBytes(usage.Encode);
+    }
 
-    private static Asn1Integer CloneInteger(Asn1Integer value) =>
-        Asn1Integer.CopyFrom(value.Span);
+    private static byte[] EncodeBasicConstraintsCa()
+    {
+        var bc = new KitBasicConstraints { CA = true };
+        return EncodeToBytes(bc.Encode);
+    }
 
-    private static Asn1BitString CloneBitString(Asn1BitString value) =>
-        Asn1BitString.CopyFrom(value.Span, value.UnusedBits);
+    private static byte[] EncodeAki(byte[] keyId)
+    {
+        var aki = new KitAuthorityKeyIdentifier { KeyIdentifier = keyId };
+        return EncodeToBytes(aki.Encode);
+    }
+
+    private static byte[] EncodeCrlNumber(int number) =>
+        EncodeToBytes(w => w.WriteInteger(Asn1Tag.Integer, number));
+
+    private static byte[] EncodeCrlReason(CRLReason reason) =>
+        EncodeToBytes(w => w.WriteEnumerated(Asn1Tag.Enumerated, new BigInteger((int)reason)));
+
+    private static byte[] EncodeToBytes(Action<Asn1Writer> encode)
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        encode(writer);
+        return writer.Encode();
+    }
+
+    private static X509Name BcName(string commonName) =>
+        new(
+            new List<DerObjectIdentifier> { X509Name.C, X509Name.O, X509Name.CN },
+            new List<string> { "US", "Test Certificates 2011", commonName });
+
+    private static BcAlgorithmIdentifier BcSha256WithRsa() =>
+        new(PkcsObjectIdentifiers.Sha256WithRsaEncryption, DerNull.Instance);
+
+    private static BcAlgorithmIdentifier BcRsaEncryption() =>
+        new(PkcsObjectIdentifiers.RsaEncryption, DerNull.Instance);
+
+    private static byte[] Filled(int length, byte seed)
+    {
+        var bytes = new byte[length];
+        for (var i = 0; i < length; i++)
+        {
+            bytes[i] = (byte)(seed + i);
+        }
+
+        return bytes;
+    }
 }

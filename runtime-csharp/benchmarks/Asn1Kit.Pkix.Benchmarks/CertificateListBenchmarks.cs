@@ -22,10 +22,10 @@ public class CertificateListBenchmarks
     public void Setup()
     {
         _der = FixtureLoader.ReadPkix("GoodCACRL.crl");
-        _asn1KitEncode = EncodeSamples.CertificateListFromFixture(_der);
-        _bouncyCastleEncode = EncodeSamples.BouncyCastleCertificateListFromFixture(_der);
+        _asn1KitEncode = EncodeSamples.CreateCertificateList();
+        _bouncyCastleEncode = EncodeSamples.CreateBouncyCastleCertificateList();
         _encodeWriter = new Asn1Writer(Asn1Encoding.Der);
-        _encodeWriter.EnsureCapacity(_der.Length);
+        _encodeWriter.EnsureCapacity(2048);
     }
 
     [Benchmark(Baseline = true)]
