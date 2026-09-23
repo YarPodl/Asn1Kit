@@ -519,6 +519,8 @@ END
         Assert.Contains("FromUnknown", source);
         Assert.DoesNotContain("ParametersKind", source);
         Assert.Contains("1.2.840.113549.1.1.11", source);
+        Assert.Contains("Decode(Asn1Reader reader, Asn1Oid definedByKey)", source);
+        Assert.DoesNotContain("Algorithm.ToString()", source);
 
         var assembly = CompileGenerated(source);
         var algType = assembly.GetType("OpenMod.AlgorithmIdentifier")!;

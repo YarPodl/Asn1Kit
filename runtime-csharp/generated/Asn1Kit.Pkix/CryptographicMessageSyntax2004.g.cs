@@ -36,7 +36,7 @@ public sealed class ContentInfo
         {
             var value = new ContentInfo();
             value.ContentType = inner.ReadOid(Asn1Tag.ObjectIdentifier);
-            value.Content = inner.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested => ContentInfo_Content.Decode(nested, value.ContentType.ToString()));
+            value.Content = inner.ReadSequence(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested => ContentInfo_Content.Decode(nested, value.ContentType));
             return value;
         });
     }
@@ -1882,126 +1882,131 @@ public sealed class ContentInfo_Content
         else throw new Asn1Exception("Open type has no alternative.");
     }
 
-    public static ContentInfo_Content Decode(Asn1Reader reader, string definedByKey) =>
+    private static readonly Asn1Oid Oid_1_2_840_113549_1_7_1 = Asn1Oid.Parse("1.2.840.113549.1.7.1");
+    private static readonly Asn1Oid Oid_1_2_840_113549_1_7_2 = Asn1Oid.Parse("1.2.840.113549.1.7.2");
+    private static readonly Asn1Oid Oid_1_2_840_113549_1_7_3 = Asn1Oid.Parse("1.2.840.113549.1.7.3");
+    private static readonly Asn1Oid Oid_1_2_840_113549_1_7_5 = Asn1Oid.Parse("1.2.840.113549.1.7.5");
+    private static readonly Asn1Oid Oid_1_2_840_113549_1_7_6 = Asn1Oid.Parse("1.2.840.113549.1.7.6");
+    private static readonly Asn1Oid Oid_1_2_840_113549_1_9_16_1_2 = Asn1Oid.Parse("1.2.840.113549.1.9.16.1.2");
+
+    public static ContentInfo_Content Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
         Decode(reader, definedByKey, expectedTag: null);
 
-    public static ContentInfo_Content Decode(Asn1Reader reader, string definedByKey, Asn1Tag expectedTag) =>
+    public static ContentInfo_Content Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>
         Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
 
-    private static ContentInfo_Content Decode(Asn1Reader reader, string definedByKey, Asn1Tag? expectedTag)
+    private static ContentInfo_Content Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
     {
-        switch (definedByKey)
+        if (definedByKey.Equals(Oid_1_2_840_113549_1_7_1))
         {
-            case "1.2.840.113549.1.7.1":
+            if (expectedTag is null)
             {
-                if (expectedTag is null)
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.OctetString))
                 {
-                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.OctetString))
-                    {
-                        return FromOctetString(reader.ReadOctetString(Asn1Tag.OctetString));
-                    }
+                    return FromOctetString(reader.ReadOctetString(Asn1Tag.OctetString));
                 }
-                else
-                {
-                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                    {
-                        return FromOctetString(reader.ReadOctetString(expectedTag.Value));
-                    }
-                }
-                return FromUnknown(reader.ReadAny());
             }
-            case "1.2.840.113549.1.7.2":
+            else
             {
-                if (expectedTag is null)
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
                 {
-                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                    {
-                        return FromSignedData(Asn1Kit.Cms.SignedData.Decode(reader, Asn1Tag.Sequence));
-                    }
+                    return FromOctetString(reader.ReadOctetString(expectedTag.Value));
                 }
-                else
-                {
-                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                    {
-                        return FromSignedData(Asn1Kit.Cms.SignedData.Decode(reader, expectedTag.Value));
-                    }
-                }
-                return FromUnknown(reader.ReadAny());
             }
-            case "1.2.840.113549.1.7.3":
+            return FromUnknown(reader.ReadAny());
+        }
+        else if (definedByKey.Equals(Oid_1_2_840_113549_1_7_2))
+        {
+            if (expectedTag is null)
             {
-                if (expectedTag is null)
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
                 {
-                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                    {
-                        return FromEnvelopedData(Asn1Kit.Cms.EnvelopedData.Decode(reader, Asn1Tag.Sequence));
-                    }
+                    return FromSignedData(Asn1Kit.Cms.SignedData.Decode(reader, Asn1Tag.Sequence));
                 }
-                else
-                {
-                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                    {
-                        return FromEnvelopedData(Asn1Kit.Cms.EnvelopedData.Decode(reader, expectedTag.Value));
-                    }
-                }
-                return FromUnknown(reader.ReadAny());
             }
-            case "1.2.840.113549.1.7.5":
+            else
             {
-                if (expectedTag is null)
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
                 {
-                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                    {
-                        return FromDigestedData(Asn1Kit.Cms.DigestedData.Decode(reader, Asn1Tag.Sequence));
-                    }
+                    return FromSignedData(Asn1Kit.Cms.SignedData.Decode(reader, expectedTag.Value));
                 }
-                else
-                {
-                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                    {
-                        return FromDigestedData(Asn1Kit.Cms.DigestedData.Decode(reader, expectedTag.Value));
-                    }
-                }
-                return FromUnknown(reader.ReadAny());
             }
-            case "1.2.840.113549.1.7.6":
+            return FromUnknown(reader.ReadAny());
+        }
+        else if (definedByKey.Equals(Oid_1_2_840_113549_1_7_3))
+        {
+            if (expectedTag is null)
             {
-                if (expectedTag is null)
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
                 {
-                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                    {
-                        return FromEncryptedData(Asn1Kit.Cms.EncryptedData.Decode(reader, Asn1Tag.Sequence));
-                    }
+                    return FromEnvelopedData(Asn1Kit.Cms.EnvelopedData.Decode(reader, Asn1Tag.Sequence));
                 }
-                else
-                {
-                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                    {
-                        return FromEncryptedData(Asn1Kit.Cms.EncryptedData.Decode(reader, expectedTag.Value));
-                    }
-                }
-                return FromUnknown(reader.ReadAny());
             }
-            case "1.2.840.113549.1.9.16.1.2":
+            else
             {
-                if (expectedTag is null)
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
                 {
-                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                    {
-                        return FromAuthenticatedData(Asn1Kit.Cms.AuthenticatedData.Decode(reader, Asn1Tag.Sequence));
-                    }
+                    return FromEnvelopedData(Asn1Kit.Cms.EnvelopedData.Decode(reader, expectedTag.Value));
                 }
-                else
-                {
-                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                    {
-                        return FromAuthenticatedData(Asn1Kit.Cms.AuthenticatedData.Decode(reader, expectedTag.Value));
-                    }
-                }
-                return FromUnknown(reader.ReadAny());
             }
-            default:
-                return FromUnknown(reader.ReadAny());
+            return FromUnknown(reader.ReadAny());
+        }
+        else if (definedByKey.Equals(Oid_1_2_840_113549_1_7_5))
+        {
+            if (expectedTag is null)
+            {
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
+                {
+                    return FromDigestedData(Asn1Kit.Cms.DigestedData.Decode(reader, Asn1Tag.Sequence));
+                }
+            }
+            else
+            {
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
+                {
+                    return FromDigestedData(Asn1Kit.Cms.DigestedData.Decode(reader, expectedTag.Value));
+                }
+            }
+            return FromUnknown(reader.ReadAny());
+        }
+        else if (definedByKey.Equals(Oid_1_2_840_113549_1_7_6))
+        {
+            if (expectedTag is null)
+            {
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
+                {
+                    return FromEncryptedData(Asn1Kit.Cms.EncryptedData.Decode(reader, Asn1Tag.Sequence));
+                }
+            }
+            else
+            {
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
+                {
+                    return FromEncryptedData(Asn1Kit.Cms.EncryptedData.Decode(reader, expectedTag.Value));
+                }
+            }
+            return FromUnknown(reader.ReadAny());
+        }
+        else if (definedByKey.Equals(Oid_1_2_840_113549_1_9_16_1_2))
+        {
+            if (expectedTag is null)
+            {
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
+                {
+                    return FromAuthenticatedData(Asn1Kit.Cms.AuthenticatedData.Decode(reader, Asn1Tag.Sequence));
+                }
+            }
+            else
+            {
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
+                {
+                    return FromAuthenticatedData(Asn1Kit.Cms.AuthenticatedData.Decode(reader, expectedTag.Value));
+                }
+            }
+            return FromUnknown(reader.ReadAny());
+        }
+        else {
+            return FromUnknown(reader.ReadAny());
         }
     }
 }

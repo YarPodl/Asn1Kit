@@ -149,10 +149,33 @@ internal static class Asn1TextCodec
             throw new Asn1Exception("Time value is empty.");
         }
 
+        Span<byte> buffer = stackalloc byte[text.Length];
+        for (var i = 0; i < text.Length; i++)
+        {
+            var c = text[i];
+            if (c > 0xFF)
+            {
+                throw new Asn1Exception("Time value contains a non-Latin-1 character.");
+            }
+
+            buffer[i] = (byte)c;
+        }
+
+        return ParseTime(buffer, form, encoding);
+    }
+
+    /// <summary>Parses UTCTime/GeneralizedTime contents (VisibleString octets) without allocating a string.</summary>
+    public static DateTimeOffset ParseTime(ReadOnlySpan<byte> contents, Asn1TimeForm form, Asn1Encoding encoding)
+    {
+        if (contents.IsEmpty)
+        {
+            throw new Asn1Exception("Time value is empty.");
+        }
+
         return form switch
         {
-            Asn1TimeForm.Utc => ParseUtc(text, encoding),
-            Asn1TimeForm.Generalized => ParseGeneralized(text, encoding),
+            Asn1TimeForm.Utc => ParseUtc(contents, encoding),
+            Asn1TimeForm.Generalized => ParseGeneralized(contents, encoding),
             _ => throw new Asn1Exception($"Unknown time form '{form}'.")
         };
     }
@@ -521,7 +544,7 @@ internal static class Asn1TextCodec
         return new DateTimeOffset(secondBase + roundedFraction, TimeSpan.Zero);
     }
 
-    private static DateTimeOffset ParseUtc(string text, Asn1Encoding encoding)
+    private static DateTimeOffset ParseUtc(ReadOnlySpan<byte> text, Asn1Encoding encoding)
     {
         // YYMMDDHHMM[SS][Z|+hhmm|-hhmm]
         if (text.Length < 10)
@@ -538,7 +561,7 @@ internal static class Asn1TextCodec
 
         var index = 10;
         int second;
-        if (index + 1 < text.Length && char.IsDigit(text[index]) && char.IsDigit(text[index + 1]))
+        if (index + 1 < text.Length && IsDigit(text[index]) && IsDigit(text[index + 1]))
         {
             second = Read2(text, index);
             index += 2;
@@ -557,7 +580,7 @@ internal static class Asn1TextCodec
         return CreateDateTime(year, month, day, hour, minute, second, 0, offset);
     }
 
-    private static DateTimeOffset ParseGeneralized(string text, Asn1Encoding encoding)
+    private static DateTimeOffset ParseGeneralized(ReadOnlySpan<byte> text, Asn1Encoding encoding)
     {
         // YYYYMMDDHHMM[SS][.f–fffffff][Z|+hhmm|-hhmm] — fraction length on input is 1..7 digits.
         if (text.Length < 12)
@@ -572,7 +595,7 @@ internal static class Asn1TextCodec
         var minute = Read2(text, 10);
         var index = 12;
         int second;
-        if (index + 1 < text.Length && char.IsDigit(text[index]) && char.IsDigit(text[index + 1]))
+        if (index + 1 < text.Length && IsDigit(text[index]) && IsDigit(text[index + 1]))
         {
             second = Read2(text, index);
             index += 2;
@@ -588,17 +611,17 @@ internal static class Asn1TextCodec
         }
 
         var fractionTicks = 0;
-        if (index < text.Length && (text[index] == '.' || text[index] == ','))
+        if (index < text.Length && (text[index] == (byte)'.' || text[index] == (byte)','))
         {
             var separator = text[index];
-            if (encoding == Asn1Encoding.Der && separator == ',')
+            if (encoding == Asn1Encoding.Der && separator == (byte)',')
             {
                 throw new Asn1Exception("DER GeneralizedTime must use '.' as the fraction separator.");
             }
 
             index++;
             var start = index;
-            while (index < text.Length && char.IsDigit(text[index]))
+            while (index < text.Length && IsDigit(text[index]))
             {
                 index++;
             }
@@ -609,22 +632,30 @@ internal static class Asn1TextCodec
                 throw new Asn1Exception("GeneralizedTime fraction must have 1 to 7 digits.");
             }
 
-            var frac = text[start..index];
-            fractionTicks = int.Parse(frac.PadRight(7, '0'), CultureInfo.InvariantCulture);
+            fractionTicks = 0;
+            for (var i = 0; i < digitCount; i++)
+            {
+                fractionTicks = (fractionTicks * 10) + (text[start + i] - '0');
+            }
+
+            for (var i = digitCount; i < 7; i++)
+            {
+                fractionTicks *= 10;
+            }
         }
 
         var offset = ParseZone(text, index, encoding, requireZ: encoding == Asn1Encoding.Der);
         return CreateDateTime(year, month, day, hour, minute, second, fractionTicks, offset);
     }
 
-    private static TimeSpan ParseZone(string text, int index, Asn1Encoding encoding, bool requireZ)
+    private static TimeSpan ParseZone(ReadOnlySpan<byte> text, int index, Asn1Encoding encoding, bool requireZ)
     {
         if (index >= text.Length)
         {
             throw new Asn1Exception("Time value is missing a time zone.");
         }
 
-        if (text[index] == 'Z')
+        if (text[index] == (byte)'Z')
         {
             if (index + 1 != text.Length)
             {
@@ -639,12 +670,12 @@ internal static class Asn1TextCodec
             throw new Asn1Exception("DER time values must end with 'Z'.");
         }
 
-        if (text[index] is not ('+' or '-'))
+        if (text[index] is not ((byte)'+' or (byte)'-'))
         {
             throw new Asn1Exception("Invalid time zone in time value.");
         }
 
-        var sign = text[index] == '+' ? 1 : -1;
+        var sign = text[index] == (byte)'+' ? 1 : -1;
         if (index + 5 != text.Length)
         {
             throw new Asn1Exception("Time zone offset must be +hhmm or -hhmm.");
@@ -680,9 +711,11 @@ internal static class Asn1TextCodec
         }
     }
 
-    private static int Read2(string text, int index)
+    private static bool IsDigit(byte b) => b is >= (byte)'0' and <= (byte)'9';
+
+    private static int Read2(ReadOnlySpan<byte> text, int index)
     {
-        if (index + 1 >= text.Length || !char.IsDigit(text[index]) || !char.IsDigit(text[index + 1]))
+        if (index + 1 >= text.Length || !IsDigit(text[index]) || !IsDigit(text[index + 1]))
         {
             throw new Asn1Exception("Expected two decimal digits in time value.");
         }
@@ -690,13 +723,13 @@ internal static class Asn1TextCodec
         return (text[index] - '0') * 10 + (text[index + 1] - '0');
     }
 
-    private static int Read4(string text, int index)
+    private static int Read4(ReadOnlySpan<byte> text, int index)
     {
         if (index + 3 >= text.Length
-            || !char.IsDigit(text[index])
-            || !char.IsDigit(text[index + 1])
-            || !char.IsDigit(text[index + 2])
-            || !char.IsDigit(text[index + 3]))
+            || !IsDigit(text[index])
+            || !IsDigit(text[index + 1])
+            || !IsDigit(text[index + 2])
+            || !IsDigit(text[index + 3]))
         {
             throw new Asn1Exception("Expected four decimal digits in time value.");
         }

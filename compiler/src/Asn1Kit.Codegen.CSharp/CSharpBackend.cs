@@ -1534,6 +1534,80 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine("    }");
         sb.AppendLine();
 
+        var useOidKeys = alts.SelectMany(a => a.Keys).All(LooksLikeOidBindingKey);
+        if (useOidKeys)
+        {
+            EmitOpenTypeOidDecode(sb, document, module, typeName, alts, soft);
+        }
+        else
+        {
+            EmitOpenTypeStringDecode(sb, document, module, typeName, alts, soft);
+        }
+
+        sb.AppendLine("}");
+    }
+
+    private void EmitOpenTypeOidDecode(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string typeName,
+        List<OpenTypeAlternative> alts,
+        bool soft)
+    {
+        var keyFields = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var key in alts.SelectMany(a => a.Keys).Distinct(StringComparer.Ordinal))
+        {
+            var field = OpenTypeOidFieldName(key, keyFields.Values);
+            keyFields[key] = field;
+            sb.AppendLine(
+                $"    private static readonly Asn1Oid {field} = Asn1Oid.Parse(\"{EscapeCSharpString(key)}\");");
+        }
+
+        if (keyFields.Count > 0)
+        {
+            sb.AppendLine();
+        }
+
+        sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader, Asn1Oid definedByKey) =>");
+        sb.AppendLine("        Decode(reader, definedByKey, expectedTag: null);");
+        sb.AppendLine();
+        sb.AppendLine(
+            $"    public static {typeName} Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>");
+        sb.AppendLine("        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);");
+        sb.AppendLine();
+        sb.AppendLine(
+            $"    private static {typeName} Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)");
+        sb.AppendLine("    {");
+
+        var firstAlt = true;
+        foreach (var alt in alts)
+        {
+            var cond = firstAlt ? "if" : "else if";
+            firstAlt = false;
+            var equals = string.Join(
+                " || ",
+                alt.Keys.Select(k => $"definedByKey.Equals({keyFields[k]})"));
+            sb.AppendLine($"        {cond} ({equals})");
+            sb.AppendLine("        {");
+            EmitOpenTypeAltBody(sb, document, module, typeName, alt, soft, definedByKeyExpr: "definedByKey");
+            sb.AppendLine("        }");
+        }
+
+        sb.AppendLine($"{(firstAlt ? "        " : "        else ")}{{");
+        sb.AppendLine("            return FromUnknown(reader.ReadAny());");
+        sb.AppendLine("        }");
+        sb.AppendLine("    }");
+    }
+
+    private void EmitOpenTypeStringDecode(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string typeName,
+        List<OpenTypeAlternative> alts,
+        bool soft)
+    {
         sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader, string definedByKey) =>");
         sb.AppendLine("        Decode(reader, definedByKey, expectedTag: null);");
         sb.AppendLine();
@@ -1554,44 +1628,7 @@ public sealed class CSharpBackend : ILanguageBackend
             }
 
             sb.AppendLine("            {");
-            sb.AppendLine("                if (expectedTag is null)");
-            sb.AppendLine("                {");
-            sb.AppendLine(
-                $"                    if (reader.TryPeekTag(out var peeked) && {PeekMatchExpr(document, module, alt.Type, "peeked")})");
-            sb.AppendLine("                    {");
-            sb.Append("                        return From" + alt.PropName + "(");
-            EmitDecodeExpr(sb, document, module, typeName, alt.PropName, alt.Type, "reader");
-            sb.AppendLine(");");
-            sb.AppendLine("                    }");
-            sb.AppendLine("                }");
-            sb.AppendLine("                else");
-            sb.AppendLine("                {");
-            sb.AppendLine(
-                "                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))");
-            sb.AppendLine("                    {");
-            sb.Append("                        return From" + alt.PropName + "(");
-            EmitDecodeExpr(
-                sb,
-                document,
-                module,
-                typeName,
-                alt.PropName,
-                alt.Type,
-                "reader",
-                forceTag: "expectedTag.Value");
-            sb.AppendLine(");");
-            sb.AppendLine("                    }");
-            sb.AppendLine("                }");
-            if (soft)
-            {
-                sb.AppendLine("                return FromUnknown(reader.ReadAny());");
-            }
-            else
-            {
-                sb.AppendLine(
-                    $"                throw new Asn1Exception(\"Open-type content for key '\" + definedByKey + \"' does not match bound type '{EscapeCSharpString(alt.PropName)}'.\");");
-            }
-
+            EmitOpenTypeAltBody(sb, document, module, typeName, alt, soft, definedByKeyExpr: "definedByKey");
             sb.AppendLine("            }");
         }
 
@@ -1599,7 +1636,80 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine("                return FromUnknown(reader.ReadAny());");
         sb.AppendLine("        }");
         sb.AppendLine("    }");
-        sb.AppendLine("}");
+    }
+
+    private void EmitOpenTypeAltBody(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string typeName,
+        OpenTypeAlternative alt,
+        bool soft,
+        string definedByKeyExpr)
+    {
+        sb.AppendLine("            if (expectedTag is null)");
+        sb.AppendLine("            {");
+        sb.AppendLine(
+            $"                if (reader.TryPeekTag(out var peeked) && {PeekMatchExpr(document, module, alt.Type, "peeked")})");
+        sb.AppendLine("                {");
+        sb.Append("                    return From" + alt.PropName + "(");
+        EmitDecodeExpr(sb, document, module, typeName, alt.PropName, alt.Type, "reader");
+        sb.AppendLine(");");
+        sb.AppendLine("                }");
+        sb.AppendLine("            }");
+        sb.AppendLine("            else");
+        sb.AppendLine("            {");
+        sb.AppendLine(
+            "                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))");
+        sb.AppendLine("                {");
+        sb.Append("                    return From" + alt.PropName + "(");
+        EmitDecodeExpr(
+            sb,
+            document,
+            module,
+            typeName,
+            alt.PropName,
+            alt.Type,
+            "reader",
+            forceTag: "expectedTag.Value");
+        sb.AppendLine(");");
+        sb.AppendLine("                }");
+        sb.AppendLine("            }");
+        if (soft)
+        {
+            sb.AppendLine("            return FromUnknown(reader.ReadAny());");
+        }
+        else
+        {
+            sb.AppendLine(
+                $"            throw new Asn1Exception(\"Open-type content for key '\" + {definedByKeyExpr} + \"' does not match bound type '{EscapeCSharpString(alt.PropName)}'.\");");
+        }
+    }
+
+    private static bool LooksLikeOidBindingKey(string key) =>
+        key.Contains('.', StringComparison.Ordinal);
+
+    private static string OpenTypeOidFieldName(string oidKey, IEnumerable<string> used)
+    {
+        var sb = new StringBuilder("Oid_");
+        foreach (var c in oidKey)
+        {
+            sb.Append(c == '.' ? '_' : c);
+        }
+
+        var name = sb.ToString();
+        if (!used.Contains(name, StringComparer.Ordinal))
+        {
+            return name;
+        }
+
+        var suffix = 2;
+        while (used.Contains(name + suffix, StringComparer.Ordinal))
+        {
+            suffix++;
+        }
+
+        return name + suffix;
     }
 
     private sealed class OpenTypeAlternative
@@ -1720,7 +1830,7 @@ public sealed class CSharpBackend : ILanguageBackend
         if (siblingType is OidType ||
             (siblingType is RefType oidRef && Find(document, module, oidRef)?.Type is OidType))
         {
-            return $"{access}.ToString()";
+            return access;
         }
 
         if (siblingType is IntegerType ||

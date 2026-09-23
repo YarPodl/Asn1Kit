@@ -187,6 +187,53 @@ public sealed class PrimitiveCodecTests
         Assert.Equal(ulong.MaxValue, reader.ReadUInt64(Asn1Tag.Integer));
     }
 
+    [Theory]
+    [InlineData(new byte[] { 0x00 }, 0)]
+    [InlineData(new byte[] { 0x7F }, 127)]
+    [InlineData(new byte[] { 0x00, 0x80 }, 128)]
+    [InlineData(new byte[] { 0x7F, 0xFF, 0xFF, 0xFF }, int.MaxValue)]
+    [InlineData(new byte[] { 0x80, 0x00, 0x00, 0x00 }, int.MinValue)]
+    [InlineData(new byte[] { 0xFF, 0x80, 0x00, 0x00, 0x00 }, int.MinValue)]
+    public void Integer_TryGetInt32_MatchesContents(byte[] contents, int expected)
+    {
+        var value = Asn1Integer.FromContents(contents);
+        Assert.True(value.TryGetInt32(out var number));
+        Assert.Equal(expected, number);
+    }
+
+    [Theory]
+    [InlineData(new byte[] { 0x00, 0x80, 0x00, 0x00, 0x00 })]
+    [InlineData(new byte[] { 0xFF, 0x7F, 0xFF, 0xFF, 0xFF })]
+    public void Integer_TryGetInt32_RejectsOutOfRangeContents(byte[] contents)
+    {
+        Assert.False(Asn1Integer.FromContents(contents).TryGetInt32(out _));
+    }
+
+    [Fact]
+    public void Integer_TryGetUInt32_AcceptsMaxValue()
+    {
+        var value = Asn1Integer.FromContents(new byte[] { 0x00, 0xFF, 0xFF, 0xFF, 0xFF });
+        Assert.True(value.TryGetUInt32(out var number));
+        Assert.Equal(uint.MaxValue, number);
+    }
+
+    [Fact]
+    public void Integer_TryGetInt32_DoesNotAllocate()
+    {
+        var value = Asn1Integer.FromContents(new byte[] { 0x7F, 0xFF, 0xFF, 0xFF });
+        // Warm up
+        Assert.True(value.TryGetInt32(out _));
+
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        for (var i = 0; i < 1000; i++)
+        {
+            Assert.True(value.TryGetInt32(out _));
+        }
+
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+        Assert.Equal(0, allocated);
+    }
+
     [Fact]
     public void WriteRaw_AppendsCompleteTlv()
     {

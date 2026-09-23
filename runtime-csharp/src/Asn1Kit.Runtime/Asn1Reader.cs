@@ -198,8 +198,15 @@ public sealed class Asn1Reader
 
         return ReadSequence(expected, inner =>
         {
-            // Heuristic capacity: remaining content octets / rough min TLV size (tag+length).
-            var capacity = Math.Max(4, inner.Source.Length / 4);
+            var remaining = inner._end - inner._offset;
+            if (remaining == 0)
+            {
+                return new List<T>();
+            }
+
+            // Prefer tight capacity for small OF (RDN SET OF often has one AVA).
+            // Cap growth so a large blob does not pre-size a huge unused array.
+            var capacity = remaining <= 32 ? 1 : Math.Min(32, Math.Max(2, remaining / 16));
             var items = new List<T>(capacity);
             while (!inner.Eof)
             {
@@ -473,8 +480,7 @@ public sealed class Asn1Reader
     public DateTimeOffset ReadTime(Asn1Tag expected, Asn1TimeForm form)
     {
         var bytes = ReadOctetLike(expected);
-        var text = Asn1TextCodec.DecodeString(bytes.Span, Asn1StringForm.Visible);
-        return Asn1TextCodec.ParseTime(text, form, Encoding);
+        return Asn1TextCodec.ParseTime(bytes.Span, form, Encoding);
     }
 
     public ReadOnlyMemory<byte> ReadValue(Asn1Tag expected, bool allowConstructed)

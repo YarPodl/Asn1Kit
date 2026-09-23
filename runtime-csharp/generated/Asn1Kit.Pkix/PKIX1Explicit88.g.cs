@@ -1452,7 +1452,7 @@ public sealed class AlgorithmIdentifier
             value.Algorithm = inner.ReadOid(Asn1Tag.ObjectIdentifier);
             if (!inner.Eof)
             {
-                value.Parameters = AlgorithmIdentifier_Parameters.Decode(inner, value.Algorithm.ToString());
+                value.Parameters = AlgorithmIdentifier_Parameters.Decode(inner, value.Algorithm);
             }
             return value;
         });
@@ -2490,40 +2490,40 @@ public sealed class AlgorithmIdentifier_Parameters
         else throw new Asn1Exception("Open type has no alternative.");
     }
 
-    public static AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, string definedByKey) =>
+    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_1 = Asn1Oid.Parse("1.2.840.113549.1.1.1");
+    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_5 = Asn1Oid.Parse("1.2.840.113549.1.1.5");
+    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_11 = Asn1Oid.Parse("1.2.840.113549.1.1.11");
+    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_12 = Asn1Oid.Parse("1.2.840.113549.1.1.12");
+    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_13 = Asn1Oid.Parse("1.2.840.113549.1.1.13");
+
+    public static AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
         Decode(reader, definedByKey, expectedTag: null);
 
-    public static AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, string definedByKey, Asn1Tag expectedTag) =>
+    public static AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>
         Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
 
-    private static AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, string definedByKey, Asn1Tag? expectedTag)
+    private static AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
     {
-        switch (definedByKey)
+        if (definedByKey.Equals(Oid_1_2_840_113549_1_1_1) || definedByKey.Equals(Oid_1_2_840_113549_1_1_5) || definedByKey.Equals(Oid_1_2_840_113549_1_1_11) || definedByKey.Equals(Oid_1_2_840_113549_1_1_12) || definedByKey.Equals(Oid_1_2_840_113549_1_1_13))
         {
-            case "1.2.840.113549.1.1.1":
-            case "1.2.840.113549.1.1.5":
-            case "1.2.840.113549.1.1.11":
-            case "1.2.840.113549.1.1.12":
-            case "1.2.840.113549.1.1.13":
+            if (expectedTag is null)
             {
-                if (expectedTag is null)
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Null))
                 {
-                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Null))
-                    {
-                        return FromNull(Asn1Null.Decode(reader, Asn1Tag.Null));
-                    }
+                    return FromNull(Asn1Null.Decode(reader, Asn1Tag.Null));
                 }
-                else
-                {
-                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                    {
-                        return FromNull(Asn1Null.Decode(reader, expectedTag.Value));
-                    }
-                }
-                return FromUnknown(reader.ReadAny());
             }
-            default:
-                return FromUnknown(reader.ReadAny());
+            else
+            {
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
+                {
+                    return FromNull(Asn1Null.Decode(reader, expectedTag.Value));
+                }
+            }
+            return FromUnknown(reader.ReadAny());
+        }
+        else {
+            return FromUnknown(reader.ReadAny());
         }
     }
 }

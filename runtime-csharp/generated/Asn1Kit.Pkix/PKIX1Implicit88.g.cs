@@ -264,7 +264,7 @@ public sealed class PolicyQualifierInfo
         {
             var value = new PolicyQualifierInfo();
             value.PolicyQualifierId = inner.ReadOid(Asn1Tag.ObjectIdentifier);
-            value.Qualifier = PolicyQualifierInfo_Qualifier.Decode(inner, value.PolicyQualifierId.ToString());
+            value.Qualifier = PolicyQualifierInfo_Qualifier.Decode(inner, value.PolicyQualifierId);
             return value;
         });
     }
@@ -1293,54 +1293,55 @@ public sealed class PolicyQualifierInfo_Qualifier
         else throw new Asn1Exception("Open type has no alternative.");
     }
 
-    public static PolicyQualifierInfo_Qualifier Decode(Asn1Reader reader, string definedByKey) =>
+    private static readonly Asn1Oid Oid_1_3_6_1_5_5_7_2_1 = Asn1Oid.Parse("1.3.6.1.5.5.7.2.1");
+    private static readonly Asn1Oid Oid_1_3_6_1_5_5_7_2_2 = Asn1Oid.Parse("1.3.6.1.5.5.7.2.2");
+
+    public static PolicyQualifierInfo_Qualifier Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
         Decode(reader, definedByKey, expectedTag: null);
 
-    public static PolicyQualifierInfo_Qualifier Decode(Asn1Reader reader, string definedByKey, Asn1Tag expectedTag) =>
+    public static PolicyQualifierInfo_Qualifier Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>
         Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
 
-    private static PolicyQualifierInfo_Qualifier Decode(Asn1Reader reader, string definedByKey, Asn1Tag? expectedTag)
+    private static PolicyQualifierInfo_Qualifier Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
     {
-        switch (definedByKey)
+        if (definedByKey.Equals(Oid_1_3_6_1_5_5_7_2_1))
         {
-            case "1.3.6.1.5.5.7.2.1":
+            if (expectedTag is null)
             {
-                if (expectedTag is null)
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Ia5String))
                 {
-                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Ia5String))
-                    {
-                        return FromCPSuri(reader.ReadString(Asn1Tag.Ia5String, Asn1StringForm.Ia5));
-                    }
+                    return FromCPSuri(reader.ReadString(Asn1Tag.Ia5String, Asn1StringForm.Ia5));
                 }
-                else
-                {
-                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                    {
-                        return FromCPSuri(reader.ReadString(expectedTag.Value, Asn1StringForm.Ia5));
-                    }
-                }
-                return FromUnknown(reader.ReadAny());
             }
-            case "1.3.6.1.5.5.7.2.2":
+            else
             {
-                if (expectedTag is null)
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
                 {
-                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                    {
-                        return FromUserNotice(Asn1Kit.Pkix.UserNotice.Decode(reader, Asn1Tag.Sequence));
-                    }
+                    return FromCPSuri(reader.ReadString(expectedTag.Value, Asn1StringForm.Ia5));
                 }
-                else
-                {
-                    if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                    {
-                        return FromUserNotice(Asn1Kit.Pkix.UserNotice.Decode(reader, expectedTag.Value));
-                    }
-                }
-                return FromUnknown(reader.ReadAny());
             }
-            default:
-                return FromUnknown(reader.ReadAny());
+            return FromUnknown(reader.ReadAny());
+        }
+        else if (definedByKey.Equals(Oid_1_3_6_1_5_5_7_2_2))
+        {
+            if (expectedTag is null)
+            {
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
+                {
+                    return FromUserNotice(Asn1Kit.Pkix.UserNotice.Decode(reader, Asn1Tag.Sequence));
+                }
+            }
+            else
+            {
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
+                {
+                    return FromUserNotice(Asn1Kit.Pkix.UserNotice.Decode(reader, expectedTag.Value));
+                }
+            }
+            return FromUnknown(reader.ReadAny());
+        }
+        else {
+            return FromUnknown(reader.ReadAny());
         }
     }
 }

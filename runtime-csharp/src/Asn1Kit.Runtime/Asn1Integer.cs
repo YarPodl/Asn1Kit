@@ -85,14 +85,15 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
 
     public bool TryGetInt32(out int value)
     {
-        var big = ToBigInteger();
-        if (big < int.MinValue || big > int.MaxValue)
+        if (!TryReadSigned(Span, maxBytes: 4, out var signed) ||
+            signed < int.MinValue ||
+            signed > int.MaxValue)
         {
             value = default;
             return false;
         }
 
-        value = (int)big;
+        value = (int)signed;
         return true;
     }
 
@@ -108,14 +109,13 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
 
     public bool TryGetUInt32(out uint value)
     {
-        var big = ToBigInteger();
-        if (big < 0 || big > uint.MaxValue)
+        if (!TryReadUnsigned(Span, maxBytes: 4, out var unsigned) || unsigned > uint.MaxValue)
         {
             value = default;
             return false;
         }
 
-        value = (uint)big;
+        value = (uint)unsigned;
         return true;
     }
 
@@ -131,14 +131,13 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
 
     public bool TryGetInt64(out long value)
     {
-        var big = ToBigInteger();
-        if (big < long.MinValue || big > long.MaxValue)
+        if (!TryReadSigned(Span, maxBytes: 8, out var signed))
         {
             value = default;
             return false;
         }
 
-        value = (long)big;
+        value = signed;
         return true;
     }
 
@@ -154,14 +153,13 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
 
     public bool TryGetUInt64(out ulong value)
     {
-        var big = ToBigInteger();
-        if (big < 0 || big > ulong.MaxValue)
+        if (!TryReadUnsigned(Span, maxBytes: 8, out var unsigned))
         {
             value = default;
             return false;
         }
 
-        value = (ulong)big;
+        value = unsigned;
         return true;
     }
 
@@ -206,4 +204,79 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
     public static bool operator ==(Asn1Integer left, Asn1Integer right) => left.Equals(right);
 
     public static bool operator !=(Asn1Integer left, Asn1Integer right) => !left.Equals(right);
+
+    /// <summary>
+    /// Reads signed big-endian INTEGER contents without allocating <see cref="BigInteger"/>.
+    /// Strips redundant leading sign octets; fails if the significant width exceeds <paramref name="maxBytes"/>.
+    /// </summary>
+    private static bool TryReadSigned(ReadOnlySpan<byte> contents, int maxBytes, out long value)
+    {
+        if (contents.Length == 0)
+        {
+            value = default;
+            return false;
+        }
+
+        var span = contents;
+        while (span.Length > 1 &&
+               ((span[0] == 0x00 && (span[1] & 0x80) == 0) ||
+                (span[0] == 0xFF && (span[1] & 0x80) != 0)))
+        {
+            span = span.Slice(1);
+        }
+
+        if (span.Length > maxBytes)
+        {
+            value = default;
+            return false;
+        }
+
+        long result = (sbyte)span[0];
+        for (var i = 1; i < span.Length; i++)
+        {
+            result = (result << 8) | span[i];
+        }
+
+        value = result;
+        return true;
+    }
+
+    /// <summary>
+    /// Reads non-negative INTEGER contents as unsigned without allocating <see cref="BigInteger"/>.
+    /// </summary>
+    private static bool TryReadUnsigned(ReadOnlySpan<byte> contents, int maxBytes, out ulong value)
+    {
+        if (contents.Length == 0 || (contents[0] & 0x80) != 0)
+        {
+            value = default;
+            return false;
+        }
+
+        var span = contents;
+        while (span.Length > 1 && span[0] == 0x00 && (span[1] & 0x80) == 0)
+        {
+            span = span.Slice(1);
+        }
+
+        // Leading 0x00 required so a high-bit magnitude stays non-negative.
+        if (span.Length > 1 && span[0] == 0x00)
+        {
+            span = span.Slice(1);
+        }
+
+        if (span.Length > maxBytes)
+        {
+            value = default;
+            return false;
+        }
+
+        ulong result = 0;
+        for (var i = 0; i < span.Length; i++)
+        {
+            result = (result << 8) | span[i];
+        }
+
+        value = result;
+        return true;
+    }
 }

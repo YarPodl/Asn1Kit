@@ -29,6 +29,12 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *Cms*
 ```
 
+Только Asn1Kit Cert Decode:
+
+```powershell
+dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *CertificateBenchmarks.Asn1Kit_Decode*
+```
+
 | Library | Certificate | CRL | CMS |
 | --- | --- | --- | --- |
 | Asn1Kit Bench / Eager | Decode + Encode (hand-built) | Decode + Encode (hand-built) | Lazy / Materialize / Eager |
@@ -38,6 +44,17 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 **Encode:** Cert/CRL объект собирается в `GlobalSetup` как hand-built граф (масштаб PKITS Trust Anchor / GoodCACRL; без Decode). В `[Benchmark]` только structural encode — без `WriteRaw` retained TLV. CMS Lazy Encode по-прежнему идёт от decoded tree — это shell-сценарий с `WriteRaw` cert.
 
 Полный typed `Certificate.Decode` **не обязан** быть быстрее `X509Certificate2` (BCL не строит ASN-граф). Цель typed path — сравняться с BouncyCastle; Lazy/retainEncoded — peer BCL shell.
+
+## Certificate Decode snapshot (Asn1Kit vs self)
+
+Release, `*CertificateBenchmarks.Asn1Kit_Decode*`, фикстура `TrustAnchorRootCertificate.crt` (Bench + retainEncoded).
+
+| Stage | Mean | Allocated |
+| --- | ---: | ---: |
+| Baseline (before decode opts) | 4.246 µs | 6.16 KB |
+| After Int32/Time + OID open-type + OF capacity | 3.436 µs | 2.84 KB |
+
+≈19% быстрее Mean, ≈54% меньше Allocated.
 
 ## CMS snapshot (local, after lazy Bench + writer buffer)
 

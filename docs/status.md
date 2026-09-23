@@ -70,7 +70,7 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 5. Пул массивов (constructed BER concat, DER SET OF sort)
 6. Второй oracle — BouncyCastle (не gate `dotnet test`)
 7. Модуль **DVCS** (CMS уже: [cms-2004.asn](../compiler/fixtures/asn1/cms-2004.asn) → `Asn1Kit.Cms`; codec-кейсы — [pkix-test-backlog.md](pkix-test-backlog.md))
-8. Follow-up zero-copy: `List<T>` → массивы в `ReadSequenceOf` / `Array.Empty`
+8. Follow-up zero-copy: `List<T>` → массивы / `Array.Empty` в `ReadSequenceOf` (capacity heuristic уже ужесточена)
 
 ### Крупные
 

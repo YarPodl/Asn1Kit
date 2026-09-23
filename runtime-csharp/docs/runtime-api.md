@@ -55,7 +55,10 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 
 - `definiteOnly` в private `WriteTlv` игнорируется; indefinite на записи не эмитится.
 - `WriteSequence` / `WriteSet` / `WriteSetOf` / `WriteExplicit` пишут nested contents в тот же буфер writer’а (callback получает outer `Asn1Writer`); length — резерв + patch/compact. Внутренний буфер — `byte[]` (не `MemoryStream`); `Reset()` обнуляет длину без освобождения capacity.
-- `ReadSequenceOf` / `ReadSetOf` создают `List<T>` с эвристической capacity по длине contents.
+- `ReadSequenceOf` / `ReadSetOf` создают `List<T>` с эвристической capacity: пустой OF → 0; мелкий contents (≤32) → 1; иначе `min(32, remaining/16)`.
+- `ReadInt32` / `TryGetInt32` (и UInt32/Int64/UInt64) разбирают short contents без `BigInteger`.
+- `ReadTime` парсит UTCTime/GeneralizedTime из contents octets без промежуточной `string` (`Asn1TextCodec.ParseTime(span)`).
+- Open-type DEFINED BY OID: codegen передаёт `Asn1Oid` и сравнивает со статическими константами (без `Oid.ToString()` на hot path).
 - `TryReadOctetString` / `TryReadValue` при нехватке destination возвращают `false`, но TLV уже потреблён.
 
 ## Soft-read и строгие опции
