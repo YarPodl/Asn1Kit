@@ -119,8 +119,11 @@ public sealed class Asn1Reader
         var start = _offset;
         _ = ReadTlv();
         var encoded = _data.AsMemory(start, _offset - start);
-        var value = WithContents(encoded, decode);
-        return Asn1Retained<T>.Wrap(encoded, value);
+        using (PushContentsWindow(encoded))
+        {
+            var value = decode(this);
+            return Asn1Retained<T>.Wrap(encoded, value);
+        }
     }
 
     /// <summary>
@@ -146,32 +149,6 @@ public sealed class Asn1Reader
         _start = savedStart;
         _offset = savedOffset;
         _end = savedEnd;
-    }
-
-    private T WithContents<T>(ReadOnlyMemory<byte> contents, Func<Asn1Reader, T> read)
-    {
-        if (!TryGetAliasedRange(contents, out var contentStart, out var contentEnd))
-        {
-            var nested = new Asn1Reader(contents, Encoding, Options);
-            return read(nested);
-        }
-
-        var savedStart = _start;
-        var savedOffset = _offset;
-        var savedEnd = _end;
-        _start = contentStart;
-        _offset = contentStart;
-        _end = contentEnd;
-        try
-        {
-            return read(this);
-        }
-        finally
-        {
-            _start = savedStart;
-            _offset = savedOffset;
-            _end = savedEnd;
-        }
     }
 
     private bool TryGetAliasedRange(ReadOnlyMemory<byte> contents, out int start, out int end)
@@ -446,13 +423,13 @@ public sealed class Asn1Reader
             return ParsePrimitiveBitString(contents, Options.RejectBitStringTrailingBits);
         }
 
-        return WithContents(contents, nested =>
+        using (PushContentsWindow(contents))
         {
             var segments = new List<Asn1BitString>();
             var unusedBits = 0;
-            while (!nested.Eof)
+            while (!Eof)
             {
-                var segment = nested.ReadBitString(Asn1Tag.BitString);
+                var segment = ReadBitString(Asn1Tag.BitString);
                 if (segments.Count > 0 && unusedBits != 0)
                 {
                     throw new Asn1Exception("Only the last BIT STRING segment may have unused bits.");
@@ -468,7 +445,7 @@ public sealed class Asn1Reader
             }
 
             return ConcatBitStringSegments(segments, unusedBits);
-        });
+        }
     }
 
     private Asn1BitString ConcatBitStringSegments(List<Asn1BitString> segments, int unusedBits)
@@ -744,23 +721,20 @@ public sealed class Asn1Reader
         Asn1Tag segmentTag,
         out int totalLength)
     {
-        var total = 0;
-        var segments = WithContents(constructedContents, nested =>
+        using (PushContentsWindow(constructedContents))
         {
             var list = new List<ReadOnlyMemory<byte>>();
             var length = 0;
-            while (!nested.Eof)
+            while (!Eof)
             {
-                var segment = nested.ReadOctetLike(segmentTag);
+                var segment = ReadOctetLike(segmentTag);
                 list.Add(segment);
                 length += segment.Length;
             }
 
-            total = length;
+            totalLength = length;
             return list;
-        });
-        totalLength = total;
-        return segments;
+        }
     }
 
     private static void CopySegments(List<ReadOnlyMemory<byte>> segments, Span<byte> destination)
