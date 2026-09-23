@@ -181,9 +181,9 @@ public sealed class Asn1Writer
 
     public void WriteObjectIdentifier(Asn1Tag tag, string oid)
     {
-        var maxBytes = Asn1ObjectIdentifier.GetEncodeContentsMaxLength(oid);
+        var maxBytes = Asn1Oid.GetEncodeContentsMaxLength(oid);
         Span<byte> scratch = maxBytes <= 128 ? stackalloc byte[maxBytes] : new byte[maxBytes];
-        var written = Asn1ObjectIdentifier.EncodeContents(oid, scratch);
+        var written = Asn1Oid.EncodeContents(oid, scratch);
         WritePrimitive(tag.AsPrimitive(), scratch.Slice(0, written));
     }
 

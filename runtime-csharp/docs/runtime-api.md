@@ -46,7 +46,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `Asn1Any.EncodedMemory` / `ContentsMemory` / `ToArray` | hot | view полного TLV / срез V / detach |
 | `Asn1Lazy<T>` / `ReadLazy` / `HasEncoded` / `Value` / `WriteTo` | hot | отложенный decode полного TLV (`options.lazy`); view до `.Value` |
 | `Asn1Retained<T>` / `ReadRetained` / `HasEncoded` / `Value` / `WriteTo` | hot | eager decode + retain TLV (`options.retainEncoded`); мутация `.Value` сбрасывает TLV |
-| `Asn1Oid` / `ReadOid` / `WriteObjectIdentifier(Asn1Oid)` | hot | DER contents OID; dotted string — `ToString` / warm `ReadObjectIdentifier` |
+| `Asn1Oid` / `Parse` / `ParseArcs` / `EncodeContents` / `ReadOid` / `WriteObjectIdentifier` | hot | единственный OID-codec (string↔arcs↔contents); dotted string — warm `Encode(string)` / `DecodeString` / `ReadObjectIdentifier` |
 | `Asn1BitString.Span` / `Memory` / `ToArray` | hot | view (из reader) / detach |
 | `Asn1Integer.Span` / `Memory` / `ToArray` | hot | view DER contents / detach |
 | `Asn1Primitives` wrappers (+ `Asn1OctetString.TryDecode`) | warm | делегируют |

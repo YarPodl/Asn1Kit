@@ -13,7 +13,7 @@
 | `enumerated` | да | C# `enum`; inline → `Owner_Field` | `PkixImplicit88Tests`, `RoundTripTests`, `PrimitiveCodecTests` |
 | `bitString` | да, `namedBits` | `Asn1BitString` или класс + `[Flags]` | `Primitive*`, `RuntimeTests`, `RoundTripTests` |
 | `octetString` | да | `ReadOnlyMemory<byte>` | `Primitive*`, `RoundTripTests`, `RuntimeTests` |
-| `oid` | да (dotted; base-128 в т.ч. `2.999…`) | `Asn1Oid` (dotted `string` — warm API) | `Primitive*`, `RuntimeTests` |
+| `oid` | да (dotted; base-128 в т.ч. `2.999…`) | `Asn1Oid` — единственный codec (string↔arcs↔contents); dotted `string` — warm (`Encode`/`DecodeString`) | `Primitive*`, `RuntimeTests` |
 | `string` (12 форм) | да | `string` + `Asn1StringForm` | `Primitive*` (все 12), `RuntimeTests`, `RoundTripTests` |
 | `time` (`utc` / `generalized`) | да; `fractionDigits` 0…7 | `DateTimeOffset` + `Asn1TimeForm` | `Primitive*`, `RuntimeTests`, `RoundTripTests` |
 | `any` (+ `definedBy`) | да; `bindings` через overlay | `Asn1Any` или `Owner_Field`; mismatch soft/strict | `OpenTypeBindingsTests`, `RuntimeTests`, `RoundTripTests` |

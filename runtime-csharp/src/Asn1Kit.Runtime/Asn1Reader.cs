@@ -393,47 +393,13 @@ public sealed class Asn1Reader
         var i = 0;
         while (i < span.Length)
         {
-            _ = ReadOidArc(span, ref i);
+            _ = Asn1Oid.ReadArc(span, ref i, Options.RejectOverlongOidBase128);
         }
 
         return Asn1Oid.FromContents(contents);
     }
 
     public string ReadObjectIdentifier(Asn1Tag expected) => ReadOid(expected).ToString();
-
-    private int ReadOidArc(ReadOnlySpan<byte> contents, ref int i)
-    {
-        var value = 0;
-        var first = true;
-        byte b;
-        do
-        {
-            if (i >= contents.Length)
-            {
-                throw new Asn1Exception("Truncated OID.");
-            }
-
-            b = contents[i++];
-            if (first)
-            {
-                if (Options.RejectOverlongOidBase128 && b == 0x80)
-                {
-                    throw new Asn1Exception("OID base-128 encoding is overlong.");
-                }
-
-                first = false;
-            }
-
-            if (value > (int.MaxValue >> 7))
-            {
-                throw new Asn1Exception("OID arc is too large.");
-            }
-
-            value = (value << 7) | (b & 0x7F);
-        } while ((b & 0x80) != 0);
-
-        return value;
-    }
 
     public Asn1BitString ReadBitString(Asn1Tag expected)
     {

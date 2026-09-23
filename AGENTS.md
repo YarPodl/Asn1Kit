@@ -84,7 +84,7 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 | [compiler/src/Asn1Kit.Compiler/IrBuilder.cs](compiler/src/Asn1Kit.Compiler/IrBuilder.cs) | AST → IR, резолв значений, `AUTOMATIC TAGS`, constraints |
 | [compiler/src/Asn1Kit.Codegen/ILanguageBackend.cs](compiler/src/Asn1Kit.Codegen/ILanguageBackend.cs) | Контракт бэкенда и `CodeGenerator` |
 | [compiler/src/Asn1Kit.Codegen.CSharp/CSharpBackend.cs](compiler/src/Asn1Kit.Codegen.CSharp/CSharpBackend.cs) | Генерация `.g.cs`, `EnsureBackendSupport` |
-| [runtime-csharp/src/Asn1Kit.Runtime/](runtime-csharp/src/Asn1Kit.Runtime/) | `Asn1Tag`, `Asn1Writer`, `Asn1Reader`, `Asn1Primitives` |
+| [runtime-csharp/src/Asn1Kit.Runtime/](runtime-csharp/src/Asn1Kit.Runtime/) | `Asn1Tag`, `Asn1Writer`, `Asn1Reader`, `Asn1Oid`, `Asn1Primitives` |
 | [runtime-csharp/generated/Asn1Kit.Pkix/](runtime-csharp/generated/Asn1Kit.Pkix/) | Golden C# PKIX + CMS; руками не править `*.g.cs` |
 | [runtime-csharp/generated/Asn1Kit.Pkix.Bench/](runtime-csharp/generated/Asn1Kit.Pkix.Bench/) | Bench C# (`Asn1Kit.Pkix.Bench` / `Asn1Kit.Cms.Bench`); из patch; руками не править `*.g.cs` |
 | [compiler/src/Asn1Kit.Cli/Program.cs](compiler/src/Asn1Kit.Cli/Program.cs) | Команды `compile` и `generate` |

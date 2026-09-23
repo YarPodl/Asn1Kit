@@ -12,8 +12,9 @@
 | [Asn1BitString.cs](../../src/Asn1Kit.Runtime/Asn1BitString.cs) | `Asn1BitString` (Memory wrap / `CopyFrom`), `UnusedBits`, indexer MSB-first, `FromBits` |
 | [Asn1Any.cs](../../src/Asn1Kit.Runtime/Asn1Any.cs) | `Asn1Any` (полный TLV `EncodedMemory` + `ContentsMemory`; `FromTagAndContents` / `CopyFrom`) |
 | [Asn1TextCodec.cs](../../src/Asn1Kit.Runtime/Asn1TextCodec.cs) | `internal`: encode/decode строк и времени (наборы символов, DER/BER-формы) |
+| [Asn1Oid.cs](../../src/Asn1Kit.Runtime/Asn1Oid.cs) | `Asn1Oid`: string↔arcs↔base-128 contents; `Encode`/`Decode`/`DecodeString`; hot для codegen |
 | [Asn1Integer.cs](../../src/Asn1Kit.Runtime/Asn1Integer.cs) | Value type: DER contents as Memory (view from reader); `Zero`/`default`=0; `FromContents` / `CopyFrom` / `FromBigInteger` / `GetInt32`…; hot для codegen `der` |
-| [Asn1Primitives.cs](../../src/Asn1Kit.Runtime/Asn1Primitives.cs) | `Asn1Boolean` / `Asn1Enumerated` / `Asn1OctetString` / … — warm обёртки; **C# backend эмитит `writer.Write*` / `reader.Read*` напрямую** |
+| [Asn1Primitives.cs](../../src/Asn1Kit.Runtime/Asn1Primitives.cs) | `Asn1Boolean` / `Asn1Enumerated` / `Asn1OctetString` / `Asn1String` / `Asn1Time` — warm обёртки; **C# backend эмитит `writer.Write*` / `reader.Read*` напрямую**; OID — в `Asn1Oid`, не здесь |
 
 Кодировка выбирается через `Asn1Encoding.Ber` / `Asn1Encoding.Der` в конструкторе writer'а и reader'а.
 
