@@ -1,6 +1,6 @@
 ---
 description: Контракт IR — аддитивность схемы v1, синхронность схемы, моделей, конвертеров, валидатора и документации
-globs: compiler/src/Asn1Kit.Ir/**/*.cs,schemas/**/*.json,compiler/fixtures/ir/**/*.json
+globs: compiler/src/Asn1Kit.Ir/**/*.cs,schemas/**/*.json,compiler/fixtures/ir/**/*.json,compiler/tests/Asn1Kit.Compiler.Tests/IrOptionsTests.cs,compiler/tests/Asn1Kit.Compiler.Tests/IrOptionsPatchTests.cs,compiler/tests/Asn1Kit.Compiler.Tests/PkixExplicit88Tests.cs,compiler/tests/Asn1Kit.Compiler.Tests/PkixImplicit88Tests.cs,compiler/tests/Asn1Kit.Compiler.Tests/Cms2004Tests.cs,docs/ir-schema.md,compiler/docs/playbooks/new-ir-kind.md
 alwaysApply: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 description: Правила работы с фикстурами ASN.1, IR и BER/DER — golden-артефакты, ручные фикстуры, регрессии
-globs: compiler/fixtures/**,runtime-csharp/fixtures/**
+globs: compiler/fixtures/**,runtime-csharp/fixtures/**,runtime-csharp/generated/**
 alwaysApply: false
 ---
 

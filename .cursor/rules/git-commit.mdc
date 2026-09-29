@@ -7,7 +7,7 @@ alwaysApply: true
 
 Оболочка — **PowerShell**. Ветка по умолчанию часто `main`. Коммит только по явной просьбе пользователя.
 
-1. Сначала параллельно: `git status --short`, `git diff` / `git diff --cached`, `git log -8 --oneline`, `git branch --show-current`. На этой машине для git сразу проси `required_permissions: ["all"]` (sandbox `workspace_readwrite` здесь не работает).
+1. Сначала параллельно: `git status --short`, `git diff` / `git diff --cached`, `git log -8 --oneline`, `git branch --show-current`. Если sandbox ограничивает доступ к `.git`, запроси необходимое повышение разрешений через механизм текущего агента сразу в первом соответствующем вызове.
 2. Отбери только файлы своей задачи; чужое не стейджи.
 
 ## PowerShell: синтаксис
@@ -29,6 +29,6 @@ git log -1 --oneline
 
 ## Коммит в `main` / `master`
 
-Если текущая ветка `main` или `master` и пользователь просит commit: в **первом** вызове Shell с commit сразу ставь `request_smart_mode_approval: true` и `smart_mode_block_reason` с текстом про commit в main (иначе Auto-review отклонит, и получится лишняя попытка).
+Если текущая ветка `main` или `master` и пользователь просит commit, в **первом** вызове Shell, выполняющем commit, сразу запроси требуемое текущей средой подтверждение с пояснением про commit в защищённую ветку.
 
 Не пушь, если не просили. Не `--amend`, если не выполнены правила amend из user rules.

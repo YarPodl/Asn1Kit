@@ -18,6 +18,20 @@ ASN.1 → JSON IR → генератор кода → runtime BER/DER. Слои 
 
 Локальные README каталогов: [compiler/README.md](compiler/README.md), [runtime-csharp/README.md](runtime-csharp/README.md), [runtime-cpp/README.md](runtime-cpp/README.md).
 
+## Предметные правила
+
+`AGENTS.md` задаёт глобальные инварианты и канонические команды. Файлы [`.cursor/rules/`](.cursor/rules/) дополняют его предметными деталями и обязательны также для Codex. Перед реализацией или ревью прочитай полностью все правила, соответствующие затрагиваемой области:
+
+- любые изменения кода — [`.cursor/rules/reliability-and-testing.mdc`](.cursor/rules/reliability-and-testing.mdc);
+- lexer, parser, AST или `IrBuilder` — [`.cursor/rules/compiler.mdc`](.cursor/rules/compiler.mdc);
+- IR, JSON Schema или IR-фикстуры — [`.cursor/rules/ir-schema.mdc`](.cursor/rules/ir-schema.mdc);
+- codegen или `*.g.cs` — [`.cursor/rules/generated-code.mdc`](.cursor/rules/generated-code.mdc);
+- runtime BER/DER — [`.cursor/rules/runtime.mdc`](.cursor/rules/runtime.mdc);
+- golden, ASN.1, IR или BER/DER-фикстуры — [`.cursor/rules/fixtures.mdc`](.cursor/rules/fixtures.mdc);
+- только при явно запрошенном commit — [`.cursor/rules/git-commit.mdc`](.cursor/rules/git-commit.mdc).
+
+Если задача пересекает несколько областей, прочитай все соответствующие правила. Frontmatter `globs` и `alwaysApply` предназначен для Cursor и не заменяет эту маршрутизацию. При противоречии с `.mdc` приоритет имеет `AGENTS.md`.
+
 ## Среда
 
 - Только .NET 6 SDK (локально 6.0.402), `net6.0`, `LangVersion 10`, `Nullable enable`.
