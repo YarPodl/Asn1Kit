@@ -51,10 +51,11 @@ public readonly struct Asn1Any : IEquatable<Asn1Any>
         return Wrap(tag, encoded, encoded.AsMemory(encoded.Length - contents.Length, contents.Length));
     }
 
-    /// <summary>Trusted wrap used by <see cref="Asn1Reader.ReadAny"/> (views may alias the reader buffer).</summary>
+    /// <summary>Trusted wrap used by <see cref="Asn1Reader.ReadAny()"/> (views may alias the reader buffer).</summary>
     internal static Asn1Any Wrap(Asn1Tag tag, ReadOnlyMemory<byte> encoded, ReadOnlyMemory<byte> contents) =>
         new(tag, encoded, contents);
 
+    /// <summary>Gets the <c>Tag</c> value.</summary>
     public Asn1Tag Tag { get; }
 
     /// <summary>Complete TLV as memory (may alias an <see cref="Asn1Reader"/> buffer).</summary>
@@ -72,18 +73,25 @@ public readonly struct Asn1Any : IEquatable<Asn1Any>
     /// <summary>Returns a copy that does not alias an external buffer.</summary>
     public Asn1Any Clone() => new(ToArray());
 
+    /// <summary>Encodes the ASN.1 value.</summary>
     public static void Encode(Asn1Writer writer, Asn1Any value) => writer.WriteAny(value);
 
+    /// <summary>Encodes the ASN.1 value.</summary>
     public static void Encode(Asn1Writer writer, Asn1Any value, Asn1Tag tag) => writer.WriteAny(tag, value);
 
+    /// <summary>Decodes the ASN.1 value.</summary>
     public static Asn1Any Decode(Asn1Reader reader) => reader.ReadAny();
 
+    /// <summary>Decodes the ASN.1 value.</summary>
     public static Asn1Any Decode(Asn1Reader reader, Asn1Tag tag) => reader.ReadAny(tag);
 
+    /// <summary>Provides the <c>Equals</c> operation.</summary>
     public bool Equals(Asn1Any other) => Span.SequenceEqual(other.Span);
 
+    /// <summary>Provides the <c>Equals</c> operation.</summary>
     public override bool Equals(object? obj) => obj is Asn1Any other && Equals(other);
 
+    /// <summary>Provides the <c>GetHashCode</c> operation.</summary>
     public override int GetHashCode()
     {
         var hash = new HashCode();
@@ -95,7 +103,9 @@ public readonly struct Asn1Any : IEquatable<Asn1Any>
         return hash.ToHashCode();
     }
 
+    /// <summary>Provides the <c>operator ==</c> operation.</summary>
     public static bool operator ==(Asn1Any left, Asn1Any right) => left.Equals(right);
 
+    /// <summary>Provides the <c>operator !=</c> operation.</summary>
     public static bool operator !=(Asn1Any left, Asn1Any right) => !left.Equals(right);
 }

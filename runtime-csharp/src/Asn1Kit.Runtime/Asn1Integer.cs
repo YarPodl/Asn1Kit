@@ -22,6 +22,7 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
     /// <summary>Integer 0; same as <c>default</c> / <see cref="FromInt32"/>(0).</summary>
     public static Asn1Integer Zero => default;
 
+    /// <summary>Gets the <c>Span</c> value.</summary>
     public ReadOnlySpan<byte> Span => CanonicalMemory.Span;
 
     /// <summary>DER contents as memory (may alias an <see cref="Asn1Reader"/> buffer).</summary>
@@ -58,16 +59,21 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
         return new Asn1Integer(contents.ToArray());
     }
 
+    /// <summary>Creates a value using the supplied input.</summary>
     public static Asn1Integer FromBigInteger(BigInteger value) =>
         value.IsZero ? Zero : new(Asn1Writer.EncodeInteger(value));
 
+    /// <summary>Creates a value using the supplied input.</summary>
     public static Asn1Integer FromInt32(int value) =>
         value == 0 ? Zero : FromBigInteger(value);
 
+    /// <summary>Creates a value using the supplied input.</summary>
     public static Asn1Integer FromUInt32(uint value) => FromBigInteger(value);
 
+    /// <summary>Creates a value using the supplied input.</summary>
     public static Asn1Integer FromInt64(long value) => FromBigInteger(value);
 
+    /// <summary>Creates a value using the supplied input.</summary>
     public static Asn1Integer FromUInt64(ulong value) => FromBigInteger(value);
 
     /// <summary>Interprets DER INTEGER/ENUMERATED contents as a signed big-endian integer.</summary>
@@ -102,8 +108,10 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
         return true;
     }
 
+    /// <summary>Provides the <c>ToBigInteger</c> operation.</summary>
     public BigInteger ToBigInteger() => ToBigInteger(Span);
 
+    /// <summary>Attempts to get int32.</summary>
     public bool TryGetInt32(out int value)
     {
         if (!TryReadSigned(Span, maxBytes: 4, out var signed) ||
@@ -118,6 +126,7 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
         return true;
     }
 
+    /// <summary>Provides the <c>GetInt32</c> operation.</summary>
     public int GetInt32()
     {
         if (!TryGetInt32(out var value))
@@ -128,6 +137,7 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
         return value;
     }
 
+    /// <summary>Attempts to get uint32.</summary>
     public bool TryGetUInt32(out uint value)
     {
         if (!TryReadUnsigned(Span, maxBytes: 4, out var unsigned) || unsigned > uint.MaxValue)
@@ -140,6 +150,7 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
         return true;
     }
 
+    /// <summary>Provides the <c>GetUInt32</c> operation.</summary>
     public uint GetUInt32()
     {
         if (!TryGetUInt32(out var value))
@@ -150,6 +161,7 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
         return value;
     }
 
+    /// <summary>Attempts to get int64.</summary>
     public bool TryGetInt64(out long value)
     {
         if (!TryReadSigned(Span, maxBytes: 8, out var signed))
@@ -162,6 +174,7 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
         return true;
     }
 
+    /// <summary>Provides the <c>GetInt64</c> operation.</summary>
     public long GetInt64()
     {
         if (!TryGetInt64(out var value))
@@ -172,6 +185,7 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
         return value;
     }
 
+    /// <summary>Attempts to get uint64.</summary>
     public bool TryGetUInt64(out ulong value)
     {
         if (!TryReadUnsigned(Span, maxBytes: 8, out var unsigned))
@@ -184,6 +198,7 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
         return true;
     }
 
+    /// <summary>Provides the <c>GetUInt64</c> operation.</summary>
     public ulong GetUInt64()
     {
         if (!TryGetUInt64(out var value))
@@ -194,12 +209,15 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
         return value;
     }
 
+    /// <summary>Encodes the ASN.1 value.</summary>
     public static void Encode(Asn1Writer writer, Asn1Integer value, Asn1Tag? tag = null) =>
         writer.WriteInteger(tag ?? Asn1Tag.Integer, value);
 
+    /// <summary>Encodes the ASN.1 value.</summary>
     public static void Encode(Asn1Writer writer, BigInteger value, Asn1Tag? tag = null) =>
         writer.WriteInteger(tag ?? Asn1Tag.Integer, value);
 
+    /// <summary>Decodes the ASN.1 value.</summary>
     public static Asn1Integer Decode(Asn1Reader reader, Asn1Tag? tag = null) =>
         reader.ReadIntegerValue(tag ?? Asn1Tag.Integer);
 
@@ -207,10 +225,13 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
     public static BigInteger DecodeBigInteger(Asn1Reader reader, Asn1Tag? tag = null) =>
         reader.ReadInteger(tag ?? Asn1Tag.Integer);
 
+    /// <summary>Provides the <c>Equals</c> operation.</summary>
     public bool Equals(Asn1Integer other) => Span.SequenceEqual(other.Span);
 
+    /// <summary>Provides the <c>Equals</c> operation.</summary>
     public override bool Equals(object? obj) => obj is Asn1Integer other && Equals(other);
 
+    /// <summary>Provides the <c>GetHashCode</c> operation.</summary>
     public override int GetHashCode()
     {
         var hash = new HashCode();
@@ -222,8 +243,10 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
         return hash.ToHashCode();
     }
 
+    /// <summary>Provides the <c>operator ==</c> operation.</summary>
     public static bool operator ==(Asn1Integer left, Asn1Integer right) => left.Equals(right);
 
+    /// <summary>Provides the <c>operator !=</c> operation.</summary>
     public static bool operator !=(Asn1Integer left, Asn1Integer right) => !left.Equals(right);
 
     /// <summary>

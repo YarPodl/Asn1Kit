@@ -39,6 +39,7 @@ public readonly struct Asn1Oid : IEquatable<Asn1Oid>
     /// <summary>Parses a dotted OID string into owned DER contents.</summary>
     public static Asn1Oid Parse(string oid) => new(EncodeContents(oid));
 
+    /// <summary>Creates a value using the supplied input.</summary>
     public static int[] ParseArcs(string oid)
     {
         var span = NormalizeOid(oid);
@@ -58,6 +59,7 @@ public readonly struct Asn1Oid : IEquatable<Asn1Oid>
         return arcs;
     }
 
+    /// <summary>Encodes the ASN.1 value.</summary>
     public static byte[] EncodeContents(string oid)
     {
         var maxBytes = GetEncodeContentsMaxLength(oid);
@@ -135,25 +137,32 @@ public readonly struct Asn1Oid : IEquatable<Asn1Oid>
     /// <summary>Returns a copy that does not alias an external buffer.</summary>
     public Asn1Oid Clone() => new(_contents.ToArray());
 
+    /// <summary>Encodes the ASN.1 value.</summary>
     public static void Encode(Asn1Writer writer, Asn1Oid value, Asn1Tag? tag = null) =>
         writer.WriteObjectIdentifier(tag ?? Asn1Tag.ObjectIdentifier, value);
 
+    /// <summary>Encodes the ASN.1 value.</summary>
     public static void Encode(Asn1Writer writer, string oid, Asn1Tag? tag = null) =>
         writer.WriteObjectIdentifier(tag ?? Asn1Tag.ObjectIdentifier, oid);
 
+    /// <summary>Decodes the ASN.1 value.</summary>
     public static Asn1Oid Decode(Asn1Reader reader, Asn1Tag? tag = null) =>
         reader.ReadOid(tag ?? Asn1Tag.ObjectIdentifier);
 
+    /// <summary>Decodes the ASN.1 value.</summary>
     public static string DecodeString(Asn1Reader reader, Asn1Tag? tag = null) =>
         reader.ReadObjectIdentifier(tag ?? Asn1Tag.ObjectIdentifier);
 
     /// <summary>Formats the dotted decimal string (allocates).</summary>
     public override string ToString() => FormatDotted(_contents.Span);
 
+    /// <summary>Provides the <c>Equals</c> operation.</summary>
     public bool Equals(Asn1Oid other) => Span.SequenceEqual(other.Span);
 
+    /// <summary>Provides the <c>Equals</c> operation.</summary>
     public override bool Equals(object? obj) => obj is Asn1Oid other && Equals(other);
 
+    /// <summary>Provides the <c>GetHashCode</c> operation.</summary>
     public override int GetHashCode()
     {
         var hash = new HashCode();
@@ -165,8 +174,10 @@ public readonly struct Asn1Oid : IEquatable<Asn1Oid>
         return hash.ToHashCode();
     }
 
+    /// <summary>Provides the <c>operator ==</c> operation.</summary>
     public static bool operator ==(Asn1Oid left, Asn1Oid right) => left.Equals(right);
 
+    /// <summary>Provides the <c>operator !=</c> operation.</summary>
     public static bool operator !=(Asn1Oid left, Asn1Oid right) => !left.Equals(right);
 
     internal static string FormatDotted(ReadOnlySpan<byte> contents)

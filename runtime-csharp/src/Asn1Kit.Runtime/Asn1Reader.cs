@@ -10,11 +10,13 @@ public sealed class Asn1Reader
 {
     private Asn1DecodeCursor _cursor;
 
+    /// <summary>Initializes a new instance of <c>Asn1Reader</c>.</summary>
     public Asn1Reader(byte[] data, Asn1Encoding encoding = Asn1Encoding.Ber, Asn1ReaderOptions? options = null)
         : this(data, 0, data is null ? 0 : data.Length, encoding, options)
     {
     }
 
+    /// <summary>Initializes a new instance of <c>Asn1Reader</c>.</summary>
     public Asn1Reader(
         byte[] data,
         int offset,
@@ -42,6 +44,7 @@ public sealed class Asn1Reader
         _cursor = new Asn1DecodeCursor(data.AsMemory(offset, length), encoding, actualOptions);
     }
 
+    /// <summary>Initializes a new instance of <c>Asn1Reader</c>.</summary>
     public Asn1Reader(ReadOnlyMemory<byte> data, Asn1Encoding encoding = Asn1Encoding.Ber, Asn1ReaderOptions? options = null)
     {
         ValidateEncoding(encoding);
@@ -49,12 +52,16 @@ public sealed class Asn1Reader
         _cursor = new Asn1DecodeCursor(data, encoding, actualOptions);
     }
 
+    /// <summary>Gets the <c>Encoding</c> value.</summary>
     public Asn1Encoding Encoding => _cursor.Encoding;
 
+    /// <summary>Gets the <c>Options</c> value.</summary>
     public Asn1ReaderOptions Options => _cursor.Options;
 
+    /// <summary>Gets the <c>Eof</c> value.</summary>
     public bool Eof => _cursor.Eof;
 
+    /// <summary>Gets the <c>Remaining</c> value.</summary>
     public int Remaining => _cursor.Remaining;
 
     /// <summary>
@@ -90,6 +97,7 @@ public sealed class Asn1Reader
         }
     }
 
+    /// <summary>Reads a SEQUENCE OF value by decoding each element with <paramref name="decodeItem"/>.</summary>
     public T[] ReadSequenceOf<T>(Asn1Tag expected, Func<Asn1Reader, T> decodeItem)
     {
         if (decodeItem is null)
@@ -137,12 +145,15 @@ public sealed class Asn1Reader
         }
     }
 
+    /// <summary>Reads a SET OF value by decoding each element with <paramref name="decodeItem"/>.</summary>
     public T[] ReadSetOf<T>(Asn1Tag expected, Func<Asn1Reader, T> decodeItem) =>
         ReadSequenceOf(expected, decodeItem);
 
+    /// <summary>Reads boolean from the current ASN.1 input.</summary>
     public bool ReadBoolean(Asn1Tag expected) =>
         Asn1Boolean.DecodeContents(ReadPrimitiveContents(expected).Span, Encoding);
 
+    /// <summary>Reads integer from the current ASN.1 input.</summary>
     public BigInteger ReadInteger(Asn1Tag expected) => ReadSignedIntegerContents(expected);
 
     /// <summary>Reads INTEGER contents without copying.</summary>
@@ -153,6 +164,7 @@ public sealed class Asn1Reader
         return Asn1Integer.FromContents(contents);
     }
 
+    /// <summary>Reads int32 from the current ASN.1 input.</summary>
     public int ReadInt32(Asn1Tag expected)
     {
         var value = ReadIntegerValue(expected);
@@ -164,6 +176,7 @@ public sealed class Asn1Reader
         return number;
     }
 
+    /// <summary>Reads uint32 from the current ASN.1 input.</summary>
     public uint ReadUInt32(Asn1Tag expected)
     {
         var value = ReadIntegerValue(expected);
@@ -175,6 +188,7 @@ public sealed class Asn1Reader
         return number;
     }
 
+    /// <summary>Reads int64 from the current ASN.1 input.</summary>
     public long ReadInt64(Asn1Tag expected)
     {
         var value = ReadIntegerValue(expected);
@@ -186,6 +200,7 @@ public sealed class Asn1Reader
         return number;
     }
 
+    /// <summary>Reads uint64 from the current ASN.1 input.</summary>
     public ulong ReadUInt64(Asn1Tag expected)
     {
         var value = ReadIntegerValue(expected);
@@ -197,8 +212,10 @@ public sealed class Asn1Reader
         return number;
     }
 
+    /// <summary>Reads enumerated from the current ASN.1 input.</summary>
     public BigInteger ReadEnumerated(Asn1Tag expected) => ReadSignedIntegerContents(expected);
 
+    /// <summary>Reads octet string from the current ASN.1 input.</summary>
     public ReadOnlyMemory<byte> ReadOctetString(Asn1Tag expected) =>
         Asn1ConstructedDecoder.ReadOctetLike(ref _cursor, expected);
 
@@ -221,6 +238,7 @@ public sealed class Asn1Reader
         return true;
     }
 
+    /// <summary>Reads null from the current ASN.1 input.</summary>
     public void ReadNull(Asn1Tag expected)
     {
         var contents = ReadPrimitiveContents(expected);
@@ -230,6 +248,7 @@ public sealed class Asn1Reader
         }
     }
 
+    /// <summary>Reads oid from the current ASN.1 input.</summary>
     public Asn1Oid ReadOid(Asn1Tag expected)
     {
         var contents = ReadPrimitiveContents(expected);
@@ -248,20 +267,24 @@ public sealed class Asn1Reader
         return Asn1Oid.FromContents(contents);
     }
 
+    /// <summary>Reads object identifier from the current ASN.1 input.</summary>
     public string ReadObjectIdentifier(Asn1Tag expected) => ReadOid(expected).ToString();
 
+    /// <summary>Reads bit string from the current ASN.1 input.</summary>
     public Asn1BitString ReadBitString(Asn1Tag expected) =>
         Asn1ConstructedDecoder.ReadBitString(
             ref _cursor,
             expected,
             Options.RejectBitStringTrailingBits);
 
+    /// <summary>Reads string from the current ASN.1 input.</summary>
     public string ReadString(Asn1Tag expected, Asn1StringForm form)
     {
         var bytes = Asn1ConstructedDecoder.ReadOctetLike(ref _cursor, expected);
         return Asn1TextCodec.DecodeString(bytes.Span, form);
     }
 
+    /// <summary>Reads time from the current ASN.1 input.</summary>
     public DateTimeOffset ReadTime(Asn1Tag expected, Asn1TimeForm form)
     {
         var bytes = Asn1ConstructedDecoder.ReadOctetLike(ref _cursor, expected);

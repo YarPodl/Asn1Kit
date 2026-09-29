@@ -60,21 +60,20 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 
 ### Открыто
 
-1. XML-документация для public API Runtime
-2. В сгенерированном коде — копия ASN.1-описания (и комментарии из модуля)
-3. Open-type follow-up:
-   - **3a.** остальные PKIX ANY (`AnotherName`, `ExtensionAttribute`, DN `AttributeValue`) через overlay
-   - **3b.** curated `.asn` параметров алгоритмов из RFC 5912 (без `CLASS`) + bindings
-   - **3c.** парсер/IR для `CLASS`, object sets, parameterized `AlgorithmIdentifier{…}`
-4. Опция сохранения исходного закодированного представления
-5. Пул массивов (constructed BER concat, DER SET OF sort)
-6. Второй oracle — BouncyCastle (не gate `dotnet test`)
-7. Модуль **DVCS** (CMS уже: [cms-2004.asn](../compiler/fixtures/asn1/cms-2004.asn) → `Asn1Kit.Cms`; codec-кейсы — [pkix-test-backlog.md](pkix-test-backlog.md))
-8. **`Asn1Writer` — симметричный split** (encode-ядро + contents helpers; Reader уже разделён на value-type `Asn1DecodeCursor`, constructed decoder и публичный фасад)
-9. **DER: reject constructed OCTET / BIT STRING / string** (или soft-флаг в `Asn1ReaderOptions`, default как сейчас accept; выровнять код с формулировкой § Runtime «BER: constructed…»). Фикстуры + runtime-api soft-inventory
-10. **Полное потребление nested scope**: generated SEQUENCE/EXPLICIT decode должен явно отвергать trailing TLV, не маскируя исходное исключение во время unwind
-11. **Лимиты hostile BER**: ограничить глубину рекурсивного indefinite scan и общий размер materialized constructed values
-12. **Default `Asn1Encoding` у Reader**: сейчас `Ber`, у Writer — `Der`. Рассмотреть default `Der` для Reader (breaking; аудит call sites и тестов BER)
+1. В сгенерированном коде — копия ASN.1-описания (и комментарии из модуля)
+2. Open-type follow-up:
+   - **2a.** остальные PKIX ANY (`AnotherName`, `ExtensionAttribute`, DN `AttributeValue`) через overlay
+   - **2b.** curated `.asn` параметров алгоритмов из RFC 5912 (без `CLASS`) + bindings
+   - **2c.** парсер/IR для `CLASS`, object sets, parameterized `AlgorithmIdentifier{…}`
+3. Опция сохранения исходного закодированного представления
+4. Пул массивов (constructed BER concat, DER SET OF sort)
+5. Второй oracle — BouncyCastle (не gate `dotnet test`)
+6. Модуль **DVCS** (CMS уже: [cms-2004.asn](../compiler/fixtures/asn1/cms-2004.asn) → `Asn1Kit.Cms`; codec-кейсы — [pkix-test-backlog.md](pkix-test-backlog.md))
+7. **`Asn1Writer` — симметричный split** (encode-ядро + contents helpers; Reader уже разделён на value-type `Asn1DecodeCursor`, constructed decoder и публичный фасад)
+8. **DER: reject constructed OCTET / BIT STRING / string** (или soft-флаг в `Asn1ReaderOptions`, default как сейчас accept; выровнять код с формулировкой § Runtime «BER: constructed…»). Фикстуры + runtime-api soft-inventory
+9. **Полное потребление nested scope**: generated SEQUENCE/EXPLICIT decode должен явно отвергать trailing TLV, не маскируя исходное исключение во время unwind
+10. **Лимиты hostile BER**: ограничить глубину рекурсивного indefinite scan и общий размер materialized constructed values
+11. **Default `Asn1Encoding` у Reader**: сейчас `Ber`, у Writer — `Der`. Рассмотреть default `Der` для Reader (breaking; аудит call sites и тестов BER)
 
 ### Крупные
 

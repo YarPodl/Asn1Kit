@@ -10,6 +10,7 @@ public delegate TReturn Asn1EncodeFunc<TReturn>(ReadOnlySpan<byte> encoded);
 /// <summary>Callback that consumes encoded octets without allocating a copy.</summary>
 public delegate void Asn1EncodeAction(ReadOnlySpan<byte> encoded);
 
+/// <summary>Represents asn1 writer.</summary>
 public sealed class Asn1Writer
 {
     /// <summary>Worst-case definite length encoding: long-form prefix + 4 length octets.</summary>
@@ -23,6 +24,7 @@ public sealed class Asn1Writer
     private byte[] _buffer;
     private int _length;
 
+    /// <summary>Initializes a new instance of <c>Asn1Writer</c>.</summary>
     public Asn1Writer(Asn1Encoding encoding = Asn1Encoding.Der)
     {
         Encoding = encoding;
@@ -30,8 +32,10 @@ public sealed class Asn1Writer
         _length = 0;
     }
 
+    /// <summary>Gets the <c>Encoding</c> value.</summary>
     public Asn1Encoding Encoding { get; }
 
+    /// <summary>Gets the <c>EncodedLength</c> value.</summary>
     public int EncodedLength => _length;
 
     /// <summary>Ensures the internal buffer can hold at least <paramref name="capacity"/> octets without further growth.</summary>
@@ -53,6 +57,7 @@ public sealed class Asn1Writer
     /// <summary>Clears written bytes so the writer can be reused without reallocating the backing store.</summary>
     public void Reset() => _length = 0;
 
+    /// <summary>Encodes the ASN.1 value.</summary>
     public byte[] Encode()
     {
         var result = new byte[_length];
@@ -82,6 +87,7 @@ public sealed class Asn1Writer
         encodeCallback(_buffer.AsSpan(0, _length));
     }
 
+    /// <summary>Attempts to encode.</summary>
     public bool TryEncode(Span<byte> destination, out int bytesWritten)
     {
         if (destination.Length < _length)
@@ -95,6 +101,7 @@ public sealed class Asn1Writer
         return true;
     }
 
+    /// <summary>Writes boolean to the ASN.1 output.</summary>
     public void WriteBoolean(Asn1Tag tag, bool value)
     {
         Span<byte> octet = stackalloc byte[1];
@@ -102,6 +109,7 @@ public sealed class Asn1Writer
         WritePrimitive(tag.AsPrimitive(), octet);
     }
 
+    /// <summary>Writes integer to the ASN.1 output.</summary>
     public void WriteInteger(Asn1Tag tag, BigInteger value)
     {
         var byteCount = value.GetByteCount(isUnsigned: false);
@@ -126,6 +134,7 @@ public sealed class Asn1Writer
         WritePrimitive(tag.AsPrimitive(), rented.AsSpan(0, writtenLarge));
     }
 
+    /// <summary>Writes integer to the ASN.1 output.</summary>
     public void WriteInteger(Asn1Tag tag, int value)
     {
         Span<byte> buffer = stackalloc byte[5];
@@ -133,6 +142,7 @@ public sealed class Asn1Writer
         WritePrimitive(tag.AsPrimitive(), buffer.Slice(0, written));
     }
 
+    /// <summary>Writes integer to the ASN.1 output.</summary>
     public void WriteInteger(Asn1Tag tag, uint value)
     {
         Span<byte> buffer = stackalloc byte[5];
@@ -140,6 +150,7 @@ public sealed class Asn1Writer
         WritePrimitive(tag.AsPrimitive(), buffer.Slice(0, written));
     }
 
+    /// <summary>Writes integer to the ASN.1 output.</summary>
     public void WriteInteger(Asn1Tag tag, long value)
     {
         Span<byte> buffer = stackalloc byte[9];
@@ -147,6 +158,7 @@ public sealed class Asn1Writer
         WritePrimitive(tag.AsPrimitive(), buffer.Slice(0, written));
     }
 
+    /// <summary>Writes integer to the ASN.1 output.</summary>
     public void WriteInteger(Asn1Tag tag, ulong value)
     {
         Span<byte> buffer = stackalloc byte[9];
@@ -169,16 +181,19 @@ public sealed class Asn1Writer
     /// <summary>ENUMERATED uses the same contents encoding as INTEGER (X.690).</summary>
     public void WriteEnumerated(Asn1Tag tag, BigInteger value) => WriteInteger(tag, value);
 
+    /// <summary>Writes octet string to the ASN.1 output.</summary>
     public void WriteOctetString(Asn1Tag tag, ReadOnlySpan<byte> value)
     {
         WritePrimitive(tag.AsPrimitive(), value);
     }
 
+    /// <summary>Writes null to the ASN.1 output.</summary>
     public void WriteNull(Asn1Tag tag)
     {
         WritePrimitive(tag.AsPrimitive(), ReadOnlySpan<byte>.Empty);
     }
 
+    /// <summary>Writes object identifier to the ASN.1 output.</summary>
     public void WriteObjectIdentifier(Asn1Tag tag, string oid)
     {
         var maxBytes = Asn1Oid.GetEncodeContentsMaxLength(oid);
@@ -187,9 +202,11 @@ public sealed class Asn1Writer
         WritePrimitive(tag.AsPrimitive(), scratch.Slice(0, written));
     }
 
+    /// <summary>Writes object identifier to the ASN.1 output.</summary>
     public void WriteObjectIdentifier(Asn1Tag tag, Asn1Oid oid) =>
         WritePrimitive(tag.AsPrimitive(), oid.Span);
 
+    /// <summary>Writes bit string to the ASN.1 output.</summary>
     public void WriteBitString(Asn1Tag tag, Asn1BitString value)
     {
         if (Encoding == Asn1Encoding.Der)
@@ -206,6 +223,7 @@ public sealed class Asn1Writer
         _length += payload.Length;
     }
 
+    /// <summary>Writes string to the ASN.1 output.</summary>
     public void WriteString(Asn1Tag tag, string value, Asn1StringForm form)
     {
         var byteCount = Asn1TextCodec.GetEncodedByteCount(value, form);
@@ -222,6 +240,7 @@ public sealed class Asn1Writer
         WritePrimitive(tag.AsPrimitive(), rented);
     }
 
+    /// <summary>Writes time to the ASN.1 output.</summary>
     public void WriteTime(Asn1Tag tag, DateTimeOffset value, Asn1TimeForm form, int fractionDigits = 3)
     {
         Span<byte> buffer = stackalloc byte[Asn1TextCodec.MaxEncodedTimeBytes];
@@ -229,6 +248,7 @@ public sealed class Asn1Writer
         WritePrimitive(tag.AsPrimitive(), buffer.Slice(0, written));
     }
 
+    /// <summary>Writes sequence to the ASN.1 output.</summary>
     public void WriteSequence(Asn1Tag tag, Action<Asn1Writer> content)
     {
         if (content is null)
@@ -264,6 +284,7 @@ public sealed class Asn1Writer
         });
     }
 
+    /// <summary>Writes set to the ASN.1 output.</summary>
     public void WriteSet(Asn1Tag tag, Action<Asn1Writer> content) => WriteSequence(tag, content);
 
     /// <summary>
@@ -305,11 +326,13 @@ public sealed class Asn1Writer
         });
     }
 
+    /// <summary>Writes explicit to the ASN.1 output.</summary>
     public void WriteExplicit(Asn1Tag outer, Action<Asn1Writer> inner)
     {
         WriteSequence(outer, inner);
     }
 
+    /// <summary>Writes raw to the ASN.1 output.</summary>
     public void WriteRaw(ReadOnlySpan<byte> tlv)
     {
         Ensure(tlv.Length);

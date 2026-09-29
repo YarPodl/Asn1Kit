@@ -33,13 +33,16 @@ public readonly struct Asn1BitString : IEquatable<Asn1BitString>
     public static Asn1BitString CopyFrom(ReadOnlySpan<byte> bytes, int unusedBits) =>
         new(bytes.Length == 0 ? ReadOnlyMemory<byte>.Empty : bytes.ToArray(), unusedBits);
 
+    /// <summary>Gets the <c>Span</c> value.</summary>
     public ReadOnlySpan<byte> Span => _bytes.Span;
 
     /// <summary>Content octets as memory (may alias an <see cref="Asn1Reader"/> buffer).</summary>
     public ReadOnlyMemory<byte> Memory => _bytes;
 
+    /// <summary>Gets the <c>UnusedBits</c> value.</summary>
     public int UnusedBits { get; }
 
+    /// <summary>Gets the <c>BitLength</c> value.</summary>
     public int BitLength => Span.Length == 0 ? 0 : Span.Length * 8 - UnusedBits;
 
     /// <summary>Detaches content octets into a new array.</summary>
@@ -48,6 +51,7 @@ public readonly struct Asn1BitString : IEquatable<Asn1BitString>
     /// <summary>Returns a copy that does not alias an external buffer.</summary>
     public Asn1BitString Clone() => new(ToArray(), UnusedBits);
 
+    /// <summary>Gets the <c>this[int]</c> value.</summary>
     public bool this[int index]
     {
         get
@@ -63,6 +67,7 @@ public readonly struct Asn1BitString : IEquatable<Asn1BitString>
         }
     }
 
+    /// <summary>Creates a value using the supplied input.</summary>
     public static Asn1BitString FromBits(ReadOnlySpan<bool> bits)
     {
         if (bits.Length == 0)
@@ -84,9 +89,11 @@ public readonly struct Asn1BitString : IEquatable<Asn1BitString>
         return new Asn1BitString(bytes, unused);
     }
 
+    /// <summary>Encodes the ASN.1 value.</summary>
     public static void Encode(Asn1Writer writer, Asn1BitString value, Asn1Tag? tag = null) =>
         writer.WriteBitString(tag ?? Asn1Tag.BitString, value);
 
+    /// <summary>Decodes the ASN.1 value.</summary>
     public static Asn1BitString Decode(Asn1Reader reader, Asn1Tag? tag = null) =>
         reader.ReadBitString(tag ?? Asn1Tag.BitString);
 
@@ -123,11 +130,14 @@ public readonly struct Asn1BitString : IEquatable<Asn1BitString>
         return new Asn1BitString(bytes, unusedBits);
     }
 
+    /// <summary>Provides the <c>Equals</c> operation.</summary>
     public bool Equals(Asn1BitString other) =>
         UnusedBits == other.UnusedBits && Span.SequenceEqual(other.Span);
 
+    /// <summary>Provides the <c>Equals</c> operation.</summary>
     public override bool Equals(object? obj) => obj is Asn1BitString other && Equals(other);
 
+    /// <summary>Provides the <c>GetHashCode</c> operation.</summary>
     public override int GetHashCode()
     {
         var hash = new HashCode();
@@ -140,7 +150,9 @@ public readonly struct Asn1BitString : IEquatable<Asn1BitString>
         return hash.ToHashCode();
     }
 
+    /// <summary>Provides the <c>operator ==</c> operation.</summary>
     public static bool operator ==(Asn1BitString left, Asn1BitString right) => left.Equals(right);
 
+    /// <summary>Provides the <c>operator !=</c> operation.</summary>
     public static bool operator !=(Asn1BitString left, Asn1BitString right) => !left.Equals(right);
 }

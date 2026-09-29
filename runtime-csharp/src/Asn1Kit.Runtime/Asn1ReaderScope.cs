@@ -28,6 +28,7 @@ public ref struct Asn1ReaderScope
         Asn1ReaderScopeToken expectedScopeToken) =>
         new(reader, savedCursor, expectedScopeToken);
 
+    /// <summary>Provides the <c>Dispose</c> operation.</summary>
     public void Dispose()
     {
         if (!_active)
