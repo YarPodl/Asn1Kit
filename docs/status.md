@@ -61,19 +61,17 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 ### Открыто
 
 1. В сгенерированном коде — копия ASN.1-описания (и комментарии из модуля)
-2. Open-type follow-up:
+2. Поддержка современных ASN.1. Open-type follow-up:
    - **2a.** остальные PKIX ANY (`AnotherName`, `ExtensionAttribute`, DN `AttributeValue`) через overlay
    - **2b.** curated `.asn` параметров алгоритмов из RFC 5912 (без `CLASS`) + bindings
    - **2c.** парсер/IR для `CLASS`, object sets, parameterized `AlgorithmIdentifier{…}`
-3. Опция сохранения исходного закодированного представления
-4. Пул массивов (constructed BER concat, DER SET OF sort)
-5. Второй oracle — BouncyCastle (не gate `dotnet test`)
-6. Модуль **DVCS** (CMS уже: [cms-2004.asn](../compiler/fixtures/asn1/cms-2004.asn) → `Asn1Kit.Cms`; codec-кейсы — [pkix-test-backlog.md](pkix-test-backlog.md))
-7. **`Asn1Writer` — симметричный split** (encode-ядро + contents helpers; Reader уже разделён на value-type `Asn1DecodeCursor`, constructed decoder и публичный фасад)
-8. **DER: reject constructed OCTET / BIT STRING / string** (или soft-флаг в `Asn1ReaderOptions`, default как сейчас accept; выровнять код с формулировкой § Runtime «BER: constructed…»). Фикстуры + runtime-api soft-inventory
-9. **Полное потребление nested scope**: generated SEQUENCE/EXPLICIT decode должен явно отвергать trailing TLV, не маскируя исходное исключение во время unwind
-10. **Лимиты hostile BER**: ограничить глубину рекурсивного indefinite scan и общий размер materialized constructed values
-11. **Default `Asn1Encoding` у Reader**: сейчас `Ber`, у Writer — `Der`. Рассмотреть default `Der` для Reader (breaking; аудит call sites и тестов BER)
+3. Пул массивов (constructed BER concat, DER SET OF sort)
+4. Второй oracle — BouncyCastle (не gate `dotnet test`)
+5. Модуль **DVCS** (CMS уже: [cms-2004.asn](../compiler/fixtures/asn1/cms-2004.asn) → `Asn1Kit.Cms`; codec-кейсы — [pkix-test-backlog.md](pkix-test-backlog.md))
+6. **`Asn1Writer` — симметричный split** (encode-ядро + contents helpers; Reader уже разделён на value-type `Asn1DecodeCursor`, constructed decoder и публичный фасад)
+7. **DER: reject constructed OCTET / BIT STRING / string** (или soft-флаг в `Asn1ReaderOptions`, default как сейчас accept; выровнять код с формулировкой § Runtime «BER: constructed…»). Фикстуры + runtime-api soft-inventory
+8. **Полное потребление nested scope**: generated SEQUENCE/EXPLICIT decode должен явно отвергать trailing TLV, не маскируя исходное исключение во время unwind
+9. **Лимиты hostile BER**: ограничить глубину рекурсивного indefinite scan и общий размер materialized constructed values
 
 ### Крупные
 
