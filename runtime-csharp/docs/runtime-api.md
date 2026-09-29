@@ -26,7 +26,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 Статические `Asn1Boolean` / `Asn1Enumerated` / … — warm convenience; codegen их не эмитит.
 `Asn1Integer` — **hot** value type (DER contents как `ReadOnlyMemory`; из reader — view) для codegen при `representation=der`; `default` / `Zero` = 0; статические `Encode(BigInteger)` / `DecodeBigInteger` — warm.
 
-Непублично: `Asn1DecodeCursor` / `Asn1Tlv` / `Asn1ConstructedDecoder` / `Asn1TextCodec` (`internal`); `Asn1Boolean.DecodeContents` / `Asn1Integer.IsMinimalContents` / `Asn1BitString.ParsePrimitive` (`internal`); `Asn1Writer.EncodeInteger` (`internal`); `WriteTag` / `WriteLength` / `WriteTlv` / `WritePrimitive` (`private`).
+Непублично: `Asn1EncodeBuffer` (`internal struct`, буфер и TLV framing), `Asn1ContentsEncoder` (BOOLEAN и числовые INTEGER/ENUMERATED contents), `Asn1DecodeCursor` / `Asn1Tlv` / `Asn1ConstructedDecoder` / `Asn1TextCodec` (`internal`); `Asn1Boolean.DecodeContents` / `Asn1Integer.IsMinimalContents` / `Asn1BitString.ParsePrimitive` (`internal`).
 
 ## Инвентарь
 
@@ -54,8 +54,8 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 
 ## Заметки
 
-- `definiteOnly` в private `WriteTlv` игнорируется; indefinite на записи не эмитится.
-- `WriteSequence` / `WriteSet` / `WriteSetOf` / `WriteExplicit` пишут nested contents в тот же буфер writer’а (callback получает outer `Asn1Writer`); length — резерв + patch/compact. Внутренний буфер — `byte[]` (не `MemoryStream`); `Reset()` обнуляет длину без освобождения capacity.
+- `Asn1Writer` — публичный фасад над `Asn1EncodeBuffer`; на записи всегда эмитится минимальная definite length.
+- `WriteSequence` / `WriteSet` / `WriteSetOf` / `WriteExplicit` пишут nested contents в тот же encode-буфер (callback получает outer `Asn1Writer`); length — резерв + patch/compact. Внутренний буфер — `byte[]` (не `MemoryStream`); `Reset()` обнуляет длину без освобождения capacity.
 - `ReadSequenceOf` / `ReadSetOf` возвращают `T[]`: пустой OF → `Array.Empty<T>()`; один элемент → `new T[1]` без pool; иначе grow через `ArrayPool<T>` и точный `T[count]`. Заполнение идёт через `EnterSequence` (без capturing-лямбды вокруг `decodeItem`).
 - `EnterSequence` / `EnterSet` / `EnterExplicit` — единственный публичный nesting API для codegen/ручного decode (без `Func`).
 - `ReadInt32` / `TryGetInt32` (и UInt32/Int64/UInt64) разбирают short contents без `BigInteger`.

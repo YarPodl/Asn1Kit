@@ -1,5 +1,3 @@
-using System.Buffers;
-using System.Buffers.Binary;
 using System.Numerics;
 
 namespace Asn1Kit.Runtime;
@@ -10,60 +8,34 @@ public delegate TReturn Asn1EncodeFunc<TReturn>(ReadOnlySpan<byte> encoded);
 /// <summary>Callback that consumes encoded octets without allocating a copy.</summary>
 public delegate void Asn1EncodeAction(ReadOnlySpan<byte> encoded);
 
-/// <summary>Represents asn1 writer.</summary>
+/// <summary>Public BER/DER encode facade.</summary>
 public sealed class Asn1Writer
 {
-    /// <summary>Worst-case definite length encoding: long-form prefix + 4 length octets.</summary>
-    private const int MaxDefiniteLengthBytes = 5;
-
     /// <summary>INTEGER / string contents larger than this use a heap buffer instead of stackalloc.</summary>
     private const int StackEncodeThreshold = 64;
 
-    private const int DefaultCapacity = 256;
-
-    private byte[] _buffer;
-    private int _length;
+    private Asn1EncodeBuffer _buffer = new();
 
     /// <summary>Initializes a new instance of <c>Asn1Writer</c>.</summary>
     public Asn1Writer(Asn1Encoding encoding = Asn1Encoding.Der)
     {
         Encoding = encoding;
-        _buffer = new byte[DefaultCapacity];
-        _length = 0;
     }
 
     /// <summary>Gets the <c>Encoding</c> value.</summary>
     public Asn1Encoding Encoding { get; }
 
     /// <summary>Gets the <c>EncodedLength</c> value.</summary>
-    public int EncodedLength => _length;
+    public int EncodedLength => _buffer.Length;
 
     /// <summary>Ensures the internal buffer can hold at least <paramref name="capacity"/> octets without further growth.</summary>
-    public void EnsureCapacity(int capacity)
-    {
-        if (capacity < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(capacity));
-        }
-
-        if (capacity <= _buffer.Length)
-        {
-            return;
-        }
-
-        Array.Resize(ref _buffer, capacity);
-    }
+    public void EnsureCapacity(int capacity) => _buffer.EnsureCapacity(capacity);
 
     /// <summary>Clears written bytes so the writer can be reused without reallocating the backing store.</summary>
-    public void Reset() => _length = 0;
+    public void Reset() => _buffer.Reset();
 
     /// <summary>Encodes the ASN.1 value.</summary>
-    public byte[] Encode()
-    {
-        var result = new byte[_length];
-        Buffer.BlockCopy(_buffer, 0, result, 0, _length);
-        return result;
-    }
+    public byte[] Encode() => _buffer.ToArray();
 
     /// <summary>Provides the encoded representation to <paramref name="encodeCallback"/> without allocating a copy.</summary>
     public T Encode<T>(Asn1EncodeFunc<T> encodeCallback)
@@ -73,7 +45,7 @@ public sealed class Asn1Writer
             throw new ArgumentNullException(nameof(encodeCallback));
         }
 
-        return encodeCallback(_buffer.AsSpan(0, _length));
+        return encodeCallback(_buffer.WrittenSpan);
     }
 
     /// <summary>Provides the encoded representation to <paramref name="encodeCallback"/> without allocating a copy.</summary>
@@ -84,127 +56,105 @@ public sealed class Asn1Writer
             throw new ArgumentNullException(nameof(encodeCallback));
         }
 
-        encodeCallback(_buffer.AsSpan(0, _length));
+        encodeCallback(_buffer.WrittenSpan);
     }
 
     /// <summary>Attempts to encode.</summary>
-    public bool TryEncode(Span<byte> destination, out int bytesWritten)
-    {
-        if (destination.Length < _length)
-        {
-            bytesWritten = 0;
-            return false;
-        }
-
-        _buffer.AsSpan(0, _length).CopyTo(destination);
-        bytesWritten = _length;
-        return true;
-    }
+    public bool TryEncode(Span<byte> destination, out int bytesWritten) =>
+        _buffer.TryCopyTo(destination, out bytesWritten);
 
     /// <summary>Writes boolean to the ASN.1 output.</summary>
     public void WriteBoolean(Asn1Tag tag, bool value)
     {
-        Span<byte> octet = stackalloc byte[1];
-        octet[0] = value ? (byte)0xFF : (byte)0x00;
-        WritePrimitive(tag.AsPrimitive(), octet);
+        Span<byte> contents = stackalloc byte[1];
+        var written = Asn1ContentsEncoder.EncodeBoolean(value, contents);
+        _buffer.WritePrimitive(tag, contents.Slice(0, written));
     }
 
     /// <summary>Writes integer to the ASN.1 output.</summary>
     public void WriteInteger(Asn1Tag tag, BigInteger value)
     {
-        var byteCount = value.GetByteCount(isUnsigned: false);
+        var byteCount = Asn1ContentsEncoder.GetIntegerByteCount(value);
         if (byteCount <= StackEncodeThreshold)
         {
-            Span<byte> buffer = stackalloc byte[byteCount];
-            if (!value.TryWriteBytes(buffer, out var written, isUnsigned: false, isBigEndian: true))
-            {
-                throw new Asn1Exception("Failed to encode INTEGER contents.");
-            }
-
-            WritePrimitive(tag.AsPrimitive(), buffer.Slice(0, written));
+            Span<byte> contents = stackalloc byte[byteCount];
+            var written = Asn1ContentsEncoder.EncodeInteger(value, contents);
+            _buffer.WritePrimitive(tag, contents.Slice(0, written));
             return;
         }
 
-        var rented = new byte[byteCount];
-        if (!value.TryWriteBytes(rented, out var writtenLarge, isUnsigned: false, isBigEndian: true))
-        {
-            throw new Asn1Exception("Failed to encode INTEGER contents.");
-        }
-
-        WritePrimitive(tag.AsPrimitive(), rented.AsSpan(0, writtenLarge));
+        var contentsArray = new byte[byteCount];
+        var writtenLarge = Asn1ContentsEncoder.EncodeInteger(value, contentsArray);
+        _buffer.WritePrimitive(tag, contentsArray.AsSpan(0, writtenLarge));
     }
 
     /// <summary>Writes integer to the ASN.1 output.</summary>
     public void WriteInteger(Asn1Tag tag, int value)
     {
-        Span<byte> buffer = stackalloc byte[5];
-        var written = EncodeSignedLong(value, buffer);
-        WritePrimitive(tag.AsPrimitive(), buffer.Slice(0, written));
+        Span<byte> contents = stackalloc byte[5];
+        var written = Asn1ContentsEncoder.EncodeInteger(value, contents);
+        _buffer.WritePrimitive(tag, contents.Slice(0, written));
     }
 
     /// <summary>Writes integer to the ASN.1 output.</summary>
     public void WriteInteger(Asn1Tag tag, uint value)
     {
-        Span<byte> buffer = stackalloc byte[5];
-        var written = EncodeSignedLong(value, buffer);
-        WritePrimitive(tag.AsPrimitive(), buffer.Slice(0, written));
+        Span<byte> contents = stackalloc byte[5];
+        var written = Asn1ContentsEncoder.EncodeInteger(value, contents);
+        _buffer.WritePrimitive(tag, contents.Slice(0, written));
     }
 
     /// <summary>Writes integer to the ASN.1 output.</summary>
     public void WriteInteger(Asn1Tag tag, long value)
     {
-        Span<byte> buffer = stackalloc byte[9];
-        var written = EncodeSignedLong(value, buffer);
-        WritePrimitive(tag.AsPrimitive(), buffer.Slice(0, written));
+        Span<byte> contents = stackalloc byte[9];
+        var written = Asn1ContentsEncoder.EncodeInteger(value, contents);
+        _buffer.WritePrimitive(tag, contents.Slice(0, written));
     }
 
     /// <summary>Writes integer to the ASN.1 output.</summary>
     public void WriteInteger(Asn1Tag tag, ulong value)
     {
-        Span<byte> buffer = stackalloc byte[9];
-        var written = EncodeUnsignedLong(value, buffer);
-        WritePrimitive(tag.AsPrimitive(), buffer.Slice(0, written));
+        Span<byte> contents = stackalloc byte[9];
+        var written = Asn1ContentsEncoder.EncodeInteger(value, contents);
+        _buffer.WritePrimitive(tag, contents.Slice(0, written));
     }
 
     /// <summary>Writes owned INTEGER contents as-is (may be non-minimal).</summary>
     public void WriteInteger(Asn1Tag tag, Asn1Integer value)
     {
-        var span = value.Span;
-        if (span.Length == 0)
+        var contents = value.Span;
+        if (contents.Length == 0)
         {
             throw new Asn1Exception("INTEGER contents must not be empty.");
         }
 
-        WritePrimitive(tag.AsPrimitive(), span);
+        _buffer.WritePrimitive(tag, contents);
     }
 
     /// <summary>ENUMERATED uses the same contents encoding as INTEGER (X.690).</summary>
     public void WriteEnumerated(Asn1Tag tag, BigInteger value) => WriteInteger(tag, value);
 
     /// <summary>Writes octet string to the ASN.1 output.</summary>
-    public void WriteOctetString(Asn1Tag tag, ReadOnlySpan<byte> value)
-    {
-        WritePrimitive(tag.AsPrimitive(), value);
-    }
+    public void WriteOctetString(Asn1Tag tag, ReadOnlySpan<byte> value) =>
+        _buffer.WritePrimitive(tag, value);
 
     /// <summary>Writes null to the ASN.1 output.</summary>
-    public void WriteNull(Asn1Tag tag)
-    {
-        WritePrimitive(tag.AsPrimitive(), ReadOnlySpan<byte>.Empty);
-    }
+    public void WriteNull(Asn1Tag tag) =>
+        _buffer.WritePrimitive(tag, ReadOnlySpan<byte>.Empty);
 
     /// <summary>Writes object identifier to the ASN.1 output.</summary>
     public void WriteObjectIdentifier(Asn1Tag tag, string oid)
     {
         var maxBytes = Asn1Oid.GetEncodeContentsMaxLength(oid);
-        Span<byte> scratch = maxBytes <= 128 ? stackalloc byte[maxBytes] : new byte[maxBytes];
-        var written = Asn1Oid.EncodeContents(oid, scratch);
-        WritePrimitive(tag.AsPrimitive(), scratch.Slice(0, written));
+        Span<byte> contents = maxBytes <= 128 ? stackalloc byte[maxBytes] : new byte[maxBytes];
+        var written = Asn1Oid.EncodeContents(oid, contents);
+        _buffer.WritePrimitive(tag, contents.Slice(0, written));
     }
 
     /// <summary>Writes object identifier to the ASN.1 output.</summary>
     public void WriteObjectIdentifier(Asn1Tag tag, Asn1Oid oid) =>
-        WritePrimitive(tag.AsPrimitive(), oid.Span);
+        _buffer.WritePrimitive(tag, oid.Span);
 
     /// <summary>Writes bit string to the ASN.1 output.</summary>
     public void WriteBitString(Asn1Tag tag, Asn1BitString value)
@@ -214,13 +164,7 @@ public sealed class Asn1Writer
             Asn1TextCodec.EnsureTrailingBitsZero(value.Span, value.UnusedBits);
         }
 
-        var payload = value.Span;
-        WriteTag(tag.AsPrimitive());
-        WriteLength(1 + payload.Length, definiteOnly: true);
-        Ensure(1 + payload.Length);
-        _buffer[_length++] = (byte)value.UnusedBits;
-        payload.CopyTo(_buffer.AsSpan(_length));
-        _length += payload.Length;
+        _buffer.WritePrimitive(tag, (byte)value.UnusedBits, value.Span);
     }
 
     /// <summary>Writes string to the ASN.1 output.</summary>
@@ -229,23 +173,23 @@ public sealed class Asn1Writer
         var byteCount = Asn1TextCodec.GetEncodedByteCount(value, form);
         if (byteCount <= StackEncodeThreshold)
         {
-            Span<byte> buffer = stackalloc byte[byteCount];
-            Asn1TextCodec.EncodeString(value, form, buffer);
-            WritePrimitive(tag.AsPrimitive(), buffer);
+            Span<byte> contents = stackalloc byte[byteCount];
+            Asn1TextCodec.EncodeString(value, form, contents);
+            _buffer.WritePrimitive(tag, contents);
             return;
         }
 
-        var rented = new byte[byteCount];
-        Asn1TextCodec.EncodeString(value, form, rented);
-        WritePrimitive(tag.AsPrimitive(), rented);
+        var contentsArray = new byte[byteCount];
+        Asn1TextCodec.EncodeString(value, form, contentsArray);
+        _buffer.WritePrimitive(tag, contentsArray);
     }
 
     /// <summary>Writes time to the ASN.1 output.</summary>
     public void WriteTime(Asn1Tag tag, DateTimeOffset value, Asn1TimeForm form, int fractionDigits = 3)
     {
-        Span<byte> buffer = stackalloc byte[Asn1TextCodec.MaxEncodedTimeBytes];
-        var written = Asn1TextCodec.EncodeTime(value, form, fractionDigits, buffer);
-        WritePrimitive(tag.AsPrimitive(), buffer.Slice(0, written));
+        Span<byte> contents = stackalloc byte[Asn1TextCodec.MaxEncodedTimeBytes];
+        var written = Asn1TextCodec.EncodeTime(value, form, fractionDigits, contents);
+        _buffer.WritePrimitive(tag, contents.Slice(0, written));
     }
 
     /// <summary>Writes sequence to the ASN.1 output.</summary>
@@ -256,7 +200,7 @@ public sealed class Asn1Writer
             throw new ArgumentNullException(nameof(content));
         }
 
-        WriteConstructed(tag.AsConstructed(), content, sortDerSetOf: false);
+        WriteConstructed(tag, content, sortDerSetOf: false);
     }
 
     /// <summary>
@@ -298,7 +242,7 @@ public sealed class Asn1Writer
             throw new ArgumentNullException(nameof(content));
         }
 
-        WriteConstructed(tag.AsConstructed(), content, sortDerSetOf: Encoding == Asn1Encoding.Der);
+        WriteConstructed(tag, content, sortDerSetOf: Encoding == Asn1Encoding.Der);
     }
 
     /// <summary>
@@ -327,18 +271,11 @@ public sealed class Asn1Writer
     }
 
     /// <summary>Writes explicit to the ASN.1 output.</summary>
-    public void WriteExplicit(Asn1Tag outer, Action<Asn1Writer> inner)
-    {
+    public void WriteExplicit(Asn1Tag outer, Action<Asn1Writer> inner) =>
         WriteSequence(outer, inner);
-    }
 
     /// <summary>Writes raw to the ASN.1 output.</summary>
-    public void WriteRaw(ReadOnlySpan<byte> tlv)
-    {
-        Ensure(tlv.Length);
-        tlv.CopyTo(_buffer.AsSpan(_length));
-        _length += tlv.Length;
-    }
+    public void WriteRaw(ReadOnlySpan<byte> tlv) => _buffer.WriteRaw(tlv);
 
     /// <summary>Writes ANY by appending the stored TLV as-is (bit-exact).</summary>
     public void WriteAny(Asn1Any value) => WriteRaw(value.EncodedMemory.Span);
@@ -349,333 +286,14 @@ public sealed class Asn1Writer
     /// </summary>
     public void WriteAny(Asn1Tag tag, Asn1Any value)
     {
-        var wire = new Asn1Tag(tag.TagClass, tag.Number, value.Tag.Constructed);
-        WriteTlv(wire, value.ContentsMemory.Span, definiteOnly: Encoding == Asn1Encoding.Der);
-    }
-
-    /// <summary>Builds a minimal definite-length TLV into a new array.</summary>
-    internal static byte[] EncodeDefiniteTlv(Asn1Tag tag, ReadOnlySpan<byte> contents)
-    {
-        var writer = new Asn1Writer(Asn1Encoding.Der);
-        writer.WriteTlv(tag, contents, definiteOnly: true);
-        return writer.Encode();
+        var wireTag = new Asn1Tag(tag.TagClass, tag.Number, value.Tag.Constructed);
+        _buffer.WriteTlv(wireTag, value.ContentsMemory.Span);
     }
 
     private void WriteConstructed(Asn1Tag tag, Action<Asn1Writer> content, bool sortDerSetOf)
     {
-        WriteTag(tag);
-        var lengthPos = _length;
-        Ensure(MaxDefiniteLengthBytes);
-        _buffer.AsSpan(_length, MaxDefiniteLengthBytes).Clear();
-        _length += MaxDefiniteLengthBytes;
-
-        var contentStart = _length;
+        var frame = _buffer.BeginConstructed(tag);
         content(this);
-        var contentLength = _length - contentStart;
-
-        if (sortDerSetOf)
-        {
-            SortDerSetOfContentsInPlace(contentStart, contentLength);
-        }
-
-        FinishDefiniteLength(lengthPos, contentStart, contentLength);
-    }
-
-    /// <summary>
-    /// Patches the reserved length field at <paramref name="lengthPos"/> and compacts the buffer when
-    /// the minimal definite-length encoding uses fewer than <see cref="MaxDefiniteLengthBytes"/> octets.
-    /// </summary>
-    private void FinishDefiniteLength(int lengthPos, int contentStart, int contentLength)
-    {
-        Span<byte> encoded = stackalloc byte[MaxDefiniteLengthBytes];
-        var lengthSize = EncodeDefiniteLength(contentLength, encoded);
-        var shift = MaxDefiniteLengthBytes - lengthSize;
-        var contentEnd = contentStart + contentLength;
-
-        encoded.Slice(0, lengthSize).CopyTo(_buffer.AsSpan(lengthPos, lengthSize));
-
-        if (shift != 0 && contentLength > 0)
-        {
-            Buffer.BlockCopy(
-                _buffer,
-                contentStart,
-                _buffer,
-                contentStart - shift,
-                contentLength);
-        }
-
-        _length = contentEnd - shift;
-    }
-
-    /// <summary>Writes a minimal definite-length encoding into <paramref name="destination"/>; returns octet count (1…5).</summary>
-    private static int EncodeDefiniteLength(int length, Span<byte> destination)
-    {
-        if (length < 128)
-        {
-            destination[0] = (byte)length;
-            return 1;
-        }
-
-        Span<byte> bytes = stackalloc byte[4];
-        BinaryPrimitives.WriteInt32BigEndian(bytes, length);
-        var start = 0;
-        while (start < bytes.Length - 1 && bytes[start] == 0)
-        {
-            start++;
-        }
-
-        var count = bytes.Length - start;
-        destination[0] = (byte)(0x80 | count);
-        bytes.Slice(start, count).CopyTo(destination.Slice(1));
-        return 1 + count;
-    }
-
-    private void SortDerSetOfContentsInPlace(int contentStart, int contentLength)
-    {
-        if (contentLength == 0)
-        {
-            return;
-        }
-
-        SortDerSetOfContents(_buffer, contentStart, contentLength);
-    }
-
-    private static void SortDerSetOfContents(byte[] data, int start, int length)
-    {
-        var end = start + length;
-        var ranges = new List<(int Start, int Length)>(8);
-        var offset = start;
-        while (offset < end)
-        {
-            var tlvStart = offset;
-            offset = GetTlvEnd(data, offset, end);
-            ranges.Add((tlvStart, offset - tlvStart));
-        }
-
-        if (ranges.Count <= 1)
-        {
-            return;
-        }
-
-        ranges.Sort((left, right) =>
-            data.AsSpan(left.Start, left.Length)
-                .SequenceCompareTo(data.AsSpan(right.Start, right.Length)));
-
-        var alreadySorted = true;
-        for (var i = 1; i < ranges.Count; i++)
-        {
-            if (ranges[i].Start < ranges[i - 1].Start)
-            {
-                alreadySorted = false;
-                break;
-            }
-        }
-
-        if (alreadySorted)
-        {
-            return;
-        }
-
-        var rented = ArrayPool<byte>.Shared.Rent(length);
-        try
-        {
-            var writeOffset = 0;
-            foreach (var (tlvStart, tlvLength) in ranges)
-            {
-                Buffer.BlockCopy(data, tlvStart, rented, writeOffset, tlvLength);
-                writeOffset += tlvLength;
-            }
-
-            Buffer.BlockCopy(rented, 0, data, start, length);
-        }
-        finally
-        {
-            ArrayPool<byte>.Shared.Return(rented);
-        }
-    }
-
-    /// <summary>Returns the index just past one complete TLV starting at <paramref name="offset"/> (bounded by <paramref name="end"/>).</summary>
-    private static int GetTlvEnd(byte[] data, int offset, int end)
-    {
-        if (offset >= end)
-        {
-            throw new Asn1Exception("Unexpected end of ASN.1 data.");
-        }
-
-        var first = data[offset++];
-        if ((first & 0x1F) == 0x1F)
-        {
-            byte b;
-            do
-            {
-                if (offset >= end)
-                {
-                    throw new Asn1Exception("Unexpected end of ASN.1 data.");
-                }
-
-                b = data[offset++];
-            } while ((b & 0x80) != 0);
-        }
-
-        if (offset >= end)
-        {
-            throw new Asn1Exception("Unexpected end of ASN.1 data.");
-        }
-
-        var lengthFirst = data[offset++];
-        if (lengthFirst == 0x80)
-        {
-            throw new Asn1Exception("Indefinite length is not allowed when sorting SET OF for DER.");
-        }
-
-        int length;
-        if ((lengthFirst & 0x80) == 0)
-        {
-            length = lengthFirst;
-        }
-        else
-        {
-            var count = lengthFirst & 0x7F;
-            if (count == 0 || count > 4 || offset + count > end)
-            {
-                throw new Asn1Exception("Unsupported length form.");
-            }
-
-            length = 0;
-            for (var i = 0; i < count; i++)
-            {
-                length = (length << 8) | data[offset++];
-            }
-        }
-
-        if (offset + length > end)
-        {
-            throw new Asn1Exception("Length exceeds buffer.");
-        }
-
-        return offset + length;
-    }
-
-    private void WritePrimitive(Asn1Tag tag, ReadOnlySpan<byte> contents)
-    {
-        WriteTlv(tag.AsPrimitive(), contents, definiteOnly: true);
-    }
-
-    private void WriteTlv(Asn1Tag tag, ReadOnlySpan<byte> contents, bool definiteOnly)
-    {
-        WriteTag(tag);
-        WriteLength(contents.Length, definiteOnly);
-        Ensure(contents.Length);
-        contents.CopyTo(_buffer.AsSpan(_length));
-        _length += contents.Length;
-    }
-
-    private void WriteTag(Asn1Tag tag)
-    {
-        var first = (byte)(((int)tag.TagClass << 6) | (tag.Constructed ? 0x20 : 0));
-        if (tag.Number < 31)
-        {
-            Ensure(1);
-            _buffer[_length++] = (byte)(first | tag.Number);
-            return;
-        }
-
-        Ensure(1 + 5);
-        _buffer[_length++] = (byte)(first | 0x1F);
-        var number = tag.Number;
-        Span<byte> temp = stackalloc byte[5];
-        var count = 0;
-        temp[count++] = (byte)(number & 0x7F);
-        number >>= 7;
-        while (number > 0)
-        {
-            temp[count++] = (byte)((number & 0x7F) | 0x80);
-            number >>= 7;
-        }
-
-        for (var i = count - 1; i >= 0; i--)
-        {
-            _buffer[_length++] = temp[i];
-        }
-    }
-
-    private void WriteLength(int length, bool definiteOnly)
-    {
-        _ = definiteOnly;
-        Span<byte> encoded = stackalloc byte[MaxDefiniteLengthBytes];
-        var size = EncodeDefiniteLength(length, encoded);
-        Ensure(size);
-        encoded[..size].CopyTo(_buffer.AsSpan(_length));
-        _length += size;
-    }
-
-    private void Ensure(int additional)
-    {
-        var required = _length + additional;
-        if (required <= _buffer.Length)
-        {
-            return;
-        }
-
-        var newSize = _buffer.Length;
-        while (newSize < required)
-        {
-            newSize = newSize < 1024 ? newSize * 2 : newSize + (newSize / 2);
-        }
-
-        Array.Resize(ref _buffer, newSize);
-    }
-
-    internal static byte[] EncodeInteger(BigInteger value)
-    {
-        var byteCount = value.GetByteCount(isUnsigned: false);
-        var bytes = new byte[byteCount];
-        if (!value.TryWriteBytes(bytes, out var written, isUnsigned: false, isBigEndian: true) || written != byteCount)
-        {
-            throw new Asn1Exception("Failed to encode INTEGER contents.");
-        }
-
-        return bytes;
-    }
-
-    /// <summary>Minimal signed big-endian INTEGER contents for a 64-bit two's-complement value.</summary>
-    private static int EncodeSignedLong(long value, Span<byte> destination)
-    {
-        Span<byte> full = stackalloc byte[8];
-        BinaryPrimitives.WriteInt64BigEndian(full, value);
-
-        var start = 0;
-        if (value >= 0)
-        {
-            while (start < 7 && full[start] == 0x00 && (full[start + 1] & 0x80) == 0)
-            {
-                start++;
-            }
-        }
-        else
-        {
-            while (start < 7 && full[start] == 0xFF && (full[start + 1] & 0x80) != 0)
-            {
-                start++;
-            }
-        }
-
-        var length = 8 - start;
-        full.Slice(start, length).CopyTo(destination);
-        return length;
-    }
-
-    /// <summary>Minimal signed big-endian INTEGER contents for an unsigned 64-bit value.</summary>
-    private static int EncodeUnsignedLong(ulong value, Span<byte> destination)
-    {
-        if (value <= (ulong)long.MaxValue)
-        {
-            return EncodeSignedLong((long)value, destination);
-        }
-
-        // High bit of the 8-byte magnitude is set — need a leading 0x00 sign octet.
-        destination[0] = 0x00;
-        BinaryPrimitives.WriteUInt64BigEndian(destination.Slice(1), value);
-        return 9;
+        _buffer.EndConstructed(frame, sortDerSetOf);
     }
 }

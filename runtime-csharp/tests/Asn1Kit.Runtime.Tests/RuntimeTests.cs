@@ -68,6 +68,20 @@ public sealed class RuntimeTests
     }
 
     [Fact]
+    public void Writer_HighTagNumber_UsesMinimalBase128Encoding()
+    {
+        var tag = new Asn1Tag(Asn1TagClass.ContextSpecific, 201);
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteInteger(tag, 1);
+
+        Assert.Equal(new byte[] { 0x9F, 0x81, 0x49, 0x01, 0x01 }, writer.Encode());
+
+        var reader = new Asn1Reader(writer.Encode(), Asn1Encoding.Der);
+        Assert.Equal(1, reader.ReadInt32(tag));
+        Assert.True(reader.Eof);
+    }
+
+    [Fact]
     public void WriteSequence_DeepNesting_RoundTrips()
     {
         var writer = new Asn1Writer(Asn1Encoding.Der);

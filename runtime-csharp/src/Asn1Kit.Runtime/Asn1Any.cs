@@ -47,7 +47,9 @@ public readonly struct Asn1Any : IEquatable<Asn1Any>
     /// </summary>
     public static Asn1Any FromTagAndContents(Asn1Tag tag, ReadOnlySpan<byte> contents)
     {
-        var encoded = Asn1Writer.EncodeDefiniteTlv(tag, contents);
+        var buffer = new Asn1EncodeBuffer();
+        buffer.WriteTlv(tag, contents);
+        var encoded = buffer.ToArray();
         return Wrap(tag, encoded, encoded.AsMemory(encoded.Length - contents.Length, contents.Length));
     }
 

@@ -7,7 +7,9 @@
 | Файл | Что внутри |
 | --- | --- |
 | [Asn1Tag.cs](../../src/Asn1Kit.Runtime/Asn1Tag.cs) | Класс тега, universal-константы, `Asn1StringForm` / `Asn1TimeForm`, `MatchesIgnoreConstructed`, `AsPrimitive` / `AsConstructed` |
-| [Asn1Writer.cs](../../src/Asn1Kit.Runtime/Asn1Writer.cs) | Публичные `Write*` / `Encode` / `WriteRaw`; внутри (`private`) `WriteTag` / `WriteLength` / `WriteTlv` / `WritePrimitive` / `WriteConstructed` (один буфер + резерв длины); симметричный split — [status.md](../../../docs/status.md) backlog §8 |
+| [Asn1Writer.cs](../../src/Asn1Kit.Runtime/Asn1Writer.cs) | Публичный фасад: `Write*` / `Encode` / `WriteRaw`; делегирует framing и буфер encode-ядру |
+| [Asn1EncodeBuffer.cs](../../src/Asn1Kit.Runtime/Asn1EncodeBuffer.cs) | `internal struct`: растущий буфер, tag/length/TLV, constructed reserve + compact, DER-сортировка `SET OF` без второй heap-аллокации |
+| [Asn1ContentsEncoder.cs](../../src/Asn1Kit.Runtime/Asn1ContentsEncoder.cs) | `internal`: канонические contents BOOLEAN и числовых INTEGER/ENUMERATED |
 | [Asn1Reader.cs](../../src/Asn1Kit.Runtime/Asn1Reader.cs) | Публичный фасад: `Encoding` / `Options` / `Remaining` / `Eof`, `Enter*` / typed `Read*` / `ReadAny` / `ReadLazy` / `ReadWithOriginalEncoding`; внутри один value-type cursor без второй heap-аллокации |
 | [Asn1DecodeCursor.cs](../../src/Asn1Kit.Runtime/Asn1DecodeCursor.cs) | `internal struct`: текущее `ReadOnlyMemory`-окно, tag/length/TLV, BER indefinite; копия cursor служит bookmark для `Try*` |
 | [Asn1ReaderScope.cs](../../src/Asn1Kit.Runtime/Asn1ReaderScope.cs) | allocation-free nested scope; восстанавливает cursor, проверяет single-dispose и LIFO |
@@ -35,7 +37,7 @@
 
 - **Запись DER:** только definite length, BOOLEAN строго `0x00` / `0xFF`, BIT STRING с нулевыми хвостовыми битами, минимальный INTEGER из чисел. `WriteInteger(Asn1Integer)` пишет сохранённые contents as-is (владение проводом). Encode из числовых типов не ослабляется soft-profile.
 - **Чтение:** soft-accept для зафиксированных неканоничных форм (см. [decisions.md](../../../docs/decisions.md), [runtime-api.md](../runtime-api.md); срез в [status.md](../../../docs/status.md)). Строгий reject — `Asn1ReaderOptions` (`Default` / `Strict` / точечные профили), не через молчаливое ужесточение default. Новый soft-accept без записи в runtime-api (и status) — запрещён.
-- **BER на чтении:** definite и indefinite length, constructed `OCTET STRING` склеивается. На записи indefinite length не порождается (`definiteOnly` в private `WriteTlv` сейчас не используется — поведение то же).
+- **BER на чтении:** definite и indefinite length, constructed `OCTET STRING` склеивается. На записи всегда используется definite length.
 - Ошибка ввода (вне soft-списка) — всегда `Asn1Exception` с внятным текстом: чужой тег, обрезанный TLV, лишние байты, невалидная строка OID.
 - Runtime ничего не знает про ASN.1-модули, имена типов и IR.
 

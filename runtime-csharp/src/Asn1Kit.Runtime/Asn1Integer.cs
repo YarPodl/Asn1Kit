@@ -61,7 +61,7 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
 
     /// <summary>Creates a value using the supplied input.</summary>
     public static Asn1Integer FromBigInteger(BigInteger value) =>
-        value.IsZero ? Zero : new(Asn1Writer.EncodeInteger(value));
+        value.IsZero ? Zero : new(Asn1ContentsEncoder.EncodeInteger(value));
 
     /// <summary>Creates a value using the supplied input.</summary>
     public static Asn1Integer FromInt32(int value) =>
