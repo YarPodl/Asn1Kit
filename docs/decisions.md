@@ -120,11 +120,11 @@
 
 **Последствие.** `options.lazy: true` на поле / typedef / модуле (разрешение: component → TypeExpr → typedef → module) заставляет C# backend обернуть внешнее использование SEQUENCE/SET в `Asn1Lazy<T>`, а SEQUENCE OF/SET OF — в `Asn1Lazy<T[]>`. `Asn1Reader.ReadLazy` захватывает полный TLV без разбора contents; `.Value` вызывает переданный decoder. Encode предпочитает `WriteRaw(EncodedMemory)` при наличии TLV (`HasEncoded`), иначе кодирует `.Value`. Собственный `T.Decode` типа с lazy по-прежнему жадный по своим полям. CHOICE и примитивы не оборачиваются.
 
-## Decode — `options.retainEncoded` и `Asn1Retained<T>`
+## Decode — `options.retainEncoded` и `Asn1Value<T>`
 
-**Причина.** Нужен полный typed decode (в отличие от lazy), но round-trip encode без мутации должен оставаться bit-exact memcpy TLV — как BCL `WriteEncodedValue` для opaque Name.
+**Причина.** Для хеширования и проверки подписи нужен полный typed decode вместе с исходным полным TLV. Использовать этот TLV как кэш encode небезопасно: вложенный объект или элемент массива может измениться без присваивания `.Value`.
 
-**Последствие.** `options.retainEncoded: true` (та же цепочка разрешения, что у lazy) оборачивает SEQUENCE/SET/OF в `Asn1Retained<T>`: decode жадный + сохраняет TLV; encode при `HasEncoded` делает `WriteRaw`. Присвоение `.Value` инвалидирует TLV. Если одновременно задан `lazy`, побеждает lazy (уже держит TLV). CHOICE и примитивы не оборачиваются.
+**Последствие.** `options.retainEncoded: true` (та же цепочка разрешения, что у lazy) оборачивает SEQUENCE/SET/OF в allocation-free `Asn1Value<T>`: decode жадный, `OriginalEncoding` сохраняет view исходного TLV, а encode всегда строится из `.Value`. Для созданного приложением значения работает неявное преобразование `T` → `Asn1Value<T>`, при этом `OriginalEncoding` пуст. Обратного неявного преобразования нет. Если одновременно задан `lazy`, побеждает lazy (уже держит TLV). CHOICE и примитивы не оборачиваются.
 
 ## C# codegen — typedef-алиасы сворачиваются
 

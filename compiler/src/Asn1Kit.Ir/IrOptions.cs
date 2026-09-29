@@ -125,7 +125,7 @@ public static class IrOptions
 
     /// <summary>
     /// When true, SEQUENCE/SET and SEQUENCE OF/SET OF usages are wrapped in an eager container that
-    /// retains the original TLV for bit-exact re-encode (C#: <c>Asn1Retained&lt;T&gt;</c>).
+    /// retains the original TLV for hashing or signature verification (C#: <c>Asn1Value&lt;T&gt;</c>).
     /// Ignored when <see cref="IsLazy"/> is true (lazy already retains the TLV). Default is false.
     /// </summary>
     public static bool IsRetainEncoded(JsonObject? options)

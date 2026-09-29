@@ -1137,6 +1137,72 @@ END
     }
 
     [Fact]
+    public void GeneratedCSharp_RetainEncoded_PreservesOriginalButEncodesCurrentValue()
+    {
+        const string asn = @"
+RetainedMod DEFINITIONS ::= BEGIN
+Inner ::= SEQUENCE { n INTEGER }
+Outer ::= SEQUENCE {
+  payload Inner,
+  maybe Inner OPTIONAL
+}
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        var outer = Assert.IsType<SequenceType>(document.Modules[0].Types.Single(t => t.Name == "Outer").Type);
+        foreach (var component in outer.Components)
+        {
+            component.Options = IrOptions.SetRetainEncoded(null, true);
+        }
+
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+        Assert.Contains("public Asn1Value<Inner> Payload { get; set; }", source);
+        Assert.Contains("public Asn1Value<Inner>? Maybe { get; set; }", source);
+        Assert.Contains("ReadWithOriginalEncoding", source);
+        Assert.DoesNotContain(".HasEncoded", source);
+
+        var assembly = CompileGenerated(source);
+        var outerType = assembly.GetType("RetainedMod.Outer")!;
+        var innerType = assembly.GetType("RetainedMod.Inner")!;
+        var asn1ValueType = typeof(Asn1Value<>).MakeGenericType(innerType);
+
+        object MakeInner(int n)
+        {
+            var inner = Activator.CreateInstance(innerType)!;
+            innerType.GetProperty("N")!.SetValue(inner, Asn1Integer.FromInt32(n));
+            return inner;
+        }
+
+        var payload = Activator.CreateInstance(asn1ValueType, new[] { MakeInner(7) })!;
+        var maybe = Activator.CreateInstance(asn1ValueType, new[] { MakeInner(8) })!;
+        Assert.True(((ReadOnlyMemory<byte>)asn1ValueType.GetProperty("OriginalEncoding")!.GetValue(payload)!).IsEmpty);
+
+        var value = Activator.CreateInstance(outerType)!;
+        outerType.GetProperty("Payload")!.SetValue(value, payload);
+        outerType.GetProperty("Maybe")!.SetValue(value, maybe);
+
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        outerType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(value, new object[] { writer });
+        var encoded = writer.Encode();
+
+        var decoded = outerType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(encoded, Asn1Encoding.Der) })!;
+        var decodedPayload = outerType.GetProperty("Payload")!.GetValue(decoded)!;
+        Assert.Equal(
+            new byte[] { 0x30, 0x03, 0x02, 0x01, 0x07 },
+            ((ReadOnlyMemory<byte>)asn1ValueType.GetProperty("OriginalEncoding")!.GetValue(decodedPayload)!).ToArray());
+
+        var decodedInner = asn1ValueType.GetProperty("Value")!.GetValue(decodedPayload)!;
+        innerType.GetProperty("N")!.SetValue(decodedInner, Asn1Integer.FromInt32(9));
+
+        var rewrite = new Asn1Writer(Asn1Encoding.Der);
+        outerType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(decoded, new object[] { rewrite });
+        Assert.Equal(
+            new byte[] { 0x30, 0x0A, 0x30, 0x03, 0x02, 0x01, 0x09, 0x30, 0x03, 0x02, 0x01, 0x08 },
+            rewrite.Encode());
+    }
+
+    [Fact]
     public void GeneratedCSharp_Lazy_SequenceOf_ContainerAndElements()
     {
         const string asn = @"

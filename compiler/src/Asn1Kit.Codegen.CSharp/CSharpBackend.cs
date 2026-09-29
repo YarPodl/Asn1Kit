@@ -532,7 +532,7 @@ public sealed class CSharpBackend : ILanguageBackend
             var prop = PropertyName(field, typeName);
             var encodeExpr = homogeneousCsType is not null
                 ? "Value"
-                : UnwrapOptional(document, module, field.Type, prop);
+                : UnwrapOptional(document, module, field.Type, prop, field.Options);
             sb.AppendLine($"            case {typeName}Kind.{prop}:");
             EmitEncodeValue(
                 sb,
@@ -904,7 +904,7 @@ public sealed class CSharpBackend : ILanguageBackend
                 field.Type,
                 indent + "    ",
                 writer,
-                UnwrapOptional(document, module, field.Type, expr),
+                UnwrapOptional(document, module, field.Type, expr, field.Options),
                 fieldOptions: field.Options);
             sb.AppendLine($"{indent}}}");
         }
@@ -924,9 +924,17 @@ public sealed class CSharpBackend : ILanguageBackend
         }
     }
 
-    private string UnwrapOptional(IrDocument document, IrModule module, TypeExpr type, string expr)
+    private string UnwrapOptional(
+        IrDocument document,
+        IrModule module,
+        TypeExpr type,
+        string expr,
+        JsonObject? fieldOptions = null)
     {
-        return IsValueOptionalWrapper(document, module, type) ? expr + ".Value" : expr;
+        return IsValueOptionalWrapper(document, module, type)
+            || ShouldEmitRetainEncoded(document, module, type, fieldOptions)
+                ? expr + ".Value"
+                : expr;
     }
 
     private bool IsValueOptionalWrapper(IrDocument document, IrModule module, TypeExpr type)
@@ -992,12 +1000,6 @@ public sealed class CSharpBackend : ILanguageBackend
 
         if (encodeLazyWrapper && ShouldEmitRetainEncoded(document, module, type, fieldOptions))
         {
-            sb.AppendLine($"{indent}if ({expr}.HasEncoded)");
-            sb.AppendLine($"{indent}{{");
-            sb.AppendLine($"{indent}    {writer}.WriteRaw({expr}.EncodedMemory.Span);");
-            sb.AppendLine($"{indent}}}");
-            sb.AppendLine($"{indent}else");
-            sb.AppendLine($"{indent}{{");
             EmitEncodeValue(
                 sb,
                 document,
@@ -1005,13 +1007,12 @@ public sealed class CSharpBackend : ILanguageBackend
                 owner,
                 hint,
                 type,
-                indent + "    ",
+                indent,
                 writer,
                 $"{expr}.Value",
                 forceTag,
                 encodeLazyWrapper: false,
                 fieldOptions: null);
-            sb.AppendLine($"{indent}}}");
             return;
         }
 
@@ -1327,7 +1328,7 @@ public sealed class CSharpBackend : ILanguageBackend
                 forceTag,
                 targetObject,
                 openKey,
-                method: "ReadRetained");
+                method: "ReadWithOriginalEncoding");
             return;
         }
 
@@ -1536,7 +1537,7 @@ public sealed class CSharpBackend : ILanguageBackend
 
         if (allowLazy && ShouldEmitRetainEncoded(document, module, type, fieldOptions))
         {
-            sb.Append($"{reader}.ReadRetained(r => ");
+            sb.Append($"{reader}.ReadWithOriginalEncoding(r => ");
             EmitDecodeExpr(
                 sb,
                 document,
@@ -2149,7 +2150,7 @@ public sealed class CSharpBackend : ILanguageBackend
             var wrapped = useLazy
                 ? $"Asn1Lazy<{listType}>"
                 : useRetain
-                    ? $"Asn1Retained<{listType}>"
+                    ? $"Asn1Value<{listType}>"
                     : listType;
             return optional ? wrapped + "?" : wrapped;
         }
@@ -2179,7 +2180,7 @@ public sealed class CSharpBackend : ILanguageBackend
         var result = useLazy
             ? $"Asn1Lazy<{name}>"
             : useRetain
-                ? $"Asn1Retained<{name}>"
+                ? $"Asn1Value<{name}>"
                 : name;
         return optional ? result + "?" : result;
     }
@@ -2338,7 +2339,7 @@ public sealed class CSharpBackend : ILanguageBackend
     }
 
     /// <summary>
-    /// True when this type usage should be wrapped in <c>Asn1Retained&lt;T&gt;</c> (SEQUENCE/SET/OF only).
+    /// True when this type usage should be wrapped in <c>Asn1Value&lt;T&gt;</c> (SEQUENCE/SET/OF only).
     /// Lazy takes precedence when both flags are set.
     /// </summary>
     private bool ShouldEmitRetainEncoded(

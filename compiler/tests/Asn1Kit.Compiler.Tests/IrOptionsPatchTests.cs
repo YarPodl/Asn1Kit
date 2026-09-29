@@ -110,7 +110,9 @@ public sealed class IrOptionsPatchTests
             StringComparison.Ordinal);
 
         var pkixFile = files.Single(f => f.RelativePath.Contains("PKIX1Explicit88", StringComparison.Ordinal));
-        Assert.Contains("Asn1Retained<", pkixFile.Contents, StringComparison.Ordinal);
+        Assert.Contains("Asn1Value<", pkixFile.Contents, StringComparison.Ordinal);
+        Assert.Contains("ReadWithOriginalEncoding", pkixFile.Contents, StringComparison.Ordinal);
+        Assert.DoesNotContain(".HasEncoded", pkixFile.Contents, StringComparison.Ordinal);
         Assert.Contains("public struct AttributeTypeAndValue", pkixFile.Contents, StringComparison.Ordinal);
         Assert.Contains("public Asn1Oid Type { get; set; }", pkixFile.Contents, StringComparison.Ordinal);
     }

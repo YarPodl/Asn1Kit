@@ -858,23 +858,29 @@ public sealed class RuntimeTests
     }
 
     [Fact]
-    public void Retained_Decode_KeepsEncoded_UntilValueReplaced()
+    public void Value_Decode_PreservesOriginalEncoding()
     {
         var writer = new Asn1Writer(Asn1Encoding.Der);
         Asn1Integer.Encode(writer, 42);
         var bytes = writer.Encode();
 
-        var retained = new Asn1Reader(bytes, Asn1Encoding.Der).ReadRetained(r => Asn1Integer.Decode(r));
-        Assert.True(retained.HasEncoded);
-        Assert.Equal(42, retained.Value.GetInt32());
+        var value = new Asn1Reader(bytes, Asn1Encoding.Der)
+            .ReadWithOriginalEncoding(r => Asn1Integer.Decode(r));
 
-        var rewrite = new Asn1Writer(Asn1Encoding.Der);
-        retained.WriteTo(rewrite);
-        Assert.Equal(bytes, rewrite.Encode());
+        Assert.Equal(42, value.Value.GetInt32());
+        Assert.Equal(bytes, value.OriginalEncoding.ToArray());
+        Assert.True(MemoryMarshal.TryGetArray(value.OriginalEncoding, out ArraySegment<byte> segment));
+        Assert.Same(bytes, segment.Array);
+    }
 
-        retained.Value = Asn1Integer.FromInt32(7);
-        Assert.False(retained.HasEncoded);
-        Assert.Throws<InvalidOperationException>(() => retained.WriteTo(new Asn1Writer(Asn1Encoding.Der)));
+    [Fact]
+    public void Value_ImplicitConversion_HasNoOriginalEncoding()
+    {
+        Asn1Value<Asn1Integer> value = Asn1Integer.FromInt32(7);
+
+        Assert.Equal(7, value.Value.GetInt32());
+        Assert.True(value.OriginalEncoding.IsEmpty);
+        Assert.Throws<ArgumentNullException>(() => new Asn1Value<string>(null!));
     }
 
     [Fact]

@@ -1031,17 +1031,17 @@ public sealed class TBSCertificate
     public Asn1Integer SerialNumber { get; set; }
     public AlgorithmIdentifier Signature { get; set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
-    public Asn1Retained<AttributeTypeAndValue[][]> Issuer { get; set; }
+    public Asn1Value<AttributeTypeAndValue[][]> Issuer { get; set; }
     public Validity Validity { get; set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
-    public Asn1Retained<AttributeTypeAndValue[][]> Subject { get; set; }
-    public Asn1Retained<SubjectPublicKeyInfo> SubjectPublicKeyInfo { get; set; }
+    public Asn1Value<AttributeTypeAndValue[][]> Subject { get; set; }
+    public Asn1Value<SubjectPublicKeyInfo> SubjectPublicKeyInfo { get; set; }
     /// <summary>ASN.1 alias UniqueIdentifier ::= BIT STRING.</summary>
     public Asn1BitString? IssuerUniqueID { get; set; }
     /// <summary>ASN.1 alias UniqueIdentifier ::= BIT STRING.</summary>
     public Asn1BitString? SubjectUniqueID { get; set; }
     /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
-    public Asn1Retained<Extension[]>? Extensions { get; set; }
+    public Asn1Value<Extension[]>? Extensions { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1058,43 +1058,22 @@ public sealed class TBSCertificate
             }
             inner.WriteInteger(Asn1Tag.Integer, SerialNumber);
             Signature.Encode(inner, Asn1Tag.Sequence);
-            if (Issuer.HasEncoded)
+            inner.WriteSequenceOf(Asn1Tag.Sequence, Issuer.Value, static (inner, item) =>
             {
-                inner.WriteRaw(Issuer.EncodedMemory.Span);
-            }
-            else
-            {
-                inner.WriteSequenceOf(Asn1Tag.Sequence, Issuer.Value, static (inner, item) =>
+                inner.WriteSetOf(Asn1Tag.Set, item, static (inner, item) =>
                 {
-                    inner.WriteSetOf(Asn1Tag.Set, item, static (inner, item) =>
-                    {
-                        item.Encode(inner, Asn1Tag.Sequence);
-                    });
+                    item.Encode(inner, Asn1Tag.Sequence);
                 });
-            }
+            });
             Validity.Encode(inner, Asn1Tag.Sequence);
-            if (Subject.HasEncoded)
+            inner.WriteSequenceOf(Asn1Tag.Sequence, Subject.Value, static (inner, item) =>
             {
-                inner.WriteRaw(Subject.EncodedMemory.Span);
-            }
-            else
-            {
-                inner.WriteSequenceOf(Asn1Tag.Sequence, Subject.Value, static (inner, item) =>
+                inner.WriteSetOf(Asn1Tag.Set, item, static (inner, item) =>
                 {
-                    inner.WriteSetOf(Asn1Tag.Set, item, static (inner, item) =>
-                    {
-                        item.Encode(inner, Asn1Tag.Sequence);
-                    });
+                    item.Encode(inner, Asn1Tag.Sequence);
                 });
-            }
-            if (SubjectPublicKeyInfo.HasEncoded)
-            {
-                inner.WriteRaw(SubjectPublicKeyInfo.EncodedMemory.Span);
-            }
-            else
-            {
-                SubjectPublicKeyInfo.Value.Encode(inner, Asn1Tag.Sequence);
-            }
+            });
+            SubjectPublicKeyInfo.Value.Encode(inner, Asn1Tag.Sequence);
             if (IssuerUniqueID != null)
             {
                 inner.WriteBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), IssuerUniqueID.Value);
@@ -1105,20 +1084,13 @@ public sealed class TBSCertificate
             }
             if (Extensions != null)
             {
-                if (Extensions.HasEncoded)
+                inner.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true), nested =>
                 {
-                    inner.WriteRaw(Extensions.EncodedMemory.Span);
-                }
-                else
-                {
-                    inner.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true), nested =>
+                    nested.WriteSequenceOf(Asn1Tag.Sequence, Extensions.Value.Value, static (inner, item) =>
                     {
-                        nested.WriteSequenceOf(Asn1Tag.Sequence, Extensions.Value, static (inner, item) =>
-                        {
-                            item.Encode(inner, Asn1Tag.Sequence);
-                        });
+                        item.Encode(inner, Asn1Tag.Sequence);
                     });
-                }
+                });
             }
         });
     }
@@ -1139,16 +1111,16 @@ public sealed class TBSCertificate
             }
             value.SerialNumber = reader.ReadIntegerValue(Asn1Tag.Integer);
             value.Signature = Asn1Kit.Pkix.Bench.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
-            value.Issuer = reader.ReadRetained(r =>
+            value.Issuer = reader.ReadWithOriginalEncoding(r =>
             {
                 return r.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Pkix.Bench.AttributeTypeAndValue.Decode(inner, Asn1Tag.Sequence)));
             });
             value.Validity = Asn1Kit.Pkix.Bench.Validity.Decode(reader, Asn1Tag.Sequence);
-            value.Subject = reader.ReadRetained(r =>
+            value.Subject = reader.ReadWithOriginalEncoding(r =>
             {
                 return r.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Pkix.Bench.AttributeTypeAndValue.Decode(inner, Asn1Tag.Sequence)));
             });
-            value.SubjectPublicKeyInfo = reader.ReadRetained(r =>
+            value.SubjectPublicKeyInfo = reader.ReadWithOriginalEncoding(r =>
             {
                 return Asn1Kit.Pkix.Bench.SubjectPublicKeyInfo.Decode(r, Asn1Tag.Sequence);
             });
@@ -1162,7 +1134,7 @@ public sealed class TBSCertificate
             }
             if (reader.TryPeekTag(out var tag_Extensions) && tag_Extensions.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
             {
-                value.Extensions = reader.ReadRetained(r =>
+                value.Extensions = reader.ReadWithOriginalEncoding(r =>
                 {
                     using (r.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
                     {

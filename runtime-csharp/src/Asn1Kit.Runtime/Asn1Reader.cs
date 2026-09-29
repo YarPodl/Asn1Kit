@@ -81,8 +81,9 @@ public sealed class Asn1Reader
     public Asn1ReaderScope EnterExplicit(Asn1Tag expected) =>
         PushContentsWindow(ReadConstructedContents(expected));
 
-    /// <summary>Consumes a TLV, eagerly decodes it, and retains its encoded bytes.</summary>
-    public Asn1Retained<T> ReadRetained<T>(Func<Asn1Reader, T> decode)
+    /// <summary>Consumes a TLV, eagerly decodes it, and retains its original complete encoding.</summary>
+    public Asn1Value<T> ReadWithOriginalEncoding<T>(Func<Asn1Reader, T> decode)
+        where T : notnull
     {
         if (decode is null)
         {
@@ -93,7 +94,7 @@ public sealed class Asn1Reader
         using (PushContentsWindow(tlv.Encoded))
         {
             var value = decode(this);
-            return Asn1Retained<T>.Wrap(tlv.Encoded, value);
+            return new Asn1Value<T>(value, tlv.Encoded);
         }
     }
 

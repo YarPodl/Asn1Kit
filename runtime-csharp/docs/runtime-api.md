@@ -20,7 +20,7 @@
 
 ```text
 CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
-              → Asn1Tag, Asn1BitString, Asn1Any, Asn1Lazy<T>, Asn1Exception
+              → Asn1Tag, Asn1BitString, Asn1Any, Asn1Lazy<T>, Asn1Value<T>, Asn1Exception
 ```
 
 Статические `Asn1Boolean` / `Asn1Enumerated` / … — warm convenience; codegen их не эмитит.
@@ -46,7 +46,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `ReadAny` | hot/cold | единственный raw TLV escape hatch: tag + encoded/contents views |
 | `Asn1Any.EncodedMemory` / `ContentsMemory` / `ToArray` | hot | view полного TLV / срез V / detach |
 | `Asn1Lazy<T>` / `ReadLazy` / `HasEncoded` / `Value` / `WriteTo` | hot | отложенный decode полного TLV (`options.lazy`); view до `.Value` |
-| `Asn1Retained<T>` / `ReadRetained` / `HasEncoded` / `Value` / `WriteTo` | hot | eager decode + retain TLV (`options.retainEncoded`); мутация `.Value` сбрасывает TLV |
+| `Asn1Value<T>` / `ReadWithOriginalEncoding` / `Value` / `OriginalEncoding` | hot | allocation-free eager decode + view исходного полного TLV (`options.retainEncoded`); encode использует `Value`, `T` неявно оборачивается без исходного TLV |
 | `Asn1Oid` / `Parse` / `ParseArcs` / `EncodeContents` / `ReadOid` / `WriteObjectIdentifier` | hot | единственный OID-codec (string↔arcs↔contents); dotted string — warm `Encode(string)` / `DecodeString` / `ReadObjectIdentifier` |
 | `Asn1BitString.Span` / `Memory` / `ToArray` | hot | view (из reader) / detach |
 | `Asn1Integer.Span` / `Memory` / `ToArray` | hot | view DER contents / detach |
@@ -103,6 +103,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `WriteExplicit` / `EnterExplicit` | constructed wrapper |
 | `WriteAny` / `ReadAny` | IMPLICIT peel; EncodedMemory bit-exact |
 | `ReadLazy` / `Asn1Lazy<T>` | defer decode; Value materialize; WriteTo raw TLV |
+| `ReadWithOriginalEncoding` / `Asn1Value<T>` | eager decode; исходный полный TLV доступен отдельно; encode текущего `Value` проверяется через generated round-trip |
 | `WriteRaw` | append TLV |
 | `ReadAny` | encoded/contents view; wrong expected tag |
 | Wrappers | smoke |

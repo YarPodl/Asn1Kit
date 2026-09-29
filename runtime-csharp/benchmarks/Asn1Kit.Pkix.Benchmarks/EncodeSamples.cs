@@ -35,7 +35,7 @@ namespace Asn1Kit.EncodeBench;
 
 /// <summary>
 /// Hand-built encode-bench object graphs (PKITS Trust Anchor / GoodCACRL scale).
-/// No Decode: values are C# object initializers so retainEncoded cannot WriteRaw fixture TLV.
+/// No Decode: values are C# object initializers, so retained original encodings are empty.
 /// </summary>
 internal static class EncodeSamples
 {
@@ -70,20 +70,20 @@ internal static class EncodeSamples
                 Version = PkixVersion.V3,
                 SerialNumber = Asn1Integer.FromInt32(1),
                 Signature = signatureAlgorithm,
-                Issuer = Asn1Retained<AttributeTypeAndValue[][]>.FromValue(name),
+                Issuer = name,
                 Validity = new Validity
                 {
                     NotBefore = Time.FromUtcTime(NotBefore),
                     NotAfter = Time.FromUtcTime(NotAfter),
                 },
-                Subject = Asn1Retained<AttributeTypeAndValue[][]>.FromValue(CloneName(name)),
-                SubjectPublicKeyInfo = Asn1Retained<SubjectPublicKeyInfo>.FromValue(CreateSpki()),
-                Extensions = Asn1Retained<Extension[]>.FromValue(new Extension[]
+                Subject = CloneName(name),
+                SubjectPublicKeyInfo = CreateSpki(),
+                Extensions = new Extension[]
                 {
                     Ext(OidSubjectKeyIdentifier, critical: false, EncodeSki(SubjectKeyId)),
                     Ext(OidKeyUsage, critical: true, EncodeKeyUsage(KeyUsageFlags.KeyCertSign | KeyUsageFlags.CRLSign)),
                     Ext(OidBasicConstraints, critical: true, EncodeBasicConstraintsCa()),
-                }),
+                },
             },
             SignatureAlgorithm = Sha256WithRsa(),
             Signature = Asn1BitString.CopyFrom(SignatureBytes, unusedBits: 0),
