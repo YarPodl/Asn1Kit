@@ -79,7 +79,7 @@ public sealed class PrimitiveOracleTests
         CrossDer(
             () => EncodeUs(w => w.WriteNull(Asn1Tag.Null)),
             () => DotnetAsnOracle.EncodeNull(),
-            bytes => Assert.True(new Asn1Reader(bytes, Asn1Encoding.Der).ReadNull(Asn1Tag.Null)),
+            bytes => new Asn1Reader(bytes, Asn1Encoding.Der).ReadNull(Asn1Tag.Null),
             bytes => DotnetAsnOracle.DecodeNull(bytes));
     }
 

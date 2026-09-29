@@ -310,15 +310,14 @@ public sealed class PrimitiveCodecTests
     }
 
     [Fact]
-    public void ReadTlv_ReturnsContentsView()
+    public void ReadAny_ReturnsContentsView()
     {
         var bytes = Hex.Parse("02012A");
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
-        var (tag, contents, constructed) = reader.ReadTlv();
-        Assert.Equal(Asn1Tag.Integer, tag);
-        Assert.False(constructed);
-        Assert.Equal(new byte[] { 0x2A }, contents.ToArray());
-        Assert.True(MemoryMarshal.TryGetArray(contents, out ArraySegment<byte> segment));
+        var any = reader.ReadAny();
+        Assert.Equal(Asn1Tag.Integer, any.Tag);
+        Assert.Equal(new byte[] { 0x2A }, any.ContentsMemory.ToArray());
+        Assert.True(MemoryMarshal.TryGetArray(any.ContentsMemory, out ArraySegment<byte> segment));
         Assert.Same(bytes, segment.Array);
         Assert.True(reader.Eof);
     }
@@ -364,7 +363,7 @@ public sealed class PrimitiveCodecTests
 
     private static void EncodeNull(BerDerCase _, Asn1Writer w) => w.WriteNull(Asn1Tag.Null);
 
-    private static void DecodeNull(BerDerCase _, Asn1Reader r, byte[] __) => Assert.True(r.ReadNull(Asn1Tag.Null));
+    private static void DecodeNull(BerDerCase _, Asn1Reader r, byte[] __) => r.ReadNull(Asn1Tag.Null);
 
     private static void EncodeInteger(BerDerCase c, Asn1Writer w) => w.WriteInteger(Asn1Tag.Integer, BerDerFixtures.GetInteger(c));
 

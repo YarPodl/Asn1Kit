@@ -8,7 +8,7 @@
 ## Политика Memory / Span
 
 - **Вход** и **буфер вызывающего** — `ReadOnlySpan` / `Span` (у `Memory` вызывайте `.Span`; парные перегрузки Span+Memory не делаем — `byte[]` неоднозначен).
-- **Вход reader** — дополнительно `ReadOnlyMemory<byte>` ctor (без копии, если array-backed). Reader держит `_data`; `Source` — окно буфера (якорь lifetime).
+- **Вход reader** — дополнительно `ReadOnlyMemory<byte>` ctor без копии, включая custom `MemoryManager`. Reader содержит value-type `Asn1DecodeCursor`; `Remaining` — байты до конца текущего окна.
 - **Значения, уходящие из reader** — `ReadOnlyMemory<byte>` / structs с `Memory` / `EncodedMemory` / `ContentsMemory`: **view на буфер reader** (primitive / definite / ANY TLV). Мутация исходного буфера после decode — UB для views. Долговременное хранение без буфера — явный detach (`ToArray` / `Clone`).
 - **Исключения (owned):** constructed BER (OCTET / BIT / string — конкатенация сегментов); materialize в `string` / `BigInteger` / `DateTimeOffset`.
 - **Value-types:** ctor / `FromContents(ReadOnlyMemory)` — wrap без копии; `CopyFrom(ReadOnlySpan)` — owned копия (отдельное имя, чтобы `byte[]` не был неоднозначен между Span и Memory).
@@ -26,7 +26,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 Статические `Asn1Boolean` / `Asn1Enumerated` / … — warm convenience; codegen их не эмитит.
 `Asn1Integer` — **hot** value type (DER contents как `ReadOnlyMemory`; из reader — view) для codegen при `representation=der`; `default` / `Zero` = 0; статические `Encode(BigInteger)` / `DecodeBigInteger` — warm.
 
-Непублично: `Asn1TextCodec` (`internal`), `Asn1Writer.EncodeInteger` (`internal`), `WriteTag` / `WriteLength` / `WriteTlv` / `WritePrimitive` (`private`).
+Непублично: `Asn1DecodeCursor` / `Asn1Tlv` / `Asn1ConstructedDecoder` / `Asn1TextCodec` (`internal`); `Asn1Boolean.DecodeContents` / `Asn1Integer.IsMinimalContents` / `Asn1BitString.ParsePrimitive` (`internal`); `Asn1Writer.EncodeInteger` (`internal`); `WriteTag` / `WriteLength` / `WriteTlv` / `WritePrimitive` (`private`).
 
 ## Инвентарь
 
@@ -38,12 +38,12 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `WriteOctetString(ReadOnlySpan)` / `WriteRaw(ReadOnlySpan)` | hot/cold | borrow |
 | `WriteSequence` / `WriteSet` / `WriteSetOf` / `WriteSequenceOf<T>` / `WriteSetOf<T>` / `WriteExplicit(Action)` | hot | callback |
 | `ReadSequenceOf<T>` / `ReadSetOf<T>` | hot | owned `T[]` (`Array.Empty<T>` when empty); OF fill без capturing-лямбды вокруг `decodeItem` |
-| `EnterSequence` / `EnterSet` / `EnterExplicit` → `Asn1ReaderCursor` | hot | push/pop окна contents без `Func` (SEQUENCE/SET/EXPLICIT nesting) |
-| `Asn1Reader(byte[]\|offset/length\|ReadOnlyMemory, encoding, options?)` / `Source` / `Options` | hot | срез без копии на входе; `Source` якорит lifetime; `Options` наследуются nested; nested SEQUENCE — push/pop без `new Asn1Reader` когда contents alias буфер |
-| `Asn1ReaderCursor` | hot | явный push/pop окна contents (`EnterSequence` / `EnterExplicit` / `Push`) |
+| `EnterSequence` / `EnterSet` / `EnterExplicit` → `Asn1ReaderScope` | hot | allocation-free push/pop окна; фактический тег обязан быть constructed; dispose только один раз и в LIFO-порядке |
+| `Asn1Reader(byte[]\|offset/length\|ReadOnlyMemory, encoding, options?)` / `Remaining` / `Options` | hot | входной `ReadOnlyMemory` не копируется; `Remaining` — байты до конца текущего окна; options сохраняются во вложенных окнах |
+| `Asn1ReaderScope` | hot | публично только `Dispose`; произвольного `Push` и доступа к reader через scope нет |
 | `Asn1ReaderOptions` (`Default` / `Strict` / `AllowNonMinimalLength` / `AllowOverlongOidBase128`) | warm | immutable flags |
-| `ReadOctetString → ReadOnlyMemory` / `TryReadOctetString(Span)` | hot | view / copy-out (Try всегда продвигает reader); constructed BER — owned |
-| `ReadValue → ReadOnlyMemory` / `TryReadValue(Span)` / `ReadTlv` | cold/warm | view / copy-out |
+| `ReadOctetString → ReadOnlyMemory` / `TryReadOctetString(Span)` | hot | primitive view / copy-out; short destination → `false`, `bytesWritten=0`, reader не продвигается; constructed BER — owned |
+| `ReadAny` | hot/cold | единственный raw TLV escape hatch: tag + encoded/contents views |
 | `Asn1Any.EncodedMemory` / `ContentsMemory` / `ToArray` | hot | view полного TLV / срез V / detach |
 | `Asn1Lazy<T>` / `ReadLazy` / `HasEncoded` / `Value` / `WriteTo` | hot | отложенный decode полного TLV (`options.lazy`); view до `.Value` |
 | `Asn1Retained<T>` / `ReadRetained` / `HasEncoded` / `Value` / `WriteTo` | hot | eager decode + retain TLV (`options.retainEncoded`); мутация `.Value` сбрасывает TLV |
@@ -61,7 +61,8 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 - `ReadInt32` / `TryGetInt32` (и UInt32/Int64/UInt64) разбирают short contents без `BigInteger`.
 - `ReadTime` парсит UTCTime/GeneralizedTime из contents octets без промежуточной `string` (`Asn1TextCodec.ParseTime(span)`).
 - Open-type DEFINED BY OID: codegen передаёт `Asn1Oid` и сравнивает со статическими константами (без `Oid.ToString()` на hot path).
-- `TryReadOctetString` / `TryReadValue` при нехватке destination возвращают `false`, но TLV уже потреблён.
+- `TryPeekTag` работает на копии cursor: malformed tag бросает `Asn1Exception`, не меняя позицию. `TryReadOctetString` коммитит cursor только при успехе.
+- Обычный `Read*` после исключения не гарантирует сохранение позиции: продолжать decode после ошибки входа нельзя.
 
 ## Soft-read и строгие опции
 
@@ -85,7 +86,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | API | Минимум |
 | --- | --- |
 | `TryEncode` / `EncodedLength` | exact fit; short Span → false; равенство с `Encode()` |
-| `TryReadOctetString` / `TryReadValue` | fit; short → false; BER constructed OCTET |
+| `TryReadOctetString` | fit; short → false без продвижения; повторный fit; BER constructed OCTET |
 | `WriteBoolean` / `ReadBoolean` | DER `00`/`FF`; BER nonzero-as-true |
 | `WriteInteger` / `ReadInteger` / `ReadIntegerValue` / `ReadInt32`… | `0`, `-1`, 127/128, длинный; empty reject; soft non-minimal accept + as-is write через `Asn1Integer`; fixed-width range reject |
 | `WriteEnumerated` / `ReadEnumerated` | tag `0A`; contents как INTEGER; empty / wrong tag reject |
@@ -103,6 +104,6 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `WriteAny` / `ReadAny` | IMPLICIT peel; EncodedMemory bit-exact |
 | `ReadLazy` / `Asn1Lazy<T>` | defer decode; Value materialize; WriteTo raw TLV |
 | `WriteRaw` | append TLV |
-| `ReadValue` / `ReadTlv` | view; wrong tag |
+| `ReadAny` | encoded/contents view; wrong expected tag |
 | Wrappers | smoke |
 | `Asn1BitString` / `Asn1Any` / `Asn1Integer` / `Asn1Null` | EncodedMemory/ContentsMemory alias source; `FromTagAndContents`; `ToArray` detach; equality; `Asn1Integer` numeric accessors + `Zero`/`default`=0; `Asn1Null` singleton value |

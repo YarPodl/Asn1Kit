@@ -177,8 +177,6 @@ public sealed class RuntimeTests
         AssertSameArray(data, any.EncodedMemory, expectedOffset: 12);
         AssertSameArray(data, any.ContentsMemory, expectedOffset: 14);
         Assert.True(reader.Eof);
-        Assert.True(MemoryMarshal.TryGetArray(reader.Source, out ArraySegment<byte> source));
-        Assert.Same(data, source.Array);
     }
 
     [Fact]
@@ -248,6 +246,10 @@ public sealed class RuntimeTests
         Span<byte> tooSmall = stackalloc byte[2];
         Assert.False(shortReader.TryReadOctetString(Asn1Tag.OctetString, tooSmall, out written));
         Assert.Equal(0, written);
+        Assert.False(shortReader.Eof);
+        Assert.Equal(bytes.Length, shortReader.Remaining);
+        Assert.True(shortReader.TryReadOctetString(Asn1Tag.OctetString, dest, out written));
+        Assert.Equal(3, written);
         Assert.True(shortReader.Eof);
 
         var ber = new byte[] { 0x24, 0x80, 0x04, 0x03, 0x41, 0x6E, 0x6E, 0x00, 0x00 };
@@ -259,16 +261,17 @@ public sealed class RuntimeTests
     }
 
     [Fact]
-    public void TryReadValue_CopiesPrimitiveContents()
+    public void ReadAny_ExposesPrimitiveContents()
     {
         var writer = new Asn1Writer(Asn1Encoding.Der);
         Asn1Integer.Encode(writer, 1);
         var bytes = writer.Encode();
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
-        Span<byte> dest = stackalloc byte[1];
-        Assert.True(reader.TryReadValue(Asn1Tag.Integer, allowConstructed: false, dest, out var written));
-        Assert.Equal(1, written);
-        Assert.Equal(0x01, dest[0]);
+        var any = reader.ReadAny();
+        Assert.Equal(Asn1Tag.Integer, any.Tag);
+        Assert.Equal(new byte[] { 0x01 }, any.ContentsMemory.ToArray());
+        Assert.Equal(bytes, any.EncodedMemory.ToArray());
+        Assert.True(reader.Eof);
     }
 
     [Fact]

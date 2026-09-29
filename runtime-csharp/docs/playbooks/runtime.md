@@ -7,13 +7,16 @@
 | Файл | Что внутри |
 | --- | --- |
 | [Asn1Tag.cs](../../src/Asn1Kit.Runtime/Asn1Tag.cs) | Класс тега, universal-константы, `Asn1StringForm` / `Asn1TimeForm`, `MatchesIgnoreConstructed`, `AsPrimitive` / `AsConstructed` |
-| [Asn1Writer.cs](../../src/Asn1Kit.Runtime/Asn1Writer.cs) | Публичные `Write*` / `Encode` / `WriteRaw`; внутри (`private`) `WriteTag` / `WriteLength` / `WriteTlv` / `WritePrimitive` / `WriteConstructed` (один буфер + резерв длины) |
-| [Asn1Reader.cs](../../src/Asn1Kit.Runtime/Asn1Reader.cs) | Чтение TLV, definite и indefinite length, `TryPeekTag`, `Eof`, публичные `ReadValue` / `ReadTlv`, ctors: `byte[]`, `(byte[], offset, length)`, `ReadOnlyMemory<byte>` |
-| [Asn1BitString.cs](../../src/Asn1Kit.Runtime/Asn1BitString.cs) | `Asn1BitString` (Memory wrap / `CopyFrom`), `UnusedBits`, indexer MSB-first, `FromBits` |
+| [Asn1Writer.cs](../../src/Asn1Kit.Runtime/Asn1Writer.cs) | Публичные `Write*` / `Encode` / `WriteRaw`; внутри (`private`) `WriteTag` / `WriteLength` / `WriteTlv` / `WritePrimitive` / `WriteConstructed` (один буфер + резерв длины); симметричный split — [status.md](../../../docs/status.md) backlog §8 |
+| [Asn1Reader.cs](../../src/Asn1Kit.Runtime/Asn1Reader.cs) | Публичный фасад: `Encoding` / `Options` / `Remaining` / `Eof`, `Enter*` / typed `Read*` / `ReadAny` / `ReadLazy`; внутри один value-type cursor без второй heap-аллокации |
+| [Asn1DecodeCursor.cs](../../src/Asn1Kit.Runtime/Asn1DecodeCursor.cs) | `internal struct`: текущее `ReadOnlyMemory`-окно, tag/length/TLV, BER indefinite; копия cursor служит bookmark для `Try*` |
+| [Asn1ReaderScope.cs](../../src/Asn1Kit.Runtime/Asn1ReaderScope.cs) | allocation-free nested scope; восстанавливает cursor, проверяет single-dispose и LIFO |
+| [Asn1ConstructedDecoder.cs](../../src/Asn1Kit.Runtime/Asn1ConstructedDecoder.cs) | `internal`: склейка constructed OCTET/BIT/string поверх `ref Asn1DecodeCursor` (soft under DER — backlog §9) |
+| [Asn1BitString.cs](../../src/Asn1Kit.Runtime/Asn1BitString.cs) | `Asn1BitString` (Memory wrap / `CopyFrom`), `UnusedBits`, indexer MSB-first, `FromBits`, `ParsePrimitive` (`internal`) |
 | [Asn1Any.cs](../../src/Asn1Kit.Runtime/Asn1Any.cs) | `Asn1Any` (полный TLV `EncodedMemory` + `ContentsMemory`; `FromTagAndContents` / `CopyFrom`) |
 | [Asn1TextCodec.cs](../../src/Asn1Kit.Runtime/Asn1TextCodec.cs) | `internal`: encode/decode строк и времени (наборы символов, DER/BER-формы) |
 | [Asn1Oid.cs](../../src/Asn1Kit.Runtime/Asn1Oid.cs) | `Asn1Oid`: string↔arcs↔base-128 contents; `Encode`/`Decode`/`DecodeString`; hot для codegen |
-| [Asn1Integer.cs](../../src/Asn1Kit.Runtime/Asn1Integer.cs) | Value type: DER contents as Memory (view from reader); `Zero`/`default`=0; `FromContents` / `CopyFrom` / `FromBigInteger` / `GetInt32`…; hot для codegen `der` |
+| [Asn1Integer.cs](../../src/Asn1Kit.Runtime/Asn1Integer.cs) | Value type: DER contents as Memory (view from reader); `Zero`/`default`=0; `FromContents` / `CopyFrom` / `FromBigInteger` / `GetInt32`…; `IsMinimalContents` (`internal`); hot для codegen `der` |
 | [Asn1Primitives.cs](../../src/Asn1Kit.Runtime/Asn1Primitives.cs) | `Asn1Boolean` / `Asn1Enumerated` / `Asn1OctetString` / `Asn1String` / `Asn1Time` — warm обёртки; **C# backend эмитит `writer.Write*` / `reader.Read*` напрямую**; OID — в `Asn1Oid`, не здесь |
 
 Кодировка выбирается через `Asn1Encoding.Ber` / `Asn1Encoding.Der` в конструкторе writer'а и reader'а.
@@ -43,12 +46,12 @@
 - Без LINQ, `ToArray()` и `new Asn1Reader(copy)` на горячем пути.
 
 ```csharp
-// ❌ BAD: копия содержимого на каждый ReadValue
+// ❌ BAD: копия содержимого каждого primitive value
 var contents = new byte[length];
 Buffer.BlockCopy(_data, _offset, contents, 0, length);
 
 // ✅ GOOD: срез без копии
-ReadOnlySpan<byte> contents = _data.AsSpan(_offset, length);
+ReadOnlyMemory<byte> contents = input.Slice(offset, length);
 ```
 
 ## Тесты

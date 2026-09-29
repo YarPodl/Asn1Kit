@@ -27,7 +27,7 @@ public sealed class ExternalVectorTests
             case "null":
                 RunPrimitive(c, bytes,
                     w => w.WriteNull(Asn1Tag.Null),
-                    r => Assert.True(r.ReadNull(Asn1Tag.Null)));
+                    r => r.ReadNull(Asn1Tag.Null));
                 break;
             case "integer":
                 RunPrimitive(c, bytes,
@@ -103,7 +103,7 @@ public sealed class ExternalVectorTests
             Assert.Equal(expectedOid, reader.ReadObjectIdentifier(Asn1Tag.ObjectIdentifier));
             if (paramsTag == "null")
             {
-                Assert.True(reader.ReadNull(Asn1Tag.Null));
+                reader.ReadNull(Asn1Tag.Null);
             }
 
             Assert.True(reader.Eof);

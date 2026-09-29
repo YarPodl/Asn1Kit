@@ -10,6 +10,21 @@ public static class Asn1Boolean
 
     public static bool Decode(Asn1Reader reader, Asn1Tag? tag = null) =>
         reader.ReadBoolean(tag ?? Asn1Tag.Boolean);
+
+    internal static bool DecodeContents(ReadOnlySpan<byte> contents, Asn1Encoding encoding)
+    {
+        if (contents.Length != 1)
+        {
+            throw new Asn1Exception("BOOLEAN must contain one octet.");
+        }
+
+        if (encoding == Asn1Encoding.Der && contents[0] is not (0x00 or 0xFF))
+        {
+            throw new Asn1Exception("DER BOOLEAN must be 0x00 or 0xFF.");
+        }
+
+        return contents[0] != 0x00;
+    }
 }
 
 public static class Asn1Enumerated

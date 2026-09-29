@@ -90,6 +90,39 @@ public readonly struct Asn1BitString : IEquatable<Asn1BitString>
     public static Asn1BitString Decode(Asn1Reader reader, Asn1Tag? tag = null) =>
         reader.ReadBitString(tag ?? Asn1Tag.BitString);
 
+    /// <summary>Parses primitive BIT STRING contents (unusedBits octet + payload).</summary>
+    internal static Asn1BitString ParsePrimitive(ReadOnlyMemory<byte> contents, bool rejectTrailingBits)
+    {
+        if (contents.Length == 0)
+        {
+            throw new Asn1Exception("BIT STRING contents must not be empty.");
+        }
+
+        var unusedBits = contents.Span[0];
+        if (unusedBits > 7)
+        {
+            throw new Asn1Exception("BIT STRING unusedBits must be in 0..7.");
+        }
+
+        if (contents.Length == 1)
+        {
+            if (unusedBits != 0)
+            {
+                throw new Asn1Exception("Empty BIT STRING must have unusedBits = 0.");
+            }
+
+            return default;
+        }
+
+        var bytes = contents.Slice(1);
+        if (rejectTrailingBits)
+        {
+            Asn1TextCodec.EnsureTrailingBitsZero(bytes.Span, unusedBits);
+        }
+
+        return new Asn1BitString(bytes, unusedBits);
+    }
+
     public bool Equals(Asn1BitString other) =>
         UnusedBits == other.UnusedBits && Span.SequenceEqual(other.Span);
 

@@ -80,7 +80,13 @@
 
 **Причина.** Owned-копия каждого OCTET / ANY / INTEGER / BIT STRING на горячем пути дороже пользы: буфер уже есть у вызывающего (сертификат, CMS, PDU). Безопасное долговременное хранение без исходных байтов — отдельный сценарий, его закрывает явный detach.
 
-**Последствие.** `Asn1Reader` держит `_data`; `Source` и значения из `Read*` (`ReadOnlyMemory`, `Asn1Any` / `Asn1BitString` / `Asn1Integer`) по возможности **алиасят** этот массив. Lifetime views = lifetime буфера (или reader’а). Мутация буфера после decode — UB. Constructed BER (конкатенация сегментов) и materialize (`string` / `BigInteger` / `DateTimeOffset`) аллоцируют. Отвязка — `ToArray` / `Clone` на value-types. Codegen: OCTET STRING → `ReadOnlyMemory<byte>`.
+**Последствие.** `Asn1Reader` держит входной `ReadOnlyMemory<byte>` внутри value-type cursor; значения из `Read*` (`ReadOnlyMemory`, `Asn1Any` / `Asn1BitString` / `Asn1Integer`) по возможности **алиасят** эту memory, в том числе от custom `MemoryManager`. Lifetime view удерживается самим `ReadOnlyMemory`; отдельный `Source` не нужен. Мутация входа после decode — UB. Constructed BER (конкатенация сегментов) и materialize (`string` / `BigInteger` / `DateTimeOffset`) аллоцируют. Отвязка — `ToArray` / `Clone` на value-types. Codegen: OCTET STRING → `ReadOnlyMemory<byte>`.
+
+## Reader — фасад + value-type cursor + allocation-free scope
+
+**Причина.** Отдельный mutable buffer-класс упрощает файл `Asn1Reader`, но добавляет heap-объект на каждый top-level decode. Дочерний reader на каждую SEQUENCE делает API локальным, но возвращает аллокации на каждом вложенном PKIX/CMS-типе. Публичный произвольный push окна также позволяет выйти за исходный slice.
+
+**Последствие.** `Asn1Reader` остаётся классом для совместимости с delegate/lazy/reflection, но содержит `Asn1DecodeCursor` как mutable struct. Копия cursor — bookmark для `TryPeekTag` и non-consuming `TryReadOctetString`. Вложенность открывается только `EnterSequence` / `EnterSet` / `EnterExplicit` и возвращает `Asn1ReaderScope`; scope проверяет single-dispose и LIFO. Raw escape hatch один — `ReadAny`; публичных `ReadTlv`, `ReadValue`, `TryReadValue` и `Push` нет. Constructed decoder работает через `ref Asn1DecodeCursor` и не вызывает фасад обратно.
 
 ## ANY — `Asn1Any` или open-type + `bindings`
 

@@ -81,6 +81,27 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
         return new BigInteger(contents, isUnsigned: false, isBigEndian: true);
     }
 
+    /// <summary>X.690 §8.3.2 — no unnecessary leading 0x00 / 0xFF octets.</summary>
+    internal static bool IsMinimalContents(ReadOnlySpan<byte> contents)
+    {
+        if (contents.Length <= 1)
+        {
+            return true;
+        }
+
+        if (contents[0] == 0x00 && (contents[1] & 0x80) == 0)
+        {
+            return false;
+        }
+
+        if (contents[0] == 0xFF && (contents[1] & 0x80) != 0)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     public BigInteger ToBigInteger() => ToBigInteger(Span);
 
     public bool TryGetInt32(out int value)
