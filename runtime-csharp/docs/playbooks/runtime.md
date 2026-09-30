@@ -9,7 +9,6 @@
 | [Asn1Tag.cs](../../src/Asn1Kit.Runtime/Asn1Tag.cs) | Класс тега, universal-константы, `Asn1StringForm` / `Asn1TimeForm`, `MatchesIgnoreConstructed`, `AsPrimitive` / `AsConstructed` |
 | [Asn1Writer.cs](../../src/Asn1Kit.Runtime/Asn1Writer.cs) | Публичный фасад: `Write*` / `Encode` / `WriteRaw`; делегирует framing и буфер encode-ядру |
 | [Asn1EncodeBuffer.cs](../../src/Asn1Kit.Runtime/Asn1EncodeBuffer.cs) | `internal struct`: растущий буфер, tag/length/TLV, constructed reserve + compact, DER-сортировка `SET OF` без второй heap-аллокации |
-| [Asn1ContentsEncoder.cs](../../src/Asn1Kit.Runtime/Asn1ContentsEncoder.cs) | `internal`: канонические contents BOOLEAN и числовых INTEGER/ENUMERATED |
 | [Asn1Reader.cs](../../src/Asn1Kit.Runtime/Asn1Reader.cs) | Публичный фасад: `Encoding` / `Options` / `Remaining` / `Eof`, `Enter*` / typed `Read*` / `ReadAny` / `ReadLazy` / `ReadWithOriginalEncoding`; внутри один value-type cursor без второй heap-аллокации |
 | [Asn1DecodeCursor.cs](../../src/Asn1Kit.Runtime/Asn1DecodeCursor.cs) | `internal struct`: текущее `ReadOnlyMemory`-окно, tag/length/TLV, BER indefinite; копия cursor служит bookmark для `Try*` |
 | [Asn1ReaderScope.cs](../../src/Asn1Kit.Runtime/Asn1ReaderScope.cs) | allocation-free nested scope; восстанавливает cursor, проверяет single-dispose и LIFO |
@@ -18,7 +17,7 @@
 | [Asn1Any.cs](../../src/Asn1Kit.Runtime/Asn1Any.cs) | `Asn1Any` (полный TLV `EncodedMemory` + `ContentsMemory`; `FromTagAndContents` / `CopyFrom`) |
 | [Asn1TextCodec.cs](../../src/Asn1Kit.Runtime/Asn1TextCodec.cs) | `internal`: encode/decode строк и времени (наборы символов, DER/BER-формы) |
 | [Asn1Oid.cs](../../src/Asn1Kit.Runtime/Asn1Oid.cs) | `Asn1Oid`: string↔arcs↔base-128 contents; `Encode`/`Decode`/`DecodeString`; hot для codegen |
-| [Asn1Integer.cs](../../src/Asn1Kit.Runtime/Asn1Integer.cs) | Value type: DER contents as Memory (view from reader); `Zero`/`default`=0; `FromContents` / `CopyFrom` / `FromBigInteger` / `GetInt32`…; `IsMinimalContents` (`internal`); hot для codegen `der` |
+| [Asn1Integer.cs](../../src/Asn1Kit.Runtime/Asn1Integer.cs) | Value type и единый INTEGER contents codec: DER contents as Memory (view from reader); `Zero`/`default`=0; `FromContents` / `CopyFrom` / `FromBigInteger` / `GetInt32`…; numeric encode и `IsMinimalContents` (`internal`); hot для codegen `der` |
 | [Asn1Primitives.cs](../../src/Asn1Kit.Runtime/Asn1Primitives.cs) | `Asn1Boolean` / `Asn1Enumerated` / `Asn1OctetString` / `Asn1String` / `Asn1Time` — warm обёртки; **C# backend эмитит `writer.Write*` / `reader.Read*` напрямую**; OID — в `Asn1Oid`, не здесь |
 
 Кодировка выбирается через `Asn1Encoding.Ber` / `Asn1Encoding.Der` в конструкторе writer'а и reader'а.

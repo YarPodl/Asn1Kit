@@ -1,3 +1,4 @@
+using System.Numerics;
 using System.Runtime.InteropServices;
 using Asn1Kit.Runtime;
 
@@ -17,6 +18,50 @@ public sealed class PrimitiveCodecTests
     public static IEnumerable<object[]> BitStringCases() => BerDerFixtures.AsTheoryData("runtime-csharp/fixtures/ber-der/bit-string.json");
     public static IEnumerable<object[]> StringCases() => BerDerFixtures.AsTheoryData("runtime-csharp/fixtures/ber-der/string.json");
     public static IEnumerable<object[]> TimeCases() => BerDerFixtures.AsTheoryData("runtime-csharp/fixtures/ber-der/time.json");
+
+    public static IEnumerable<object[]> Int32EncodingCases()
+    {
+        yield return new object[] { 127, "02017F" };
+        yield return new object[] { 128, "02020080" };
+        yield return new object[] { -128, "020180" };
+        yield return new object[] { -129, "0202FF7F" };
+        yield return new object[] { 255, "020200FF" };
+        yield return new object[] { 256, "02020100" };
+        yield return new object[] { int.MinValue, "020480000000" };
+        yield return new object[] { int.MaxValue, "02047FFFFFFF" };
+    }
+
+    public static IEnumerable<object[]> UInt32EncodingCases()
+    {
+        yield return new object[] { 0u, "020100" };
+        yield return new object[] { 127u, "02017F" };
+        yield return new object[] { 128u, "02020080" };
+        yield return new object[] { 255u, "020200FF" };
+        yield return new object[] { 256u, "02020100" };
+        yield return new object[] { uint.MaxValue, "020500FFFFFFFF" };
+    }
+
+    public static IEnumerable<object[]> Int64EncodingCases()
+    {
+        yield return new object[] { 127L, "02017F" };
+        yield return new object[] { 128L, "02020080" };
+        yield return new object[] { -128L, "020180" };
+        yield return new object[] { -129L, "0202FF7F" };
+        yield return new object[] { 255L, "020200FF" };
+        yield return new object[] { 256L, "02020100" };
+        yield return new object[] { long.MinValue, "02088000000000000000" };
+        yield return new object[] { long.MaxValue, "02087FFFFFFFFFFFFFFF" };
+    }
+
+    public static IEnumerable<object[]> UInt64EncodingCases()
+    {
+        yield return new object[] { 0UL, "020100" };
+        yield return new object[] { 127UL, "02017F" };
+        yield return new object[] { 128UL, "02020080" };
+        yield return new object[] { 255UL, "020200FF" };
+        yield return new object[] { 256UL, "02020100" };
+        yield return new object[] { ulong.MaxValue, "020900FFFFFFFFFFFFFFFF" };
+    }
 
     [Theory]
     [MemberData(nameof(BooleanCases))]
@@ -186,6 +231,42 @@ public sealed class PrimitiveCodecTests
         Assert.Equal(long.MinValue, reader.ReadInt64(Asn1Tag.Integer));
         Assert.Equal(ulong.MaxValue, reader.ReadUInt64(Asn1Tag.Integer));
     }
+
+    [Theory]
+    [MemberData(nameof(Int32EncodingCases))]
+    public void Integer_Int32Encoding_IsCanonical(int value, string expectedHex) =>
+        AssertIntegerEncoding(
+            new BigInteger(value),
+            Asn1Integer.FromInt32(value),
+            writer => writer.WriteInteger(Asn1Tag.Integer, value),
+            expectedHex);
+
+    [Theory]
+    [MemberData(nameof(UInt32EncodingCases))]
+    public void Integer_UInt32Encoding_IsCanonical(uint value, string expectedHex) =>
+        AssertIntegerEncoding(
+            new BigInteger(value),
+            Asn1Integer.FromUInt32(value),
+            writer => writer.WriteInteger(Asn1Tag.Integer, value),
+            expectedHex);
+
+    [Theory]
+    [MemberData(nameof(Int64EncodingCases))]
+    public void Integer_Int64Encoding_IsCanonical(long value, string expectedHex) =>
+        AssertIntegerEncoding(
+            new BigInteger(value),
+            Asn1Integer.FromInt64(value),
+            writer => writer.WriteInteger(Asn1Tag.Integer, value),
+            expectedHex);
+
+    [Theory]
+    [MemberData(nameof(UInt64EncodingCases))]
+    public void Integer_UInt64Encoding_IsCanonical(ulong value, string expectedHex) =>
+        AssertIntegerEncoding(
+            new BigInteger(value),
+            Asn1Integer.FromUInt64(value),
+            writer => writer.WriteInteger(Asn1Tag.Integer, value),
+            expectedHex);
 
     [Theory]
     [InlineData(new byte[] { 0x00 }, 0)]
@@ -467,4 +548,21 @@ public sealed class PrimitiveCodecTests
 
     private static Asn1TimeForm ParseTimeForm(string form) =>
         Enum.Parse<Asn1TimeForm>(form, ignoreCase: true);
+
+    private static void AssertIntegerEncoding(
+        BigInteger numericValue,
+        Asn1Integer integerValue,
+        Action<Asn1Writer> write,
+        string expectedHex)
+    {
+        var expected = Hex.Parse(expectedHex);
+        Assert.Equal(expected.AsSpan(2).ToArray(), integerValue.Span.ToArray());
+
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        write(writer);
+        var actual = writer.Encode();
+
+        Assert.Equal(expected, actual);
+        Assert.Equal(DotnetAsnOracle.EncodeInteger(numericValue), actual);
+    }
 }

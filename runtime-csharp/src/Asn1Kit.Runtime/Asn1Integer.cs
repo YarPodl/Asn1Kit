@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.Numerics;
 
 namespace Asn1Kit.Runtime;
@@ -61,20 +62,124 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
 
     /// <summary>Creates a value using the supplied input.</summary>
     public static Asn1Integer FromBigInteger(BigInteger value) =>
-        value.IsZero ? Zero : new(Asn1ContentsEncoder.EncodeInteger(value));
+        value.IsZero ? Zero : new(EncodeContents(value));
 
     /// <summary>Creates a value using the supplied input.</summary>
-    public static Asn1Integer FromInt32(int value) =>
-        value == 0 ? Zero : FromBigInteger(value);
+    public static Asn1Integer FromInt32(int value)
+        => value == 0 ? Zero : FromSignedInteger(value, maxLength: 4);
 
     /// <summary>Creates a value using the supplied input.</summary>
-    public static Asn1Integer FromUInt32(uint value) => FromBigInteger(value);
+    public static Asn1Integer FromUInt32(uint value)
+        => value == 0 ? Zero : FromUnsignedInteger(value, maxLength: 5);
 
     /// <summary>Creates a value using the supplied input.</summary>
-    public static Asn1Integer FromInt64(long value) => FromBigInteger(value);
+    public static Asn1Integer FromInt64(long value)
+        => value == 0 ? Zero : FromSignedInteger(value, maxLength: 8);
 
     /// <summary>Creates a value using the supplied input.</summary>
-    public static Asn1Integer FromUInt64(ulong value) => FromBigInteger(value);
+    public static Asn1Integer FromUInt64(ulong value)
+        => value == 0 ? Zero : FromUnsignedInteger(value, maxLength: 9);
+
+    internal static int GetEncodedByteCount(BigInteger value) =>
+        value.GetByteCount(isUnsigned: false);
+
+    internal static int EncodeContents(BigInteger value, Span<byte> destination)
+    {
+        if (!value.TryWriteBytes(destination, out var written, isUnsigned: false, isBigEndian: true))
+        {
+            throw new Asn1Exception("Failed to encode INTEGER contents.");
+        }
+
+        return written;
+    }
+
+    internal static int EncodeContents(int value, Span<byte> destination) =>
+        EncodeSignedContents(value, destination);
+
+    internal static int EncodeContents(uint value, Span<byte> destination) =>
+        EncodeSignedContents(value, destination);
+
+    internal static int EncodeContents(long value, Span<byte> destination) =>
+        EncodeSignedContents(value, destination);
+
+    internal static int EncodeContents(ulong value, Span<byte> destination) =>
+        EncodeUnsignedContents(value, destination);
+
+    private static byte[] EncodeContents(BigInteger value)
+    {
+        var contents = new byte[GetEncodedByteCount(value)];
+        var written = EncodeContents(value, contents);
+        if (written != contents.Length)
+        {
+            throw new Asn1Exception("Failed to encode INTEGER contents.");
+        }
+
+        return contents;
+    }
+
+    private static Asn1Integer FromSignedInteger(long value, int maxLength)
+    {
+        Span<byte> contents = stackalloc byte[maxLength];
+        var written = EncodeSignedContents(value, contents);
+        return new Asn1Integer(contents.Slice(0, written).ToArray());
+    }
+
+    private static Asn1Integer FromUnsignedInteger(ulong value, int maxLength)
+    {
+        Span<byte> contents = stackalloc byte[maxLength];
+        var written = EncodeUnsignedContents(value, contents);
+        return new Asn1Integer(contents.Slice(0, written).ToArray());
+    }
+
+    /// <summary>Minimal signed big-endian INTEGER contents for a 64-bit two's-complement value.</summary>
+    private static int EncodeSignedContents(long value, Span<byte> destination)
+    {
+        Span<byte> full = stackalloc byte[8];
+        BinaryPrimitives.WriteInt64BigEndian(full, value);
+
+        var start = 0;
+        if (value >= 0)
+        {
+            while (start < 7 && full[start] == 0x00 && (full[start + 1] & 0x80) == 0)
+            {
+                start++;
+            }
+        }
+        else
+        {
+            while (start < 7 && full[start] == 0xFF && (full[start + 1] & 0x80) != 0)
+            {
+                start++;
+            }
+        }
+
+        var length = 8 - start;
+        EnsureEncodeDestination(destination, length);
+        full.Slice(start, length).CopyTo(destination);
+        return length;
+    }
+
+    /// <summary>Minimal signed big-endian INTEGER contents for an unsigned 64-bit value.</summary>
+    private static int EncodeUnsignedContents(ulong value, Span<byte> destination)
+    {
+        if (value <= (ulong)long.MaxValue)
+        {
+            return EncodeSignedContents((long)value, destination);
+        }
+
+        EnsureEncodeDestination(destination, 9);
+        destination[0] = 0x00;
+        BinaryPrimitives.WriteUInt64BigEndian(destination.Slice(1), value);
+        return 9;
+    }
+
+    private static void EnsureEncodeDestination(Span<byte> destination, int required)
+    {
+        if (destination.Length < required)
+        {
+            throw new Asn1Exception("INTEGER encode destination is too small.");
+        }
+    }
 
     /// <summary>Interprets DER INTEGER/ENUMERATED contents as a signed big-endian integer.</summary>
     public static BigInteger ToBigInteger(ReadOnlySpan<byte> contents)

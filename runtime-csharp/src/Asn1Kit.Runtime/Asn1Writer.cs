@@ -67,32 +67,32 @@ public sealed class Asn1Writer
     public void WriteBoolean(Asn1Tag tag, bool value)
     {
         Span<byte> contents = stackalloc byte[1];
-        var written = Asn1ContentsEncoder.EncodeBoolean(value, contents);
-        _buffer.WritePrimitive(tag, contents.Slice(0, written));
+        contents[0] = value ? (byte)0xFF : (byte)0x00;
+        _buffer.WritePrimitive(tag, contents);
     }
 
     /// <summary>Writes integer to the ASN.1 output.</summary>
     public void WriteInteger(Asn1Tag tag, BigInteger value)
     {
-        var byteCount = Asn1ContentsEncoder.GetIntegerByteCount(value);
+        var byteCount = Asn1Integer.GetEncodedByteCount(value);
         if (byteCount <= StackEncodeThreshold)
         {
             Span<byte> contents = stackalloc byte[byteCount];
-            var written = Asn1ContentsEncoder.EncodeInteger(value, contents);
+            var written = Asn1Integer.EncodeContents(value, contents);
             _buffer.WritePrimitive(tag, contents.Slice(0, written));
             return;
         }
 
         var contentsArray = new byte[byteCount];
-        var writtenLarge = Asn1ContentsEncoder.EncodeInteger(value, contentsArray);
+        var writtenLarge = Asn1Integer.EncodeContents(value, contentsArray);
         _buffer.WritePrimitive(tag, contentsArray.AsSpan(0, writtenLarge));
     }
 
     /// <summary>Writes integer to the ASN.1 output.</summary>
     public void WriteInteger(Asn1Tag tag, int value)
     {
-        Span<byte> contents = stackalloc byte[5];
-        var written = Asn1ContentsEncoder.EncodeInteger(value, contents);
+        Span<byte> contents = stackalloc byte[4];
+        var written = Asn1Integer.EncodeContents(value, contents);
         _buffer.WritePrimitive(tag, contents.Slice(0, written));
     }
 
@@ -100,15 +100,15 @@ public sealed class Asn1Writer
     public void WriteInteger(Asn1Tag tag, uint value)
     {
         Span<byte> contents = stackalloc byte[5];
-        var written = Asn1ContentsEncoder.EncodeInteger(value, contents);
+        var written = Asn1Integer.EncodeContents(value, contents);
         _buffer.WritePrimitive(tag, contents.Slice(0, written));
     }
 
     /// <summary>Writes integer to the ASN.1 output.</summary>
     public void WriteInteger(Asn1Tag tag, long value)
     {
-        Span<byte> contents = stackalloc byte[9];
-        var written = Asn1ContentsEncoder.EncodeInteger(value, contents);
+        Span<byte> contents = stackalloc byte[8];
+        var written = Asn1Integer.EncodeContents(value, contents);
         _buffer.WritePrimitive(tag, contents.Slice(0, written));
     }
 
@@ -116,21 +116,13 @@ public sealed class Asn1Writer
     public void WriteInteger(Asn1Tag tag, ulong value)
     {
         Span<byte> contents = stackalloc byte[9];
-        var written = Asn1ContentsEncoder.EncodeInteger(value, contents);
+        var written = Asn1Integer.EncodeContents(value, contents);
         _buffer.WritePrimitive(tag, contents.Slice(0, written));
     }
 
     /// <summary>Writes owned INTEGER contents as-is (may be non-minimal).</summary>
     public void WriteInteger(Asn1Tag tag, Asn1Integer value)
-    {
-        var contents = value.Span;
-        if (contents.Length == 0)
-        {
-            throw new Asn1Exception("INTEGER contents must not be empty.");
-        }
-
-        _buffer.WritePrimitive(tag, contents);
-    }
+        => _buffer.WritePrimitive(tag, value.Span);
 
     /// <summary>ENUMERATED uses the same contents encoding as INTEGER (X.690).</summary>
     public void WriteEnumerated(Asn1Tag tag, BigInteger value) => WriteInteger(tag, value);

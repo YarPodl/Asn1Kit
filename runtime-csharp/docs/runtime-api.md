@@ -12,7 +12,7 @@
 - **Значения, уходящие из reader** — `ReadOnlyMemory<byte>` / structs с `Memory` / `EncodedMemory` / `ContentsMemory`: **view на буфер reader** (primitive / definite / ANY TLV). Мутация исходного буфера после decode — UB для views. Долговременное хранение без буфера — явный detach (`ToArray` / `Clone`).
 - **Исключения (owned):** constructed BER (OCTET / BIT / string — конкатенация сегментов); materialize в `string` / `BigInteger` / `DateTimeOffset`.
 - **Value-types:** ctor / `FromContents(ReadOnlyMemory)` — wrap без копии; `CopyFrom(ReadOnlySpan)` — owned копия (отдельное имя, чтобы `byte[]` не был неоднозначен между Span и Memory).
-- **Encode (writer):** contents примитивов — scratch на стеке (порог) или прямой write в буфер; heap только для oversized INTEGER/строк и для owned API (`EncodeInteger`, `EncodeContents(string)→byte[]`). Финальный `Encode()→byte[]` и рост внутреннего буфера — отдельно.
+- **Encode (writer):** contents примитивов — scratch на стеке (порог) или прямой write в буфер; heap только для oversized INTEGER/строк и для owned API (`Asn1Integer.From*`, `Asn1Oid.EncodeContents(string)→byte[]`). Финальный `Encode()→byte[]` и рост внутреннего буфера — отдельно.
 
 ## Кто кого вызывает
 
@@ -26,7 +26,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 Статические `Asn1Boolean` / `Asn1Enumerated` / … — warm convenience; codegen их не эмитит.
 `Asn1Integer` — **hot** value type (DER contents как `ReadOnlyMemory`; из reader — view) для codegen при `representation=der`; `default` / `Zero` = 0; статические `Encode(BigInteger)` / `DecodeBigInteger` — warm.
 
-Непублично: `Asn1EncodeBuffer` (`internal struct`, буфер и TLV framing), `Asn1ContentsEncoder` (BOOLEAN и числовые INTEGER/ENUMERATED contents), `Asn1DecodeCursor` / `Asn1Tlv` / `Asn1ConstructedDecoder` / `Asn1TextCodec` (`internal`); `Asn1Boolean.DecodeContents` / `Asn1Integer.IsMinimalContents` / `Asn1BitString.ParsePrimitive` (`internal`).
+Непублично: `Asn1EncodeBuffer` (`internal struct`, буфер и TLV framing), `Asn1DecodeCursor` / `Asn1Tlv` / `Asn1ConstructedDecoder` / `Asn1TextCodec` (`internal`); `Asn1Boolean.DecodeContents` / numeric contents codec и `IsMinimalContents` в `Asn1Integer` / `Asn1BitString.ParsePrimitive` (`internal`).
 
 ## Инвентарь
 
