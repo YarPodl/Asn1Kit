@@ -1,0 +1,35 @@
+-- Curated from RFC 2314 sections 6.1 and 6.2 (ASN.1:1988).
+-- RFC 2510 requires implementers to provide a module for CertificationRequest.
+
+PKCS10 DEFINITIONS IMPLICIT TAGS ::=
+BEGIN
+
+IMPORTS
+    Name, SubjectPublicKeyInfo, AlgorithmIdentifier
+        FROM PKIX1Explicit88 {iso(1) identified-organization(3) dod(6)
+            internet(1) security(5) mechanisms(5) pkix(7) id-mod(0)
+            id-pkix1-explicit(18)};
+
+CertificationRequestInfo ::= SEQUENCE {
+    version Version,
+    subject Name,
+    subjectPublicKeyInfo SubjectPublicKeyInfo,
+    attributes [0] IMPLICIT Attributes }
+
+Version ::= INTEGER
+
+Attributes ::= SET OF Attribute
+
+Attribute ::= SEQUENCE {
+    type OBJECT IDENTIFIER,
+    values SET OF ANY }
+
+CertificationRequest ::= SEQUENCE {
+    certificationRequestInfo CertificationRequestInfo,
+    signatureAlgorithm SignatureAlgorithmIdentifier,
+    signature Signature }
+
+SignatureAlgorithmIdentifier ::= AlgorithmIdentifier
+Signature ::= BIT STRING
+
+END

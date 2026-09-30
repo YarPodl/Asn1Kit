@@ -600,12 +600,26 @@ internal sealed class IrBuilder
     private static IEnumerable<int> ParseOidArcs(string oid) =>
         oid.Split('.', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse);
 
-    private static bool IsChoice(TypeAst type) => type switch
+    private bool IsChoice(TypeAst type) => IsChoice(type, _currentModule, new HashSet<string>(StringComparer.Ordinal));
+
+    private bool IsChoice(TypeAst type, string scopeModule, HashSet<string> visited) => type switch
     {
         ChoiceTypeAst => true,
-        TaggedTypeAst tagged => IsChoice(tagged.Inner),
+        TaggedTypeAst tagged => IsChoice(tagged.Inner, scopeModule, visited),
+        TypeReferenceAst reference => IsChoiceReference(reference, scopeModule, visited),
         _ => false
     };
+
+    private bool IsChoiceReference(TypeReferenceAst reference, string scopeModule, HashSet<string> visited)
+    {
+        if (!TryResolveType(scopeModule, reference.Name, reference.Module, out var assignment, out var definingModule))
+        {
+            return false;
+        }
+
+        var key = definingModule + "." + reference.Name;
+        return visited.Add(key) && IsChoice(assignment.Type, definingModule, visited);
+    }
 
     private static IrTag ResolveTag(TagAst tag, string tagDefault, bool innerIsChoice)
     {

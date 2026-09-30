@@ -34,7 +34,7 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/i
 
 `generate` также принимает `.asn` напрямую: компиляция выполняется в памяти. Повторяемый `-O` / `--option path=value` задаёт `options` всем модулям (например `-O csharp.namespace=Asn1Kit.Pkix` для golden PKIX).
 
-Эталонный C# PKIX: [runtime-csharp/generated/Asn1Kit.Pkix](runtime-csharp/generated/Asn1Kit.Pkix/).
+Эталонный C# PKIX/CMS/DVCS и зависимых протоколов: [runtime-csharp/generated/Asn1Kit.Pkix](runtime-csharp/generated/Asn1Kit.Pkix/).
 
 ## Профиль компилятора
 
@@ -45,6 +45,8 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/i
 Value assignments (`id-pkix OBJECT IDENTIFIER ::= { … }`, `ub-name INTEGER ::= 32768`) попадают в `module.values`.
 
 Опорные фикстуры RFC 5280: [compiler/fixtures/asn1/pkix1-explicit88.asn](compiler/fixtures/asn1/pkix1-explicit88.asn) (Appendix A.1) и [compiler/fixtures/asn1/pkix1-implicit88.asn](compiler/fixtures/asn1/pkix1-implicit88.asn) (Appendix A.2, с `IMPORTS` из Explicit88).
+
+Полный граф DVCS основан на ASN.1:1988 из RFC 3029 и исходных CMP/CRMF/OCSP/ESS/S/MIME RFC; устаревшие X.509/CMS imports нормализованы на локальные RFC 5280 и `CryptographicMessageSyntax2004`. Публичные namespace: `Asn1Kit.Dvcs`, `.Cmp`, `.Crmf`, `.Ocsp`, `.Ess`, `.Smime`, `.Pkcs10`.
 
 Вне профиля (явная ошибка): information object classes (`CLASS`), `COMPONENTS OF`, параметризованные типы, `REAL`, `EXTERNAL`.
 

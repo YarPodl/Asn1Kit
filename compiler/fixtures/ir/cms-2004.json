@@ -4028,7 +4028,7 @@
                   "tag": {
                     "class": "context",
                     "number": 4,
-                    "mode": "implicit"
+                    "mode": "explicit"
                   }
                 },
                 "optional": false
@@ -4129,7 +4129,7 @@
                   "tag": {
                     "class": "context",
                     "number": 0,
-                    "mode": "implicit"
+                    "mode": "explicit"
                   }
                 },
                 "optional": true
@@ -4142,7 +4142,7 @@
                   "tag": {
                     "class": "context",
                     "number": 1,
-                    "mode": "implicit"
+                    "mode": "explicit"
                   }
                 },
                 "optional": false
@@ -4387,7 +4387,7 @@
                   "tag": {
                     "class": "context",
                     "number": 0,
-                    "mode": "implicit"
+                    "mode": "explicit"
                   }
                 },
                 "optional": true
@@ -4614,7 +4614,7 @@
                   "tag": {
                     "class": "context",
                     "number": 0,
-                    "mode": "implicit"
+                    "mode": "explicit"
                   }
                 },
                 "optional": true

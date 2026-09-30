@@ -38,8 +38,8 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- compile `
   --bindings compiler/fixtures/opentype/cms-bindings.json
 # затем csharp.namespace: PKIX* → Asn1Kit.Pkix, CMS → Asn1Kit.Cms
 
-# пересборка golden C# (PKIX + CMS)
-dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/ir/cms-2004.json --lang csharp -o runtime-csharp/generated/Asn1Kit.Pkix
+# golden C# теперь включает полный DVCS-граф; каноническая команда:
+# runtime-csharp/generated/Asn1Kit.Pkix/README.md
 
 # bench IR + C# (patch → namespaces *.Bench + options.lazy)
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate `
@@ -62,8 +62,9 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- generate `
 | `fixtures/ir/cms-2004.json` | **Golden**: Explicit + Implicit + CMS + оба bindings; namespaces в `options` |
 | `fixtures/ir/cms-2004-bench.patch.json` | Bench options overlay (`*.Bench`, `lazy` на `CertificateChoices.certificate`) |
 | `fixtures/ir/cms-2004-bench.json` | **Производный**: golden + patch; не в `MatchesGoldenIr` |
+| `fixtures/ir/dvcs.patch.json` | Namespace overlay для полного DVCS-графа; отдельный DVCS IR не коммитится |
 | `fixtures/ir/example.json` | **Ручная**: `options.csharp.*`; компилятором не пересобирать |
-| `../runtime-csharp/generated/Asn1Kit.Pkix/*.g.cs` | **Golden C#**: из `cms-2004.json`, руками не править |
+| `../runtime-csharp/generated/Asn1Kit.Pkix/*.g.cs` | **Golden C#**: PKIX/CMS/DVCS и зависимости из полного `.asn`-графа + `dvcs.patch.json`, руками не править |
 | `../runtime-csharp/generated/Asn1Kit.Pkix.Bench/*.g.cs` | **Bench C#**: из patch / `cms-2004-bench.json`, руками не править |
 
 Golden IR сверяют `PkixExplicit88Tests` / `PkixImplicit88Tests` / `Cms2004Tests`; golden C# — `PkixGeneratedCodeTests`; bench IR — `Cms2004BenchTests` / `IrOptionsPatchTests`. Diff фикстуры — часть ревью.

@@ -30,6 +30,7 @@
 
 - Значения IR: `integer`, `boolean`, `null`, `oid`, `string`, `bitString`, `ref` (в скомпилированном IR обычно раскрыт).
 - `EXPLICIT` / `IMPLICIT` / `AUTOMATIC TAGS`; `IMPORTS` между переданными файлами.
+- Тег без mode на локальном или импортированном `CHOICE` раскрывается как `EXPLICIT`.
 - Open-type `bindings`: CLI `--bindings` / overlay; ключи `Module.Type.field`.
 - Options patch: CLI `--patch` / `IrOptionsPatch`; `modules`, `fields` (`Module.Type.field`), `types` (`Module.Type`); bench — [cms-2004-bench.patch.json](../compiler/fixtures/ir/cms-2004-bench.patch.json).
 - `SIZE` / диапазоны → `constraint.size` / `constraint.value`; прочее → `constraint.unsupported`.
@@ -56,6 +57,12 @@
 dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks
 ```
 
+## Сгенерированные протокольные модули
+
+Проект [Asn1Kit.Pkix](../runtime-csharp/generated/Asn1Kit.Pkix/) содержит PKIX/CMS и полный граф DVCS: `PKIXDVCS` (RFC 3029), `PKIXCMP` (RFC 2510), `PKIXCRMF` (RFC 2511), `OCSP` (RFC 2560), `ExtendedSecurityServices` (RFC 2634), `SecureMimeMessageV3` (RFC 2633) и предоставленный для CMP модуль PKCS#10 (RFC 2314). Namespace разделены по протоколам; отдельного golden IR для этого графа нет, golden C# воспроизводится из `.asn` + [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json).
+
+DVCS codec-тесты покрывают request `message` / `messageImprint`, обе response-альтернативы, DER round-trip и повреждённый TLV. Криптографическая проверка и транспорт не входят в этот слой.
+
 ## Backlog
 
 ### Открыто
@@ -67,10 +74,9 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
    - **2c.** парсер/IR для `CLASS`, object sets, parameterized `AlgorithmIdentifier{…}`
 3. Пул массивов (constructed BER concat, DER SET OF sort)
 4. Второй oracle — BouncyCastle (не gate `dotnet test`)
-5. Модуль **DVCS** (CMS уже: [cms-2004.asn](../compiler/fixtures/asn1/cms-2004.asn) → `Asn1Kit.Cms`; codec-кейсы — [pkix-test-backlog.md](pkix-test-backlog.md))
-6. **DER: reject constructed OCTET / BIT STRING / string** (или soft-флаг в `Asn1ReaderOptions`, default как сейчас accept; выровнять код с формулировкой § Runtime «BER: constructed…»). Фикстуры + runtime-api soft-inventory
-7. **Полное потребление nested scope**: generated SEQUENCE/EXPLICIT decode должен явно отвергать trailing TLV, не маскируя исходное исключение во время unwind
-8. **Лимиты hostile BER**: ограничить глубину рекурсивного indefinite scan и общий размер materialized constructed values
+5. **DER: reject constructed OCTET / BIT STRING / string** (или soft-флаг в `Asn1ReaderOptions`, default как сейчас accept; выровнять код с формулировкой § Runtime «BER: constructed…»). Фикстуры + runtime-api soft-inventory
+6. **Полное потребление nested scope**: generated SEQUENCE/EXPLICIT decode должен явно отвергать trailing TLV, не маскируя исходное исключение во время unwind
+7. **Лимиты hostile BER**: ограничить глубину рекурсивного indefinite scan и общий размер materialized constructed values
 
 ### Крупные
 

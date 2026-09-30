@@ -10,9 +10,9 @@ public sealed class PkixGeneratedCodeTests
     [Fact]
     public void GenerateMatchesCommittedGoldenSources()
     {
-        var document = IrSerializer.Load(TestData.RepoPath("compiler/fixtures/ir/cms-2004.json"));
+        var document = DvcsTestData.Compile();
         var generated = new CSharpBackend().Generate(document);
-        Assert.Equal(3, generated.Count);
+        Assert.Equal(10, generated.Count);
 
         foreach (var file in generated)
         {

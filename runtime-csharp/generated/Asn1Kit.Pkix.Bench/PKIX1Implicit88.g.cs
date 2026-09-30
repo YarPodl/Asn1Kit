@@ -569,11 +569,14 @@ public sealed class GeneralName
                 X400Address.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true));
                 break;
             case GeneralNameKind.DirectoryName:
-                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true), DirectoryName, static (inner, item) =>
+                writer.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true), nested =>
                 {
-                    inner.WriteSetOf(Asn1Tag.Set, item, static (inner, item) =>
+                    nested.WriteSequenceOf(Asn1Tag.Sequence, DirectoryName, static (inner, item) =>
                     {
-                        item.Encode(inner, Asn1Tag.Sequence);
+                        inner.WriteSetOf(Asn1Tag.Set, item, static (inner, item) =>
+                        {
+                            item.Encode(inner, Asn1Tag.Sequence);
+                        });
                     });
                 });
                 break;
@@ -620,7 +623,10 @@ public sealed class GeneralName
         else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true)))
         {
             value.Kind = GeneralNameKind.DirectoryName;
-            value.DirectoryName = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true), static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Pkix.Bench.AttributeTypeAndValue.Decode(inner, Asn1Tag.Sequence)));
+            using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true)))
+            {
+                value.DirectoryName = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Pkix.Bench.AttributeTypeAndValue.Decode(inner, Asn1Tag.Sequence)));
+            }
         }
         else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 5, true)))
         {
@@ -698,9 +704,15 @@ public sealed class EDIPartyName
         {
             if (NameAssigner != null)
             {
-                NameAssigner.Encode(inner);
+                inner.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested =>
+                {
+                    NameAssigner.Encode(nested);
+                });
             }
-            PartyName.Encode(inner);
+            inner.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), nested =>
+            {
+                PartyName.Encode(nested);
+            });
         });
     }
 
@@ -713,9 +725,15 @@ public sealed class EDIPartyName
             var value = new EDIPartyName();
             if (reader.TryPeekTag(out var tag_NameAssigner) && tag_NameAssigner.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
-                value.NameAssigner = Asn1Kit.Pkix.Bench.DirectoryString.Decode(reader);
+                using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+                {
+                    value.NameAssigner = Asn1Kit.Pkix.Bench.DirectoryString.Decode(reader);
+                }
             }
-            value.PartyName = Asn1Kit.Pkix.Bench.DirectoryString.Decode(reader);
+            using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            {
+                value.PartyName = Asn1Kit.Pkix.Bench.DirectoryString.Decode(reader);
+            }
             return value;
         }
     }
@@ -929,7 +947,10 @@ public sealed class DistributionPoint
         {
             if (DistributionPointValue != null)
             {
-                DistributionPointValue.Encode(inner);
+                inner.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested =>
+                {
+                    DistributionPointValue.Encode(nested);
+                });
             }
             if (Reasons != null)
             {
@@ -954,7 +975,10 @@ public sealed class DistributionPoint
             var value = new DistributionPoint();
             if (reader.TryPeekTag(out var tag_DistributionPoint) && tag_DistributionPoint.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
-                value.DistributionPointValue = Asn1Kit.Pkix.Bench.DistributionPointName.Decode(reader);
+                using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+                {
+                    value.DistributionPointValue = Asn1Kit.Pkix.Bench.DistributionPointName.Decode(reader);
+                }
             }
             if (reader.TryPeekTag(out var tag_Reasons) && tag_Reasons.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
             {
@@ -1171,7 +1195,10 @@ public sealed class IssuingDistributionPoint
         {
             if (DistributionPoint != null)
             {
-                DistributionPoint.Encode(inner);
+                inner.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested =>
+                {
+                    DistributionPoint.Encode(nested);
+                });
             }
             if (OnlyContainsUserCerts != null)
             {
@@ -1205,7 +1232,10 @@ public sealed class IssuingDistributionPoint
             var value = new IssuingDistributionPoint();
             if (reader.TryPeekTag(out var tag_DistributionPoint) && tag_DistributionPoint.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
-                value.DistributionPoint = Asn1Kit.Pkix.Bench.DistributionPointName.Decode(reader);
+                using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+                {
+                    value.DistributionPoint = Asn1Kit.Pkix.Bench.DistributionPointName.Decode(reader);
+                }
             }
             if (reader.TryPeekTag(out var tag_OnlyContainsUserCerts) && tag_OnlyContainsUserCerts.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
             {

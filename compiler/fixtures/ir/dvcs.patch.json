@@ -1,0 +1,14 @@
+{
+  "modules": {
+    "PKIX1Explicit88": { "csharp": { "namespace": "Asn1Kit.Pkix" } },
+    "PKIX1Implicit88": { "csharp": { "namespace": "Asn1Kit.Pkix" } },
+    "CryptographicMessageSyntax2004": { "csharp": { "namespace": "Asn1Kit.Cms" } },
+    "PKCS10": { "csharp": { "namespace": "Asn1Kit.Pkcs10" } },
+    "PKIXCRMF": { "csharp": { "namespace": "Asn1Kit.Crmf" } },
+    "PKIXCMP": { "csharp": { "namespace": "Asn1Kit.Cmp" } },
+    "OCSP": { "csharp": { "namespace": "Asn1Kit.Ocsp" } },
+    "ExtendedSecurityServices": { "csharp": { "namespace": "Asn1Kit.Ess" } },
+    "SecureMimeMessageV3": { "csharp": { "namespace": "Asn1Kit.Smime" } },
+    "PKIXDVCS": { "csharp": { "namespace": "Asn1Kit.Dvcs" } }
+  }
+}

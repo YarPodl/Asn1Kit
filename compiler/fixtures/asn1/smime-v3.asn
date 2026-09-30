@@ -1,0 +1,101 @@
+-- Curated from RFC 2633 Appendix A (ASN.1:1988).
+-- The original CMS import is redirected to the wire-compatible local CMS 2004 module.
+
+SecureMimeMessageV3
+  { iso(1) member-body(2) us(840) rsadsi(113549)
+         pkcs(1) pkcs-9(9) smime(16) modules(0) smime(4) }
+DEFINITIONS IMPLICIT TAGS ::=
+BEGIN
+IMPORTS
+-- Cryptographic Message Syntax
+    SubjectKeyIdentifier, IssuerAndSerialNumber,
+RecipientKeyIdentifier
+        FROM    CryptographicMessageSyntax2004
+               { iso(1) member-body(2) us(840) rsadsi(113549)
+                 pkcs(1) pkcs-9(9) smime(16) modules(0) cms-2004(24) };
+--  id-aa is the arc with all new authenticated and unauthenticated
+--  attributes produced the by S/MIME Working Group
+id-aa OBJECT IDENTIFIER ::= {iso(1) member-body(2) usa(840)
+rsadsi(113549)
+        pkcs(1) pkcs-9(9) smime(16) attributes(2)}
+-- S/MIME Capabilities provides a method of broadcasting the symetric
+-- capabilities understood.  Algorithms should be ordered by preference
+-- and grouped by type
+smimeCapabilities OBJECT IDENTIFIER ::=
+   {iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-9(9) 15}
+SMIMECapability ::= SEQUENCE {
+   capabilityID OBJECT IDENTIFIER,
+   parameters ANY DEFINED BY capabilityID OPTIONAL }
+SMIMECapabilities ::= SEQUENCE OF SMIMECapability
+-- Encryption Key Preference provides a method of broadcasting the
+-- preferred encryption certificate.
+id-aa-encrypKeyPref OBJECT IDENTIFIER ::= {id-aa 11}
+SMIMEEncryptionKeyPreference ::= CHOICE {
+   issuerAndSerialNumber   [0] IssuerAndSerialNumber,
+   receipentKeyId          [1] RecipientKeyIdentifier,
+   subjectAltKeyIdentifier [2] SubjectKeyIdentifier
+}
+-- The Content Encryption Algorithms defined for SMIME are:
+-- Triple-DES is the manditory algorithm with CBCParameter being the
+-- parameters
+dES-EDE3-CBC OBJECT IDENTIFIER ::=
+   {iso(1) member-body(2) us(840) rsadsi(113549)
+encryptionAlgorithm(3) 7}
+CBCParameter ::= IV
+IV ::= OCTET STRING (SIZE (8..8))
+--  RC2 (or compatable) is an optional algorithm w/ RC2-CBC-paramter
+--  as the parameter
+rC2-CBC OBJECT IDENTIFIER ::=
+   {iso(1) member-body(2) us(840) rsadsi(113549)
+encryptionAlgorithm(3) 2}
+-- For the effective-key-bits (key size) greater than 32 and less than
+-- 256, the RC2-CBC algorithm parameters are encoded as:
+RC2-CBC-parameter ::=  SEQUENCE {
+   rc2ParameterVersion  INTEGER,
+   iv                   IV}
+-- For the effective-key-bits of 40, 64, and 128, the
+-- rc2ParameterVersion values are 160, 120, 58 respectively.
+-- The following list the OIDs to be used with S/MIME V3
+-- Digest Algorithms:
+-- md5 OBJECT IDENTIFIER ::=
+--    {iso(1) member-body(2) us(840) rsadsi(113549)
+-- digestAlgorithm(2) 5}
+-- sha-1 OBJECT IDENTIFIER ::=
+--    {iso(1) identified-organization(3) oiw(14) secsig(3)
+-- algorithm(2) 26}
+-- Asymmetric Encryption Algorithms
+--
+-- rsaEncryption OBJECT IDENTIFIER ::=
+--    {iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-1(1)
+-- 1}
+--
+-- rsa OBJECT IDENTIFIER ::=
+--    {joint-iso-ccitt(2) ds(5) algorithm(8) encryptionAlgorithm(1) 1}
+--
+-- id-dsa OBJECT IDENTIFIER ::=
+--    {iso(1) member-body(2) us(840) x9-57(10040) x9cm(4) 1 }
+-- Signature Algorithms
+--
+-- md2WithRSAEncryption OBJECT IDENTIFIER ::=
+--    {iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-1(1)
+-- 2}
+--
+-- md5WithRSAEncryption OBJECT IDENTIFIER ::=
+--    {iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-1(1)
+-- 4}
+--
+-- sha-1WithRSAEncryption OBJECT IDENTIFIER ::=
+--    {iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-1(1)
+-- 5}
+--
+-- id-dsa-with-sha1 OBJECT IDENTIFIER ::=
+--    {iso(1) member-body(2) us(840) x9-57(10040) x9cm(4) 3}
+-- Other Signed Attributes
+--
+-- signingTime OBJECT IDENTIFIER ::=
+--    {iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-9(9)
+-- 5}
+--    See [CMS] for a description of how to encode the attribute
+--    value.
+END
+
