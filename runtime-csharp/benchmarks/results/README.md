@@ -43,3 +43,4 @@ Update the “current baseline” section in [../Asn1Kit.Pkix.Benchmarks/README.
 | [2026-09-23-of-arrays](2026-09-23-of-arrays/) | working tree | `ReadSequenceOf` → `T[]` / ArrayPool; backlog §8; Asn1Kit Alloc↓; микробенч Fill A/B/C (архив) |
 | [2026-09-24-sequence-lambda](2026-09-24-sequence-lambda/) | working tree | `EnterSequence`; OF без capturing-лямбды; микробенч Nest/Of; Decode Alloc↓ ~30% |
 | [2026-09-24-explicit-enter](2026-09-24-explicit-enter/) | working tree | `EnterExplicit`; удалены `ReadSequence(Func)`/`ReadSet`; Alloc ≈ sequence-lambda |
+| [2026-09-30-writer-optimizations](2026-09-30-writer-optimizations/) | `eb0984b` + working tree | reserve-one constructed length; lookup однобайтовых INTEGER; micro + encode before/after |

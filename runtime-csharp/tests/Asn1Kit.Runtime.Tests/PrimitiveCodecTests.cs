@@ -63,6 +63,19 @@ public sealed class PrimitiveCodecTests
         yield return new object[] { ulong.MaxValue, "020900FFFFFFFFFFFFFFFF" };
     }
 
+    public static IEnumerable<object[]> ConstructedLengthCases()
+    {
+        yield return new object[] { 0, "3000" };
+        yield return new object[] { 1, "3001" };
+        yield return new object[] { 127, "307F" };
+        yield return new object[] { 128, "308180" };
+        yield return new object[] { 254, "3081FE" };
+        yield return new object[] { 255, "3081FF" };
+        yield return new object[] { 256, "30820100" };
+        yield return new object[] { 65_535, "3082FFFF" };
+        yield return new object[] { 65_536, "3083010000" };
+    }
+
     [Theory]
     [MemberData(nameof(BooleanCases))]
     public void Boolean_Fixture(BerDerCase c) => Run(c, EncodeBoolean, DecodeBoolean);
@@ -194,6 +207,50 @@ public sealed class PrimitiveCodecTests
         var writer = new Asn1Writer(Asn1Encoding.Der);
         writer.WriteInteger(Asn1Tag.Integer, default(Asn1Integer));
         Assert.Equal(new byte[] { 0x02, 0x01, 0x00 }, writer.Encode());
+    }
+
+    [Fact]
+    public void IntegerValue_SingleOctetFactories_DoNotAllocate()
+    {
+        _ = Asn1Integer.FromInt32(-128).Span;
+        _ = Asn1Integer.FromUInt32(127).Span;
+        _ = Asn1Integer.FromInt64(-1).Span;
+        _ = Asn1Integer.FromUInt64(1).Span;
+        _ = Asn1Integer.FromBigInteger(new BigInteger(42)).Span;
+
+        var checksum = 0;
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        for (var i = -128; i <= 127; i++)
+        {
+            checksum += Asn1Integer.FromInt32(i).GetInt32();
+            checksum += Asn1Integer.FromInt64(i).GetInt32();
+            checksum += Asn1Integer.FromBigInteger(new BigInteger(i)).GetInt32();
+            if (i >= 0)
+            {
+                checksum += Asn1Integer.FromUInt32((uint)i).GetInt32();
+                checksum += Asn1Integer.FromUInt64((ulong)i).GetInt32();
+            }
+        }
+
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+        Assert.Equal(15_872, checksum);
+        Assert.Equal(0, allocated);
+    }
+
+    [Fact]
+    public void IntegerValue_SingleOctetMemoryIsStable_AndCopiesDetach()
+    {
+        var negative = Asn1Integer.FromInt32(-128);
+        var positive = Asn1Integer.FromInt64(127);
+        Assert.True(MemoryMarshal.TryGetArray(negative.Memory, out ArraySegment<byte> negativeSegment));
+        Assert.True(MemoryMarshal.TryGetArray(positive.Memory, out ArraySegment<byte> positiveSegment));
+        Assert.Same(negativeSegment.Array, positiveSegment.Array);
+
+        var detached = negative.ToArray();
+        var clone = negative.Clone();
+        detached[0] = 0;
+        Assert.Equal(new byte[] { 0x80 }, negative.Span.ToArray());
+        Assert.Equal(new byte[] { 0x80 }, clone.Span.ToArray());
     }
 
     [Fact]
@@ -361,6 +418,34 @@ public sealed class PrimitiveCodecTests
 
         var decoded = new Asn1Reader(bytes, Asn1Encoding.Der).ReadOctetString(Asn1Tag.OctetString);
         Assert.Equal(payload, decoded.ToArray());
+    }
+
+    [Theory]
+    [MemberData(nameof(ConstructedLengthCases))]
+    public void ConstructedLength_UsesMinimalDefiniteForm(int contentLength, string expectedHeaderHex)
+    {
+        var contents = new byte[contentLength];
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteSequence(Asn1Tag.Sequence, inner => inner.WriteRaw(contents));
+        var encoded = writer.Encode();
+        var expectedHeader = Hex.Parse(expectedHeaderHex);
+
+        Assert.Equal(expectedHeader, encoded.AsSpan(0, expectedHeader.Length).ToArray());
+        Assert.Equal(expectedHeader.Length + contentLength, encoded.Length);
+        Assert.True(encoded.AsSpan(expectedHeader.Length).SequenceEqual(contents));
+    }
+
+    [Fact]
+    public void ConstructedLength_NestedAndAdjacentValuesRemainIntact()
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteSequence(Asn1Tag.Sequence, outer =>
+        {
+            outer.WriteSequence(Asn1Tag.Sequence, inner => inner.WriteInteger(Asn1Tag.Integer, 1));
+            outer.WriteSequence(Asn1Tag.Sequence, inner => inner.WriteInteger(Asn1Tag.Integer, 2));
+        });
+
+        Assert.Equal(Hex.Parse("300A30030201013003020102"), writer.Encode());
     }
 
     [Fact]

@@ -7,6 +7,7 @@ namespace Asn1Kit.Runtime;
 internal struct Asn1EncodeBuffer
 {
     private const int MaxDefiniteLengthBytes = 5;
+    private const int InitialConstructedLengthBytes = 1;
     private const int DefaultCapacity = 256;
 
     private byte[] _buffer;
@@ -88,9 +89,8 @@ internal struct Asn1EncodeBuffer
     {
         WriteTag(tag.AsConstructed());
         var lengthPosition = _length;
-        EnsureAdditionalCapacity(MaxDefiniteLengthBytes);
-        _buffer.AsSpan(_length, MaxDefiniteLengthBytes).Clear();
-        _length += MaxDefiniteLengthBytes;
+        EnsureAdditionalCapacity(InitialConstructedLengthBytes);
+        _buffer[_length++] = 0;
         return new Asn1EncodeFrame(lengthPosition, _length);
     }
 
@@ -109,16 +109,21 @@ internal struct Asn1EncodeBuffer
     {
         Span<byte> encoded = stackalloc byte[MaxDefiniteLengthBytes];
         var lengthSize = EncodeDefiniteLength(contentLength, encoded);
-        var shift = MaxDefiniteLengthBytes - lengthSize;
+        var reservedLengthSize = contentStart - lengthPosition;
+        var shift = lengthSize - reservedLengthSize;
         var contentEnd = contentStart + contentLength;
 
-        encoded.Slice(0, lengthSize).CopyTo(_buffer.AsSpan(lengthPosition, lengthSize));
-        if (shift != 0 && contentLength > 0)
+        if (shift > 0)
         {
-            Buffer.BlockCopy(_buffer, contentStart, _buffer, contentStart - shift, contentLength);
+            EnsureAdditionalCapacity(shift);
+            if (contentLength > 0)
+            {
+                Buffer.BlockCopy(_buffer, contentStart, _buffer, contentStart + shift, contentLength);
+            }
         }
 
-        _length = contentEnd - shift;
+        encoded.Slice(0, lengthSize).CopyTo(_buffer.AsSpan(lengthPosition, lengthSize));
+        _length = contentEnd + shift;
     }
 
     private static int EncodeDefiniteLength(int length, Span<byte> destination)

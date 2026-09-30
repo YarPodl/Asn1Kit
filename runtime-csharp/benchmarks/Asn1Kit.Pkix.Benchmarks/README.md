@@ -54,6 +54,18 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 История: выбор стратегии заполнения SEQUENCE OF (`List` / ArrayPool / pre-count) закрыт микробенчем; прод — ArrayPool + empty/single. Снимок — [results/2026-09-23-of-arrays](../results/2026-09-23-of-arrays/).
 Гипотеза лямбд в `ReadSequence`: выигрыш Alloc — от устранения capturing-обёртки в `ReadSequenceOf` (+ codegen `EnterSequence`); Nest Func→cursor почти не режет Alloc. Снимок — [results/2026-09-24-sequence-lambda](../results/2026-09-24-sequence-lambda/).
 EXPLICIT без лямбд: `EnterExplicit` + удаление `ReadSequence(Func)`; Alloc на Cert/CRL без изменений (кэш делегата). Снимок — [results/2026-09-24-explicit-enter](../results/2026-09-24-explicit-enter/).
+Writer reserve-one + однобайтовый `Asn1Integer` lookup: короткие/nested constructed быстрее на 32–44%, фабрики малых INTEGER дают 0 B/op; end-to-end Encode быстрее на 13–22%. Снимок — [results/2026-09-30-writer-optimizations](../results/2026-09-30-writer-optimizations/).
+
+## Encode baseline (2026-09-30, writer optimizations)
+
+Same-session `ShortRun` до/после production-правок; полные отчёты и оговорки — в [SUMMARY.md](../results/2026-09-30-writer-optimizations/SUMMARY.md).
+
+| Method | Before | After | Change | Allocated |
+| --- | ---: | ---: | ---: | ---: |
+| Certificate Asn1Kit_Encode | 4.878 µs | 4.043 µs | −17.1% | 4.13 KB |
+| CRL Asn1Kit_Encode | 4.236 µs | 3.548 µs | −16.2% | 2.82 KB |
+| CMS Asn1Kit_Lazy_Encode | 2.523 µs | 2.198 µs | −12.9% | 2.96 KB |
+| CMS Asn1Kit_Eager_Encode | 5.856 µs | 4.548 µs | −22.3% | 4.45 KB |
 
 ## Current baseline (2026-09-24, explicit-enter)
 

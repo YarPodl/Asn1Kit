@@ -12,6 +12,7 @@ namespace Asn1Kit.Runtime;
 public readonly struct Asn1Integer : IEquatable<Asn1Integer>
 {
     private static readonly byte[] ZeroContents = { 0x00 };
+    private static readonly byte[] SingleOctetContents = CreateSingleOctetContents();
 
     private readonly ReadOnlyMemory<byte> _bytes;
 
@@ -61,24 +62,41 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
     }
 
     /// <summary>Creates a value using the supplied input.</summary>
-    public static Asn1Integer FromBigInteger(BigInteger value) =>
-        value.IsZero ? Zero : new(EncodeContents(value));
+    public static Asn1Integer FromBigInteger(BigInteger value)
+    {
+        if (value.IsZero)
+        {
+            return Zero;
+        }
+
+        return GetEncodedByteCount(value) == 1
+            ? FromSingleOctet((int)value)
+            : new Asn1Integer(EncodeContents(value));
+    }
 
     /// <summary>Creates a value using the supplied input.</summary>
     public static Asn1Integer FromInt32(int value)
-        => value == 0 ? Zero : FromSignedInteger(value, maxLength: 4);
+        => value == 0 ? Zero : value is >= sbyte.MinValue and <= sbyte.MaxValue
+            ? FromSingleOctet(value)
+            : FromSignedInteger(value, maxLength: 4);
 
     /// <summary>Creates a value using the supplied input.</summary>
     public static Asn1Integer FromUInt32(uint value)
-        => value == 0 ? Zero : FromUnsignedInteger(value, maxLength: 5);
+        => value == 0 ? Zero : value <= sbyte.MaxValue
+            ? FromSingleOctet((int)value)
+            : FromUnsignedInteger(value, maxLength: 5);
 
     /// <summary>Creates a value using the supplied input.</summary>
     public static Asn1Integer FromInt64(long value)
-        => value == 0 ? Zero : FromSignedInteger(value, maxLength: 8);
+        => value == 0 ? Zero : value is >= sbyte.MinValue and <= sbyte.MaxValue
+            ? FromSingleOctet((int)value)
+            : FromSignedInteger(value, maxLength: 8);
 
     /// <summary>Creates a value using the supplied input.</summary>
     public static Asn1Integer FromUInt64(ulong value)
-        => value == 0 ? Zero : FromUnsignedInteger(value, maxLength: 9);
+        => value == 0 ? Zero : value <= (ulong)sbyte.MaxValue
+            ? FromSingleOctet((int)value)
+            : FromUnsignedInteger(value, maxLength: 9);
 
     internal static int GetEncodedByteCount(BigInteger value) =>
         value.GetByteCount(isUnsigned: false);
@@ -112,6 +130,20 @@ public readonly struct Asn1Integer : IEquatable<Asn1Integer>
         if (written != contents.Length)
         {
             throw new Asn1Exception("Failed to encode INTEGER contents.");
+        }
+
+        return contents;
+    }
+
+    private static Asn1Integer FromSingleOctet(int value) =>
+        new(SingleOctetContents.AsMemory(unchecked((byte)value), 1));
+
+    private static byte[] CreateSingleOctetContents()
+    {
+        var contents = new byte[256];
+        for (var i = 0; i < contents.Length; i++)
+        {
+            contents[i] = (byte)i;
         }
 
         return contents;

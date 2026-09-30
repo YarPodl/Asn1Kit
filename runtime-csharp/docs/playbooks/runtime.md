@@ -8,7 +8,7 @@
 | --- | --- |
 | [Asn1Tag.cs](../../src/Asn1Kit.Runtime/Asn1Tag.cs) | Класс тега, universal-константы, `Asn1StringForm` / `Asn1TimeForm`, `MatchesIgnoreConstructed`, `AsPrimitive` / `AsConstructed` |
 | [Asn1Writer.cs](../../src/Asn1Kit.Runtime/Asn1Writer.cs) | Публичный фасад: `Write*` / `Encode` / `WriteRaw`; делегирует framing и буфер encode-ядру |
-| [Asn1EncodeBuffer.cs](../../src/Asn1Kit.Runtime/Asn1EncodeBuffer.cs) | `internal struct`: растущий буфер, tag/length/TLV, constructed reserve + compact, DER-сортировка `SET OF` без второй heap-аллокации |
+| [Asn1EncodeBuffer.cs](../../src/Asn1Kit.Runtime/Asn1EncodeBuffer.cs) | `internal struct`: растущий буфер, tag/length/TLV, однобайтовый constructed reserve + расширение длинной формы, DER-сортировка `SET OF` без второй heap-аллокации |
 | [Asn1Reader.cs](../../src/Asn1Kit.Runtime/Asn1Reader.cs) | Публичный фасад: `Encoding` / `Options` / `Remaining` / `Eof`, `Enter*` / typed `Read*` / `ReadAny` / `ReadLazy` / `ReadWithOriginalEncoding`; внутри один value-type cursor без второй heap-аллокации |
 | [Asn1DecodeCursor.cs](../../src/Asn1Kit.Runtime/Asn1DecodeCursor.cs) | `internal struct`: текущее `ReadOnlyMemory`-окно, tag/length/TLV, BER indefinite; копия cursor служит bookmark для `Try*` |
 | [Asn1ReaderScope.cs](../../src/Asn1Kit.Runtime/Asn1ReaderScope.cs) | allocation-free nested scope; восстанавливает cursor, проверяет single-dispose и LIFO |

@@ -12,7 +12,7 @@
 - **Значения, уходящие из reader** — `ReadOnlyMemory<byte>` / structs с `Memory` / `EncodedMemory` / `ContentsMemory`: **view на буфер reader** (primitive / definite / ANY TLV). Мутация исходного буфера после decode — UB для views. Долговременное хранение без буфера — явный detach (`ToArray` / `Clone`).
 - **Исключения (owned):** constructed BER (OCTET / BIT / string — конкатенация сегментов); materialize в `string` / `BigInteger` / `DateTimeOffset`.
 - **Value-types:** ctor / `FromContents(ReadOnlyMemory)` — wrap без копии; `CopyFrom(ReadOnlySpan)` — owned копия (отдельное имя, чтобы `byte[]` не был неоднозначен между Span и Memory).
-- **Encode (writer):** contents примитивов — scratch на стеке (порог) или прямой write в буфер; heap только для oversized INTEGER/строк и для owned API (`Asn1Integer.From*`, `Asn1Oid.EncodeContents(string)→byte[]`). Финальный `Encode()→byte[]` и рост внутреннего буфера — отдельно.
+- **Encode (writer):** contents примитивов — scratch на стеке (порог) или прямой write в буфер; heap только для oversized INTEGER/строк и owned API. Числовые фабрики `Asn1Integer` для однобайтового DER-диапазона используют общий read-only lookup, остальные `Asn1Integer.From*` владеют отдельным массивом. Финальный `Encode()→byte[]` и рост внутреннего буфера — отдельно.
 
 ## Кто кого вызывает
 
@@ -55,7 +55,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 ## Заметки
 
 - `Asn1Writer` — публичный фасад над `Asn1EncodeBuffer`; на записи всегда эмитится минимальная definite length.
-- `WriteSequence` / `WriteSet` / `WriteSetOf` / `WriteExplicit` пишут nested contents в тот же encode-буфер (callback получает outer `Asn1Writer`); length — резерв + patch/compact. Внутренний буфер — `byte[]` (не `MemoryStream`); `Reset()` обнуляет длину без освобождения capacity.
+- `WriteSequence` / `WriteSet` / `WriteSetOf` / `WriteExplicit` пишут nested contents в тот же encode-буфер (callback получает outer `Asn1Writer`); под length резервируется один октет, длинная форма при завершении расширяет frame с минимальным сдвигом. Внутренний буфер — `byte[]` (не `MemoryStream`); `Reset()` обнуляет длину без освобождения capacity.
 - `ReadSequenceOf` / `ReadSetOf` возвращают `T[]`: пустой OF → `Array.Empty<T>()`; один элемент → `new T[1]` без pool; иначе grow через `ArrayPool<T>` и точный `T[count]`. Заполнение идёт через `EnterSequence` (без capturing-лямбды вокруг `decodeItem`).
 - `EnterSequence` / `EnterSet` / `EnterExplicit` — единственный публичный nesting API для codegen/ручного decode (без `Func`).
 - `ReadInt32` / `TryGetInt32` (и UInt32/Int64/UInt64) разбирают short contents без `BigInteger`.
