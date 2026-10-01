@@ -38,6 +38,7 @@
 - **Чтение:** soft-accept для зафиксированных неканоничных форм (см. [decisions.md](../../../docs/decisions.md), [runtime-api.md](../runtime-api.md); срез в [status.md](../../../docs/status.md)). Строгий reject — `Asn1ReaderOptions` (`Default` / `Strict` / точечные профили), не через молчаливое ужесточение default. Новый soft-accept без записи в runtime-api (и status) — запрещён.
 - **BER на чтении:** definite и indefinite length, constructed `OCTET STRING` склеивается. На записи всегда используется definite length.
 - Ошибка ввода (вне soft-списка) — всегда `Asn1Exception` с внятным текстом: чужой тег, обрезанный TLV, лишние байты, невалидная строка OID.
+- Полное потребление nested scope проверяй явным `reader.ThrowIfNotEmpty()` после успешного decode. Не переноси эту проверку в `Asn1ReaderScope.Dispose()`: исключение во время unwind должно сохраняться.
 - Runtime ничего не знает про ASN.1-модули, имена типов и IR.
 
 ## Производительность

@@ -344,6 +344,49 @@ END
     }
 
     [Fact]
+    public void GeneratedCSharp_RejectsTrailingDataInSequenceAndExplicitWithoutMaskingDecodeErrors()
+    {
+        const string asn = @"
+NestedScope DEFINITIONS EXPLICIT TAGS ::= BEGIN
+Sample ::= SEQUENCE {
+  number INTEGER,
+  wrapped [0] EXPLICIT INTEGER
+}
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+
+        Assert.Contains("reader.ThrowIfNotEmpty();", source);
+        var assembly = CompileGenerated(source);
+        var sampleType = assembly.GetType("NestedScope.Sample")!;
+        var decode = sampleType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!;
+
+        static Asn1Exception DecodeError(MethodInfo decodeMethod, byte[] encoded)
+        {
+            var invocation = Assert.Throws<TargetInvocationException>(() =>
+                decodeMethod.Invoke(null, new object[] { new Asn1Reader(encoded, Asn1Encoding.Der) }));
+            return Assert.IsType<Asn1Exception>(invocation.InnerException);
+        }
+
+        var sequenceTrailing = DecodeError(
+            decode,
+            new byte[] { 0x30, 0x0A, 0x02, 0x01, 0x01, 0xA0, 0x03, 0x02, 0x01, 0x02, 0x05, 0x00 });
+        Assert.Contains("trailing data", sequenceTrailing.Message);
+
+        var explicitTrailing = DecodeError(
+            decode,
+            new byte[] { 0x30, 0x0A, 0x02, 0x01, 0x01, 0xA0, 0x05, 0x02, 0x01, 0x02, 0x05, 0x00 });
+        Assert.Contains("trailing data", explicitTrailing.Message);
+
+        var originalDecodeError = DecodeError(
+            decode,
+            new byte[] { 0x30, 0x07, 0x01, 0x01, 0xFF, 0x05, 0x00, 0x05, 0x00 });
+        Assert.Contains("Expected tag", originalDecodeError.Message);
+        Assert.DoesNotContain("trailing data", originalDecodeError.Message);
+    }
+
+    [Fact]
     public void CompileThenGenerateFromAsn_Works()
     {
         var document = new Asn1Compiler().CompileFiles(new[] { TestData.RepoPath("compiler/fixtures/asn1/example.asn") });

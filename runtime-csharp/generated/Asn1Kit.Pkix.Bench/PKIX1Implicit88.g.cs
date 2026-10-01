@@ -405,6 +405,7 @@ public sealed class AuthorityKeyIdentifier
             {
                 value.AuthorityCertSerialNumber = reader.ReadIntegerValue(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false));
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -535,6 +536,7 @@ public sealed class PrivateKeyUsagePeriod
             {
                 value.NotAfter = reader.ReadTime(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), Asn1TimeForm.Generalized);
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -577,6 +579,7 @@ public sealed class PolicyInformation
             {
                 value.PolicyQualifiers = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.Bench.PolicyQualifierInfo.Decode(inner, Asn1Tag.Sequence));
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -610,6 +613,7 @@ public sealed class PolicyQualifierInfo
             var value = new PolicyQualifierInfo();
             value.PolicyQualifierId = reader.ReadOid(Asn1Tag.ObjectIdentifier);
             value.Qualifier = PolicyQualifierInfo_Qualifier.Decode(reader, value.PolicyQualifierId);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -654,6 +658,7 @@ public sealed class UserNotice
             {
                 value.ExplicitText = Asn1Kit.Pkix.Bench.DisplayText.Decode(reader);
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -689,6 +694,7 @@ public sealed class NoticeReference
             var value = new NoticeReference();
             value.Organization = Asn1Kit.Pkix.Bench.DisplayText.Decode(reader);
             value.NoticeNumbers = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadIntegerValue(Asn1Tag.Integer));
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -809,6 +815,7 @@ public sealed class PolicyMappings_Item
             var value = new PolicyMappings_Item();
             value.IssuerDomainPolicy = reader.ReadOid(Asn1Tag.ObjectIdentifier);
             value.SubjectDomainPolicy = reader.ReadOid(Asn1Tag.ObjectIdentifier);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -971,6 +978,7 @@ public sealed class GeneralName
             using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true)))
             {
                 value.DirectoryName = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Pkix.Bench.AttributeTypeAndValue.Decode(inner, Asn1Tag.Sequence)));
+                reader.ThrowIfNotEmpty();
             }
         }
         else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 5, true)))
@@ -1028,7 +1036,9 @@ public sealed class AnotherName
             using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
                 value.Value = reader.ReadAny();
+                reader.ThrowIfNotEmpty();
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1073,12 +1083,15 @@ public sealed class EDIPartyName
                 using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                 {
                     value.NameAssigner = Asn1Kit.Pkix.Bench.DirectoryString.Decode(reader);
+                    reader.ThrowIfNotEmpty();
                 }
             }
             using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
             {
                 value.PartyName = Asn1Kit.Pkix.Bench.DirectoryString.Decode(reader);
+                reader.ThrowIfNotEmpty();
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1123,6 +1136,7 @@ public sealed class BasicConstraints
             {
                 value.PathLenConstraint = reader.ReadIntegerValue(Asn1Tag.Integer);
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1175,6 +1189,7 @@ public sealed class NameConstraints
             {
                 value.ExcludedSubtrees = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), static inner => Asn1Kit.Pkix.Bench.GeneralSubtree.Decode(inner, Asn1Tag.Sequence));
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1224,6 +1239,7 @@ public sealed class GeneralSubtree
             {
                 value.Maximum = reader.ReadIntegerValue(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1270,6 +1286,7 @@ public sealed class PolicyConstraints
             {
                 value.InhibitPolicyMapping = reader.ReadIntegerValue(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1323,6 +1340,7 @@ public sealed class DistributionPoint
                 using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                 {
                     value.DistributionPointValue = Asn1Kit.Pkix.Bench.DistributionPointName.Decode(reader);
+                    reader.ThrowIfNotEmpty();
                 }
             }
             if (reader.TryPeekTag(out var tag_Reasons) && tag_Reasons.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
@@ -1333,6 +1351,7 @@ public sealed class DistributionPoint
             {
                 value.CRLIssuer = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), static inner => Asn1Kit.Pkix.Bench.GeneralName.Decode(inner));
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1516,6 +1535,7 @@ public sealed class AccessDescription
             var value = new AccessDescription();
             value.AccessMethod = reader.ReadOid(Asn1Tag.ObjectIdentifier);
             value.AccessLocation = Asn1Kit.Pkix.Bench.GeneralName.Decode(reader);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1580,6 +1600,7 @@ public sealed class IssuingDistributionPoint
                 using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                 {
                     value.DistributionPoint = Asn1Kit.Pkix.Bench.DistributionPointName.Decode(reader);
+                    reader.ThrowIfNotEmpty();
                 }
             }
             if (reader.TryPeekTag(out var tag_OnlyContainsUserCerts) && tag_OnlyContainsUserCerts.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
@@ -1602,6 +1623,7 @@ public sealed class IssuingDistributionPoint
             {
                 value.OnlyContainsAttributeCerts = reader.ReadBoolean(new Asn1Tag(Asn1TagClass.ContextSpecific, 5, false));
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }

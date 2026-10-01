@@ -1137,6 +1137,46 @@ public sealed class RuntimeTests
     }
 
     [Fact]
+    public void ThrowIfNotEmpty_ValidatesCurrentWindowWithoutChangingPosition()
+    {
+        var bytes = new byte[] { 0x30, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02 };
+        var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
+
+        using (reader.EnterSequence(Asn1Tag.Sequence))
+        {
+            Assert.Equal(1, reader.ReadInt32(Asn1Tag.Integer));
+            var error = Assert.Throws<Asn1Exception>(() => reader.ThrowIfNotEmpty());
+            Assert.Contains("trailing data", error.Message);
+            Assert.Equal(3, reader.Remaining);
+
+            Assert.Equal(2, reader.ReadInt32(Asn1Tag.Integer));
+            reader.ThrowIfNotEmpty();
+        }
+
+        Assert.True(reader.Eof);
+    }
+
+    [Fact]
+    public void ReaderScope_UnwindPreservesOriginalDecodeException()
+    {
+        var bytes = new byte[] { 0x30, 0x05, 0x02, 0x01, 0x01, 0x05, 0x00 };
+        var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
+
+        var error = Assert.Throws<Asn1Exception>(() =>
+        {
+            using (reader.EnterSequence(Asn1Tag.Sequence))
+            {
+                _ = reader.ReadBoolean(Asn1Tag.Boolean);
+                reader.ThrowIfNotEmpty();
+            }
+        });
+
+        Assert.Contains("Expected tag", error.Message);
+        Assert.DoesNotContain("trailing data", error.Message);
+        Assert.True(reader.Eof);
+    }
+
+    [Fact]
     public void ReadSequenceOf_NoCapturingClosure_AllocatesLessThanLegacyWrap()
     {
         var items = new List<Asn1Integer>();

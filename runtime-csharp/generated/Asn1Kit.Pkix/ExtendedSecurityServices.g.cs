@@ -136,6 +136,7 @@ public sealed class ReceiptRequest
             value.SignedContentIdentifier = reader.ReadOctetString(Asn1Tag.OctetString);
             value.ReceiptsFrom = Asn1Kit.Ess.ReceiptsFrom.Decode(reader);
             value.ReceiptsTo = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.GeneralName.Decode(inner)));
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -247,6 +248,7 @@ public sealed class Receipt
             value.ContentType = reader.ReadOid(Asn1Tag.ObjectIdentifier);
             value.SignedContentIdentifier = reader.ReadOctetString(Asn1Tag.OctetString);
             value.OriginatorSignatureValue = reader.ReadOctetString(Asn1Tag.OctetString);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -292,6 +294,7 @@ public sealed class ContentHints
                 value.ContentDescription = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
             }
             value.ContentType = reader.ReadOid(Asn1Tag.ObjectIdentifier);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -329,6 +332,7 @@ public sealed class ContentReference
             value.ContentType = reader.ReadOid(Asn1Tag.ObjectIdentifier);
             value.SignedContentIdentifier = reader.ReadOctetString(Asn1Tag.OctetString);
             value.OriginatorSignatureValue = reader.ReadOctetString(Asn1Tag.OctetString);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -512,6 +516,7 @@ public sealed class SecurityCategory
             var value = new SecurityCategory();
             value.Type = reader.ReadOid(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
             value.Value = reader.ReadAny(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -553,6 +558,7 @@ public sealed class MLData
             {
                 value.MlReceiptPolicy = Asn1Kit.Ess.MLReceiptPolicy.Decode(reader);
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -740,6 +746,7 @@ public sealed class SigningCertificate
             {
                 value.Policies = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.PolicyInformation.Decode(inner, Asn1Tag.Sequence));
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -779,6 +786,7 @@ public sealed class ESSCertID
             {
                 value.IssuerSerial = Asn1Kit.Ess.IssuerSerial.Decode(reader, Asn1Tag.Sequence);
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -816,6 +824,7 @@ public sealed class IssuerSerial
             var value = new IssuerSerial();
             value.Issuer = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.GeneralName.Decode(inner));
             value.SerialNumber = reader.ReadIntegerValue(Asn1Tag.Integer);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }

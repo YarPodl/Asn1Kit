@@ -40,7 +40,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `EnterSequence` / `EnterSet` / `EnterSequenceOf` / `EnterSetOf` / `EnterExplicit` → `Asn1WriterScope` | hot | allocation-free begin/end frame; запись содержимого через тот же writer; dispose только один раз и в LIFO-порядке |
 | `ReadSequenceOf<T>` / `ReadSetOf<T>` | hot | owned `T[]` (`Array.Empty<T>` when empty); OF fill без capturing-лямбды вокруг `decodeItem` |
 | `EnterSequence` / `EnterSet` / `EnterExplicit` → `Asn1ReaderScope` | hot | allocation-free push/pop окна; фактический тег обязан быть constructed; dispose только один раз и в LIFO-порядке |
-| `Asn1Reader(byte[]\|offset/length\|ReadOnlyMemory, encoding, options?)` / `Remaining` / `Options` | hot | входной `ReadOnlyMemory` не копируется; `Remaining` — байты до конца текущего окна; options сохраняются во вложенных окнах |
+| `Asn1Reader(byte[]\|offset/length\|ReadOnlyMemory, encoding, options?)` / `Remaining` / `Options` / `ThrowIfNotEmpty()` | hot | входной `ReadOnlyMemory` не копируется; `Remaining` — байты до конца текущего окна; `ThrowIfNotEmpty` отвергает непрочитанный хвост без продвижения; options сохраняются во вложенных окнах |
 | `Asn1ReaderScope` | hot | публично только `Dispose`; произвольного `Push` и доступа к reader через scope нет |
 | `Asn1WriterScope` | hot | публично только `Dispose`; `Encode` / `TryEncode` / `Reset` запрещены, пока открыт хотя бы один scope |
 | `Asn1ReaderOptions` (`Default` / `Strict` / `AllowNonMinimalLength` / `AllowOverlongOidBase128`) | warm | immutable flags |
@@ -61,6 +61,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 - Writer scopes закрываются ровно один раз и строго в LIFO-порядке. Scope не транзакционный: при исключении внутри `using` уже записанное содержимое финализируется; после обработки ошибки writer можно очистить через `Reset()`. Внутренний буфер — `byte[]` (не `MemoryStream`), `Reset()` не уменьшает capacity.
 - `ReadSequenceOf` / `ReadSetOf` возвращают `T[]`: пустой OF → `Array.Empty<T>()`; один элемент → `new T[1]` без pool; иначе grow через `ArrayPool<T>` и точный `T[count]`. Заполнение идёт через `EnterSequence` (без capturing-лямбды вокруг `decodeItem`).
 - `EnterSequence` / `EnterSet` / `EnterExplicit` — единственный публичный nesting API для decode. Для encode эти scope-методы обязательны для structured значений и ручного OF; collection OF дополнительно использует `WriteSequenceOf<T>` / `WriteSetOf<T>` с `Action<Asn1Writer, T>`.
+- `Asn1ReaderScope.Dispose()` только восстанавливает внешнее окно и проверяет LIFO. Полное потребление проверяется явным `ThrowIfNotEmpty()` в успешной ветке decode, чтобы исключение при unwind не заменяло исходную ошибку.
 - `ReadInt32` / `TryGetInt32` (и UInt32/Int64/UInt64) разбирают short contents без `BigInteger`.
 - `ReadTime` парсит UTCTime/GeneralizedTime из contents octets без промежуточной `string` (`Asn1TextCodec.ParseTime(span)`).
 - Open-type DEFINED BY OID: codegen передаёт `Asn1Oid` и сравнивает со статическими константами (без `Oid.ToString()` на hot path).

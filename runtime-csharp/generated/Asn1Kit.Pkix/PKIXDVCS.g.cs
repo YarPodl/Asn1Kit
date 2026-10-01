@@ -101,6 +101,7 @@ public sealed class DigestInfo
             var value = new DigestInfo();
             value.DigestAlgorithm = Asn1Kit.Pkix.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.Digest = reader.ReadOctetString(Asn1Tag.OctetString);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -208,6 +209,7 @@ public sealed class TargetEtcChain
             {
                 value.PathProcInput = Asn1Kit.Dvcs.PathProcInput.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -258,6 +260,7 @@ public sealed class PathProcInput
             {
                 value.ExplicitPolicyReqd = reader.ReadBoolean(Asn1Tag.Boolean);
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -565,6 +568,7 @@ public sealed class DVCSRequestInformation
             {
                 value.Extensions = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true), static inner => Asn1Kit.Pkix.Extension.Decode(inner, Asn1Tag.Sequence));
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -618,6 +622,7 @@ public sealed class DVCSRequest
             {
                 value.TransactionIdentifier = Asn1Kit.Pkix.GeneralName.Decode(reader);
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -854,6 +859,7 @@ public sealed class DVCSCertInfo
             {
                 value.Extensions = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.Extension.Decode(inner, Asn1Tag.Sequence));
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -892,6 +898,7 @@ public sealed class DVCSErrorNotice
             {
                 value.TransactionIdentifier = Asn1Kit.Pkix.GeneralName.Decode(reader);
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }

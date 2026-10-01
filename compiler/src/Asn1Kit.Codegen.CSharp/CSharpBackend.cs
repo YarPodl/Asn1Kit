@@ -446,6 +446,7 @@ public sealed class CSharpBackend : ILanguageBackend
                 sb, document, module, typeName, field, type.Components, "            ", "reader", "value");
         }
 
+        sb.AppendLine("            reader.ThrowIfNotEmpty();");
         sb.AppendLine("            return value;");
         sb.AppendLine("        }");
         sb.AppendLine("    }");
@@ -1718,7 +1719,7 @@ public sealed class CSharpBackend : ILanguageBackend
             var explicitTag = TagFromIr(unwrapped.Tag, constructed: true);
             sb.AppendLine($"{indent}using ({reader}.EnterExplicit({explicitTag}))");
             sb.AppendLine($"{indent}{{");
-            sb.Append($"{indent}    return ");
+            sb.Append($"{indent}    var decodedValue = ");
             EmitDecodeExpr(
                 sb,
                 document,
@@ -1733,6 +1734,8 @@ public sealed class CSharpBackend : ILanguageBackend
                 fieldOptions: fieldOptions,
                 originalForOf: original);
             sb.AppendLine(";");
+            sb.AppendLine($"{indent}    {reader}.ThrowIfNotEmpty();");
+            sb.AppendLine($"{indent}    return decodedValue;");
             sb.AppendLine($"{indent}}}");
             return;
         }
@@ -1791,6 +1794,7 @@ public sealed class CSharpBackend : ILanguageBackend
                 targetObject,
                 openKey,
                 fieldOptions);
+            sb.AppendLine($"{indent}    {reader}.ThrowIfNotEmpty();");
             sb.AppendLine($"{indent}}}");
             return;
         }

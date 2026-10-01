@@ -75,8 +75,7 @@ DVCS codec-тесты покрывают request `message` / `messageImprint`, �
 2. Пул массивов (constructed BER concat, DER SET OF sort)
 3. Второй oracle — BouncyCastle (не gate `dotnet test`)
 4. **DER: reject constructed OCTET / BIT STRING / string** (или soft-флаг в `Asn1ReaderOptions`, default как сейчас accept; выровнять код с формулировкой § Runtime «BER: constructed…»). Фикстуры + runtime-api soft-inventory
-5. **Полное потребление nested scope**: generated SEQUENCE/EXPLICIT decode должен явно отвергать trailing TLV, не маскируя исходное исключение во время unwind
-6. **Лимиты hostile BER**: ограничить глубину рекурсивного indefinite scan и общий размер materialized constructed values
+5. **Лимиты hostile BER**: ограничить глубину рекурсивного indefinite scan и общий размер materialized constructed values
 
 ### Крупные
 

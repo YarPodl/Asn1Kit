@@ -310,6 +310,7 @@ public sealed class Attribute
             var value = new Attribute();
             value.Type = reader.ReadOid(Asn1Tag.ObjectIdentifier);
             value.Values = reader.ReadSetOf(Asn1Tag.Set, static inner => inner.ReadAny());
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -346,6 +347,7 @@ public struct AttributeTypeAndValue
             var value = new AttributeTypeAndValue();
             value.Type = reader.ReadOid(Asn1Tag.ObjectIdentifier);
             value.Value = reader.ReadAny();
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1290,6 +1292,7 @@ public sealed class Certificate
             value.TbsCertificate = Asn1Kit.Pkix.Bench.TBSCertificate.Decode(reader, Asn1Tag.Sequence);
             value.SignatureAlgorithm = Asn1Kit.Pkix.Bench.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.Signature = reader.ReadBitString(Asn1Tag.BitString);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1380,6 +1383,7 @@ public sealed class TBSCertificate
                 using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                 {
                     value.Version = reader.ReadInt32(Asn1Tag.Integer);
+                    reader.ThrowIfNotEmpty();
                 }
             }
             value.SerialNumber = reader.ReadIntegerValue(Asn1Tag.Integer);
@@ -1411,10 +1415,13 @@ public sealed class TBSCertificate
                 {
                     using (r.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
                     {
-                        return r.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.Bench.Extension.Decode(inner, Asn1Tag.Sequence));
+                        var decodedValue = r.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.Bench.Extension.Decode(inner, Asn1Tag.Sequence));
+                        r.ThrowIfNotEmpty();
+                        return decodedValue;
                     }
                 });
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1457,6 +1464,7 @@ public sealed class Validity
             var value = new Validity();
             value.NotBefore = Asn1Kit.Pkix.Bench.Time.Decode(reader);
             value.NotAfter = Asn1Kit.Pkix.Bench.Time.Decode(reader);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1545,6 +1553,7 @@ public sealed class SubjectPublicKeyInfo
             var value = new SubjectPublicKeyInfo();
             value.Algorithm = Asn1Kit.Pkix.Bench.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.SubjectPublicKey = reader.ReadBitString(Asn1Tag.BitString);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1586,6 +1595,7 @@ public sealed class Extension
                 value.Critical = reader.ReadBoolean(Asn1Tag.Boolean);
             }
             value.ExtnValue = reader.ReadOctetString(Asn1Tag.OctetString);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1621,6 +1631,7 @@ public sealed class CertificateList
             value.TbsCertList = Asn1Kit.Pkix.Bench.TBSCertList.Decode(reader, Asn1Tag.Sequence);
             value.SignatureAlgorithm = Asn1Kit.Pkix.Bench.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.Signature = reader.ReadBitString(Asn1Tag.BitString);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1710,8 +1721,10 @@ public sealed class TBSCertList
                 using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                 {
                     value.CrlExtensions = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.Bench.Extension.Decode(inner, Asn1Tag.Sequence));
+                    reader.ThrowIfNotEmpty();
                 }
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1750,6 +1763,7 @@ public sealed class AlgorithmIdentifier
             {
                 value.Parameters = AlgorithmIdentifier_Parameters.Decode(reader, value.Algorithm);
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1805,6 +1819,7 @@ public sealed class ORAddress
             {
                 value.ExtensionAttributes = reader.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Pkix.Bench.ExtensionAttribute.Decode(inner, Asn1Tag.Sequence));
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1908,6 +1923,7 @@ public sealed class BuiltInStandardAttributes
                 using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
                 {
                     value.PrivateDomainName = Asn1Kit.Pkix.Bench.PrivateDomainName.Decode(reader);
+                    reader.ThrowIfNotEmpty();
                 }
             }
             if (reader.TryPeekTag(out var tag_OrganizationName) && tag_OrganizationName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false)))
@@ -1926,6 +1942,7 @@ public sealed class BuiltInStandardAttributes
             {
                 value.OrganizationalUnitNames = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 6, true), static inner => inner.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable));
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -2200,6 +2217,7 @@ public sealed class BuiltInDomainDefinedAttribute
             var value = new BuiltInDomainDefinedAttribute();
             value.Type = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
             value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -2237,7 +2255,9 @@ public sealed class ExtensionAttribute
             using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
             {
                 value.ExtensionAttributeValue = reader.ReadAny();
+                reader.ThrowIfNotEmpty();
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -2655,6 +2675,7 @@ public sealed class PresentationAddress
                 using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                 {
                     value.PSelector = reader.ReadOctetString(Asn1Tag.OctetString);
+                    reader.ThrowIfNotEmpty();
                 }
             }
             if (reader.TryPeekTag(out var tag_SSelector) && tag_SSelector.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
@@ -2662,6 +2683,7 @@ public sealed class PresentationAddress
                 using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
                 {
                     value.SSelector = reader.ReadOctetString(Asn1Tag.OctetString);
+                    reader.ThrowIfNotEmpty();
                 }
             }
             if (reader.TryPeekTag(out var tag_TSelector) && tag_TSelector.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
@@ -2669,12 +2691,15 @@ public sealed class PresentationAddress
                 using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
                 {
                     value.TSelector = reader.ReadOctetString(Asn1Tag.OctetString);
+                    reader.ThrowIfNotEmpty();
                 }
             }
             using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
             {
                 value.NAddresses = reader.ReadSetOf(Asn1Tag.Set, static inner => inner.ReadOctetString(Asn1Tag.OctetString));
+                reader.ThrowIfNotEmpty();
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -2723,6 +2748,7 @@ public sealed class TeletexDomainDefinedAttribute
             var value = new TeletexDomainDefinedAttribute();
             value.Type = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
             value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -2769,6 +2795,7 @@ public sealed class TBSCertList_RevokedCertificates_Item
             {
                 value.CrlEntryExtensions = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.Bench.Extension.Decode(inner, Asn1Tag.Sequence));
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -2873,6 +2900,7 @@ public sealed class ExtendedNetworkAddress_E1634Address
             {
                 value.SubAddress = reader.ReadString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), Asn1StringForm.Numeric);
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }

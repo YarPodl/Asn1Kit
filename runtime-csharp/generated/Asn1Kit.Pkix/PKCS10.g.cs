@@ -51,6 +51,7 @@ public sealed class CertificationRequestInfo
             value.Subject = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Pkix.AttributeTypeAndValue.Decode(inner, Asn1Tag.Sequence)));
             value.SubjectPublicKeyInfo = Asn1Kit.Pkix.SubjectPublicKeyInfo.Decode(reader, Asn1Tag.Sequence);
             value.Attributes = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), static inner => Asn1Kit.Pkcs10.Attribute.Decode(inner, Asn1Tag.Sequence));
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -86,6 +87,7 @@ public sealed class Attribute
             var value = new Attribute();
             value.Type = reader.ReadOid(Asn1Tag.ObjectIdentifier);
             value.Values = reader.ReadSetOf(Asn1Tag.Set, static inner => inner.ReadAny());
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -123,6 +125,7 @@ public sealed class CertificationRequest
             value.CertificationRequestInfo = Asn1Kit.Pkcs10.CertificationRequestInfo.Decode(reader, Asn1Tag.Sequence);
             value.SignatureAlgorithm = Asn1Kit.Pkix.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.Signature = reader.ReadBitString(Asn1Tag.BitString);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }

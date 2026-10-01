@@ -64,6 +64,15 @@ public sealed class Asn1Reader
     /// <summary>Gets the <c>Remaining</c> value.</summary>
     public int Remaining => _cursor.Remaining;
 
+    /// <summary>Throws when the current decode window contains unconsumed data.</summary>
+    public void ThrowIfNotEmpty()
+    {
+        if (!Eof)
+        {
+            throw new Asn1Exception("ASN.1 reader contains trailing data.");
+        }
+    }
+
     /// <summary>
     /// Peeks the next tag without advancing. Malformed tags throw without changing the reader position.
     /// </summary>

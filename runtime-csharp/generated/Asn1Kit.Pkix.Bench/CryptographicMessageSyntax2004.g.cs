@@ -141,7 +141,9 @@ public sealed class ContentInfo
             using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
                 value.Content = ContentInfo_Content.Decode(reader, value.ContentType);
+                reader.ThrowIfNotEmpty();
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -214,6 +216,7 @@ public sealed class SignedData
                 value.Crls = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), static inner => Asn1Kit.Cms.Bench.RevocationInfoChoice.Decode(inner));
             }
             value.SignerInfos = reader.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Cms.Bench.SignerInfo.Decode(inner, Asn1Tag.Sequence));
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -257,8 +260,10 @@ public sealed class EncapsulatedContentInfo
                 using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                 {
                     value.EContent = reader.ReadOctetString(Asn1Tag.OctetString);
+                    reader.ThrowIfNotEmpty();
                 }
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -329,6 +334,7 @@ public sealed class SignerInfo
             {
                 value.UnsignedAttrs = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), static inner => Asn1Kit.Cms.Bench.Attribute.Decode(inner, Asn1Tag.Sequence));
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -422,6 +428,7 @@ public sealed class Attribute
             var value = new Attribute();
             value.AttrType = reader.ReadOid(Asn1Tag.ObjectIdentifier);
             value.AttrValues = reader.ReadSetOf(Asn1Tag.Set, static inner => inner.ReadAny());
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -483,6 +490,7 @@ public sealed class EnvelopedData
             {
                 value.UnprotectedAttrs = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), static inner => Asn1Kit.Cms.Bench.Attribute.Decode(inner, Asn1Tag.Sequence));
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -535,6 +543,7 @@ public sealed class OriginatorInfo
             {
                 value.Crls = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), static inner => Asn1Kit.Cms.Bench.RevocationInfoChoice.Decode(inner));
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -579,6 +588,7 @@ public sealed class EncryptedContentInfo
             {
                 value.EncryptedContent = reader.ReadOctetString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -724,6 +734,7 @@ public sealed class KeyTransRecipientInfo
             value.Rid = Asn1Kit.Cms.Bench.RecipientIdentifier.Decode(reader);
             value.KeyEncryptionAlgorithm = Asn1Kit.Pkix.Bench.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.EncryptedKey = reader.ReadOctetString(Asn1Tag.OctetString);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -837,16 +848,19 @@ public sealed class KeyAgreeRecipientInfo
             using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
                 value.Originator = Asn1Kit.Cms.Bench.OriginatorIdentifierOrKey.Decode(reader);
+                reader.ThrowIfNotEmpty();
             }
             if (reader.TryPeekTag(out var tag_Ukm) && tag_Ukm.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
             {
                 using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
                 {
                     value.Ukm = reader.ReadOctetString(Asn1Tag.OctetString);
+                    reader.ThrowIfNotEmpty();
                 }
             }
             value.KeyEncryptionAlgorithm = Asn1Kit.Pkix.Bench.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.RecipientEncryptedKeys = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Cms.Bench.RecipientEncryptedKey.Decode(inner, Asn1Tag.Sequence));
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -953,6 +967,7 @@ public sealed class OriginatorPublicKey
             var value = new OriginatorPublicKey();
             value.Algorithm = Asn1Kit.Pkix.Bench.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.PublicKey = reader.ReadBitString(Asn1Tag.BitString);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -986,6 +1001,7 @@ public sealed class RecipientEncryptedKey
             var value = new RecipientEncryptedKey();
             value.Rid = Asn1Kit.Cms.Bench.KeyAgreeRecipientIdentifier.Decode(reader);
             value.EncryptedKey = reader.ReadOctetString(Asn1Tag.OctetString);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1091,6 +1107,7 @@ public sealed class RecipientKeyIdentifier
             {
                 value.Other = Asn1Kit.Cms.Bench.OtherKeyAttribute.Decode(reader, Asn1Tag.Sequence);
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1131,6 +1148,7 @@ public sealed class KEKRecipientInfo
             value.Kekid = Asn1Kit.Cms.Bench.KEKIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.KeyEncryptionAlgorithm = Asn1Kit.Pkix.Bench.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.EncryptedKey = reader.ReadOctetString(Asn1Tag.OctetString);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1178,6 +1196,7 @@ public sealed class KEKIdentifier
             {
                 value.Other = Asn1Kit.Cms.Bench.OtherKeyAttribute.Decode(reader, Asn1Tag.Sequence);
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1225,6 +1244,7 @@ public sealed class PasswordRecipientInfo
             }
             value.KeyEncryptionAlgorithm = Asn1Kit.Pkix.Bench.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.EncryptedKey = reader.ReadOctetString(Asn1Tag.OctetString);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1257,6 +1277,7 @@ public sealed class OtherRecipientInfo
             var value = new OtherRecipientInfo();
             value.OriType = reader.ReadOid(Asn1Tag.ObjectIdentifier);
             value.OriValue = reader.ReadAny();
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1297,6 +1318,7 @@ public sealed class DigestedData
             value.DigestAlgorithm = Asn1Kit.Pkix.Bench.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.EncapContentInfo = Asn1Kit.Cms.Bench.EncapsulatedContentInfo.Decode(reader, Asn1Tag.Sequence);
             value.Digest = reader.ReadOctetString(Asn1Tag.OctetString);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1342,6 +1364,7 @@ public sealed class EncryptedData
             {
                 value.UnprotectedAttrs = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), static inner => Asn1Kit.Cms.Bench.Attribute.Decode(inner, Asn1Tag.Sequence));
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1434,6 +1457,7 @@ public sealed class AuthenticatedData
             {
                 value.UnauthAttrs = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true), static inner => Asn1Kit.Cms.Bench.Attribute.Decode(inner, Asn1Tag.Sequence));
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1523,6 +1547,7 @@ public sealed class OtherRevocationInfoFormat
             var value = new OtherRevocationInfoFormat();
             value.OtherRevInfoFormat = reader.ReadOid(Asn1Tag.ObjectIdentifier);
             value.OtherRevInfo = reader.ReadAny();
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1638,6 +1663,7 @@ public sealed class OtherCertificateFormat
             var value = new OtherCertificateFormat();
             value.OtherCertFormat = reader.ReadOid(Asn1Tag.ObjectIdentifier);
             value.OtherCert = reader.ReadAny();
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1678,6 +1704,7 @@ public sealed class IssuerAndSerialNumber
             var value = new IssuerAndSerialNumber();
             value.Issuer = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Pkix.Bench.AttributeTypeAndValue.Decode(inner, Asn1Tag.Sequence)));
             value.SerialNumber = reader.ReadIntegerValue(Asn1Tag.Integer);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1732,6 +1759,7 @@ public sealed class OtherKeyAttribute
             {
                 value.KeyAttr = reader.ReadAny();
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1882,6 +1910,7 @@ public sealed class ExtendedCertificate
             value.ExtendedCertificateInfo = Asn1Kit.Cms.Bench.ExtendedCertificateInfo.Decode(reader, Asn1Tag.Sequence);
             value.SignatureAlgorithm = Asn1Kit.Pkix.Bench.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.Signature = reader.ReadBitString(Asn1Tag.BitString);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -1921,6 +1950,7 @@ public sealed class ExtendedCertificateInfo
             value.Version = reader.ReadInt32(Asn1Tag.Integer);
             value.Certificate = Asn1Kit.Pkix.Bench.Certificate.Decode(reader, Asn1Tag.Sequence);
             value.Attributes = reader.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Cms.Bench.Attribute.Decode(inner, Asn1Tag.Sequence));
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }

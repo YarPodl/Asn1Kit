@@ -87,6 +87,7 @@ public sealed class SMIMECapability
             {
                 value.Parameters = reader.ReadAny();
             }
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
@@ -194,6 +195,7 @@ public sealed class RC2CBCParameter
             var value = new RC2CBCParameter();
             value.Rc2ParameterVersion = reader.ReadIntegerValue(Asn1Tag.Integer);
             value.Iv = reader.ReadOctetString(Asn1Tag.OctetString);
+            reader.ThrowIfNotEmpty();
             return value;
         }
     }
