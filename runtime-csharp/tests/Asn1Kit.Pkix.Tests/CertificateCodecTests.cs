@@ -45,7 +45,7 @@ public sealed class CertificateCodecTests
         foreach (var expectedExt in expected.Extensions)
         {
             var actual = PkixFixtures.RequireExtension(tbs.Extensions!, expectedExt.Oid);
-            Assert.Equal(expectedExt.Critical, actual.Critical ?? false);
+            Assert.Equal(expectedExt.Critical, actual.Critical);
         }
 
         using (var bcl = new X509Certificate2(der))

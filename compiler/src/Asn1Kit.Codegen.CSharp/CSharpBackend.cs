@@ -284,9 +284,17 @@ public sealed class CSharpBackend : ILanguageBackend
         var typeKeyword = IsCSharpValueTypeEmit(module, typeName, type) ? "struct" : "sealed class";
         sb.AppendLine($"public {typeKeyword} {typeName}");
         sb.AppendLine("{");
+        EmitCachedDefaults(sb, document, module, typeName, type.Components);
         foreach (var field in type.Components)
         {
-            EmitProperty(sb, document, module, typeName, field, field.Optional, privateSetter: false);
+            EmitProperty(
+                sb,
+                document,
+                module,
+                typeName,
+                field,
+                field.Optional && field.Default is null,
+                privateSetter: false);
         }
 
         sb.AppendLine();
@@ -356,9 +364,17 @@ public sealed class CSharpBackend : ILanguageBackend
         var typeKeyword = IsCSharpValueTypeEmit(module, typeName, type) ? "struct" : "sealed class";
         sb.AppendLine($"public {typeKeyword} {typeName}");
         sb.AppendLine("{");
+        EmitCachedDefaults(sb, document, module, typeName, type.Components);
         foreach (var field in type.Components)
         {
-            EmitProperty(sb, document, module, typeName, field, field.Optional, privateSetter: false);
+            EmitProperty(
+                sb,
+                document,
+                module,
+                typeName,
+                field,
+                field.Optional && field.Default is null,
+                privateSetter: false);
         }
 
         sb.AppendLine();
@@ -412,7 +428,7 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine($"            var value = new {typeName}();");
         foreach (var field in type.Components)
         {
-            if (!field.Optional)
+            if (!field.Optional || field.Default is not null)
             {
                 sb.AppendLine($"            var seen_{SanitizeIdentifier(field.Name)} = false;");
             }
@@ -432,7 +448,7 @@ public sealed class CSharpBackend : ILanguageBackend
             first = false;
             sb.AppendLine($"                {cond} ({PeekMatchExpr(document, module, field.Type, "peeked")})");
             sb.AppendLine("                {");
-            if (!field.Optional)
+            if (!field.Optional || field.Default is not null)
             {
                 var seen = $"seen_{SanitizeIdentifier(field.Name)}";
                 sb.AppendLine($"                    if ({seen}) throw new Asn1Exception(\"Duplicate SET component '{field.Name}'.\");");
@@ -462,7 +478,7 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine("            }");
         foreach (var field in type.Components)
         {
-            if (!field.Optional)
+            if (!field.Optional && field.Default is null)
             {
                 sb.AppendLine(
                     $"            if (!seen_{SanitizeIdentifier(field.Name)}) throw new Asn1Exception(\"Missing SET component '{field.Name}'.\");");
@@ -795,8 +811,192 @@ public sealed class CSharpBackend : ILanguageBackend
         var setter = privateSetter ? "private set" : "set";
         var initializer = privateSetter
             ? ""
-            : Initializer(document, module, typeName, field.Name, field.Type, optional, field.Options);
+            : field.Default is not null
+                ? " = " + DefaultValueExpression(document, module, typeName, field) + ";"
+                : Initializer(document, module, typeName, field.Name, field.Type, optional, field.Options);
         sb.AppendLine($"    public {csType} {prop} {{ get; {setter}; }}{initializer}");
+    }
+
+    private void EmitCachedDefaults(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string owner,
+        IReadOnlyList<IrComponent> components)
+    {
+        foreach (var field in components.Where(NeedsCachedDefault))
+        {
+            var (_, target) = ResolveDefaultTarget(document, module, field.Type);
+            var storageType = target is BitStringType ? "Asn1BitString" : "Asn1Oid";
+            sb.AppendLine(
+                $"    private static readonly {storageType} {DefaultFieldName(field)} = " +
+                $"{DefaultStorageExpression(document, module, owner, field)};");
+        }
+
+        if (components.Any(NeedsCachedDefault))
+        {
+            sb.AppendLine();
+        }
+    }
+
+    private static bool NeedsCachedDefault(IrComponent field) =>
+        field.Default is IrOidValue or IrBitStringValue;
+
+    private static string DefaultFieldName(IrComponent field) =>
+        "s_default" + SanitizeIdentifier(field.Name);
+
+    private string DefaultValueExpression(
+        IrDocument document,
+        IrModule module,
+        string owner,
+        IrComponent field)
+    {
+        var (_, target) = ResolveDefaultTarget(document, module, field.Type);
+        if (target is BitStringType { NamedBits.Count: > 0 })
+        {
+            var csType = CsType(document, module, owner, field.Name, field.Type, optional: false, field.Options);
+            return $"new {csType} {{ Value = {DefaultFieldName(field)} }}";
+        }
+
+        return NeedsCachedDefault(field)
+            ? DefaultFieldName(field)
+            : DefaultStorageExpression(document, module, owner, field);
+    }
+
+    private string DefaultNotEqualExpression(
+        IrDocument document,
+        IrModule module,
+        string owner,
+        IrComponent field,
+        string valueExpression)
+    {
+        var (_, target) = ResolveDefaultTarget(document, module, field.Type);
+        var value = target is BitStringType { NamedBits.Count: > 0 }
+            ? valueExpression + ".Value"
+            : valueExpression;
+        var defaultValue = NeedsCachedDefault(field)
+            ? DefaultFieldName(field)
+            : DefaultStorageExpression(document, module, owner, field);
+        return $"{value} != {defaultValue}";
+    }
+
+    private string DefaultStorageExpression(
+        IrDocument document,
+        IrModule module,
+        string owner,
+        IrComponent field)
+    {
+        var (_, target) = ResolveDefaultTarget(document, module, field.Type);
+        return (target, field.Default) switch
+        {
+            (BooleanType, IrBooleanValue value) => value.Value ? "true" : "false",
+            (NullType, IrNullValue) => "Asn1Null.Value",
+            (OidType, IrOidValue value) => $"Asn1Oid.Parse(\"{EscapeCSharpString(value.Value)}\")",
+            (StringType, IrStringValue value) => $"\"{EscapeCSharpString(value.Value)}\"",
+            (BitStringType, IrBitStringValue value) => BitStringDefaultExpression(value),
+            (EnumeratedType, IrIntegerValue value) =>
+                $"({CsType(document, module, owner, field.Name, field.Type, optional: false, field.Options)})" +
+                IntegerLiteral(value.Value, "long"),
+            (IntegerType, IrIntegerValue value) => IntegerDefaultExpression(
+                value.Value,
+                TryResolveIntegerRepresentation(document, module, field.Type)
+                    ?? IrOptions.IntegerRepresentations.Der),
+            _ => throw new NotSupportedException(
+                $"DEFAULT kind '{field.Default?.Kind ?? "null"}' is not supported for " +
+                $"ASN.1 type '{target.Kind}' on '{owner}.{field.Name}'.")
+        };
+    }
+
+    private static (IrModule Module, TypeExpr Type) ResolveDefaultTarget(
+        IrDocument document,
+        IrModule module,
+        TypeExpr type)
+    {
+        var visited = new HashSet<string>(StringComparer.Ordinal);
+        while (type is RefType reference)
+        {
+            var key = (reference.Module ?? module.Name) + "::" + reference.Name;
+            if (!visited.Add(key))
+            {
+                throw new NotSupportedException($"Circular type alias '{reference.Name}'.");
+            }
+
+            var found = FindWithModule(document, module, reference)
+                ?? throw new NotSupportedException($"Cannot resolve DEFAULT type reference '{reference.Name}'.");
+            module = found.Module;
+            type = found.Def.Type;
+        }
+
+        return (module, type);
+    }
+
+    private static string IntegerDefaultExpression(long value, string representation) => representation switch
+    {
+        IrOptions.IntegerRepresentations.Int32 when value is >= int.MinValue and <= int.MaxValue =>
+            IntegerLiteral(value, "int"),
+        IrOptions.IntegerRepresentations.UInt32 when value is >= uint.MinValue and <= uint.MaxValue =>
+            IntegerLiteral(value, "uint"),
+        IrOptions.IntegerRepresentations.Int64 => IntegerLiteral(value, "long"),
+        IrOptions.IntegerRepresentations.UInt64 when value >= 0 => IntegerLiteral(value, "ulong"),
+        IrOptions.IntegerRepresentations.BigInt =>
+            $"BigInteger.Parse(\"{value.ToString(CultureInfo.InvariantCulture)}\", CultureInfo.InvariantCulture)",
+        IrOptions.IntegerRepresentations.Der =>
+            $"Asn1Integer.FromInt64({IntegerLiteral(value, "long")})",
+        _ => throw new NotSupportedException(
+            $"INTEGER DEFAULT '{value.ToString(CultureInfo.InvariantCulture)}' does not fit representation '{representation}'.")
+    };
+
+    private static string IntegerLiteral(long value, string representation)
+    {
+        var text = value.ToString(CultureInfo.InvariantCulture);
+        return representation switch
+        {
+            "int" => text,
+            "uint" => text + "U",
+            "long" when value == long.MinValue => "(-9223372036854775807L - 1L)",
+            "long" => text + "L",
+            "ulong" => text + "UL",
+            _ => throw new ArgumentOutOfRangeException(nameof(representation))
+        };
+    }
+
+    private static string BitStringDefaultExpression(IrBitStringValue value)
+    {
+        string bits;
+        if (value.Bits is not null)
+        {
+            bits = value.Bits;
+        }
+        else if (value.Hex is not null)
+        {
+            bits = string.Concat(value.Hex.Select(c => Convert.ToString(Convert.ToInt32(c.ToString(), 16), 2).PadLeft(4, '0')));
+        }
+        else
+        {
+            throw new NotSupportedException("BIT STRING DEFAULT requires bits or hex.");
+        }
+
+        if (bits.Any(c => c is not ('0' or '1')))
+        {
+            throw new NotSupportedException("BIT STRING DEFAULT contains a character other than '0' or '1'.");
+        }
+
+        if (bits.Length == 0)
+        {
+            return "default";
+        }
+
+        var bytes = new byte[(bits.Length + 7) / 8];
+        for (var i = 0; i < bits.Length; i++)
+        {
+            if (bits[i] == '1')
+            {
+                bytes[i / 8] |= (byte)(1 << (7 - i % 8));
+            }
+        }
+
+        var byteLiteral = string.Join(", ", bytes.Select(b => $"0x{b:X2}"));
+        return $"Asn1BitString.CopyFrom(new byte[] {{ {byteLiteral} }}, {bytes.Length * 8 - bits.Length})";
     }
 
     private void EmitCollapsedAliasDoc(StringBuilder sb, IrDocument document, IrModule module, TypeExpr type)
@@ -891,7 +1091,24 @@ public sealed class CSharpBackend : ILanguageBackend
         string writer,
         string expr)
     {
-        if (field.Optional)
+        if (field.Default is not null)
+        {
+            sb.AppendLine($"{indent}if ({DefaultNotEqualExpression(document, module, owner, field, expr)})");
+            sb.AppendLine($"{indent}{{");
+            EmitEncodeValue(
+                sb,
+                document,
+                module,
+                owner,
+                field.Name,
+                field.Type,
+                indent + "    ",
+                writer,
+                expr,
+                fieldOptions: field.Options);
+            sb.AppendLine($"{indent}}}");
+        }
+        else if (field.Optional)
         {
             sb.AppendLine($"{indent}if ({expr} != null)");
             sb.AppendLine($"{indent}{{");
@@ -1144,7 +1361,7 @@ public sealed class CSharpBackend : ILanguageBackend
         string target)
     {
         var prop = PropertyName(field, owner);
-        if (field.Optional)
+        if (field.Optional || field.Default is not null)
         {
             if (IsUntaggedAny(document, module, field.Type))
             {
@@ -2063,8 +2280,39 @@ public sealed class CSharpBackend : ILanguageBackend
             $"Open-type DEFINED BY sibling '{definedBy}' on '{owner}' must be OBJECT IDENTIFIER or INTEGER.");
     }
 
-    private static string EscapeCSharpString(string value) =>
-        value.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal);
+    private static string EscapeCSharpString(string value)
+    {
+        var escaped = new StringBuilder(value.Length);
+        foreach (var c in value)
+        {
+            switch (c)
+            {
+                case '\\': escaped.Append("\\\\"); break;
+                case '"': escaped.Append("\\\""); break;
+                case '\0': escaped.Append("\\0"); break;
+                case '\a': escaped.Append("\\a"); break;
+                case '\b': escaped.Append("\\b"); break;
+                case '\f': escaped.Append("\\f"); break;
+                case '\n': escaped.Append("\\n"); break;
+                case '\r': escaped.Append("\\r"); break;
+                case '\t': escaped.Append("\\t"); break;
+                case '\v': escaped.Append("\\v"); break;
+                default:
+                    if (char.IsControl(c))
+                    {
+                        escaped.Append("\\u").Append(((int)c).ToString("X4", CultureInfo.InvariantCulture));
+                    }
+                    else
+                    {
+                        escaped.Append(c);
+                    }
+
+                    break;
+            }
+        }
+
+        return escaped.ToString();
+    }
 
     private void EmitOfDecodeExpr(
         StringBuilder sb,

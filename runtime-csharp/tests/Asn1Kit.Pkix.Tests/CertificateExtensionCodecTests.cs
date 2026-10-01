@@ -20,7 +20,7 @@ public sealed class CertificateExtensionCodecTests
         foreach (var expected in expectedCert.Extensions)
         {
             var extension = PkixFixtures.RequireExtension(certificate.TbsCertificate.Extensions!, expected.Oid);
-            Assert.Equal(expected.Critical, extension.Critical ?? false);
+            Assert.Equal(expected.Critical, extension.Critical);
 
             switch (expected.Oid)
             {
@@ -98,7 +98,7 @@ public sealed class CertificateExtensionCodecTests
     {
         Assert.NotNull(expected.BasicConstraints);
         var bc = BasicConstraints.Decode(PkixFixtures.ExtnValueReader(extension));
-        Assert.Equal(expected.BasicConstraints!.Ca, bc.CA ?? false);
+        Assert.Equal(expected.BasicConstraints!.Ca, bc.CA);
         if (expected.BasicConstraints.PathLenPresent)
         {
                     Assert.NotNull(bc.PathLenConstraint);

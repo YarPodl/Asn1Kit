@@ -113,6 +113,98 @@ END
 public sealed class RoundTripTests
 {
     [Fact]
+    public void GeneratedCSharp_DefaultComponents_AreValuesAndAreOmittedFromDer()
+    {
+        const string asn = @"
+Defaults DEFINITIONS EXPLICIT TAGS ::= BEGIN
+Version ::= INTEGER { v1(0), v2(2) }
+Mode ::= ENUMERATED { zero(0), one(1) }
+Sample ::= SEQUENCE {
+  version [0] EXPLICIT Version DEFAULT v1,
+  enabled BOOLEAN DEFAULT FALSE,
+  mode Mode DEFAULT zero,
+  oid OBJECT IDENTIFIER DEFAULT { 1 2 3 },
+  label UTF8String DEFAULT ""hello"",
+  bits BIT STRING DEFAULT 'A'H,
+  nothing NULL DEFAULT NULL
+}
+Bag ::= SET {
+  version [0] IMPLICIT INTEGER DEFAULT 0,
+  enabled [1] IMPLICIT BOOLEAN DEFAULT FALSE
+}
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+
+        Assert.Contains("public int Version { get; set; } = 0;", source);
+        Assert.Contains("public bool Enabled { get; set; } = false;", source);
+        Assert.DoesNotContain("int? Version", source);
+        Assert.DoesNotContain("bool? Enabled", source);
+
+        var assembly = CompileGenerated(source);
+        var sampleType = assembly.GetType("Defaults.Sample")!;
+        var sample = Activator.CreateInstance(sampleType)!;
+        Assert.Equal(0, sampleType.GetProperty("Version")!.GetValue(sample));
+        Assert.False((bool)sampleType.GetProperty("Enabled")!.GetValue(sample)!);
+        Assert.Equal(0, Convert.ToInt32(sampleType.GetProperty("Mode")!.GetValue(sample)));
+        Assert.Equal("1.2.3", sampleType.GetProperty("Oid")!.GetValue(sample)!.ToString());
+        Assert.Equal("hello", sampleType.GetProperty("Label")!.GetValue(sample));
+        Assert.Equal(4, ((Asn1BitString)sampleType.GetProperty("Bits")!.GetValue(sample)!).BitLength);
+
+        var defaultWriter = new Asn1Writer(Asn1Encoding.Der);
+        sampleType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(sample, new object[] { defaultWriter });
+        Assert.Equal(new byte[] { 0x30, 0x00 }, defaultWriter.Encode());
+
+        sampleType.GetProperty("Version")!.SetValue(sample, 2);
+        sampleType.GetProperty("Enabled")!.SetValue(sample, true);
+        var nonDefaultWriter = new Asn1Writer(Asn1Encoding.Der);
+        sampleType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!
+            .Invoke(sample, new object[] { nonDefaultWriter });
+        Assert.Equal(
+            new byte[] { 0x30, 0x08, 0xA0, 0x03, 0x02, 0x01, 0x02, 0x01, 0x01, 0xFF },
+            nonDefaultWriter.Encode());
+
+        var encodedDefault = new byte[] { 0x30, 0x05, 0xA0, 0x03, 0x02, 0x01, 0x00 };
+        var decoded = sampleType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(encodedDefault, Asn1Encoding.Der) })!;
+        Assert.Equal(0, sampleType.GetProperty("Version")!.GetValue(decoded));
+        Assert.False((bool)sampleType.GetProperty("Enabled")!.GetValue(decoded)!);
+        var normalizedWriter = new Asn1Writer(Asn1Encoding.Der);
+        sampleType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!
+            .Invoke(decoded, new object[] { normalizedWriter });
+        Assert.Equal(new byte[] { 0x30, 0x00 }, normalizedWriter.Encode());
+
+        var bagType = assembly.GetType("Defaults.Bag")!;
+        var emptyBag = bagType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(new byte[] { 0x31, 0x00 }, Asn1Encoding.Der) })!;
+        Assert.Equal(Asn1Integer.Zero, bagType.GetProperty("Version")!.GetValue(emptyBag));
+        Assert.False((bool)bagType.GetProperty("Enabled")!.GetValue(emptyBag)!);
+
+        var duplicate = new byte[] { 0x31, 0x06, 0x80, 0x01, 0x01, 0x80, 0x01, 0x02 };
+        var duplicateError = Assert.Throws<TargetInvocationException>(() =>
+            bagType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+                .Invoke(null, new object[] { new Asn1Reader(duplicate, Asn1Encoding.Der) }));
+        Assert.IsType<Asn1Exception>(duplicateError.InnerException);
+    }
+
+    [Fact]
+    public void GeneratedCSharp_IncompatibleDefault_ThrowsExplicitly()
+    {
+        const string asn = @"
+Defaults DEFINITIONS ::= BEGIN
+Sample ::= SEQUENCE { enabled BOOLEAN DEFAULT 1 }
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+
+        var error = Assert.Throws<NotSupportedException>(() => new CSharpBackend().Generate(document));
+        Assert.Contains("DEFAULT kind 'integer'", error.Message);
+        Assert.Contains("Sample.enabled", error.Message);
+    }
+
+    [Fact]
     public void GeneratedCSharp_CompilesAndRoundTripsPerson()
     {
         var document = IrSerializer.Load(TestData.RepoPath("compiler/fixtures/ir/example.json"));

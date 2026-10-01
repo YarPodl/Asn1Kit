@@ -743,7 +743,7 @@ public sealed class EDIPartyName
 
 public sealed class BasicConstraints
 {
-    public bool? CA { get; set; }
+    public bool CA { get; set; } = false;
     public Asn1Integer? PathLenConstraint { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -752,9 +752,9 @@ public sealed class BasicConstraints
     {
         using (writer.EnterSequence(tag))
         {
-            if (CA != null)
+            if (CA != false)
             {
-                writer.WriteBoolean(Asn1Tag.Boolean, CA.Value);
+                writer.WriteBoolean(Asn1Tag.Boolean, CA);
             }
             if (PathLenConstraint != null)
             {
@@ -841,7 +841,7 @@ public sealed class GeneralSubtree
 {
     public GeneralName Base { get; set; }
     /// <summary>ASN.1 alias BaseDistance ::= INTEGER.</summary>
-    public Asn1Integer? Minimum { get; set; }
+    public Asn1Integer Minimum { get; set; } = Asn1Integer.FromInt64(0L);
     /// <summary>ASN.1 alias BaseDistance ::= INTEGER.</summary>
     public Asn1Integer? Maximum { get; set; }
 
@@ -852,9 +852,9 @@ public sealed class GeneralSubtree
         using (writer.EnterSequence(tag))
         {
             Base.Encode(writer);
-            if (Minimum != null)
+            if (Minimum != Asn1Integer.FromInt64(0L))
             {
-                writer.WriteInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), Minimum.Value);
+                writer.WriteInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), Minimum);
             }
             if (Maximum != null)
             {
@@ -1181,11 +1181,11 @@ public sealed class AccessDescription
 public sealed class IssuingDistributionPoint
 {
     public DistributionPointName? DistributionPoint { get; set; }
-    public bool? OnlyContainsUserCerts { get; set; }
-    public bool? OnlyContainsCACerts { get; set; }
+    public bool OnlyContainsUserCerts { get; set; } = false;
+    public bool OnlyContainsCACerts { get; set; } = false;
     public ReasonFlags? OnlySomeReasons { get; set; }
-    public bool? IndirectCRL { get; set; }
-    public bool? OnlyContainsAttributeCerts { get; set; }
+    public bool IndirectCRL { get; set; } = false;
+    public bool OnlyContainsAttributeCerts { get; set; } = false;
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1200,25 +1200,25 @@ public sealed class IssuingDistributionPoint
                     DistributionPoint.Encode(writer);
                 }
             }
-            if (OnlyContainsUserCerts != null)
+            if (OnlyContainsUserCerts != false)
             {
-                writer.WriteBoolean(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), OnlyContainsUserCerts.Value);
+                writer.WriteBoolean(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), OnlyContainsUserCerts);
             }
-            if (OnlyContainsCACerts != null)
+            if (OnlyContainsCACerts != false)
             {
-                writer.WriteBoolean(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false), OnlyContainsCACerts.Value);
+                writer.WriteBoolean(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false), OnlyContainsCACerts);
             }
             if (OnlySomeReasons != null)
             {
                 OnlySomeReasons.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false));
             }
-            if (IndirectCRL != null)
+            if (IndirectCRL != false)
             {
-                writer.WriteBoolean(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, false), IndirectCRL.Value);
+                writer.WriteBoolean(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, false), IndirectCRL);
             }
-            if (OnlyContainsAttributeCerts != null)
+            if (OnlyContainsAttributeCerts != false)
             {
-                writer.WriteBoolean(new Asn1Tag(Asn1TagClass.ContextSpecific, 5, false), OnlyContainsAttributeCerts.Value);
+                writer.WriteBoolean(new Asn1Tag(Asn1TagClass.ContextSpecific, 5, false), OnlyContainsAttributeCerts);
             }
         }
     }

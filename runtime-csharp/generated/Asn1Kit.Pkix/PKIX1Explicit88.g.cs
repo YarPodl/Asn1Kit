@@ -1024,7 +1024,7 @@ public sealed class Certificate
 
 public sealed class TBSCertificate
 {
-    public int? Version { get; set; }
+    public int Version { get; set; } = 0;
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
     public Asn1Integer SerialNumber { get; set; }
     public AlgorithmIdentifier Signature { get; set; }
@@ -1047,11 +1047,11 @@ public sealed class TBSCertificate
     {
         using (writer.EnterSequence(tag))
         {
-            if (Version != null)
+            if (Version != 0)
             {
                 using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                 {
-                    writer.WriteInteger(Asn1Tag.Integer, Version.Value);
+                    writer.WriteInteger(Asn1Tag.Integer, Version);
                 }
             }
             writer.WriteInteger(Asn1Tag.Integer, SerialNumber);
@@ -1268,7 +1268,7 @@ public sealed class SubjectPublicKeyInfo
 public sealed class Extension
 {
     public Asn1Oid ExtnID { get; set; }
-    public bool? Critical { get; set; }
+    public bool Critical { get; set; } = false;
     public ReadOnlyMemory<byte> ExtnValue { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1278,9 +1278,9 @@ public sealed class Extension
         using (writer.EnterSequence(tag))
         {
             writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, ExtnID);
-            if (Critical != null)
+            if (Critical != false)
             {
-                writer.WriteBoolean(Asn1Tag.Boolean, Critical.Value);
+                writer.WriteBoolean(Asn1Tag.Boolean, Critical);
             }
             writer.WriteOctetString(Asn1Tag.OctetString, ExtnValue.Span);
         }

@@ -152,8 +152,8 @@ public sealed class TargetEtcChain
 public sealed class PathProcInput
 {
     public Asn1Kit.Pkix.PolicyInformation[] AcceptablePolicySet { get; set; } = Array.Empty<Asn1Kit.Pkix.PolicyInformation>();
-    public bool? InhibitPolicyMapping { get; set; }
-    public bool? ExplicitPolicyReqd { get; set; }
+    public bool InhibitPolicyMapping { get; set; } = false;
+    public bool ExplicitPolicyReqd { get; set; } = false;
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -165,13 +165,13 @@ public sealed class PathProcInput
             {
                 item.Encode(inner, Asn1Tag.Sequence);
             });
-            if (InhibitPolicyMapping != null)
+            if (InhibitPolicyMapping != false)
             {
-                writer.WriteBoolean(Asn1Tag.Boolean, InhibitPolicyMapping.Value);
+                writer.WriteBoolean(Asn1Tag.Boolean, InhibitPolicyMapping);
             }
-            if (ExplicitPolicyReqd != null)
+            if (ExplicitPolicyReqd != false)
             {
-                writer.WriteBoolean(Asn1Tag.Boolean, ExplicitPolicyReqd.Value);
+                writer.WriteBoolean(Asn1Tag.Boolean, ExplicitPolicyReqd);
             }
         }
     }
@@ -390,7 +390,7 @@ public sealed class CertEtcToken
 
 public sealed class DVCSRequestInformation
 {
-    public Asn1Integer? Version { get; set; }
+    public Asn1Integer Version { get; set; } = Asn1Integer.FromInt64(1L);
     public ServiceType Service { get; set; }
     /// <summary>ASN.1 alias Nonce ::= INTEGER.</summary>
     public Asn1Integer? Nonce { get; set; }
@@ -411,9 +411,9 @@ public sealed class DVCSRequestInformation
     {
         using (writer.EnterSequence(tag))
         {
-            if (Version != null)
+            if (Version != Asn1Integer.FromInt64(1L))
             {
-                writer.WriteInteger(Asn1Tag.Integer, Version.Value);
+                writer.WriteInteger(Asn1Tag.Integer, Version);
             }
             writer.WriteEnumerated(Asn1Tag.Enumerated, (BigInteger)(long)Service);
             if (Nonce != null)
@@ -694,7 +694,7 @@ public sealed class DVCSResponse
 
 public sealed class DVCSCertInfo
 {
-    public Asn1Integer? Version { get; set; }
+    public Asn1Integer Version { get; set; } = Asn1Integer.FromInt64(1L);
     public DVCSRequestInformation DvReqInfo { get; set; }
     public DigestInfo MessageImprint { get; set; }
     public Asn1Integer SerialNumber { get; set; }
@@ -713,9 +713,9 @@ public sealed class DVCSCertInfo
     {
         using (writer.EnterSequence(tag))
         {
-            if (Version != null)
+            if (Version != Asn1Integer.FromInt64(1L))
             {
-                writer.WriteInteger(Asn1Tag.Integer, Version.Value);
+                writer.WriteInteger(Asn1Tag.Integer, Version);
             }
             DvReqInfo.Encode(writer, Asn1Tag.Sequence);
             MessageImprint.Encode(writer, Asn1Tag.Sequence);

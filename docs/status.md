@@ -29,6 +29,7 @@
 ## Значения, теги, constraints
 
 - Значения IR: `integer`, `boolean`, `null`, `oid`, `string`, `bitString`, `ref` (в скомпилированном IR обычно раскрыт).
+- C# компоненты с `DEFAULT` генерируются как ненуллабельные свойства с ASN.1-значением по умолчанию; decoder подставляет его при отсутствии компонента, DER encoder не записывает равное default значение.
 - `EXPLICIT` / `IMPLICIT` / `AUTOMATIC TAGS`; `IMPORTS` между переданными файлами.
 - Тег без mode на локальном или импортированном `CHOICE` раскрывается как `EXPLICIT`.
 - Open-type `bindings`: CLI `--bindings` / overlay; ключи `Module.Type.field`.

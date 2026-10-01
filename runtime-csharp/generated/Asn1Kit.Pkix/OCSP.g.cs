@@ -54,7 +54,7 @@ public sealed class OCSPRequest
 
 public sealed class TBSRequest
 {
-    public int? Version { get; set; }
+    public int Version { get; set; } = 0;
     public Asn1Kit.Pkix.GeneralName? RequestorName { get; set; }
     public Request[] RequestList { get; set; } = Array.Empty<Request>();
     /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
@@ -66,11 +66,11 @@ public sealed class TBSRequest
     {
         using (writer.EnterSequence(tag))
         {
-            if (Version != null)
+            if (Version != 0)
             {
                 using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                 {
-                    writer.WriteInteger(Asn1Tag.Integer, Version.Value);
+                    writer.WriteInteger(Asn1Tag.Integer, Version);
                 }
             }
             if (RequestorName != null)
@@ -423,7 +423,7 @@ public sealed class BasicOCSPResponse
 
 public sealed class ResponseData
 {
-    public int? Version { get; set; }
+    public int Version { get; set; } = 0;
     public ResponderID ResponderID { get; set; }
     public DateTimeOffset ProducedAt { get; set; }
     public SingleResponse[] Responses { get; set; } = Array.Empty<SingleResponse>();
@@ -436,11 +436,11 @@ public sealed class ResponseData
     {
         using (writer.EnterSequence(tag))
         {
-            if (Version != null)
+            if (Version != 0)
             {
                 using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                 {
-                    writer.WriteInteger(Asn1Tag.Integer, Version.Value);
+                    writer.WriteInteger(Asn1Tag.Integer, Version);
                 }
             }
             ResponderID.Encode(writer);

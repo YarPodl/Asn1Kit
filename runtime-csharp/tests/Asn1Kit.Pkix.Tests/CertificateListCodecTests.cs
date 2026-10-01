@@ -35,7 +35,7 @@ public sealed class CertificateListCodecTests
             Assert.Equal(want.RevocationDateUtc, got.RevocationDate.Value);
             Assert.NotNull(got.CrlEntryExtensions);
             var reasonExt = PkixFixtures.RequireExtension(got.CrlEntryExtensions!, "2.5.29.21");
-            Assert.False(reasonExt.Critical ?? false);
+            Assert.False(reasonExt.Critical);
             var reason = (CRLReason)(int)PkixFixtures.ExtnValueReader(reasonExt).ReadEnumerated(Asn1Tag.Enumerated);
             Assert.Equal(PkixFixtures.ParseCrlReason(want.CrlReason!), reason);
             PkixFixtures.AssertExtnValueRoundTrip(reasonExt, writer =>
@@ -49,7 +49,7 @@ public sealed class CertificateListCodecTests
         foreach (var expectedExt in expected.CrlExtensions)
         {
             var extension = PkixFixtures.RequireExtension(tbs.CrlExtensions!, expectedExt.Oid);
-            Assert.Equal(expectedExt.Critical, extension.Critical ?? false);
+            Assert.Equal(expectedExt.Critical, extension.Critical);
             if (expectedExt.Oid == "2.5.29.35")
             {
                 var aki = AuthorityKeyIdentifier.Decode(PkixFixtures.ExtnValueReader(extension));
