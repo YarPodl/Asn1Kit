@@ -18,21 +18,21 @@ public sealed class CertReqMsg
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            CertReq.Encode(inner, Asn1Tag.Sequence);
+            CertReq.Encode(writer, Asn1Tag.Sequence);
             if (Pop != null)
             {
-                Pop.Encode(inner);
+                Pop.Encode(writer);
             }
             if (RegInfo != null)
             {
-                inner.WriteSequenceOf(Asn1Tag.Sequence, RegInfo, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Sequence, RegInfo, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
             }
-        });
+        }
     }
 
     public static CertReqMsg Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -69,18 +69,18 @@ public sealed class CertRequest
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            inner.WriteInteger(Asn1Tag.Integer, CertReqId);
-            CertTemplate.Encode(inner, Asn1Tag.Sequence);
+            writer.WriteInteger(Asn1Tag.Integer, CertReqId);
+            CertTemplate.Encode(writer, Asn1Tag.Sequence);
             if (Controls != null)
             {
-                inner.WriteSequenceOf(Asn1Tag.Sequence, Controls, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Sequence, Controls, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
             }
-        });
+        }
     }
 
     public static CertRequest Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -125,70 +125,70 @@ public sealed class CertTemplate
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
             if (Version != null)
             {
-                inner.WriteInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), Version.Value);
+                writer.WriteInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), Version.Value);
             }
             if (SerialNumber != null)
             {
-                inner.WriteInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), SerialNumber.Value);
+                writer.WriteInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), SerialNumber.Value);
             }
             if (SigningAlg != null)
             {
-                SigningAlg.Encode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true));
+                SigningAlg.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true));
             }
             if (Issuer != null)
             {
-                inner.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true), nested =>
+                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
                 {
-                    nested.WriteSequenceOf(Asn1Tag.Sequence, Issuer, static (inner, item) =>
+                    writer.WriteSequenceOf(Asn1Tag.Sequence, Issuer, static (inner, item) =>
                     {
                         inner.WriteSetOf(Asn1Tag.Set, item, static (inner, item) =>
                         {
                             item.Encode(inner, Asn1Tag.Sequence);
                         });
                     });
-                });
+                }
             }
             if (Validity != null)
             {
-                Validity.Encode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true));
+                Validity.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true));
             }
             if (Subject != null)
             {
-                inner.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 5, true), nested =>
+                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 5, true)))
                 {
-                    nested.WriteSequenceOf(Asn1Tag.Sequence, Subject, static (inner, item) =>
+                    writer.WriteSequenceOf(Asn1Tag.Sequence, Subject, static (inner, item) =>
                     {
                         inner.WriteSetOf(Asn1Tag.Set, item, static (inner, item) =>
                         {
                             item.Encode(inner, Asn1Tag.Sequence);
                         });
                     });
-                });
+                }
             }
             if (PublicKey != null)
             {
-                PublicKey.Encode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 6, true));
+                PublicKey.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 6, true));
             }
             if (IssuerUID != null)
             {
-                inner.WriteBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 7, false), IssuerUID.Value);
+                writer.WriteBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 7, false), IssuerUID.Value);
             }
             if (SubjectUID != null)
             {
-                inner.WriteBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 8, false), SubjectUID.Value);
+                writer.WriteBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 8, false), SubjectUID.Value);
             }
             if (Extensions != null)
             {
-                inner.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 9, true), Extensions, static (inner, item) =>
+                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 9, true), Extensions, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
             }
-        });
+        }
     }
 
     public static CertTemplate Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -260,23 +260,23 @@ public sealed class OptionalValidity
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
             if (NotBefore != null)
             {
-                inner.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested =>
+                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                 {
-                    NotBefore.Encode(nested);
-                });
+                    NotBefore.Encode(writer);
+                }
             }
             if (NotAfter != null)
             {
-                inner.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), nested =>
+                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
                 {
-                    NotAfter.Encode(nested);
-                });
+                    NotAfter.Encode(writer);
+                }
             }
-        });
+        }
     }
 
     public static OptionalValidity Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -316,11 +316,11 @@ public sealed class AttributeTypeAndValue
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            inner.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, Type);
-            inner.WriteAny(Value);
-        });
+            writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, Type);
+            writer.WriteAny(Value);
+        }
     }
 
     public static AttributeTypeAndValue Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -390,16 +390,16 @@ public sealed class ProofOfPossession
                 Signature.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
                 break;
             case ProofOfPossessionKind.KeyEncipherment:
-                writer.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), nested =>
+                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
                 {
-                    KeyEncipherment.Encode(nested);
-                });
+                    KeyEncipherment.Encode(writer);
+                }
                 break;
             case ProofOfPossessionKind.KeyAgreement:
-                writer.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true), nested =>
+                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
                 {
-                    KeyAgreement.Encode(nested);
-                });
+                    KeyAgreement.Encode(writer);
+                }
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -450,15 +450,15 @@ public sealed class POPOSigningKey
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
             if (PoposkInput != null)
             {
-                PoposkInput.Encode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                PoposkInput.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
             }
-            AlgorithmIdentifier.Encode(inner, Asn1Tag.Sequence);
-            inner.WriteBitString(Asn1Tag.BitString, Signature);
-        });
+            AlgorithmIdentifier.Encode(writer, Asn1Tag.Sequence);
+            writer.WriteBitString(Asn1Tag.BitString, Signature);
+        }
     }
 
     public static POPOSigningKey Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -490,11 +490,11 @@ public sealed class POPOSigningKeyInput
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            AuthInfo.Encode(inner);
-            PublicKey.Encode(inner, Asn1Tag.Sequence);
-        });
+            AuthInfo.Encode(writer);
+            PublicKey.Encode(writer, Asn1Tag.Sequence);
+        }
     }
 
     public static POPOSigningKeyInput Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -522,11 +522,11 @@ public sealed class PKMACValue
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            AlgId.Encode(inner, Asn1Tag.Sequence);
-            inner.WriteBitString(Asn1Tag.BitString, Value);
-        });
+            AlgId.Encode(writer, Asn1Tag.Sequence);
+            writer.WriteBitString(Asn1Tag.BitString, Value);
+        }
     }
 
     public static PKMACValue Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -556,13 +556,13 @@ public sealed class PBMParameter
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            inner.WriteOctetString(Asn1Tag.OctetString, Salt.Span);
-            Owf.Encode(inner, Asn1Tag.Sequence);
-            inner.WriteInteger(Asn1Tag.Integer, IterationCount);
-            Mac.Encode(inner, Asn1Tag.Sequence);
-        });
+            writer.WriteOctetString(Asn1Tag.OctetString, Salt.Span);
+            Owf.Encode(writer, Asn1Tag.Sequence);
+            writer.WriteInteger(Asn1Tag.Integer, IterationCount);
+            Mac.Encode(writer, Asn1Tag.Sequence);
+        }
     }
 
     public static PBMParameter Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -673,17 +673,17 @@ public sealed class PKIPublicationInfo
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            inner.WriteInteger(Asn1Tag.Integer, Action);
+            writer.WriteInteger(Asn1Tag.Integer, Action);
             if (PubInfos != null)
             {
-                inner.WriteSequenceOf(Asn1Tag.Sequence, PubInfos, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Sequence, PubInfos, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
             }
-        });
+        }
     }
 
     public static PKIPublicationInfo Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -714,14 +714,14 @@ public sealed class SinglePubInfo
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            inner.WriteInteger(Asn1Tag.Integer, PubMethod);
+            writer.WriteInteger(Asn1Tag.Integer, PubMethod);
             if (PubLocation != null)
             {
-                PubLocation.Encode(inner);
+                PubLocation.Encode(writer);
             }
-        });
+        }
     }
 
     public static SinglePubInfo Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -781,10 +781,10 @@ public sealed class PKIArchiveOptions
         switch (Kind)
         {
             case PKIArchiveOptionsKind.EncryptedPrivKey:
-                writer.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested =>
+                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                 {
-                    EncryptedPrivKey.Encode(nested);
-                });
+                    EncryptedPrivKey.Encode(writer);
+                }
                 break;
             case PKIArchiveOptionsKind.KeyGenParameters:
                 writer.WriteOctetString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), KeyGenParameters.Value.Span);
@@ -893,30 +893,30 @@ public sealed class EncryptedValue
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
             if (IntendedAlg != null)
             {
-                IntendedAlg.Encode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                IntendedAlg.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
             }
             if (SymmAlg != null)
             {
-                SymmAlg.Encode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
+                SymmAlg.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
             }
             if (EncSymmKey != null)
             {
-                inner.WriteBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false), EncSymmKey.Value);
+                writer.WriteBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false), EncSymmKey.Value);
             }
             if (KeyAlg != null)
             {
-                KeyAlg.Encode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true));
+                KeyAlg.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true));
             }
             if (ValueHint != null)
             {
-                inner.WriteOctetString(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, false), ValueHint.Value.Span);
+                writer.WriteOctetString(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, false), ValueHint.Value.Span);
             }
-            inner.WriteBitString(Asn1Tag.BitString, EncValue);
-        });
+            writer.WriteBitString(Asn1Tag.BitString, EncValue);
+        }
     }
 
     public static EncryptedValue Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -963,11 +963,11 @@ public sealed class CertId
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            Issuer.Encode(inner);
-            inner.WriteInteger(Asn1Tag.Integer, SerialNumber);
-        });
+            Issuer.Encode(writer);
+            writer.WriteInteger(Asn1Tag.Integer, SerialNumber);
+        }
     }
 
     public static CertId Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -1015,10 +1015,10 @@ public sealed class POPOSigningKeyInput_AuthInfo
         switch (Kind)
         {
             case POPOSigningKeyInput_AuthInfoKind.Sender:
-                writer.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested =>
+                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                 {
-                    Sender.Encode(nested);
-                });
+                    Sender.Encode(writer);
+                }
                 break;
             case POPOSigningKeyInput_AuthInfoKind.PublicKeyMAC:
                 PublicKeyMAC.Encode(writer, Asn1Tag.Sequence);

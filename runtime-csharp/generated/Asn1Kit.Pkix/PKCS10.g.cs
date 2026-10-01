@@ -22,22 +22,22 @@ public sealed class CertificationRequestInfo
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            inner.WriteInteger(Asn1Tag.Integer, Version);
-            inner.WriteSequenceOf(Asn1Tag.Sequence, Subject, static (inner, item) =>
+            writer.WriteInteger(Asn1Tag.Integer, Version);
+            writer.WriteSequenceOf(Asn1Tag.Sequence, Subject, static (inner, item) =>
             {
                 inner.WriteSetOf(Asn1Tag.Set, item, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
             });
-            SubjectPublicKeyInfo.Encode(inner, Asn1Tag.Sequence);
-            inner.WriteSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), Attributes, static (inner, item) =>
+            SubjectPublicKeyInfo.Encode(writer, Asn1Tag.Sequence);
+            writer.WriteSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), Attributes, static (inner, item) =>
             {
                 item.Encode(inner, Asn1Tag.Sequence);
             });
-        });
+        }
     }
 
     public static CertificationRequestInfo Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -67,14 +67,14 @@ public sealed class Attribute
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            inner.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, Type);
-            inner.WriteSetOf(Asn1Tag.Set, Values, static (inner, item) =>
+            writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, Type);
+            writer.WriteSetOf(Asn1Tag.Set, Values, static (inner, item) =>
             {
                 inner.WriteAny(item);
             });
-        });
+        }
     }
 
     public static Attribute Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -105,12 +105,12 @@ public sealed class CertificationRequest
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            CertificationRequestInfo.Encode(inner, Asn1Tag.Sequence);
-            SignatureAlgorithm.Encode(inner, Asn1Tag.Sequence);
-            inner.WriteBitString(Asn1Tag.BitString, Signature);
-        });
+            CertificationRequestInfo.Encode(writer, Asn1Tag.Sequence);
+            SignatureAlgorithm.Encode(writer, Asn1Tag.Sequence);
+            writer.WriteBitString(Asn1Tag.BitString, Signature);
+        }
     }
 
     public static CertificationRequest Decode(Asn1Reader reader) => Decode(reader, DefaultTag);

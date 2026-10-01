@@ -18,14 +18,14 @@ public sealed class Attribute
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            inner.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, Type);
-            inner.WriteSetOf(Asn1Tag.Set, Values, static (inner, item) =>
+            writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, Type);
+            writer.WriteSetOf(Asn1Tag.Set, Values, static (inner, item) =>
             {
                 inner.WriteAny(item);
             });
-        });
+        }
     }
 
     public static Attribute Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -57,11 +57,11 @@ public struct AttributeTypeAndValue
     {
         var enc_Type = Type;
         var enc_Value = Value;
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            inner.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, enc_Type);
-            inner.WriteAny(enc_Value);
-        });
+            writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, enc_Type);
+            writer.WriteAny(enc_Value);
+        }
     }
 
     public static AttributeTypeAndValue Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -999,12 +999,12 @@ public sealed class Certificate
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            TbsCertificate.Encode(inner, Asn1Tag.Sequence);
-            SignatureAlgorithm.Encode(inner, Asn1Tag.Sequence);
-            inner.WriteBitString(Asn1Tag.BitString, Signature);
-        });
+            TbsCertificate.Encode(writer, Asn1Tag.Sequence);
+            SignatureAlgorithm.Encode(writer, Asn1Tag.Sequence);
+            writer.WriteBitString(Asn1Tag.BitString, Signature);
+        }
     }
 
     public static Certificate Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -1047,52 +1047,52 @@ public sealed class TBSCertificate
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
             if (Version != null)
             {
-                inner.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested =>
+                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                 {
-                    nested.WriteInteger(Asn1Tag.Integer, Version.Value);
-                });
+                    writer.WriteInteger(Asn1Tag.Integer, Version.Value);
+                }
             }
-            inner.WriteInteger(Asn1Tag.Integer, SerialNumber);
-            Signature.Encode(inner, Asn1Tag.Sequence);
-            inner.WriteSequenceOf(Asn1Tag.Sequence, Issuer.Value, static (inner, item) =>
+            writer.WriteInteger(Asn1Tag.Integer, SerialNumber);
+            Signature.Encode(writer, Asn1Tag.Sequence);
+            writer.WriteSequenceOf(Asn1Tag.Sequence, Issuer.Value, static (inner, item) =>
             {
                 inner.WriteSetOf(Asn1Tag.Set, item, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
             });
-            Validity.Encode(inner, Asn1Tag.Sequence);
-            inner.WriteSequenceOf(Asn1Tag.Sequence, Subject.Value, static (inner, item) =>
+            Validity.Encode(writer, Asn1Tag.Sequence);
+            writer.WriteSequenceOf(Asn1Tag.Sequence, Subject.Value, static (inner, item) =>
             {
                 inner.WriteSetOf(Asn1Tag.Set, item, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
             });
-            SubjectPublicKeyInfo.Value.Encode(inner, Asn1Tag.Sequence);
+            SubjectPublicKeyInfo.Value.Encode(writer, Asn1Tag.Sequence);
             if (IssuerUniqueID != null)
             {
-                inner.WriteBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), IssuerUniqueID.Value);
+                writer.WriteBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), IssuerUniqueID.Value);
             }
             if (SubjectUniqueID != null)
             {
-                inner.WriteBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false), SubjectUniqueID.Value);
+                writer.WriteBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false), SubjectUniqueID.Value);
             }
             if (Extensions != null)
             {
-                inner.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true), nested =>
+                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
                 {
-                    nested.WriteSequenceOf(Asn1Tag.Sequence, Extensions.Value.Value, static (inner, item) =>
+                    writer.WriteSequenceOf(Asn1Tag.Sequence, Extensions.Value.Value, static (inner, item) =>
                     {
                         item.Encode(inner, Asn1Tag.Sequence);
                     });
-                });
+                }
             }
-        });
+        }
     }
 
     public static TBSCertificate Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -1168,11 +1168,11 @@ public sealed class Validity
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            NotBefore.Encode(inner);
-            NotAfter.Encode(inner);
-        });
+            NotBefore.Encode(writer);
+            NotAfter.Encode(writer);
+        }
     }
 
     public static Validity Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -1256,11 +1256,11 @@ public sealed class SubjectPublicKeyInfo
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            Algorithm.Encode(inner, Asn1Tag.Sequence);
-            inner.WriteBitString(Asn1Tag.BitString, SubjectPublicKey);
-        });
+            Algorithm.Encode(writer, Asn1Tag.Sequence);
+            writer.WriteBitString(Asn1Tag.BitString, SubjectPublicKey);
+        }
     }
 
     public static SubjectPublicKeyInfo Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -1289,15 +1289,15 @@ public sealed class Extension
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            inner.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, ExtnID);
+            writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, ExtnID);
             if (Critical != null)
             {
-                inner.WriteBoolean(Asn1Tag.Boolean, Critical.Value);
+                writer.WriteBoolean(Asn1Tag.Boolean, Critical.Value);
             }
-            inner.WriteOctetString(Asn1Tag.OctetString, ExtnValue.Span);
-        });
+            writer.WriteOctetString(Asn1Tag.OctetString, ExtnValue.Span);
+        }
     }
 
     public static Extension Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -1330,12 +1330,12 @@ public sealed class CertificateList
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            TbsCertList.Encode(inner, Asn1Tag.Sequence);
-            SignatureAlgorithm.Encode(inner, Asn1Tag.Sequence);
-            inner.WriteBitString(Asn1Tag.BitString, Signature);
-        });
+            TbsCertList.Encode(writer, Asn1Tag.Sequence);
+            SignatureAlgorithm.Encode(writer, Asn1Tag.Sequence);
+            writer.WriteBitString(Asn1Tag.BitString, Signature);
+        }
     }
 
     public static CertificateList Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -1371,43 +1371,43 @@ public sealed class TBSCertList
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
             if (Version != null)
             {
-                inner.WriteInteger(Asn1Tag.Integer, Version.Value);
+                writer.WriteInteger(Asn1Tag.Integer, Version.Value);
             }
-            Signature.Encode(inner, Asn1Tag.Sequence);
-            inner.WriteSequenceOf(Asn1Tag.Sequence, Issuer, static (inner, item) =>
+            Signature.Encode(writer, Asn1Tag.Sequence);
+            writer.WriteSequenceOf(Asn1Tag.Sequence, Issuer, static (inner, item) =>
             {
                 inner.WriteSetOf(Asn1Tag.Set, item, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
             });
-            ThisUpdate.Encode(inner);
+            ThisUpdate.Encode(writer);
             if (NextUpdate != null)
             {
-                NextUpdate.Encode(inner);
+                NextUpdate.Encode(writer);
             }
             if (RevokedCertificates != null)
             {
-                inner.WriteSequenceOf(Asn1Tag.Sequence, RevokedCertificates, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Sequence, RevokedCertificates, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
             }
             if (CrlExtensions != null)
             {
-                inner.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested =>
+                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                 {
-                    nested.WriteSequenceOf(Asn1Tag.Sequence, CrlExtensions, static (inner, item) =>
+                    writer.WriteSequenceOf(Asn1Tag.Sequence, CrlExtensions, static (inner, item) =>
                     {
                         item.Encode(inner, Asn1Tag.Sequence);
                     });
-                });
+                }
             }
-        });
+        }
     }
 
     public static TBSCertList Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -1455,14 +1455,14 @@ public sealed class AlgorithmIdentifier
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            inner.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, Algorithm);
+            writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, Algorithm);
             if (Parameters != null)
             {
-                Parameters.Encode(inner);
+                Parameters.Encode(writer);
             }
-        });
+        }
     }
 
     public static AlgorithmIdentifier Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -1496,24 +1496,24 @@ public sealed class ORAddress
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            BuiltInStandardAttributes.Encode(inner, Asn1Tag.Sequence);
+            BuiltInStandardAttributes.Encode(writer, Asn1Tag.Sequence);
             if (BuiltInDomainDefinedAttributes != null)
             {
-                inner.WriteSequenceOf(Asn1Tag.Sequence, BuiltInDomainDefinedAttributes, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Sequence, BuiltInDomainDefinedAttributes, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
             }
             if (ExtensionAttributes != null)
             {
-                inner.WriteSetOf(Asn1Tag.Set, ExtensionAttributes, static (inner, item) =>
+                writer.WriteSetOf(Asn1Tag.Set, ExtensionAttributes, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
             }
-        });
+        }
     }
 
     public static ORAddress Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -1560,51 +1560,51 @@ public sealed class BuiltInStandardAttributes
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
             if (CountryName != null)
             {
-                CountryName.Encode(inner);
+                CountryName.Encode(writer);
             }
             if (AdministrationDomainName != null)
             {
-                AdministrationDomainName.Encode(inner);
+                AdministrationDomainName.Encode(writer);
             }
             if (NetworkAddress != null)
             {
-                inner.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), NetworkAddress, Asn1StringForm.Numeric);
+                writer.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), NetworkAddress, Asn1StringForm.Numeric);
             }
             if (TerminalIdentifier != null)
             {
-                inner.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), TerminalIdentifier, Asn1StringForm.Printable);
+                writer.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), TerminalIdentifier, Asn1StringForm.Printable);
             }
             if (PrivateDomainName != null)
             {
-                inner.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), nested =>
+                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
                 {
-                    PrivateDomainName.Encode(nested);
-                });
+                    PrivateDomainName.Encode(writer);
+                }
             }
             if (OrganizationName != null)
             {
-                inner.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false), OrganizationName, Asn1StringForm.Printable);
+                writer.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false), OrganizationName, Asn1StringForm.Printable);
             }
             if (NumericUserIdentifier != null)
             {
-                inner.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, false), NumericUserIdentifier, Asn1StringForm.Numeric);
+                writer.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, false), NumericUserIdentifier, Asn1StringForm.Numeric);
             }
             if (PersonalName != null)
             {
-                PersonalName.Encode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 5, true));
+                PersonalName.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 5, true));
             }
             if (OrganizationalUnitNames != null)
             {
-                inner.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 6, true), OrganizationalUnitNames, static (inner, item) =>
+                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 6, true), OrganizationalUnitNames, static (inner, item) =>
                 {
                     inner.WriteString(Asn1Tag.PrintableString, item, Asn1StringForm.Printable);
                 });
             }
-        });
+        }
     }
 
     public static BuiltInStandardAttributes Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -1839,22 +1839,22 @@ public sealed class PersonalName
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSet(tag, inner =>
+        using (writer.EnterSet(tag))
         {
-            inner.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), Surname, Asn1StringForm.Printable);
+            writer.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), Surname, Asn1StringForm.Printable);
             if (GivenName != null)
             {
-                inner.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), GivenName, Asn1StringForm.Printable);
+                writer.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), GivenName, Asn1StringForm.Printable);
             }
             if (Initials != null)
             {
-                inner.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false), Initials, Asn1StringForm.Printable);
+                writer.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false), Initials, Asn1StringForm.Printable);
             }
             if (GenerationQualifier != null)
             {
-                inner.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false), GenerationQualifier, Asn1StringForm.Printable);
+                writer.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false), GenerationQualifier, Asn1StringForm.Printable);
             }
-        });
+        }
     }
 
     public static PersonalName Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -1911,11 +1911,11 @@ public sealed class BuiltInDomainDefinedAttribute
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            inner.WriteString(Asn1Tag.PrintableString, Type, Asn1StringForm.Printable);
-            inner.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
-        });
+            writer.WriteString(Asn1Tag.PrintableString, Type, Asn1StringForm.Printable);
+            writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
+        }
     }
 
     public static BuiltInDomainDefinedAttribute Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -1943,14 +1943,14 @@ public sealed class ExtensionAttribute
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            inner.WriteInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), ExtensionAttributeType);
-            inner.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), nested =>
+            writer.WriteInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), ExtensionAttributeType);
+            using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
             {
-                nested.WriteAny(ExtensionAttributeValue);
-            });
-        });
+                writer.WriteAny(ExtensionAttributeValue);
+            }
+        }
     }
 
     public static ExtensionAttribute Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -1983,22 +1983,22 @@ public sealed class TeletexPersonalName
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSet(tag, inner =>
+        using (writer.EnterSet(tag))
         {
-            inner.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), Surname, Asn1StringForm.Teletex);
+            writer.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), Surname, Asn1StringForm.Teletex);
             if (GivenName != null)
             {
-                inner.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), GivenName, Asn1StringForm.Teletex);
+                writer.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), GivenName, Asn1StringForm.Teletex);
             }
             if (Initials != null)
             {
-                inner.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false), Initials, Asn1StringForm.Teletex);
+                writer.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false), Initials, Asn1StringForm.Teletex);
             }
             if (GenerationQualifier != null)
             {
-                inner.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false), GenerationQualifier, Asn1StringForm.Teletex);
+                writer.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false), GenerationQualifier, Asn1StringForm.Teletex);
             }
-        });
+        }
     }
 
     public static TeletexPersonalName Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -2167,20 +2167,20 @@ public sealed class UnformattedPostalAddress
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSet(tag, inner =>
+        using (writer.EnterSet(tag))
         {
             if (PrintableAddress != null)
             {
-                inner.WriteSequenceOf(Asn1Tag.Sequence, PrintableAddress, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Sequence, PrintableAddress, static (inner, item) =>
                 {
                     inner.WriteString(Asn1Tag.PrintableString, item, Asn1StringForm.Printable);
                 });
             }
             if (TeletexString != null)
             {
-                inner.WriteString(Asn1Tag.TeletexString, TeletexString, Asn1StringForm.Teletex);
+                writer.WriteString(Asn1Tag.TeletexString, TeletexString, Asn1StringForm.Teletex);
             }
-        });
+        }
     }
 
     public static UnformattedPostalAddress Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -2224,17 +2224,17 @@ public sealed class PDSParameter
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSet(tag, inner =>
+        using (writer.EnterSet(tag))
         {
             if (PrintableString != null)
             {
-                inner.WriteString(Asn1Tag.PrintableString, PrintableString, Asn1StringForm.Printable);
+                writer.WriteString(Asn1Tag.PrintableString, PrintableString, Asn1StringForm.Printable);
             }
             if (TeletexString != null)
             {
-                inner.WriteString(Asn1Tag.TeletexString, TeletexString, Asn1StringForm.Teletex);
+                writer.WriteString(Asn1Tag.TeletexString, TeletexString, Asn1StringForm.Teletex);
             }
-        });
+        }
     }
 
     public static PDSParameter Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -2337,37 +2337,37 @@ public sealed class PresentationAddress
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
             if (PSelector != null)
             {
-                inner.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), nested =>
+                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                 {
-                    nested.WriteOctetString(Asn1Tag.OctetString, PSelector.Value.Span);
-                });
+                    writer.WriteOctetString(Asn1Tag.OctetString, PSelector.Value.Span);
+                }
             }
             if (SSelector != null)
             {
-                inner.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), nested =>
+                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
                 {
-                    nested.WriteOctetString(Asn1Tag.OctetString, SSelector.Value.Span);
-                });
+                    writer.WriteOctetString(Asn1Tag.OctetString, SSelector.Value.Span);
+                }
             }
             if (TSelector != null)
             {
-                inner.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), nested =>
+                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
                 {
-                    nested.WriteOctetString(Asn1Tag.OctetString, TSelector.Value.Span);
-                });
+                    writer.WriteOctetString(Asn1Tag.OctetString, TSelector.Value.Span);
+                }
             }
-            inner.WriteExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true), nested =>
+            using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
             {
-                nested.WriteSetOf(Asn1Tag.Set, NAddresses, static (inner, item) =>
+                writer.WriteSetOf(Asn1Tag.Set, NAddresses, static (inner, item) =>
                 {
                     inner.WriteOctetString(Asn1Tag.OctetString, item.Span);
                 });
-            });
-        });
+            }
+        }
     }
 
     public static PresentationAddress Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -2434,11 +2434,11 @@ public sealed class TeletexDomainDefinedAttribute
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            inner.WriteString(Asn1Tag.TeletexString, Type, Asn1StringForm.Teletex);
-            inner.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
-        });
+            writer.WriteString(Asn1Tag.TeletexString, Type, Asn1StringForm.Teletex);
+            writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
+        }
     }
 
     public static TeletexDomainDefinedAttribute Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -2469,18 +2469,18 @@ public sealed class TBSCertList_RevokedCertificates_Item
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            inner.WriteInteger(Asn1Tag.Integer, UserCertificate);
-            RevocationDate.Encode(inner);
+            writer.WriteInteger(Asn1Tag.Integer, UserCertificate);
+            RevocationDate.Encode(writer);
             if (CrlEntryExtensions != null)
             {
-                inner.WriteSequenceOf(Asn1Tag.Sequence, CrlEntryExtensions, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Sequence, CrlEntryExtensions, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
             }
-        });
+        }
     }
 
     public static TBSCertList_RevokedCertificates_Item Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -2578,14 +2578,14 @@ public sealed class ExtendedNetworkAddress_E1634Address
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            inner.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), Number, Asn1StringForm.Numeric);
+            writer.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), Number, Asn1StringForm.Numeric);
             if (SubAddress != null)
             {
-                inner.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), SubAddress, Asn1StringForm.Numeric);
+                writer.WriteString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), SubAddress, Asn1StringForm.Numeric);
             }
-        });
+        }
     }
 
     public static ExtendedNetworkAddress_E1634Address Decode(Asn1Reader reader) => Decode(reader, DefaultTag);

@@ -17,14 +17,14 @@ public sealed class SMIMECapability
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            inner.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, CapabilityID);
+            writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, CapabilityID);
             if (Parameters != null)
             {
-                inner.WriteAny(Parameters.Value);
+                writer.WriteAny(Parameters.Value);
             }
-        });
+        }
     }
 
     public static SMIMECapability Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -130,11 +130,11 @@ public sealed class RC2CBCParameter
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            inner.WriteInteger(Asn1Tag.Integer, Rc2ParameterVersion);
-            inner.WriteOctetString(Asn1Tag.OctetString, Iv.Span);
-        });
+            writer.WriteInteger(Asn1Tag.Integer, Rc2ParameterVersion);
+            writer.WriteOctetString(Asn1Tag.OctetString, Iv.Span);
+        }
     }
 
     public static RC2CBCParameter Decode(Asn1Reader reader) => Decode(reader, DefaultTag);

@@ -19,11 +19,11 @@ public sealed class DigestInfo
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            DigestAlgorithm.Encode(inner, Asn1Tag.Sequence);
-            inner.WriteOctetString(Asn1Tag.OctetString, Digest.Span);
-        });
+            DigestAlgorithm.Encode(writer, Asn1Tag.Sequence);
+            writer.WriteOctetString(Asn1Tag.OctetString, Digest.Span);
+        }
     }
 
     public static DigestInfo Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -109,21 +109,21 @@ public sealed class TargetEtcChain
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            Target.Encode(inner);
+            Target.Encode(writer);
             if (Chain != null)
             {
-                inner.WriteSequenceOf(Asn1Tag.Sequence, Chain, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Sequence, Chain, static (inner, item) =>
                 {
                     item.Encode(inner);
                 });
             }
             if (PathProcInput != null)
             {
-                PathProcInput.Encode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                PathProcInput.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
             }
-        });
+        }
     }
 
     public static TargetEtcChain Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -159,21 +159,21 @@ public sealed class PathProcInput
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            inner.WriteSequenceOf(Asn1Tag.Sequence, AcceptablePolicySet, static (inner, item) =>
+            writer.WriteSequenceOf(Asn1Tag.Sequence, AcceptablePolicySet, static (inner, item) =>
             {
                 item.Encode(inner, Asn1Tag.Sequence);
             });
             if (InhibitPolicyMapping != null)
             {
-                inner.WriteBoolean(Asn1Tag.Boolean, InhibitPolicyMapping.Value);
+                writer.WriteBoolean(Asn1Tag.Boolean, InhibitPolicyMapping.Value);
             }
             if (ExplicitPolicyReqd != null)
             {
-                inner.WriteBoolean(Asn1Tag.Boolean, ExplicitPolicyReqd.Value);
+                writer.WriteBoolean(Asn1Tag.Boolean, ExplicitPolicyReqd.Value);
             }
-        });
+        }
     }
 
     public static PathProcInput Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -409,54 +409,54 @@ public sealed class DVCSRequestInformation
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
             if (Version != null)
             {
-                inner.WriteInteger(Asn1Tag.Integer, Version.Value);
+                writer.WriteInteger(Asn1Tag.Integer, Version.Value);
             }
-            inner.WriteEnumerated(Asn1Tag.Enumerated, (BigInteger)(long)Service);
+            writer.WriteEnumerated(Asn1Tag.Enumerated, (BigInteger)(long)Service);
             if (Nonce != null)
             {
-                inner.WriteInteger(Asn1Tag.Integer, Nonce.Value);
+                writer.WriteInteger(Asn1Tag.Integer, Nonce.Value);
             }
             if (RequestTime != null)
             {
-                RequestTime.Encode(inner);
+                RequestTime.Encode(writer);
             }
             if (Requester != null)
             {
-                inner.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), Requester, static (inner, item) =>
+                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), Requester, static (inner, item) =>
                 {
                     item.Encode(inner);
                 });
             }
             if (RequestPolicy != null)
             {
-                RequestPolicy.Encode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
+                RequestPolicy.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
             }
             if (Dvcs != null)
             {
-                inner.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), Dvcs, static (inner, item) =>
+                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), Dvcs, static (inner, item) =>
                 {
                     item.Encode(inner);
                 });
             }
             if (DataLocations != null)
             {
-                inner.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true), DataLocations, static (inner, item) =>
+                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true), DataLocations, static (inner, item) =>
                 {
                     item.Encode(inner);
                 });
             }
             if (Extensions != null)
             {
-                inner.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true), Extensions, static (inner, item) =>
+                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true), Extensions, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
             }
-        });
+        }
     }
 
     public static DVCSRequestInformation Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -528,15 +528,15 @@ public sealed class DVCSRequest
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            RequestInformation.Encode(inner, Asn1Tag.Sequence);
-            Data.Encode(inner);
+            RequestInformation.Encode(writer, Asn1Tag.Sequence);
+            Data.Encode(writer);
             if (TransactionIdentifier != null)
             {
-                TransactionIdentifier.Encode(inner);
+                TransactionIdentifier.Encode(writer);
             }
-        });
+        }
     }
 
     public static DVCSRequest Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -711,46 +711,46 @@ public sealed class DVCSCertInfo
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
             if (Version != null)
             {
-                inner.WriteInteger(Asn1Tag.Integer, Version.Value);
+                writer.WriteInteger(Asn1Tag.Integer, Version.Value);
             }
-            DvReqInfo.Encode(inner, Asn1Tag.Sequence);
-            MessageImprint.Encode(inner, Asn1Tag.Sequence);
-            inner.WriteInteger(Asn1Tag.Integer, SerialNumber);
-            ResponseTime.Encode(inner);
+            DvReqInfo.Encode(writer, Asn1Tag.Sequence);
+            MessageImprint.Encode(writer, Asn1Tag.Sequence);
+            writer.WriteInteger(Asn1Tag.Integer, SerialNumber);
+            ResponseTime.Encode(writer);
             if (DvStatus != null)
             {
-                DvStatus.Encode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                DvStatus.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
             }
             if (Policy != null)
             {
-                Policy.Encode(inner, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
+                Policy.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
             }
             if (ReqSignature != null)
             {
-                inner.WriteSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), ReqSignature, static (inner, item) =>
+                writer.WriteSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), ReqSignature, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
             }
             if (Certs != null)
             {
-                inner.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true), Certs, static (inner, item) =>
+                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true), Certs, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
             }
             if (Extensions != null)
             {
-                inner.WriteSequenceOf(Asn1Tag.Sequence, Extensions, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Sequence, Extensions, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
             }
-        });
+        }
     }
 
     public static DVCSCertInfo Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
@@ -804,14 +804,14 @@ public sealed class DVCSErrorNotice
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
-        writer.WriteSequence(tag, inner =>
+        using (writer.EnterSequence(tag))
         {
-            TransactionStatus.Encode(inner, Asn1Tag.Sequence);
+            TransactionStatus.Encode(writer, Asn1Tag.Sequence);
             if (TransactionIdentifier != null)
             {
-                TransactionIdentifier.Encode(inner);
+                TransactionIdentifier.Encode(writer);
             }
-        });
+        }
     }
 
     public static DVCSErrorNotice Decode(Asn1Reader reader) => Decode(reader, DefaultTag);

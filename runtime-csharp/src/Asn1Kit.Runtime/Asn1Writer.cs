@@ -15,6 +15,8 @@ public sealed class Asn1Writer
     private const int StackEncodeThreshold = 64;
 
     private Asn1EncodeBuffer _buffer = new();
+    private long _activeScopeToken;
+    private long _nextScopeToken;
 
     /// <summary>Initializes a new instance of <c>Asn1Writer</c>.</summary>
     public Asn1Writer(Asn1Encoding encoding = Asn1Encoding.Der)
@@ -32,10 +34,18 @@ public sealed class Asn1Writer
     public void EnsureCapacity(int capacity) => _buffer.EnsureCapacity(capacity);
 
     /// <summary>Clears written bytes so the writer can be reused without reallocating the backing store.</summary>
-    public void Reset() => _buffer.Reset();
+    public void Reset()
+    {
+        EnsureNoActiveScope("reset");
+        _buffer.Reset();
+    }
 
     /// <summary>Encodes the ASN.1 value.</summary>
-    public byte[] Encode() => _buffer.ToArray();
+    public byte[] Encode()
+    {
+        EnsureNoActiveScope("encode");
+        return _buffer.ToArray();
+    }
 
     /// <summary>Provides the encoded representation to <paramref name="encodeCallback"/> without allocating a copy.</summary>
     public T Encode<T>(Asn1EncodeFunc<T> encodeCallback)
@@ -45,6 +55,7 @@ public sealed class Asn1Writer
             throw new ArgumentNullException(nameof(encodeCallback));
         }
 
+        EnsureNoActiveScope("encode");
         return encodeCallback(_buffer.WrittenSpan);
     }
 
@@ -56,12 +67,16 @@ public sealed class Asn1Writer
             throw new ArgumentNullException(nameof(encodeCallback));
         }
 
+        EnsureNoActiveScope("encode");
         encodeCallback(_buffer.WrittenSpan);
     }
 
     /// <summary>Attempts to encode.</summary>
-    public bool TryEncode(Span<byte> destination, out int bytesWritten) =>
-        _buffer.TryCopyTo(destination, out bytesWritten);
+    public bool TryEncode(Span<byte> destination, out int bytesWritten)
+    {
+        EnsureNoActiveScope("encode");
+        return _buffer.TryCopyTo(destination, out bytesWritten);
+    }
 
     /// <summary>Writes boolean to the ASN.1 output.</summary>
     public void WriteBoolean(Asn1Tag tag, bool value)
@@ -184,21 +199,16 @@ public sealed class Asn1Writer
         _buffer.WritePrimitive(tag, contents.Slice(0, written));
     }
 
-    /// <summary>Writes sequence to the ASN.1 output.</summary>
-    public void WriteSequence(Asn1Tag tag, Action<Asn1Writer> content)
-    {
-        if (content is null)
-        {
-            throw new ArgumentNullException(nameof(content));
-        }
+    /// <summary>Enters constructed SEQUENCE contents and finalizes the value on dispose.</summary>
+    public Asn1WriterScope EnterSequence(Asn1Tag tag) => BeginScope(tag, sortDerSetOf: false);
 
-        WriteConstructed(tag, content, sortDerSetOf: false);
-    }
+    /// <summary>Enters constructed SET contents and finalizes the value on dispose.</summary>
+    public Asn1WriterScope EnterSet(Asn1Tag tag) => BeginScope(tag, sortDerSetOf: false);
 
-    /// <summary>
-    /// Writes a SEQUENCE OF: one SEQUENCE TLV whose contents are the encodings of <paramref name="items"/>.
-    /// <paramref name="encodeItem"/> is invoked once per item (no per-element delegate allocation beyond the call).
-    /// </summary>
+    /// <summary>Enters constructed SEQUENCE OF contents and finalizes the value on dispose.</summary>
+    public Asn1WriterScope EnterSequenceOf(Asn1Tag tag) => BeginScope(tag, sortDerSetOf: false);
+
+    /// <summary>Writes a SEQUENCE OF by encoding each item in <paramref name="items"/>.</summary>
     public void WriteSequenceOf<T>(Asn1Tag tag, IList<T> items, Action<Asn1Writer, T> encodeItem)
     {
         if (items is null)
@@ -211,34 +221,24 @@ public sealed class Asn1Writer
             throw new ArgumentNullException(nameof(encodeItem));
         }
 
-        WriteSequence(tag, inner =>
+        using (EnterSequenceOf(tag))
         {
             for (var i = 0; i < items.Count; i++)
             {
-                encodeItem(inner, items[i]);
+                encodeItem(this, items[i]);
             }
-        });
-    }
-
-    /// <summary>Writes set to the ASN.1 output.</summary>
-    public void WriteSet(Asn1Tag tag, Action<Asn1Writer> content) => WriteSequence(tag, content);
-
-    /// <summary>
-    /// Writes a SET OF. Each call inside <paramref name="content"/> should write one complete element TLV.
-    /// In DER mode, element encodings are sorted lexicographically (X.690 §11.6).
-    /// </summary>
-    public void WriteSetOf(Asn1Tag tag, Action<Asn1Writer> content)
-    {
-        if (content is null)
-        {
-            throw new ArgumentNullException(nameof(content));
         }
-
-        WriteConstructed(tag, content, sortDerSetOf: Encoding == Asn1Encoding.Der);
     }
 
     /// <summary>
-    /// Writes a SET OF from <paramref name="items"/>. In DER mode, element encodings are sorted
+    /// Enters constructed SET OF contents and finalizes the value on dispose. DER elements are sorted
+    /// lexicographically by their complete encodings (X.690 §11.6).
+    /// </summary>
+    public Asn1WriterScope EnterSetOf(Asn1Tag tag) =>
+        BeginScope(tag, sortDerSetOf: Encoding == Asn1Encoding.Der);
+
+    /// <summary>
+    /// Writes a SET OF by encoding each item in <paramref name="items"/>. DER element encodings are sorted
     /// lexicographically (X.690 §11.6).
     /// </summary>
     public void WriteSetOf<T>(Asn1Tag tag, IList<T> items, Action<Asn1Writer, T> encodeItem)
@@ -253,18 +253,17 @@ public sealed class Asn1Writer
             throw new ArgumentNullException(nameof(encodeItem));
         }
 
-        WriteSetOf(tag, inner =>
+        using (EnterSetOf(tag))
         {
             for (var i = 0; i < items.Count; i++)
             {
-                encodeItem(inner, items[i]);
+                encodeItem(this, items[i]);
             }
-        });
+        }
     }
 
-    /// <summary>Writes explicit to the ASN.1 output.</summary>
-    public void WriteExplicit(Asn1Tag outer, Action<Asn1Writer> inner) =>
-        WriteSequence(outer, inner);
+    /// <summary>Enters an EXPLICIT constructed wrapper and finalizes the value on dispose.</summary>
+    public Asn1WriterScope EnterExplicit(Asn1Tag tag) => BeginScope(tag, sortDerSetOf: false);
 
     /// <summary>Writes raw to the ASN.1 output.</summary>
     public void WriteRaw(ReadOnlySpan<byte> tlv) => _buffer.WriteRaw(tlv);
@@ -282,10 +281,35 @@ public sealed class Asn1Writer
         _buffer.WriteTlv(wireTag, value.ContentsMemory.Span);
     }
 
-    private void WriteConstructed(Asn1Tag tag, Action<Asn1Writer> content, bool sortDerSetOf)
+    internal void EndScope(
+        Asn1EncodeFrame frame,
+        long scopeToken,
+        long parentScopeToken,
+        bool sortDerSetOf)
     {
-        var frame = _buffer.BeginConstructed(tag);
-        content(this);
+        if (_activeScopeToken != scopeToken)
+        {
+            throw new InvalidOperationException("ASN.1 writer scopes must be disposed once in LIFO order.");
+        }
+
         _buffer.EndConstructed(frame, sortDerSetOf);
+        _activeScopeToken = parentScopeToken;
+    }
+
+    private Asn1WriterScope BeginScope(Asn1Tag tag, bool sortDerSetOf)
+    {
+        var parentScopeToken = _activeScopeToken;
+        var scopeToken = ++_nextScopeToken;
+        var frame = _buffer.BeginConstructed(tag);
+        _activeScopeToken = scopeToken;
+        return Asn1WriterScope.Create(this, frame, scopeToken, parentScopeToken, sortDerSetOf);
+    }
+
+    private void EnsureNoActiveScope(string operation)
+    {
+        if (_activeScopeToken != 0)
+        {
+            throw new InvalidOperationException($"Cannot {operation} while an ASN.1 writer scope is active.");
+        }
     }
 }

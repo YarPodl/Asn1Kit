@@ -11,11 +11,11 @@ public sealed class RuntimeTests
     public void Der_RoundTripsPersonShape()
     {
         var writer = new Asn1Writer(Asn1Encoding.Der);
-        writer.WriteSequence(Asn1Tag.Sequence, inner =>
+        using (writer.EnterSequence(Asn1Tag.Sequence))
         {
-            Asn1Integer.Encode(inner, 42, new Asn1Tag(Asn1TagClass.ContextSpecific, 0));
-            Asn1OctetString.Encode(inner, Encoding.UTF8.GetBytes("Ann"), new Asn1Tag(Asn1TagClass.ContextSpecific, 1));
-        });
+            Asn1Integer.Encode(writer, 42, new Asn1Tag(Asn1TagClass.ContextSpecific, 0));
+            Asn1OctetString.Encode(writer, Encoding.UTF8.GetBytes("Ann"), new Asn1Tag(Asn1TagClass.ContextSpecific, 1));
+        }
         var bytes = writer.Encode();
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
         using (reader.EnterSequence(Asn1Tag.Sequence))
@@ -30,7 +30,7 @@ public sealed class RuntimeTests
     public void WriteSequence_Empty_EmitsShortFormLengthZero()
     {
         var writer = new Asn1Writer(Asn1Encoding.Der);
-        writer.WriteSequence(Asn1Tag.Sequence, _ => { });
+        using (writer.EnterSequence(Asn1Tag.Sequence)) { }
         Assert.Equal(new byte[] { 0x30, 0x00 }, writer.Encode());
     }
 
@@ -45,10 +45,10 @@ public sealed class RuntimeTests
         }
 
         var writer = new Asn1Writer(Asn1Encoding.Der);
-        writer.WriteSequence(Asn1Tag.Sequence, inner =>
+        using (writer.EnterSequence(Asn1Tag.Sequence))
         {
-            inner.WriteOctetString(Asn1Tag.OctetString, payload);
-        });
+            writer.WriteOctetString(Asn1Tag.OctetString, payload);
+        }
         var bytes = writer.Encode();
 
         Assert.Equal(0x30, bytes[0]);
@@ -85,17 +85,17 @@ public sealed class RuntimeTests
     public void WriteSequence_DeepNesting_RoundTrips()
     {
         var writer = new Asn1Writer(Asn1Encoding.Der);
-        writer.WriteSequence(Asn1Tag.Sequence, level1 =>
+        using (writer.EnterSequence(Asn1Tag.Sequence))
         {
-            level1.WriteSequence(Asn1Tag.Sequence, level2 =>
+            using (writer.EnterSequence(Asn1Tag.Sequence))
             {
-                level2.WriteSequence(Asn1Tag.Sequence, level3 =>
+                using (writer.EnterSequence(Asn1Tag.Sequence))
                 {
-                    Asn1Integer.Encode(level3, 7);
-                    Asn1Integer.Encode(level3, 9);
-                });
-            });
-        });
+                    Asn1Integer.Encode(writer, 7);
+                    Asn1Integer.Encode(writer, 9);
+                }
+            }
+        }
         var bytes = writer.Encode();
 
         // 30 0A 30 08 30 06 02 01 07 02 01 09
@@ -120,6 +120,113 @@ public sealed class RuntimeTests
 
             Assert.True(reader.Eof);
         }
+    }
+
+    [Fact]
+    public void WriterScope_RequiresSingleDisposeInLifoOrder()
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        var outer = writer.EnterSequence(Asn1Tag.Sequence);
+        var outerCopy = outer;
+        var inner = writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, constructed: true));
+
+        InvalidOperationException? outOfOrder = null;
+        try
+        {
+            outer.Dispose();
+        }
+        catch (InvalidOperationException exception)
+        {
+            outOfOrder = exception;
+        }
+
+        Assert.NotNull(outOfOrder);
+        Assert.Contains("LIFO", outOfOrder!.Message);
+
+        inner.Dispose();
+        outer.Dispose();
+
+        InvalidOperationException? copiedDispose = null;
+        try
+        {
+            outerCopy.Dispose();
+        }
+        catch (InvalidOperationException exception)
+        {
+            copiedDispose = exception;
+        }
+
+        Assert.NotNull(copiedDispose);
+        Assert.Contains("disposed once", copiedDispose!.Message);
+        InvalidOperationException? repeatedDispose = null;
+        try
+        {
+            outer.Dispose();
+        }
+        catch (InvalidOperationException exception)
+        {
+            repeatedDispose = exception;
+        }
+
+        Assert.NotNull(repeatedDispose);
+        Assert.Contains("disposed once", repeatedDispose!.Message);
+        Assert.Equal(Hex.Parse("3002A000"), writer.Encode());
+    }
+
+    [Fact]
+    public void WriterScope_BlocksSnapshotAndResetUntilDisposed()
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        using (writer.EnterSequence(Asn1Tag.Sequence))
+        {
+            writer.WriteNull(Asn1Tag.Null);
+            Assert.Throws<InvalidOperationException>(() => writer.Encode());
+            Assert.Throws<InvalidOperationException>(() => writer.Encode(static encoded => encoded.Length));
+            Assert.Throws<InvalidOperationException>(() => writer.Encode(static encoded => { }));
+            Assert.Throws<InvalidOperationException>(() => writer.TryEncode(new byte[16], out _));
+            Assert.Throws<InvalidOperationException>(() => writer.Reset());
+        }
+
+        Assert.Equal(Hex.Parse("30020500"), writer.Encode());
+    }
+
+    [Fact]
+    public void WriterScope_ExceptionFinalizesPartialValueAndResetAllowsReuse()
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        InvalidOperationException? thrown = null;
+        try
+        {
+            using (writer.EnterSequence(Asn1Tag.Sequence))
+            {
+                writer.WriteInteger(Asn1Tag.Integer, 1);
+                throw new InvalidOperationException("boom");
+            }
+        }
+        catch (InvalidOperationException exception)
+        {
+            thrown = exception;
+        }
+
+        Assert.NotNull(thrown);
+        Assert.Equal("boom", thrown!.Message);
+        Assert.Equal(Hex.Parse("3003020101"), writer.Encode());
+        writer.Reset();
+        writer.WriteNull(Asn1Tag.Null);
+        Assert.Equal(Hex.Parse("0500"), writer.Encode());
+    }
+
+    [Fact]
+    public void EnterSet_DerPreservesFieldOrder()
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        using (writer.EnterSet(Asn1Tag.Set))
+        {
+            writer.WriteInteger(Asn1Tag.Integer, 2);
+            writer.WriteInteger(Asn1Tag.Integer, 1);
+        }
+
+        Assert.Equal(Hex.Parse("3106020102020101"), writer.Encode());
     }
 
     [Fact]
@@ -308,11 +415,11 @@ public sealed class RuntimeTests
     {
         // INTEGER 2 then INTEGER 1 вЂ” DER must emit 1 then 2 (X.690 В§11.6).
         var writer = new Asn1Writer(Asn1Encoding.Der);
-        writer.WriteSetOf(Asn1Tag.Set, inner =>
+        using (writer.EnterSetOf(Asn1Tag.Set))
         {
-            Asn1Integer.Encode(inner, 2);
-            Asn1Integer.Encode(inner, 1);
-        });
+            Asn1Integer.Encode(writer, 2);
+            Asn1Integer.Encode(writer, 1);
+        }
         var bytes = writer.Encode();
         Assert.Equal(new byte[] { 0x31, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02 }, bytes);
 
@@ -329,11 +436,11 @@ public sealed class RuntimeTests
     public void WriteSetOf_BerPreservesElementOrder()
     {
         var writer = new Asn1Writer(Asn1Encoding.Ber);
-        writer.WriteSetOf(Asn1Tag.Set, inner =>
+        using (writer.EnterSetOf(Asn1Tag.Set))
         {
-            Asn1Integer.Encode(inner, 2);
-            Asn1Integer.Encode(inner, 1);
-        });
+            Asn1Integer.Encode(writer, 2);
+            Asn1Integer.Encode(writer, 1);
+        }
         var bytes = writer.Encode();
         Assert.Equal(new byte[] { 0x31, 0x06, 0x02, 0x01, 0x02, 0x02, 0x01, 0x01 }, bytes);
     }
@@ -347,7 +454,7 @@ public sealed class RuntimeTests
             Asn1Integer.FromInt32(2),
         };
         var writer = new Asn1Writer(Asn1Encoding.Der);
-        writer.WriteSequenceOf(Asn1Tag.Sequence, items, static (w, item) => Asn1Integer.Encode(w, item));
+        writer.WriteSequenceOf(Asn1Tag.Sequence, items, static (inner, item) => Asn1Integer.Encode(inner, item));
         var bytes = writer.Encode();
         Assert.Equal(new byte[] { 0x30, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02 }, bytes);
 
@@ -363,7 +470,7 @@ public sealed class RuntimeTests
     public void ReadSequenceOf_Empty_ReturnsArrayEmpty()
     {
         var writer = new Asn1Writer(Asn1Encoding.Der);
-        writer.WriteSequenceOf(Asn1Tag.Sequence, Array.Empty<Asn1Integer>(), static (w, item) => Asn1Integer.Encode(w, item));
+        using (writer.EnterSequenceOf(Asn1Tag.Sequence)) { }
         var bytes = writer.Encode();
 
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
@@ -394,7 +501,7 @@ public sealed class RuntimeTests
             Asn1Integer.FromInt32(1),
         };
         var writer = new Asn1Writer(Asn1Encoding.Der);
-        writer.WriteSetOf(Asn1Tag.Set, items, static (w, item) => Asn1Integer.Encode(w, item));
+        writer.WriteSetOf(Asn1Tag.Set, items, static (inner, item) => Asn1Integer.Encode(inner, item));
         var bytes = writer.Encode();
         Assert.Equal(new byte[] { 0x31, 0x06, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02 }, bytes);
 
@@ -403,6 +510,21 @@ public sealed class RuntimeTests
         Assert.Equal(2, decoded.Length);
         Assert.Equal(1, decoded[0].GetInt32());
         Assert.Equal(2, decoded[1].GetInt32());
+    }
+
+    [Fact]
+    public void WriteOf_RejectsNullCollectionAndCallback()
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+
+        Assert.Throws<ArgumentNullException>(() =>
+            writer.WriteSequenceOf<Asn1Integer>(Asn1Tag.Sequence, null!, static (inner, item) => Asn1Integer.Encode(inner, item)));
+        Assert.Throws<ArgumentNullException>(() =>
+            writer.WriteSequenceOf<Asn1Integer>(Asn1Tag.Sequence, Array.Empty<Asn1Integer>(), null!));
+        Assert.Throws<ArgumentNullException>(() =>
+            writer.WriteSetOf<Asn1Integer>(Asn1Tag.Set, null!, static (inner, item) => Asn1Integer.Encode(inner, item)));
+        Assert.Throws<ArgumentNullException>(() =>
+            writer.WriteSetOf<Asn1Integer>(Asn1Tag.Set, Array.Empty<Asn1Integer>(), null!));
     }
 
     [Fact]
@@ -779,11 +901,11 @@ public sealed class RuntimeTests
     public void ReadLazy_DefersDecode_UntilValueAccess()
     {
         var writer = new Asn1Writer(Asn1Encoding.Der);
-        writer.WriteSequence(Asn1Tag.Sequence, inner =>
+        using (writer.EnterSequence(Asn1Tag.Sequence))
         {
-            Asn1Integer.Encode(inner, 7);
-            Asn1Integer.Encode(inner, 9);
-        });
+            Asn1Integer.Encode(writer, 7);
+            Asn1Integer.Encode(writer, 9);
+        }
         var bytes = writer.Encode();
 
         var decodedCalls = 0;
@@ -933,11 +1055,14 @@ public sealed class RuntimeTests
     public void Reader_NestedSequence_DoesNotRequireSeparateBufferOwner()
     {
         var writer = new Asn1Writer(Asn1Encoding.Der);
-        writer.WriteSequence(Asn1Tag.Sequence, inner =>
+        using (writer.EnterSequence(Asn1Tag.Sequence))
         {
-            inner.WriteInteger(Asn1Tag.Integer, 1);
-            inner.WriteSequence(Asn1Tag.Sequence, nested => nested.WriteInteger(Asn1Tag.Integer, 2));
-        });
+            writer.WriteInteger(Asn1Tag.Integer, 1);
+            using (writer.EnterSequence(Asn1Tag.Sequence))
+            {
+                writer.WriteInteger(Asn1Tag.Integer, 2);
+            }
+        }
         var bytes = writer.Encode();
 
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
@@ -960,11 +1085,14 @@ public sealed class RuntimeTests
     public void EnterSequence_RoundTripsNestedContents()
     {
         var writer = new Asn1Writer(Asn1Encoding.Der);
-        writer.WriteSequence(Asn1Tag.Sequence, inner =>
+        using (writer.EnterSequence(Asn1Tag.Sequence))
         {
-            inner.WriteInteger(Asn1Tag.Integer, 1);
-            inner.WriteSequence(Asn1Tag.Sequence, nested => nested.WriteInteger(Asn1Tag.Integer, 2));
-        });
+            writer.WriteInteger(Asn1Tag.Integer, 1);
+            using (writer.EnterSequence(Asn1Tag.Sequence))
+            {
+                writer.WriteInteger(Asn1Tag.Integer, 2);
+            }
+        }
         var bytes = writer.Encode();
 
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
@@ -990,7 +1118,10 @@ public sealed class RuntimeTests
     {
         var tag = new Asn1Tag(Asn1TagClass.ContextSpecific, 0, constructed: true);
         var writer = new Asn1Writer(Asn1Encoding.Der);
-        writer.WriteExplicit(tag, nested => nested.WriteInteger(Asn1Tag.Integer, 42));
+        using (writer.EnterExplicit(tag))
+        {
+            writer.WriteInteger(Asn1Tag.Integer, 42);
+        }
         var bytes = writer.Encode();
 
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
@@ -1015,7 +1146,13 @@ public sealed class RuntimeTests
         }
 
         var writer = new Asn1Writer(Asn1Encoding.Der);
-        writer.WriteSequenceOf(Asn1Tag.Sequence, items, static (w, item) => Asn1Integer.Encode(w, item));
+        using (writer.EnterSequenceOf(Asn1Tag.Sequence))
+        {
+            foreach (var item in items)
+            {
+                Asn1Integer.Encode(writer, item);
+            }
+        }
         var bytes = writer.Encode();
 
         // Legacy shape: EnterSequence + capturing Func body that closes over decodeItem.

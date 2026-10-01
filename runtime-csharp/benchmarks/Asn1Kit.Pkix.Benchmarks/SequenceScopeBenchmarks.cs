@@ -11,7 +11,7 @@ namespace Asn1Kit.Benchmarks;
 [MemoryDiagnoser]
 [CategoriesColumn]
 [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
-public class SequenceLambdaBenchmarks
+public class SequenceScopeBenchmarks
 {
     private byte[] _nested = null!;
     private byte[] _ofMany = null!;
@@ -21,15 +21,18 @@ public class SequenceLambdaBenchmarks
     public void Setup()
     {
         var nestedWriter = new Asn1Writer(Asn1Encoding.Der);
-        nestedWriter.WriteSequence(Asn1Tag.Sequence, outer =>
+        using (nestedWriter.EnterSequence(Asn1Tag.Sequence))
         {
-            outer.WriteInteger(Asn1Tag.Integer, 1);
-            outer.WriteSequence(Asn1Tag.Sequence, mid =>
+            nestedWriter.WriteInteger(Asn1Tag.Integer, 1);
+            using (nestedWriter.EnterSequence(Asn1Tag.Sequence))
             {
-                mid.WriteInteger(Asn1Tag.Integer, 2);
-                mid.WriteSequence(Asn1Tag.Sequence, inner => inner.WriteInteger(Asn1Tag.Integer, 3));
-            });
-        });
+                nestedWriter.WriteInteger(Asn1Tag.Integer, 2);
+                using (nestedWriter.EnterSequence(Asn1Tag.Sequence))
+                {
+                    nestedWriter.WriteInteger(Asn1Tag.Integer, 3);
+                }
+            }
+        }
         _nested = nestedWriter.Encode();
 
         var many = new Asn1Integer[16];
@@ -39,11 +42,20 @@ public class SequenceLambdaBenchmarks
         }
 
         var ofManyWriter = new Asn1Writer(Asn1Encoding.Der);
-        ofManyWriter.WriteSequenceOf(Asn1Tag.Sequence, many, static (w, item) => Asn1Integer.Encode(w, item));
+        using (ofManyWriter.EnterSequenceOf(Asn1Tag.Sequence))
+        {
+            foreach (var item in many)
+            {
+                Asn1Integer.Encode(ofManyWriter, item);
+            }
+        }
         _ofMany = ofManyWriter.Encode();
 
         var ofOneWriter = new Asn1Writer(Asn1Encoding.Der);
-        ofOneWriter.WriteSequenceOf(Asn1Tag.Sequence, new[] { Asn1Integer.FromInt32(7) }, static (w, item) => Asn1Integer.Encode(w, item));
+        using (ofOneWriter.EnterSequenceOf(Asn1Tag.Sequence))
+        {
+            Asn1Integer.Encode(ofOneWriter, Asn1Integer.FromInt32(7));
+        }
         _ofOne = ofOneWriter.Encode();
     }
 

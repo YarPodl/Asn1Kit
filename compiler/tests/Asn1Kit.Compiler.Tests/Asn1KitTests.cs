@@ -161,7 +161,8 @@ public sealed class RoundTripTests
         Assert.Contains("WriteTime", source);
         Assert.Contains("Asn1TimeForm.Generalized, 3)", source);
         Assert.Contains("WriteBitString", source);
-        Assert.Contains("WriteExplicit", source);
+        Assert.Contains("EnterExplicit", source);
+        Assert.DoesNotContain("WriteExplicit", source);
 
         var assembly = CompileGenerated(source);
         var sampleType = assembly.GetType("PrimitivesModule.Sample")!;
@@ -247,8 +248,9 @@ END
         var document = new Asn1Compiler().CompileText(asn);
         IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
         var source = new CSharpBackend().Generate(document).Single().Contents;
-        Assert.Contains("WriteSet", source);
+        Assert.Contains("EnterSet", source);
         Assert.Contains("WriteSetOf", source);
+        Assert.DoesNotContain("EnterSetOf", source);
         Assert.Contains("Asn1Tag.Set", source);
         Assert.DoesNotContain("class List", source);
         Assert.Contains("ASN.1 alias List ::= SET OF INTEGER.", source);
@@ -356,6 +358,8 @@ END
         Assert.Contains("ASN.1 alias Seq ::= SEQUENCE OF INTEGER.", source);
         Assert.Contains("Asn1Integer[] Values", source);
         Assert.Contains("WriteSequenceOf", source);
+        Assert.DoesNotContain("EnterSequenceOf", source);
+        Assert.DoesNotContain("foreach (", source);
         Assert.Contains("ReadSequenceOf", source);
 
         var assembly = CompileGenerated(source);

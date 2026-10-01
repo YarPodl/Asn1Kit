@@ -304,7 +304,7 @@ public sealed class CSharpBackend : ILanguageBackend
             }
         }
 
-        sb.AppendLine("        writer.WriteSequence(tag, inner =>");
+        sb.AppendLine("        using (writer.EnterSequence(tag))");
         sb.AppendLine("        {");
         foreach (var field in type.Components)
         {
@@ -319,16 +319,16 @@ public sealed class CSharpBackend : ILanguageBackend
                     typeName,
                     field,
                     "            ",
-                    "inner",
+                    "writer",
                     local);
             }
             else
             {
-                EmitEncodeField(sb, document, module, typeName, field, "            ", "inner");
+                EmitEncodeField(sb, document, module, typeName, field, "            ", "writer");
             }
         }
 
-        sb.AppendLine("        });");
+        sb.AppendLine("        }");
         sb.AppendLine("    }");
         sb.AppendLine();
         sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader) => Decode(reader, DefaultTag);");
@@ -376,7 +376,7 @@ public sealed class CSharpBackend : ILanguageBackend
             }
         }
 
-        sb.AppendLine("        writer.WriteSet(tag, inner =>");
+        sb.AppendLine("        using (writer.EnterSet(tag))");
         sb.AppendLine("        {");
         foreach (var field in SortedSetComponents(document, module, type.Components))
         {
@@ -391,16 +391,16 @@ public sealed class CSharpBackend : ILanguageBackend
                     typeName,
                     field,
                     "            ",
-                    "inner",
+                    "writer",
                     local);
             }
             else
             {
-                EmitEncodeField(sb, document, module, typeName, field, "            ", "inner");
+                EmitEncodeField(sb, document, module, typeName, field, "            ", "writer");
             }
         }
 
-        sb.AppendLine("        });");
+        sb.AppendLine("        }");
         sb.AppendLine("    }");
         sb.AppendLine();
         sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader) => Decode(reader, DefaultTag);");
@@ -1021,21 +1021,21 @@ public sealed class CSharpBackend : ILanguageBackend
 
         if (type.Tag?.Mode == TagModes.Explicit && forceTag is null)
         {
-            sb.AppendLine($"{indent}{writer}.WriteExplicit({TagFromIr(type.Tag, constructed: true)}, nested =>");
+            sb.AppendLine($"{indent}using ({writer}.EnterExplicit({TagFromIr(type.Tag, constructed: true)}))");
             sb.AppendLine($"{indent}{{");
             var inner = CloneUntagged(type);
             if (inner is SequenceOfType or SetOfType)
             {
                 EmitOfEncode(
-                    sb, document, module, original, owner, hint, inner, indent + "    ", "nested", expr, forceTag: null);
+                    sb, document, module, original, owner, hint, inner, indent + "    ", writer, expr, forceTag: null);
             }
             else
             {
                 EmitEncodeValue(
-                    sb, document, module, owner, hint, inner, indent + "    ", "nested", expr, encodeLazyWrapper: false);
+                    sb, document, module, owner, hint, inner, indent + "    ", writer, expr, encodeLazyWrapper: false);
             }
 
-            sb.AppendLine($"{indent}}});");
+            sb.AppendLine($"{indent}}}");
             return;
         }
 

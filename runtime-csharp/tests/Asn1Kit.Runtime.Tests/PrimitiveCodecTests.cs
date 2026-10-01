@@ -380,7 +380,10 @@ public sealed class PrimitiveCodecTests
         var tlv = inner.Encode();
 
         var writer = new Asn1Writer(Asn1Encoding.Der);
-        writer.WriteSequence(Asn1Tag.Sequence, w => w.WriteRaw(tlv));
+        using (writer.EnterSequence(Asn1Tag.Sequence))
+        {
+            writer.WriteRaw(tlv);
+        }
         var bytes = writer.Encode();
         Assert.Equal(new byte[] { 0x30, 0x03, 0x02, 0x01, 0x07 }, bytes);
     }
@@ -426,7 +429,10 @@ public sealed class PrimitiveCodecTests
     {
         var contents = new byte[contentLength];
         var writer = new Asn1Writer(Asn1Encoding.Der);
-        writer.WriteSequence(Asn1Tag.Sequence, inner => inner.WriteRaw(contents));
+        using (writer.EnterSequence(Asn1Tag.Sequence))
+        {
+            writer.WriteRaw(contents);
+        }
         var encoded = writer.Encode();
         var expectedHeader = Hex.Parse(expectedHeaderHex);
 
@@ -439,11 +445,17 @@ public sealed class PrimitiveCodecTests
     public void ConstructedLength_NestedAndAdjacentValuesRemainIntact()
     {
         var writer = new Asn1Writer(Asn1Encoding.Der);
-        writer.WriteSequence(Asn1Tag.Sequence, outer =>
+        using (writer.EnterSequence(Asn1Tag.Sequence))
         {
-            outer.WriteSequence(Asn1Tag.Sequence, inner => inner.WriteInteger(Asn1Tag.Integer, 1));
-            outer.WriteSequence(Asn1Tag.Sequence, inner => inner.WriteInteger(Asn1Tag.Integer, 2));
-        });
+            using (writer.EnterSequence(Asn1Tag.Sequence))
+            {
+                writer.WriteInteger(Asn1Tag.Integer, 1);
+            }
+            using (writer.EnterSequence(Asn1Tag.Sequence))
+            {
+                writer.WriteInteger(Asn1Tag.Integer, 2);
+            }
+        }
 
         Assert.Equal(Hex.Parse("300A30030201013003020102"), writer.Encode());
     }
@@ -464,7 +476,10 @@ public sealed class PrimitiveCodecTests
     {
         var tag = new Asn1Tag(Asn1TagClass.ContextSpecific, 0, constructed: true);
         var writer = new Asn1Writer(Asn1Encoding.Der);
-        writer.WriteExplicit(tag, inner => Asn1Integer.Encode(inner, 1));
+        using (writer.EnterExplicit(tag))
+        {
+            Asn1Integer.Encode(writer, 1);
+        }
         var bytes = writer.Encode();
         Assert.Equal(new byte[] { 0xA0, 0x03, 0x02, 0x01, 0x01 }, bytes);
 

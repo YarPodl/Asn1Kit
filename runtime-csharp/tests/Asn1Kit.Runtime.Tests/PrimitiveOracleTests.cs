@@ -232,11 +232,11 @@ public sealed class PrimitiveOracleTests
     {
         var us = EncodeUs(w =>
         {
-            w.WriteSetOf(Asn1Tag.Set, inner =>
+            using (w.EnterSetOf(Asn1Tag.Set))
             {
-                inner.WriteInteger(Asn1Tag.Integer, 2);
-                inner.WriteInteger(Asn1Tag.Integer, 1);
-            });
+                w.WriteInteger(Asn1Tag.Integer, 2);
+                w.WriteInteger(Asn1Tag.Integer, 1);
+            }
         });
 
         var bclWriter = new AsnWriter(AsnEncodingRules.DER);
@@ -254,11 +254,11 @@ public sealed class PrimitiveOracleTests
     {
         var us = EncodeUs(w =>
         {
-            w.WriteSequence(Asn1Tag.Sequence, inner =>
+            using (w.EnterSequence(Asn1Tag.Sequence))
             {
-                inner.WriteInteger(Asn1Tag.Integer, 1);
-                inner.WriteInteger(Asn1Tag.Integer, 2);
-            });
+                w.WriteInteger(Asn1Tag.Integer, 1);
+                w.WriteInteger(Asn1Tag.Integer, 2);
+            }
         });
 
         var bclWriter = new AsnWriter(AsnEncodingRules.DER);

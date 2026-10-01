@@ -139,6 +139,8 @@ END
         Assert.DoesNotContain("class PolicyMappingsItem", source);
         Assert.DoesNotContain("class PolicyMappings\n{", source.Replace("\r\n", "\n", StringComparison.Ordinal));
         Assert.Contains("WriteSequenceOf", source);
+        Assert.DoesNotContain("EnterSequenceOf", source);
+        Assert.DoesNotContain("foreach (", source);
         Assert.Contains("ASN.1 alias PolicyMappings ::= SEQUENCE OF SEQUENCE.", source);
     }
 

@@ -33,7 +33,10 @@ public class WriterOptimizationBenchmarks
         _writer.Reset();
         for (var i = 0; i < 32; i++)
         {
-            _writer.WriteSequence(Asn1Tag.Sequence, static inner => inner.WriteNull(Asn1Tag.Null));
+            using (_writer.EnterSequence(Asn1Tag.Sequence))
+            {
+                _writer.WriteNull(Asn1Tag.Null);
+            }
         }
 
         return _writer.EncodedLength;
@@ -44,15 +47,17 @@ public class WriterOptimizationBenchmarks
     public int DeepShortSequence()
     {
         _writer.Reset();
-        _writer.WriteSequence(Asn1Tag.Sequence, static level1 =>
-            level1.WriteSequence(Asn1Tag.Sequence, static level2 =>
-                level2.WriteSequence(Asn1Tag.Sequence, static level3 =>
-                    level3.WriteSequence(Asn1Tag.Sequence, static level4 =>
-                        level4.WriteSequence(Asn1Tag.Sequence, static level5 =>
-                            level5.WriteSequence(Asn1Tag.Sequence, static level6 =>
-                                level6.WriteSequence(Asn1Tag.Sequence, static level7 =>
-                                    level7.WriteSequence(Asn1Tag.Sequence, static level8 =>
-                                        level8.WriteInteger(Asn1Tag.Integer, 1)))))))));
+        using (_writer.EnterSequence(Asn1Tag.Sequence))
+        using (_writer.EnterSequence(Asn1Tag.Sequence))
+        using (_writer.EnterSequence(Asn1Tag.Sequence))
+        using (_writer.EnterSequence(Asn1Tag.Sequence))
+        using (_writer.EnterSequence(Asn1Tag.Sequence))
+        using (_writer.EnterSequence(Asn1Tag.Sequence))
+        using (_writer.EnterSequence(Asn1Tag.Sequence))
+        using (_writer.EnterSequence(Asn1Tag.Sequence))
+        {
+            _writer.WriteInteger(Asn1Tag.Integer, 1);
+        }
 
         return _writer.EncodedLength;
     }
@@ -110,7 +115,10 @@ public class WriterOptimizationBenchmarks
     private int WriteLongSequence(Action<Asn1Writer> writeContents)
     {
         _writer.Reset();
-        _writer.WriteSequence(Asn1Tag.Sequence, writeContents);
+        using (_writer.EnterSequence(Asn1Tag.Sequence))
+        {
+            writeContents(_writer);
+        }
         return _writer.EncodedLength;
     }
 

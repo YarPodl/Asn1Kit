@@ -120,7 +120,13 @@ public sealed class CertificateExtensionCodecTests
         Assert.Equal(expected.CertificatePolicies!, policies.Select(p => p.PolicyIdentifier.ToString()).ToList());
         PkixFixtures.AssertExtnValueRoundTrip(extension, writer =>
         {
-            writer.WriteSequenceOf(Asn1Tag.Sequence, policies, static (inner, item) => item.Encode(inner, Asn1Tag.Sequence));
+            using (writer.EnterSequenceOf(Asn1Tag.Sequence))
+            {
+                foreach (var item in policies)
+                {
+                    item.Encode(writer, Asn1Tag.Sequence);
+                }
+            }
         });
     }
 
@@ -177,7 +183,13 @@ public sealed class CertificateExtensionCodecTests
 
         PkixFixtures.AssertExtnValueRoundTrip(extension, writer =>
         {
-            writer.WriteSequenceOf(Asn1Tag.Sequence, names, static (inner, item) => item.Encode(inner));
+            using (writer.EnterSequenceOf(Asn1Tag.Sequence))
+            {
+                foreach (var item in names)
+                {
+                    item.Encode(writer);
+                }
+            }
         });
     }
 }
