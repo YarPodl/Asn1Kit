@@ -1,38 +1,21 @@
 ---
-description: Повышенные требования к генератору и сгенерированному коду — сценарии, тесты, эффективность
+description: C# codegen и generated-код — полнота сценариев и эффективность
 globs: compiler/src/Asn1Kit.Codegen/**/*.cs,compiler/src/Asn1Kit.Codegen.CSharp/**/*.cs,compiler/tests/Asn1Kit.Compiler.Tests/PkixGeneratedCodeTests.cs,compiler/tests/Asn1Kit.Compiler.Tests/OptionalChoiceDecodeTests.cs,compiler/tests/Asn1Kit.Compiler.Tests/Cms2004BenchTests.cs,runtime-csharp/generated/**/*.g.cs,compiler/docs/playbooks/csharp-backend.md
 alwaysApply: false
 ---
 
-# Генератор и сгенерированный код
+# Генератор и generated-код
 
-Сгенерированный код — часть продукта. К нему те же (и выше) требования надёжности, покрытия и эффективности, что к runtime.
+Следуй [playbook C# backend](../../compiler/docs/playbooks/csharp-backend.md).
 
-## Поведение
+- `*.g.cs` не правь вручную; меняй генератор или IR и запускай скрипт из `scripts/`.
+- Уважай `generate: false` и все поддержанные `options.csharp.*`.
+- Encode/decode покрывает OPTIONAL, CHOICE, коллекции и EXPLICIT/IMPLICIT/AUTOMATIC tags.
+- Не создавай мёртвый код, лишние аллокации, boxing, промежуточные `MemoryStream`, `List`, `ToArray` или closures на горячем пути.
 
-- Типы только вызывают `Asn1Kit.Runtime`. Запрещено вшивать TLV, длины, DER-канонизацию в шаблон.
-- `*.g.cs` руками не правь: меняй генератор или IR и пересобирай артефакты канонической командой из `AGENTS.md`.
-- Уважай `generate: false` и `options.csharp.*` (namespace, имена типов/свойств).
-- Encode/decode должны быть полными: OPTIONAL, CHOICE, SEQUENCE OF, теги EXPLICIT/IMPLICIT/AUTOMATIC.
-- Не генерируй мёртвый код, лишние аллокации и ненужные `List`/`ToArray` на encode.
+## Проверка
 
-## Тесты (обязательный максимум сценариев)
-
-- Компилируй сгенерированный C# в тесте (Roslyn, как сейчас) и гоняй encode/decode.
-- Фикстуры ASN.1/IR: каждый тип профиля v0 и типичные комбинации (вложенность, optional, choice, imports).
-- Проверяй байты DER канонически; BER — хотя бы decode известных векторов.
-- Сломанный вход (не тот тег, лишние байты в SEQUENCE, неизвестная альтернатива CHOICE) должен падать явно.
-
-## Память
-
-- Предпочитай `Asn1Writer` без промежуточных `MemoryStream` на каждое поле.
-- Не боксируй примитивы; коллекции — с известной ёмкостью, если размер известен.
-- Не генерируй замыкания/`Func` на элемент SEQUENCE OF, если достаточно цикла.
-
-```csharp
-// ❌ BAD: кодек внутри шаблона
-writer.WriteByte(0x02); writer.WriteByte(0x01); writer.WriteByte(0x00);
-
-// ✅ GOOD: только runtime
-writer.WriteInteger(Asn1Tag.Integer, value);
-```
+- Компилируй generated C# через существующий Roslyn test и выполняй encode/decode.
+- Проверяй канонические DER-байты, BER-векторы и явный отказ сломанного входа.
+- Golden PKIX/CMS/DVCS: `scripts/regenerate-csharp-golden.ps1`; bench: `scripts/regenerate-bench.ps1`.
+- Просматривай generated diff перед полным `dotnet test Asn1Kit.sln`.

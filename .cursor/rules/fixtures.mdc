@@ -1,64 +1,23 @@
 ---
-description: Правила работы с фикстурами ASN.1, IR и BER/DER — golden-артефакты, ручные фикстуры, регрессии
+description: ASN.1, IR, BER/DER и generated fixtures — происхождение и регрессии
 globs: compiler/fixtures/**,runtime-csharp/fixtures/**,runtime-csharp/generated/**
 alwaysApply: false
 ---
 
 # Фикстуры
 
-Фикстуры лежат в каталогах продуктов. Путать сорта нельзя.
+## Категории
 
-## Golden-артефакт: `compiler/fixtures/ir/pkix1-explicit88.json`
+- `pkix1-explicit88.json`, `pkix1-implicit88.json`, `cms-2004.json` — generated IR golden; вручную не правятся.
+- `cms-2004-bench.json` — производный IR из `cms-2004-bench.patch.json`.
+- `example.json` — ручная фикстура; сохраняй её `options` при точечных правках.
+- `runtime-csharp/generated/**/*.g.cs` — generated C#; вручную не правится.
+- Формат BER/DER-векторов описан в `runtime-csharp/fixtures/ber-der/README.md`.
 
-- Генерируется компилятором из [compiler/fixtures/asn1/pkix1-explicit88.asn](../../compiler/fixtures/asn1/pkix1-explicit88.asn) (RFC 5280 Appendix A.1). Руками не правится никогда.
-- Сверяется в `PkixExplicit88Tests.CompilesAndMatchesGoldenIr`: JSON компилятора сравнивается с нормализованным golden побайтово как строка. Любая правка `IrBuilder`, схемы или сериализации роняет этот тест.
-- Если тест упал — сначала убедись, что новый вывод правильный, затем пересобери фикстуру и посмотри diff глазами:
+## Workflow
 
-```powershell
-dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/pkix1-explicit88.asn -o compiler/fixtures/ir/pkix1-explicit88.json --bindings compiler/fixtures/opentype/pkix-bindings.json
-```
-
-Diff фикстуры — часть ревью изменения. Неожиданные строки в нём означают регрессию, а не «фикстура протухла».
-
-## Golden-артефакт: `compiler/fixtures/ir/pkix1-implicit88.json`
-
-- Генерируется компилятором из **обоих** модулей RFC 5280 Appendix A.1 + A.2: Explicit88 и [pkix1-implicit88.asn](../../compiler/fixtures/asn1/pkix1-implicit88.asn). Руками не правится.
-- Покрывает multi-module `IMPORTS`, `IMPLICIT TAGS` и union-constraint → `unsupported`. Сверяется в `PkixImplicit88Tests.CompilesAndMatchesGoldenIr`.
-
-```powershell
-dotnet run --project compiler/src/Asn1Kit.Cli -- compile `
-  -i compiler/fixtures/asn1/pkix1-explicit88.asn `
-  -i compiler/fixtures/asn1/pkix1-implicit88.asn `
-  -o compiler/fixtures/ir/pkix1-implicit88.json `
-  --bindings compiler/fixtures/opentype/pkix-bindings.json
-```
-
-## Golden-артефакт: `compiler/fixtures/ir/cms-2004.json`
-
-- Explicit88 + Implicit88 + [cms-2004.asn](../../compiler/fixtures/asn1/cms-2004.asn) (RFC 5652 §12.1 curated). Руками не правится, кроме `options.csharp.namespace` после compile: PKIX → `Asn1Kit.Pkix`, CMS → `Asn1Kit.Cms`.
-- Bindings: [pkix-bindings.json](../../compiler/fixtures/opentype/pkix-bindings.json) + [cms-bindings.json](../../compiler/fixtures/opentype/cms-bindings.json). Сверяется в `Cms2004Tests`; golden C# — `PkixGeneratedCodeTests`.
-
-```powershell
-dotnet run --project compiler/src/Asn1Kit.Cli -- compile `
-  -i compiler/fixtures/asn1/pkix1-explicit88.asn `
-  -i compiler/fixtures/asn1/pkix1-implicit88.asn `
-  -i compiler/fixtures/asn1/cms-2004.asn `
-  -o compiler/fixtures/ir/cms-2004.json `
-  --bindings compiler/fixtures/opentype/pkix-bindings.json `
-  --bindings compiler/fixtures/opentype/cms-bindings.json
-```
-
-## Ручная фикстура: `compiler/fixtures/ir/example.json`
-
-- Демонстрирует ручные правки `options`: namespace `Example.Asn1` и `propertyName: Nickname`, которых компилятор не выдаёт.
-- Компилятором **не** перегенерируется. Если она разошлась с [compiler/fixtures/asn1/example.asn](../../compiler/fixtures/asn1/example.asn) по форме типов — правь точечно, сохраняя `options`.
-
-## BER/DER: `runtime-csharp/fixtures/ber-der/`
-
-- Hex-матрица и `external/` для runtime-тестов. Формат — [runtime-csharp/fixtures/ber-der/README.md](../../runtime-csharp/fixtures/ber-der/README.md).
-
-## Регрессии
-
-- Каждый воспроизводимый баг закрывается фикстурой (`.asn`, `.json` или hex-вектор) либо явным байтовым вектором в тесте, а не комментарием.
-- Новый `.asn` в `compiler/fixtures/asn1/` заводится вместе с тестом, который его компилирует и валидирует по схеме.
-- Фикстура без теста, который её читает, — мёртвый файл; не оставляй такие.
+- IR golden регенерируй через `scripts/regenerate-ir-goldens.ps1`.
+- Golden C# регенерируй через `scripts/regenerate-csharp-golden.ps1`, bench — через `scripts/regenerate-bench.ps1`.
+- Любой diff generated-артефакта просмотри; неожиданные строки считай регрессией, а не устаревшей фикстурой.
+- Новый fixture добавляй вместе с тестом, который его читает; мёртвые fixture-файлы запрещены.
+- Воспроизводимый баг закрывай минимальной фикстурой или явным байтовым вектором.

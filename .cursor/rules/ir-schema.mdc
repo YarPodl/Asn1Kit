@@ -1,43 +1,22 @@
 ---
-description: Контракт IR — аддитивность схемы v1, синхронность схемы, моделей, конвертеров, валидатора и документации
+description: Контракт IR v1 — аддитивность, синхронизация представлений и валидация
 globs: compiler/src/Asn1Kit.Ir/**/*.cs,schemas/**/*.json,compiler/fixtures/ir/**/*.json,compiler/tests/Asn1Kit.Compiler.Tests/IrOptionsTests.cs,compiler/tests/Asn1Kit.Compiler.Tests/IrOptionsPatchTests.cs,compiler/tests/Asn1Kit.Compiler.Tests/PkixExplicit88Tests.cs,compiler/tests/Asn1Kit.Compiler.Tests/PkixImplicit88Tests.cs,compiler/tests/Asn1Kit.Compiler.Tests/Cms2004Tests.cs,docs/ir-schema.md,compiler/docs/playbooks/new-ir-kind.md
 alwaysApply: false
 ---
 
 # IR и схема v1
 
-IR — единственный контракт между компилятором и генераторами. Всё, что не описано схемой, для генератора не существует.
+- `irVersion: 1` изменяется только аддитивно; несовместимому контракту нужна новая версия и схема.
+- `options` остаётся расширяемым словарём с сохранением неизвестных ключей.
+- Имена полей и значения `kind` — camelCase; `kind` сериализуется первым.
+- Кодировочные детали и вычисления над представлением не помещай в IR.
+- Запреты, не выражаемые JSON Schema, проверяй в `IrValidator` с указанием модуля и типа.
 
-## Аддитивность
+Для нового или изменённого kind выполни весь [playbook](../../compiler/docs/playbooks/new-ir-kind.md): схема, модели и константы, converters, validator, документация, фикстуры и тесты.
 
-- При `irVersion: 1` изменения только аддитивные: старые документы обязаны оставаться валидными.
-- Несовместимое изменение — это `irVersion: 2` с отдельной схемой, а не правка `asn1kit-ir-v1.json` «по месту».
-- `options` — свободный словарь с `additionalProperties: true`. Неизвестные ключи обязаны переживать round-trip `FromJson` → `ToJson`.
+## Проверка
 
-## Что синхронизируется вместе
-
-Добавление или изменение `kind` (типа либо значения) трогает все пункты сразу:
-
-1. [schemas/asn1kit-ir-v1.json](../../schemas/asn1kit-ir-v1.json) — вариант в `oneOf`, `additionalProperties: false`.
-2. [compiler/src/Asn1Kit.Ir/IrModels.cs](../../compiler/src/Asn1Kit.Ir/IrModels.cs) — класс и константа в `TypeKinds` / `ValueKinds`.
-3. [compiler/src/Asn1Kit.Ir/TypeExprConverter.cs](../../compiler/src/Asn1Kit.Ir/TypeExprConverter.cs) — ветка `switch` в `TypeExprConverter` или `IrValueConverter`.
-4. [compiler/src/Asn1Kit.Ir/IrValidator.cs](../../compiler/src/Asn1Kit.Ir/IrValidator.cs) — семантика, которую JSON Schema не выражает.
-5. [docs/ir-schema.md](../../docs/ir-schema.md) и [docs/status.md](../../docs/status.md).
-6. Фикстуры и тесты.
-
-Пропущенный пункт 3 даёт `IrException("Unknown type kind '...'")` уже после того, как схема пропустила документ, — это не «работает частично», это сломанный round-trip.
-
-Подробный порядок шагов — [compiler/docs/playbooks/new-ir-kind.md](../../compiler/docs/playbooks/new-ir-kind.md).
-
-## Правила моделирования
-
-- Имена полей — camelCase, `kind` — camelCase (`octetString`, `sequenceOf`, `bitString`).
-- Дискриминатор `kind` пишется первым полем объекта; порядок обеспечивают конвертеры, не правь его руками в JSON.
-- Кодировочные детали в IR не попадают: IR описывает форму типа, а не байты. Вычисления над представлением (например дуги OID) — в runtime.
-- Семантические запреты (`optional` / `default` у компонента CHOICE, неизвестный `tagDefault`, дубликаты имён) проверяет `IrValidator` с текстом, называющим модуль и тип.
-
-## Тесты
-
-- Round-trip через `IrSerializer.FromJson(IrSerializer.ToJson(document))` для каждого нового `kind`.
-- Отдельный тест на сохранение неизвестного ключа `options`.
-- Невалидный документ должен падать `IrException` — и от схемы, и от `IrValidator`.
+- Round-trip нового kind через `ToJson` / `FromJson`.
+- Сохранение неизвестного ключа `options`.
+- Отказ невалидного документа на уровне схемы и `IrValidator`.
+- Регенерация IR golden через `scripts/regenerate-ir-goldens.ps1` и просмотр diff.

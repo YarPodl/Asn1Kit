@@ -26,28 +26,10 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/i
 # -O / --option path=value — override module.options (repeatable); same flag on compile
 # --bindings — open-type overlay (Module.Type.field → OID/INTEGER → type); repeatable
 # --patch — options overlay (modules / fields Module.Type.field); repeatable; generate also has --ir-output
-# пересборка golden-фикстур
-dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/pkix1-explicit88.asn -o compiler/fixtures/ir/pkix1-explicit88.json --bindings compiler/fixtures/opentype/pkix-bindings.json
-dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/pkix1-explicit88.asn -i compiler/fixtures/asn1/pkix1-implicit88.asn -o compiler/fixtures/ir/pkix1-implicit88.json --bindings compiler/fixtures/opentype/pkix-bindings.json
-dotnet run --project compiler/src/Asn1Kit.Cli -- compile `
-  -i compiler/fixtures/asn1/pkix1-explicit88.asn `
-  -i compiler/fixtures/asn1/pkix1-implicit88.asn `
-  -i compiler/fixtures/asn1/cms-2004.asn `
-  -o compiler/fixtures/ir/cms-2004.json `
-  --bindings compiler/fixtures/opentype/pkix-bindings.json `
-  --bindings compiler/fixtures/opentype/cms-bindings.json
-# затем csharp.namespace: PKIX* → Asn1Kit.Pkix, CMS → Asn1Kit.Cms
-
-# golden C# теперь включает полный DVCS-граф; каноническая команда:
-# runtime-csharp/generated/Asn1Kit.Pkix/README.md
-
-# bench IR + C# (patch → namespaces *.Bench + options.lazy)
-dotnet run --project compiler/src/Asn1Kit.Cli -- generate `
-  -i compiler/fixtures/ir/cms-2004.json `
-  --patch compiler/fixtures/ir/cms-2004-bench.patch.json `
-  --ir-output compiler/fixtures/ir/cms-2004-bench.json `
-  --lang csharp `
-  -o runtime-csharp/generated/Asn1Kit.Pkix.Bench
+# составные workflow регенерации
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-ir-goldens.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-csharp-golden.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-bench.ps1
 ```
 
 ## Фикстуры

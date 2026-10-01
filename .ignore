@@ -1,0 +1,6 @@
+# Большие производные артефакты: исключены из обычного поиска rg.
+runtime-csharp/generated/**/*.g.cs
+compiler/fixtures/ir/pkix1-explicit88.json
+compiler/fixtures/ir/pkix1-implicit88.json
+compiler/fixtures/ir/cms-2004.json
+compiler/fixtures/ir/cms-2004-bench.json

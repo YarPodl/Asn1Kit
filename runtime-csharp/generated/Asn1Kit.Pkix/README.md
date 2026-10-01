@@ -7,27 +7,7 @@ Files `*.g.cs` are **auto-generated** — do not edit by hand. Diffs here are re
 ## Regenerate
 
 ```powershell
-# The intermediate DVCS IR is intentionally temporary and is not a golden fixture.
-dotnet run --project compiler/src/Asn1Kit.Cli -- compile `
-  -i compiler/fixtures/asn1/pkix1-explicit88.asn `
-  -i compiler/fixtures/asn1/pkix1-implicit88.asn `
-  -i compiler/fixtures/asn1/cms-2004.asn `
-  -i compiler/fixtures/asn1/pkcs10.asn `
-  -i compiler/fixtures/asn1/pkixcrmf.asn `
-  -i compiler/fixtures/asn1/pkixcmp.asn `
-  -i compiler/fixtures/asn1/ocsp.asn `
-  -i compiler/fixtures/asn1/ess.asn `
-  -i compiler/fixtures/asn1/smime-v3.asn `
-  -i compiler/fixtures/asn1/dvcs.asn `
-  -o $env:TEMP/asn1kit-dvcs.json `
-  --bindings compiler/fixtures/opentype/pkix-bindings.json `
-  --bindings compiler/fixtures/opentype/cms-bindings.json
-
-dotnet run --project compiler/src/Asn1Kit.Cli -- generate `
-  -i $env:TEMP/asn1kit-dvcs.json `
-  --patch compiler/fixtures/ir/dvcs.patch.json `
-  --lang csharp `
-  -o runtime-csharp/generated/Asn1Kit.Pkix
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-csharp-golden.ps1
 ```
 
-PKIX/CMS JSON goldens remain compiler regression fixtures. DVCS is checked by shape assertions and generated-source regeneration rather than a committed JSON IR.
+Скрипт создаёт промежуточный DVCS IR во временном каталоге и удаляет его после генерации. PKIX/CMS JSON goldens остаются compiler regression fixtures. DVCS проверяется shape assertions и регенерацией исходников, а не закоммиченным JSON IR.

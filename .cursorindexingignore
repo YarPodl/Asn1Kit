@@ -4,9 +4,14 @@
 compiler/fixtures/ir/pkix1-explicit88.json
 compiler/fixtures/ir/pkix1-implicit88.json
 compiler/fixtures/ir/cms-2004.json
+compiler/fixtures/ir/cms-2004-bench.json
 
-# Выходные каталоги.
+# Generated C# читается точечно по запросу, но не нужен в семантическом индексе.
 generated/
+
+# Выходные каталоги инструментов и тестов.
 TestResults/
 bin/
 obj/
+BenchmarkDotNet.Artifacts/
+.vs/
