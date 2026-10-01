@@ -1,24 +1,103 @@
 # Asn1Kit
 
-Набор инструментов для работы с ASN.1: компилятор модуля во внутреннее JSON-представление, генератор кода и runtime BER/DER.
+English | [Русский](README.ru.md)
 
-Репозиторий разбит на каталоги:
+A toolkit for working with ASN.1: a module compiler that produces an intermediate JSON representation, a code generator, and a BER/DER runtime.
 
-| Каталог | Содержание |
+The repository is organized into the following directories:
+
+| Directory | Contents |
 | --- | --- |
-| [compiler/](compiler/) | IR, компилятор, codegen (C#), CLI и их тесты |
-| [runtime-csharp/](runtime-csharp/) | C# runtime BER/DER и его тесты |
-| [runtime-cpp/](runtime-cpp/) | Заглушка под будущий C++ runtime |
+| [compiler/](compiler/) | IR, compiler, C# code generator, CLI, and their tests |
+| [runtime-csharp/](runtime-csharp/) | C# BER/DER runtime and its tests |
+| [runtime-cpp/](runtime-cpp/) | Placeholder for a future C++ runtime |
 
-## Компоненты
+## Components
 
-1. **Компилятор** — текст ASN.1 → JSON IR (`irVersion` + схема [schemas/asn1kit-ir-v1.json](schemas/asn1kit-ir-v1.json)). Файл можно править: `options.csharp.namespace`, имена типов, `generate: false`.
-2. **Генератор** — IR → исходный код. Сейчас C#, позже C++.
-3. **Runtime** — примитивы BER и DER на языке цели. Сгенерированный код вызывает эту библиотеку.
+1. **Compiler** — converts ASN.1 text into JSON IR (`irVersion` plus the [schemas/asn1kit-ir-v1.json](schemas/asn1kit-ir-v1.json) schema). The resulting file can be edited to configure `options.csharp.namespace`, type names, and `generate: false`.
+2. **Generator** — converts IR into source code. C# is currently supported, with C++ planned for the future.
+3. **Runtime** — provides BER and DER primitives for the target language. Generated code calls this library.
 
-## Сборка
+## Get started
 
-Требуется .NET 6 SDK.
+Asn1Kit uses a two-stage workflow: compile one or more ASN.1 modules into JSON IR, then generate C# sources from that IR. Keeping the IR as a separate artifact lets you review it, change code-generation options, or start from one of the IR files already included in this repository.
+
+### 1. Produce or select an IR file
+
+To compile your own ASN.1 module, run the CLI from the repository root. Use `-O csharp.namespace=...` to choose the namespace of the generated types:
+
+```powershell
+dotnet run --project compiler/src/Asn1Kit.Cli -- compile `
+  -i path/to/MyProtocol.asn `
+  -o artifacts/MyProtocol.json `
+  -O csharp.namespace=MyCompany.MyProtocol
+```
+
+Pass multiple `-i` files when the module imports definitions from other ASN.1 modules.
+
+Alternatively, start with a ready-made IR file from [compiler/fixtures/ir](compiler/fixtures/ir/). Copy it into your project if you want to customize its `options`, such as the C# namespace, generated names, or whether individual definitions are emitted. The IR format is documented in [docs/ir-schema.md](docs/ir-schema.md).
+
+### 2. Generate C# sources
+
+Create a class library for the generated module and emit the `.g.cs` files into it:
+
+```powershell
+dotnet new classlib --framework net6.0 -o generated/MyProtocol
+
+dotnet run --project compiler/src/Asn1Kit.Cli -- generate `
+  -i artifacts/MyProtocol.json `
+  --lang csharp `
+  -o generated/MyProtocol
+```
+
+You can pass an `.asn` file directly to `generate` for a shorter workflow, but keeping the IR is useful when its options need to be reviewed or maintained.
+
+### 3. Reference the runtime
+
+Generated C# sources call `Asn1Writer`, `Asn1Reader`, and other APIs from `Asn1Kit.Runtime`, so the generated class library must reference the runtime. While working from this repository, add a project reference:
+
+```powershell
+dotnet add generated/MyProtocol/MyProtocol.csproj reference `
+  runtime-csharp/src/Asn1Kit.Runtime/Asn1Kit.Runtime.csproj
+```
+
+After `Asn1Kit.Runtime` is published to NuGet, consumers will instead use:
+
+```powershell
+dotnet add generated/MyProtocol/MyProtocol.csproj package Asn1Kit.Runtime
+```
+
+Finally, reference the generated class library from your application:
+
+```powershell
+dotnet add path/to/MyApplication.csproj reference `
+  generated/MyProtocol/MyProtocol.csproj
+```
+
+Generated composite types expose an instance `Encode(Asn1Writer)` method and a static `Decode(Asn1Reader)` method. A typical DER round trip looks like this:
+
+```csharp
+using Asn1Kit.Runtime;
+using MyCompany.MyProtocol;
+
+var value = new MyMessage
+{
+    // Initialize fields generated from the ASN.1 definition.
+};
+
+var writer = new Asn1Writer(Asn1Encoding.Der);
+value.Encode(writer);
+byte[] encoded = writer.Encode();
+
+var reader = new Asn1Reader(encoded, Asn1Encoding.Der);
+MyMessage decoded = MyMessage.Decode(reader);
+```
+
+Replace `MyMessage` with a type defined by your ASN.1 module. Consult the current [support status](docs/status.md) before using language constructs outside the supported compiler and runtime profile.
+
+## Build
+
+.NET 6 SDK is required.
 
 ```text
 dotnet build Asn1Kit.sln
@@ -32,32 +111,32 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/as
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/ir/example.json --lang csharp -o ./generated
 ```
 
-`generate` также принимает `.asn` напрямую: компиляция выполняется в памяти. Повторяемый `-O` / `--option path=value` задаёт `options` всем модулям (например `-O csharp.namespace=Asn1Kit.Pkix` для golden PKIX).
+`generate` also accepts `.asn` files directly and compiles them in memory. The repeatable `-O` / `--option path=value` argument applies `options` to every module, for example `-O csharp.namespace=Asn1Kit.Pkix` for the PKIX golden output.
 
-Эталонный C# PKIX/CMS/DVCS и зависимых протоколов: [runtime-csharp/generated/Asn1Kit.Pkix](runtime-csharp/generated/Asn1Kit.Pkix/).
+The reference generated C# code for PKIX, CMS, DVCS, and their dependent protocols is located in [runtime-csharp/generated/Asn1Kit.Pkix](runtime-csharp/generated/Asn1Kit.Pkix/).
 
-## Профиль компилятора
+## Compiler profile
 
-Модули с `DEFINITIONS`, теги `EXPLICIT` / `IMPLICIT` / `AUTOMATIC`, `IMPORTS`/`EXPORTS` внутри переданных файлов.
+Modules with `DEFINITIONS`, `EXPLICIT` / `IMPLICIT` / `AUTOMATIC` tags, and `IMPORTS` / `EXPORTS` across the supplied files are supported.
 
-Типы: `BOOLEAN`, `INTEGER`, `ENUMERATED`, `BIT STRING`, `OCTET STRING`, `NULL`, `OBJECT IDENTIFIER`, строковые типы (`UTF8String`, `PrintableString`, `IA5String`, …), `UTCTime` / `GeneralizedTime`, `SEQUENCE` / `SEQUENCE OF`, `SET` / `SET OF`, `CHOICE`, `ANY` / `ANY DEFINED BY`, `OPTIONAL`, `DEFAULT`, constraints `SIZE` / диапазоны (ссылки на `ub-*` разрешаются).
+Supported types include `BOOLEAN`, `INTEGER`, `ENUMERATED`, `BIT STRING`, `OCTET STRING`, `NULL`, `OBJECT IDENTIFIER`, character string types (`UTF8String`, `PrintableString`, `IA5String`, etc.), `UTCTime` / `GeneralizedTime`, `SEQUENCE` / `SEQUENCE OF`, `SET` / `SET OF`, `CHOICE`, `ANY` / `ANY DEFINED BY`, `OPTIONAL`, `DEFAULT`, and `SIZE` / range constraints, including resolved `ub-*` references.
 
-Value assignments (`id-pkix OBJECT IDENTIFIER ::= { … }`, `ub-name INTEGER ::= 32768`) попадают в `module.values`.
+Value assignments such as `id-pkix OBJECT IDENTIFIER ::= { … }` and `ub-name INTEGER ::= 32768` are stored in `module.values`.
 
-Опорные фикстуры RFC 5280: [compiler/fixtures/asn1/pkix1-explicit88.asn](compiler/fixtures/asn1/pkix1-explicit88.asn) (Appendix A.1) и [compiler/fixtures/asn1/pkix1-implicit88.asn](compiler/fixtures/asn1/pkix1-implicit88.asn) (Appendix A.2, с `IMPORTS` из Explicit88).
+The reference RFC 5280 fixtures are [compiler/fixtures/asn1/pkix1-explicit88.asn](compiler/fixtures/asn1/pkix1-explicit88.asn) (Appendix A.1) and [compiler/fixtures/asn1/pkix1-implicit88.asn](compiler/fixtures/asn1/pkix1-implicit88.asn) (Appendix A.2, with `IMPORTS` from Explicit88).
 
-Полный граф DVCS основан на ASN.1:1988 из RFC 3029 и исходных CMP/CRMF/OCSP/ESS/S/MIME RFC; устаревшие X.509/CMS imports нормализованы на локальные RFC 5280 и `CryptographicMessageSyntax2004`. Публичные namespace: `Asn1Kit.Dvcs`, `.Cmp`, `.Crmf`, `.Ocsp`, `.Ess`, `.Smime`, `.Pkcs10`.
+The complete DVCS graph is based on the ASN.1:1988 module from RFC 3029 and the original CMP, CRMF, OCSP, ESS, and S/MIME RFCs. Legacy X.509 and CMS imports are normalized to the local RFC 5280 modules and `CryptographicMessageSyntax2004`. Public namespaces include `Asn1Kit.Dvcs`, `.Cmp`, `.Crmf`, `.Ocsp`, `.Ess`, `.Smime`, and `.Pkcs10`.
 
-Вне профиля (явная ошибка): information object classes (`CLASS`), `COMPONENTS OF`, параметризованные типы, `REAL`, `EXTERNAL`.
+Out-of-profile constructs produce explicit errors: information object classes (`CLASS`), `COMPONENTS OF`, parameterized types, `REAL`, and `EXTERNAL`.
 
-C# backend генерирует `sequence` / `choice` / `sequenceOf` / `set` / `setOf`, `enumerated` → C# `enum`, примитивы (`boolean`, `integer`, `octetString`, `oid`, `bitString`, `string`, `time`, `any` → `Asn1Any`).
+The C# backend generates `sequence`, `choice`, `sequenceOf`, `set`, `setOf`, and `enumerated` as C# `enum`, as well as primitives (`boolean`, `integer`, `octetString`, `oid`, `bitString`, `string`, `time`, and `any` as `Asn1Any`).
 
-Кодировки runtime: BER (в том числе indefinite length на чтении) и DER (каноническая запись).
+The runtime supports BER, including indefinite-length decoding, and DER with canonical encoding.
 
-Подробности: [docs/architecture.md](docs/architecture.md), [docs/ir-schema.md](docs/ir-schema.md), текущее состояние поддержки — [docs/status.md](docs/status.md).
+For more information, see [docs/architecture.md](docs/architecture.md), [docs/ir-schema.md](docs/ir-schema.md), and the current [support status](docs/status.md).
 
-## Лицензия
+## License
 
-Asn1Kit распространяется по лицензии [Apache License 2.0](LICENSE). Она разрешает коммерческое использование, изменение и распространение, в том числе в составе закрытых продуктов, при соблюдении условий лицензии.
+Asn1Kit is distributed under the [Apache License 2.0](LICENSE). It permits commercial use, modification, and distribution, including as part of proprietary products, subject to the terms of the license.
 
-Код, созданный генератором Asn1Kit из пользовательских ASN.1-модулей или IR, можно использовать без дополнительных ограничений со стороны Asn1Kit. На сторонние материалы, для которых в репозитории явно указан источник или отдельная лицензия, распространяются условия соответствующего правообладателя.
+Code generated by Asn1Kit from user-provided ASN.1 modules or IR may be used without additional restrictions imposed by Asn1Kit. Third-party materials with an explicitly identified source or separate license remain subject to their respective copyright holders' terms.
