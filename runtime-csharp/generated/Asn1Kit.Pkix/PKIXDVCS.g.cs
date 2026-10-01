@@ -8,6 +8,72 @@ using Asn1Kit.Runtime;
 
 namespace Asn1Kit.Dvcs;
 
+public static class PKIXDVCSOids
+{
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ad-dvcs.</summary>
+    public const string IdAdDvcsString = "1.3.6.1.5.5.7.48.4";
+    public static Asn1Oid IdAdDvcs => IdAdDvcsCache.Value;
+
+    private static class IdAdDvcsCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAdDvcsString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-kp-dvcs.</summary>
+    public const string IdKpDvcsString = "1.3.6.1.5.5.7.3.10";
+    public static Asn1Oid IdKpDvcs => IdKpDvcsCache.Value;
+
+    private static class IdKpDvcsCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdKpDvcsString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ct-DVCSRequestData.</summary>
+    public const string IdCtDVCSRequestDataString = "1.2.840.113549.1.9.16.1.7";
+    public static Asn1Oid IdCtDVCSRequestData => IdCtDVCSRequestDataCache.Value;
+
+    private static class IdCtDVCSRequestDataCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCtDVCSRequestDataString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ct-DVCSResponseData.</summary>
+    public const string IdCtDVCSResponseDataString = "1.2.840.113549.1.9.16.1.8";
+    public static Asn1Oid IdCtDVCSResponseData => IdCtDVCSResponseDataCache.Value;
+
+    private static class IdCtDVCSResponseDataCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCtDVCSResponseDataString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-aa-dvcs-dvc.</summary>
+    public const string IdAaDvcsDvcString = "1.2.840.113549.1.9.16.2.29";
+    public static Asn1Oid IdAaDvcsDvc => IdAaDvcsDvcCache.Value;
+
+    private static class IdAaDvcsDvcCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAaDvcsDvcString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-pkix.</summary>
+    public const string IdPkixString = "1.3.6.1.5.5.7";
+    public static Asn1Oid IdPkix => IdPkixCache.Value;
+
+    private static class IdPkixCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdPkixString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-smime.</summary>
+    public const string IdSmimeString = "1.2.840.113549.1.9.16";
+    public static Asn1Oid IdSmime => IdSmimeCache.Value;
+
+    private static class IdSmimeCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdSmimeString);
+    }
+}
+
 public sealed class DigestInfo
 {
     /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>

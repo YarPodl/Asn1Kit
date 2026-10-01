@@ -8,6 +8,54 @@ using Asn1Kit.Runtime;
 
 namespace Asn1Kit.Smime;
 
+public static class SecureMimeMessageV3Oids
+{
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-aa.</summary>
+    public const string IdAaString = "1.2.840.113549.1.9.16.2";
+    public static Asn1Oid IdAa => IdAaCache.Value;
+
+    private static class IdAaCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAaString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER smimeCapabilities.</summary>
+    public const string SmimeCapabilitiesString = "1.2.840.113549.1.9.15";
+    public static Asn1Oid SmimeCapabilities => SmimeCapabilitiesCache.Value;
+
+    private static class SmimeCapabilitiesCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(SmimeCapabilitiesString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-aa-encrypKeyPref.</summary>
+    public const string IdAaEncrypKeyPrefString = "1.2.840.113549.1.9.16.2.11";
+    public static Asn1Oid IdAaEncrypKeyPref => IdAaEncrypKeyPrefCache.Value;
+
+    private static class IdAaEncrypKeyPrefCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAaEncrypKeyPrefString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER dES-EDE3-CBC.</summary>
+    public const string DESEDE3CBCString = "1.2.840.113549.3.7";
+    public static Asn1Oid DESEDE3CBC => DESEDE3CBCCache.Value;
+
+    private static class DESEDE3CBCCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(DESEDE3CBCString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER rC2-CBC.</summary>
+    public const string RC2CBCString = "1.2.840.113549.3.2";
+    public static Asn1Oid RC2CBC => RC2CBCCache.Value;
+
+    private static class RC2CBCCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(RC2CBCString);
+    }
+}
+
 public sealed class SMIMECapability
 {
     public Asn1Oid CapabilityID { get; set; }

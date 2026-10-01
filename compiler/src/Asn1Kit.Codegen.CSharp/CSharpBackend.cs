@@ -69,6 +69,20 @@ public sealed class CSharpBackend : ILanguageBackend
             nested.Add((name, type));
         }
 
+        var oidValues = CollectOidValues(module);
+        if (oidValues.Count > 0)
+        {
+            var catalogName = OidCatalogName(module);
+            if (emitted.Contains(catalogName))
+            {
+                throw new NotSupportedException(
+                    $"Generated OID catalog '{catalogName}' in module '{module.Name}' conflicts with a generated type.");
+            }
+
+            EmitOidCatalog(builder, module, oidValues);
+            builder.AppendLine();
+        }
+
         foreach (var (name, type) in nested)
         {
             EmitType(builder, document, module, name, type);
@@ -76,6 +90,86 @@ public sealed class CSharpBackend : ILanguageBackend
         }
 
         return new GeneratedFile(SanitizeIdentifier(module.Name) + ".g.cs", builder.ToString());
+    }
+
+    private static List<(IrValueDef Definition, IrOidValue Value, string Member)> CollectOidValues(IrModule module)
+    {
+        var result = new List<(IrValueDef Definition, IrOidValue Value, string Member)>();
+        var generatedNames = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var definition in module.Values)
+        {
+            if (definition.Value is not IrOidValue value || !IrOptions.ShouldGenerate(definition.Options))
+            {
+                continue;
+            }
+
+            var member = SanitizeIdentifier(definition.Name);
+            ReserveOidMemberName(generatedNames, member, definition.Name, module.Name);
+            ReserveOidMemberName(generatedNames, member + "String", definition.Name, module.Name);
+            ReserveOidMemberName(generatedNames, member + "Cache", definition.Name, module.Name);
+            result.Add((definition, value, member));
+        }
+
+        return result;
+    }
+
+    private static void ReserveOidMemberName(
+        Dictionary<string, string> generatedNames,
+        string generatedName,
+        string asnName,
+        string moduleName)
+    {
+        if (generatedNames.TryGetValue(generatedName, out var existing))
+        {
+            throw new NotSupportedException(
+                $"OID values '{existing}' and '{asnName}' in module '{moduleName}' generate conflicting C# member " +
+                $"'{generatedName}'.");
+        }
+
+        generatedNames.Add(generatedName, asnName);
+    }
+
+    private static void EmitOidCatalog(
+        StringBuilder sb,
+        IrModule module,
+        IReadOnlyList<(IrValueDef Definition, IrOidValue Value, string Member)> values)
+    {
+        sb.AppendLine($"public static class {OidCatalogName(module)}");
+        sb.AppendLine("{");
+        for (var i = 0; i < values.Count; i++)
+        {
+            var (definition, value, member) = values[i];
+            sb.AppendLine($"    /// <summary>ASN.1 OBJECT IDENTIFIER {definition.Name}.</summary>");
+            sb.AppendLine($"    public const string {member}String = \"{EscapeCSharpString(value.Value)}\";");
+            sb.AppendLine($"    public static Asn1Oid {member} => {member}Cache.Value;");
+            sb.AppendLine();
+            sb.AppendLine($"    private static class {member}Cache");
+            sb.AppendLine("    {");
+            sb.AppendLine($"        internal static readonly Asn1Oid Value = Asn1Oid.Parse({member}String);");
+            sb.AppendLine("    }");
+            if (i + 1 < values.Count)
+            {
+                sb.AppendLine();
+            }
+        }
+
+        sb.AppendLine("}");
+    }
+
+    private static string OidCatalogName(IrModule module) =>
+        SanitizeIdentifier(module.Name) + "Oids";
+
+    private static string? KnownOidExpression(IrModule module, string dottedValue)
+    {
+        foreach (var (_, value, member) in CollectOidValues(module))
+        {
+            if (string.Equals(value.Value, dottedValue, StringComparison.Ordinal))
+            {
+                return OidCatalogName(module) + "." + member;
+            }
+        }
+
+        return null;
     }
 
     private void CollectNested(
@@ -891,7 +985,8 @@ public sealed class CSharpBackend : ILanguageBackend
         {
             (BooleanType, IrBooleanValue value) => value.Value ? "true" : "false",
             (NullType, IrNullValue) => "Asn1Null.Value",
-            (OidType, IrOidValue value) => $"Asn1Oid.Parse(\"{EscapeCSharpString(value.Value)}\")",
+            (OidType, IrOidValue value) => KnownOidExpression(module, value.Value)
+                ?? $"Asn1Oid.Parse(\"{EscapeCSharpString(value.Value)}\")",
             (StringType, IrStringValue value) => $"\"{EscapeCSharpString(value.Value)}\"",
             (BitStringType, IrBitStringValue value) => BitStringDefaultExpression(value),
             (EnumeratedType, IrIntegerValue value) =>
@@ -1960,15 +2055,28 @@ public sealed class CSharpBackend : ILanguageBackend
         bool soft)
     {
         var keyFields = new Dictionary<string, string>(StringComparer.Ordinal);
+        var privateFields = new List<(string Field, string Key)>();
         foreach (var key in alts.SelectMany(a => a.Keys).Distinct(StringComparer.Ordinal))
         {
+            var known = KnownOidExpression(module, key);
+            if (known is not null)
+            {
+                keyFields[key] = known;
+                continue;
+            }
+
             var field = OpenTypeOidFieldName(key, keyFields.Values);
             keyFields[key] = field;
+            privateFields.Add((field, key));
+        }
+
+        foreach (var (field, key) in privateFields)
+        {
             sb.AppendLine(
                 $"    private static readonly Asn1Oid {field} = Asn1Oid.Parse(\"{EscapeCSharpString(key)}\");");
         }
 
-        if (keyFields.Count > 0)
+        if (privateFields.Count > 0)
         {
             sb.AppendLine();
         }

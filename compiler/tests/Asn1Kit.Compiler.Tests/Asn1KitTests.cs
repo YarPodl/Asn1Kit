@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Text;
+using System.Text.Json.Nodes;
 using Asn1Kit.Codegen;
 using Asn1Kit.Codegen.CSharp;
 using Asn1Kit.Compiler;
@@ -112,6 +113,116 @@ END
 
 public sealed class RoundTripTests
 {
+    [Fact]
+    public void GeneratedCSharp_EmitsLazyOidCatalog()
+    {
+        const string asn = @"
+KnownOids DEFINITIONS ::= BEGIN
+id-root OBJECT IDENTIFIER ::= { 1 2 840 113549 }
+id-child OBJECT IDENTIFIER ::= { id-root 1 }
+id-hidden OBJECT IDENTIFIER ::= { id-root 2 }
+answer INTEGER ::= 42
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        document.Modules[0].Values.Single(v => v.Name == "id-hidden").Options =
+            new JsonObject { ["generate"] = false };
+
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+
+        Assert.Contains("public static class KnownOidsOids", source);
+        Assert.Contains("public const string IdRootString = \"1.2.840.113549\";", source);
+        Assert.Contains("public static Asn1Oid IdRoot => IdRootCache.Value;", source);
+        Assert.Contains("Asn1Oid.Parse(IdRootString)", source);
+        Assert.DoesNotContain("IdHiddenString", source);
+        Assert.DoesNotContain("AnswerString", source);
+
+        var assembly = CompileGenerated(source);
+        var catalog = assembly.GetType("KnownOids.KnownOidsOids")!;
+        Assert.Equal("1.2.840.113549", catalog.GetField("IdRootString")!.GetRawConstantValue());
+
+        var property = catalog.GetProperty("IdRoot")!;
+        var first = (Asn1Oid)property.GetValue(null)!;
+        var second = (Asn1Oid)property.GetValue(null)!;
+        Assert.Equal(new byte[] { 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D }, first.Span.ToArray());
+        Assert.True(first.Memory.Equals(second.Memory));
+    }
+
+    [Fact]
+    public void GeneratedCSharp_DoesNotEmitOidCatalogWithoutOidAssignments()
+    {
+        var document = new Asn1Compiler().CompileText(@"
+NoOids DEFINITIONS ::= BEGIN
+answer INTEGER ::= 42
+END
+");
+
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+
+        Assert.DoesNotContain("NoOidsOids", source);
+    }
+
+    [Fact]
+    public void GeneratedCSharp_RejectsOidCatalogMemberCollision()
+    {
+        var document = new Asn1Compiler().CompileText(@"
+M DEFINITIONS ::= BEGIN
+id-a OBJECT IDENTIFIER ::= { 1 2 3 }
+id-b OBJECT IDENTIFIER ::= { 1 2 4 }
+END
+");
+        document.Modules[0].Values[1].Name = "id_A";
+
+        var error = Assert.Throws<NotSupportedException>(() => new CSharpBackend().Generate(document));
+
+        Assert.Contains("id-a", error.Message);
+        Assert.Contains("id_A", error.Message);
+        Assert.Contains("IdA", error.Message);
+    }
+
+    [Fact]
+    public void GeneratedCSharp_RejectsOidCatalogTypeCollision()
+    {
+        var document = new Asn1Compiler().CompileText(@"
+M DEFINITIONS ::= BEGIN
+id-a OBJECT IDENTIFIER ::= { 1 2 3 }
+MOids ::= SEQUENCE { value INTEGER }
+END
+");
+
+        var error = Assert.Throws<NotSupportedException>(() => new CSharpBackend().Generate(document));
+
+        Assert.Contains("OID catalog 'MOids'", error.Message);
+        Assert.Contains("conflicts with a generated type", error.Message);
+    }
+
+    [Fact]
+    public void GeneratedCSharp_ReusesOidCatalogForDefaultAndOpenTypeKey()
+    {
+        const string asn = @"
+M DEFINITIONS ::= BEGIN
+id-alg OBJECT IDENTIFIER ::= { 1 2 3 }
+Sample ::= SEQUENCE {
+  algorithm OBJECT IDENTIFIER DEFAULT id-alg,
+  parameters ANY DEFINED BY algorithm OPTIONAL
+}
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        OpenTypeBindings.ApplyJson(document, @"{
+  ""M.Sample.parameters"": [
+    { ""key"": ""1.2.3"", ""type"": { ""kind"": ""null"" } }
+  ]
+}");
+
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+
+        Assert.Contains("private static readonly Asn1Oid s_defaultAlgorithm = MOids.IdAlg;", source);
+        Assert.Contains("definedByKey.Equals(MOids.IdAlg)", source);
+        Assert.Equal(1, source.Split("Asn1Oid.Parse", StringSplitOptions.None).Length - 1);
+        _ = CompileGenerated(source);
+    }
+
     [Fact]
     public void GeneratedCSharp_DefaultComponents_AreValuesAndAreOmittedFromDer()
     {

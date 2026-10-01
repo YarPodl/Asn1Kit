@@ -8,6 +8,108 @@ using Asn1Kit.Runtime;
 
 namespace Asn1Kit.Cms;
 
+public static class CryptographicMessageSyntax2004Oids
+{
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ct-contentInfo.</summary>
+    public const string IdCtContentInfoString = "1.2.840.113549.1.9.16.1.6";
+    public static Asn1Oid IdCtContentInfo => IdCtContentInfoCache.Value;
+
+    private static class IdCtContentInfoCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCtContentInfoString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-data.</summary>
+    public const string IdDataString = "1.2.840.113549.1.7.1";
+    public static Asn1Oid IdData => IdDataCache.Value;
+
+    private static class IdDataCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdDataString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-signedData.</summary>
+    public const string IdSignedDataString = "1.2.840.113549.1.7.2";
+    public static Asn1Oid IdSignedData => IdSignedDataCache.Value;
+
+    private static class IdSignedDataCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdSignedDataString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-envelopedData.</summary>
+    public const string IdEnvelopedDataString = "1.2.840.113549.1.7.3";
+    public static Asn1Oid IdEnvelopedData => IdEnvelopedDataCache.Value;
+
+    private static class IdEnvelopedDataCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdEnvelopedDataString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-digestedData.</summary>
+    public const string IdDigestedDataString = "1.2.840.113549.1.7.5";
+    public static Asn1Oid IdDigestedData => IdDigestedDataCache.Value;
+
+    private static class IdDigestedDataCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdDigestedDataString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-encryptedData.</summary>
+    public const string IdEncryptedDataString = "1.2.840.113549.1.7.6";
+    public static Asn1Oid IdEncryptedData => IdEncryptedDataCache.Value;
+
+    private static class IdEncryptedDataCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdEncryptedDataString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ct-authData.</summary>
+    public const string IdCtAuthDataString = "1.2.840.113549.1.9.16.1.2";
+    public static Asn1Oid IdCtAuthData => IdCtAuthDataCache.Value;
+
+    private static class IdCtAuthDataCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCtAuthDataString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-contentType.</summary>
+    public const string IdContentTypeString = "1.2.840.113549.1.9.3";
+    public static Asn1Oid IdContentType => IdContentTypeCache.Value;
+
+    private static class IdContentTypeCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdContentTypeString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-messageDigest.</summary>
+    public const string IdMessageDigestString = "1.2.840.113549.1.9.4";
+    public static Asn1Oid IdMessageDigest => IdMessageDigestCache.Value;
+
+    private static class IdMessageDigestCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdMessageDigestString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-signingTime.</summary>
+    public const string IdSigningTimeString = "1.2.840.113549.1.9.5";
+    public static Asn1Oid IdSigningTime => IdSigningTimeCache.Value;
+
+    private static class IdSigningTimeCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdSigningTimeString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-countersignature.</summary>
+    public const string IdCountersignatureString = "1.2.840.113549.1.9.6";
+    public static Asn1Oid IdCountersignature => IdCountersignatureCache.Value;
+
+    private static class IdCountersignatureCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCountersignatureString);
+    }
+}
+
 public sealed class ContentInfo
 {
     /// <summary>ASN.1 alias ContentType ::= OBJECT IDENTIFIER.</summary>
@@ -1894,13 +1996,6 @@ public sealed class ContentInfo_Content
         else throw new Asn1Exception("Open type has no alternative.");
     }
 
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_7_1 = Asn1Oid.Parse("1.2.840.113549.1.7.1");
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_7_2 = Asn1Oid.Parse("1.2.840.113549.1.7.2");
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_7_3 = Asn1Oid.Parse("1.2.840.113549.1.7.3");
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_7_5 = Asn1Oid.Parse("1.2.840.113549.1.7.5");
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_7_6 = Asn1Oid.Parse("1.2.840.113549.1.7.6");
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_9_16_1_2 = Asn1Oid.Parse("1.2.840.113549.1.9.16.1.2");
-
     public static ContentInfo_Content Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
         Decode(reader, definedByKey, expectedTag: null);
 
@@ -1909,7 +2004,7 @@ public sealed class ContentInfo_Content
 
     private static ContentInfo_Content Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
     {
-        if (definedByKey.Equals(Oid_1_2_840_113549_1_7_1))
+        if (definedByKey.Equals(CryptographicMessageSyntax2004Oids.IdData))
         {
             if (expectedTag is null)
             {
@@ -1927,7 +2022,7 @@ public sealed class ContentInfo_Content
             }
             return FromUnknown(reader.ReadAny());
         }
-        else if (definedByKey.Equals(Oid_1_2_840_113549_1_7_2))
+        else if (definedByKey.Equals(CryptographicMessageSyntax2004Oids.IdSignedData))
         {
             if (expectedTag is null)
             {
@@ -1945,7 +2040,7 @@ public sealed class ContentInfo_Content
             }
             return FromUnknown(reader.ReadAny());
         }
-        else if (definedByKey.Equals(Oid_1_2_840_113549_1_7_3))
+        else if (definedByKey.Equals(CryptographicMessageSyntax2004Oids.IdEnvelopedData))
         {
             if (expectedTag is null)
             {
@@ -1963,7 +2058,7 @@ public sealed class ContentInfo_Content
             }
             return FromUnknown(reader.ReadAny());
         }
-        else if (definedByKey.Equals(Oid_1_2_840_113549_1_7_5))
+        else if (definedByKey.Equals(CryptographicMessageSyntax2004Oids.IdDigestedData))
         {
             if (expectedTag is null)
             {
@@ -1981,7 +2076,7 @@ public sealed class ContentInfo_Content
             }
             return FromUnknown(reader.ReadAny());
         }
-        else if (definedByKey.Equals(Oid_1_2_840_113549_1_7_6))
+        else if (definedByKey.Equals(CryptographicMessageSyntax2004Oids.IdEncryptedData))
         {
             if (expectedTag is null)
             {
@@ -1999,7 +2094,7 @@ public sealed class ContentInfo_Content
             }
             return FromUnknown(reader.ReadAny());
         }
-        else if (definedByKey.Equals(Oid_1_2_840_113549_1_9_16_1_2))
+        else if (definedByKey.Equals(CryptographicMessageSyntax2004Oids.IdCtAuthData))
         {
             if (expectedTag is null)
             {

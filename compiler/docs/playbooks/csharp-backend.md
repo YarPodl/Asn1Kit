@@ -18,12 +18,14 @@
 8. **`namedBits`.** `EmitNamedBitString`: `[Flags]` enum `{Type}Flags` (`1 << index`), класс с `Asn1BitString Value`, свойство `Flags`, статические `ToFlags` / `FromFlags`, Encode/Decode через `WriteBitString` / `ReadBitString`.
 9. **`enumerated`.** `EmitEnumerated`: `public enum {Type}` с членами `Name = value` из IR; `: long`, если значение вне `int`; encode/decode через `WriteEnumerated` / `ReadEnumerated` (tag 10). Inline ENUMERATED → `Owner_Field`.
 10. **`integer` с `namedValues`.** `EmitNamedIntegerConstants`: `public static class {Type}` с `public const int|long Name = value`; свойство поля остаётся числом (`int` по умолчанию). Inline → `Owner_Field`.
+11. **Именованные OID.** Локальные `module.values` с `kind: oid` эмитятся в публичный `<ModuleName>Oids`: dotted-форма как `const string`, DER contents как лениво и однократно разобранный `Asn1Oid`. `DEFAULT` и open-type ключи переиспользуют локальный каталог; полный TLV не кешируется, потому что тег может быть переопределён.
 
 ## Требования к сгенерированному коду
 
 - Только вызовы runtime: байтов тегов, длин и правил DER в шаблоне быть не должно.
 - `options.csharp.namespace` / `typeName` / `propertyName` / `valueType`, `options.generate: false`, `options.integer.representation`, `options.lazy` и `options.retainEncoded` уважаются (читаются через `IrOptions`). Для INTEGER без опции: `namedValues` → `int32` (или `int64`, если метка вне `int`); иначе полный `constraint.value` → наименьший подходящий `int32`→`uint32`→`int64`→`uint64`; иначе `der` (`Asn1Integer`). `options.lazy: true` на поле/типе/модуле оборачивает SEQUENCE/SET в `Asn1Lazy<T>`, SEQUENCE OF/SET OF — в `Asn1Lazy<List<T>>` (`ReadLazy` / `HasEncoded` → `WriteRaw`). `options.retainEncoded: true` — то же с `Asn1Value<T>` (eager + исходный TLV в `OriginalEncoding`; encode всегда из `Value`; lazy побеждает при конфликте). `options.csharp.valueType: true` на typedef SEQUENCE/SET — `struct` вместо `sealed class`. OID → `Asn1Oid`.
 - Никаких лишних аллокаций: без промежуточных `MemoryStream` на поле, без `Func` на элемент `SEQUENCE OF`, коллекции с известной ёмкостью, где размер известен.
+- OID-каталог ленив по каждому значению: обращение к строковой константе не должно разбирать остальные OID модуля. Runtime остаётся единственным местом dotted-string ↔ DER contents codec.
 - Ломаный вход падает `Asn1Exception` (чужой тег, неизвестная альтернатива `CHOICE`, лишние байты) — это обеспечивает runtime, задача шаблона его не обходить.
 
 ## Тесты

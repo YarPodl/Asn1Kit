@@ -8,6 +8,351 @@ using Asn1Kit.Runtime;
 
 namespace Asn1Kit.Pkix;
 
+public static class PKIX1Implicit88Oids
+{
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ce.</summary>
+    public const string IdCeString = "2.5.29";
+    public static Asn1Oid IdCe => IdCeCache.Value;
+
+    private static class IdCeCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCeString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ce-authorityKeyIdentifier.</summary>
+    public const string IdCeAuthorityKeyIdentifierString = "2.5.29.35";
+    public static Asn1Oid IdCeAuthorityKeyIdentifier => IdCeAuthorityKeyIdentifierCache.Value;
+
+    private static class IdCeAuthorityKeyIdentifierCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCeAuthorityKeyIdentifierString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ce-subjectKeyIdentifier.</summary>
+    public const string IdCeSubjectKeyIdentifierString = "2.5.29.14";
+    public static Asn1Oid IdCeSubjectKeyIdentifier => IdCeSubjectKeyIdentifierCache.Value;
+
+    private static class IdCeSubjectKeyIdentifierCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCeSubjectKeyIdentifierString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ce-keyUsage.</summary>
+    public const string IdCeKeyUsageString = "2.5.29.15";
+    public static Asn1Oid IdCeKeyUsage => IdCeKeyUsageCache.Value;
+
+    private static class IdCeKeyUsageCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCeKeyUsageString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ce-privateKeyUsagePeriod.</summary>
+    public const string IdCePrivateKeyUsagePeriodString = "2.5.29.16";
+    public static Asn1Oid IdCePrivateKeyUsagePeriod => IdCePrivateKeyUsagePeriodCache.Value;
+
+    private static class IdCePrivateKeyUsagePeriodCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCePrivateKeyUsagePeriodString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ce-certificatePolicies.</summary>
+    public const string IdCeCertificatePoliciesString = "2.5.29.32";
+    public static Asn1Oid IdCeCertificatePolicies => IdCeCertificatePoliciesCache.Value;
+
+    private static class IdCeCertificatePoliciesCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCeCertificatePoliciesString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER anyPolicy.</summary>
+    public const string AnyPolicyString = "2.5.29.32.0";
+    public static Asn1Oid AnyPolicy => AnyPolicyCache.Value;
+
+    private static class AnyPolicyCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(AnyPolicyString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ce-policyMappings.</summary>
+    public const string IdCePolicyMappingsString = "2.5.29.33";
+    public static Asn1Oid IdCePolicyMappings => IdCePolicyMappingsCache.Value;
+
+    private static class IdCePolicyMappingsCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCePolicyMappingsString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ce-subjectAltName.</summary>
+    public const string IdCeSubjectAltNameString = "2.5.29.17";
+    public static Asn1Oid IdCeSubjectAltName => IdCeSubjectAltNameCache.Value;
+
+    private static class IdCeSubjectAltNameCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCeSubjectAltNameString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ce-issuerAltName.</summary>
+    public const string IdCeIssuerAltNameString = "2.5.29.18";
+    public static Asn1Oid IdCeIssuerAltName => IdCeIssuerAltNameCache.Value;
+
+    private static class IdCeIssuerAltNameCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCeIssuerAltNameString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ce-subjectDirectoryAttributes.</summary>
+    public const string IdCeSubjectDirectoryAttributesString = "2.5.29.9";
+    public static Asn1Oid IdCeSubjectDirectoryAttributes => IdCeSubjectDirectoryAttributesCache.Value;
+
+    private static class IdCeSubjectDirectoryAttributesCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCeSubjectDirectoryAttributesString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ce-basicConstraints.</summary>
+    public const string IdCeBasicConstraintsString = "2.5.29.19";
+    public static Asn1Oid IdCeBasicConstraints => IdCeBasicConstraintsCache.Value;
+
+    private static class IdCeBasicConstraintsCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCeBasicConstraintsString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ce-nameConstraints.</summary>
+    public const string IdCeNameConstraintsString = "2.5.29.30";
+    public static Asn1Oid IdCeNameConstraints => IdCeNameConstraintsCache.Value;
+
+    private static class IdCeNameConstraintsCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCeNameConstraintsString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ce-policyConstraints.</summary>
+    public const string IdCePolicyConstraintsString = "2.5.29.36";
+    public static Asn1Oid IdCePolicyConstraints => IdCePolicyConstraintsCache.Value;
+
+    private static class IdCePolicyConstraintsCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCePolicyConstraintsString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ce-cRLDistributionPoints.</summary>
+    public const string IdCeCRLDistributionPointsString = "2.5.29.31";
+    public static Asn1Oid IdCeCRLDistributionPoints => IdCeCRLDistributionPointsCache.Value;
+
+    private static class IdCeCRLDistributionPointsCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCeCRLDistributionPointsString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ce-extKeyUsage.</summary>
+    public const string IdCeExtKeyUsageString = "2.5.29.37";
+    public static Asn1Oid IdCeExtKeyUsage => IdCeExtKeyUsageCache.Value;
+
+    private static class IdCeExtKeyUsageCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCeExtKeyUsageString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER anyExtendedKeyUsage.</summary>
+    public const string AnyExtendedKeyUsageString = "2.5.29.37.0";
+    public static Asn1Oid AnyExtendedKeyUsage => AnyExtendedKeyUsageCache.Value;
+
+    private static class AnyExtendedKeyUsageCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(AnyExtendedKeyUsageString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-kp-serverAuth.</summary>
+    public const string IdKpServerAuthString = "1.3.6.1.5.5.7.3.1";
+    public static Asn1Oid IdKpServerAuth => IdKpServerAuthCache.Value;
+
+    private static class IdKpServerAuthCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdKpServerAuthString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-kp-clientAuth.</summary>
+    public const string IdKpClientAuthString = "1.3.6.1.5.5.7.3.2";
+    public static Asn1Oid IdKpClientAuth => IdKpClientAuthCache.Value;
+
+    private static class IdKpClientAuthCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdKpClientAuthString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-kp-codeSigning.</summary>
+    public const string IdKpCodeSigningString = "1.3.6.1.5.5.7.3.3";
+    public static Asn1Oid IdKpCodeSigning => IdKpCodeSigningCache.Value;
+
+    private static class IdKpCodeSigningCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdKpCodeSigningString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-kp-emailProtection.</summary>
+    public const string IdKpEmailProtectionString = "1.3.6.1.5.5.7.3.4";
+    public static Asn1Oid IdKpEmailProtection => IdKpEmailProtectionCache.Value;
+
+    private static class IdKpEmailProtectionCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdKpEmailProtectionString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-kp-timeStamping.</summary>
+    public const string IdKpTimeStampingString = "1.3.6.1.5.5.7.3.8";
+    public static Asn1Oid IdKpTimeStamping => IdKpTimeStampingCache.Value;
+
+    private static class IdKpTimeStampingCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdKpTimeStampingString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-kp-OCSPSigning.</summary>
+    public const string IdKpOCSPSigningString = "1.3.6.1.5.5.7.3.9";
+    public static Asn1Oid IdKpOCSPSigning => IdKpOCSPSigningCache.Value;
+
+    private static class IdKpOCSPSigningCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdKpOCSPSigningString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ce-inhibitAnyPolicy.</summary>
+    public const string IdCeInhibitAnyPolicyString = "2.5.29.54";
+    public static Asn1Oid IdCeInhibitAnyPolicy => IdCeInhibitAnyPolicyCache.Value;
+
+    private static class IdCeInhibitAnyPolicyCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCeInhibitAnyPolicyString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ce-freshestCRL.</summary>
+    public const string IdCeFreshestCRLString = "2.5.29.46";
+    public static Asn1Oid IdCeFreshestCRL => IdCeFreshestCRLCache.Value;
+
+    private static class IdCeFreshestCRLCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCeFreshestCRLString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-pe-authorityInfoAccess.</summary>
+    public const string IdPeAuthorityInfoAccessString = "1.3.6.1.5.5.7.1.1";
+    public static Asn1Oid IdPeAuthorityInfoAccess => IdPeAuthorityInfoAccessCache.Value;
+
+    private static class IdPeAuthorityInfoAccessCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdPeAuthorityInfoAccessString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-pe-subjectInfoAccess.</summary>
+    public const string IdPeSubjectInfoAccessString = "1.3.6.1.5.5.7.1.11";
+    public static Asn1Oid IdPeSubjectInfoAccess => IdPeSubjectInfoAccessCache.Value;
+
+    private static class IdPeSubjectInfoAccessCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdPeSubjectInfoAccessString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ce-cRLNumber.</summary>
+    public const string IdCeCRLNumberString = "2.5.29.20";
+    public static Asn1Oid IdCeCRLNumber => IdCeCRLNumberCache.Value;
+
+    private static class IdCeCRLNumberCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCeCRLNumberString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ce-issuingDistributionPoint.</summary>
+    public const string IdCeIssuingDistributionPointString = "2.5.29.28";
+    public static Asn1Oid IdCeIssuingDistributionPoint => IdCeIssuingDistributionPointCache.Value;
+
+    private static class IdCeIssuingDistributionPointCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCeIssuingDistributionPointString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ce-deltaCRLIndicator.</summary>
+    public const string IdCeDeltaCRLIndicatorString = "2.5.29.27";
+    public static Asn1Oid IdCeDeltaCRLIndicator => IdCeDeltaCRLIndicatorCache.Value;
+
+    private static class IdCeDeltaCRLIndicatorCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCeDeltaCRLIndicatorString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ce-cRLReasons.</summary>
+    public const string IdCeCRLReasonsString = "2.5.29.21";
+    public static Asn1Oid IdCeCRLReasons => IdCeCRLReasonsCache.Value;
+
+    private static class IdCeCRLReasonsCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCeCRLReasonsString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ce-certificateIssuer.</summary>
+    public const string IdCeCertificateIssuerString = "2.5.29.29";
+    public static Asn1Oid IdCeCertificateIssuer => IdCeCertificateIssuerCache.Value;
+
+    private static class IdCeCertificateIssuerCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCeCertificateIssuerString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ce-holdInstructionCode.</summary>
+    public const string IdCeHoldInstructionCodeString = "2.5.29.23";
+    public static Asn1Oid IdCeHoldInstructionCode => IdCeHoldInstructionCodeCache.Value;
+
+    private static class IdCeHoldInstructionCodeCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCeHoldInstructionCodeString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER holdInstruction.</summary>
+    public const string HoldInstructionString = "2.2.840.10040.2";
+    public static Asn1Oid HoldInstruction => HoldInstructionCache.Value;
+
+    private static class HoldInstructionCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(HoldInstructionString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-holdinstruction-none.</summary>
+    public const string IdHoldinstructionNoneString = "2.2.840.10040.2.1";
+    public static Asn1Oid IdHoldinstructionNone => IdHoldinstructionNoneCache.Value;
+
+    private static class IdHoldinstructionNoneCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdHoldinstructionNoneString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-holdinstruction-callissuer.</summary>
+    public const string IdHoldinstructionCallissuerString = "2.2.840.10040.2.2";
+    public static Asn1Oid IdHoldinstructionCallissuer => IdHoldinstructionCallissuerCache.Value;
+
+    private static class IdHoldinstructionCallissuerCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdHoldinstructionCallissuerString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-holdinstruction-reject.</summary>
+    public const string IdHoldinstructionRejectString = "2.2.840.10040.2.3";
+    public static Asn1Oid IdHoldinstructionReject => IdHoldinstructionRejectCache.Value;
+
+    private static class IdHoldinstructionRejectCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdHoldinstructionRejectString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ce-invalidityDate.</summary>
+    public const string IdCeInvalidityDateString = "2.5.29.24";
+    public static Asn1Oid IdCeInvalidityDate => IdCeInvalidityDateCache.Value;
+
+    private static class IdCeInvalidityDateCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCeInvalidityDateString);
+    }
+}
+
 public sealed class AuthorityKeyIdentifier
 {
     /// <summary>ASN.1 alias KeyIdentifier ::= OCTET STRING.</summary>

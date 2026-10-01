@@ -8,6 +8,99 @@ using Asn1Kit.Runtime;
 
 namespace Asn1Kit.Ess;
 
+public static class ExtendedSecurityServicesOids
+{
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-aa-receiptRequest.</summary>
+    public const string IdAaReceiptRequestString = "1.2.840.113549.1.9.16.2.1";
+    public static Asn1Oid IdAaReceiptRequest => IdAaReceiptRequestCache.Value;
+
+    private static class IdAaReceiptRequestCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAaReceiptRequestString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-aa-contentIdentifier.</summary>
+    public const string IdAaContentIdentifierString = "1.2.840.113549.1.9.16.2.7";
+    public static Asn1Oid IdAaContentIdentifier => IdAaContentIdentifierCache.Value;
+
+    private static class IdAaContentIdentifierCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAaContentIdentifierString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ct-receipt.</summary>
+    public const string IdCtReceiptString = "1.2.840.113549.1.9.16.1.1";
+    public static Asn1Oid IdCtReceipt => IdCtReceiptCache.Value;
+
+    private static class IdCtReceiptCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdCtReceiptString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-aa-contentHint.</summary>
+    public const string IdAaContentHintString = "1.2.840.113549.1.9.16.2.4";
+    public static Asn1Oid IdAaContentHint => IdAaContentHintCache.Value;
+
+    private static class IdAaContentHintCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAaContentHintString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-aa-msgSigDigest.</summary>
+    public const string IdAaMsgSigDigestString = "1.2.840.113549.1.9.16.2.5";
+    public static Asn1Oid IdAaMsgSigDigest => IdAaMsgSigDigestCache.Value;
+
+    private static class IdAaMsgSigDigestCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAaMsgSigDigestString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-aa-contentReference.</summary>
+    public const string IdAaContentReferenceString = "1.2.840.113549.1.9.16.2.10";
+    public static Asn1Oid IdAaContentReference => IdAaContentReferenceCache.Value;
+
+    private static class IdAaContentReferenceCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAaContentReferenceString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-aa-securityLabel.</summary>
+    public const string IdAaSecurityLabelString = "1.2.840.113549.1.9.16.2.2";
+    public static Asn1Oid IdAaSecurityLabel => IdAaSecurityLabelCache.Value;
+
+    private static class IdAaSecurityLabelCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAaSecurityLabelString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-aa-equivalentLabels.</summary>
+    public const string IdAaEquivalentLabelsString = "1.2.840.113549.1.9.16.2.9";
+    public static Asn1Oid IdAaEquivalentLabels => IdAaEquivalentLabelsCache.Value;
+
+    private static class IdAaEquivalentLabelsCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAaEquivalentLabelsString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-aa-mlExpandHistory.</summary>
+    public const string IdAaMlExpandHistoryString = "1.2.840.113549.1.9.16.2.3";
+    public static Asn1Oid IdAaMlExpandHistory => IdAaMlExpandHistoryCache.Value;
+
+    private static class IdAaMlExpandHistoryCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAaMlExpandHistoryString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-aa-signingCertificate.</summary>
+    public const string IdAaSigningCertificateString = "1.2.840.113549.1.9.16.2.12";
+    public static Asn1Oid IdAaSigningCertificate => IdAaSigningCertificateCache.Value;
+
+    private static class IdAaSigningCertificateCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAaSigningCertificateString);
+    }
+}
+
 public sealed class ReceiptRequest
 {
     /// <summary>ASN.1 alias ContentIdentifier ::= OCTET STRING.</summary>

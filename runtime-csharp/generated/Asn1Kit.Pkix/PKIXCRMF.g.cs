@@ -8,6 +8,117 @@ using Asn1Kit.Runtime;
 
 namespace Asn1Kit.Crmf;
 
+public static class PKIXCRMFOids
+{
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-pkix.</summary>
+    public const string IdPkixString = "1.3.6.1.5.5.7";
+    public static Asn1Oid IdPkix => IdPkixCache.Value;
+
+    private static class IdPkixCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdPkixString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-pkip.</summary>
+    public const string IdPkipString = "1.3.6.1.5.5.7.5";
+    public static Asn1Oid IdPkip => IdPkipCache.Value;
+
+    private static class IdPkipCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdPkipString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-regCtrl.</summary>
+    public const string IdRegCtrlString = "1.3.6.1.5.5.7.5.1";
+    public static Asn1Oid IdRegCtrl => IdRegCtrlCache.Value;
+
+    private static class IdRegCtrlCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdRegCtrlString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-regCtrl-regToken.</summary>
+    public const string IdRegCtrlRegTokenString = "1.3.6.1.5.5.7.5.1.1";
+    public static Asn1Oid IdRegCtrlRegToken => IdRegCtrlRegTokenCache.Value;
+
+    private static class IdRegCtrlRegTokenCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdRegCtrlRegTokenString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-regCtrl-authenticator.</summary>
+    public const string IdRegCtrlAuthenticatorString = "1.3.6.1.5.5.7.5.1.2";
+    public static Asn1Oid IdRegCtrlAuthenticator => IdRegCtrlAuthenticatorCache.Value;
+
+    private static class IdRegCtrlAuthenticatorCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdRegCtrlAuthenticatorString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-regCtrl-pkiPublicationInfo.</summary>
+    public const string IdRegCtrlPkiPublicationInfoString = "1.3.6.1.5.5.7.5.1.3";
+    public static Asn1Oid IdRegCtrlPkiPublicationInfo => IdRegCtrlPkiPublicationInfoCache.Value;
+
+    private static class IdRegCtrlPkiPublicationInfoCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdRegCtrlPkiPublicationInfoString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-regCtrl-pkiArchiveOptions.</summary>
+    public const string IdRegCtrlPkiArchiveOptionsString = "1.3.6.1.5.5.7.5.1.4";
+    public static Asn1Oid IdRegCtrlPkiArchiveOptions => IdRegCtrlPkiArchiveOptionsCache.Value;
+
+    private static class IdRegCtrlPkiArchiveOptionsCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdRegCtrlPkiArchiveOptionsString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-regCtrl-oldCertID.</summary>
+    public const string IdRegCtrlOldCertIDString = "1.3.6.1.5.5.7.5.1.5";
+    public static Asn1Oid IdRegCtrlOldCertID => IdRegCtrlOldCertIDCache.Value;
+
+    private static class IdRegCtrlOldCertIDCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdRegCtrlOldCertIDString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-regCtrl-protocolEncrKey.</summary>
+    public const string IdRegCtrlProtocolEncrKeyString = "1.3.6.1.5.5.7.5.1.6";
+    public static Asn1Oid IdRegCtrlProtocolEncrKey => IdRegCtrlProtocolEncrKeyCache.Value;
+
+    private static class IdRegCtrlProtocolEncrKeyCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdRegCtrlProtocolEncrKeyString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-regInfo.</summary>
+    public const string IdRegInfoString = "1.3.6.1.5.5.7.5.2";
+    public static Asn1Oid IdRegInfo => IdRegInfoCache.Value;
+
+    private static class IdRegInfoCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdRegInfoString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-regInfo-utf8Pairs.</summary>
+    public const string IdRegInfoUtf8PairsString = "1.3.6.1.5.5.7.5.2.1";
+    public static Asn1Oid IdRegInfoUtf8Pairs => IdRegInfoUtf8PairsCache.Value;
+
+    private static class IdRegInfoUtf8PairsCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdRegInfoUtf8PairsString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-regInfo-certReq.</summary>
+    public const string IdRegInfoCertReqString = "1.3.6.1.5.5.7.5.2.2";
+    public static Asn1Oid IdRegInfoCertReq => IdRegInfoCertReqCache.Value;
+
+    private static class IdRegInfoCertReqCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdRegInfoCertReqString);
+    }
+}
+
 public sealed class CertReqMsg
 {
     public CertRequest CertReq { get; set; }

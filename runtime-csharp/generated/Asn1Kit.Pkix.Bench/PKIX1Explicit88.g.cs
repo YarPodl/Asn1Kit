@@ -8,6 +8,279 @@ using Asn1Kit.Runtime;
 
 namespace Asn1Kit.Pkix.Bench;
 
+public static class PKIX1Explicit88Oids
+{
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-pkix.</summary>
+    public const string IdPkixString = "1.3.6.1.5.5.7";
+    public static Asn1Oid IdPkix => IdPkixCache.Value;
+
+    private static class IdPkixCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdPkixString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-pe.</summary>
+    public const string IdPeString = "1.3.6.1.5.5.7.1";
+    public static Asn1Oid IdPe => IdPeCache.Value;
+
+    private static class IdPeCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdPeString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-qt.</summary>
+    public const string IdQtString = "1.3.6.1.5.5.7.2";
+    public static Asn1Oid IdQt => IdQtCache.Value;
+
+    private static class IdQtCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdQtString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-kp.</summary>
+    public const string IdKpString = "1.3.6.1.5.5.7.3";
+    public static Asn1Oid IdKp => IdKpCache.Value;
+
+    private static class IdKpCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdKpString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ad.</summary>
+    public const string IdAdString = "1.3.6.1.5.5.7.48";
+    public static Asn1Oid IdAd => IdAdCache.Value;
+
+    private static class IdAdCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAdString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-qt-cps.</summary>
+    public const string IdQtCpsString = "1.3.6.1.5.5.7.2.1";
+    public static Asn1Oid IdQtCps => IdQtCpsCache.Value;
+
+    private static class IdQtCpsCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdQtCpsString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-qt-unotice.</summary>
+    public const string IdQtUnoticeString = "1.3.6.1.5.5.7.2.2";
+    public static Asn1Oid IdQtUnotice => IdQtUnoticeCache.Value;
+
+    private static class IdQtUnoticeCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdQtUnoticeString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ad-ocsp.</summary>
+    public const string IdAdOcspString = "1.3.6.1.5.5.7.48.1";
+    public static Asn1Oid IdAdOcsp => IdAdOcspCache.Value;
+
+    private static class IdAdOcspCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAdOcspString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ad-caIssuers.</summary>
+    public const string IdAdCaIssuersString = "1.3.6.1.5.5.7.48.2";
+    public static Asn1Oid IdAdCaIssuers => IdAdCaIssuersCache.Value;
+
+    private static class IdAdCaIssuersCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAdCaIssuersString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ad-timeStamping.</summary>
+    public const string IdAdTimeStampingString = "1.3.6.1.5.5.7.48.3";
+    public static Asn1Oid IdAdTimeStamping => IdAdTimeStampingCache.Value;
+
+    private static class IdAdTimeStampingCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAdTimeStampingString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-ad-caRepository.</summary>
+    public const string IdAdCaRepositoryString = "1.3.6.1.5.5.7.48.5";
+    public static Asn1Oid IdAdCaRepository => IdAdCaRepositoryCache.Value;
+
+    private static class IdAdCaRepositoryCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAdCaRepositoryString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-at.</summary>
+    public const string IdAtString = "2.5.4";
+    public static Asn1Oid IdAt => IdAtCache.Value;
+
+    private static class IdAtCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAtString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-at-name.</summary>
+    public const string IdAtNameString = "2.5.4.41";
+    public static Asn1Oid IdAtName => IdAtNameCache.Value;
+
+    private static class IdAtNameCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAtNameString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-at-surname.</summary>
+    public const string IdAtSurnameString = "2.5.4.4";
+    public static Asn1Oid IdAtSurname => IdAtSurnameCache.Value;
+
+    private static class IdAtSurnameCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAtSurnameString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-at-givenName.</summary>
+    public const string IdAtGivenNameString = "2.5.4.42";
+    public static Asn1Oid IdAtGivenName => IdAtGivenNameCache.Value;
+
+    private static class IdAtGivenNameCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAtGivenNameString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-at-initials.</summary>
+    public const string IdAtInitialsString = "2.5.4.43";
+    public static Asn1Oid IdAtInitials => IdAtInitialsCache.Value;
+
+    private static class IdAtInitialsCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAtInitialsString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-at-generationQualifier.</summary>
+    public const string IdAtGenerationQualifierString = "2.5.4.44";
+    public static Asn1Oid IdAtGenerationQualifier => IdAtGenerationQualifierCache.Value;
+
+    private static class IdAtGenerationQualifierCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAtGenerationQualifierString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-at-commonName.</summary>
+    public const string IdAtCommonNameString = "2.5.4.3";
+    public static Asn1Oid IdAtCommonName => IdAtCommonNameCache.Value;
+
+    private static class IdAtCommonNameCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAtCommonNameString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-at-localityName.</summary>
+    public const string IdAtLocalityNameString = "2.5.4.7";
+    public static Asn1Oid IdAtLocalityName => IdAtLocalityNameCache.Value;
+
+    private static class IdAtLocalityNameCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAtLocalityNameString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-at-stateOrProvinceName.</summary>
+    public const string IdAtStateOrProvinceNameString = "2.5.4.8";
+    public static Asn1Oid IdAtStateOrProvinceName => IdAtStateOrProvinceNameCache.Value;
+
+    private static class IdAtStateOrProvinceNameCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAtStateOrProvinceNameString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-at-organizationName.</summary>
+    public const string IdAtOrganizationNameString = "2.5.4.10";
+    public static Asn1Oid IdAtOrganizationName => IdAtOrganizationNameCache.Value;
+
+    private static class IdAtOrganizationNameCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAtOrganizationNameString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-at-organizationalUnitName.</summary>
+    public const string IdAtOrganizationalUnitNameString = "2.5.4.11";
+    public static Asn1Oid IdAtOrganizationalUnitName => IdAtOrganizationalUnitNameCache.Value;
+
+    private static class IdAtOrganizationalUnitNameCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAtOrganizationalUnitNameString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-at-title.</summary>
+    public const string IdAtTitleString = "2.5.4.12";
+    public static Asn1Oid IdAtTitle => IdAtTitleCache.Value;
+
+    private static class IdAtTitleCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAtTitleString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-at-dnQualifier.</summary>
+    public const string IdAtDnQualifierString = "2.5.4.46";
+    public static Asn1Oid IdAtDnQualifier => IdAtDnQualifierCache.Value;
+
+    private static class IdAtDnQualifierCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAtDnQualifierString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-at-countryName.</summary>
+    public const string IdAtCountryNameString = "2.5.4.6";
+    public static Asn1Oid IdAtCountryName => IdAtCountryNameCache.Value;
+
+    private static class IdAtCountryNameCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAtCountryNameString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-at-serialNumber.</summary>
+    public const string IdAtSerialNumberString = "2.5.4.5";
+    public static Asn1Oid IdAtSerialNumber => IdAtSerialNumberCache.Value;
+
+    private static class IdAtSerialNumberCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAtSerialNumberString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-at-pseudonym.</summary>
+    public const string IdAtPseudonymString = "2.5.4.65";
+    public static Asn1Oid IdAtPseudonym => IdAtPseudonymCache.Value;
+
+    private static class IdAtPseudonymCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdAtPseudonymString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-domainComponent.</summary>
+    public const string IdDomainComponentString = "0.9.2342.19200300.100.1.25";
+    public static Asn1Oid IdDomainComponent => IdDomainComponentCache.Value;
+
+    private static class IdDomainComponentCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdDomainComponentString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER pkcs-9.</summary>
+    public const string Pkcs9String = "1.2.840.113549.1.9";
+    public static Asn1Oid Pkcs9 => Pkcs9Cache.Value;
+
+    private static class Pkcs9Cache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(Pkcs9String);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-emailAddress.</summary>
+    public const string IdEmailAddressString = "1.2.840.113549.1.9.1";
+    public static Asn1Oid IdEmailAddress => IdEmailAddressCache.Value;
+
+    private static class IdEmailAddressCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdEmailAddressString);
+    }
+}
+
 public sealed class Attribute
 {
     /// <summary>ASN.1 alias AttributeType ::= OBJECT IDENTIFIER.</summary>

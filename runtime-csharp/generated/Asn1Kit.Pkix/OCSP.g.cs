@@ -8,6 +8,90 @@ using Asn1Kit.Runtime;
 
 namespace Asn1Kit.Ocsp;
 
+public static class OCSPOids
+{
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-kp-OCSPSigning.</summary>
+    public const string IdKpOCSPSigningString = "1.3.6.1.5.5.7.3.9";
+    public static Asn1Oid IdKpOCSPSigning => IdKpOCSPSigningCache.Value;
+
+    private static class IdKpOCSPSigningCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdKpOCSPSigningString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-pkix-ocsp.</summary>
+    public const string IdPkixOcspString = "1.3.6.1.5.5.7.48.1";
+    public static Asn1Oid IdPkixOcsp => IdPkixOcspCache.Value;
+
+    private static class IdPkixOcspCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdPkixOcspString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-pkix-ocsp-basic.</summary>
+    public const string IdPkixOcspBasicString = "1.3.6.1.5.5.7.48.1.1";
+    public static Asn1Oid IdPkixOcspBasic => IdPkixOcspBasicCache.Value;
+
+    private static class IdPkixOcspBasicCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdPkixOcspBasicString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-pkix-ocsp-nonce.</summary>
+    public const string IdPkixOcspNonceString = "1.3.6.1.5.5.7.48.1.2";
+    public static Asn1Oid IdPkixOcspNonce => IdPkixOcspNonceCache.Value;
+
+    private static class IdPkixOcspNonceCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdPkixOcspNonceString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-pkix-ocsp-crl.</summary>
+    public const string IdPkixOcspCrlString = "1.3.6.1.5.5.7.48.1.3";
+    public static Asn1Oid IdPkixOcspCrl => IdPkixOcspCrlCache.Value;
+
+    private static class IdPkixOcspCrlCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdPkixOcspCrlString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-pkix-ocsp-response.</summary>
+    public const string IdPkixOcspResponseString = "1.3.6.1.5.5.7.48.1.4";
+    public static Asn1Oid IdPkixOcspResponse => IdPkixOcspResponseCache.Value;
+
+    private static class IdPkixOcspResponseCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdPkixOcspResponseString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-pkix-ocsp-nocheck.</summary>
+    public const string IdPkixOcspNocheckString = "1.3.6.1.5.5.7.48.1.5";
+    public static Asn1Oid IdPkixOcspNocheck => IdPkixOcspNocheckCache.Value;
+
+    private static class IdPkixOcspNocheckCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdPkixOcspNocheckString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-pkix-ocsp-archive-cutoff.</summary>
+    public const string IdPkixOcspArchiveCutoffString = "1.3.6.1.5.5.7.48.1.6";
+    public static Asn1Oid IdPkixOcspArchiveCutoff => IdPkixOcspArchiveCutoffCache.Value;
+
+    private static class IdPkixOcspArchiveCutoffCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdPkixOcspArchiveCutoffString);
+    }
+
+    /// <summary>ASN.1 OBJECT IDENTIFIER id-pkix-ocsp-service-locator.</summary>
+    public const string IdPkixOcspServiceLocatorString = "1.3.6.1.5.5.7.48.1.7";
+    public static Asn1Oid IdPkixOcspServiceLocator => IdPkixOcspServiceLocatorCache.Value;
+
+    private static class IdPkixOcspServiceLocatorCache
+    {
+        internal static readonly Asn1Oid Value = Asn1Oid.Parse(IdPkixOcspServiceLocatorString);
+    }
+}
+
 public sealed class OCSPRequest
 {
     public TBSRequest TbsRequest { get; set; }

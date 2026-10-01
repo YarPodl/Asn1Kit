@@ -68,16 +68,15 @@ DVCS codec-тесты покрывают request `message` / `messageImprint`, �
 
 ### Открыто
 
-1. В сгенерированном коде — копия ASN.1-описания (и комментарии из модуля)
-2. Поддержка современных ASN.1. Open-type follow-up:
-   - **2a.** остальные PKIX ANY (`AnotherName`, `ExtensionAttribute`, DN `AttributeValue`) через overlay
-   - **2b.** curated `.asn` параметров алгоритмов из RFC 5912 (без `CLASS`) + bindings
-   - **2c.** парсер/IR для `CLASS`, object sets, parameterized `AlgorithmIdentifier{…}`
-3. Пул массивов (constructed BER concat, DER SET OF sort)
-4. Второй oracle — BouncyCastle (не gate `dotnet test`)
-5. **DER: reject constructed OCTET / BIT STRING / string** (или soft-флаг в `Asn1ReaderOptions`, default как сейчас accept; выровнять код с формулировкой § Runtime «BER: constructed…»). Фикстуры + runtime-api soft-inventory
-6. **Полное потребление nested scope**: generated SEQUENCE/EXPLICIT decode должен явно отвергать trailing TLV, не маскируя исходное исключение во время unwind
-7. **Лимиты hostile BER**: ограничить глубину рекурсивного indefinite scan и общий размер materialized constructed values
+1. Поддержка современных ASN.1. Open-type follow-up:
+   - **1a.** остальные PKIX ANY (`AnotherName`, `ExtensionAttribute`, DN `AttributeValue`) через overlay
+   - **1b.** curated `.asn` параметров алгоритмов из RFC 5912 (без `CLASS`) + bindings
+   - **1c.** парсер/IR для `CLASS`, object sets, parameterized `AlgorithmIdentifier{…}`
+2. Пул массивов (constructed BER concat, DER SET OF sort)
+3. Второй oracle — BouncyCastle (не gate `dotnet test`)
+4. **DER: reject constructed OCTET / BIT STRING / string** (или soft-флаг в `Asn1ReaderOptions`, default как сейчас accept; выровнять код с формулировкой § Runtime «BER: constructed…»). Фикстуры + runtime-api soft-inventory
+5. **Полное потребление nested scope**: generated SEQUENCE/EXPLICIT decode должен явно отвергать trailing TLV, не маскируя исходное исключение во время unwind
+6. **Лимиты hostile BER**: ограничить глубину рекурсивного indefinite scan и общий размер materialized constructed values
 
 ### Крупные
 
