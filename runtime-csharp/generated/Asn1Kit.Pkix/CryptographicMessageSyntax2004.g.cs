@@ -2143,6 +2143,10 @@ public sealed class ContentInfo_Content
             return FromUnknown(reader.ReadAny());
         }
         else {
+            if (expectedTag is null && reader.TryPeekTag(out var fallbackOctetString) && fallbackOctetString.MatchesIgnoreConstructed(Asn1Tag.OctetString))
+            {
+                return FromOctetString(reader.ReadOctetString(Asn1Tag.OctetString));
+            }
             return FromUnknown(reader.ReadAny());
         }
     }

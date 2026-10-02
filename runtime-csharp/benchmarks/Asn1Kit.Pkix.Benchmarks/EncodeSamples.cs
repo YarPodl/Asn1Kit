@@ -21,6 +21,7 @@ using AlgorithmIdentifier = global::Asn1Kit.Pkix.Bench.AlgorithmIdentifier;
 using AlgorithmIdentifier_Parameters = global::Asn1Kit.Pkix.Bench.AlgorithmIdentifier_Parameters;
 using SubjectPublicKeyInfo = global::Asn1Kit.Pkix.Bench.SubjectPublicKeyInfo;
 using AttributeTypeAndValue = global::Asn1Kit.Pkix.Bench.AttributeTypeAndValue;
+using AttributeTypeAndValue_Value = global::Asn1Kit.Pkix.Bench.AttributeTypeAndValue_Value;
 using Extension = global::Asn1Kit.Pkix.Bench.Extension;
 using Validity = global::Asn1Kit.Pkix.Bench.Validity;
 using Time = global::Asn1Kit.Pkix.Bench.Time;
@@ -228,14 +229,12 @@ internal static class EncodeSamples
     {
         if (type.Equals(OidCommonName))
         {
-            return AttributeTypeAndValue_Value.FromDirectoryString(
-                DirectoryString.FromPrintableString(value));
+            return AttributeTypeAndValue_Value.FromPrintableString(value);
         }
 
         if (type.Equals(OidOrganizationName))
         {
-            return AttributeTypeAndValue_Value.FromDirectoryString(
-                DirectoryString.FromPrintableString(value));
+            return AttributeTypeAndValue_Value.FromPrintableString(value);
         }
 
         if (type.Equals(OidCountryName))

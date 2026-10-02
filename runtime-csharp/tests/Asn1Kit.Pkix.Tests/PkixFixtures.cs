@@ -56,8 +56,7 @@ internal static class PkixFixtures
 
     public static string ReadDirectoryString(AttributeTypeAndValue_Value value)
     {
-        var typed = value.DirectoryString?.Value
-            ?? value.StringValue;
+        var typed = value.Value;
         if (typed is not null)
         {
             return typed;

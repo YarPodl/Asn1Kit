@@ -2743,7 +2743,11 @@ public sealed class TeletexDomainDefinedAttribute
 public enum AttributeTypeAndValue_ValueKind
 {
     None,
-    DirectoryString,
+    TeletexString,
+    PrintableString,
+    UniversalString,
+    Utf8String,
+    BmpString,
     Printable,
     Ia5,
     Unknown,
@@ -2752,26 +2756,49 @@ public enum AttributeTypeAndValue_ValueKind
 public sealed class AttributeTypeAndValue_Value
 {
     public AttributeTypeAndValue_ValueKind Kind { get; private set; }
-    public DirectoryString? DirectoryString { get; private set; }
-    public string? StringValue { get; private set; }
+    public string? Value { get; private set; }
     public Asn1Any? Unknown { get; private set; }
 
-    public static AttributeTypeAndValue_Value FromDirectoryString(DirectoryString directoryString) => new AttributeTypeAndValue_Value
+    public static AttributeTypeAndValue_Value FromTeletexString(string teletexString) => new AttributeTypeAndValue_Value
     {
-        Kind = AttributeTypeAndValue_ValueKind.DirectoryString,
-        DirectoryString = directoryString,
+        Kind = AttributeTypeAndValue_ValueKind.TeletexString,
+        Value = teletexString,
+    };
+
+    public static AttributeTypeAndValue_Value FromPrintableString(string printableString) => new AttributeTypeAndValue_Value
+    {
+        Kind = AttributeTypeAndValue_ValueKind.PrintableString,
+        Value = printableString,
+    };
+
+    public static AttributeTypeAndValue_Value FromUniversalString(string universalString) => new AttributeTypeAndValue_Value
+    {
+        Kind = AttributeTypeAndValue_ValueKind.UniversalString,
+        Value = universalString,
+    };
+
+    public static AttributeTypeAndValue_Value FromUtf8String(string utf8String) => new AttributeTypeAndValue_Value
+    {
+        Kind = AttributeTypeAndValue_ValueKind.Utf8String,
+        Value = utf8String,
+    };
+
+    public static AttributeTypeAndValue_Value FromBmpString(string bmpString) => new AttributeTypeAndValue_Value
+    {
+        Kind = AttributeTypeAndValue_ValueKind.BmpString,
+        Value = bmpString,
     };
 
     public static AttributeTypeAndValue_Value FromPrintable(string printable) => new AttributeTypeAndValue_Value
     {
         Kind = AttributeTypeAndValue_ValueKind.Printable,
-        StringValue = printable,
+        Value = printable,
     };
 
     public static AttributeTypeAndValue_Value FromIa5(string ia5) => new AttributeTypeAndValue_Value
     {
         Kind = AttributeTypeAndValue_ValueKind.Ia5,
-        StringValue = ia5,
+        Value = ia5,
     };
 
     public static AttributeTypeAndValue_Value FromUnknown(Asn1Any value) => new AttributeTypeAndValue_Value
@@ -2784,14 +2811,26 @@ public sealed class AttributeTypeAndValue_Value
     {
         switch (Kind)
         {
-            case AttributeTypeAndValue_ValueKind.DirectoryString:
-                DirectoryString!.Encode(writer);
+            case AttributeTypeAndValue_ValueKind.TeletexString:
+                writer.WriteString(Asn1Tag.TeletexString, Value!, Asn1StringForm.Teletex);
+                break;
+            case AttributeTypeAndValue_ValueKind.PrintableString:
+                writer.WriteString(Asn1Tag.PrintableString, Value!, Asn1StringForm.Printable);
+                break;
+            case AttributeTypeAndValue_ValueKind.UniversalString:
+                writer.WriteString(Asn1Tag.UniversalString, Value!, Asn1StringForm.Universal);
+                break;
+            case AttributeTypeAndValue_ValueKind.Utf8String:
+                writer.WriteString(Asn1Tag.Utf8String, Value!, Asn1StringForm.Utf8);
+                break;
+            case AttributeTypeAndValue_ValueKind.BmpString:
+                writer.WriteString(Asn1Tag.BmpString, Value!, Asn1StringForm.Bmp);
                 break;
             case AttributeTypeAndValue_ValueKind.Printable:
-                writer.WriteString(Asn1Tag.PrintableString, StringValue!, Asn1StringForm.Printable);
+                writer.WriteString(Asn1Tag.PrintableString, Value!, Asn1StringForm.Printable);
                 break;
             case AttributeTypeAndValue_ValueKind.Ia5:
-                writer.WriteString(Asn1Tag.Ia5String, StringValue!, Asn1StringForm.Ia5);
+                writer.WriteString(Asn1Tag.Ia5String, Value!, Asn1StringForm.Ia5);
                 break;
             case AttributeTypeAndValue_ValueKind.Unknown:
                 if (Unknown is null) throw new Asn1Exception("Open type has no alternative.");
@@ -2811,19 +2850,25 @@ public sealed class AttributeTypeAndValue_Value
     {
         if (definedByKey.Equals(PKIX1Explicit88Oids.IdAtName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtSurname) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtGivenName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtInitials) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtGenerationQualifier) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtCommonName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtLocalityName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtStateOrProvinceName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtOrganizationName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtOrganizationalUnitName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtTitle) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtPseudonym))
         {
-            if (expectedTag is null)
+            if (expectedTag is null && reader.TryPeekTag(out var peekTeletexString) && peekTeletexString.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
             {
-                if (reader.TryPeekTag(out var peeked) && (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString) || peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString) || peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString) || peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String) || peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString)))
-                {
-                    return FromDirectoryString(Asn1Kit.Pkix.DirectoryString.Decode(reader));
-                }
+                return FromTeletexString(reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex));
             }
-            else
+            if (expectedTag is null && reader.TryPeekTag(out var peekPrintableString) && peekPrintableString.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
             {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromDirectoryString(Asn1Kit.Pkix.DirectoryString.Decode(reader));
-                }
+                return FromPrintableString(reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable));
+            }
+            if (expectedTag is null && reader.TryPeekTag(out var peekUniversalString) && peekUniversalString.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
+            {
+                return FromUniversalString(reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal));
+            }
+            if (expectedTag is null && reader.TryPeekTag(out var peekUtf8String) && peekUtf8String.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
+            {
+                return FromUtf8String(reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8));
+            }
+            if (expectedTag is null && reader.TryPeekTag(out var peekBmpString) && peekBmpString.MatchesIgnoreConstructed(Asn1Tag.BmpString))
+            {
+                return FromBmpString(reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp));
             }
             return FromUnknown(reader.ReadAny());
         }
@@ -2864,6 +2909,30 @@ public sealed class AttributeTypeAndValue_Value
             return FromUnknown(reader.ReadAny());
         }
         else {
+            if (expectedTag is null && reader.TryPeekTag(out var fallbackTeletexString) && fallbackTeletexString.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
+            {
+                return FromTeletexString(reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex));
+            }
+            if (expectedTag is null && reader.TryPeekTag(out var fallbackPrintableString) && fallbackPrintableString.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
+            {
+                return FromPrintableString(reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable));
+            }
+            if (expectedTag is null && reader.TryPeekTag(out var fallbackUniversalString) && fallbackUniversalString.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
+            {
+                return FromUniversalString(reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal));
+            }
+            if (expectedTag is null && reader.TryPeekTag(out var fallbackUtf8String) && fallbackUtf8String.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
+            {
+                return FromUtf8String(reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8));
+            }
+            if (expectedTag is null && reader.TryPeekTag(out var fallbackBmpString) && fallbackBmpString.MatchesIgnoreConstructed(Asn1Tag.BmpString))
+            {
+                return FromBmpString(reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp));
+            }
+            if (expectedTag is null && reader.TryPeekTag(out var fallbackIa5) && fallbackIa5.MatchesIgnoreConstructed(Asn1Tag.Ia5String))
+            {
+                return FromIa5(reader.ReadString(Asn1Tag.Ia5String, Asn1StringForm.Ia5));
+            }
             return FromUnknown(reader.ReadAny());
         }
     }
@@ -2977,6 +3046,10 @@ public sealed class AlgorithmIdentifier_Parameters
             return FromUnknown(reader.ReadAny());
         }
         else {
+            if (expectedTag is null && reader.TryPeekTag(out var fallbackNull) && fallbackNull.MatchesIgnoreConstructed(Asn1Tag.Null))
+            {
+                return FromNull(Asn1Null.Decode(reader, Asn1Tag.Null));
+            }
             return FromUnknown(reader.ReadAny());
         }
     }

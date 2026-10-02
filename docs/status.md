@@ -33,6 +33,8 @@
 - `EXPLICIT` / `IMPLICIT` / `AUTOMATIC TAGS`; `IMPORTS` между переданными файлами.
 - Тег без mode на локальном или импортированном `CHOICE` раскрывается как `EXPLICIT`.
 - Open-type `bindings`: CLI `--bindings` / overlay; ключи `Module.Type.field`.
+- C# `ANY DEFINED BY`: при неизвестном OID примитив с однозначно подходящей существующей альтернативой декодируется в её свойство по universal-тегу, сохраняя wire-форму и `Kind`. Неоднозначные, составные и нераспознанные значения остаются в `Asn1Any`; IMPLICIT-тег не используется для угадывания типа. Правило действует в soft и strict; mismatch известного binding сохраняет прежнее поведение.
+- Нетегированные `CHOICE` в open-type bindings рекурсивно раскрываются в альтернативы `Owner_Field`, включая именованные, импортированные и inline-типы. Вложенный объект `CHOICE` не создаётся; свойства группируются по CLR-типу, `Kind` сохраняет выбранную wire-альтернативу. OID ограничивает набор допустимых веток; тегированный или рекурсивный `CHOICE` остаётся отдельной альтернативой. Самостоятельные типы `CHOICE` сохраняют свой API.
 - Options patch: CLI `--patch` / `IrOptionsPatch`; `modules`, `fields` (`Module.Type.field`), `types` (`Module.Type`); bench — [cms-2004-bench.patch.json](../compiler/fixtures/ir/cms-2004-bench.patch.json).
 - `SIZE` / диапазоны → `constraint.size` / `constraint.value`; прочее → `constraint.unsupported`.
 - Вне профиля (явный `CompileException`): `CLASS`/IOC, `COMPONENTS OF`, `REAL`, `EXTERNAL`, параметризованные типы.

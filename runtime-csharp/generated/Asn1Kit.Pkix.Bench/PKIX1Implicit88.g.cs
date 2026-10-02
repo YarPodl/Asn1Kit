@@ -1741,6 +1741,10 @@ public sealed class PolicyQualifierInfo_Qualifier
             return FromUnknown(reader.ReadAny());
         }
         else {
+            if (expectedTag is null && reader.TryPeekTag(out var fallbackCPSuri) && fallbackCPSuri.MatchesIgnoreConstructed(Asn1Tag.Ia5String))
+            {
+                return FromCPSuri(reader.ReadString(Asn1Tag.Ia5String, Asn1StringForm.Ia5));
+            }
             return FromUnknown(reader.ReadAny());
         }
     }
@@ -1873,6 +1877,14 @@ public sealed class AnotherName_Value
             return FromUnknown(reader.ReadAny());
         }
         else {
+            if (expectedTag is null && reader.TryPeekTag(out var fallbackXmppAddr) && fallbackXmppAddr.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
+            {
+                return FromXmppAddr(reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8));
+            }
+            if (expectedTag is null && reader.TryPeekTag(out var fallbackSrvName) && fallbackSrvName.MatchesIgnoreConstructed(Asn1Tag.Ia5String))
+            {
+                return FromSrvName(reader.ReadString(Asn1Tag.Ia5String, Asn1StringForm.Ia5));
+            }
             return FromUnknown(reader.ReadAny());
         }
     }

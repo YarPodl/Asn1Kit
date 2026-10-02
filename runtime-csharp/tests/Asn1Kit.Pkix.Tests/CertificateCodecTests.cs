@@ -83,16 +83,16 @@ public sealed class CertificateCodecTests
             switch (expected[i].Oid)
             {
                 case "2.5.4.3":
-                    Assert.Equal(AttributeTypeAndValue_ValueKind.DirectoryString, actualAttributes[i].Value.Kind);
-                    Assert.NotNull(actualAttributes[i].Value.DirectoryString);
+                    Assert.Equal(AttributeTypeAndValue_ValueKind.PrintableString, actualAttributes[i].Value.Kind);
+                    Assert.NotNull(actualAttributes[i].Value.Value);
                     break;
                 case "2.5.4.6":
                     Assert.Equal(AttributeTypeAndValue_ValueKind.Printable, actualAttributes[i].Value.Kind);
-                    Assert.NotNull(actualAttributes[i].Value.StringValue);
+                    Assert.NotNull(actualAttributes[i].Value.Value);
                     break;
                 case "2.5.4.10":
-                    Assert.Equal(AttributeTypeAndValue_ValueKind.DirectoryString, actualAttributes[i].Value.Kind);
-                    Assert.NotNull(actualAttributes[i].Value.DirectoryString);
+                    Assert.Equal(AttributeTypeAndValue_ValueKind.PrintableString, actualAttributes[i].Value.Kind);
+                    Assert.NotNull(actualAttributes[i].Value.Value);
                     break;
                 default:
                     throw new Xunit.Sdk.XunitException($"Unexpected test-fixture DN OID '{expected[i].Oid}'.");

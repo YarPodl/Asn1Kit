@@ -808,9 +808,11 @@ END
         var decodedUnknown = algType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
             .Invoke(null, new object[] { new Asn1Reader(unknownOid, Asn1Encoding.Der) })!;
         var unknownParams = algType.GetProperty("Parameters")!.GetValue(decodedUnknown)!;
-        Assert.Null(unknownParams.GetType().GetProperty("Null")!.GetValue(unknownParams));
-        var unknownAny = Assert.IsType<Asn1Any>(unknownParams.GetType().GetProperty("Unknown")!.GetValue(unknownParams)!);
-        Assert.Equal(Asn1Tag.Null, unknownAny.Tag);
+        Assert.Equal(Asn1Null.Value, unknownParams.GetType().GetProperty("Null")!.GetValue(unknownParams));
+        Assert.Null(unknownParams.GetType().GetProperty("Unknown")!.GetValue(unknownParams));
+        var unknownWriter = new Asn1Writer(Asn1Encoding.Der);
+        algType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(decodedUnknown, new object[] { unknownWriter });
+        Assert.Equal(unknownOid, unknownWriter.Encode());
 
         // Soft mismatch: known OID but content is INTEGER, not NULL
         var mismatch = new byte[]
@@ -875,6 +877,218 @@ END
                 .Invoke(null, new object[] { new Asn1Reader(mismatch, Asn1Encoding.Der) }));
         Assert.IsType<Asn1Exception>(ex.InnerException);
         Assert.Contains("does not match bound type", ex.InnerException!.Message);
+    }
+
+    [Theory]
+    [InlineData("soft")]
+    [InlineData("strict")]
+    public void GeneratedCSharp_OpenTypeBindings_UnknownOidUsesPrimitiveWireAlternative(string mode)
+    {
+        var document = new Asn1Compiler().CompileText(@"
+Fallback DEFINITIONS EXPLICIT TAGS ::= BEGIN
+Text ::= IA5String
+Container ::= SEQUENCE {}
+Entry ::= SEQUENCE { id OBJECT IDENTIFIER, value ANY DEFINED BY id }
+END");
+        document.Modules[0].Options = IrOptions.SetOpenTypeMismatch(document.Modules[0].Options, mode);
+        OpenTypeBindings.ApplyJson(document, @"{
+  ""Fallback.Entry.value"": [
+    { ""key"": ""1.2.3"", ""type"": { ""kind"": ""string"", ""stringType"": ""utf8"" } },
+    { ""key"": ""1.2.4"", ""name"": ""Ia5"", ""type"": { ""kind"": ""ref"", ""name"": ""Text"" } },
+    { ""key"": ""1.2.5"", ""type"": { ""kind"": ""ref"", ""name"": ""Container"" } },
+    { ""key"": ""1.2.6"", ""name"": ""Small"", ""type"": { ""kind"": ""integer"", ""options"": { ""integer"": { ""representation"": ""int32"" } } } },
+    { ""key"": ""1.2.7"", ""name"": ""Large"", ""type"": { ""kind"": ""integer"", ""options"": { ""integer"": { ""representation"": ""int64"" } } } },
+    { ""key"": ""1.2.8"", ""type"": { ""kind"": ""boolean"", ""tag"": { ""class"": ""context"", ""number"": 0, ""mode"": ""implicit"" } } }
+  ]
+}");
+        IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
+        var assembly = CompileGenerated(new CSharpBackend().Generate(document).Single().Contents);
+        var type = assembly.GetType("Fallback.Entry_Value")!;
+        var decode = type.GetMethod("Decode", new[] { typeof(Asn1Reader), typeof(Asn1Oid) })!;
+        var unknownOid = Asn1Oid.Parse("1.2.99");
+        foreach (var tag in new byte[] { 0x0C, 0x16 })
+        {
+            var der = new byte[] { tag, 0x03, 0x41, 0x6E, 0x6E };
+            var value = decode.Invoke(null, new object[] { new Asn1Reader(der, Asn1Encoding.Der), unknownOid })!;
+            Assert.Equal("Ann", type.GetProperty("StringValue")!.GetValue(value));
+            Assert.Equal(tag == 0x0C ? "Utf8" : "Ia5", type.GetProperty("Kind")!.GetValue(value)!.ToString());
+            Assert.Null(type.GetProperty("Unknown")!.GetValue(value));
+            var writer = new Asn1Writer(Asn1Encoding.Der);
+            type.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(value, new object[] { writer });
+            Assert.Equal(der, writer.Encode());
+        }
+
+        foreach (var der in new[]
+        {
+            new byte[] { 0x05, 0x00 }, new byte[] { 0x30, 0x00 },
+            new byte[] { 0x02, 0x01, 0x01 }, new byte[] { 0x80, 0x01, 0xFF }
+        })
+        {
+            var value = decode.Invoke(null, new object[] { new Asn1Reader(der, Asn1Encoding.Der), unknownOid })!;
+            Assert.IsType<Asn1Any>(type.GetProperty("Unknown")!.GetValue(value));
+            var writer = new Asn1Writer(Asn1Encoding.Der);
+            type.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(value, new object[] { writer });
+            Assert.Equal(der, writer.Encode());
+        }
+
+        var ex = Assert.Throws<TargetInvocationException>(() => decode.Invoke(null,
+            new object[] { new Asn1Reader(new byte[] { 0x0C, 0x02, 0x41 }, Asn1Encoding.Der), unknownOid }));
+        Assert.IsType<Asn1Exception>(ex.InnerException);
+    }
+
+    [Theory]
+    [InlineData("soft")]
+    [InlineData("strict")]
+    public void GeneratedCSharp_OpenTypeBindings_FlattenNestedChoiceAndKeepBindingDispatch(string mode)
+    {
+        var document = new Asn1Compiler().CompileText(@"
+Flat DEFINITIONS EXPLICIT TAGS ::= BEGIN
+Nested ::= CHOICE { utf8 UTF8String, ia5 IA5String }
+Text ::= CHOICE { nested Nested, printable PrintableString }
+Tagged ::= CHOICE { yes BOOLEAN, nothing NULL }
+Wrapped ::= [1] EXPLICIT CHOICE { yes BOOLEAN, nothing NULL }
+Entry ::= SEQUENCE { id OBJECT IDENTIFIER, value ANY DEFINED BY id OPTIONAL }
+END");
+        document.Modules[0].Options = IrOptions.SetOpenTypeMismatch(null, mode);
+        OpenTypeBindings.ApplyJson(document, @"{
+  ""Flat.Entry.value"": [
+    { ""key"": ""1.2.3"", ""type"": { ""kind"": ""ref"", ""name"": ""Text"" } },
+    { ""key"": ""1.2.4"", ""type"": { ""kind"": ""ref"", ""name"": ""Text"" } },
+    { ""key"": ""1.2.5"", ""type"": { ""kind"": ""string"", ""stringType"": ""ia5"" } },
+    { ""key"": ""1.2.6"", ""type"": { ""kind"": ""ref"", ""name"": ""Tagged"", ""tag"": { ""class"": ""context"", ""number"": 0, ""mode"": ""explicit"" } } },
+    { ""key"": ""1.2.7"", ""type"": { ""kind"": ""ref"", ""name"": ""Wrapped"" } }
+  ]
+}");
+        var original = IrSerializer.ToJson(document);
+        IrSerializer.ValidateSchema(original);
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+        Assert.Equal(original, IrSerializer.ToJson(document));
+        var assembly = CompileGenerated(source);
+        var entryType = assembly.GetType("Flat.Entry")!;
+        var valueType = assembly.GetType("Flat.Entry_Value")!;
+        Assert.Null(valueType.GetProperty("Text"));
+        Assert.Null(valueType.GetProperty("Nested"));
+        Assert.Null(valueType.GetMethod("FromText"));
+        Assert.NotNull(valueType.GetProperty("Tagged"));
+        Assert.NotNull(valueType.GetMethod("FromNestedUtf8"));
+
+        foreach (var oid in new byte[] { 3, 4, 99 })
+        foreach (var (tag, kind) in new[] { ((byte)0x0C, "NestedUtf8"), ((byte)0x16, "NestedIa5"), ((byte)0x13, "Printable") })
+        {
+            var der = new byte[] { 0x30, 0x09, 0x06, 0x02, 0x2A, oid, tag, 0x03, 0x41, 0x6E, 0x6E };
+            var entry = entryType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+                .Invoke(null, new object[] { new Asn1Reader(der, Asn1Encoding.Der) })!;
+            var value = entryType.GetProperty("Value")!.GetValue(entry)!;
+            Assert.Equal("Ann", valueType.GetProperty("StringValue")!.GetValue(value));
+            Assert.Equal(kind, valueType.GetProperty("Kind")!.GetValue(value)!.ToString());
+            Assert.Null(valueType.GetProperty("Unknown")!.GetValue(value));
+            var writer = new Asn1Writer(Asn1Encoding.Der);
+            entryType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(entry, new object[] { writer });
+            Assert.Equal(der, writer.Encode());
+        }
+
+        var factoryValue = valueType.GetMethod("FromNestedUtf8")!.Invoke(null, new object[] { "Ann" })!;
+        var factoryWriter = new Asn1Writer(Asn1Encoding.Der);
+        valueType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(factoryValue, new object[] { factoryWriter });
+        Assert.Equal(new byte[] { 0x0C, 0x03, 0x41, 0x6E, 0x6E }, factoryWriter.Encode());
+
+        var decodeValue = valueType.GetMethod("Decode", new[] { typeof(Asn1Reader), typeof(Asn1Oid) })!;
+        foreach (var (oid, mismatch) in new[]
+        {
+            ("1.2.5", new byte[] { 0x0C, 0x03, 0x41, 0x6E, 0x6E }),
+            ("1.2.3", new byte[] { 0x05, 0x00 })
+        })
+        {
+            if (mode == "strict")
+            {
+                var ex = Assert.Throws<TargetInvocationException>(() => decodeValue.Invoke(null,
+                    new object[] { new Asn1Reader(mismatch, Asn1Encoding.Der), Asn1Oid.Parse(oid) }));
+                Assert.IsType<Asn1Exception>(ex.InnerException);
+            }
+            else
+            {
+                var value = decodeValue.Invoke(null,
+                    new object[] { new Asn1Reader(mismatch, Asn1Encoding.Der), Asn1Oid.Parse(oid) })!;
+                Assert.IsType<Asn1Any>(valueType.GetProperty("Unknown")!.GetValue(value));
+            }
+        }
+
+        foreach (var (tag, oid, property) in new[] { ((byte)0xA0, "1.2.6", "Tagged"), ((byte)0xA1, "1.2.7", "Wrapped") })
+        {
+            var taggedDer = new byte[] { tag, 0x02, 0x05, 0x00 };
+            var taggedValue = decodeValue.Invoke(null,
+                new object[] { new Asn1Reader(taggedDer, Asn1Encoding.Der), Asn1Oid.Parse(oid) })!;
+            Assert.NotNull(valueType.GetProperty(property)!.GetValue(taggedValue));
+            var taggedWriter = new Asn1Writer(Asn1Encoding.Der);
+            valueType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(taggedValue, new object[] { taggedWriter });
+            Assert.Equal(taggedDer, taggedWriter.Encode());
+        }
+
+        var absent = entryType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!.Invoke(null,
+            new object[] { new Asn1Reader(new byte[] { 0x30, 0x04, 0x06, 0x02, 0x2A, 0x03 }, Asn1Encoding.Der) })!;
+        Assert.Null(entryType.GetProperty("Value")!.GetValue(absent));
+        var absentWriter = new Asn1Writer(Asn1Encoding.Der);
+        entryType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(absent, new object[] { absentWriter });
+        Assert.Equal(new byte[] { 0x30, 0x04, 0x06, 0x02, 0x2A, 0x03 }, absentWriter.Encode());
+        var malformed = Assert.Throws<TargetInvocationException>(() => decodeValue.Invoke(null,
+            new object[] { new Asn1Reader(new byte[] { 0x0C, 0x02, 0x41 }, Asn1Encoding.Der), Asn1Oid.Parse("1.2.3") }));
+        Assert.IsType<Asn1Exception>(malformed.InnerException);
+    }
+
+    [Fact]
+    public void GeneratedCSharp_OpenTypeBindings_FlattenImportedAndInlineChoices()
+    {
+        var document = new Asn1Compiler().CompileTexts(new (string Text, string? FileName)[]
+        {
+            (@"Provider DEFINITIONS EXPLICIT TAGS ::= BEGIN
+Payload ::= SEQUENCE { text UTF8String }
+Selection ::= CHOICE { payload Payload, empty NULL }
+END", "provider.asn"),
+            (@"Consumer DEFINITIONS EXPLICIT TAGS ::= BEGIN
+IMPORTS Selection FROM Provider;
+Payload ::= SEQUENCE { flag BOOLEAN }
+Entry ::= SEQUENCE { id OBJECT IDENTIFIER, value ANY DEFINED BY id }
+END", "consumer.asn")
+        });
+        OpenTypeBindings.ApplyJson(document, @"{
+  ""Consumer.Entry.value"": [
+    { ""key"": ""1.2.3"", ""type"": { ""kind"": ""ref"", ""module"": ""Provider"", ""name"": ""Selection"" } },
+    { ""key"": ""1.2.4"", ""type"": { ""kind"": ""choice"", ""components"": [
+      { ""name"": ""local"", ""options"": { ""csharp"": { ""propertyName"": ""InlinePayload"" }, ""retainEncoded"": true }, ""type"": { ""kind"": ""sequence"", ""components"": [
+        { ""name"": ""text"", ""type"": { ""kind"": ""string"", ""stringType"": ""utf8"" } }
+      ] } },
+      { ""name"": ""flag"", ""type"": { ""kind"": ""boolean"" } }
+    ] } }
+  ]
+}");
+        IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
+        var original = IrSerializer.ToJson(document);
+        var assembly = CompileGenerated(new CSharpBackend().Generate(document).Select(file => file.Contents).ToArray());
+        Assert.Equal(original, IrSerializer.ToJson(document));
+        var type = assembly.GetType("Consumer.Entry_Value")!;
+        Assert.Null(type.GetProperty("Selection"));
+        Assert.Null(type.GetProperty("Choice"));
+        Assert.Equal(assembly.GetType("Provider.Payload"), type.GetProperty("Payload")!.PropertyType);
+        var inlineType = assembly.GetType("Consumer.Entry_Value_InlinePayload")!;
+        Assert.Equal(typeof(Nullable<>).MakeGenericType(typeof(Asn1Value<>).MakeGenericType(inlineType)),
+            type.GetProperty("InlinePayload")!.PropertyType);
+        var decode = type.GetMethod("Decode", new[] { typeof(Asn1Reader), typeof(Asn1Oid) })!;
+        var der = new byte[] { 0x30, 0x03, 0x0C, 0x01, 0x41 };
+        foreach (var (oid, property) in new[] { ("1.2.3", "Payload"), ("1.2.4", "InlinePayload") })
+        {
+            var value = decode.Invoke(null, new object[] { new Asn1Reader(der, Asn1Encoding.Der), Asn1Oid.Parse(oid) })!;
+            var payload = type.GetProperty(property)!.GetValue(value)!;
+            if (property == "InlinePayload")
+            {
+                Assert.Equal(der, ((ReadOnlyMemory<byte>)payload.GetType().GetProperty("OriginalEncoding")!.GetValue(payload)!).ToArray());
+                payload = payload.GetType().GetProperty("Value")!.GetValue(payload)!;
+            }
+            Assert.Equal("A", payload.GetType().GetProperty("Text")!.GetValue(payload));
+            Assert.Null(type.GetProperty("Unknown")!.GetValue(value));
+            var writer = new Asn1Writer(Asn1Encoding.Der);
+            type.GetMethod("Encode", new[] { typeof(Asn1Writer) })!.Invoke(value, new object[] { writer });
+            Assert.Equal(der, writer.Encode());
+        }
     }
 
     [Fact]
@@ -1627,7 +1841,7 @@ END
         Assert.Equal(new[] { Asn1Integer.FromInt32(1), Asn1Integer.FromInt32(2) }, value);
     }
 
-    private static Assembly CompileGenerated(string source)
+    private static Assembly CompileGenerated(params string[] sources)
     {
         var tpa = (string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!;
         var references = tpa.Split(Path.PathSeparator)
@@ -1638,7 +1852,7 @@ END
 
         var compilation = CSharpCompilation.Create(
             "GeneratedAsn1",
-            new[] { CSharpSyntaxTree.ParseText(source) },
+            sources.Select(source => CSharpSyntaxTree.ParseText(source)),
             references,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
