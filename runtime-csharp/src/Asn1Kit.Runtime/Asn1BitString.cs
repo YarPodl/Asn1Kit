@@ -3,6 +3,9 @@ namespace Asn1Kit.Runtime;
 /// <summary>BIT STRING value: content octets plus the count of unused trailing bits.</summary>
 public readonly struct Asn1BitString : IEquatable<Asn1BitString>
 {
+    /// <summary>Returns the number of significant bits without dumping bytes.</summary>
+    public override string ToString() => BitLength.ToString(System.Globalization.CultureInfo.InvariantCulture) + " bits";
+
     private readonly ReadOnlyMemory<byte> _bytes;
 
     /// <summary>Wraps <paramref name="bytes"/> without copying (caller owns lifetime).</summary>

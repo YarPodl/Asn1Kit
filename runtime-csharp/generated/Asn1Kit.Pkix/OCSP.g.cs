@@ -622,6 +622,16 @@ public sealed class ResponderID
         ByKey = byKey,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            ResponderIDKind.ByName => Asn1Formatting.Format(ByName),
+            ResponderIDKind.ByKey => Asn1Formatting.Format(ByKey),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -779,6 +789,17 @@ public sealed class CertStatus
         Kind = CertStatusKind.Unknown,
         Unknown = unknown,
     };
+
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            CertStatusKind.Good => Asn1Formatting.Format(Good),
+            CertStatusKind.Revoked => Asn1Formatting.Format(Revoked),
+            CertStatusKind.Unknown => Asn1Formatting.Format(Unknown),
+            _ => "<unset>",
+        };
+    }
 
     public void Encode(Asn1Writer writer)
     {

@@ -11,6 +11,9 @@ namespace Asn1Kit.Runtime;
 /// </summary>
 public readonly struct Asn1Integer : IEquatable<Asn1Integer>
 {
+    /// <summary>Returns the decimal value independently of the current culture.</summary>
+    public override string ToString() => ToBigInteger().ToString(System.Globalization.CultureInfo.InvariantCulture);
+
     private static readonly byte[] ZeroContents = { 0x00 };
     private static readonly byte[] SingleOctetContents = CreateSingleOctetContents();
 

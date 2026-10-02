@@ -133,6 +133,16 @@ public sealed class DVCSTime
         TimeStampToken = timeStampToken,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            DVCSTimeKind.GenTime => Asn1Formatting.Format(GenTime),
+            DVCSTimeKind.TimeStampToken => Asn1Formatting.Format(TimeStampToken),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -356,6 +366,24 @@ public sealed class CertEtcToken
         Kind = CertEtcTokenKind.Extension,
         Extension = extension,
     };
+
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            CertEtcTokenKind.Certificate => Asn1Formatting.Format(Certificate),
+            CertEtcTokenKind.Esscertid => Asn1Formatting.Format(Esscertid),
+            CertEtcTokenKind.Pkistatus => Asn1Formatting.Format(Pkistatus),
+            CertEtcTokenKind.Assertion => Asn1Formatting.Format(Assertion),
+            CertEtcTokenKind.Crl => Asn1Formatting.Format(Crl),
+            CertEtcTokenKind.Ocspcertstatus => Asn1Formatting.Format(Ocspcertstatus),
+            CertEtcTokenKind.Oscpcertid => Asn1Formatting.Format(Oscpcertid),
+            CertEtcTokenKind.Oscpresponse => Asn1Formatting.Format(Oscpresponse),
+            CertEtcTokenKind.Capabilities => Asn1Formatting.Format(Capabilities),
+            CertEtcTokenKind.Extension => Asn1Formatting.Format(Extension),
+            _ => "<unset>",
+        };
+    }
 
     public void Encode(Asn1Writer writer)
     {
@@ -662,6 +690,17 @@ public sealed class Data
         Certs = certs,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            DataKind.Message => Asn1Formatting.Format(Message),
+            DataKind.MessageImprint => Asn1Formatting.Format(MessageImprint),
+            DataKind.Certs => Asn1Formatting.Format(Certs),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -729,6 +768,16 @@ public sealed class DVCSResponse
         Kind = DVCSResponseKind.DvErrorNote,
         DvErrorNote = dvErrorNote,
     };
+
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            DVCSResponseKind.DvCertInfo => Asn1Formatting.Format(DvCertInfo),
+            DVCSResponseKind.DvErrorNote => Asn1Formatting.Format(DvErrorNote),
+            _ => "<unset>",
+        };
+    }
 
     public void Encode(Asn1Writer writer)
     {

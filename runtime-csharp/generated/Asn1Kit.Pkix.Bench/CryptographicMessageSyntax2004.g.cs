@@ -367,6 +367,16 @@ public sealed class SignerIdentifier
         SubjectKeyIdentifier = subjectKeyIdentifier,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            SignerIdentifierKind.IssuerAndSerialNumber => Asn1Formatting.Format(IssuerAndSerialNumber),
+            SignerIdentifierKind.SubjectKeyIdentifier => Asn1Formatting.Format(SubjectKeyIdentifier),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -644,6 +654,19 @@ public sealed class RecipientInfo
         Ori = ori,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            RecipientInfoKind.Ktri => Asn1Formatting.Format(Ktri),
+            RecipientInfoKind.Kari => Asn1Formatting.Format(Kari),
+            RecipientInfoKind.Kekri => Asn1Formatting.Format(Kekri),
+            RecipientInfoKind.Pwri => Asn1Formatting.Format(Pwri),
+            RecipientInfoKind.Ori => Asn1Formatting.Format(Ori),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -766,6 +789,16 @@ public sealed class RecipientIdentifier
         Kind = RecipientIdentifierKind.SubjectKeyIdentifier,
         SubjectKeyIdentifier = subjectKeyIdentifier,
     };
+
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            RecipientIdentifierKind.IssuerAndSerialNumber => Asn1Formatting.Format(IssuerAndSerialNumber),
+            RecipientIdentifierKind.SubjectKeyIdentifier => Asn1Formatting.Format(SubjectKeyIdentifier),
+            _ => "<unset>",
+        };
+    }
 
     public void Encode(Asn1Writer writer)
     {
@@ -901,6 +934,17 @@ public sealed class OriginatorIdentifierOrKey
         OriginatorKey = originatorKey,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            OriginatorIdentifierOrKeyKind.IssuerAndSerialNumber => Asn1Formatting.Format(IssuerAndSerialNumber),
+            OriginatorIdentifierOrKeyKind.SubjectKeyIdentifier => Asn1Formatting.Format(SubjectKeyIdentifier),
+            OriginatorIdentifierOrKeyKind.OriginatorKey => Asn1Formatting.Format(OriginatorKey),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -1032,6 +1076,16 @@ public sealed class KeyAgreeRecipientIdentifier
         Kind = KeyAgreeRecipientIdentifierKind.RKeyId,
         RKeyId = rKeyId,
     };
+
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            KeyAgreeRecipientIdentifierKind.IssuerAndSerialNumber => Asn1Formatting.Format(IssuerAndSerialNumber),
+            KeyAgreeRecipientIdentifierKind.RKeyId => Asn1Formatting.Format(RKeyId),
+            _ => "<unset>",
+        };
+    }
 
     public void Encode(Asn1Writer writer)
     {
@@ -1489,6 +1543,16 @@ public sealed class RevocationInfoChoice
         Other = other,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            RevocationInfoChoiceKind.Crl => Asn1Formatting.Format(Crl),
+            RevocationInfoChoiceKind.Other => Asn1Formatting.Format(Other),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -1586,6 +1650,17 @@ public sealed class CertificateChoices
         Kind = CertificateChoicesKind.Other,
         Other = other,
     };
+
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            CertificateChoicesKind.Certificate => Asn1Formatting.Format(Certificate),
+            CertificateChoicesKind.ExtendedCertificate => Asn1Formatting.Format(ExtendedCertificate),
+            CertificateChoicesKind.Other => Asn1Formatting.Format(Other),
+            _ => "<unset>",
+        };
+    }
 
     public void Encode(Asn1Writer writer)
     {
@@ -1790,6 +1865,16 @@ public sealed class Time
         Value = generalTime,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            TimeKind.UtcTime => Asn1Formatting.Format(Value),
+            TimeKind.GeneralTime => Asn1Formatting.Format(Value),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -1846,6 +1931,16 @@ public sealed class ExtendedCertificateOrCertificate
         Kind = ExtendedCertificateOrCertificateKind.ExtendedCertificate,
         ExtendedCertificate = extendedCertificate,
     };
+
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            ExtendedCertificateOrCertificateKind.Certificate => Asn1Formatting.Format(Certificate),
+            ExtendedCertificateOrCertificateKind.ExtendedCertificate => Asn1Formatting.Format(ExtendedCertificate),
+            _ => "<unset>",
+        };
+    }
 
     public void Encode(Asn1Writer writer)
     {
@@ -2002,6 +2097,18 @@ public sealed class ContentInfo_Content
     {
         Unknown = value,
     };
+
+    public override string ToString()
+    {
+        if (OctetString is not null) return Asn1Formatting.Format(OctetString);
+        if (SignedData is not null) return Asn1Formatting.Format(SignedData);
+        if (EnvelopedData is not null) return Asn1Formatting.Format(EnvelopedData);
+        if (DigestedData is not null) return Asn1Formatting.Format(DigestedData);
+        if (EncryptedData is not null) return Asn1Formatting.Format(EncryptedData);
+        if (AuthenticatedData is not null) return Asn1Formatting.Format(AuthenticatedData);
+        if (Unknown is not null) return Asn1Formatting.Format(Unknown);
+        return "<unset>";
+    }
 
     public void Encode(Asn1Writer writer)
     {

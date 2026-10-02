@@ -480,6 +480,38 @@ public sealed class PKIBody
         Error = error,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            PKIBodyKind.Ir => Asn1Formatting.Format(Ir),
+            PKIBodyKind.Ip => Asn1Formatting.Format(Ip),
+            PKIBodyKind.Cr => Asn1Formatting.Format(Cr),
+            PKIBodyKind.Cp => Asn1Formatting.Format(Cp),
+            PKIBodyKind.P10cr => Asn1Formatting.Format(P10cr),
+            PKIBodyKind.Popdecc => Asn1Formatting.Format(Popdecc),
+            PKIBodyKind.Popdecr => Asn1Formatting.Format(Popdecr),
+            PKIBodyKind.Kur => Asn1Formatting.Format(Kur),
+            PKIBodyKind.Kup => Asn1Formatting.Format(Kup),
+            PKIBodyKind.Krr => Asn1Formatting.Format(Krr),
+            PKIBodyKind.Krp => Asn1Formatting.Format(Krp),
+            PKIBodyKind.Rr => Asn1Formatting.Format(Rr),
+            PKIBodyKind.Rp => Asn1Formatting.Format(Rp),
+            PKIBodyKind.Ccr => Asn1Formatting.Format(Ccr),
+            PKIBodyKind.Ccp => Asn1Formatting.Format(Ccp),
+            PKIBodyKind.Ckuann => Asn1Formatting.Format(Ckuann),
+            PKIBodyKind.Cann => Asn1Formatting.Format(Cann),
+            PKIBodyKind.Rann => Asn1Formatting.Format(Rann),
+            PKIBodyKind.Crlann => Asn1Formatting.Format(Crlann),
+            PKIBodyKind.Conf => Asn1Formatting.Format(Conf),
+            PKIBodyKind.Nested => Asn1Formatting.Format(Nested),
+            PKIBodyKind.Genm => Asn1Formatting.Format(Genm),
+            PKIBodyKind.Genp => Asn1Formatting.Format(Genp),
+            PKIBodyKind.Error => Asn1Formatting.Format(Error),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -1447,6 +1479,16 @@ public sealed class CertOrEncCert
         Kind = CertOrEncCertKind.EncryptedCert,
         EncryptedCert = encryptedCert,
     };
+
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            CertOrEncCertKind.Certificate => Asn1Formatting.Format(Certificate),
+            CertOrEncCertKind.EncryptedCert => Asn1Formatting.Format(EncryptedCert),
+            _ => "<unset>",
+        };
+    }
 
     public void Encode(Asn1Writer writer)
     {

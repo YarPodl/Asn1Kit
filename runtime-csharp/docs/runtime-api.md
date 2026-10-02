@@ -28,6 +28,16 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 
 Непублично: `Asn1EncodeBuffer` (`internal struct`, буфер и TLV framing), `Asn1DecodeCursor` / `Asn1Tlv` / `Asn1ConstructedDecoder` / `Asn1TextCodec` (`internal`); `Asn1Boolean.DecodeContents` / numeric contents codec и `IsMinimalContents` в `Asn1Integer` / `Asn1BitString.ParsePrimitive` (`internal`).
 
+## Строковое представление значений
+
+`Asn1Formatting.Format(object? value)` используется для отображения, независимо от текущей культуры: числа — `InvariantCulture`, время — формат `O`, строки — без кавычек, `null` — строка `null`. Для остальных объектов вызывается их `ToString()`; рекурсивного обхода составных значений нет.
+
+`Asn1Integer.ToString()` возвращает десятичное число, `Asn1Null` — `NULL`, `Asn1BitString` — `N bits` с учётом `UnusedBits`. Байт-массивы и `Memory<byte>` / `ReadOnlyMemory<byte>` форматируются как `N bytes`, без HEX. `Asn1Any` показывает тег и длину полного TLV, например `Universal-2P (3 bytes)`; значение по умолчанию — `<empty>`. Форматы OID и тегов сохранены.
+
+`Asn1Value<T>` форматирует `Value`; default с отсутствующим ссылочным значением возвращает `<unset>`. `Asn1Lazy<T>` до материализации возвращает `<not decoded: N bytes>` без вызова декодера, после — представление сохранённого значения.
+
+Сгенерированные CHOICE и ANY DEFINED BY с bindings выводят только выбранное значение; неизвестная open-type альтернатива использует представление `Asn1Any`. Дополнительного состояния для форматирования нет. CHOICE выбирает значение по существующему `Kind`, в том числе первую ветку у нового экземпляра. Open type с `Kind.None` возвращает `<unset>`; компактная форма без `Kind` возвращает `<unset>`, если все свойства равны `null`, и не различает новый экземпляр и фабрику с переданным `null`. Выбранная через `Kind` альтернатива с `null` форматируется как `null`.
+
 ## Инвентарь
 
 Роли: **hot** — каждый generated encode/decode; **warm** — тесты / helpers; **cold** — escape hatch.

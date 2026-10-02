@@ -168,6 +168,16 @@ public sealed class ReceiptsFrom
         ReceiptList = receiptList,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            ReceiptsFromKind.AllOrFirstTier => Asn1Formatting.Format(AllOrFirstTier),
+            ReceiptsFromKind.ReceiptList => Asn1Formatting.Format(ReceiptList),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -458,6 +468,16 @@ public sealed class ESSPrivacyMark
         Value = utf8String,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            ESSPrivacyMarkKind.PString => Asn1Formatting.Format(Value),
+            ESSPrivacyMarkKind.Utf8String => Asn1Formatting.Format(Value),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -591,6 +611,16 @@ public sealed class EntityIdentifier
         SubjectKeyIdentifier = subjectKeyIdentifier,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            EntityIdentifierKind.IssuerAndSerialNumber => Asn1Formatting.Format(IssuerAndSerialNumber),
+            EntityIdentifierKind.SubjectKeyIdentifier => Asn1Formatting.Format(SubjectKeyIdentifier),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -655,6 +685,17 @@ public sealed class MLReceiptPolicy
         Kind = MLReceiptPolicyKind.InAdditionTo,
         InAdditionTo = inAdditionTo,
     };
+
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            MLReceiptPolicyKind.None => Asn1Formatting.Format(None),
+            MLReceiptPolicyKind.InsteadOf => Asn1Formatting.Format(InsteadOf),
+            MLReceiptPolicyKind.InAdditionTo => Asn1Formatting.Format(InAdditionTo),
+            _ => "<unset>",
+        };
+    }
 
     public void Encode(Asn1Writer writer)
     {

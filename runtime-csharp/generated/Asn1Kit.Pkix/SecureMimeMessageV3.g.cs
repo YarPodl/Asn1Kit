@@ -128,6 +128,17 @@ public sealed class SMIMEEncryptionKeyPreference
         SubjectAltKeyIdentifier = subjectAltKeyIdentifier,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            SMIMEEncryptionKeyPreferenceKind.IssuerAndSerialNumber => Asn1Formatting.Format(IssuerAndSerialNumber),
+            SMIMEEncryptionKeyPreferenceKind.ReceipentKeyId => Asn1Formatting.Format(ReceipentKeyId),
+            SMIMEEncryptionKeyPreferenceKind.SubjectAltKeyIdentifier => Asn1Formatting.Format(SubjectAltKeyIdentifier),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)

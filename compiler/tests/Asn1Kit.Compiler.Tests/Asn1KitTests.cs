@@ -1966,6 +1966,106 @@ END
         Assert.Equal(new[] { Asn1Integer.FromInt32(1), Asn1Integer.FromInt32(2) }, value);
     }
 
+    [Fact]
+    public void GeneratedCSharp_ChoiceToStringFormatsOnlyTheSelectedValue()
+    {
+        var document = new Asn1Compiler().CompileText(@"
+Display DEFINITIONS EXPLICIT TAGS ::= BEGIN
+Text ::= CHOICE { utf8 UTF8String, ia5 IA5String }
+Mixed ::= CHOICE { number INTEGER, bytes OCTET STRING, nothing NULL, bits BIT STRING }
+Nested ::= CHOICE { text Text, flag BOOLEAN }
+END");
+        IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+        Assert.DoesNotContain("_hasValue", source);
+        var assembly = CompileGenerated(source);
+        var text = assembly.GetType("Display.Text")!;
+        var mixed = assembly.GetType("Display.Mixed")!;
+        Assert.Equal("", Activator.CreateInstance(text)!.ToString());
+        Assert.Equal("null", Activator.CreateInstance(mixed)!.ToString());
+        Assert.Equal("hello", text.GetMethod("FromUtf8")!.Invoke(null, new object[] { "hello" })!.ToString());
+        Assert.Equal("", text.GetMethod("FromIa5")!.Invoke(null, new object[] { "" })!.ToString());
+        Assert.Equal("null", text.GetMethod("FromUtf8")!.Invoke(null, new object?[] { null })!.ToString());
+        Assert.Equal("0", mixed.GetMethod("FromNumber")!.Invoke(null, new object[] { default(Asn1Integer) })!.ToString());
+        var nested = assembly.GetType("Display.Nested")!;
+        Assert.Equal("null", nested.GetMethod("FromText")!.Invoke(null, new object?[] { null })!.ToString());
+        var inner = text.GetMethod("FromUtf8")!.Invoke(null, new object[] { "nested" })!;
+        Assert.Equal("nested", nested.GetMethod("FromText")!.Invoke(null, new[] { inner })!.ToString());
+        foreach (var test in new[]
+        {
+            (Type: text, Hex: "0C03616263", Display: "abc"),
+            (Type: text, Hex: "1600", Display: ""),
+            (Type: mixed, Hex: "0201D6", Display: "-42"),
+            (Type: mixed, Hex: "0402A0FF", Display: "2 bytes"),
+            (Type: mixed, Hex: "0500", Display: "NULL"),
+            (Type: mixed, Hex: "030205A0", Display: "3 bits")
+        })
+        {
+            var bytes = Convert.FromHexString(test.Hex);
+            var value = test.Type.GetMethod("Decode")!.Invoke(null,
+                new object[] { new Asn1Reader(bytes, Asn1Encoding.Der) })!;
+            Assert.Equal(test.Display, value.ToString());
+            var writer = new Asn1Writer(Asn1Encoding.Der);
+            test.Type.GetMethod("Encode")!.Invoke(value, new object[] { writer });
+            Assert.Equal(bytes, writer.Encode());
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GeneratedCSharp_OpenTypeToStringSupportsBothApiShapes(bool repeatedClrType)
+    {
+        var document = new Asn1Compiler().CompileText(@"
+DisplayOpen DEFINITIONS EXPLICIT TAGS ::= BEGIN
+Entry ::= SEQUENCE { id OBJECT IDENTIFIER, value ANY DEFINED BY id }
+END");
+        var extra = repeatedClrType
+            ? @", { ""key"": ""1.2.7"", ""name"": ""Ia5"", ""type"": { ""kind"": ""string"", ""stringType"": ""ia5"" } }"
+            : "";
+        OpenTypeBindings.ApplyJson(document, @"{
+  ""DisplayOpen.Entry.value"": [
+    { ""key"": ""1.2.3"", ""name"": ""Text"", ""type"": { ""kind"": ""string"", ""stringType"": ""utf8"" } },
+    { ""key"": ""1.2.4"", ""name"": ""Bytes"", ""type"": { ""kind"": ""octetString"" } },
+    { ""key"": ""1.2.5"", ""name"": ""Nothing"", ""type"": { ""kind"": ""null"" } },
+    { ""key"": ""1.2.6"", ""name"": ""Number"", ""type"": { ""kind"": ""integer"" } }
+    " + extra + @"
+  ]
+}");
+        IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
+        var assembly = CompileGenerated(new CSharpBackend().Generate(document).Single().Contents);
+        Assert.DoesNotContain("_hasValue", new CSharpBackend().Generate(document).Single().Contents);
+        var type = assembly.GetType("DisplayOpen.Entry_Value")!;
+        Assert.Equal(repeatedClrType, type.GetProperty("Kind") is not null);
+        Assert.Equal("<unset>", Activator.CreateInstance(type)!.ToString());
+        Assert.Equal(repeatedClrType ? "null" : "<unset>",
+            type.GetMethod("FromText")!.Invoke(null, new object?[] { null })!.ToString());
+        Assert.Equal("", type.GetMethod("FromText")!.Invoke(null, new object[] { "" })!.ToString());
+        foreach (var test in new[]
+        {
+            (Oid: "1.2.3", Hex: "0C03616263", Display: "abc"),
+            (Oid: "1.2.4", Hex: "0402A0FF", Display: "2 bytes"),
+            (Oid: "1.2.5", Hex: "0500", Display: "NULL"),
+            (Oid: "1.2.6", Hex: "02012A", Display: "42"),
+            (Oid: "1.2.99", Hex: "3000", Display: "Universal-16C (2 bytes)")
+        })
+        {
+            var bytes = Convert.FromHexString(test.Hex);
+            var value = type.GetMethod("Decode", new[] { typeof(Asn1Reader), typeof(Asn1Oid) })!.Invoke(null,
+                new object[] { new Asn1Reader(bytes, Asn1Encoding.Der), Asn1Oid.Parse(test.Oid) })!;
+            Assert.Equal(test.Display, value.ToString());
+            var writer = new Asn1Writer(Asn1Encoding.Der);
+            type.GetMethod("Encode")!.Invoke(value, new object[] { writer });
+            Assert.Equal(bytes, writer.Encode());
+        }
+        if (repeatedClrType)
+        {
+            Assert.Equal("ia5", type.GetMethod("FromIa5")!.Invoke(null, new object[] { "ia5" })!.ToString());
+        }
+        var unknown = new Asn1Any(new byte[] { 0x30, 0x80, 0, 0 });
+        Assert.Equal("Universal-16C (4 bytes)", type.GetMethod("FromUnknown")!.Invoke(null, new object[] { unknown })!.ToString());
+    }
+
     private static Assembly CompileGenerated(params string[] sources)
     {
         var tpa = (string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!;

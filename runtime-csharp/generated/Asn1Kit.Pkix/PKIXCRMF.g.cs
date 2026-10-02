@@ -499,6 +499,18 @@ public sealed class ProofOfPossession
         KeyAgreement = keyAgreement,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            ProofOfPossessionKind.RaVerified => Asn1Formatting.Format(RaVerified),
+            ProofOfPossessionKind.Signature => Asn1Formatting.Format(Signature),
+            ProofOfPossessionKind.KeyEncipherment => Asn1Formatting.Format(KeyEncipherment),
+            ProofOfPossessionKind.KeyAgreement => Asn1Formatting.Format(KeyAgreement),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -741,6 +753,17 @@ public sealed class POPOPrivKey
         DhMAC = dhMAC,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            POPOPrivKeyKind.ThisMessage => Asn1Formatting.Format(ThisMessage),
+            POPOPrivKeyKind.SubsequentMessage => Asn1Formatting.Format(SubsequentMessage),
+            POPOPrivKeyKind.DhMAC => Asn1Formatting.Format(DhMAC),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -904,6 +927,17 @@ public sealed class PKIArchiveOptions
         ArchiveRemGenPrivKey = archiveRemGenPrivKey,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            PKIArchiveOptionsKind.EncryptedPrivKey => Asn1Formatting.Format(EncryptedPrivKey),
+            PKIArchiveOptionsKind.KeyGenParameters => Asn1Formatting.Format(KeyGenParameters),
+            PKIArchiveOptionsKind.ArchiveRemGenPrivKey => Asn1Formatting.Format(ArchiveRemGenPrivKey),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -975,6 +1009,16 @@ public sealed class EncryptedKey
         Kind = EncryptedKeyKind.EnvelopedData,
         EnvelopedData = envelopedData,
     };
+
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            EncryptedKeyKind.EncryptedValue => Asn1Formatting.Format(EncryptedValue),
+            EncryptedKeyKind.EnvelopedData => Asn1Formatting.Format(EnvelopedData),
+            _ => "<unset>",
+        };
+    }
 
     public void Encode(Asn1Writer writer)
     {
@@ -1140,6 +1184,16 @@ public sealed class POPOSigningKeyInput_AuthInfo
         Kind = POPOSigningKeyInput_AuthInfoKind.PublicKeyMAC,
         PublicKeyMAC = publicKeyMAC,
     };
+
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            POPOSigningKeyInput_AuthInfoKind.Sender => Asn1Formatting.Format(Sender),
+            POPOSigningKeyInput_AuthInfoKind.PublicKeyMAC => Asn1Formatting.Format(PublicKeyMAC),
+            _ => "<unset>",
+        };
+    }
 
     public void Encode(Asn1Writer writer)
     {

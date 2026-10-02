@@ -5,6 +5,11 @@ namespace Asn1Kit.Runtime;
 /// </summary>
 public readonly struct Asn1Any : IEquatable<Asn1Any>
 {
+    /// <summary>Returns the tag and complete TLV length without dumping bytes.</summary>
+    public override string ToString() => _encoded.IsEmpty
+        ? "<empty>"
+        : Tag + " (" + _encoded.Length.ToString(System.Globalization.CultureInfo.InvariantCulture) + " bytes)";
+
     private readonly ReadOnlyMemory<byte> _encoded;
     private readonly ReadOnlyMemory<byte> _contents;
 

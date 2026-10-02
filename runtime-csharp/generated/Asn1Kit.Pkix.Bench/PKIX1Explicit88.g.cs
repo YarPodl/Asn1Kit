@@ -398,6 +398,19 @@ public sealed class X520name
         Value = bmpString,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            X520nameKind.TeletexString => Asn1Formatting.Format(Value),
+            X520nameKind.PrintableString => Asn1Formatting.Format(Value),
+            X520nameKind.UniversalString => Asn1Formatting.Format(Value),
+            X520nameKind.Utf8String => Asn1Formatting.Format(Value),
+            X520nameKind.BmpString => Asn1Formatting.Format(Value),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -498,6 +511,19 @@ public sealed class X520CommonName
         Kind = X520CommonNameKind.BmpString,
         Value = bmpString,
     };
+
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            X520CommonNameKind.TeletexString => Asn1Formatting.Format(Value),
+            X520CommonNameKind.PrintableString => Asn1Formatting.Format(Value),
+            X520CommonNameKind.UniversalString => Asn1Formatting.Format(Value),
+            X520CommonNameKind.Utf8String => Asn1Formatting.Format(Value),
+            X520CommonNameKind.BmpString => Asn1Formatting.Format(Value),
+            _ => "<unset>",
+        };
+    }
 
     public void Encode(Asn1Writer writer)
     {
@@ -600,6 +626,19 @@ public sealed class X520LocalityName
         Value = bmpString,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            X520LocalityNameKind.TeletexString => Asn1Formatting.Format(Value),
+            X520LocalityNameKind.PrintableString => Asn1Formatting.Format(Value),
+            X520LocalityNameKind.UniversalString => Asn1Formatting.Format(Value),
+            X520LocalityNameKind.Utf8String => Asn1Formatting.Format(Value),
+            X520LocalityNameKind.BmpString => Asn1Formatting.Format(Value),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -700,6 +739,19 @@ public sealed class X520StateOrProvinceName
         Kind = X520StateOrProvinceNameKind.BmpString,
         Value = bmpString,
     };
+
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            X520StateOrProvinceNameKind.TeletexString => Asn1Formatting.Format(Value),
+            X520StateOrProvinceNameKind.PrintableString => Asn1Formatting.Format(Value),
+            X520StateOrProvinceNameKind.UniversalString => Asn1Formatting.Format(Value),
+            X520StateOrProvinceNameKind.Utf8String => Asn1Formatting.Format(Value),
+            X520StateOrProvinceNameKind.BmpString => Asn1Formatting.Format(Value),
+            _ => "<unset>",
+        };
+    }
 
     public void Encode(Asn1Writer writer)
     {
@@ -802,6 +854,19 @@ public sealed class X520OrganizationName
         Value = bmpString,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            X520OrganizationNameKind.TeletexString => Asn1Formatting.Format(Value),
+            X520OrganizationNameKind.PrintableString => Asn1Formatting.Format(Value),
+            X520OrganizationNameKind.UniversalString => Asn1Formatting.Format(Value),
+            X520OrganizationNameKind.Utf8String => Asn1Formatting.Format(Value),
+            X520OrganizationNameKind.BmpString => Asn1Formatting.Format(Value),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -902,6 +967,19 @@ public sealed class X520OrganizationalUnitName
         Kind = X520OrganizationalUnitNameKind.BmpString,
         Value = bmpString,
     };
+
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            X520OrganizationalUnitNameKind.TeletexString => Asn1Formatting.Format(Value),
+            X520OrganizationalUnitNameKind.PrintableString => Asn1Formatting.Format(Value),
+            X520OrganizationalUnitNameKind.UniversalString => Asn1Formatting.Format(Value),
+            X520OrganizationalUnitNameKind.Utf8String => Asn1Formatting.Format(Value),
+            X520OrganizationalUnitNameKind.BmpString => Asn1Formatting.Format(Value),
+            _ => "<unset>",
+        };
+    }
 
     public void Encode(Asn1Writer writer)
     {
@@ -1004,6 +1082,19 @@ public sealed class X520Title
         Value = bmpString,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            X520TitleKind.TeletexString => Asn1Formatting.Format(Value),
+            X520TitleKind.PrintableString => Asn1Formatting.Format(Value),
+            X520TitleKind.UniversalString => Asn1Formatting.Format(Value),
+            X520TitleKind.Utf8String => Asn1Formatting.Format(Value),
+            X520TitleKind.BmpString => Asn1Formatting.Format(Value),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -1105,6 +1196,19 @@ public sealed class X520Pseudonym
         Value = bmpString,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            X520PseudonymKind.TeletexString => Asn1Formatting.Format(Value),
+            X520PseudonymKind.PrintableString => Asn1Formatting.Format(Value),
+            X520PseudonymKind.UniversalString => Asn1Formatting.Format(Value),
+            X520PseudonymKind.Utf8String => Asn1Formatting.Format(Value),
+            X520PseudonymKind.BmpString => Asn1Formatting.Format(Value),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -1205,6 +1309,19 @@ public sealed class DirectoryString
         Kind = DirectoryStringKind.BmpString,
         Value = bmpString,
     };
+
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            DirectoryStringKind.TeletexString => Asn1Formatting.Format(Value),
+            DirectoryStringKind.PrintableString => Asn1Formatting.Format(Value),
+            DirectoryStringKind.UniversalString => Asn1Formatting.Format(Value),
+            DirectoryStringKind.Utf8String => Asn1Formatting.Format(Value),
+            DirectoryStringKind.BmpString => Asn1Formatting.Format(Value),
+            _ => "<unset>",
+        };
+    }
 
     public void Encode(Asn1Writer writer)
     {
@@ -1493,6 +1610,16 @@ public sealed class Time
         Kind = TimeKind.GeneralTime,
         Value = generalTime,
     };
+
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            TimeKind.UtcTime => Asn1Formatting.Format(Value),
+            TimeKind.GeneralTime => Asn1Formatting.Format(Value),
+            _ => "<unset>",
+        };
+    }
 
     public void Encode(Asn1Writer writer)
     {
@@ -1972,6 +2099,16 @@ public sealed class CountryName
         Value = iso3166Alpha2Code,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            CountryNameKind.X121DccCode => Asn1Formatting.Format(Value),
+            CountryNameKind.Iso3166Alpha2Code => Asn1Formatting.Format(Value),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -2028,6 +2165,16 @@ public sealed class AdministrationDomainName
         Value = printable,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            AdministrationDomainNameKind.Numeric => Asn1Formatting.Format(Value),
+            AdministrationDomainNameKind.Printable => Asn1Formatting.Format(Value),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -2083,6 +2230,16 @@ public sealed class PrivateDomainName
         Kind = PrivateDomainNameKind.Printable,
         Value = printable,
     };
+
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            PrivateDomainNameKind.Numeric => Asn1Formatting.Format(Value),
+            PrivateDomainNameKind.Printable => Asn1Formatting.Format(Value),
+            _ => "<unset>",
+        };
+    }
 
     public void Encode(Asn1Writer writer)
     {
@@ -2361,6 +2518,16 @@ public sealed class PhysicalDeliveryCountryName
         Value = iso3166Alpha2Code,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            PhysicalDeliveryCountryNameKind.X121DccCode => Asn1Formatting.Format(Value),
+            PhysicalDeliveryCountryNameKind.Iso3166Alpha2Code => Asn1Formatting.Format(Value),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -2416,6 +2583,16 @@ public sealed class PostalCode
         Kind = PostalCodeKind.PrintableCode,
         Value = printableCode,
     };
+
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            PostalCodeKind.NumericCode => Asn1Formatting.Format(Value),
+            PostalCodeKind.PrintableCode => Asn1Formatting.Format(Value),
+            _ => "<unset>",
+        };
+    }
 
     public void Encode(Asn1Writer writer)
     {
@@ -2584,6 +2761,16 @@ public sealed class ExtendedNetworkAddress
         Kind = ExtendedNetworkAddressKind.PsapAddress,
         PsapAddress = psapAddress,
     };
+
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            ExtendedNetworkAddressKind.E1634Address => Asn1Formatting.Format(E1634Address),
+            ExtendedNetworkAddressKind.PsapAddress => Asn1Formatting.Format(PsapAddress),
+            _ => "<unset>",
+        };
+    }
 
     public void Encode(Asn1Writer writer)
     {
@@ -2822,6 +3009,22 @@ public sealed class AttributeTypeAndValue_Value
         Unknown = value,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            AttributeTypeAndValue_ValueKind.TeletexString => Asn1Formatting.Format(Value),
+            AttributeTypeAndValue_ValueKind.PrintableString => Asn1Formatting.Format(Value),
+            AttributeTypeAndValue_ValueKind.UniversalString => Asn1Formatting.Format(Value),
+            AttributeTypeAndValue_ValueKind.Utf8String => Asn1Formatting.Format(Value),
+            AttributeTypeAndValue_ValueKind.BmpString => Asn1Formatting.Format(Value),
+            AttributeTypeAndValue_ValueKind.Printable => Asn1Formatting.Format(Value),
+            AttributeTypeAndValue_ValueKind.Ia5 => Asn1Formatting.Format(Value),
+            AttributeTypeAndValue_ValueKind.Unknown => Asn1Formatting.Format(Unknown),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -2999,6 +3202,13 @@ public sealed class AlgorithmIdentifier_Parameters
     {
         Unknown = value,
     };
+
+    public override string ToString()
+    {
+        if (Null is not null) return Asn1Formatting.Format(Null);
+        if (Unknown is not null) return Asn1Formatting.Format(Unknown);
+        return "<unset>";
+    }
 
     public void Encode(Asn1Writer writer)
     {

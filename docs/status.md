@@ -41,6 +41,8 @@
 
 ## Runtime BER/DER
 
+Runtime-значения и обёртки поддерживают полезный `ToString()`: числа и время независимы от культуры, бинарные данные показывают только длину, ANY — тег и длину TLV. Форматирование `Asn1Lazy<T>` не запускает декодирование. Сгенерированные CHOICE и ANY DEFINED BY с bindings показывают выбранное значение без имени альтернативы, используя существующие `Kind` и свойства без дополнительного состояния. Контракт описан в [runtime-api.md](../runtime-csharp/docs/runtime-api.md).
+
 Полный инвентарь `Write*` / `Read*` и ownership — [runtime-api.md](../runtime-csharp/docs/runtime-api.md). Hex-матрица — [ber-der/](../runtime-csharp/fixtures/ber-der/); oracle BCL — `PrimitiveOracleTests`.
 
 **Запись** всегда канонический DER. **Чтение** — soft-profile ([decisions.md](decisions.md), инвентарь опций — [runtime-api.md](../runtime-csharp/docs/runtime-api.md)):

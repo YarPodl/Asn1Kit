@@ -739,6 +739,18 @@ public sealed class DisplayText
         Value = utf8String,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            DisplayTextKind.Ia5String => Asn1Formatting.Format(Value),
+            DisplayTextKind.VisibleString => Asn1Formatting.Format(Value),
+            DisplayTextKind.BmpString => Asn1Formatting.Format(Value),
+            DisplayTextKind.Utf8String => Asn1Formatting.Format(Value),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -903,6 +915,23 @@ public sealed class GeneralName
         Kind = GeneralNameKind.RegisteredID,
         RegisteredID = registeredID,
     };
+
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            GeneralNameKind.OtherName => Asn1Formatting.Format(OtherName),
+            GeneralNameKind.Rfc822Name => Asn1Formatting.Format(Rfc822Name),
+            GeneralNameKind.DNSName => Asn1Formatting.Format(DNSName),
+            GeneralNameKind.X400Address => Asn1Formatting.Format(X400Address),
+            GeneralNameKind.DirectoryName => Asn1Formatting.Format(DirectoryName),
+            GeneralNameKind.EdiPartyName => Asn1Formatting.Format(EdiPartyName),
+            GeneralNameKind.UniformResourceIdentifier => Asn1Formatting.Format(UniformResourceIdentifier),
+            GeneralNameKind.IPAddress => Asn1Formatting.Format(IPAddress),
+            GeneralNameKind.RegisteredID => Asn1Formatting.Format(RegisteredID),
+            _ => "<unset>",
+        };
+    }
 
     public void Encode(Asn1Writer writer)
     {
@@ -1385,6 +1414,16 @@ public sealed class DistributionPointName
         NameRelativeToCRLIssuer = nameRelativeToCRLIssuer,
     };
 
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            DistributionPointNameKind.FullName => Asn1Formatting.Format(FullName),
+            DistributionPointNameKind.NameRelativeToCRLIssuer => Asn1Formatting.Format(NameRelativeToCRLIssuer),
+            _ => "<unset>",
+        };
+    }
+
     public void Encode(Asn1Writer writer)
     {
         switch (Kind)
@@ -1676,6 +1715,14 @@ public sealed class PolicyQualifierInfo_Qualifier
         Unknown = value,
     };
 
+    public override string ToString()
+    {
+        if (CPSuri is not null) return Asn1Formatting.Format(CPSuri);
+        if (UserNotice is not null) return Asn1Formatting.Format(UserNotice);
+        if (Unknown is not null) return Asn1Formatting.Format(Unknown);
+        return "<unset>";
+    }
+
     public void Encode(Asn1Writer writer)
     {
         if (CPSuri != null)
@@ -1782,6 +1829,18 @@ public sealed class AnotherName_Value
         Kind = AnotherName_ValueKind.Unknown,
         Unknown = value,
     };
+
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            AnotherName_ValueKind.XmppAddr => Asn1Formatting.Format(Value),
+            AnotherName_ValueKind.SrvName => Asn1Formatting.Format(Value),
+            AnotherName_ValueKind.SmtpUtf8Mailbox => Asn1Formatting.Format(Value),
+            AnotherName_ValueKind.Unknown => Asn1Formatting.Format(Unknown),
+            _ => "<unset>",
+        };
+    }
 
     public void Encode(Asn1Writer writer)
     {

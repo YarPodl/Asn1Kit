@@ -3,6 +3,9 @@ namespace Asn1Kit.Runtime;
 /// <summary>ASN.1 NULL value (universal tag 5, empty contents).</summary>
 public readonly struct Asn1Null : IEquatable<Asn1Null>
 {
+    /// <summary>Returns the ASN.1 NULL literal.</summary>
+    public override string ToString() => "NULL";
+
     /// <summary>Gets the <c>Value</c> value.</summary>
     public static Asn1Null Value => default;
 

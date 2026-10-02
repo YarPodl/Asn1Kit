@@ -641,6 +641,20 @@ public sealed class CSharpBackend : ILanguageBackend
             sb.AppendLine();
         }
 
+        sb.AppendLine("    public override string ToString()");
+        sb.AppendLine("    {");
+        sb.AppendLine("        return Kind switch");
+        sb.AppendLine("        {");
+        foreach (var field in type.Components)
+        {
+            var prop = PropertyName(field, typeName);
+            var access = homogeneousCsType is not null ? "Value" : prop;
+            sb.AppendLine($"            {typeName}Kind.{prop} => Asn1Formatting.Format({access}),");
+        }
+        sb.AppendLine("            _ => \"<unset>\",");
+        sb.AppendLine("        };");
+        sb.AppendLine("    }");
+        sb.AppendLine();
         sb.AppendLine("    public void Encode(Asn1Writer writer)");
         sb.AppendLine("    {");
         sb.AppendLine("        switch (Kind)");
@@ -2074,6 +2088,32 @@ public sealed class CSharpBackend : ILanguageBackend
         }
         sb.AppendLine("        Unknown = value,");
         sb.AppendLine("    };");
+        sb.AppendLine();
+
+        sb.AppendLine("    public override string ToString()");
+        sb.AppendLine("    {");
+        if (collapseSameClrType)
+        {
+            sb.AppendLine("        return Kind switch");
+            sb.AppendLine("        {");
+            foreach (var alt in alts)
+            {
+                sb.AppendLine($"            {typeName}Kind.{alt.PropName} => Asn1Formatting.Format({alt.ValuePropName}),");
+            }
+            sb.AppendLine($"            {typeName}Kind.Unknown => Asn1Formatting.Format(Unknown),");
+            sb.AppendLine("            _ => \"<unset>\",");
+            sb.AppendLine("        };");
+        }
+        else
+        {
+            foreach (var alt in alts)
+            {
+                sb.AppendLine($"        if ({alt.PropName} is not null) return Asn1Formatting.Format({alt.PropName});");
+            }
+            sb.AppendLine("        if (Unknown is not null) return Asn1Formatting.Format(Unknown);");
+            sb.AppendLine("        return \"<unset>\";");
+        }
+        sb.AppendLine("    }");
         sb.AppendLine();
 
         sb.AppendLine("    public void Encode(Asn1Writer writer)");

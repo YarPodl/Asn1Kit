@@ -6,6 +6,11 @@ namespace Asn1Kit.Runtime;
 /// </summary>
 public sealed class Asn1Lazy<T>
 {
+    /// <summary>Formats the stored value without triggering deferred decoding.</summary>
+    public override string ToString() => _isMaterialized
+        ? Asn1Formatting.Format(_value)
+        : "<not decoded: " + _encoded.Length.ToString(System.Globalization.CultureInfo.InvariantCulture) + " bytes>";
+
     private readonly ReadOnlyMemory<byte> _encoded;
     private readonly Asn1Encoding _encoding;
     private readonly Asn1ReaderOptions _options;

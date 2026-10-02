@@ -6,6 +6,9 @@ namespace Asn1Kit.Runtime;
 public readonly struct Asn1Value<T>
     where T : notnull
 {
+    /// <summary>Formats the decoded value, or reports an unset default reference value.</summary>
+    public override string ToString() => Value is null ? "<unset>" : Asn1Formatting.Format(Value);
+
     /// <summary>Creates an application-provided value with no original encoding.</summary>
     public Asn1Value(T value)
     {
