@@ -251,6 +251,9 @@ public sealed class IrOpenTypeBinding
     /// <summary>Dotted OID or decimal INTEGER string matching the DEFINED BY sibling value.</summary>
     public string Key { get; set; } = "";
 
+    /// <summary>Optional semantic alternative name from an information object or overlay.</summary>
+    public string? Name { get; set; }
+
     public TypeExpr Type { get; set; } = null!;
 }
 

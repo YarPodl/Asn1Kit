@@ -71,6 +71,7 @@
       "required": ["key", "type"],
       "properties": {
         "key": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
         "type": { "$ref": "#/$defs/typeExpr" }
       }
     },

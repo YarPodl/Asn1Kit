@@ -1009,7 +1009,7 @@ public sealed class GeneralName
 public sealed class AnotherName
 {
     public Asn1Oid TypeId { get; set; }
-    public Asn1Any Value { get; set; }
+    public AnotherName_Value Value { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1020,7 +1020,7 @@ public sealed class AnotherName
             writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, TypeId);
             using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
-                writer.WriteAny(Value);
+                Value.Encode(writer);
             }
         }
     }
@@ -1035,7 +1035,7 @@ public sealed class AnotherName
             value.TypeId = reader.ReadOid(Asn1Tag.ObjectIdentifier);
             using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
-                value.Value = reader.ReadAny();
+                value.Value = AnotherName_Value.Decode(reader, value.TypeId);
                 reader.ThrowIfNotEmpty();
             }
             reader.ThrowIfNotEmpty();
@@ -1736,6 +1736,138 @@ public sealed class PolicyQualifierInfo_Qualifier
                 if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
                 {
                     return FromUserNotice(Asn1Kit.Pkix.UserNotice.Decode(reader, expectedTag.Value));
+                }
+            }
+            return FromUnknown(reader.ReadAny());
+        }
+        else {
+            return FromUnknown(reader.ReadAny());
+        }
+    }
+}
+
+public enum AnotherName_ValueKind
+{
+    None,
+    XmppAddr,
+    SrvName,
+    SmtpUtf8Mailbox,
+    Unknown,
+}
+
+public sealed class AnotherName_Value
+{
+    public AnotherName_ValueKind Kind { get; private set; }
+    public string? Value { get; private set; }
+    public Asn1Any? Unknown { get; private set; }
+
+    public static AnotherName_Value FromXmppAddr(string xmppAddr) => new AnotherName_Value
+    {
+        Kind = AnotherName_ValueKind.XmppAddr,
+        Value = xmppAddr,
+    };
+
+    public static AnotherName_Value FromSrvName(string srvName) => new AnotherName_Value
+    {
+        Kind = AnotherName_ValueKind.SrvName,
+        Value = srvName,
+    };
+
+    public static AnotherName_Value FromSmtpUtf8Mailbox(string smtpUtf8Mailbox) => new AnotherName_Value
+    {
+        Kind = AnotherName_ValueKind.SmtpUtf8Mailbox,
+        Value = smtpUtf8Mailbox,
+    };
+
+    public static AnotherName_Value FromUnknown(Asn1Any value) => new AnotherName_Value
+    {
+        Kind = AnotherName_ValueKind.Unknown,
+        Unknown = value,
+    };
+
+    public void Encode(Asn1Writer writer)
+    {
+        switch (Kind)
+        {
+            case AnotherName_ValueKind.XmppAddr:
+                writer.WriteString(Asn1Tag.Utf8String, Value!, Asn1StringForm.Utf8);
+                break;
+            case AnotherName_ValueKind.SrvName:
+                writer.WriteString(Asn1Tag.Ia5String, Value!, Asn1StringForm.Ia5);
+                break;
+            case AnotherName_ValueKind.SmtpUtf8Mailbox:
+                writer.WriteString(Asn1Tag.Utf8String, Value!, Asn1StringForm.Utf8);
+                break;
+            case AnotherName_ValueKind.Unknown:
+                if (Unknown is null) throw new Asn1Exception("Open type has no alternative.");
+                writer.WriteAny(Unknown.Value);
+                break;
+            default: throw new Asn1Exception("Open type has no alternative.");
+        }
+    }
+
+    private static readonly Asn1Oid Oid_1_3_6_1_5_5_7_8_5 = Asn1Oid.Parse("1.3.6.1.5.5.7.8.5");
+    private static readonly Asn1Oid Oid_1_3_6_1_5_5_7_8_7 = Asn1Oid.Parse("1.3.6.1.5.5.7.8.7");
+    private static readonly Asn1Oid Oid_1_3_6_1_5_5_7_8_9 = Asn1Oid.Parse("1.3.6.1.5.5.7.8.9");
+
+    public static AnotherName_Value Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
+        Decode(reader, definedByKey, expectedTag: null);
+
+    public static AnotherName_Value Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>
+        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
+
+    private static AnotherName_Value Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
+    {
+        if (definedByKey.Equals(Oid_1_3_6_1_5_5_7_8_5))
+        {
+            if (expectedTag is null)
+            {
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
+                {
+                    return FromXmppAddr(reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8));
+                }
+            }
+            else
+            {
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
+                {
+                    return FromXmppAddr(reader.ReadString(expectedTag.Value, Asn1StringForm.Utf8));
+                }
+            }
+            return FromUnknown(reader.ReadAny());
+        }
+        else if (definedByKey.Equals(Oid_1_3_6_1_5_5_7_8_7))
+        {
+            if (expectedTag is null)
+            {
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Ia5String))
+                {
+                    return FromSrvName(reader.ReadString(Asn1Tag.Ia5String, Asn1StringForm.Ia5));
+                }
+            }
+            else
+            {
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
+                {
+                    return FromSrvName(reader.ReadString(expectedTag.Value, Asn1StringForm.Ia5));
+                }
+            }
+            return FromUnknown(reader.ReadAny());
+        }
+        else if (definedByKey.Equals(Oid_1_3_6_1_5_5_7_8_9))
+        {
+            if (expectedTag is null)
+            {
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
+                {
+                    return FromSmtpUtf8Mailbox(reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8));
+                }
+            }
+            else
+            {
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
+                {
+                    return FromSmtpUtf8Mailbox(reader.ReadString(expectedTag.Value, Asn1StringForm.Utf8));
                 }
             }
             return FromUnknown(reader.ReadAny());

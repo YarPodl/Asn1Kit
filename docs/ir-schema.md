@@ -37,7 +37,7 @@
 - `bitString` — опционально `namedBits: [{ name, value }]`
 - `string` — обязательно `stringType`: `utf8` \| `printable` \| `teletex` \| `t61` \| `ia5` \| `numeric` \| `visible` \| `bmp` \| `universal` \| `general` \| `graphic` \| `videotex`
 - `time` — обязательно `timeType`: `utc` \| `generalized`; опционально `fractionDigits` `0…7` (только `generalized`; отсутствие = 3 при записи)
-- `any` — опционально `definedBy` (имя sibling-компонента); опционально `bindings: [{ key, type }]` — таблица open-type (ключ — dotted OID или десятичный INTEGER); заполняется overlay после compile, не парсером ASN.1 1988. C# при `bindings` эмитит `Owner_Field` с `From…`/`Unknown` (без enum `Kind`); `options.openType.mismatch`: `soft` \| `strict` (default `soft`).
+- `any` — опционально `definedBy` (имя sibling-компонента); опционально `bindings: [{ key, name?, type }]` — таблица open-type (ключ — dotted OID или десятичный INTEGER, `name` задаёт семантическое имя альтернативы); заполняется overlay после compile, не парсером ASN.1 1988. C# при `bindings` эмитит `Owner_Field` с `From…`/`Unknown`. На каждый различный CLR-тип создаётся не более одного свойства; если несколько семантических альтернатив имеют один CLR-тип, соседний `Owner_FieldKind` сохраняет выбранную ASN.1-альтернативу. `options.openType.mismatch`: `soft` \| `strict` (default `soft`).
 - `sequence` / `set` / `choice` — `components[]`, опционально `extensible`
 - `sequenceOf` / `setOf` — `element`
 - `ref` — `name`, опционально `module`
@@ -108,6 +108,22 @@
 | `options.lazy` | поле / тип / модуль | `true` — отложенный разбор SEQUENCE/SET и SEQUENCE OF/SET OF (C#: `Asn1Lazy<T>` / `Asn1Lazy<T[]>`). Разрешение: component → TypeExpr → typedef → module; default `false`. |
 | `options.retainEncoded` | поле / тип / модуль | `true` — eager-разбор SEQUENCE/SET/OF с сохранением исходного полного TLV для хеширования или проверки подписи (C#: `Asn1Value<T>` / `Asn1Value<T[]>`). Encode всегда строится из текущего `Value`. Игнорируется, если `lazy` уже включён. Та же цепочка разрешения, что у `lazy`; default `false`. |
 | `options.csharp.valueType` | typedef SEQUENCE/SET | `true` — эмит `struct` вместо `sealed class`. |
+
+Sidecar open-type bindings (CLI `--bindings`, API `OpenTypeBindings`) адресует поле как
+`Module.Type.field`. Для прямого `ANY DEFINED BY` значение остаётся массивом bindings. Если поле
+ссылается на typedef вида `AttributeValue ::= ANY`, объектная форма локально раскрывает alias и
+задаёт sibling-дискриминатор, не изменяя typedef и остальные его использования:
+
+```json
+{
+  "Module.AttributeTypeAndValue.value": {
+    "definedBy": "type",
+    "bindings": [
+      { "key": "2.5.4.3", "type": { "kind": "string", "stringType": "utf8" } }
+    ]
+  }
+}
+```
 
 Sidecar options-patch (CLI `--patch`, API `IrOptionsPatch`): JSON `{ "modules": { "<Module>": { … } }, "fields": { "<Module>.<Type>.<field>": { … } } }` — deep-merge в `options`. Неизвестный module/type/field → ошибка. Пример: [cms-2004-bench.patch.json](../compiler/fixtures/ir/cms-2004-bench.patch.json).
 

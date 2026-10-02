@@ -5,13 +5,16 @@ namespace Asn1Kit.Tests;
 
 public sealed class PkixExplicit88Tests
 {
+    private static readonly string BindingsPath =
+        "compiler/fixtures/opentype/pkix-bindings.json";
+
     [Fact]
     public void CompilesAndMatchesGoldenIr()
     {
         var asnPath = TestData.RepoPath("compiler/fixtures/asn1/pkix1-explicit88.asn");
         var goldenPath = TestData.RepoPath("compiler/fixtures/ir/pkix1-explicit88.json");
         var document = new Asn1Compiler().CompileFiles(new[] { asnPath });
-        OpenTypeBindings.ApplyFile(document, TestData.RepoPath("compiler/fixtures/opentype/pkix-bindings.json"));
+        OpenTypeBindings.ApplyFile(document, TestData.RepoPath(BindingsPath));
         var actual = IrSerializer.ToJson(document);
         IrSerializer.ValidateSchema(actual);
 
@@ -19,6 +22,29 @@ public sealed class PkixExplicit88Tests
         IrSerializer.ValidateSchema(golden);
         var expected = IrSerializer.ToJson(IrSerializer.FromJson(golden));
         Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void DnAttributeValueBindingsCoverRfc5280NamingAttributes()
+    {
+        var document = new Asn1Compiler().CompileFiles(new[]
+        {
+            TestData.RepoPath("compiler/fixtures/asn1/pkix1-explicit88.asn")
+        });
+        OpenTypeBindings.ApplyFile(document, TestData.RepoPath(BindingsPath));
+
+        var module = Assert.Single(document.Modules);
+        var atv = Assert.IsType<SequenceType>(
+            module.Types.Single(type => type.Name == "AttributeTypeAndValue").Type);
+        var value = Assert.IsType<AnyType>(atv.Components.Single(component => component.Name == "value").Type);
+        Assert.Equal("type", value.DefinedBy);
+        Assert.Equal(17, value.Bindings!.Count);
+        Assert.Equal(12, value.Bindings.Count(binding =>
+            binding.Type is RefType { Name: "DirectoryString" }));
+        Assert.Equal(3, value.Bindings.Count(binding =>
+            binding.Type is StringType { Form: StringTypes.Printable }));
+        Assert.Equal(2, value.Bindings.Count(binding =>
+            binding.Type is StringType { Form: StringTypes.Ia5 }));
     }
 
     [Fact]

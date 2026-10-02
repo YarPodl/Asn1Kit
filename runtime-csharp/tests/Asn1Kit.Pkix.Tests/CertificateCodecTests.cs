@@ -72,12 +72,31 @@ public sealed class CertificateCodecTests
 
     private static void AssertDn(List<ExpectedDnAttribute> expected, AttributeTypeAndValue[][] actual)
     {
+        var actualAttributes = actual.SelectMany(rdn => rdn).ToArray();
         var flat = PkixFixtures.FlattenName(actual);
         Assert.Equal(expected.Count, flat.Count);
         for (var i = 0; i < expected.Count; i++)
         {
             Assert.Equal(expected[i].Oid, flat[i].Oid);
             Assert.Equal(expected[i].Value, flat[i].Value);
+            Assert.Null(actualAttributes[i].Value.Unknown);
+            switch (expected[i].Oid)
+            {
+                case "2.5.4.3":
+                    Assert.Equal(AttributeTypeAndValue_ValueKind.DirectoryString, actualAttributes[i].Value.Kind);
+                    Assert.NotNull(actualAttributes[i].Value.DirectoryString);
+                    break;
+                case "2.5.4.6":
+                    Assert.Equal(AttributeTypeAndValue_ValueKind.Printable, actualAttributes[i].Value.Kind);
+                    Assert.NotNull(actualAttributes[i].Value.StringValue);
+                    break;
+                case "2.5.4.10":
+                    Assert.Equal(AttributeTypeAndValue_ValueKind.DirectoryString, actualAttributes[i].Value.Kind);
+                    Assert.NotNull(actualAttributes[i].Value.DirectoryString);
+                    break;
+                default:
+                    throw new Xunit.Sdk.XunitException($"Unexpected test-fixture DN OID '{expected[i].Oid}'.");
+            }
         }
     }
 }

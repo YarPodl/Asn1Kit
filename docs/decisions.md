@@ -94,7 +94,8 @@
 
 **Последствие.**
 - Без `bindings`: runtime хранит полный TLV (`Asn1Any.EncodedMemory`); поле `definedBy` в IR информационное. `WriteAny` пишет байты as-is (`WriteRaw`); IMPLICIT-перегрузка снимает value-октеты и собирает новый TLV.
-- С `bindings` (sidecar `Module.Type.field` → `{ key, type }[]`): C# эмитит тип `Owner_Field` — фабрики `From…` / `FromUnknown` и nullable-свойства на альтернативу (дискриминант — какое свойство задано; отдельного `Kind` нет); ASN.1 NULL → `Asn1Null`.
+- С `bindings` (sidecar `Module.Type.field` → `{ key, name?, type }[]`): C# эмитит тип `Owner_Field` — фабрики `From…` / `FromUnknown` и не более одного nullable-свойства на каждый различный CLR-тип. Если несколько семантических альтернатив имеют один CLR-тип, рядом эмитится `Owner_FieldKind`: фабрика и decode выставляют `Kind`, а encode по нему выбирает исходный ASN.1 wire-тип. При единственной CLR-группе общее свойство называется `Value`; при смешанных типах повторяющаяся группа получает имя по CLR-типу (`StringValue` и т.п.). Если повторяющихся CLR-типов нет, отдельный enum не нужен, а дискриминантом остаётся заданное свойство. Опциональный `name` задаёт имя фабрики и элемента enum; ASN.1 NULL → `Asn1Null`.
+- В PKIX DN overlay специализированные X.520 string typedef проецируются на `DirectoryString`, `Printable` и `Ia5`. Последние две альтернативы используют общее CLR-свойство `StringValue`, а `Kind` различает их wire-форму; `DirectoryString` сохраняет собственные `Kind` + `Value`. Исходные X.520 typedef остаются в модуле, а выбор компактных типов задаётся overlay для `AttributeTypeAndValue.value`.
 - Несовпадение **тега** TLV с ожидаемым для типа из таблицы: `options.openType.mismatch` = `soft` (default, → `Unknown`/`Asn1Any`) или `strict` (→ `Asn1Exception`). Содержимое при совпавшем теге разбирается обычным decode (ошибки длины и т.п. не глотаются). Неизвестный ключ всегда → `Unknown`.
 - RFC 5912 as published по-прежнему вне профиля (беклог 6c/6d).
 

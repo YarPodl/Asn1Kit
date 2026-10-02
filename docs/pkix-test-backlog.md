@@ -83,7 +83,7 @@
 | `GeneralName`: dNSName / rfc822 / URI | done |
 | `GeneralName`: iPAddress / registeredID (synthetic Formats.Asn1 hex) | done |
 | `GeneralName.directoryName` | deferred |
-| `GeneralName.otherName` → `AnotherName` | deferred |
+| `GeneralName.otherName` → `AnotherName` (XMPP, DNS SRV, SMTPUTF8; synthetic DER) | done |
 | Multi-valued RDN | deferred |
 | Escaped DN chars | deferred |
 | Минимальный `ORAddress` | deferred |

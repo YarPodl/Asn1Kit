@@ -878,6 +878,67 @@ END
     }
 
     [Fact]
+    public void GeneratedCSharp_OpenTypeBindings_CollapseSameClrTypeAndKeepSemanticKind()
+    {
+        const string asn = @"
+OpenNames DEFINITIONS EXPLICIT TAGS ::= BEGIN
+OpenName ::= SEQUENCE {
+  type OBJECT IDENTIFIER,
+  value ANY DEFINED BY type
+}
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        OpenTypeBindings.ApplyJson(document, @"{
+  ""OpenNames.OpenName.value"": [
+    { ""key"": ""1.2.3"", ""type"": { ""kind"": ""string"", ""stringType"": ""utf8"" } },
+    { ""key"": ""1.2.5"", ""type"": { ""kind"": ""string"", ""stringType"": ""utf8"" } },
+    { ""key"": ""1.2.4"", ""type"": { ""kind"": ""string"", ""stringType"": ""ia5"" } }
+  ]
+}");
+
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+        Assert.Contains("public enum OpenName_ValueKind", source);
+        Assert.Contains("public string? Value", source);
+        Assert.DoesNotContain("public string? Utf8", source);
+        Assert.DoesNotContain("public string? Ia5", source);
+        Assert.DoesNotContain("Utf82", source);
+
+        var assembly = CompileGenerated(source);
+        var openNameType = assembly.GetType("OpenNames.OpenName")!;
+        var valueType = assembly.GetType("OpenNames.OpenName_Value")!;
+
+        var utf8Der = new byte[]
+        {
+            0x30, 0x09,
+            0x06, 0x02, 0x2A, 0x05,
+            0x0C, 0x03, 0x41, 0x6E, 0x6E
+        };
+        var utf8 = openNameType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(utf8Der, Asn1Encoding.Der) })!;
+        var utf8Value = openNameType.GetProperty("Value")!.GetValue(utf8)!;
+        Assert.Equal("Utf8", valueType.GetProperty("Kind")!.GetValue(utf8Value)!.ToString());
+        Assert.Equal("Ann", valueType.GetProperty("Value")!.GetValue(utf8Value));
+
+        var ia5Der = new byte[]
+        {
+            0x30, 0x09,
+            0x06, 0x02, 0x2A, 0x04,
+            0x16, 0x03, 0x62, 0x6F, 0x62
+        };
+        var ia5 = openNameType.GetMethod("Decode", new[] { typeof(Asn1Reader) })!
+            .Invoke(null, new object[] { new Asn1Reader(ia5Der, Asn1Encoding.Der) })!;
+        var ia5Value = openNameType.GetProperty("Value")!.GetValue(ia5)!;
+        Assert.Equal("Ia5", valueType.GetProperty("Kind")!.GetValue(ia5Value)!.ToString());
+        Assert.Equal("bob", valueType.GetProperty("Value")!.GetValue(ia5Value));
+
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        openNameType.GetMethod("Encode", new[] { typeof(Asn1Writer) })!
+            .Invoke(ia5, new object[] { writer });
+        Assert.Equal(ia5Der, writer.Encode());
+    }
+
+    [Fact]
     public void GeneratedCSharp_CollapsesAliasesAndKeepsNamedBitStringFlags()
     {
         const string asn = @"

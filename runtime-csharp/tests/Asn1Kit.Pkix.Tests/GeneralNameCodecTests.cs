@@ -5,6 +5,37 @@ namespace Asn1Kit.Tests;
 
 public sealed class GeneralNameCodecTests
 {
+    [Theory]
+    [InlineData("a01106082b06010505070805a0050c03614062", "1.3.6.1.5.5.7.8.5", "xmpp", "a@b")]
+    [InlineData("a01106082b06010505070807a0051603737276", "1.3.6.1.5.5.7.8.7", "srv", "srv")]
+    [InlineData("a01206082b06010505070809a0060c04c3a94078", "1.3.6.1.5.5.7.8.9", "smtp", "é@x")]
+    public void OtherName_KnownIetfFormsDecodeTypedAndRoundTrip(
+        string hex,
+        string oid,
+        string form,
+        string expected)
+    {
+        var der = PkixFixtures.ParseHex(hex);
+        var name = GeneralName.Decode(new Asn1Reader(der, Asn1Encoding.Der));
+
+        Assert.Equal(GeneralNameKind.OtherName, name.Kind);
+        Assert.Equal(oid, name.OtherName!.TypeId.ToString());
+        Assert.Null(name.OtherName.Value.Unknown);
+        var expectedKind = form switch
+        {
+            "xmpp" => AnotherName_ValueKind.XmppAddr,
+            "srv" => AnotherName_ValueKind.SrvName,
+            "smtp" => AnotherName_ValueKind.SmtpUtf8Mailbox,
+            _ => throw new Xunit.Sdk.XunitException($"Unexpected otherName form '{form}'.")
+        };
+        Assert.Equal(expectedKind, name.OtherName.Value.Kind);
+        Assert.Equal(expected, name.OtherName.Value.Value);
+
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        name.Encode(writer);
+        Assert.Equal(hex, PkixFixtures.ToHex(writer.Encode()));
+    }
+
     [Fact]
     public void SyntheticGeneralNames_MatchExternalHexAndRoundTrip()
     {

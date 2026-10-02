@@ -69,7 +69,7 @@ DVCS codec-тесты покрывают request `message` / `messageImprint`, �
 ### Открыто
 
 1. Поддержка современных ASN.1. Open-type follow-up:
-   - **1a.** остальные PKIX ANY (`AnotherName`, `ExtensionAttribute`, DN `AttributeValue`) через overlay
+   - **1a.** остальные PKIX ANY через overlay: DN `AttributeValue` и `AnotherName` — готово; остаётся `ExtensionAttribute`
    - **1b.** curated `.asn` параметров алгоритмов из RFC 5912 (без `CLASS`) + bindings
    - **1c.** парсер/IR для `CLASS`, object sets, parameterized `AlgorithmIdentifier{…}`
 2. Пул массивов (constructed BER concat, DER SET OF sort)

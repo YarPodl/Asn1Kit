@@ -54,6 +54,23 @@ internal static class PkixFixtures
         return DirectoryString.Decode(new Asn1Reader(writer.Encode(), Asn1Encoding.Der)).Value;
     }
 
+    public static string ReadDirectoryString(AttributeTypeAndValue_Value value)
+    {
+        var typed = value.DirectoryString?.Value
+            ?? value.StringValue;
+        if (typed is not null)
+        {
+            return typed;
+        }
+
+        if (value.Unknown is not null)
+        {
+            return ReadDirectoryString(value.Unknown.Value);
+        }
+
+        throw new Xunit.Sdk.XunitException("DN attribute value has no alternative.");
+    }
+
     public static List<(string Oid, string Value)> FlattenName(AttributeTypeAndValue[][] name)
     {
         var result = new List<(string, string)>();

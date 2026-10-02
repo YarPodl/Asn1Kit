@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Asn1Kit.Codegen;
 using Asn1Kit.Ir;
@@ -1964,13 +1965,72 @@ public sealed class CSharpBackend : ILanguageBackend
     {
         var alts = BuildOpenTypeAlternatives(document, module, typeName, any);
         var soft = ResolveOpenTypeSoft(document, module, any);
+        var groups = alts
+            .GroupBy(alt => alt.CsType, StringComparer.Ordinal)
+            .Select(group => group.ToList())
+            .ToList();
+        var collapseSameClrType = groups.Any(group => group.Count > 1);
+
+        if (collapseSameClrType)
+        {
+            sb.AppendLine($"public enum {typeName}Kind");
+            sb.AppendLine("{");
+            sb.AppendLine("    None,");
+            foreach (var alt in alts)
+            {
+                sb.AppendLine($"    {alt.PropName},");
+            }
+
+            sb.AppendLine("    Unknown,");
+            sb.AppendLine("}");
+            sb.AppendLine();
+
+            var usedPropertyNames = new HashSet<string>(StringComparer.Ordinal)
+            {
+                "Kind",
+                "Unknown"
+            };
+            foreach (var group in groups)
+            {
+                var basePropertyName = groups.Count == 1
+                    ? "Value"
+                    : group.Count == 1
+                        ? group[0].PropName
+                        : OpenTypeClrGroupPropertyName(group[0].CsType);
+                var propertyName = basePropertyName;
+                var suffix = 2;
+                while (!usedPropertyNames.Add(propertyName))
+                {
+                    propertyName = basePropertyName + suffix;
+                    suffix++;
+                }
+
+                foreach (var alt in group)
+                {
+                    alt.ValuePropName = propertyName;
+                }
+            }
+        }
 
         sb.AppendLine($"public sealed class {typeName}");
         sb.AppendLine("{");
-        foreach (var alt in alts)
+        if (collapseSameClrType)
         {
-            var propType = CsType(document, module, typeName, alt.PropName, alt.Type, optional: true);
-            sb.AppendLine($"    public {propType} {alt.PropName} {{ get; private set; }}");
+            sb.AppendLine($"    public {typeName}Kind Kind {{ get; private set; }}");
+            foreach (var group in groups)
+            {
+                var alt = group[0];
+                var propType = CsType(document, module, typeName, alt.PropName, alt.Type, optional: true);
+                sb.AppendLine($"    public {propType} {alt.ValuePropName} {{ get; private set; }}");
+            }
+        }
+        else
+        {
+            foreach (var alt in alts)
+            {
+                var propType = CsType(document, module, typeName, alt.PropName, alt.Type, optional: true);
+                sb.AppendLine($"    public {propType} {alt.PropName} {{ get; private set; }}");
+            }
         }
 
         sb.AppendLine("    public Asn1Any? Unknown { get; private set; }");
@@ -1991,49 +2051,82 @@ public sealed class CSharpBackend : ILanguageBackend
             }
 
             sb.AppendLine("    {");
-            sb.AppendLine($"        {alt.PropName} = {param},");
+            if (collapseSameClrType)
+            {
+                sb.AppendLine($"        Kind = {typeName}Kind.{alt.PropName},");
+            }
+            sb.AppendLine($"        {(collapseSameClrType ? alt.ValuePropName : alt.PropName)} = {param},");
             sb.AppendLine("    };");
             sb.AppendLine();
         }
 
         sb.AppendLine($"    public static {typeName} FromUnknown(Asn1Any value) => new {typeName}");
         sb.AppendLine("    {");
+        if (collapseSameClrType)
+        {
+            sb.AppendLine($"        Kind = {typeName}Kind.Unknown,");
+        }
         sb.AppendLine("        Unknown = value,");
         sb.AppendLine("    };");
         sb.AppendLine();
 
         sb.AppendLine("    public void Encode(Asn1Writer writer)");
         sb.AppendLine("    {");
-        var first = true;
-        foreach (var alt in alts)
+        if (collapseSameClrType)
         {
-            var cond = first ? "if" : "else if";
-            first = false;
-            sb.AppendLine($"        {cond} ({alt.PropName} != null)");
+            sb.AppendLine("        switch (Kind)");
             sb.AppendLine("        {");
-            var propExpr = UnwrapAliases(document, module, alt.Type) is NullType
-                ? "Asn1Null.Value"
-                : IsValueOptionalWrapper(document, module, alt.Type)
-                    ? alt.PropName + ".Value"
-                    : alt.PropName + "!";
-            EmitEncodeValue(
-                sb,
-                document,
-                module,
-                typeName,
-                alt.PropName,
-                alt.Type,
-                "            ",
-                "writer",
-                propExpr);
+            foreach (var alt in alts)
+            {
+                sb.AppendLine($"            case {typeName}Kind.{alt.PropName}:");
+                EmitEncodeValue(
+                    sb,
+                    document,
+                    module,
+                    typeName,
+                    alt.PropName,
+                    alt.Type,
+                    "                ",
+                    "writer",
+                    OpenTypeEncodeExpr(document, module, alt.Type, alt.ValuePropName));
+                sb.AppendLine("                break;");
+            }
+
+            sb.AppendLine($"            case {typeName}Kind.Unknown:");
+            sb.AppendLine("                if (Unknown is null) throw new Asn1Exception(\"Open type has no alternative.\");");
+            sb.AppendLine("                writer.WriteAny(Unknown.Value);");
+            sb.AppendLine("                break;");
+            sb.AppendLine("            default: throw new Asn1Exception(\"Open type has no alternative.\");");
             sb.AppendLine("        }");
         }
+        else
+        {
+            var first = true;
+            foreach (var alt in alts)
+            {
+                var cond = first ? "if" : "else if";
+                first = false;
+                sb.AppendLine($"        {cond} ({alt.PropName} != null)");
+                sb.AppendLine("        {");
+                EmitEncodeValue(
+                    sb,
+                    document,
+                    module,
+                    typeName,
+                    alt.PropName,
+                    alt.Type,
+                    "            ",
+                    "writer",
+                    OpenTypeEncodeExpr(document, module, alt.Type, alt.PropName));
+                sb.AppendLine("        }");
+            }
 
-        sb.AppendLine($"        {(first ? "if" : "else if")} (Unknown != null)");
-        sb.AppendLine("        {");
-        sb.AppendLine("            writer.WriteAny(Unknown.Value);");
-        sb.AppendLine("        }");
-        sb.AppendLine("        else throw new Asn1Exception(\"Open type has no alternative.\");");
+            sb.AppendLine($"        {(first ? "if" : "else if")} (Unknown != null)");
+            sb.AppendLine("        {");
+            sb.AppendLine("            writer.WriteAny(Unknown.Value);");
+            sb.AppendLine("        }");
+            sb.AppendLine("        else throw new Asn1Exception(\"Open type has no alternative.\");");
+        }
         sb.AppendLine("    }");
         sb.AppendLine();
 
@@ -2262,7 +2355,9 @@ public sealed class CSharpBackend : ILanguageBackend
         public string PropName { get; init; } = "";
         public TypeExpr Type { get; init; } = null!;
         public List<string> Keys { get; init; } = new();
-        public string ClrTypeKey { get; init; } = "";
+        public string TypeKey { get; init; } = "";
+        public string CsType { get; init; } = "";
+        public string ValuePropName { get; set; } = "";
     }
 
     private List<OpenTypeAlternative> BuildOpenTypeAlternatives(
@@ -2272,18 +2367,21 @@ public sealed class CSharpBackend : ILanguageBackend
         AnyType any)
     {
         var alts = new List<OpenTypeAlternative>();
-        var usedNames = new HashSet<string>(StringComparer.Ordinal) { "Unknown" };
+        var usedNames = new HashSet<string>(StringComparer.Ordinal) { "None", "Unknown" };
         foreach (var binding in any.Bindings!)
         {
-            var clrKey = CsType(document, module, typeName, "binding", binding.Type, optional: false);
-            var existing = alts.FirstOrDefault(a => a.ClrTypeKey == clrKey);
+            var typeKey = (binding.Name ?? "") + "\n" +
+                JsonSerializer.Serialize(binding.Type, IrSerializer.JsonOptions);
+            var existing = alts.FirstOrDefault(a => a.TypeKey == typeKey);
             if (existing is not null)
             {
                 existing.Keys.Add(binding.Key);
                 continue;
             }
 
-            var propName = OpenTypePropName(document, module, binding.Type);
+            var propName = binding.Name is null
+                ? OpenTypePropName(document, module, binding.Type)
+                : SanitizeIdentifier(binding.Name);
             if (!usedNames.Add(propName))
             {
                 var suffix = 2;
@@ -2300,12 +2398,35 @@ public sealed class CSharpBackend : ILanguageBackend
                 PropName = propName,
                 Type = binding.Type,
                 Keys = new List<string> { binding.Key },
-                ClrTypeKey = clrKey
+                TypeKey = typeKey,
+                CsType = CsType(document, module, typeName, propName, binding.Type, optional: false),
+                ValuePropName = propName
             });
         }
 
         return alts;
     }
+
+    private static string OpenTypeClrGroupPropertyName(string csType) => csType switch
+    {
+        "string" => "StringValue",
+        "bool" => "BooleanValue",
+        "int" => "Int32Value",
+        "uint" => "UInt32Value",
+        "long" => "Int64Value",
+        "ulong" => "UInt64Value",
+        _ => SanitizeIdentifier(csType.Split('.').Last()) + "Value"
+    };
+
+    private string OpenTypeEncodeExpr(
+        IrDocument document,
+        IrModule module,
+        TypeExpr type,
+        string propertyName) => UnwrapAliases(document, module, type) is NullType
+        ? "Asn1Null.Value"
+        : IsValueOptionalWrapper(document, module, type)
+            ? propertyName + ".Value"
+            : propertyName + "!";
 
     private string OpenTypePropName(IrDocument document, IrModule module, TypeExpr type)
     {

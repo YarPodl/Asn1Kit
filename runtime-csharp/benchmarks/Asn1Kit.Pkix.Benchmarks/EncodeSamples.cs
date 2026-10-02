@@ -190,7 +190,7 @@ internal static class EncodeSamples
                 new AttributeTypeAndValue
                 {
                     Type = type.Clone(),
-                    Value = PrintableStringAny(value),
+                    Value = NameValue(type, value),
                 },
             };
         }
@@ -211,7 +211,7 @@ internal static class EncodeSamples
                 copy[j] = new AttributeTypeAndValue
                 {
                     Type = atv.Type.Clone(),
-                    Value = Asn1Any.CopyFrom(atv.Value.EncodedMemory.Span),
+                    Value = CloneNameValue(atv.Type, atv.Value),
                 };
             }
 
@@ -223,6 +223,39 @@ internal static class EncodeSamples
 
     private static Asn1Any PrintableStringAny(string value) =>
         Asn1Any.FromTagAndContents(Asn1Tag.PrintableString, Encoding.ASCII.GetBytes(value));
+
+    private static AttributeTypeAndValue_Value NameValue(Asn1Oid type, string value)
+    {
+        if (type.Equals(OidCommonName))
+        {
+            return AttributeTypeAndValue_Value.FromDirectoryString(
+                DirectoryString.FromPrintableString(value));
+        }
+
+        if (type.Equals(OidOrganizationName))
+        {
+            return AttributeTypeAndValue_Value.FromDirectoryString(
+                DirectoryString.FromPrintableString(value));
+        }
+
+        if (type.Equals(OidCountryName))
+        {
+            return AttributeTypeAndValue_Value.FromPrintable(value);
+        }
+
+        return AttributeTypeAndValue_Value.FromUnknown(PrintableStringAny(value));
+    }
+
+    private static AttributeTypeAndValue_Value CloneNameValue(
+        Asn1Oid type,
+        AttributeTypeAndValue_Value value)
+    {
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        value.Encode(writer);
+        return AttributeTypeAndValue_Value.Decode(
+            new Asn1Reader(writer.Encode(), Asn1Encoding.Der),
+            type);
+    }
 
     private static AlgorithmIdentifier Sha256WithRsa() => new()
     {

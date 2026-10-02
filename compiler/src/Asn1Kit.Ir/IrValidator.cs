@@ -222,6 +222,12 @@ public static class IrValidator
                                 $"ANY binding key '{binding.Key}' is duplicated in '{context}'.");
                         }
 
+                        if (binding.Name is not null && string.IsNullOrWhiteSpace(binding.Name))
+                        {
+                            throw new IrException(
+                                $"ANY binding '{binding.Key}' in '{context}' has an empty name.");
+                        }
+
                         if (binding.Type is null)
                         {
                             throw new IrException(

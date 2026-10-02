@@ -24,7 +24,8 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/as
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/ir/example.json --lang csharp -o ./generated
 
 # -O / --option path=value — override module.options (repeatable); same flag on compile
-# --bindings — open-type overlay (Module.Type.field → OID/INTEGER → type); repeatable
+# --bindings — open-type overlay (Module.Type.field → OID/INTEGER → type); объектная форма
+#              также задаёт definedBy для поля через alias ::= ANY; repeatable
 # --patch — options overlay (modules / fields Module.Type.field); repeatable; generate also has --ir-output
 # составные workflow регенерации
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-ir-goldens.ps1

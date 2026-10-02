@@ -322,8 +322,7 @@ public sealed class AttributeTypeAndValue
 {
     /// <summary>ASN.1 alias AttributeType ::= OBJECT IDENTIFIER.</summary>
     public Asn1Oid Type { get; set; }
-    /// <summary>ASN.1 alias AttributeValue ::= ANY.</summary>
-    public Asn1Any Value { get; set; }
+    public AttributeTypeAndValue_Value Value { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -332,7 +331,7 @@ public sealed class AttributeTypeAndValue
         using (writer.EnterSequence(tag))
         {
             writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, Type);
-            writer.WriteAny(Value);
+            Value.Encode(writer);
         }
     }
 
@@ -344,7 +343,7 @@ public sealed class AttributeTypeAndValue
         {
             var value = new AttributeTypeAndValue();
             value.Type = reader.ReadOid(Asn1Tag.ObjectIdentifier);
-            value.Value = reader.ReadAny();
+            value.Value = AttributeTypeAndValue_Value.Decode(reader, value.Type);
             reader.ThrowIfNotEmpty();
             return value;
         }
@@ -2739,6 +2738,135 @@ public sealed class TeletexDomainDefinedAttribute
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
+}
+
+public enum AttributeTypeAndValue_ValueKind
+{
+    None,
+    DirectoryString,
+    Printable,
+    Ia5,
+    Unknown,
+}
+
+public sealed class AttributeTypeAndValue_Value
+{
+    public AttributeTypeAndValue_ValueKind Kind { get; private set; }
+    public DirectoryString? DirectoryString { get; private set; }
+    public string? StringValue { get; private set; }
+    public Asn1Any? Unknown { get; private set; }
+
+    public static AttributeTypeAndValue_Value FromDirectoryString(DirectoryString directoryString) => new AttributeTypeAndValue_Value
+    {
+        Kind = AttributeTypeAndValue_ValueKind.DirectoryString,
+        DirectoryString = directoryString,
+    };
+
+    public static AttributeTypeAndValue_Value FromPrintable(string printable) => new AttributeTypeAndValue_Value
+    {
+        Kind = AttributeTypeAndValue_ValueKind.Printable,
+        StringValue = printable,
+    };
+
+    public static AttributeTypeAndValue_Value FromIa5(string ia5) => new AttributeTypeAndValue_Value
+    {
+        Kind = AttributeTypeAndValue_ValueKind.Ia5,
+        StringValue = ia5,
+    };
+
+    public static AttributeTypeAndValue_Value FromUnknown(Asn1Any value) => new AttributeTypeAndValue_Value
+    {
+        Kind = AttributeTypeAndValue_ValueKind.Unknown,
+        Unknown = value,
+    };
+
+    public void Encode(Asn1Writer writer)
+    {
+        switch (Kind)
+        {
+            case AttributeTypeAndValue_ValueKind.DirectoryString:
+                DirectoryString!.Encode(writer);
+                break;
+            case AttributeTypeAndValue_ValueKind.Printable:
+                writer.WriteString(Asn1Tag.PrintableString, StringValue!, Asn1StringForm.Printable);
+                break;
+            case AttributeTypeAndValue_ValueKind.Ia5:
+                writer.WriteString(Asn1Tag.Ia5String, StringValue!, Asn1StringForm.Ia5);
+                break;
+            case AttributeTypeAndValue_ValueKind.Unknown:
+                if (Unknown is null) throw new Asn1Exception("Open type has no alternative.");
+                writer.WriteAny(Unknown.Value);
+                break;
+            default: throw new Asn1Exception("Open type has no alternative.");
+        }
+    }
+
+    public static AttributeTypeAndValue_Value Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
+        Decode(reader, definedByKey, expectedTag: null);
+
+    public static AttributeTypeAndValue_Value Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>
+        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
+
+    private static AttributeTypeAndValue_Value Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
+    {
+        if (definedByKey.Equals(PKIX1Explicit88Oids.IdAtName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtSurname) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtGivenName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtInitials) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtGenerationQualifier) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtCommonName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtLocalityName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtStateOrProvinceName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtOrganizationName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtOrganizationalUnitName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtTitle) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtPseudonym))
+        {
+            if (expectedTag is null)
+            {
+                if (reader.TryPeekTag(out var peeked) && (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString) || peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString) || peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString) || peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String) || peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString)))
+                {
+                    return FromDirectoryString(Asn1Kit.Pkix.DirectoryString.Decode(reader));
+                }
+            }
+            else
+            {
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
+                {
+                    return FromDirectoryString(Asn1Kit.Pkix.DirectoryString.Decode(reader));
+                }
+            }
+            return FromUnknown(reader.ReadAny());
+        }
+        else if (definedByKey.Equals(PKIX1Explicit88Oids.IdAtDnQualifier) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtCountryName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtSerialNumber))
+        {
+            if (expectedTag is null)
+            {
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
+                {
+                    return FromPrintable(reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable));
+                }
+            }
+            else
+            {
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
+                {
+                    return FromPrintable(reader.ReadString(expectedTag.Value, Asn1StringForm.Printable));
+                }
+            }
+            return FromUnknown(reader.ReadAny());
+        }
+        else if (definedByKey.Equals(PKIX1Explicit88Oids.IdDomainComponent) || definedByKey.Equals(PKIX1Explicit88Oids.IdEmailAddress))
+        {
+            if (expectedTag is null)
+            {
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Ia5String))
+                {
+                    return FromIa5(reader.ReadString(Asn1Tag.Ia5String, Asn1StringForm.Ia5));
+                }
+            }
+            else
+            {
+                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
+                {
+                    return FromIa5(reader.ReadString(expectedTag.Value, Asn1StringForm.Ia5));
+                }
+            }
+            return FromUnknown(reader.ReadAny());
+        }
+        else {
+            return FromUnknown(reader.ReadAny());
+        }
+    }
 }
 
 public sealed class TBSCertList_RevokedCertificates_Item
