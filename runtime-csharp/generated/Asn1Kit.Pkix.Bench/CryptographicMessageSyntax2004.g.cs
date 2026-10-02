@@ -2044,21 +2044,15 @@ public sealed class ContentInfo_Content
 
     private static ContentInfo_Content Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
     {
+        if (!reader.TryPeekTag(out var peeked))
+            throw new Asn1Exception("Unexpected end of ASN.1 data while decoding open type 'ContentInfo_Content': expected an encoded ASN.1 value for key '" + definedByKey + "'.");
+
         if (definedByKey.Equals(CryptographicMessageSyntax2004Oids.IdData))
         {
-            if (expectedTag is null)
+            var tag = expectedTag ?? Asn1Tag.OctetString;
+            if (peeked.MatchesIgnoreConstructed(tag))
             {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.OctetString))
-                {
-                    return FromOctetString(reader.ReadOctetString(Asn1Tag.OctetString));
-                }
-            }
-            else
-            {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromOctetString(reader.ReadOctetString(expectedTag.Value));
-                }
+                return FromOctetString(reader.ReadOctetString(tag));
             }
             return FromUnknown(reader.ReadAny());
         }
@@ -2066,14 +2060,14 @@ public sealed class ContentInfo_Content
         {
             if (expectedTag is null)
             {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
+                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
                 {
                     return FromSignedData(Asn1Kit.Cms.Bench.SignedData.Decode(reader, Asn1Tag.Sequence));
                 }
             }
             else
             {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
+                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
                 {
                     return FromSignedData(Asn1Kit.Cms.Bench.SignedData.Decode(reader, expectedTag.Value));
                 }
@@ -2084,14 +2078,14 @@ public sealed class ContentInfo_Content
         {
             if (expectedTag is null)
             {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
+                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
                 {
                     return FromEnvelopedData(Asn1Kit.Cms.Bench.EnvelopedData.Decode(reader, Asn1Tag.Sequence));
                 }
             }
             else
             {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
+                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
                 {
                     return FromEnvelopedData(Asn1Kit.Cms.Bench.EnvelopedData.Decode(reader, expectedTag.Value));
                 }
@@ -2102,14 +2096,14 @@ public sealed class ContentInfo_Content
         {
             if (expectedTag is null)
             {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
+                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
                 {
                     return FromDigestedData(Asn1Kit.Cms.Bench.DigestedData.Decode(reader, Asn1Tag.Sequence));
                 }
             }
             else
             {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
+                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
                 {
                     return FromDigestedData(Asn1Kit.Cms.Bench.DigestedData.Decode(reader, expectedTag.Value));
                 }
@@ -2120,14 +2114,14 @@ public sealed class ContentInfo_Content
         {
             if (expectedTag is null)
             {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
+                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
                 {
                     return FromEncryptedData(Asn1Kit.Cms.Bench.EncryptedData.Decode(reader, Asn1Tag.Sequence));
                 }
             }
             else
             {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
+                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
                 {
                     return FromEncryptedData(Asn1Kit.Cms.Bench.EncryptedData.Decode(reader, expectedTag.Value));
                 }
@@ -2138,14 +2132,14 @@ public sealed class ContentInfo_Content
         {
             if (expectedTag is null)
             {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
+                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
                 {
                     return FromAuthenticatedData(Asn1Kit.Cms.Bench.AuthenticatedData.Decode(reader, Asn1Tag.Sequence));
                 }
             }
             else
             {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
+                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
                 {
                     return FromAuthenticatedData(Asn1Kit.Cms.Bench.AuthenticatedData.Decode(reader, expectedTag.Value));
                 }
@@ -2153,7 +2147,7 @@ public sealed class ContentInfo_Content
             return FromUnknown(reader.ReadAny());
         }
         else {
-            if (expectedTag is null && reader.TryPeekTag(out var fallbackOctetString) && fallbackOctetString.MatchesIgnoreConstructed(Asn1Tag.OctetString))
+            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.OctetString))
             {
                 return FromOctetString(reader.ReadOctetString(Asn1Tag.OctetString));
             }

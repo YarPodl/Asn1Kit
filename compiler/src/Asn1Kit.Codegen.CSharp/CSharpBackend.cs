@@ -2196,6 +2196,9 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine(
             $"    private static {typeName} Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)");
         sb.AppendLine("    {");
+        sb.AppendLine("        if (!reader.TryPeekTag(out var peeked))");
+        sb.AppendLine($"            throw new Asn1Exception(\"Unexpected end of ASN.1 data while decoding open type '{EscapeCSharpString(typeName)}': expected an encoded ASN.1 value for key '\" + definedByKey + \"'.\");");
+        sb.AppendLine();
 
         var firstAlt = true;
         foreach (var (keys, alternatives) in OpenTypeDecodeGroups(alts))
@@ -2241,7 +2244,7 @@ public sealed class CSharpBackend : ILanguageBackend
             }
 
             var alt = group.First();
-            sb.AppendLine($"            if (expectedTag is null && reader.TryPeekTag(out var fallback{alt.PropName}) && {PeekMatchExpr(document, module, alt.Type, "fallback" + alt.PropName)})");
+            sb.AppendLine($"            if (expectedTag is null && {PeekMatchExpr(document, module, alt.Type, "peeked")})");
             sb.AppendLine("            {");
             EmitOpenTypeAltReturn(sb, document, module, typeName, alt, forceTag: null, indent: "                ");
             sb.AppendLine("            }");
@@ -2266,6 +2269,9 @@ public sealed class CSharpBackend : ILanguageBackend
         sb.AppendLine(
             $"    private static {typeName} Decode(Asn1Reader reader, string definedByKey, Asn1Tag? expectedTag)");
         sb.AppendLine("    {");
+        sb.AppendLine("        if (!reader.TryPeekTag(out var peeked))");
+        sb.AppendLine($"            throw new Asn1Exception(\"Unexpected end of ASN.1 data while decoding open type '{EscapeCSharpString(typeName)}': expected an encoded ASN.1 value for key '\" + definedByKey + \"'.\");");
+        sb.AppendLine();
         sb.AppendLine("        switch (definedByKey)");
         sb.AppendLine("        {");
         foreach (var (keys, alternatives) in OpenTypeDecodeGroups(alts))
@@ -2309,7 +2315,7 @@ public sealed class CSharpBackend : ILanguageBackend
 
         foreach (var alt in alternatives)
         {
-            sb.AppendLine($"            if (expectedTag is null && reader.TryPeekTag(out var peek{alt.PropName}) && {PeekMatchExpr(document, module, alt.Type, "peek" + alt.PropName)})");
+            sb.AppendLine($"            if (expectedTag is null && {PeekMatchExpr(document, module, alt.Type, "peeked")})");
             sb.AppendLine("            {");
             EmitOpenTypeAltReturn(sb, document, module, typeName, alt, forceTag: null, indent: "                ");
             sb.AppendLine("            }");
@@ -2329,22 +2335,34 @@ public sealed class CSharpBackend : ILanguageBackend
         bool soft,
         string definedByKeyExpr)
     {
-        sb.AppendLine("            if (expectedTag is null)");
-        sb.AppendLine("            {");
-        sb.AppendLine(
-            $"                if (reader.TryPeekTag(out var peeked) && {PeekMatchExpr(document, module, alt.Type, "peeked")})");
-        sb.AppendLine("                {");
-        EmitOpenTypeAltReturn(sb, document, module, typeName, alt, forceTag: null);
-        sb.AppendLine("                }");
-        sb.AppendLine("            }");
-        sb.AppendLine("            else");
-        sb.AppendLine("            {");
-        sb.AppendLine(
-            "                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))");
-        sb.AppendLine("                {");
-        EmitOpenTypeAltReturn(sb, document, module, typeName, alt, forceTag: "expectedTag.Value");
-        sb.AppendLine("                }");
-        sb.AppendLine("            }");
+        var type = UnwrapAliases(document, module, alt.Type);
+        if (type.Tag?.Mode != TagModes.Explicit && ResolvePrimitive(type) is { } kind && kind != TypeKinds.Any)
+        {
+            sb.AppendLine($"            var tag = expectedTag ?? {TagExpr(document, module, alt.Type)};");
+            sb.AppendLine("            if (peeked.MatchesIgnoreConstructed(tag))");
+            sb.AppendLine("            {");
+            EmitOpenTypeAltReturn(sb, document, module, typeName, alt, forceTag: "tag", indent: "                ");
+            sb.AppendLine("            }");
+        }
+        else
+        {
+            sb.AppendLine("            if (expectedTag is null)");
+            sb.AppendLine("            {");
+            sb.AppendLine(
+                $"                if ({PeekMatchExpr(document, module, alt.Type, "peeked")})");
+            sb.AppendLine("                {");
+            EmitOpenTypeAltReturn(sb, document, module, typeName, alt, forceTag: null);
+            sb.AppendLine("                }");
+            sb.AppendLine("            }");
+            sb.AppendLine("            else");
+            sb.AppendLine("            {");
+            sb.AppendLine(
+                "                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))");
+            sb.AppendLine("                {");
+            EmitOpenTypeAltReturn(sb, document, module, typeName, alt, forceTag: "expectedTag.Value");
+            sb.AppendLine("                }");
+            sb.AppendLine("            }");
+        }
         if (soft)
         {
             sb.AppendLine("            return FromUnknown(reader.ReadAny());");

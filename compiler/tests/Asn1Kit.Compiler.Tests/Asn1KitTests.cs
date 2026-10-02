@@ -845,6 +845,131 @@ END
         Assert.NotNull(qualifierType);
     }
 
+    [Theory]
+    [InlineData("soft", false)]
+    [InlineData("strict", false)]
+    [InlineData("soft", true)]
+    [InlineData("strict", true)]
+    public void GeneratedCSharp_OpenTypeBindings_PrimitiveUsesEffectiveTag(string mode, bool implicitBinding)
+    {
+        var document = new Asn1Compiler().CompileText(@"
+EffectiveTag DEFINITIONS EXPLICIT TAGS ::= BEGIN
+Text ::= UTF8String
+Holder ::= SEQUENCE { key OBJECT IDENTIFIER, value ANY DEFINED BY key }
+END");
+        document.Modules[0].Options = IrOptions.SetOpenTypeMismatch(null, mode);
+        OpenTypeBindings.ApplyJson(document, @"{
+  ""EffectiveTag.Holder.value"": [
+    { ""key"": ""1.2.3"", ""type"": { ""kind"": ""ref"", ""name"": ""Text"" } }
+  ]
+}");
+        var any = (AnyType)((SequenceType)document.Modules[0].Types.Single(t => t.Name == "Holder").Type).Components[1].Type;
+        if (implicitBinding)
+        {
+            any.Bindings![0].Type.Tag = new IrTag { Class = TagClasses.Context, Number = 3, Mode = TagModes.Implicit };
+        }
+        IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+        Assert.Contains("var tag = expectedTag ??", source);
+        var assembly = CompileGenerated(source);
+        var valueType = assembly.GetType("EffectiveTag.Holder_Value")!;
+        var decode = valueType.GetMethod("Decode", new[] { typeof(Asn1Reader), typeof(Asn1Oid) })!;
+        var decodeTagged = valueType.GetMethod("Decode", new[] { typeof(Asn1Reader), typeof(Asn1Oid), typeof(Asn1Tag) })!;
+        var key = Asn1Oid.Parse("1.2.3");
+        var normalBytes = new byte[] { implicitBinding ? (byte)0x83 : (byte)0x0C, 0x01, 0x41 };
+        var reader = new Asn1Reader(normalBytes, Asn1Encoding.Der);
+        var value = decode.Invoke(null, new object[] { reader, key })!;
+        Assert.Equal("A", valueType.GetProperty("Text")!.GetValue(value));
+        Assert.True(reader.Eof);
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        valueType.GetMethod("Encode")!.Invoke(value, new object[] { writer });
+        Assert.Equal(normalBytes, writer.Encode());
+
+        var overrideTag = new Asn1Tag(Asn1TagClass.ContextSpecific, 7, false);
+        var taggedReader = new Asn1Reader(new byte[] { 0x87, 0x01, 0x42 }, Asn1Encoding.Der);
+        var taggedValue = decodeTagged.Invoke(null, new object[] { taggedReader, key, overrideTag })!;
+        Assert.Equal("B", valueType.GetProperty("Text")!.GetValue(taggedValue));
+        Assert.True(taggedReader.Eof);
+
+        var mismatch = new byte[] { 0x02, 0x01, 0x01 };
+        foreach (var overridden in new[] { false, true })
+        {
+            object DecodeMismatch() => overridden
+                ? decodeTagged.Invoke(null, new object[] { new Asn1Reader(mismatch, Asn1Encoding.Der), key, overrideTag })!
+                : decode.Invoke(null, new object[] { new Asn1Reader(mismatch, Asn1Encoding.Der), key })!;
+            if (mode == "soft")
+            {
+                var unknown = DecodeMismatch();
+                Assert.NotNull(valueType.GetProperty("Unknown")!.GetValue(unknown));
+                var unknownWriter = new Asn1Writer(Asn1Encoding.Der);
+                valueType.GetMethod("Encode")!.Invoke(unknown, new object[] { unknownWriter });
+                Assert.Equal(mismatch, unknownWriter.Encode());
+            }
+            else
+            {
+                var error = Assert.Throws<TargetInvocationException>(() => DecodeMismatch());
+                Assert.IsType<Asn1Exception>(error.InnerException);
+                Assert.Contains("does not match bound type", error.InnerException!.Message);
+            }
+        }
+
+        var truncated = new byte[] { normalBytes[0], 0x02, 0x41 };
+        var truncatedError = Assert.Throws<TargetInvocationException>(() =>
+            decode.Invoke(null, new object[] { new Asn1Reader(truncated, Asn1Encoding.Der), key }));
+        Assert.IsType<Asn1Exception>(truncatedError.InnerException);
+    }
+
+    [Theory]
+    [InlineData("soft", true)]
+    [InlineData("strict", true)]
+    [InlineData("soft", false)]
+    [InlineData("strict", false)]
+    public void GeneratedCSharp_OpenTypeBindings_EmptyInputReportsTypeAndKey(string mode, bool oidKey)
+    {
+        var document = new Asn1Compiler().CompileText($@"
+EmptyOpen DEFINITIONS EXPLICIT TAGS ::= BEGIN
+Text ::= UTF8String
+TextChoice ::= CHOICE {{ text UTF8String, number INTEGER }}
+Holder ::= SEQUENCE {{ key {(oidKey ? "OBJECT IDENTIFIER" : "INTEGER")}, value ANY DEFINED BY key }}
+END");
+        document.Modules[0].Options = IrOptions.SetOpenTypeMismatch(null, mode);
+        OpenTypeBindings.ApplyJson(document, $@"{{
+  ""EmptyOpen.Holder.value"": [
+    {{ ""key"": ""{(oidKey ? "1.2.3" : "1")}"", ""type"": {{ ""kind"": ""ref"", ""name"": ""Text"" }} }},
+    {{ ""key"": ""{(oidKey ? "1.2.4" : "2")}"", ""type"": {{ ""kind"": ""ref"", ""name"": ""TextChoice"" }} }}
+  ]
+}}");
+        IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
+        var source = new CSharpBackend().Generate(document).Single().Contents;
+        var decodeStart = source.IndexOf("    private static Holder_Value Decode(", StringComparison.Ordinal);
+        Assert.True(decodeStart >= 0);
+        var decodeEnd = source.IndexOf("\n    }", decodeStart, StringComparison.Ordinal);
+        var decodeSource = source.Substring(decodeStart, decodeEnd - decodeStart);
+        Assert.Single(decodeSource.Split("reader.TryPeekTag(").Skip(1));
+        var assembly = CompileGenerated(source);
+        var valueType = assembly.GetType("EmptyOpen.Holder_Value")!;
+        var keyType = oidKey ? typeof(Asn1Oid) : typeof(string);
+        var decode = valueType.GetMethod("Decode", new[] { typeof(Asn1Reader), keyType })!;
+        var decodeTagged = valueType.GetMethod("Decode", new[] { typeof(Asn1Reader), keyType, typeof(Asn1Tag) })!;
+        foreach (var keyText in oidKey ? new[] { "1.2.3", "1.2.4", "1.2.9" } : new[] { "1", "2", "9" })
+        {
+            object key = oidKey ? Asn1Oid.Parse(keyText) : keyText;
+            foreach (var overridden in new[] { false, true })
+            {
+                var reader = new Asn1Reader(ReadOnlyMemory<byte>.Empty, Asn1Encoding.Der);
+                var error = Assert.Throws<TargetInvocationException>(() =>
+                    overridden
+                        ? decodeTagged.Invoke(null, new object[] { reader, key, Asn1Tag.Utf8String })
+                        : decode.Invoke(null, new object[] { reader, key }));
+                var asnError = Assert.IsType<Asn1Exception>(error.InnerException);
+                Assert.Equal(
+                    "Unexpected end of ASN.1 data while decoding open type 'Holder_Value': " +
+                    "expected an encoded ASN.1 value for key '" + keyText + "'.",
+                    asnError.Message);
+            }
+        }
+    }
+
     [Fact]
     public void GeneratedCSharp_OpenTypeBindings_StrictMismatchThrows()
     {

@@ -1704,21 +1704,15 @@ public sealed class PolicyQualifierInfo_Qualifier
 
     private static PolicyQualifierInfo_Qualifier Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
     {
+        if (!reader.TryPeekTag(out var peeked))
+            throw new Asn1Exception("Unexpected end of ASN.1 data while decoding open type 'PolicyQualifierInfo_Qualifier': expected an encoded ASN.1 value for key '" + definedByKey + "'.");
+
         if (definedByKey.Equals(Oid_1_3_6_1_5_5_7_2_1))
         {
-            if (expectedTag is null)
+            var tag = expectedTag ?? Asn1Tag.Ia5String;
+            if (peeked.MatchesIgnoreConstructed(tag))
             {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Ia5String))
-                {
-                    return FromCPSuri(reader.ReadString(Asn1Tag.Ia5String, Asn1StringForm.Ia5));
-                }
-            }
-            else
-            {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCPSuri(reader.ReadString(expectedTag.Value, Asn1StringForm.Ia5));
-                }
+                return FromCPSuri(reader.ReadString(tag, Asn1StringForm.Ia5));
             }
             return FromUnknown(reader.ReadAny());
         }
@@ -1726,14 +1720,14 @@ public sealed class PolicyQualifierInfo_Qualifier
         {
             if (expectedTag is null)
             {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
+                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
                 {
                     return FromUserNotice(Asn1Kit.Pkix.Bench.UserNotice.Decode(reader, Asn1Tag.Sequence));
                 }
             }
             else
             {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
+                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
                 {
                     return FromUserNotice(Asn1Kit.Pkix.Bench.UserNotice.Decode(reader, expectedTag.Value));
                 }
@@ -1741,7 +1735,7 @@ public sealed class PolicyQualifierInfo_Qualifier
             return FromUnknown(reader.ReadAny());
         }
         else {
-            if (expectedTag is null && reader.TryPeekTag(out var fallbackCPSuri) && fallbackCPSuri.MatchesIgnoreConstructed(Asn1Tag.Ia5String))
+            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.Ia5String))
             {
                 return FromCPSuri(reader.ReadString(Asn1Tag.Ia5String, Asn1StringForm.Ia5));
             }
@@ -1822,66 +1816,42 @@ public sealed class AnotherName_Value
 
     private static AnotherName_Value Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
     {
+        if (!reader.TryPeekTag(out var peeked))
+            throw new Asn1Exception("Unexpected end of ASN.1 data while decoding open type 'AnotherName_Value': expected an encoded ASN.1 value for key '" + definedByKey + "'.");
+
         if (definedByKey.Equals(Oid_1_3_6_1_5_5_7_8_5))
         {
-            if (expectedTag is null)
+            var tag = expectedTag ?? Asn1Tag.Utf8String;
+            if (peeked.MatchesIgnoreConstructed(tag))
             {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
-                {
-                    return FromXmppAddr(reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8));
-                }
-            }
-            else
-            {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromXmppAddr(reader.ReadString(expectedTag.Value, Asn1StringForm.Utf8));
-                }
+                return FromXmppAddr(reader.ReadString(tag, Asn1StringForm.Utf8));
             }
             return FromUnknown(reader.ReadAny());
         }
         else if (definedByKey.Equals(Oid_1_3_6_1_5_5_7_8_7))
         {
-            if (expectedTag is null)
+            var tag = expectedTag ?? Asn1Tag.Ia5String;
+            if (peeked.MatchesIgnoreConstructed(tag))
             {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Ia5String))
-                {
-                    return FromSrvName(reader.ReadString(Asn1Tag.Ia5String, Asn1StringForm.Ia5));
-                }
-            }
-            else
-            {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSrvName(reader.ReadString(expectedTag.Value, Asn1StringForm.Ia5));
-                }
+                return FromSrvName(reader.ReadString(tag, Asn1StringForm.Ia5));
             }
             return FromUnknown(reader.ReadAny());
         }
         else if (definedByKey.Equals(Oid_1_3_6_1_5_5_7_8_9))
         {
-            if (expectedTag is null)
+            var tag = expectedTag ?? Asn1Tag.Utf8String;
+            if (peeked.MatchesIgnoreConstructed(tag))
             {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
-                {
-                    return FromSmtpUtf8Mailbox(reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8));
-                }
-            }
-            else
-            {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSmtpUtf8Mailbox(reader.ReadString(expectedTag.Value, Asn1StringForm.Utf8));
-                }
+                return FromSmtpUtf8Mailbox(reader.ReadString(tag, Asn1StringForm.Utf8));
             }
             return FromUnknown(reader.ReadAny());
         }
         else {
-            if (expectedTag is null && reader.TryPeekTag(out var fallbackXmppAddr) && fallbackXmppAddr.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
+            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
             {
                 return FromXmppAddr(reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8));
             }
-            if (expectedTag is null && reader.TryPeekTag(out var fallbackSrvName) && fallbackSrvName.MatchesIgnoreConstructed(Asn1Tag.Ia5String))
+            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.Ia5String))
             {
                 return FromSrvName(reader.ReadString(Asn1Tag.Ia5String, Asn1StringForm.Ia5));
             }

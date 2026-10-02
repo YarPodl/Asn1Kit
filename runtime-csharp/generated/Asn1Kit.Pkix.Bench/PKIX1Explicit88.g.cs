@@ -2863,25 +2863,28 @@ public sealed class AttributeTypeAndValue_Value
 
     private static AttributeTypeAndValue_Value Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
     {
+        if (!reader.TryPeekTag(out var peeked))
+            throw new Asn1Exception("Unexpected end of ASN.1 data while decoding open type 'AttributeTypeAndValue_Value': expected an encoded ASN.1 value for key '" + definedByKey + "'.");
+
         if (definedByKey.Equals(PKIX1Explicit88Oids.IdAtName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtSurname) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtGivenName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtInitials) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtGenerationQualifier) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtCommonName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtLocalityName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtStateOrProvinceName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtOrganizationName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtOrganizationalUnitName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtTitle) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtPseudonym))
         {
-            if (expectedTag is null && reader.TryPeekTag(out var peekTeletexString) && peekTeletexString.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
+            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
             {
                 return FromTeletexString(reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex));
             }
-            if (expectedTag is null && reader.TryPeekTag(out var peekPrintableString) && peekPrintableString.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
+            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
             {
                 return FromPrintableString(reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable));
             }
-            if (expectedTag is null && reader.TryPeekTag(out var peekUniversalString) && peekUniversalString.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
+            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
             {
                 return FromUniversalString(reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal));
             }
-            if (expectedTag is null && reader.TryPeekTag(out var peekUtf8String) && peekUtf8String.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
+            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
             {
                 return FromUtf8String(reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8));
             }
-            if (expectedTag is null && reader.TryPeekTag(out var peekBmpString) && peekBmpString.MatchesIgnoreConstructed(Asn1Tag.BmpString))
+            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
             {
                 return FromBmpString(reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp));
             }
@@ -2889,62 +2892,44 @@ public sealed class AttributeTypeAndValue_Value
         }
         else if (definedByKey.Equals(PKIX1Explicit88Oids.IdAtDnQualifier) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtCountryName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtSerialNumber))
         {
-            if (expectedTag is null)
+            var tag = expectedTag ?? Asn1Tag.PrintableString;
+            if (peeked.MatchesIgnoreConstructed(tag))
             {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
-                {
-                    return FromPrintable(reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable));
-                }
-            }
-            else
-            {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromPrintable(reader.ReadString(expectedTag.Value, Asn1StringForm.Printable));
-                }
+                return FromPrintable(reader.ReadString(tag, Asn1StringForm.Printable));
             }
             return FromUnknown(reader.ReadAny());
         }
         else if (definedByKey.Equals(PKIX1Explicit88Oids.IdDomainComponent) || definedByKey.Equals(PKIX1Explicit88Oids.IdEmailAddress))
         {
-            if (expectedTag is null)
+            var tag = expectedTag ?? Asn1Tag.Ia5String;
+            if (peeked.MatchesIgnoreConstructed(tag))
             {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Ia5String))
-                {
-                    return FromIa5(reader.ReadString(Asn1Tag.Ia5String, Asn1StringForm.Ia5));
-                }
-            }
-            else
-            {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromIa5(reader.ReadString(expectedTag.Value, Asn1StringForm.Ia5));
-                }
+                return FromIa5(reader.ReadString(tag, Asn1StringForm.Ia5));
             }
             return FromUnknown(reader.ReadAny());
         }
         else {
-            if (expectedTag is null && reader.TryPeekTag(out var fallbackTeletexString) && fallbackTeletexString.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
+            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
             {
                 return FromTeletexString(reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex));
             }
-            if (expectedTag is null && reader.TryPeekTag(out var fallbackPrintableString) && fallbackPrintableString.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
+            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
             {
                 return FromPrintableString(reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable));
             }
-            if (expectedTag is null && reader.TryPeekTag(out var fallbackUniversalString) && fallbackUniversalString.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
+            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
             {
                 return FromUniversalString(reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal));
             }
-            if (expectedTag is null && reader.TryPeekTag(out var fallbackUtf8String) && fallbackUtf8String.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
+            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
             {
                 return FromUtf8String(reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8));
             }
-            if (expectedTag is null && reader.TryPeekTag(out var fallbackBmpString) && fallbackBmpString.MatchesIgnoreConstructed(Asn1Tag.BmpString))
+            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
             {
                 return FromBmpString(reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp));
             }
-            if (expectedTag is null && reader.TryPeekTag(out var fallbackIa5) && fallbackIa5.MatchesIgnoreConstructed(Asn1Tag.Ia5String))
+            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.Ia5String))
             {
                 return FromIa5(reader.ReadString(Asn1Tag.Ia5String, Asn1StringForm.Ia5));
             }
@@ -3042,26 +3027,20 @@ public sealed class AlgorithmIdentifier_Parameters
 
     private static AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
     {
+        if (!reader.TryPeekTag(out var peeked))
+            throw new Asn1Exception("Unexpected end of ASN.1 data while decoding open type 'AlgorithmIdentifier_Parameters': expected an encoded ASN.1 value for key '" + definedByKey + "'.");
+
         if (definedByKey.Equals(Oid_1_2_840_113549_1_1_1) || definedByKey.Equals(Oid_1_2_840_113549_1_1_5) || definedByKey.Equals(Oid_1_2_840_113549_1_1_11) || definedByKey.Equals(Oid_1_2_840_113549_1_1_12) || definedByKey.Equals(Oid_1_2_840_113549_1_1_13))
         {
-            if (expectedTag is null)
+            var tag = expectedTag ?? Asn1Tag.Null;
+            if (peeked.MatchesIgnoreConstructed(tag))
             {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(Asn1Tag.Null))
-                {
-                    return FromNull(Asn1Null.Decode(reader, Asn1Tag.Null));
-                }
-            }
-            else
-            {
-                if (reader.TryPeekTag(out var peeked) && peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromNull(Asn1Null.Decode(reader, expectedTag.Value));
-                }
+                return FromNull(Asn1Null.Decode(reader, tag));
             }
             return FromUnknown(reader.ReadAny());
         }
         else {
-            if (expectedTag is null && reader.TryPeekTag(out var fallbackNull) && fallbackNull.MatchesIgnoreConstructed(Asn1Tag.Null))
+            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.Null))
             {
                 return FromNull(Asn1Null.Decode(reader, Asn1Tag.Null));
             }
