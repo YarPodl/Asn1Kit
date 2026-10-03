@@ -2143,6 +2143,7 @@ public sealed class ContentInfo_Content
         else throw new Asn1Exception("Open type has no alternative.");
     }
 
+    public static bool IsKnown(Asn1Oid key) => key.Equals(CryptographicMessageSyntax2004Oids.IdData) || key.Equals(CryptographicMessageSyntax2004Oids.IdSignedData) || key.Equals(CryptographicMessageSyntax2004Oids.IdEnvelopedData) || key.Equals(CryptographicMessageSyntax2004Oids.IdDigestedData) || key.Equals(CryptographicMessageSyntax2004Oids.IdEncryptedData) || key.Equals(CryptographicMessageSyntax2004Oids.IdCtAuthData);
     public static ContentInfo_Content Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
         Decode(reader, definedByKey, expectedTag: null);
 

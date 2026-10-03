@@ -18,11 +18,14 @@ public sealed class Asn1Compiler
         var modules = new List<ModuleAst>();
         foreach (var (text, fileName) in inputs)
         {
-            modules.Add(Asn1Parser.Parse(text, fileName));
+            try { modules.Add(Asn1Parser.Parse(text, fileName)); }
+            catch (CompileException error) when (fileName is not null && error.SourceFile is null)
+            { throw new CompileException(error.Detail, error.Line, error.Column, fileName); }
         }
 
-        var document = new IrBuilder(modules).Build();
+        var document = new IrBuilder(new InformationResolver(modules).Resolve()).Build();
         IrValidator.Validate(document);
+        IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
         return document;
     }
 }

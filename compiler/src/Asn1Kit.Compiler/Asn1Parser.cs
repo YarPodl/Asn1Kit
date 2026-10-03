@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Asn1Kit.Compiler;
 
-internal sealed class Asn1Parser
+internal sealed partial class Asn1Parser
 {
     private readonly IReadOnlyList<Token> _tokens;
     private readonly string? _source;
@@ -113,23 +113,25 @@ internal sealed class Asn1Parser
         ExpectKeyword(Keywords.Imports);
         while (!Check(TokenKind.Semicolon) && !Check(TokenKind.EndOfFile))
         {
-            var symbols = new List<Token> { ExpectIdentifier("imported symbol") };
+            var symbols = new List<Token> { ParseImportedSymbol() };
             while (Check(TokenKind.Comma))
             {
                 Advance();
-                symbols.Add(ExpectIdentifier("imported symbol"));
+                symbols.Add(ParseImportedSymbol());
             }
 
             ExpectKeyword(Keywords.From);
             var from = ExpectIdentifier("imported module");
+            OidValueAst? importOid = null;
             if (Check(TokenKind.LBrace))
             {
-                ParseOidValueAst();
+                importOid = ParseOidValueAst();
             }
 
             var import = new ImportAst
             {
                 Module = from.Text,
+                Oid = importOid,
                 Line = from.Line,
                 Column = from.Column
             };
@@ -155,11 +157,14 @@ internal sealed class Asn1Parser
     {
         RejectOutOfProfile();
         var name = ExpectIdentifier("assignment name");
-        if (char.IsLower(name.Text[0]))
+        var parameters = Check(TokenKind.LBrace) ? ParseFormalParameters() : new List<FormalParameterAst>();
+        if (!Check(TokenKind.Assign))
         {
+            if (parameters.Count != 0) throw Error("Parameterized values and information objects are outside the Asn1Kit compiler profile.");
             var type = ParseType();
             Expect(TokenKind.Assign, "::=");
-            var value = ParseValue();
+            // Uppercase governed assignments are value/object sets; their governor is resolved later.
+            var value = char.IsUpper(name.Text[0]) ? ParseValue() : ParseConcreteValue(type);
             module.ValueAssignments.Add(new ValueAssignmentAst
             {
                 Name = name.Text,
@@ -172,18 +177,22 @@ internal sealed class Asn1Parser
         }
 
         Expect(TokenKind.Assign, "::=");
-        module.TypeAssignments.Add(new TypeAssignmentAst
+        if (parameters.Count != 0 && IsKeyword("CLASS"))
+            throw Error("Parameterized object classes are outside the Asn1Kit compiler profile.");
+        var assignment = new TypeAssignmentAst
         {
             Name = name.Text,
-            Type = ParseType(),
+            Type = IsKeyword("CLASS") ? ParseInformationClass() : ParseType(),
             Line = name.Line,
             Column = name.Column
-        });
+        };
+        assignment.Parameters.AddRange(parameters);
+        module.TypeAssignments.Add(assignment);
     }
 
     private void RejectOutOfProfile()
     {
-        if (IsKeyword(Keywords.Class) || IsKeyword(Keywords.Real) || IsKeyword(Keywords.External))
+        if (IsKeyword(Keywords.Real) || IsKeyword(Keywords.External))
         {
             throw Error($"'{Peek().Text}' is outside the Asn1Kit compiler profile.");
         }
@@ -256,7 +265,7 @@ internal sealed class Asn1Parser
         else if (IsKeyword(Keywords.Enumerated))
         {
             var tok = Advance();
-            type = new EnumeratedTypeAst(ParseNamedNumberList()) { Line = tok.Line, Column = tok.Column };
+            type = ParseEnumerated(tok);
         }
         else if (IsKeyword(Keywords.Boolean))
         {
@@ -305,6 +314,11 @@ internal sealed class Asn1Parser
 
             type = new AnyTypeAst(definedBy) { Line = tok.Line, Column = tok.Column };
         }
+        else if (IsKeyword("INSTANCE"))
+        {
+            var token = Advance(); ExpectKeyword("OF");
+            type = new InstanceOfTypeAst { Class = ParseReferenceType(), Line = token.Line, Column = token.Column };
+        }
         else if (TryParseStringType(out var stringType))
         {
             type = stringType;
@@ -315,17 +329,7 @@ internal sealed class Asn1Parser
         }
         else
         {
-            var ident = ExpectIdentifier("type");
-            string? module = null;
-            string name = ident.Text;
-            if (Check(TokenKind.Dot))
-            {
-                Advance();
-                module = ident.Text;
-                name = ExpectIdentifier("type name").Text;
-            }
-
-            type = new TypeReferenceAst(name, module) { Line = ident.Line, Column = ident.Column };
+            type = ParseReferenceType();
         }
 
         return ApplyTrailingConstraint(type);
@@ -333,12 +337,20 @@ internal sealed class Asn1Parser
 
     private TypeAst ApplyTrailingConstraint(TypeAst type)
     {
+        if (type is ObjectFieldTypeAst objectField && Check(TokenKind.LParen))
+        {
+            ParseTableConstraint(objectField);
+        }
         if (!Check(TokenKind.LParen))
         {
             return type;
         }
 
         type.Constraint = ParseConstraint();
+        if (type.Constraint.Containing is { } contained)
+        {
+            return new ContainingTypeAst { Outer = type, Inner = contained, Line = type.Line, Column = type.Column };
+        }
         return type;
     }
 
@@ -440,6 +452,8 @@ internal sealed class Asn1Parser
     private void ParseComponentList(List<FieldAst> fields, bool allowOptional, out bool extensible)
     {
         extensible = false;
+        var extensionAdditions = false;
+        var extensionMarkers = 0;
         var first = true;
         while (!Check(TokenKind.RBrace) && !Check(TokenKind.EndOfFile))
         {
@@ -453,6 +467,8 @@ internal sealed class Asn1Parser
             {
                 Advance();
                 extensible = true;
+                if (++extensionMarkers > 2) throw Error("Too many extension markers.");
+                extensionAdditions = extensionMarkers == 1;
                 if (Check(TokenKind.Comma))
                 {
                     Advance();
@@ -461,7 +477,6 @@ internal sealed class Asn1Parser
                         break;
                     }
 
-                    // extension additions after ... are accepted as normal fields
                     first = true;
                     continue;
                 }
@@ -474,7 +489,17 @@ internal sealed class Asn1Parser
                 throw Error("COMPONENTS OF is outside the Asn1Kit compiler profile.");
             }
 
-            fields.Add(ParseComponentType(allowOptional));
+            if (Check(TokenKind.LBracket) && _tokens[_index + 1].Kind == TokenKind.LBracket)
+            {
+                if (!extensionAdditions) throw Error("Extension group requires an extension-addition region.");
+                ParseExtensionGroup(fields, allowOptional);
+            }
+            else
+            {
+                var field = ParseComponentType(allowOptional);
+                field.ExtensionAddition = extensionAdditions;
+                fields.Add(field);
+            }
         }
     }
 
@@ -490,7 +515,7 @@ internal sealed class Asn1Parser
         if (allowOptional && IsKeyword(Keywords.Default))
         {
             Advance();
-            named.Default = ParseValue();
+            named.Default = ParseConcreteValue(named.Type);
             named.Optional = true;
         }
 
@@ -659,6 +684,13 @@ internal sealed class Asn1Parser
     private ConstraintAst ParseConstraint()
     {
         var open = Expect(TokenKind.LParen, "(");
+        if (IsKeyword("CONTAINING"))
+        {
+            Advance();
+            var contained = ParseType();
+            Expect(TokenKind.RParen, ")");
+            return new ConstraintAst { Containing = contained, Line = open.Line, Column = open.Column };
+        }
         if (IsKeyword(Keywords.Size))
         {
             var size = ParseSizeConstraintKeyword();
@@ -706,7 +738,7 @@ internal sealed class Asn1Parser
             {
                 depth--;
             }
-            else if (kind == TokenKind.Union && depth == 1)
+            else if (kind is TokenKind.Union or TokenKind.Comma or TokenKind.Ellipsis or TokenKind.Ampersand or TokenKind.At or TokenKind.Dot && depth == 1)
             {
                 return true;
             }
@@ -877,7 +909,8 @@ internal sealed class Asn1Parser
 
         if (Check(TokenKind.LBrace))
         {
-            return ParseOidValueAst();
+            var token = Peek();
+            return new RawValueAst { Tokens = CaptureGroup(TokenKind.LBrace, TokenKind.RBrace, includeDelimiters: true), Line = token.Line, Column = token.Column };
         }
 
         var ident = ExpectIdentifier("value");
@@ -886,8 +919,17 @@ internal sealed class Asn1Parser
         if (Check(TokenKind.Dot))
         {
             Advance();
+            if (Check(TokenKind.Ampersand))
+            {
+                return ParseObjectFieldValue(ident.Text, null, ident);
+            }
             module = ident.Text;
             name = ExpectIdentifier("value name").Text;
+            if (Check(TokenKind.Dot) && _tokens[_index + 1].Kind == TokenKind.Ampersand)
+            {
+                Advance();
+                return ParseObjectFieldValue(name, module, ident);
+            }
         }
 
         return new ValueReferenceAst(name, module) { Line = ident.Line, Column = ident.Column };

@@ -33,7 +33,7 @@
 
 - `boolean`, `null`, `octetString`, `oid`
 - `integer` — опционально `namedValues: [{ name, value }]`
-- `enumerated` — `values: [{ name, value }]`
+- `enumerated` — `values: [{ name, value }]`, опционально `extensible`
 - `bitString` — опционально `namedBits: [{ name, value }]`
 - `string` — обязательно `stringType`: `utf8` \| `printable` \| `teletex` \| `t61` \| `ia5` \| `numeric` \| `visible` \| `bmp` \| `universal` \| `general` \| `graphic` \| `videotex`
 - `time` — обязательно `timeType`: `utc` \| `generalized`; опционально `fractionDigits` `0…7` (только `generalized`; отсутствие = 3 при записи)
@@ -43,6 +43,22 @@
 - `ref` — `name`, опционально `module`
 
 У любого выражения опциональны `tag`, `constraint`, `options`.
+
+### Результат разрешения IOC и параметризации
+
+CLASS, WITH SYNTAX, information objects/sets и формальные параметры остаются внутри компилятора. В `module.types` записываются конкретные специализации; `ref` адресует обычный или специализированный тип. Bindings могут поступать из ASN.1 object sets и из legacy overlay.
+
+Новые семантические поля не помещаются в `options`:
+
+| Поле | Где | Контракт |
+| --- | --- | --- |
+| `selector: { levels, path[] }` | `any` | `levels = 0` — владелец, `1` — его родитель и т.д.; считаются SEQUENCE/SET/CHOICE, OF прозрачен. `path` — непустой путь имён компонентов к OID/INTEGER. |
+| `tableExtensible: boolean` | `any` | Наличие поля обозначает современную IOC-таблицу, значение сохраняет её `...`. Неизвестный ключ всегда raw; закрытость пока не исполняется. Отсутствие поля сохраняет legacy fallback/mismatch. |
+| `containing: type` | `octetString`, `bitString` | Содержимое закодировано внутри contents внешнего string-типа; может быть `any` с selector/bindings. BIT STRING с типизированным содержимым выровнен по октетам. |
+| `extensionAddition: true` | компонент | Компонент между первой и второй границами расширения; компоненты trailing root не получают эту метку. |
+| `extensionGroup: integer >= 0` | компонент addition | Принадлежность к группе `[[n: ...]]`; номер без явно заданной версии назначается компилятором. |
+
+`definedBy` сохраняется для старых документов. OF и CONTAINING сохраняют контекст владельца при валидации selector. Синтаксические уровни `@`, `@.`, `@..` преобразуются компилятором в эти разрешённые уровни IR. Отсутствие bindings или пустой extensible set не добавляет типы из импортированных модулей.
 
 ```json
 {
@@ -89,6 +105,11 @@
 | `oid` | `value: string` dotted-форма (`"1.3.6.1"`; цепочки вроде `{ id-pkix 1 }` уже развёрнуты) |
 | `string` | `value` |
 | `bitString` | `bits?` / `hex?` |
+| `octetString` | `hex` (contents, без тега/длины) |
+| `structured` | `fields: { componentName: value }` для SEQUENCE/SET; отсутствующие DEFAULT/OPTIONAL поля допустимы |
+| `collection` | `items: value[]` для OF |
+| `choice` | `alternative: string`, `value` |
+| `typed` | `type: type`, `value` — конкретная структура открытого значения (`Type : value`) |
 | `ref` | `name`, опционально `module` (в скомпилированном IR обычно уже разрешён) |
 
 ## Options
@@ -104,7 +125,7 @@
 | `options.csharp.propertyName` | поле | Имя свойства |
 | `options.generate` | тип | `false` — не генерировать |
 | `options.integer.representation` | тип / модуль | Представление INTEGER: `int32` \| `uint32` \| `int64` \| `uint64` \| `bigint` \| `der`. На типе перекрывает модуль. Если не задано, C# backend выводит: при `namedValues` → `int32` (или `int64` при метке вне `int`); иначе из полного `constraint.value`; иначе `der`. |
-| `options.openType.mismatch` | модуль / документ / тип `any` | При известном ключе bindings, если **тег** TLV не совпал с типом: `soft` (default) → `Unknown`/`Asn1Any`; `strict` → `Asn1Exception`. |
+| `options.openType.mismatch` | модуль / документ / legacy `any` | При известном ключе bindings, если **тег** TLV не совпал с типом: `soft` (default) → `Unknown`/`Asn1Any`; `strict` → `Asn1Exception`. Современные таблицы всегда отвергают несовместимый известный тип. |
 | `options.lazy` | поле / тип / модуль | `true` — отложенный разбор SEQUENCE/SET и SEQUENCE OF/SET OF (C#: `Asn1Lazy<T>` / `Asn1Lazy<T[]>`). Разрешение: component → TypeExpr → typedef → module; default `false`. |
 | `options.retainEncoded` | поле / тип / модуль | `true` — eager-разбор SEQUENCE/SET/OF с сохранением исходного полного TLV для хеширования или проверки подписи (C#: `Asn1Value<T>` / `Asn1Value<T[]>`). Encode всегда строится из текущего `Value`. Игнорируется, если `lazy` уже включён. Та же цепочка разрешения, что у `lazy`; default `false`. |
 | `options.csharp.valueType` | typedef SEQUENCE/SET | `true` — эмит `struct` вместо `sealed class`. |

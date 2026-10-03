@@ -146,6 +146,31 @@ public sealed class Asn1Writer
     public void WriteOctetString(Asn1Tag tag, ReadOnlySpan<byte> value) =>
         _buffer.WritePrimitive(tag, value);
 
+    /// <summary>Writes opaque octets or encodes typed content directly into the existing buffer.</summary>
+    public void WriteContained<T>(Asn1Tag tag, bool bitString, Asn1Contained<T> value, Action<Asn1Writer, T> encode)
+    {
+        if (encode is null) throw new ArgumentNullException(nameof(encode));
+        if (!value.HasValue)
+        {
+            if (bitString) WriteBitString(tag, new Asn1BitString(value.Contents, value.UnusedBits));
+            else WriteOctetString(tag, value.Contents.Span);
+            return;
+        }
+        var parentToken = _activeScopeToken;
+        var token = ++_nextScopeToken;
+        var frame = _buffer.BeginValue(tag.AsPrimitive());
+        _activeScopeToken = token;
+        using (Asn1WriterScope.Create(this, frame, token, parentToken, false))
+        {
+            if (bitString)
+            {
+                Span<byte> unused = stackalloc byte[1]; unused[0] = 0;
+                _buffer.WriteRaw(unused);
+            }
+            encode(this, value.Value);
+        }
+    }
+
     /// <summary>Writes null to the ASN.1 output.</summary>
     public void WriteNull(Asn1Tag tag) =>
         _buffer.WritePrimitive(tag, ReadOnlySpan<byte>.Empty);

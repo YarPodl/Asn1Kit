@@ -104,6 +104,11 @@ public sealed class IrValueConverter : JsonConverter<IrValue>
         var raw = root.GetRawText();
         IrValue? value = kind switch
         {
+            ValueKinds.Structured => JsonSerializer.Deserialize<IrStructuredValue>(raw, inner),
+            ValueKinds.Typed => JsonSerializer.Deserialize<IrTypedValue>(raw, inner),
+            ValueKinds.Collection => JsonSerializer.Deserialize<IrCollectionValue>(raw, inner),
+            ValueKinds.Choice => JsonSerializer.Deserialize<IrChoiceValue>(raw, inner),
+            ValueKinds.OctetString => JsonSerializer.Deserialize<IrOctetStringValue>(raw, inner),
             ValueKinds.Integer => JsonSerializer.Deserialize<IrIntegerValue>(raw, inner),
             ValueKinds.Boolean => JsonSerializer.Deserialize<IrBooleanValue>(raw, inner),
             ValueKinds.Null => JsonSerializer.Deserialize<IrNullValue>(raw, inner),

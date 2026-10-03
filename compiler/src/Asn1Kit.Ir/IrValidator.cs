@@ -96,7 +96,7 @@ public static class IrValidator
             }
 
             ValidateExpr(document, module, value.Type, value.Name, ownerComponents: null);
-            ValidateValue(value.Value, value.Name);
+            ValidateValue(document, module, value.Value, value.Name);
         }
     }
 
@@ -105,17 +105,18 @@ public static class IrValidator
         IrModule module,
         TypeExpr expr,
         string context,
-        IReadOnlyList<IrComponent>? ownerComponents)
+        IReadOnlyList<IrComponent>? ownerComponents,
+        IReadOnlyList<IReadOnlyList<IrComponent>>? ancestors = null)
     {
         ValidateTag(expr.Tag, context);
         ValidateConstraint(expr.Constraint, context);
         switch (expr)
         {
             case SequenceType sequence:
-                ValidateComponents(document, module, sequence.Components, context, allowOptional: true);
+                ValidateComponents(document, module, sequence.Components, context, allowOptional: true, ancestors);
                 break;
             case SetType set:
-                ValidateComponents(document, module, set.Components, context, allowOptional: true);
+                ValidateComponents(document, module, set.Components, context, allowOptional: true, ancestors);
                 break;
             case ChoiceType choice:
                 if (choice.Components.Count == 0)
@@ -123,7 +124,7 @@ public static class IrValidator
                     throw new IrException($"CHOICE '{context}' has no alternatives.");
                 }
 
-                ValidateComponents(document, module, choice.Components, context, allowOptional: false);
+                ValidateComponents(document, module, choice.Components, context, allowOptional: false, ancestors);
                 break;
             case SequenceOfType sequenceOf:
                 if (sequenceOf.Element is null)
@@ -131,7 +132,7 @@ public static class IrValidator
                     throw new IrException($"sequenceOf '{context}' is missing element.");
                 }
 
-                ValidateExpr(document, module, sequenceOf.Element, context + "[]", ownerComponents: null);
+                ValidateExpr(document, module, sequenceOf.Element, context + "[]", ownerComponents, ancestors);
                 break;
             case SetOfType setOf:
                 if (setOf.Element is null)
@@ -139,7 +140,7 @@ public static class IrValidator
                     throw new IrException($"setOf '{context}' is missing element.");
                 }
 
-                ValidateExpr(document, module, setOf.Element, context + "[]", ownerComponents: null);
+                ValidateExpr(document, module, setOf.Element, context + "[]", ownerComponents, ancestors);
                 break;
             case RefType reference:
                 if (string.IsNullOrWhiteSpace(reference.Name))
@@ -159,6 +160,9 @@ public static class IrValidator
                     throw new IrException($"ENUMERATED '{context}' has no values.");
                 }
 
+                if (enumerated.Values.Select(v => v.Name).Distinct(StringComparer.Ordinal).Count() != enumerated.Values.Count ||
+                    enumerated.Values.Select(v => v.Value).Distinct().Count() != enumerated.Values.Count)
+                    throw new IrException($"Duplicate ENUMERATED name or value in '{context}'.");
                 break;
             case StringType stringType:
                 if (string.IsNullOrWhiteSpace(stringType.Form))
@@ -190,6 +194,14 @@ public static class IrValidator
 
                 break;
             case AnyType any:
+                if (any.Selector is { } selector)
+                {
+                    if (selector.Levels < 0 || selector.Path.Count == 0 || selector.Path.Any(string.IsNullOrWhiteSpace))
+                        throw new IrException($"Invalid open-type selector in '{context}'.");
+                    if (ancestors is null || selector.Levels >= ancestors.Count)
+                        throw new IrException($"Open-type selector in '{context}' is outside its enclosing context.");
+                    ValidateSelector(document, module, ancestors[ancestors.Count - 1 - selector.Levels], selector.Path, context);
+                }
                 if (any.DefinedBy is not null)
                 {
                     if (ownerComponents is null || ownerComponents.All(c => c.Name != any.DefinedBy))
@@ -201,7 +213,7 @@ public static class IrValidator
 
                 if (any.Bindings is { Count: > 0 })
                 {
-                    if (string.IsNullOrWhiteSpace(any.DefinedBy))
+                    if (string.IsNullOrWhiteSpace(any.DefinedBy) && any.Selector is null)
                     {
                         throw new IrException(
                             $"ANY bindings in '{context}' require definedBy naming a sibling component.");
@@ -244,6 +256,12 @@ public static class IrValidator
                 }
 
                 break;
+            case OctetStringType octets when octets.Containing is not null:
+                ValidateExpr(document, module, octets.Containing, context + ".containing", ownerComponents, ancestors);
+                break;
+            case BitStringType bits when bits.Containing is not null:
+                ValidateExpr(document, module, bits.Containing, context + ".containing", ownerComponents, ancestors);
+                break;
             case BooleanType:
             case NullType:
             case OctetStringType:
@@ -261,8 +279,10 @@ public static class IrValidator
         IrModule module,
         List<IrComponent> components,
         string owner,
-        bool allowOptional)
+        bool allowOptional,
+        IReadOnlyList<IReadOnlyList<IrComponent>>? ancestors = null)
     {
+        var context = (ancestors ?? Array.Empty<IReadOnlyList<IrComponent>>()).Append(components).ToArray();
         var names = new HashSet<string>(StringComparer.Ordinal);
         foreach (var component in components)
         {
@@ -286,18 +306,48 @@ public static class IrValidator
                 throw new IrException($"Component '{owner}.{component.Name}' is missing a type.");
             }
 
-            ValidateExpr(document, module, component.Type, $"{owner}.{component.Name}", components);
+            if (component.ExtensionGroup is not null && (component.ExtensionGroup < 0 || component.ExtensionAddition != true))
+                throw new IrException($"Invalid extension group on '{owner}.{component.Name}'.");
+            ValidateExpr(document, module, component.Type, $"{owner}.{component.Name}", components, context);
             if (component.Default is not null)
             {
-                ValidateValue(component.Default, $"{owner}.{component.Name}.default");
+                ValidateValue(document, module, component.Default, $"{owner}.{component.Name}.default");
             }
         }
     }
 
-    private static void ValidateValue(IrValue value, string context)
+    private static void ValidateValue(IrDocument document, IrModule module, IrValue value, string context)
     {
         switch (value)
         {
+            case IrTypedValue typed:
+                if (typed.Type is null || typed.Value is null) throw new IrException($"Invalid typed value in '{context}'.");
+                ValidateExpr(document, module, typed.Type, context + ".type", ownerComponents: null);
+                ValidateValue(document, module, typed.Value, context + ".value");
+                break;
+            case IrStructuredValue structured:
+                foreach (var (name, field) in structured.Fields)
+                {
+                    if (string.IsNullOrWhiteSpace(name) || field is null) throw new IrException($"Invalid structured value in '{context}'.");
+                    ValidateValue(document, module, field, context + "." + name);
+                }
+                break;
+            case IrCollectionValue collection:
+                foreach (var item in collection.Items)
+                {
+                    if (item is null) throw new IrException($"Null collection item in '{context}'.");
+                    ValidateValue(document, module, item, context + "[]");
+                }
+                break;
+            case IrChoiceValue choice:
+                if (string.IsNullOrWhiteSpace(choice.Alternative) || choice.Value is null)
+                    throw new IrException($"Invalid choice value in '{context}'.");
+                ValidateValue(document, module, choice.Value, context + "." + choice.Alternative);
+                break;
+            case IrOctetStringValue octets:
+                if (octets.Hex.Length % 2 != 0 || octets.Hex.Any(c => !Uri.IsHexDigit(c)))
+                    throw new IrException($"Invalid octetString value in '{context}'.");
+                break;
             case IrIntegerValue:
             case IrBooleanValue:
             case IrNullValue:
@@ -327,6 +377,33 @@ public static class IrValidator
             default:
                 throw new IrException($"Unknown value expression in '{context}'.");
         }
+    }
+
+    private static void ValidateSelector(IrDocument document, IrModule module, IReadOnlyList<IrComponent> fields, List<string> path, string context)
+    {
+        TypeExpr? selected = null;
+        for (var i = 0; i < path.Count; i++)
+        {
+            selected = fields.SingleOrDefault(f => f.Name == path[i])?.Type
+                ?? throw new IrException($"Unresolved selector component '{path[i]}' in '{context}'.");
+            var visited = new HashSet<string>();
+            while (selected is RefType reference)
+            {
+                var target = document.Modules.SingleOrDefault(m => m.Name == (reference.Module ?? module.Name));
+                if (target is null || !visited.Add(target.Name + "." + reference.Name))
+                    throw new IrException($"Unresolved selector type in '{context}'.");
+                selected = target.Types.SingleOrDefault(t => t.Name == reference.Name)?.Type
+                    ?? throw new IrException($"Unresolved selector type in '{context}'.");
+            }
+            if (i + 1 < path.Count)
+                fields = selected switch
+                {
+                    SequenceType sequence => sequence.Components, SetType set => set.Components,
+                    _ => throw new IrException($"Selector path traverses a non-constructed type in '{context}'.")
+                };
+        }
+        if (selected is not (OidType or IntegerType))
+            throw new IrException($"Open-type selector in '{context}' must select OBJECT IDENTIFIER or INTEGER.");
     }
 
     private static void ValidateConstraint(IrConstraint? constraint, string context)

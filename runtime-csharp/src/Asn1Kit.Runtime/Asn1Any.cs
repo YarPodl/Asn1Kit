@@ -47,6 +47,15 @@ public readonly struct Asn1Any : IEquatable<Asn1Any>
     public static Asn1Any CopyFrom(ReadOnlySpan<byte> encoded) =>
         new(encoded.Length == 0 ? ReadOnlyMemory<byte>.Empty : encoded.ToArray());
 
+    /// <summary>Encodes a supplied value as one DER TLV using the runtime writer.</summary>
+    public static Asn1Any FromValue<T>(T value, Action<Asn1Writer, T> encode)
+    {
+        if (encode is null) throw new ArgumentNullException(nameof(encode));
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        encode(writer, value);
+        return new Asn1Any(writer.Encode());
+    }
+
     /// <summary>
     /// Builds a definite-length TLV from <paramref name="tag"/> and value octets into an owned buffer.
     /// </summary>

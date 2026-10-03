@@ -17,6 +17,9 @@ public enum TokenKind
     Range,
     Ellipsis,
     Union,
+    Ampersand,
+    At,
+    Colon,
     CString,
     BString,
     HString,
@@ -43,13 +46,17 @@ public readonly struct Token
 
 public sealed class CompileException : Exception
 {
-    public CompileException(string message, int line, int column)
-        : base($"{message} ({line}:{column})")
+    public CompileException(string message, int line, int column, string? source = null)
+        : base($"{message} ({(source is null ? "" : source + ":")}{line}:{column})")
     {
+        Detail = message;
+        SourceFile = source;
         Line = line;
         Column = column;
     }
 
     public int Line { get; }
+    public string Detail { get; }
+    public string? SourceFile { get; }
     public int Column { get; }
 }

@@ -1743,6 +1743,7 @@ public sealed class PolicyQualifierInfo_Qualifier
     private static readonly Asn1Oid Oid_1_3_6_1_5_5_7_2_1 = Asn1Oid.Parse("1.3.6.1.5.5.7.2.1");
     private static readonly Asn1Oid Oid_1_3_6_1_5_5_7_2_2 = Asn1Oid.Parse("1.3.6.1.5.5.7.2.2");
 
+    public static bool IsKnown(Asn1Oid key) => key.Equals(Oid_1_3_6_1_5_5_7_2_1) || key.Equals(Oid_1_3_6_1_5_5_7_2_2);
     public static PolicyQualifierInfo_Qualifier Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
         Decode(reader, definedByKey, expectedTag: null);
 
@@ -1867,6 +1868,7 @@ public sealed class AnotherName_Value
     private static readonly Asn1Oid Oid_1_3_6_1_5_5_7_8_7 = Asn1Oid.Parse("1.3.6.1.5.5.7.8.7");
     private static readonly Asn1Oid Oid_1_3_6_1_5_5_7_8_9 = Asn1Oid.Parse("1.3.6.1.5.5.7.8.9");
 
+    public static bool IsKnown(Asn1Oid key) => key.Equals(Oid_1_3_6_1_5_5_7_8_5) || key.Equals(Oid_1_3_6_1_5_5_7_8_7) || key.Equals(Oid_1_3_6_1_5_5_7_8_9);
     public static AnotherName_Value Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
         Decode(reader, definedByKey, expectedTag: null);
 

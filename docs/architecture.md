@@ -32,11 +32,12 @@ ASN.1 module  -->  Compiler (C#)  -->  IR JSON (schema v1)
 | Проект | Каталог | Роль |
 | --- | --- | --- |
 | `Asn1Kit.Ir` | compiler | Модель IR, JSON, валидация по JSON Schema |
-| `Asn1Kit.Compiler` | compiler | Лексер, парсер, резолв имён, эмит IR |
+| `Asn1Kit.Compiler` | compiler | Лексер, парсер AST, семантический resolver, построение IR |
 | `Asn1Kit.Codegen` | compiler | `ILanguageBackend` |
 | `Asn1Kit.Codegen.CSharp` | compiler | Генерация `.cs` |
 | `Asn1Kit.Cli` | compiler | Команды `compile` и `generate` |
 | `Asn1Kit.Runtime` | runtime-csharp | TLV, примитивы BER/DER |
+| `Asn1Kit.Modern` | runtime-csharp/generated | Отдельная сборка PKIX/CMS RFC 5911/5912/6268/8410 |
 
 C++ планируется как backend в `compiler/` и runtime в `runtime-cpp/`, без изменений фронтенда.
 
@@ -46,11 +47,11 @@ C++ планируется как backend в `compiler/` и runtime в `runtime-
 
 `asn1kit compile` перезаписывает IR из ASN.1. Правки `options` вносите в JSON перед `generate`, либо не пересобирайте IR. Альтернатива — sidecar options-patch (`IrOptionsPatch` / CLI `--patch`): deep-merge в `module.Options` и в `IrComponent.Options` у SEQUENCE/SET/CHOICE (`Module.Type.field`). На `generate` можно записать результат через `--ir-output` (так собирается bench IR).
 
-Компилятор делает двухфазный резолв значений: сначала собирает все type/value assignments модулей, затем разворачивает OID-цепочки, подставляет `ub-*` в constraints и `DEFAULT`. Это нужно, потому что в реальных модулях (например PKIX1Explicit88) upper bounds объявлены в конце файла.
+В компиляторе три этапа: `Asn1Parser` создаёт AST; `InformationResolver` собирает символы всех модулей, разрешает imports/governors/IOC, специализирует параметризованные типы и превращает object sets в таблицы; `IrBuilder` строит конкретный IR, разворачивает OID-цепочки, bounds и DEFAULT. После этого выполняются `IrValidator` и проверка JSON Schema. Частные CLASS и шаблоны в публичный IR не попадают. Ссылки вперёд разрешаются после сбора объявлений, генератор не выполняет ASN.1-семантику.
 
 ### Границы профиля компилятора
 
-Поддерживается широко используемое подмножество X.680 / PKCS-модулей: value assignments, `SET`/`SET OF`, `BIT STRING`, строки, время, `ANY DEFINED BY`, `DEFAULT`, `SIZE`/диапазоны. Вне профиля — явная `CompileException`: `CLASS` / information objects, `COMPONENTS OF`, параметризованные типы, `REAL`, `EXTERNAL`. Нераспознанные constraint-формы сохраняются в `constraint.unsupported`, а не отбрасываются молча.
+Поддерживаются legacy PKCS/PKIX/DVCS и современный корпус PKIX/CMS с CLASS, objects/sets, WITH SYNTAX и параметризованными типами. Проверяемые конструкции и ограничения перечислены в [status.md](status.md). Вне профиля — явная `CompileException` с позицией; нераспознанные constraint-формы сохраняются в `constraint.unsupported`.
 
 C# codegen пока не покрывает все kind IR; на неподдерживаемых kind бросает `NotSupportedException`.
 

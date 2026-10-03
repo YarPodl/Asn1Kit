@@ -63,6 +63,18 @@ internal sealed class Asn1Lexer
 
             switch (ch)
             {
+                case '&':
+                    Advance();
+                    tokens.Add(new Token(TokenKind.Ampersand, "&", line, column));
+                    continue;
+                case '@':
+                    Advance();
+                    tokens.Add(new Token(TokenKind.At, "@", line, column));
+                    continue;
+                case ':':
+                    Advance();
+                    tokens.Add(new Token(TokenKind.Colon, ":", line, column));
+                    continue;
                 case '{':
                     Advance();
                     tokens.Add(new Token(TokenKind.LBrace, "{", line, column));

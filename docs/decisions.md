@@ -44,7 +44,7 @@
 
 **Причина.** Молча пропущенная конструкция даёт IR, который выглядит правильным, и неверный сгенерированный кодек. Ошибка обнаружится на чужих данных.
 
-**Последствие.** `CLASS`, `COMPONENTS OF`, `REAL`, `EXTERNAL` роняют `CompileException` с позицией. Нераспознанные формы constraint не отбрасываются, а сохраняются в `constraint.unsupported` — данные не теряются, но и не притворяются понятыми.
+**Последствие.** `COMPONENTS OF`, `REAL`, `EXTERNAL` и формы IOC вне документированного профиля роняют `CompileException` с позицией. Нераспознанные формы constraint не отбрасываются, а сохраняются в `constraint.unsupported` — данные не теряются, но и не притворяются понятыми.
 
 ## Неподдержанный бэкендом kind падает до генерации
 
@@ -90,7 +90,7 @@
 
 ## ANY — `Asn1Any` или open-type + `bindings`
 
-**Причина.** В PKIX `parameters ANY DEFINED BY algorithm` и `AttributeValue ::= ANY` встречаются постоянно. Полноценный open-type в ASN.1 1994+ — information object classes (`CLASS`, object sets), которые вне профиля компилятора. Без таблицы OID → тип нельзя честно выбрать concrete decode; молчаливый пропуск TLV недопустим. Представлять open-type как `object` неудобно; `bool` для NULL — ещё хуже.
+**Причина.** В legacy PKIX `parameters ANY DEFINED BY algorithm` и `AttributeValue ::= ANY` встречаются постоянно. Для них таблица задаётся overlay; современные information object classes разрешаются компилятором в конкретные bindings. Без таблицы OID → тип нельзя честно выбрать concrete decode; молчаливый пропуск TLV недопустим. Представлять open-type как `object` неудобно; `bool` для NULL — ещё хуже.
 
 **Последствие.**
 - Без `bindings`: runtime хранит полный TLV (`Asn1Any.EncodedMemory`); поле `definedBy` в IR информационное. `WriteAny` пишет байты as-is (`WriteRaw`); IMPLICIT-перегрузка снимает value-октеты и собирает новый TLV.
@@ -141,7 +141,7 @@
 
 ## CMS — RFC 5652 §12.1 curated; C# namespace `Asn1Kit.Cms`
 
-**Причина.** As-published RFC 5911/6268 CMS использует `CLASS` и parameterized types — вне профиля. RFC 5652 §12.1 (`CryptographicMessageSyntax2004`) — ASN.1:1988 с `ANY DEFINED BY`, как PKIX Explicit88. Полный `CertificateChoices` тянет `AttributeCertificate` / `AttributeCertificateV1` (модулей нет; RFC 5755 ещё и импортирует `ContentInfo` из CMS → цикл). Имена `Attribute`, `Time`, `AttributeValue`, `SubjectKeyIdentifier` совпадают с PKIX, но формы другие — общий C# namespace дал бы коллизии типов.
+**Причина.** При введении legacy CMS конструкции CLASS и parameterized types ещё не поддерживались. RFC 5652 §12.1 (`CryptographicMessageSyntax2004`) — ASN.1:1988 с `ANY DEFINED BY`, как PKIX Explicit88. Полный `CertificateChoices` тянет `AttributeCertificate` / `AttributeCertificateV1` (в legacy-графе этих модулей нет; RFC 5755 импортирует `ContentInfo` из CMS → цикл). Имена `Attribute`, `Time`, `AttributeValue`, `SubjectKeyIdentifier` совпадают с PKIX, но формы другие — общий C# namespace дал бы коллизии типов.
 
 **Последствие.** Фикстура [cms-2004.asn](../compiler/fixtures/asn1/cms-2004.asn): IMPORTS только из PKIX1Explicit88; в `CertificateChoices` оставлены `certificate` / `extendedCertificate` / `other` (ветки `[1]`/`[2]` attr-cert отложены). Golden IR [cms-2004.json](../compiler/fixtures/ir/cms-2004.json) — Explicit + Implicit + CMS; C# CMS в `Asn1Kit.Cms`, PKIX в `Asn1Kit.Pkix` (тот же csproj). Open-type `ContentInfo.content` — [cms-bindings.json](../compiler/fixtures/opentype/cms-bindings.json). IrBuilder резолвит типы/значения **по модулю** (одно имя в разных модулях допустимо).
 
@@ -149,7 +149,19 @@
 
 **Причина.** RFC 3029 Appendix E соответствует поддерживаемому профилю, но зависит от CMP, CRMF, OCSP, ESS, S/MIME и CMS. Опубликованный модуль имеет verified errata на импорты `DigestAlgorithmIdentifier` и `GeneralNames`, использует разные написания `CertID` / `ESSCertID` и ссылается на старые X.509/CMS module identifiers. RFC 2510, в свою очередь, оставляет модуль для `CertificationRequest` на стороне реализации.
 
-**Последствие.** В [compiler/fixtures/asn1](../compiler/fixtures/asn1/) хранятся полные модули исходных RFC с комментариями о curated-правках: старые X.509 imports направлены на RFC 5280 Explicit88/Implicit88, CMS — на `CryptographicMessageSyntax2004`, а PKCS#10 собран из RFC 2314. Namespace задаёт [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json). Промежуточный DVCS IR не коммитится; `*.g.cs` — golden и сверяется генерацией из полного графа. RFC 5911/5912 не используются, потому что их `CLASS`, object sets и parameterized types остаются вне профиля.
+**Последствие.** В [compiler/fixtures/asn1](../compiler/fixtures/asn1/) хранятся полные модули исходных RFC с комментариями о curated-правках: старые X.509 imports направлены на RFC 5280 Explicit88/Implicit88, CMS — на `CryptographicMessageSyntax2004`, а PKCS#10 собран из RFC 2314. Namespace задаёт [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json). Промежуточный DVCS IR не коммитится; `*.g.cs` — golden и сверяется генерацией из полного графа. Замена зависимостей на RFC 5911/5912 потребовала бы изменения module identifiers в этом графе, поэтому современная сборка выпускается отдельно.
+
+## Современный ASN.1 — частная семантика компилятора, конкретный IR v1
+
+**Причина.** CLASS, WITH SYNTAX, objects/sets и параметризация описывают связи идентификаторов и типов. Если передать их в публичный IR, каждый backend должен будет повторять ASN.1 resolver. RFC 5912 меняет язык описания PKIX без изменения wire-формы; существующий runtime подходит для разрешённой модели.
+
+**Последствие.** `InformationResolver` работает между AST и `IrBuilder`. Публичный IR содержит специализации, bindings, selectors, CONTAINING, составные значения и метаданные расширений. Новые поля типизированы и аддитивны; options остаётся настройками. Специализации кэшируются по модулю/шаблону/actual arguments, имя содержит стабильный hash. Лимиты 512 специализаций и 128 активных разрешений превращают растущую рекурсию в диагностику.
+
+Современная таблица отмечается `tableExtensible` даже без `...`: неизвестный ключ сохраняется raw без legacy угадывания по universal-тегу; неверное содержимое известного binding отвергается. Пустой `{...}` не пополняется импортированными алгоритмами. Закрытость набора и правила присутствия параметров пока не исполняются, что явно отражено в [status.md](status.md).
+
+CONTAINING сохраняет contents и типизированное значение в `Asn1Contained<T>`; runtime открывает окно содержимого в том же reader и пишет содержимое в тот же writer. OF получает состояние через static callback. SET читает зависимые TLV после дискриминатора. Составные DEFAULT создаются для каждого объекта, а DER сравнивает структуру, включая мультимножество SET OF. Неизвестные extensions сохраняют TLV и позицию внутри SEQUENCE; SET сортирует известные и неизвестные компоненты совместно.
+
+Корпус RFC 5911/5912/6268/8410 и все его зависимости хранится с документированными исправлениями. `Asn1Kit.Modern` имеет отдельную сборку и namespace на модуль; legacy PKIX/CMS/DVCS сохраняется и проверяется теми же consumer codec-тестами. Перенаправления по похожим именам нет; явно заданный module OID может разрешить импорт по точной идентичности.
 
 ## C++ — ещё один бэкенд, а не форк фронтенда
 

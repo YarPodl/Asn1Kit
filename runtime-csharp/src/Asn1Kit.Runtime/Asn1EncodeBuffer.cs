@@ -86,8 +86,11 @@ internal struct Asn1EncodeBuffer
     }
 
     public Asn1EncodeFrame BeginConstructed(Asn1Tag tag)
+        => BeginValue(tag.AsConstructed());
+
+    public Asn1EncodeFrame BeginValue(Asn1Tag tag)
     {
-        WriteTag(tag.AsConstructed());
+        WriteTag(tag);
         var lengthPosition = _length;
         EnsureAdditionalCapacity(InitialConstructedLengthBytes);
         _buffer[_length++] = 0;

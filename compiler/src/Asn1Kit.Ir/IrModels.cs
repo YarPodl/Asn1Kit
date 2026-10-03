@@ -62,6 +62,9 @@ public sealed class IrValueDef
 
 public sealed class IrComponent
 {
+    public bool? ExtensionAddition { get; set; }
+
+    public int? ExtensionGroup { get; set; }
     public string Name { get; set; } = "";
 
     public TypeExpr Type { get; set; } = null!;
@@ -163,6 +166,38 @@ public sealed class IrValueRef : IrValue
     public string? Module { get; set; }
 }
 
+public sealed class IrStructuredValue : IrValue
+{
+    public override string Kind => ValueKinds.Structured;
+    public Dictionary<string, IrValue> Fields { get; set; } = new();
+}
+
+public sealed class IrCollectionValue : IrValue
+{
+    public override string Kind => ValueKinds.Collection;
+    public List<IrValue> Items { get; set; } = new();
+}
+
+public sealed class IrChoiceValue : IrValue
+{
+    public override string Kind => ValueKinds.Choice;
+    public string Alternative { get; set; } = "";
+    public IrValue Value { get; set; } = null!;
+}
+
+public sealed class IrTypedValue : IrValue
+{
+    public override string Kind => ValueKinds.Typed;
+    public TypeExpr Type { get; set; } = null!;
+    public IrValue Value { get; set; } = null!;
+}
+
+public sealed class IrOctetStringValue : IrValue
+{
+    public override string Kind => ValueKinds.OctetString;
+    public string Hex { get; set; } = "";
+}
+
 [JsonConverter(typeof(TypeExprConverter))]
 public abstract class TypeExpr
 {
@@ -189,6 +224,7 @@ public sealed class NullType : TypeExpr
 public sealed class OctetStringType : TypeExpr
 {
     public override string Kind => TypeKinds.OctetString;
+    public TypeExpr? Containing { get; set; }
 }
 
 public sealed class OidType : TypeExpr
@@ -206,6 +242,7 @@ public sealed class IntegerType : TypeExpr
 public sealed class EnumeratedType : TypeExpr
 {
     public override string Kind => TypeKinds.Enumerated;
+    public bool? Extensible { get; set; }
 
     public List<IrNamedNumber> Values { get; set; } = new();
 }
@@ -213,6 +250,7 @@ public sealed class EnumeratedType : TypeExpr
 public sealed class BitStringType : TypeExpr
 {
     public override string Kind => TypeKinds.BitString;
+    public TypeExpr? Containing { get; set; }
 
     public List<IrNamedNumber>? NamedBits { get; set; }
 }
@@ -244,6 +282,15 @@ public sealed class AnyType : TypeExpr
 
     /// <summary>Open-type table: sibling OID/INTEGER key → concrete type (from overlay or hand-authored IR).</summary>
     public List<IrOpenTypeBinding>? Bindings { get; set; }
+    public IrOpenTypeSelector? Selector { get; set; }
+    public bool? TableExtensible { get; set; }
+}
+
+/// <summary>A component path relative to an enclosing constructed value (0 = immediate owner).</summary>
+public sealed class IrOpenTypeSelector
+{
+    public int Levels { get; set; }
+    public List<string> Path { get; set; } = new();
 }
 
 public sealed class IrOpenTypeBinding
@@ -329,6 +376,11 @@ public static class TypeKinds
 
 public static class ValueKinds
 {
+    public const string Structured = "structured";
+    public const string Typed = "typed";
+    public const string Collection = "collection";
+    public const string Choice = "choice";
+    public const string OctetString = "octetString";
     public const string Integer = "integer";
     public const string Boolean = "boolean";
     public const string Null = "null";

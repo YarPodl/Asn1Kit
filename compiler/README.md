@@ -31,6 +31,7 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/i
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-ir-goldens.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-csharp-golden.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-bench.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-modern.ps1
 ```
 
 ## Фикстуры
@@ -38,6 +39,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-bench.ps1
 | Путь | Назначение |
 | --- | --- |
 | `fixtures/asn1/` | Входные модули ASN.1 (в т.ч. `cms-2004.asn`) |
+| `fixtures/asn1/modern/` | 35 модулей RFC 5911/5912/6268/8410; происхождение и исправления в [README](fixtures/asn1/modern/README.md) |
+| `fixtures/ir/modern-pkix-cms.json` | **Golden**: весь современный корпус; регенерация через `scripts/regenerate-modern.ps1` |
 | `fixtures/opentype/pkix-bindings.json` | Sidecar open-type bindings для golden PKIX |
 | `fixtures/opentype/cms-bindings.json` | Bindings `ContentInfo.content` для CMS |
 | `fixtures/ir/pkix1-explicit88.json` | **Golden**: только через CLI (+ `--bindings`), руками не править |
@@ -49,8 +52,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-bench.ps1
 | `fixtures/ir/example.json` | **Ручная**: `options.csharp.*`; компилятором не пересобирать |
 | `../runtime-csharp/generated/Asn1Kit.Pkix/*.g.cs` | **Golden C#**: PKIX/CMS/DVCS и зависимости из полного `.asn`-графа + `dvcs.patch.json`, руками не править |
 | `../runtime-csharp/generated/Asn1Kit.Pkix.Bench/*.g.cs` | **Bench C#**: из patch / `cms-2004-bench.json`, руками не править |
+| `../runtime-csharp/generated/Asn1Kit.Modern/*.g.cs` | **Modern C#**: конкретные специализации/IOC-таблицы из корпуса; руками не править |
 
 Golden IR сверяют `PkixExplicit88Tests` / `PkixImplicit88Tests` / `Cms2004Tests`; golden C# — `PkixGeneratedCodeTests`; bench IR — `Cms2004BenchTests` / `IrOptionsPatchTests`. Diff фикстуры — часть ревью.
+
+`ModernRfcTests` компилирует все современные модули, сверяет IR/C# golden, собирает исходники через Roslyn и проверяет внешние DER-векторы. `ModernAsn1Tests` проверяет минимальные конструкции и диагностику. Фронтенд: parser → частный `InformationResolver` → `IrBuilder` → валидаторы; CLASS и шаблоны не передаются генератору. Профиль и ограничения — [status.md](../docs/status.md).
 
 ## Плейбуки
 

@@ -3058,6 +3058,7 @@ public sealed class AttributeTypeAndValue_Value
         }
     }
 
+    public static bool IsKnown(Asn1Oid key) => key.Equals(PKIX1Explicit88Oids.IdAtName) || key.Equals(PKIX1Explicit88Oids.IdAtSurname) || key.Equals(PKIX1Explicit88Oids.IdAtGivenName) || key.Equals(PKIX1Explicit88Oids.IdAtInitials) || key.Equals(PKIX1Explicit88Oids.IdAtGenerationQualifier) || key.Equals(PKIX1Explicit88Oids.IdAtCommonName) || key.Equals(PKIX1Explicit88Oids.IdAtLocalityName) || key.Equals(PKIX1Explicit88Oids.IdAtStateOrProvinceName) || key.Equals(PKIX1Explicit88Oids.IdAtOrganizationName) || key.Equals(PKIX1Explicit88Oids.IdAtOrganizationalUnitName) || key.Equals(PKIX1Explicit88Oids.IdAtTitle) || key.Equals(PKIX1Explicit88Oids.IdAtPseudonym) || key.Equals(PKIX1Explicit88Oids.IdAtDnQualifier) || key.Equals(PKIX1Explicit88Oids.IdAtCountryName) || key.Equals(PKIX1Explicit88Oids.IdAtSerialNumber) || key.Equals(PKIX1Explicit88Oids.IdDomainComponent) || key.Equals(PKIX1Explicit88Oids.IdEmailAddress);
     public static AttributeTypeAndValue_Value Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
         Decode(reader, definedByKey, expectedTag: null);
 
@@ -3229,6 +3230,7 @@ public sealed class AlgorithmIdentifier_Parameters
     private static readonly Asn1Oid Oid_1_2_840_113549_1_1_12 = Asn1Oid.Parse("1.2.840.113549.1.1.12");
     private static readonly Asn1Oid Oid_1_2_840_113549_1_1_13 = Asn1Oid.Parse("1.2.840.113549.1.1.13");
 
+    public static bool IsKnown(Asn1Oid key) => key.Equals(Oid_1_2_840_113549_1_1_1) || key.Equals(Oid_1_2_840_113549_1_1_5) || key.Equals(Oid_1_2_840_113549_1_1_11) || key.Equals(Oid_1_2_840_113549_1_1_12) || key.Equals(Oid_1_2_840_113549_1_1_13);
     public static AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
         Decode(reader, definedByKey, expectedTag: null);
 

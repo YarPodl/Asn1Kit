@@ -26,6 +26,7 @@ internal sealed class ModuleAst : AstNode
 
 internal sealed class ImportAst : AstNode
 {
+    public OidValueAst? Oid { get; init; }
     public string Module { get; init; } = "";
     public List<string> Types { get; } = new();
     public List<string> Values { get; } = new();
@@ -33,6 +34,7 @@ internal sealed class ImportAst : AstNode
 
 internal sealed class TypeAssignmentAst : AstNode
 {
+    public List<FormalParameterAst> Parameters { get; } = new();
     public string Name { get; init; } = "";
     public TypeAst Type { get; init; } = null!;
 }
@@ -46,11 +48,13 @@ internal sealed class ValueAssignmentAst : AstNode
 
 internal abstract class TypeAst : AstNode
 {
+    public TagDefaultKind? TagDefaultOverride { get; set; }
     public ConstraintAst? Constraint { get; set; }
 }
 
 internal sealed class EnumeratedTypeAst : TypeAst
 {
+    public bool Extensible { get; set; }
     public EnumeratedTypeAst(List<NamedNumberAst> values) => Values = values;
 
     public List<NamedNumberAst> Values { get; }
@@ -94,6 +98,9 @@ internal sealed class AnyTypeAst : TypeAst
     public AnyTypeAst(string? definedBy = null) => DefinedBy = definedBy;
 
     public string? DefinedBy { get; }
+    public List<OpenTypeBindingAst>? Bindings { get; set; }
+    public Asn1Kit.Ir.IrOpenTypeSelector? Selector { get; set; }
+    public bool? TableExtensible { get; set; }
 }
 
 internal sealed class NamedNumberAst : AstNode
@@ -104,6 +111,7 @@ internal sealed class NamedNumberAst : AstNode
 
 internal sealed class TypeReferenceAst : TypeAst
 {
+    public List<IReadOnlyList<Token>>? Arguments { get; set; }
     public TypeReferenceAst(string name, string? module = null)
     {
         Name = name;
@@ -167,6 +175,8 @@ internal sealed class TagAst : AstNode
 
 internal sealed class FieldAst : AstNode
 {
+    public bool ExtensionAddition { get; set; }
+    public int? ExtensionGroup { get; set; }
     public string Name { get; init; } = "";
     public TypeAst Type { get; init; } = null!;
     public bool Optional { get; set; }
@@ -175,6 +185,7 @@ internal sealed class FieldAst : AstNode
 
 internal sealed class ConstraintAst : AstNode
 {
+    public TypeAst? Containing { get; set; }
     public BoundAst? SizeMin { get; set; }
     public BoundAst? SizeMax { get; set; }
     public bool HasSize { get; set; }
@@ -186,6 +197,7 @@ internal sealed class ConstraintAst : AstNode
 
 internal sealed class BoundAst : AstNode
 {
+    public string? Module { get; init; }
     public bool IsMin { get; init; }
     public bool IsMax { get; init; }
     public long? Number { get; init; }

@@ -8,3 +8,4 @@ BenchmarkDotNet.Artifacts/
 TestResults/
 /generated/
 artifacts/
+/.cache/

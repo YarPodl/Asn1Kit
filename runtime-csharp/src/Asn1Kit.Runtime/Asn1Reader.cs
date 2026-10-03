@@ -90,6 +90,9 @@ public sealed class Asn1Reader
     public Asn1ReaderScope EnterExplicit(Asn1Tag expected) =>
         PushContentsWindow(ReadConstructedContents(expected));
 
+    /// <summary>Decodes a previously retained encoding with the same rules and restores the current window on dispose.</summary>
+    public Asn1ReaderScope EnterEncoded(ReadOnlyMemory<byte> encoded) => PushContentsWindow(encoded);
+
     /// <summary>Consumes a TLV, eagerly decodes it, and retains its original complete encoding.</summary>
     public Asn1Value<T> ReadWithOriginalEncoding<T>(Func<Asn1Reader, T> decode)
         where T : notnull
@@ -110,6 +113,13 @@ public sealed class Asn1Reader
     /// <summary>Reads a SEQUENCE OF value by decoding each element with <paramref name="decodeItem"/>.</summary>
     public T[] ReadSequenceOf<T>(Asn1Tag expected, Func<Asn1Reader, T> decodeItem)
     {
+        if (decodeItem is null) throw new ArgumentNullException(nameof(decodeItem));
+        return ReadSequenceOf(expected, decodeItem, static (reader, decode) => decode(reader));
+    }
+
+    /// <summary>Reads elements with explicitly supplied state and a reusable callback.</summary>
+    public T[] ReadSequenceOf<T, TState>(Asn1Tag expected, TState state, Func<Asn1Reader, TState, T> decodeItem)
+    {
         if (decodeItem is null)
         {
             throw new ArgumentNullException(nameof(decodeItem));
@@ -121,7 +131,9 @@ public sealed class Asn1Reader
             return Array.Empty<T>();
         }
 
-        var first = decodeItem(this);
+        var remaining = Remaining;
+        var first = decodeItem(this, state);
+        if (Remaining >= remaining) throw new Asn1Exception("Collection decoder did not consume an element.");
         if (Eof)
         {
             return new[] { first };
@@ -142,7 +154,9 @@ public sealed class Asn1Reader
                     rented = grown;
                 }
 
-                rented[count++] = decodeItem(this);
+                remaining = Remaining;
+                rented[count++] = decodeItem(this, state);
+                if (Remaining >= remaining) throw new Asn1Exception("Collection decoder did not consume an element.");
             }
 
             var result = new T[count];
@@ -158,6 +172,32 @@ public sealed class Asn1Reader
     /// <summary>Reads a SET OF value by decoding each element with <paramref name="decodeItem"/>.</summary>
     public T[] ReadSetOf<T>(Asn1Tag expected, Func<Asn1Reader, T> decodeItem) =>
         ReadSequenceOf(expected, decodeItem);
+
+    /// <summary>Reads SET OF elements with explicit state.</summary>
+    public T[] ReadSetOf<T, TState>(Asn1Tag expected, TState state, Func<Asn1Reader, TState, T> decodeItem) =>
+        ReadSequenceOf(expected, state, decodeItem);
+
+    /// <summary>Reads contained OCTET STRING or BIT STRING content, decoding known structures in the same reader.</summary>
+    public Asn1Contained<T> ReadContained<T, TState>(Asn1Tag tag, bool bitString, bool known, TState state, Func<Asn1Reader, TState, T> decode)
+    {
+        if (decode is null) throw new ArgumentNullException(nameof(decode));
+        ReadOnlyMemory<byte> contents;
+        var unusedBits = 0;
+        if (bitString)
+        {
+            var bits = ReadBitString(tag);
+            contents = bits.Memory; unusedBits = bits.UnusedBits;
+        }
+        else contents = ReadOctetString(tag);
+        if (!known) return Asn1Contained<T>.FromEncoded(contents, unusedBits);
+        if (unusedBits != 0) throw new Asn1Exception("ASN.1 contained content must be octet-aligned.");
+        using (PushContentsWindow(contents))
+        {
+            var value = decode(this, state);
+            ThrowIfNotEmpty();
+            return Asn1Contained<T>.Decoded(contents, value);
+        }
+    }
 
     /// <summary>Reads boolean from the current ASN.1 input.</summary>
     public bool ReadBoolean(Asn1Tag expected) =>

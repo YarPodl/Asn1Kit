@@ -10,13 +10,13 @@
 | --- | --- | --- | --- |
 | `boolean` | да | `bool` | `ParserTests`, `PrimitiveCodecTests`, `PrimitiveOracleTests` |
 | `integer` | да, `namedValues` | `int`…`Asn1Integer` по опции / выводу | `CompilerTests`, `Primitive*`, `RoundTripTests` |
-| `enumerated` | да | C# `enum`; inline → `Owner_Field` | `PkixImplicit88Tests`, `RoundTripTests`, `PrimitiveCodecTests` |
+| `enumerated` | да, автоматическая нумерация и `...` | C# `enum`; inline → `Owner_Field` | `ModernAsn1Tests`, `PkixImplicit88Tests`, `PrimitiveCodecTests` |
 | `bitString` | да, `namedBits` | `Asn1BitString` или класс + `[Flags]` | `Primitive*`, `RuntimeTests`, `RoundTripTests` |
-| `octetString` | да | `ReadOnlyMemory<byte>` | `Primitive*`, `RoundTripTests`, `RuntimeTests` |
+| `octetString` | да, `CONTAINING` | `ReadOnlyMemory<byte>` / `Asn1Contained<T>` | `ModernAsn1Tests`, `ContainedValueTests`, `Primitive*` |
 | `oid` | да (dotted; base-128 в т.ч. `2.999…`) | `Asn1Oid` — единственный codec (string↔arcs↔contents); dotted `string` — warm (`Encode`/`DecodeString`) | `Primitive*`, `RuntimeTests` |
 | `string` (12 форм) | да | `string` + `Asn1StringForm` | `Primitive*` (все 12), `RuntimeTests`, `RoundTripTests` |
 | `time` (`utc` / `generalized`) | да; `fractionDigits` 0…7 | `DateTimeOffset` + `Asn1TimeForm` | `Primitive*`, `RuntimeTests`, `RoundTripTests` |
-| `any` (+ `definedBy`) | да; `bindings` через overlay | `Asn1Any` или `Owner_Field`; mismatch soft/strict | `OpenTypeBindingsTests`, `RuntimeTests`, `RoundTripTests` |
+| `any` | legacy `definedBy` и overlay; IOC → `selector` + `bindings` | `Asn1Any` / `Owner_Field`; современный выбор строго по ключу | `ModernAsn1Tests`, `ModernRfcTests`, `OpenTypeBindingsTests` |
 | `sequence` | да, `extensible` | класс или `struct` (`options.csharp.valueType`); `lazy` → `Asn1Lazy<T>`; `retainEncoded` → `Asn1Value<T>` с исходным TLV | `RoundTripTests`, `Pkix*`, `Asn1Kit.Pkix.Tests` |
 | `set` | да | класс/`struct`; DER-порядок по тегу; `lazy` / `retainEncoded` | `RoundTripTests`, `ParserTests`, `RuntimeTests` |
 | `choice` | да | `…Kind` + `From…`; однотипные → `Kind`+`Value`; один вариант → алиас | `ParserTests`, `Pkix*`, `RoundTripTests`, `Asn1Kit.Pkix.Tests` |
@@ -28,7 +28,7 @@
 
 ## Значения, теги, constraints
 
-- Значения IR: `integer`, `boolean`, `null`, `oid`, `string`, `bitString`, `ref` (в скомпилированном IR обычно раскрыт).
+- Значения IR: `integer`, `boolean`, `null`, `oid`, `string`, `bitString`, `octetString`, `structured`, `collection`, `choice`, `typed`, `ref` (в скомпилированном IR обычно раскрыт).
 - C# компоненты с `DEFAULT` генерируются как ненуллабельные свойства с ASN.1-значением по умолчанию; decoder подставляет его при отсутствии компонента, DER encoder не записывает равное default значение.
 - `EXPLICIT` / `IMPLICIT` / `AUTOMATIC TAGS`; `IMPORTS` между переданными файлами.
 - Тег без mode на локальном или импортированном `CHOICE` раскрывается как `EXPLICIT`.
@@ -37,7 +37,30 @@
 - Нетегированные `CHOICE` в open-type bindings рекурсивно раскрываются в альтернативы `Owner_Field`, включая именованные, импортированные и inline-типы. Вложенный объект `CHOICE` не создаётся; свойства группируются по CLR-типу, `Kind` сохраняет выбранную wire-альтернативу. OID ограничивает набор допустимых веток; тегированный или рекурсивный `CHOICE` остаётся отдельной альтернативой. Самостоятельные типы `CHOICE` сохраняют свой API.
 - Options patch: CLI `--patch` / `IrOptionsPatch`; `modules`, `fields` (`Module.Type.field`), `types` (`Module.Type`); bench — [cms-2004-bench.patch.json](../compiler/fixtures/ir/cms-2004-bench.patch.json).
 - `SIZE` / диапазоны → `constraint.size` / `constraint.value`; прочее → `constraint.unsupported`.
-- Вне профиля (явный `CompileException`): `CLASS`/IOC, `COMPONENTS OF`, `REAL`, `EXTERNAL`, параметризованные типы.
+- Вне профиля (явный `CompileException`): `COMPONENTS OF`, `REAL`, `EXTERNAL`, параметризованные значения/объекты и формы IOC, перечисленные ниже.
+
+## Современные PKIX/CMS
+
+Проверяемый корпус — **35 модулей** RFC 5911/5912, RFC 6268 и RFC 8410 со всеми зависимостями внутри корпуса. Исходники и документированные исправления: [modern/README.md](../compiler/fixtures/asn1/modern/README.md). Полный корпус компилируется в [modern-pkix-cms.json](../compiler/fixtures/ir/modern-pkix-cms.json), C# выпускается в отдельной сборке [Asn1Kit.Modern](../runtime-csharp/generated/Asn1Kit.Modern/README.md), с namespace на каждый модуль. Исходный граф PKIX/CMS/DVCS и его namespace сохраняются: современный граф имеет другие module identifiers.
+
+Поддержано:
+
+- `CLASS`, фиксированные поля типов/значений, поля объектов/наборов, обязательные/OPTIONAL/DEFAULT поля, default object syntax и `WITH SYNTAX` с вложенными optional groups по шаблону класса.
+- Объекты, aliases, наборы с объединением (`|`/`,`), ссылками, inline objects и `...`; обращения `object.&field`, включая вложенные поля. Проверяются governors, обязательные поля и конфликты UNIQUE для ключей OID/INTEGER.
+- Параметризованные типы с параметрами типов, классов, значений и object sets; конкретные специализации переиспользуются, имена стабильны. Анонимные actual types сохраняют TAGS и ссылки исходного модуля. Обычная рекурсия остаётся ссылкой; растущая параметризация завершается диагностикой по лимиту.
+- `IMPORTS` разрешаются по объявлениям/governors, квалификация модулем снимает неоднозначность одноимённых наборов. При отсутствующем текстовом имени допускается точное совпадение явно указанного module OID; эвристики похожих имён нет.
+- Component relation selectors: локальный, внешний контекст и вложенный путь; `SEQUENCE OF`/`SET OF` передают состояние элементам через static callbacks. SET откладывает зависимое значение до чтения дискриминатора.
+- `OCTET STRING` / `BIT STRING (CONTAINING ...)`: исходные contents и типизированное содержимое, включая OID-таблицы. CMS `id-data`, которому не объявлена ASN.1-структура, сохраняет сырые октеты.
+- Составные assignments/DEFAULT (SEQUENCE/SET, OF, CHOICE, typed open values); каждый экземпляр получает собственные изменяемые значения. DER сравнивает DEFAULT структурно, SET OF — как мультимножество.
+- Граница расширений, trailing root и `[[n: ...]]`; неизвестные additions сохраняются, обязательные поля группы проверяются при её присутствии. Расширяемый CHOICE сохраняет неизвестную альтернативу. `INSTANCE OF TYPE-IDENTIFIER` поддерживается в стандартной форме.
+
+Современные открытые типы при неизвестном OID сохраняют raw TLV без угадывания по тегу; несовместимое содержимое известного binding вызывает `Asn1Exception`. Пустой набор `{...}` остаётся пустым. Legacy ANY сохраняет прежнюю политику fallback/mismatch.
+
+Это профиль структуры и BER/DER-кодеков, **не полная поддержка X.680–X.683**. Пока не исполняются закрытость наборов, `WITH COMPONENTS`, фиксированные value sets и правила присутствия параметров (`PRESENT`/`ABSENT`/`OPTIONAL`). Нераспознанные ограничения сохраняются в `constraint.unsupported`; поля IOC остаются в частной семантической модели. Переменные governors `&Type`, параметризованные CLASS/объекты/наборы, произвольные операции пересечения/разности наборов, неоднозначные optional templates и обобщённый `INSTANCE OF` вне профиля. Контекст selectors требуется в месте определения; произвольное перенесение такого типа через отдельный typedef не поддерживается.
+
+Проверки: `ModernAsn1Tests` (минимальные конструкции, ошибки, специализации, selectors, defaults, extensions, Roslyn и DER), `ModernRfcTests` (весь IR/C# golden, внешние сертификаты, CMS, RSA-PSS), `ContainedValueTests` (DER/BER, opaque contents, повреждения). Старый граф и codec-тесты DVCS остаются в обязательном полном `dotnet test Asn1Kit.sln`.
+
+Сборка современного generated-кода пока выдаёт nullable-предупреждения для обязательных ссылочных свойств и выбранных ветвей CHOICE. Объекты для encode должны быть заполнены вызывающим кодом; nullable-контекст включён, предупреждения не подавляются.
 
 ## Runtime BER/DER
 
@@ -72,10 +95,7 @@ DVCS codec-тесты покрывают request `message` / `messageImprint`, �
 
 ### Открыто
 
-1. Поддержка современных ASN.1. Open-type follow-up:
-   - **1a.** остальные PKIX ANY через overlay: DN `AttributeValue` и `AnotherName` — готово; остаётся `ExtensionAttribute`
-   - **1b.** curated `.asn` параметров алгоритмов из RFC 5912 (без `CLASS`) + bindings
-   - **1c.** парсер/IR для `CLASS`, object sets, parameterized `AlgorithmIdentifier{…}`
+1. Расширение современного профиля: исполняемые table/presence constraints, `WITH COMPONENTS`, переменные governors и остальные формы X.681–X.683. Базовый корпус RFC и семантическое разрешение реализованы; отдельные curated `.asn` без CLASS не нужны как предварительный этап. Legacy overlay `ExtensionAttribute` остаётся самостоятельной задачей.
 2. Пул массивов (constructed BER concat, DER SET OF sort)
 3. Второй oracle — BouncyCastle (не gate `dotnet test`)
 4. **DER: reject constructed OCTET / BIT STRING / string** (или soft-флаг в `Asn1ReaderOptions`, default как сейчас accept; выровнять код с формулировкой § Runtime «BER: constructed…»). Фикстуры + runtime-api soft-inventory

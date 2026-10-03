@@ -10,6 +10,7 @@
 | --- | --- |
 | `src/Asn1Kit.Runtime` | Теги, writer/reader, примитивы |
 | `generated/Asn1Kit.Pkix` | Golden C# PKIX1Explicit88 + PKIX1Implicit88 + CryptographicMessageSyntax2004; `*.g.cs` руками не править |
+| `generated/Asn1Kit.Modern` | Отдельная сборка современного корпуса PKIX/CMS; [профиль и регенерация](generated/Asn1Kit.Modern/README.md) |
 | `tests/Asn1Kit.Runtime.Tests` | Матрица hex, oracle BCL, внешние векторы, `RuntimeTests` |
 | `tests/Asn1Kit.Pkix.Tests` | Encode/decode `Certificate` / `CertificateList` на NIST PKITS |
 | `benchmarks/Asn1Kit.Pkix.Benchmarks` | BenchmarkDotNet: Decode/Encode Cert/CRL/CMS vs BCL и BouncyCastle (не `dotnet test`) |

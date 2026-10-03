@@ -49,6 +49,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `WriteSequenceOf<T>` / `WriteSetOf<T>` | hot | collection + item callback; `SET OF` inherits DER sorting from its internal scope |
 | `EnterSequence` / `EnterSet` / `EnterSequenceOf` / `EnterSetOf` / `EnterExplicit` → `Asn1WriterScope` | hot | allocation-free begin/end frame; запись содержимого через тот же writer; dispose только один раз и в LIFO-порядке |
 | `ReadSequenceOf<T>` / `ReadSetOf<T>` | hot | owned `T[]` (`Array.Empty<T>` when empty); OF fill без capturing-лямбды вокруг `decodeItem` |
+| `ReadSequenceOf<T,TState>` / `ReadSetOf<T,TState>` | hot | явное состояние + `Func<Asn1Reader,TState,T>`; generated static callback не захватывает контекст |
 | `EnterSequence` / `EnterSet` / `EnterExplicit` → `Asn1ReaderScope` | hot | allocation-free push/pop окна; фактический тег обязан быть constructed; dispose только один раз и в LIFO-порядке |
 | `Asn1Reader(byte[]\|offset/length\|ReadOnlyMemory, encoding, options?)` / `Remaining` / `Options` / `ThrowIfNotEmpty()` | hot | входной `ReadOnlyMemory` не копируется; `Remaining` — байты до конца текущего окна; `ThrowIfNotEmpty` отвергает непрочитанный хвост без продвижения; options сохраняются во вложенных окнах |
 | `Asn1ReaderScope` | hot | публично только `Dispose`; произвольного `Push` и доступа к reader через scope нет |
@@ -63,6 +64,19 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `Asn1BitString.Span` / `Memory` / `ToArray` | hot | view (из reader) / detach |
 | `Asn1Integer.Span` / `Memory` / `ToArray` | hot | view DER contents / detach |
 | `Asn1Primitives` wrappers (+ `Asn1OctetString.TryDecode`) | warm | делегируют |
+| `Asn1Contained<T>` / `ReadContained` / `WriteContained` | hot | исходные contents + optional typed value; typed decode в том же reader, encode в том же writer |
+| `Asn1Extension(Position, Value)` | hot | raw TLV неизвестного addition и позиция относительно известных компонентов SEQUENCE |
+| `EnterEncoded(ReadOnlyMemory<byte>)` | hot | окно ранее прочитанного TLV для отложенного SET decode; те же encoding/options, scope восстанавливает исходное окно |
+| `Asn1Any.FromValue<T>(T, Action<Asn1Writer,T>)` | warm | owned DER TLV одного значения, используется для констант typed DEFAULT |
+| `Asn1Collection.Count<T>(IReadOnlyList<T>, Func<T,bool>)` | hot | подсчёт без временных коллекций для структурного сравнения SET OF DEFAULT |
+
+## CONTAINING и неизвестные расширения
+
+`Asn1Contained<T>.FromValue(value)` создаёт типизированное содержимое; `FromEncoded(contents, unusedBits = 0)` сохраняет opaque октеты без копирования. `Contents` — первоначальные contents внешнего OCTET/BIT STRING (без unused-bits октета у BIT STRING); `Value` доступно только при `HasValue`. Decode известного содержимого проверяет полное потребление и сохраняет исходные октеты. Encode известного значения использует текущее `Value`, opaque — исходные `Contents`. Typed BIT STRING требует выравнивания по октетам; opaque сохраняет `UnusedBits`.
+
+`ReadContained<T,TState>(tag, bitString, known, state, decode)` использует обычный string decoder, включая constructed BER, и при `known` открывает окно contents с теми же options. `WriteContained<T>(tag, bitString, value, encode)` помещает DER-представление в primitive string, используя тот же буфер. Открытые современные таблицы передают `known` по OID; неизвестное содержимое не декодируется по догадке о теге.
+
+`Asn1Extension.Position` — индекс следующего известного компонента в SEQUENCE. Generated decode сохраняет порядок неизвестных TLV, encode вставляет их перед этим компонентом; в SET position не используется, runtime сортирует все компоненты для DER. Расширяемый CHOICE сохраняет неизвестный полный TLV. Сырые неизвестные TLV пишутся как есть, поэтому канонизация их внутренней ASN.1-структуры без объявленного типа не выполняется.
 
 ## Заметки
 
@@ -70,7 +84,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 - `EnterSequence` / `EnterSet` / `EnterSequenceOf` / `EnterSetOf` / `EnterExplicit` пишут nested contents в тот же encode-буфер. Для коллекций есть компактные `WriteSequenceOf<T>` / `WriteSetOf<T>` с item callback; они открывают соответствующий scope и вызывают callback для каждого элемента. Под length резервируется один октет, а `Asn1WriterScope.Dispose()` завершает frame и при необходимости расширяет длинную форму с минимальным сдвигом. `EnterSetOf` и `WriteSetOf<T>` сортируют TLV только в DER; обычный `EnterSet` сохраняет порядок полей.
 - Writer scopes закрываются ровно один раз и строго в LIFO-порядке. Scope не транзакционный: при исключении внутри `using` уже записанное содержимое финализируется; после обработки ошибки writer можно очистить через `Reset()`. Внутренний буфер — `byte[]` (не `MemoryStream`), `Reset()` не уменьшает capacity.
 - `ReadSequenceOf` / `ReadSetOf` возвращают `T[]`: пустой OF → `Array.Empty<T>()`; один элемент → `new T[1]` без pool; иначе grow через `ArrayPool<T>` и точный `T[count]`. Заполнение идёт через `EnterSequence` (без capturing-лямбды вокруг `decodeItem`).
-- `EnterSequence` / `EnterSet` / `EnterExplicit` — единственный публичный nesting API для decode. Для encode эти scope-методы обязательны для structured значений и ручного OF; collection OF дополнительно использует `WriteSequenceOf<T>` / `WriteSetOf<T>` с `Action<Asn1Writer, T>`.
+- `EnterSequence` / `EnterSet` / `EnterExplicit` открывают обычные constructed значения; `EnterEncoded` открывает сохранённый TLV, `ReadContained` — contents string-типа. Для encode scope-методы обязательны для structured значений и ручного OF; collection OF дополнительно использует `WriteSequenceOf<T>` / `WriteSetOf<T>` с `Action<Asn1Writer, T>`.
 - `Asn1ReaderScope.Dispose()` только восстанавливает внешнее окно и проверяет LIFO. Полное потребление проверяется явным `ThrowIfNotEmpty()` в успешной ветке decode, чтобы исключение при unwind не заменяло исходную ошибку.
 - `ReadInt32` / `TryGetInt32` (и UInt32/Int64/UInt64) разбирают short contents без `BigInteger`.
 - `ReadTime` парсит UTCTime/GeneralizedTime из contents octets без промежуточной `string` (`Asn1TextCodec.ParseTime(span)`).
