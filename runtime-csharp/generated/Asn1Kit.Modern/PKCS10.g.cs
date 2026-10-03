@@ -8,9 +8,9 @@ using Asn1Kit.Runtime;
 
 namespace Asn1Kit.Modern.PKCS10;
 
-public sealed class SubjectPublicKeyInfo798109DDA90DF270
+public sealed class SubjectPublicKeyInfo
 {
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier75E588CEE47673C5 Algorithm { get; set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Algorithm { get; set; }
     public Asn1BitString SubjectPublicKey { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -24,14 +24,14 @@ public sealed class SubjectPublicKeyInfo798109DDA90DF270
         }
     }
 
-    public static SubjectPublicKeyInfo798109DDA90DF270 Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
+    public static SubjectPublicKeyInfo Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
 
-    public static SubjectPublicKeyInfo798109DDA90DF270 Decode(Asn1Reader reader, Asn1Tag tag)
+    public static SubjectPublicKeyInfo Decode(Asn1Reader reader, Asn1Tag tag)
     {
         using (reader.EnterSequence(tag))
         {
-            var value = new SubjectPublicKeyInfo798109DDA90DF270();
-            value.Algorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier75E588CEE47673C5.Decode(reader, Asn1Tag.Sequence);
+            var value = new SubjectPublicKeyInfo();
+            value.Algorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.SubjectPublicKey = reader.ReadBitString(Asn1Tag.BitString);
             reader.ThrowIfNotEmpty();
             return value;
@@ -41,7 +41,7 @@ public sealed class SubjectPublicKeyInfo798109DDA90DF270
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class Attribute100DDF123AA4863E
+public sealed class Attribute
 {
     public Asn1Oid Type { get; set; }
     public Asn1Any[] Values { get; set; } = Array.Empty<Asn1Any>();
@@ -60,13 +60,13 @@ public sealed class Attribute100DDF123AA4863E
         }
     }
 
-    public static Attribute100DDF123AA4863E Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
+    public static Attribute Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
 
-    public static Attribute100DDF123AA4863E Decode(Asn1Reader reader, Asn1Tag tag)
+    public static Attribute Decode(Asn1Reader reader, Asn1Tag tag)
     {
         using (reader.EnterSequence(tag))
         {
-            var value = new Attribute100DDF123AA4863E();
+            var value = new Attribute();
             value.Type = reader.ReadOid(Asn1Tag.ObjectIdentifier);
             value.Values = reader.ReadSetOf(Asn1Tag.Set, static inner => inner.ReadAny());
             reader.ThrowIfNotEmpty();
@@ -81,10 +81,10 @@ public sealed class CertificationRequestInfo
 {
     public int Version { get; set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
-    public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute30071208C05157D5[][] Subject { get; set; } = Array.Empty<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute30071208C05157D5[]>();
-    public SubjectPublicKeyInfo798109DDA90DF270 SubjectPKInfo { get; set; }
-    /// <summary>ASN.1 alias Attributes-3A27AF78A62ADD27 ::= SET OF Attribute-100DDF123AA4863E.</summary>
-    public Attribute100DDF123AA4863E[] Attributes { get; set; } = Array.Empty<Attribute100DDF123AA4863E>();
+    public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[][] Subject { get; set; } = Array.Empty<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[]>();
+    public SubjectPublicKeyInfo SubjectPKInfo { get; set; }
+    /// <summary>ASN.1 alias Attributes ::= SET OF Attribute.</summary>
+    public Attribute[] Attributes { get; set; } = Array.Empty<Attribute>();
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -116,9 +116,9 @@ public sealed class CertificationRequestInfo
         {
             var value = new CertificationRequestInfo();
             value.Version = reader.ReadInt32(Asn1Tag.Integer);
-            value.Subject = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute30071208C05157D5.Decode(inner, Asn1Tag.Sequence)));
-            value.SubjectPKInfo = Asn1Kit.Modern.PKCS10.SubjectPublicKeyInfo798109DDA90DF270.Decode(reader, Asn1Tag.Sequence);
-            value.Attributes = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), static inner => Asn1Kit.Modern.PKCS10.Attribute100DDF123AA4863E.Decode(inner, Asn1Tag.Sequence));
+            value.Subject = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute.Decode(inner, Asn1Tag.Sequence)));
+            value.SubjectPKInfo = Asn1Kit.Modern.PKCS10.SubjectPublicKeyInfo.Decode(reader, Asn1Tag.Sequence);
+            value.Attributes = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), static inner => Asn1Kit.Modern.PKCS10.Attribute.Decode(inner, Asn1Tag.Sequence));
             reader.ThrowIfNotEmpty();
             return value;
         }
@@ -130,7 +130,7 @@ public sealed class CertificationRequestInfo
 public sealed class CertificationRequest
 {
     public CertificationRequestInfo CertificationRequestInfo { get; set; }
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier0D47FDF62A87EF32 SignatureAlgorithm { get; set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier SignatureAlgorithm { get; set; }
     public Asn1BitString Signature { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -153,7 +153,7 @@ public sealed class CertificationRequest
         {
             var value = new CertificationRequest();
             value.CertificationRequestInfo = Asn1Kit.Modern.PKCS10.CertificationRequestInfo.Decode(reader, Asn1Tag.Sequence);
-            value.SignatureAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier0D47FDF62A87EF32.Decode(reader, Asn1Tag.Sequence);
+            value.SignatureAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.Signature = reader.ReadBitString(Asn1Tag.BitString);
             reader.ThrowIfNotEmpty();
             return value;

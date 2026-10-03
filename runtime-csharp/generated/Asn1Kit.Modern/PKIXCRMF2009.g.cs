@@ -150,7 +150,7 @@ public sealed class CertReqMsg
 {
     public CertRequest CertReq { get; set; }
     public ProofOfPossession? Popo { get; set; }
-    public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute17E04241103F8A62[]? RegInfo { get; set; }
+    public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[]? RegInfo { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -187,7 +187,7 @@ public sealed class CertReqMsg
             }
             if (reader.TryPeekTag(out var tag_RegInfo) && tag_RegInfo.MatchesIgnoreConstructed(Asn1Tag.Sequence))
             {
-                value.RegInfo = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute17E04241103F8A62.Decode(inner, Asn1Tag.Sequence));
+                value.RegInfo = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute.Decode(inner, Asn1Tag.Sequence));
             }
             reader.ThrowIfNotEmpty();
             return value;
@@ -201,8 +201,8 @@ public sealed class CertRequest
 {
     public Asn1Integer CertReqId { get; set; }
     public CertTemplate CertTemplate { get; set; }
-    /// <summary>ASN.1 alias Controls ::= SEQUENCE OF SingleAttribute-8C396A65465F6133.</summary>
-    public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute8C396A65465F6133[]? Controls { get; set; }
+    /// <summary>ASN.1 alias Controls ::= SEQUENCE OF SingleAttribute.</summary>
+    public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[]? Controls { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -233,7 +233,7 @@ public sealed class CertRequest
             value.CertTemplate = Asn1Kit.Modern.PKIXCRMF2009.CertTemplate.Decode(reader, Asn1Tag.Sequence);
             if (reader.TryPeekTag(out var tag_Controls) && tag_Controls.MatchesIgnoreConstructed(Asn1Tag.Sequence))
             {
-                value.Controls = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute8C396A65465F6133.Decode(inner, Asn1Tag.Sequence));
+                value.Controls = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute.Decode(inner, Asn1Tag.Sequence));
             }
             reader.ThrowIfNotEmpty();
             return value;
@@ -247,19 +247,242 @@ public sealed class CertTemplate
 {
     public int? Version { get; set; }
     public Asn1Integer? SerialNumber { get; set; }
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier7C4F553AA4AB3FAC? SigningAlg { get; set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? SigningAlg { get; set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
-    public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute30071208C05157D5[][]? Issuer { get; set; }
+    public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[][]? Issuer { get; set; }
     public OptionalValidity? Validity { get; set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
-    public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute30071208C05157D5[][]? Subject { get; set; }
-    public Asn1Kit.Modern.PKIX1Explicit2009.SubjectPublicKeyInfo? PublicKey { get; set; }
+    public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[][]? Subject { get; set; }
+    public Asn1Kit.Modern.PKCS10.SubjectPublicKeyInfo? PublicKey { get; set; }
     /// <summary>ASN.1 alias UniqueIdentifier ::= BIT STRING.</summary>
     public Asn1BitString? IssuerUID { get; set; }
     /// <summary>ASN.1 alias UniqueIdentifier ::= BIT STRING.</summary>
     public Asn1BitString? SubjectUID { get; set; }
-    /// <summary>ASN.1 alias Extensions-F3EC90E03480DB25 ::= SEQUENCE OF Extension-57013FB2B956F99B.</summary>
-    public Asn1Kit.Modern.PKIXCommonTypes2009.Extension57013FB2B956F99B[]? Extensions { get; set; }
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    public Asn1Kit.Modern.PKIXCommonTypes2009.Extension[]? Extensions { get; set; }
+
+    public bool TryDecodeSigningAlgParameters<T>(out T value)
+    {
+        value = default!;
+        if (SigningAlg is null || SigningAlg.Parameters is not { } raw) return false;
+        switch (SigningAlg.Algorithm.ToString())
+        {
+            case "1.2.840.113549.1.1.2":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.113549.1.1.4":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.113549.1.1.5":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10040.4.3":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10045.4.1":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "2.16.840.1.101.3.4.3.1":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "2.16.840.1.101.3.4.3.2":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10045.4.3.1":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10045.4.3.2":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10045.4.3.3":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10045.4.3.4":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.113549.1.1.10":
+            {
+                if (typeof(T) != typeof(Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams.Decode(inner, Asn1Tag.Sequence);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            default: return false;
+        }
+    }
+
+    public void SetSigningAlgParameters<T>(T value)
+    {
+        if (SigningAlg is null) throw new Asn1Exception("Missing SigningAlg.");
+        switch (SigningAlg.Algorithm.ToString())
+        {
+            case "1.2.840.113549.1.1.2":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                SigningAlg.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.113549.1.1.4":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                SigningAlg.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.113549.1.1.5":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                SigningAlg.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10040.4.3":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                SigningAlg.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10045.4.1":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                SigningAlg.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "2.16.840.1.101.3.4.3.1":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                SigningAlg.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "2.16.840.1.101.3.4.3.2":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                SigningAlg.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10045.4.3.1":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                SigningAlg.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10045.4.3.2":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                SigningAlg.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10045.4.3.3":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                SigningAlg.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10045.4.3.4":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                SigningAlg.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.113549.1.1.10":
+            {
+                if (value is not Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                typed.Encode(writer, Asn1Tag.Sequence);
+                SigningAlg.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            default: throw new Asn1Exception("Unknown open-type key.");
+        }
+    }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -348,13 +571,13 @@ public sealed class CertTemplate
             }
             if (reader.TryPeekTag(out var tag_SigningAlg) && tag_SigningAlg.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
             {
-                value.SigningAlg = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier7C4F553AA4AB3FAC.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true));
+                value.SigningAlg = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true));
             }
             if (reader.TryPeekTag(out var tag_Issuer) && tag_Issuer.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
             {
                 using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
                 {
-                    value.Issuer = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute30071208C05157D5.Decode(inner, Asn1Tag.Sequence)));
+                    value.Issuer = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute.Decode(inner, Asn1Tag.Sequence)));
                     reader.ThrowIfNotEmpty();
                 }
             }
@@ -366,13 +589,13 @@ public sealed class CertTemplate
             {
                 using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 5, true)))
                 {
-                    value.Subject = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute30071208C05157D5.Decode(inner, Asn1Tag.Sequence)));
+                    value.Subject = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute.Decode(inner, Asn1Tag.Sequence)));
                     reader.ThrowIfNotEmpty();
                 }
             }
             if (reader.TryPeekTag(out var tag_PublicKey) && tag_PublicKey.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 6, true)))
             {
-                value.PublicKey = Asn1Kit.Modern.PKIX1Explicit2009.SubjectPublicKeyInfo.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 6, true));
+                value.PublicKey = Asn1Kit.Modern.PKCS10.SubjectPublicKeyInfo.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 6, true));
             }
             if (reader.TryPeekTag(out var tag_IssuerUID) && tag_IssuerUID.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 7, false)))
             {
@@ -384,7 +607,7 @@ public sealed class CertTemplate
             }
             if (reader.TryPeekTag(out var tag_Extensions) && tag_Extensions.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 9, true)))
             {
-                value.Extensions = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 9, true), static inner => Asn1Kit.Modern.PKIXCommonTypes2009.Extension57013FB2B956F99B.Decode(inner, Asn1Tag.Sequence));
+                value.Extensions = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 9, true), static inner => Asn1Kit.Modern.PKIXCommonTypes2009.Extension.Decode(inner, Asn1Tag.Sequence));
             }
             reader.ThrowIfNotEmpty();
             return value;
@@ -571,8 +794,231 @@ public sealed class ProofOfPossession
 public sealed class POPOSigningKey
 {
     public POPOSigningKeyInput? PoposkInput { get; set; }
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier7C4F553AA4AB3FAC AlgorithmIdentifier { get; set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier AlgorithmIdentifier { get; set; }
     public Asn1BitString Signature { get; set; }
+
+    public bool TryDecodeAlgorithmIdentifierParameters<T>(out T value)
+    {
+        value = default!;
+        if (AlgorithmIdentifier is null || AlgorithmIdentifier.Parameters is not { } raw) return false;
+        switch (AlgorithmIdentifier.Algorithm.ToString())
+        {
+            case "1.2.840.113549.1.1.2":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.113549.1.1.4":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.113549.1.1.5":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10040.4.3":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10045.4.1":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "2.16.840.1.101.3.4.3.1":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "2.16.840.1.101.3.4.3.2":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10045.4.3.1":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10045.4.3.2":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10045.4.3.3":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10045.4.3.4":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.113549.1.1.10":
+            {
+                if (typeof(T) != typeof(Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams.Decode(inner, Asn1Tag.Sequence);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            default: return false;
+        }
+    }
+
+    public void SetAlgorithmIdentifierParameters<T>(T value)
+    {
+        if (AlgorithmIdentifier is null) throw new Asn1Exception("Missing AlgorithmIdentifier.");
+        switch (AlgorithmIdentifier.Algorithm.ToString())
+        {
+            case "1.2.840.113549.1.1.2":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                AlgorithmIdentifier.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.113549.1.1.4":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                AlgorithmIdentifier.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.113549.1.1.5":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                AlgorithmIdentifier.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10040.4.3":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                AlgorithmIdentifier.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10045.4.1":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                AlgorithmIdentifier.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "2.16.840.1.101.3.4.3.1":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                AlgorithmIdentifier.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "2.16.840.1.101.3.4.3.2":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                AlgorithmIdentifier.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10045.4.3.1":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                AlgorithmIdentifier.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10045.4.3.2":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                AlgorithmIdentifier.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10045.4.3.3":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                AlgorithmIdentifier.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10045.4.3.4":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                AlgorithmIdentifier.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.113549.1.1.10":
+            {
+                if (value is not Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                typed.Encode(writer, Asn1Tag.Sequence);
+                AlgorithmIdentifier.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            default: throw new Asn1Exception("Unknown open-type key.");
+        }
+    }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -600,7 +1046,7 @@ public sealed class POPOSigningKey
             {
                 value.PoposkInput = Asn1Kit.Modern.PKIXCRMF2009.POPOSigningKeyInput.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
             }
-            value.AlgorithmIdentifier = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier7C4F553AA4AB3FAC.Decode(reader, Asn1Tag.Sequence);
+            value.AlgorithmIdentifier = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.Signature = reader.ReadBitString(Asn1Tag.BitString);
             reader.ThrowIfNotEmpty();
             return value;
@@ -613,7 +1059,7 @@ public sealed class POPOSigningKey
 public sealed class POPOSigningKeyInput
 {
     public POPOSigningKeyInput_AuthInfo AuthInfo { get; set; }
-    public Asn1Kit.Modern.PKIX1Explicit2009.SubjectPublicKeyInfo PublicKey { get; set; }
+    public Asn1Kit.Modern.PKCS10.SubjectPublicKeyInfo PublicKey { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -634,7 +1080,7 @@ public sealed class POPOSigningKeyInput
         {
             var value = new POPOSigningKeyInput();
             value.AuthInfo = Asn1Kit.Modern.PKIXCRMF2009.POPOSigningKeyInput_AuthInfo.Decode(reader);
-            value.PublicKey = Asn1Kit.Modern.PKIX1Explicit2009.SubjectPublicKeyInfo.Decode(reader, Asn1Tag.Sequence);
+            value.PublicKey = Asn1Kit.Modern.PKCS10.SubjectPublicKeyInfo.Decode(reader, Asn1Tag.Sequence);
             reader.ThrowIfNotEmpty();
             return value;
         }
@@ -645,8 +1091,44 @@ public sealed class POPOSigningKeyInput
 
 public sealed class PKMACValue
 {
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierFBBC13A731BAE939 AlgId { get; set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier AlgId { get; set; }
     public Asn1BitString Value { get; set; }
+
+    public bool TryDecodeAlgIdParameters<T>(out T value)
+    {
+        value = default!;
+        if (AlgId is null || AlgId.Parameters is not { } raw) return false;
+        switch (AlgId.Algorithm.ToString())
+        {
+            case "1.2.840.113533.7.66.13":
+            {
+                if (typeof(T) != typeof(PBMParameter)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Kit.Modern.PKIXCRMF2009.PBMParameter.Decode(inner, Asn1Tag.Sequence);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            default: return false;
+        }
+    }
+
+    public void SetAlgIdParameters<T>(T value)
+    {
+        if (AlgId is null) throw new Asn1Exception("Missing AlgId.");
+        switch (AlgId.Algorithm.ToString())
+        {
+            case "1.2.840.113533.7.66.13":
+            {
+                if (value is not PBMParameter typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                typed.Encode(writer, Asn1Tag.Sequence);
+                AlgId.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            default: throw new Asn1Exception("Unknown open-type key.");
+        }
+    }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -666,7 +1148,7 @@ public sealed class PKMACValue
         using (reader.EnterSequence(tag))
         {
             var value = new PKMACValue();
-            value.AlgId = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierFBBC13A731BAE939.Decode(reader, Asn1Tag.Sequence);
+            value.AlgId = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.Value = reader.ReadBitString(Asn1Tag.BitString);
             reader.ThrowIfNotEmpty();
             return value;
@@ -679,9 +1161,81 @@ public sealed class PKMACValue
 public sealed class PBMParameter
 {
     public ReadOnlyMemory<byte> Salt { get; set; }
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierE7007A2478A2F7D1 Owf { get; set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Owf { get; set; }
     public Asn1Integer IterationCount { get; set; }
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier970496D3D4270B28 Mac { get; set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Mac { get; set; }
+
+    public bool TryDecodeOwfParameters<T>(out T value)
+    {
+        value = default!;
+        if (Owf is null || Owf.Parameters is not { } raw) return false;
+        switch (Owf.Algorithm.ToString())
+        {
+            case "1.3.14.3.2.26":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            default: return false;
+        }
+    }
+
+    public void SetOwfParameters<T>(T value)
+    {
+        if (Owf is null) throw new Asn1Exception("Missing Owf.");
+        switch (Owf.Algorithm.ToString())
+        {
+            case "1.3.14.3.2.26":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Owf.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            default: throw new Asn1Exception("Unknown open-type key.");
+        }
+    }
+
+    public bool TryDecodeMacParameters<T>(out T value)
+    {
+        value = default!;
+        if (Mac is null || Mac.Parameters is not { } raw) return false;
+        switch (Mac.Algorithm.ToString())
+        {
+            case "1.3.6.1.5.5.8.1.2":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            default: return false;
+        }
+    }
+
+    public void SetMacParameters<T>(T value)
+    {
+        if (Mac is null) throw new Asn1Exception("Missing Mac.");
+        switch (Mac.Algorithm.ToString())
+        {
+            case "1.3.6.1.5.5.8.1.2":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Mac.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            default: throw new Asn1Exception("Unknown open-type key.");
+        }
+    }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -704,9 +1258,9 @@ public sealed class PBMParameter
         {
             var value = new PBMParameter();
             value.Salt = reader.ReadOctetString(Asn1Tag.OctetString);
-            value.Owf = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierE7007A2478A2F7D1.Decode(reader, Asn1Tag.Sequence);
+            value.Owf = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.IterationCount = reader.ReadIntegerValue(Asn1Tag.Integer);
-            value.Mac = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier970496D3D4270B28.Decode(reader, Asn1Tag.Sequence);
+            value.Mac = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             reader.ThrowIfNotEmpty();
             return value;
         }
@@ -883,10 +1437,10 @@ public sealed class EncKeyWithID
 public sealed class PrivateKeyInfo
 {
     public Asn1Integer Version { get; set; }
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierDB17C229310705BD PrivateKeyAlgorithm { get; set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier PrivateKeyAlgorithm { get; set; }
     public ReadOnlyMemory<byte> PrivateKey { get; set; }
-    /// <summary>ASN.1 alias Attributes ::= SET OF AttributeSet-3E6CFFDB27092015.</summary>
-    public Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet3E6CFFDB27092015[]? Attributes { get; set; }
+    /// <summary>ASN.1 alias Attributes ::= SET OF AttributeSet.</summary>
+    public Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet[]? Attributes { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -915,11 +1469,11 @@ public sealed class PrivateKeyInfo
         {
             var value = new PrivateKeyInfo();
             value.Version = reader.ReadIntegerValue(Asn1Tag.Integer);
-            value.PrivateKeyAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierDB17C229310705BD.Decode(reader, Asn1Tag.Sequence);
+            value.PrivateKeyAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.PrivateKey = reader.ReadOctetString(Asn1Tag.OctetString);
             if (reader.TryPeekTag(out var tag_Attributes) && tag_Attributes.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
-                value.Attributes = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), static inner => Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet3E6CFFDB27092015.Decode(inner, Asn1Tag.Sequence));
+                value.Attributes = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), static inner => Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet.Decode(inner, Asn1Tag.Sequence));
             }
             reader.ThrowIfNotEmpty();
             return value;
@@ -1171,10 +1725,10 @@ public sealed class EncryptedKey
 
 public sealed class EncryptedValue
 {
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier4DD576B2E470B5D8? IntendedAlg { get; set; }
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier4DD576B2E470B5D8? SymmAlg { get; set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? IntendedAlg { get; set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? SymmAlg { get; set; }
     public Asn1BitString? EncSymmKey { get; set; }
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier4DD576B2E470B5D8? KeyAlg { get; set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? KeyAlg { get; set; }
     public ReadOnlyMemory<byte>? ValueHint { get; set; }
     public Asn1BitString EncValue { get; set; }
 
@@ -1217,11 +1771,11 @@ public sealed class EncryptedValue
             var value = new EncryptedValue();
             if (reader.TryPeekTag(out var tag_IntendedAlg) && tag_IntendedAlg.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
-                value.IntendedAlg = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier4DD576B2E470B5D8.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                value.IntendedAlg = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
             }
             if (reader.TryPeekTag(out var tag_SymmAlg) && tag_SymmAlg.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
             {
-                value.SymmAlg = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier4DD576B2E470B5D8.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
+                value.SymmAlg = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
             }
             if (reader.TryPeekTag(out var tag_EncSymmKey) && tag_EncSymmKey.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false)))
             {
@@ -1229,7 +1783,7 @@ public sealed class EncryptedValue
             }
             if (reader.TryPeekTag(out var tag_KeyAlg) && tag_KeyAlg.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
             {
-                value.KeyAlg = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier4DD576B2E470B5D8.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true));
+                value.KeyAlg = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true));
             }
             if (reader.TryPeekTag(out var tag_ValueHint) && tag_ValueHint.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, false)))
             {

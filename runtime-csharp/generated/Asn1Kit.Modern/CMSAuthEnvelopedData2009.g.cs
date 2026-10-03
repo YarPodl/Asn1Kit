@@ -26,14 +26,13 @@ public sealed class AuthEnvelopedData
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.OriginatorInfo? OriginatorInfo { get; set; }
     /// <summary>ASN.1 alias RecipientInfos ::= SET OF RecipientInfo.</summary>
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.RecipientInfo[] RecipientInfos { get; set; } = Array.Empty<Asn1Kit.Modern.CryptographicMessageSyntax2009.RecipientInfo>();
-    /// <summary>ASN.1 alias EncryptedContentInfo ::= EncryptedContentInfoType-5F95BB1E8946976E.</summary>
-    public Asn1Kit.Modern.CryptographicMessageSyntax2010.EncryptedContentInfoType5F95BB1E8946976E AuthEncryptedContentInfo { get; set; }
-    /// <summary>ASN.1 alias AuthAttributes ::= Attributes-376B52E5D51DE4DA.</summary>
-    public Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute3E74D713091476DE[]? AuthAttrs { get; set; }
+    public Asn1Kit.Modern.CMSAuthEnvelopedData2010.EncryptedContentInfo AuthEncryptedContentInfo { get; set; }
+    /// <summary>ASN.1 alias AuthAttributes ::= Attributes.</summary>
+    public Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[]? AuthAttrs { get; set; }
     /// <summary>ASN.1 alias MessageAuthenticationCode ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> Mac { get; set; }
-    /// <summary>ASN.1 alias UnauthAttributes ::= Attributes-21C1E5179F1FDC52.</summary>
-    public Asn1Kit.Modern.CryptographicMessageSyntax2010.AttributeB886FFAF35FCD072[]? UnauthAttrs { get; set; }
+    /// <summary>ASN.1 alias UnauthAttributes ::= Attributes.</summary>
+    public Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[]? UnauthAttrs { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -82,15 +81,15 @@ public sealed class AuthEnvelopedData
                 value.OriginatorInfo = Asn1Kit.Modern.CryptographicMessageSyntax2009.OriginatorInfo.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
             }
             value.RecipientInfos = reader.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.CryptographicMessageSyntax2009.RecipientInfo.Decode(inner));
-            value.AuthEncryptedContentInfo = Asn1Kit.Modern.CryptographicMessageSyntax2010.EncryptedContentInfoType5F95BB1E8946976E.Decode(reader, Asn1Tag.Sequence);
+            value.AuthEncryptedContentInfo = Asn1Kit.Modern.CMSAuthEnvelopedData2010.EncryptedContentInfo.Decode(reader, Asn1Tag.Sequence);
             if (reader.TryPeekTag(out var tag_AuthAttrs) && tag_AuthAttrs.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
             {
-                value.AuthAttrs = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), static inner => Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute3E74D713091476DE.Decode(inner, Asn1Tag.Sequence));
+                value.AuthAttrs = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), static inner => Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute.Decode(inner, Asn1Tag.Sequence));
             }
             value.Mac = reader.ReadOctetString(Asn1Tag.OctetString);
             if (reader.TryPeekTag(out var tag_UnauthAttrs) && tag_UnauthAttrs.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
             {
-                value.UnauthAttrs = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), static inner => Asn1Kit.Modern.CryptographicMessageSyntax2010.AttributeB886FFAF35FCD072.Decode(inner, Asn1Tag.Sequence));
+                value.UnauthAttrs = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), static inner => Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute.Decode(inner, Asn1Tag.Sequence));
             }
             reader.ThrowIfNotEmpty();
             return value;

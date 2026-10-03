@@ -14,15 +14,15 @@ public sealed class AttributeCertificateInfoV1
     public AttributeCertificateInfoV1_Subject Subject { get; set; }
     /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName.</summary>
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[] Issuer { get; set; } = Array.Empty<Asn1Kit.Modern.PKIX1Implicit2009.GeneralName>();
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier220F807A595A4A18 Signature { get; set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Signature { get; set; }
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
     public Asn1Integer SerialNumber { get; set; }
     public Asn1Kit.Modern.PKIXAttributeCertificate2009.AttCertValidityPeriod AttCertValidityPeriod { get; set; }
-    public Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSetC0366C2F01F6BF47[] Attributes { get; set; } = Array.Empty<Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSetC0366C2F01F6BF47>();
+    public Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet[] Attributes { get; set; } = Array.Empty<Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet>();
     /// <summary>ASN.1 alias UniqueIdentifier ::= BIT STRING.</summary>
     public Asn1BitString? IssuerUniqueID { get; set; }
-    /// <summary>ASN.1 alias Extensions-5C07F56BD391EFF6 ::= SEQUENCE OF Extension-11C0613EEBAC7DB7.</summary>
-    public Asn1Kit.Modern.PKIXCommonTypes2009.Extension11C0613EEBAC7DB7[]? Extensions { get; set; }
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    public Asn1Kit.Modern.PKIXCommonTypes2009.Extension[]? Extensions { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -73,17 +73,17 @@ public sealed class AttributeCertificateInfoV1
             }
             value.Subject = Asn1Kit.Modern.AttributeCertificateVersion12009.AttributeCertificateInfoV1_Subject.Decode(reader);
             value.Issuer = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIX1Implicit2009.GeneralName.Decode(inner));
-            value.Signature = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier220F807A595A4A18.Decode(reader, Asn1Tag.Sequence);
+            value.Signature = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.SerialNumber = reader.ReadIntegerValue(Asn1Tag.Integer);
             value.AttCertValidityPeriod = Asn1Kit.Modern.PKIXAttributeCertificate2009.AttCertValidityPeriod.Decode(reader, Asn1Tag.Sequence);
-            value.Attributes = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSetC0366C2F01F6BF47.Decode(inner, Asn1Tag.Sequence));
+            value.Attributes = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet.Decode(inner, Asn1Tag.Sequence));
             if (reader.TryPeekTag(out var tag_IssuerUniqueID) && tag_IssuerUniqueID.MatchesIgnoreConstructed(Asn1Tag.BitString))
             {
                 value.IssuerUniqueID = reader.ReadBitString(Asn1Tag.BitString);
             }
             if (reader.TryPeekTag(out var tag_Extensions) && tag_Extensions.MatchesIgnoreConstructed(Asn1Tag.Sequence))
             {
-                value.Extensions = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.Extension11C0613EEBAC7DB7.Decode(inner, Asn1Tag.Sequence));
+                value.Extensions = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.Extension.Decode(inner, Asn1Tag.Sequence));
             }
             reader.ThrowIfNotEmpty();
             return value;
@@ -182,5 +182,26 @@ public sealed class AttributeCertificateInfoV1_Subject
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
     }
+}
+
+public sealed class AttributeCertificateV1 : Asn1Kit.Modern.PKIX1Explicit2009.Signed<AttributeCertificateInfoV1>
+{
+    protected override void EncodeToBeSigned(Asn1Writer writer)
+    {
+        ToBeSigned.Encode(writer, Asn1Tag.Sequence);
+    }
+    public static AttributeCertificateV1 Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
+    public static AttributeCertificateV1 Decode(Asn1Reader reader, Asn1Tag tag)
+    {
+        using (reader.EnterSequence(tag))
+        {
+            var value = new AttributeCertificateV1();
+            value.ToBeSigned = Asn1Kit.Modern.AttributeCertificateVersion12009.AttributeCertificateInfoV1.Decode(reader, Asn1Tag.Sequence);
+            DecodeTail(reader, value);
+            reader.ThrowIfNotEmpty();
+            return value;
+        }
+    }
+    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 

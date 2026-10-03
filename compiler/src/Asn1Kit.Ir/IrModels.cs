@@ -47,6 +47,15 @@ public sealed class IrTypeDef
     public TypeExpr Type { get; set; } = null!;
 
     public JsonObject? Options { get; set; }
+
+    /// <summary>Source template of a concrete type when a backend can share its structural codec.</summary>
+    public IrSpecializationOrigin? Specialization { get; set; }
+}
+
+public sealed class IrSpecializationOrigin
+{
+    public string Module { get; set; } = "";
+    public string Name { get; set; } = "";
 }
 
 public sealed class IrValueDef
@@ -352,6 +361,19 @@ public sealed class RefType : TypeExpr
     public string Name { get; set; } = "";
 
     public string? Module { get; set; }
+
+    /// <summary>IOC tables belonging to this particular use of the referenced type.</summary>
+    public List<IrOpenTypeUse>? OpenTypes { get; set; }
+}
+
+public sealed class IrOpenTypeUse
+{
+    /// <summary>Component names from the referenced type to its open type; "[]" denotes an OF element.</summary>
+    public List<string> Path { get; set; } = new();
+
+    public List<IrOpenTypeBinding> Bindings { get; set; } = new();
+
+    public bool? TableExtensible { get; set; }
 }
 
 public static class TypeKinds

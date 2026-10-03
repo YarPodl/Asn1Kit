@@ -130,12 +130,152 @@ public static class PKIX1PSSOAEPAlgorithms2009Oids
 
 public sealed class RSASSAPSSParams
 {
-    /// <summary>ASN.1 alias HashAlgorithm ::= AlgorithmIdentifier-FDBC8277480B20CA.</summary>
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierFDBC8277480B20CA HashAlgorithm { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierFDBC8277480B20CA { Algorithm = PKIX1PSSOAEPAlgorithms2009Defaults.Value0, Parameters = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierFDBC8277480B20CA_Parameters.FromNull(Asn1Null.Value) };
-    /// <summary>ASN.1 alias MaskGenAlgorithm ::= AlgorithmIdentifier-62B3922ECC736D17.</summary>
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier62B3922ECC736D17 MaskGenAlgorithm { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier62B3922ECC736D17 { Algorithm = PKIX1PSSOAEPAlgorithms2009Defaults.Value1, Parameters = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier62B3922ECC736D17_Parameters.FromHashAlgorithm(new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierFDBC8277480B20CA { Algorithm = PKIX1PSSOAEPAlgorithms2009Defaults.Value0, Parameters = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierFDBC8277480B20CA_Parameters.FromNull(Asn1Null.Value) }) };
+    /// <summary>ASN.1 alias HashAlgorithm ::= AlgorithmIdentifier.</summary>
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier HashAlgorithm { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = PKIX1PSSOAEPAlgorithms2009Defaults.Value0, Parameters = PKIX1PSSOAEPAlgorithms2009Defaults.Value1 };
+    /// <summary>ASN.1 alias MaskGenAlgorithm ::= AlgorithmIdentifier.</summary>
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier MaskGenAlgorithm { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = PKIX1PSSOAEPAlgorithms2009Defaults.Value2, Parameters = PKIX1PSSOAEPAlgorithms2009Defaults.Value3 };
     public Asn1Integer SaltLength { get; set; } = Asn1Integer.FromInt64(20L);
     public Asn1Integer TrailerField { get; set; } = Asn1Integer.FromInt64(1L);
+
+    public bool TryDecodeHashAlgorithmParameters<T>(out T value)
+    {
+        value = default!;
+        if (HashAlgorithm is null || HashAlgorithm.Parameters is not { } raw) return false;
+        switch (HashAlgorithm.Algorithm.ToString())
+        {
+            case "1.3.14.3.2.26":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "2.16.840.1.101.3.4.2.4":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "2.16.840.1.101.3.4.2.1":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "2.16.840.1.101.3.4.2.2":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "2.16.840.1.101.3.4.2.3":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            default: return false;
+        }
+    }
+
+    public void SetHashAlgorithmParameters<T>(T value)
+    {
+        if (HashAlgorithm is null) throw new Asn1Exception("Missing HashAlgorithm.");
+        switch (HashAlgorithm.Algorithm.ToString())
+        {
+            case "1.3.14.3.2.26":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                HashAlgorithm.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "2.16.840.1.101.3.4.2.4":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                HashAlgorithm.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "2.16.840.1.101.3.4.2.1":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                HashAlgorithm.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "2.16.840.1.101.3.4.2.2":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                HashAlgorithm.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "2.16.840.1.101.3.4.2.3":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                HashAlgorithm.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            default: throw new Asn1Exception("Unknown open-type key.");
+        }
+    }
+
+    public bool TryDecodeMaskGenAlgorithmParameters<T>(out T value)
+    {
+        value = default!;
+        if (MaskGenAlgorithm is null || MaskGenAlgorithm.Parameters is not { } raw) return false;
+        switch (MaskGenAlgorithm.Algorithm.ToString())
+        {
+            case "1.2.840.113549.1.1.8":
+            {
+                if (typeof(T) != typeof(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(inner, Asn1Tag.Sequence);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            default: return false;
+        }
+    }
+
+    public void SetMaskGenAlgorithmParameters<T>(T value)
+    {
+        if (MaskGenAlgorithm is null) throw new Asn1Exception("Missing MaskGenAlgorithm.");
+        switch (MaskGenAlgorithm.Algorithm.ToString())
+        {
+            case "1.2.840.113549.1.1.8":
+            {
+                if (value is not Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                typed.Encode(writer, Asn1Tag.Sequence);
+                MaskGenAlgorithm.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            default: throw new Asn1Exception("Unknown open-type key.");
+        }
+    }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -143,14 +283,14 @@ public sealed class RSASSAPSSParams
     {
         using (writer.EnterSequence(tag))
         {
-            if (!((HashAlgorithm != null && HashAlgorithm.Algorithm == PKIX1PSSOAEPAlgorithms2009Defaults.Value0 && HashAlgorithm.Parameters != null && (HashAlgorithm.Parameters != null && HashAlgorithm.Parameters.Null != null && true))))
+            if (!((HashAlgorithm != null && HashAlgorithm.Algorithm == PKIX1PSSOAEPAlgorithms2009Defaults.Value0 && HashAlgorithm.Parameters != null && HashAlgorithm.Parameters.Value.Equals(PKIX1PSSOAEPAlgorithms2009Defaults.Value1))))
             {
                 using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                 {
                     HashAlgorithm.Encode(writer, Asn1Tag.Sequence);
                 }
             }
-            if (!((MaskGenAlgorithm != null && MaskGenAlgorithm.Algorithm == PKIX1PSSOAEPAlgorithms2009Defaults.Value1 && MaskGenAlgorithm.Parameters != null && (MaskGenAlgorithm.Parameters != null && MaskGenAlgorithm.Parameters.HashAlgorithm != null && (MaskGenAlgorithm.Parameters.HashAlgorithm != null && MaskGenAlgorithm.Parameters.HashAlgorithm.Algorithm == PKIX1PSSOAEPAlgorithms2009Defaults.Value0 && MaskGenAlgorithm.Parameters.HashAlgorithm.Parameters != null && (MaskGenAlgorithm.Parameters.HashAlgorithm.Parameters != null && MaskGenAlgorithm.Parameters.HashAlgorithm.Parameters.Null != null && true))))))
+            if (!((MaskGenAlgorithm != null && MaskGenAlgorithm.Algorithm == PKIX1PSSOAEPAlgorithms2009Defaults.Value2 && MaskGenAlgorithm.Parameters != null && MaskGenAlgorithm.Parameters.Value.Equals(PKIX1PSSOAEPAlgorithms2009Defaults.Value3))))
             {
                 using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
                 {
@@ -185,7 +325,7 @@ public sealed class RSASSAPSSParams
             {
                 using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                 {
-                    value.HashAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierFDBC8277480B20CA.Decode(reader, Asn1Tag.Sequence);
+                    value.HashAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
                     reader.ThrowIfNotEmpty();
                 }
             }
@@ -193,7 +333,7 @@ public sealed class RSASSAPSSParams
             {
                 using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
                 {
-                    value.MaskGenAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier62B3922ECC736D17.Decode(reader, Asn1Tag.Sequence);
+                    value.MaskGenAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
                     reader.ThrowIfNotEmpty();
                 }
             }
@@ -223,12 +363,188 @@ public sealed class RSASSAPSSParams
 
 public sealed class RSAESOAEPParams
 {
-    /// <summary>ASN.1 alias HashAlgorithm ::= AlgorithmIdentifier-FDBC8277480B20CA.</summary>
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierFDBC8277480B20CA HashFunc { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierFDBC8277480B20CA { Algorithm = PKIX1PSSOAEPAlgorithms2009Defaults.Value0, Parameters = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierFDBC8277480B20CA_Parameters.FromNull(Asn1Null.Value) };
-    /// <summary>ASN.1 alias MaskGenAlgorithm ::= AlgorithmIdentifier-62B3922ECC736D17.</summary>
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier62B3922ECC736D17 MaskGenFunc { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier62B3922ECC736D17 { Algorithm = PKIX1PSSOAEPAlgorithms2009Defaults.Value1, Parameters = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier62B3922ECC736D17_Parameters.FromHashAlgorithm(new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierFDBC8277480B20CA { Algorithm = PKIX1PSSOAEPAlgorithms2009Defaults.Value0, Parameters = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierFDBC8277480B20CA_Parameters.FromNull(Asn1Null.Value) }) };
-    /// <summary>ASN.1 alias PSourceAlgorithm ::= AlgorithmIdentifier-66CB9EDD53112263.</summary>
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier66CB9EDD53112263 PSourceFunc { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier66CB9EDD53112263 { Algorithm = PKIX1PSSOAEPAlgorithms2009Defaults.Value2, Parameters = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier66CB9EDD53112263_Parameters.FromEncodingParameters(PKIX1PSSOAEPAlgorithms2009Defaults.Value3) };
+    /// <summary>ASN.1 alias HashAlgorithm ::= AlgorithmIdentifier.</summary>
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier HashFunc { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = PKIX1PSSOAEPAlgorithms2009Defaults.Value0, Parameters = PKIX1PSSOAEPAlgorithms2009Defaults.Value1 };
+    /// <summary>ASN.1 alias MaskGenAlgorithm ::= AlgorithmIdentifier.</summary>
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier MaskGenFunc { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = PKIX1PSSOAEPAlgorithms2009Defaults.Value2, Parameters = PKIX1PSSOAEPAlgorithms2009Defaults.Value3 };
+    /// <summary>ASN.1 alias PSourceAlgorithm ::= AlgorithmIdentifier.</summary>
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier PSourceFunc { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = PKIX1PSSOAEPAlgorithms2009Defaults.Value4, Parameters = PKIX1PSSOAEPAlgorithms2009Defaults.Value6 };
+
+    public bool TryDecodeHashFuncParameters<T>(out T value)
+    {
+        value = default!;
+        if (HashFunc is null || HashFunc.Parameters is not { } raw) return false;
+        switch (HashFunc.Algorithm.ToString())
+        {
+            case "1.3.14.3.2.26":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "2.16.840.1.101.3.4.2.4":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "2.16.840.1.101.3.4.2.1":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "2.16.840.1.101.3.4.2.2":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "2.16.840.1.101.3.4.2.3":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            default: return false;
+        }
+    }
+
+    public void SetHashFuncParameters<T>(T value)
+    {
+        if (HashFunc is null) throw new Asn1Exception("Missing HashFunc.");
+        switch (HashFunc.Algorithm.ToString())
+        {
+            case "1.3.14.3.2.26":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                HashFunc.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "2.16.840.1.101.3.4.2.4":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                HashFunc.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "2.16.840.1.101.3.4.2.1":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                HashFunc.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "2.16.840.1.101.3.4.2.2":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                HashFunc.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "2.16.840.1.101.3.4.2.3":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                HashFunc.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            default: throw new Asn1Exception("Unknown open-type key.");
+        }
+    }
+
+    public bool TryDecodeMaskGenFuncParameters<T>(out T value)
+    {
+        value = default!;
+        if (MaskGenFunc is null || MaskGenFunc.Parameters is not { } raw) return false;
+        switch (MaskGenFunc.Algorithm.ToString())
+        {
+            case "1.2.840.113549.1.1.8":
+            {
+                if (typeof(T) != typeof(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(inner, Asn1Tag.Sequence);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            default: return false;
+        }
+    }
+
+    public void SetMaskGenFuncParameters<T>(T value)
+    {
+        if (MaskGenFunc is null) throw new Asn1Exception("Missing MaskGenFunc.");
+        switch (MaskGenFunc.Algorithm.ToString())
+        {
+            case "1.2.840.113549.1.1.8":
+            {
+                if (value is not Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                typed.Encode(writer, Asn1Tag.Sequence);
+                MaskGenFunc.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            default: throw new Asn1Exception("Unknown open-type key.");
+        }
+    }
+
+    public bool TryDecodePSourceFuncParameters<T>(out T value)
+    {
+        value = default!;
+        if (PSourceFunc is null || PSourceFunc.Parameters is not { } raw) return false;
+        switch (PSourceFunc.Algorithm.ToString())
+        {
+            case "1.2.840.113549.1.1.9":
+            {
+                if (typeof(T) != typeof(ReadOnlyMemory<byte>)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = inner.ReadOctetString(Asn1Tag.OctetString);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            default: return false;
+        }
+    }
+
+    public void SetPSourceFuncParameters<T>(T value)
+    {
+        if (PSourceFunc is null) throw new Asn1Exception("Missing PSourceFunc.");
+        switch (PSourceFunc.Algorithm.ToString())
+        {
+            case "1.2.840.113549.1.1.9":
+            {
+                if (value is not ReadOnlyMemory<byte> typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteOctetString(Asn1Tag.OctetString, typed.Span);
+                PSourceFunc.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            default: throw new Asn1Exception("Unknown open-type key.");
+        }
+    }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -236,21 +552,21 @@ public sealed class RSAESOAEPParams
     {
         using (writer.EnterSequence(tag))
         {
-            if (!((HashFunc != null && HashFunc.Algorithm == PKIX1PSSOAEPAlgorithms2009Defaults.Value0 && HashFunc.Parameters != null && (HashFunc.Parameters != null && HashFunc.Parameters.Null != null && true))))
+            if (!((HashFunc != null && HashFunc.Algorithm == PKIX1PSSOAEPAlgorithms2009Defaults.Value0 && HashFunc.Parameters != null && HashFunc.Parameters.Value.Equals(PKIX1PSSOAEPAlgorithms2009Defaults.Value1))))
             {
                 using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                 {
                     HashFunc.Encode(writer, Asn1Tag.Sequence);
                 }
             }
-            if (!((MaskGenFunc != null && MaskGenFunc.Algorithm == PKIX1PSSOAEPAlgorithms2009Defaults.Value1 && MaskGenFunc.Parameters != null && (MaskGenFunc.Parameters != null && MaskGenFunc.Parameters.HashAlgorithm != null && (MaskGenFunc.Parameters.HashAlgorithm != null && MaskGenFunc.Parameters.HashAlgorithm.Algorithm == PKIX1PSSOAEPAlgorithms2009Defaults.Value0 && MaskGenFunc.Parameters.HashAlgorithm.Parameters != null && (MaskGenFunc.Parameters.HashAlgorithm.Parameters != null && MaskGenFunc.Parameters.HashAlgorithm.Parameters.Null != null && true))))))
+            if (!((MaskGenFunc != null && MaskGenFunc.Algorithm == PKIX1PSSOAEPAlgorithms2009Defaults.Value2 && MaskGenFunc.Parameters != null && MaskGenFunc.Parameters.Value.Equals(PKIX1PSSOAEPAlgorithms2009Defaults.Value3))))
             {
                 using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
                 {
                     MaskGenFunc.Encode(writer, Asn1Tag.Sequence);
                 }
             }
-            if (!((PSourceFunc != null && PSourceFunc.Algorithm == PKIX1PSSOAEPAlgorithms2009Defaults.Value2 && PSourceFunc.Parameters != null && (PSourceFunc.Parameters != null && PSourceFunc.Parameters.EncodingParameters != null && PSourceFunc.Parameters.EncodingParameters.Value.Span.SequenceEqual(PKIX1PSSOAEPAlgorithms2009Defaults.Value3.Span)))))
+            if (!((PSourceFunc != null && PSourceFunc.Algorithm == PKIX1PSSOAEPAlgorithms2009Defaults.Value4 && PSourceFunc.Parameters != null && PSourceFunc.Parameters.Value.Equals(PKIX1PSSOAEPAlgorithms2009Defaults.Value6))))
             {
                 using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
                 {
@@ -271,7 +587,7 @@ public sealed class RSAESOAEPParams
             {
                 using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                 {
-                    value.HashFunc = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierFDBC8277480B20CA.Decode(reader, Asn1Tag.Sequence);
+                    value.HashFunc = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
                     reader.ThrowIfNotEmpty();
                 }
             }
@@ -279,7 +595,7 @@ public sealed class RSAESOAEPParams
             {
                 using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
                 {
-                    value.MaskGenFunc = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier62B3922ECC736D17.Decode(reader, Asn1Tag.Sequence);
+                    value.MaskGenFunc = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
                     reader.ThrowIfNotEmpty();
                 }
             }
@@ -287,7 +603,7 @@ public sealed class RSAESOAEPParams
             {
                 using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
                 {
-                    value.PSourceFunc = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier66CB9EDD53112263.Decode(reader, Asn1Tag.Sequence);
+                    value.PSourceFunc = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
                     reader.ThrowIfNotEmpty();
                 }
             }
@@ -302,7 +618,13 @@ public sealed class RSAESOAEPParams
 internal static class PKIX1PSSOAEPAlgorithms2009Defaults
 {
     internal static readonly Asn1Oid Value0 = Asn1Oid.Parse("1.3.14.3.2.26");
-    internal static readonly Asn1Oid Value1 = Asn1Oid.Parse("1.2.840.113549.1.1.8");
-    internal static readonly Asn1Oid Value2 = Asn1Oid.Parse("1.2.840.113549.1.1.9");
-    internal static readonly ReadOnlyMemory<byte> Value3 = new ReadOnlyMemory<byte>(Convert.FromHexString(""));
+    internal static readonly Asn1Any Value1 = Asn1Any.FromValue(Asn1Null.Value, static (writer, value) => { writer.WriteNull(Asn1Tag.Null);
+ });
+    internal static readonly Asn1Oid Value2 = Asn1Oid.Parse("1.2.840.113549.1.1.8");
+    internal static readonly Asn1Any Value3 = Asn1Any.FromValue(new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = PKIX1PSSOAEPAlgorithms2009Defaults.Value0, Parameters = PKIX1PSSOAEPAlgorithms2009Defaults.Value1 }, static (writer, value) => { value.Encode(writer, Asn1Tag.Sequence);
+ });
+    internal static readonly Asn1Oid Value4 = Asn1Oid.Parse("1.2.840.113549.1.1.9");
+    internal static readonly ReadOnlyMemory<byte> Value5 = new ReadOnlyMemory<byte>(Convert.FromHexString(""));
+    internal static readonly Asn1Any Value6 = Asn1Any.FromValue(PKIX1PSSOAEPAlgorithms2009Defaults.Value5, static (writer, value) => { writer.WriteOctetString(Asn1Tag.OctetString, value.Span);
+ });
 }

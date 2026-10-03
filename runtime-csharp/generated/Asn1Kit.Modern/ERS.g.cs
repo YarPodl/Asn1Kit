@@ -41,9 +41,9 @@ public static class ERSOids
 public sealed class EvidenceRecord
 {
     public int Version { get; set; }
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier2C7D8D811C578515[] DigestAlgorithms { get; set; } = Array.Empty<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier2C7D8D811C578515>();
-    /// <summary>ASN.1 alias CryptoInfos ::= SEQUENCE OF AttributeSet-29A63F1D3B0B5809.</summary>
-    public Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet29A63F1D3B0B5809[]? CryptoInfos { get; set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier[] DigestAlgorithms { get; set; } = Array.Empty<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier>();
+    /// <summary>ASN.1 alias CryptoInfos ::= SEQUENCE OF AttributeSet.</summary>
+    public Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet[]? CryptoInfos { get; set; }
     public EncryptionInfo? EncryptionInfo { get; set; }
     /// <summary>ASN.1 alias ArchiveTimeStampSequence ::= SEQUENCE OF ArchiveTimeStampChain.</summary>
     public ArchiveTimeStamp[][] ArchiveTimeStampSequence { get; set; } = Array.Empty<ArchiveTimeStamp[]>();
@@ -88,10 +88,10 @@ public sealed class EvidenceRecord
         {
             var value = new EvidenceRecord();
             value.Version = reader.ReadInt32(Asn1Tag.Integer);
-            value.DigestAlgorithms = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier2C7D8D811C578515.Decode(inner, Asn1Tag.Sequence));
+            value.DigestAlgorithms = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(inner, Asn1Tag.Sequence));
             if (reader.TryPeekTag(out var tag_CryptoInfos) && tag_CryptoInfos.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
-                value.CryptoInfos = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), static inner => Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet29A63F1D3B0B5809.Decode(inner, Asn1Tag.Sequence));
+                value.CryptoInfos = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), static inner => Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet.Decode(inner, Asn1Tag.Sequence));
             }
             if (reader.TryPeekTag(out var tag_EncryptionInfo) && tag_EncryptionInfo.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
             {
@@ -108,9 +108,9 @@ public sealed class EvidenceRecord
 
 public sealed class ArchiveTimeStamp
 {
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier2C7D8D811C578515? DigestAlgorithm { get; set; }
-    /// <summary>ASN.1 alias Attributes ::= SET OF AttributeSet-29A63F1D3B0B5809.</summary>
-    public Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet29A63F1D3B0B5809[]? Attributes { get; set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? DigestAlgorithm { get; set; }
+    /// <summary>ASN.1 alias Attributes ::= SET OF AttributeSet.</summary>
+    public Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet[]? Attributes { get; set; }
     public ReadOnlyMemory<byte>[][]? ReducedHashtree { get; set; }
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.ContentInfo TimeStamp { get; set; }
 
@@ -154,11 +154,11 @@ public sealed class ArchiveTimeStamp
             var value = new ArchiveTimeStamp();
             if (reader.TryPeekTag(out var tag_DigestAlgorithm) && tag_DigestAlgorithm.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
-                value.DigestAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier2C7D8D811C578515.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                value.DigestAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
             }
             if (reader.TryPeekTag(out var tag_Attributes) && tag_Attributes.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
             {
-                value.Attributes = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), static inner => Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet29A63F1D3B0B5809.Decode(inner, Asn1Tag.Sequence));
+                value.Attributes = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), static inner => Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet.Decode(inner, Asn1Tag.Sequence));
             }
             if (reader.TryPeekTag(out var tag_ReducedHashtree) && tag_ReducedHashtree.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
             {

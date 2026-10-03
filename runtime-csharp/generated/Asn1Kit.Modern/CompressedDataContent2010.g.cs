@@ -32,9 +32,45 @@ public static class CompressedDataContent2010Oids
 public sealed class CompressedData
 {
     public int Version { get; set; }
-    /// <summary>ASN.1 alias CompressionAlgorithmIdentifier ::= AlgorithmIdentifier-42BA388E2F14A366.</summary>
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier42BA388E2F14A366 CompressionAlgorithm { get; set; }
+    /// <summary>ASN.1 alias CompressionAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier CompressionAlgorithm { get; set; }
     public EncapsulatedContentInfo EncapContentInfo { get; set; }
+
+    public bool TryDecodeCompressionAlgorithmParameters<T>(out T value)
+    {
+        value = default!;
+        if (CompressionAlgorithm is null || CompressionAlgorithm.Parameters is not { } raw) return false;
+        switch (CompressionAlgorithm.Algorithm.ToString())
+        {
+            case "1.2.840.113549.1.9.16.3.8":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            default: return false;
+        }
+    }
+
+    public void SetCompressionAlgorithmParameters<T>(T value)
+    {
+        if (CompressionAlgorithm is null) throw new Asn1Exception("Missing CompressionAlgorithm.");
+        switch (CompressionAlgorithm.Algorithm.ToString())
+        {
+            case "1.2.840.113549.1.9.16.3.8":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                CompressionAlgorithm.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            default: throw new Asn1Exception("Unknown open-type key.");
+        }
+    }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -56,7 +92,7 @@ public sealed class CompressedData
         {
             var value = new CompressedData();
             value.Version = reader.ReadInt32(Asn1Tag.Integer);
-            value.CompressionAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier42BA388E2F14A366.Decode(reader, Asn1Tag.Sequence);
+            value.CompressionAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.EncapContentInfo = Asn1Kit.Modern.CompressedDataContent2010.EncapsulatedContentInfo.Decode(reader, Asn1Tag.Sequence);
             reader.ThrowIfNotEmpty();
             return value;

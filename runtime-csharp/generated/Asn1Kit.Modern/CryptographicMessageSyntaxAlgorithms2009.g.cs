@@ -130,8 +130,44 @@ public sealed class PBKDF2Params
     public PBKDF2Params_Salt Salt { get; set; }
     public Asn1Integer IterationCount { get; set; }
     public Asn1Integer? KeyLength { get; set; }
-    /// <summary>ASN.1 alias PBKDF2-PRFsAlgorithmIdentifier ::= AlgorithmIdentifier-CF88A663DA4BE201.</summary>
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierCF88A663DA4BE201 Prf { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierCF88A663DA4BE201 { Algorithm = CryptographicMessageSyntaxAlgorithms2009Defaults.Value0, Parameters = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierCF88A663DA4BE201_Parameters.FromAlgHMACSHA1(Asn1Null.Value) };
+    /// <summary>ASN.1 alias PBKDF2-PRFsAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Prf { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = CryptographicMessageSyntaxAlgorithms2009Defaults.Value0, Parameters = CryptographicMessageSyntaxAlgorithms2009Defaults.Value1 };
+
+    public bool TryDecodePrfParameters<T>(out T value)
+    {
+        value = default!;
+        if (Prf is null || Prf.Parameters is not { } raw) return false;
+        switch (Prf.Algorithm.ToString())
+        {
+            case "1.3.6.1.5.5.8.1.2":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            default: return false;
+        }
+    }
+
+    public void SetPrfParameters<T>(T value)
+    {
+        if (Prf is null) throw new Asn1Exception("Missing Prf.");
+        switch (Prf.Algorithm.ToString())
+        {
+            case "1.3.6.1.5.5.8.1.2":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Prf.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            default: throw new Asn1Exception("Unknown open-type key.");
+        }
+    }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -145,7 +181,7 @@ public sealed class PBKDF2Params
             {
                 writer.WriteInteger(Asn1Tag.Integer, KeyLength.Value);
             }
-            if (!((Prf != null && Prf.Algorithm == CryptographicMessageSyntaxAlgorithms2009Defaults.Value0 && Prf.Parameters != null && (Prf.Parameters != null && Prf.Parameters.AlgHMACSHA1 != null && true))))
+            if (!((Prf != null && Prf.Algorithm == CryptographicMessageSyntaxAlgorithms2009Defaults.Value0 && Prf.Parameters != null && Prf.Parameters.Value.Equals(CryptographicMessageSyntaxAlgorithms2009Defaults.Value1))))
             {
                 Prf.Encode(writer, Asn1Tag.Sequence);
             }
@@ -167,7 +203,7 @@ public sealed class PBKDF2Params
             }
             if (reader.TryPeekTag(out var tag_Prf) && tag_Prf.MatchesIgnoreConstructed(Asn1Tag.Sequence))
             {
-                value.Prf = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierCF88A663DA4BE201.Decode(reader, Asn1Tag.Sequence);
+                value.Prf = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             }
             reader.ThrowIfNotEmpty();
             return value;
@@ -187,8 +223,8 @@ public sealed class PBKDF2Params_Salt
 {
     public PBKDF2Params_SaltKind Kind { get; private set; }
     public ReadOnlyMemory<byte>? Specified { get; private set; }
-    /// <summary>ASN.1 alias PBKDF2-SaltSourcesAlgorithmIdentifier ::= AlgorithmIdentifier-82990BF484C1FAAB.</summary>
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier82990BF484C1FAAB? OtherSource { get; private set; }
+    /// <summary>ASN.1 alias PBKDF2-SaltSourcesAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? OtherSource { get; private set; }
 
     public static PBKDF2Params_Salt FromSpecified(ReadOnlyMemory<byte> specified) => new PBKDF2Params_Salt
     {
@@ -196,7 +232,7 @@ public sealed class PBKDF2Params_Salt
         Specified = specified,
     };
 
-    public static PBKDF2Params_Salt FromOtherSource(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier82990BF484C1FAAB otherSource) => new PBKDF2Params_Salt
+    public static PBKDF2Params_Salt FromOtherSource(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier otherSource) => new PBKDF2Params_Salt
     {
         Kind = PBKDF2Params_SaltKind.OtherSource,
         OtherSource = otherSource,
@@ -238,7 +274,7 @@ public sealed class PBKDF2Params_Salt
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
         {
             value.Kind = PBKDF2Params_SaltKind.OtherSource;
-            value.OtherSource = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier82990BF484C1FAAB.Decode(reader, Asn1Tag.Sequence);
+            value.OtherSource = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
@@ -248,4 +284,6 @@ public sealed class PBKDF2Params_Salt
 internal static class CryptographicMessageSyntaxAlgorithms2009Defaults
 {
     internal static readonly Asn1Oid Value0 = Asn1Oid.Parse("1.3.6.1.5.5.8.1.2");
+    internal static readonly Asn1Any Value1 = Asn1Any.FromValue(Asn1Null.Value, static (writer, value) => { writer.WriteNull(Asn1Tag.Null);
+ });
 }

@@ -281,994 +281,393 @@ public static class PKIX1Explicit2009Oids
     }
 }
 
-public sealed class SIGNED8D46A36079F224AC
+public sealed class SignedAlgorithmIdentifier
 {
-    public Asn1Kit.Modern.AttributeCertificateVersion12009.AttributeCertificateInfoV1 ToBeSigned { get; set; }
-    public SIGNED8D46A36079F224AC_AlgorithmIdentifier AlgorithmIdentifier { get; set; }
-    public Asn1Contained<SIGNED8D46A36079F224AC_Signature_Content> Signature { get; set; }
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
+    public Asn1Oid Algorithm { get; set; }
+    public Asn1Any? Parameters { get; set; }
+    public void Encode(Asn1Writer writer)
     {
-        using (writer.EnterSequence(tag))
+        using (writer.EnterSequence(Asn1Tag.Sequence))
         {
-            ToBeSigned.Encode(writer, Asn1Tag.Sequence);
-            AlgorithmIdentifier.Encode(writer, Asn1Tag.Sequence);
-            writer.WriteContained(Asn1Tag.BitString, true, Signature, static (inner, value) =>
-            {
-                value.Encode(inner);
-            });
+            writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, Algorithm);
+            if (Parameters is { } parameters) writer.WriteAny(parameters);
         }
     }
-
-    public static SIGNED8D46A36079F224AC Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static SIGNED8D46A36079F224AC Decode(Asn1Reader reader, Asn1Tag tag)
+    public static SignedAlgorithmIdentifier Decode(Asn1Reader reader)
     {
-        using (reader.EnterSequence(tag))
+        using (reader.EnterSequence(Asn1Tag.Sequence))
         {
-            var value = new SIGNED8D46A36079F224AC();
-            value.ToBeSigned = Asn1Kit.Modern.AttributeCertificateVersion12009.AttributeCertificateInfoV1.Decode(reader, Asn1Tag.Sequence);
-            value.AlgorithmIdentifier = Asn1Kit.Modern.PKIX1Explicit2009.SIGNED8D46A36079F224AC_AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
-            value.Signature = reader.ReadContained(Asn1Tag.BitString, true, SIGNED8D46A36079F224AC_Signature_Content.IsKnown(value.AlgorithmIdentifier.Algorithm), value.AlgorithmIdentifier.Algorithm, static (inner, key) => SIGNED8D46A36079F224AC_Signature_Content.Decode(inner, key));
+            var value = new SignedAlgorithmIdentifier { Algorithm = reader.ReadOid(Asn1Tag.ObjectIdentifier) };
+            if (!reader.Eof) value.Parameters = reader.ReadAny();
             reader.ThrowIfNotEmpty();
             return value;
         }
     }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public enum DirectoryString3D958CFC24E75F4AKind
+public abstract class Signed<T>
 {
-    TeletexString,
-    PrintableString,
-    BmpString,
-    UniversalString,
-    UTF8String,
-}
-
-public sealed class DirectoryString3D958CFC24E75F4A
-{
-    public DirectoryString3D958CFC24E75F4AKind Kind { get; private set; }
-    public string Value { get; private set; } = "";
-
-    public static DirectoryString3D958CFC24E75F4A FromTeletexString(string teletexString) => new DirectoryString3D958CFC24E75F4A
-    {
-        Kind = DirectoryString3D958CFC24E75F4AKind.TeletexString,
-        Value = teletexString,
-    };
-
-    public static DirectoryString3D958CFC24E75F4A FromPrintableString(string printableString) => new DirectoryString3D958CFC24E75F4A
-    {
-        Kind = DirectoryString3D958CFC24E75F4AKind.PrintableString,
-        Value = printableString,
-    };
-
-    public static DirectoryString3D958CFC24E75F4A FromBmpString(string bmpString) => new DirectoryString3D958CFC24E75F4A
-    {
-        Kind = DirectoryString3D958CFC24E75F4AKind.BmpString,
-        Value = bmpString,
-    };
-
-    public static DirectoryString3D958CFC24E75F4A FromUniversalString(string universalString) => new DirectoryString3D958CFC24E75F4A
-    {
-        Kind = DirectoryString3D958CFC24E75F4AKind.UniversalString,
-        Value = universalString,
-    };
-
-    public static DirectoryString3D958CFC24E75F4A FromUTF8String(string uTF8String) => new DirectoryString3D958CFC24E75F4A
-    {
-        Kind = DirectoryString3D958CFC24E75F4AKind.UTF8String,
-        Value = uTF8String,
-    };
-
-    public override string ToString()
-    {
-        return Kind switch
-        {
-            DirectoryString3D958CFC24E75F4AKind.TeletexString => Asn1Formatting.Format(Value),
-            DirectoryString3D958CFC24E75F4AKind.PrintableString => Asn1Formatting.Format(Value),
-            DirectoryString3D958CFC24E75F4AKind.BmpString => Asn1Formatting.Format(Value),
-            DirectoryString3D958CFC24E75F4AKind.UniversalString => Asn1Formatting.Format(Value),
-            DirectoryString3D958CFC24E75F4AKind.UTF8String => Asn1Formatting.Format(Value),
-            _ => "<unset>",
-        };
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        switch (Kind)
-        {
-            case DirectoryString3D958CFC24E75F4AKind.TeletexString:
-                writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
-                break;
-            case DirectoryString3D958CFC24E75F4AKind.PrintableString:
-                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
-                break;
-            case DirectoryString3D958CFC24E75F4AKind.BmpString:
-                writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
-                break;
-            case DirectoryString3D958CFC24E75F4AKind.UniversalString:
-                writer.WriteString(Asn1Tag.UniversalString, Value, Asn1StringForm.Universal);
-                break;
-            case DirectoryString3D958CFC24E75F4AKind.UTF8String:
-                writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
-                break;
-            default: throw new Asn1Exception("CHOICE has no alternative.");
-        }
-    }
-
-    public static DirectoryString3D958CFC24E75F4A Decode(Asn1Reader reader)
-    {
-        if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
-        var value = new DirectoryString3D958CFC24E75F4A();
-        if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
-        {
-            value.Kind = DirectoryString3D958CFC24E75F4AKind.TeletexString;
-            value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
-        {
-            value.Kind = DirectoryString3D958CFC24E75F4AKind.PrintableString;
-            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
-        {
-            value.Kind = DirectoryString3D958CFC24E75F4AKind.BmpString;
-            value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
-        {
-            value.Kind = DirectoryString3D958CFC24E75F4AKind.UniversalString;
-            value.Value = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
-        {
-            value.Kind = DirectoryString3D958CFC24E75F4AKind.UTF8String;
-            value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
-        }
-        else throw new Asn1Exception("Unknown CHOICE alternative.");
-        return value;
-    }
-}
-
-public enum DirectoryStringE088997CEFC18E93Kind
-{
-    TeletexString,
-    PrintableString,
-    BmpString,
-    UniversalString,
-    UTF8String,
-}
-
-public sealed class DirectoryStringE088997CEFC18E93
-{
-    public DirectoryStringE088997CEFC18E93Kind Kind { get; private set; }
-    public string Value { get; private set; } = "";
-
-    public static DirectoryStringE088997CEFC18E93 FromTeletexString(string teletexString) => new DirectoryStringE088997CEFC18E93
-    {
-        Kind = DirectoryStringE088997CEFC18E93Kind.TeletexString,
-        Value = teletexString,
-    };
-
-    public static DirectoryStringE088997CEFC18E93 FromPrintableString(string printableString) => new DirectoryStringE088997CEFC18E93
-    {
-        Kind = DirectoryStringE088997CEFC18E93Kind.PrintableString,
-        Value = printableString,
-    };
-
-    public static DirectoryStringE088997CEFC18E93 FromBmpString(string bmpString) => new DirectoryStringE088997CEFC18E93
-    {
-        Kind = DirectoryStringE088997CEFC18E93Kind.BmpString,
-        Value = bmpString,
-    };
-
-    public static DirectoryStringE088997CEFC18E93 FromUniversalString(string universalString) => new DirectoryStringE088997CEFC18E93
-    {
-        Kind = DirectoryStringE088997CEFC18E93Kind.UniversalString,
-        Value = universalString,
-    };
-
-    public static DirectoryStringE088997CEFC18E93 FromUTF8String(string uTF8String) => new DirectoryStringE088997CEFC18E93
-    {
-        Kind = DirectoryStringE088997CEFC18E93Kind.UTF8String,
-        Value = uTF8String,
-    };
-
-    public override string ToString()
-    {
-        return Kind switch
-        {
-            DirectoryStringE088997CEFC18E93Kind.TeletexString => Asn1Formatting.Format(Value),
-            DirectoryStringE088997CEFC18E93Kind.PrintableString => Asn1Formatting.Format(Value),
-            DirectoryStringE088997CEFC18E93Kind.BmpString => Asn1Formatting.Format(Value),
-            DirectoryStringE088997CEFC18E93Kind.UniversalString => Asn1Formatting.Format(Value),
-            DirectoryStringE088997CEFC18E93Kind.UTF8String => Asn1Formatting.Format(Value),
-            _ => "<unset>",
-        };
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        switch (Kind)
-        {
-            case DirectoryStringE088997CEFC18E93Kind.TeletexString:
-                writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
-                break;
-            case DirectoryStringE088997CEFC18E93Kind.PrintableString:
-                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
-                break;
-            case DirectoryStringE088997CEFC18E93Kind.BmpString:
-                writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
-                break;
-            case DirectoryStringE088997CEFC18E93Kind.UniversalString:
-                writer.WriteString(Asn1Tag.UniversalString, Value, Asn1StringForm.Universal);
-                break;
-            case DirectoryStringE088997CEFC18E93Kind.UTF8String:
-                writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
-                break;
-            default: throw new Asn1Exception("CHOICE has no alternative.");
-        }
-    }
-
-    public static DirectoryStringE088997CEFC18E93 Decode(Asn1Reader reader)
-    {
-        if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
-        var value = new DirectoryStringE088997CEFC18E93();
-        if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
-        {
-            value.Kind = DirectoryStringE088997CEFC18E93Kind.TeletexString;
-            value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
-        {
-            value.Kind = DirectoryStringE088997CEFC18E93Kind.PrintableString;
-            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
-        {
-            value.Kind = DirectoryStringE088997CEFC18E93Kind.BmpString;
-            value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
-        {
-            value.Kind = DirectoryStringE088997CEFC18E93Kind.UniversalString;
-            value.Value = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
-        {
-            value.Kind = DirectoryStringE088997CEFC18E93Kind.UTF8String;
-            value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
-        }
-        else throw new Asn1Exception("Unknown CHOICE alternative.");
-        return value;
-    }
-}
-
-public enum DirectoryStringFA81C6A96FD6F32DKind
-{
-    TeletexString,
-    PrintableString,
-    BmpString,
-    UniversalString,
-    UTF8String,
-}
-
-public sealed class DirectoryStringFA81C6A96FD6F32D
-{
-    public DirectoryStringFA81C6A96FD6F32DKind Kind { get; private set; }
-    public string Value { get; private set; } = "";
-
-    public static DirectoryStringFA81C6A96FD6F32D FromTeletexString(string teletexString) => new DirectoryStringFA81C6A96FD6F32D
-    {
-        Kind = DirectoryStringFA81C6A96FD6F32DKind.TeletexString,
-        Value = teletexString,
-    };
-
-    public static DirectoryStringFA81C6A96FD6F32D FromPrintableString(string printableString) => new DirectoryStringFA81C6A96FD6F32D
-    {
-        Kind = DirectoryStringFA81C6A96FD6F32DKind.PrintableString,
-        Value = printableString,
-    };
-
-    public static DirectoryStringFA81C6A96FD6F32D FromBmpString(string bmpString) => new DirectoryStringFA81C6A96FD6F32D
-    {
-        Kind = DirectoryStringFA81C6A96FD6F32DKind.BmpString,
-        Value = bmpString,
-    };
-
-    public static DirectoryStringFA81C6A96FD6F32D FromUniversalString(string universalString) => new DirectoryStringFA81C6A96FD6F32D
-    {
-        Kind = DirectoryStringFA81C6A96FD6F32DKind.UniversalString,
-        Value = universalString,
-    };
-
-    public static DirectoryStringFA81C6A96FD6F32D FromUTF8String(string uTF8String) => new DirectoryStringFA81C6A96FD6F32D
-    {
-        Kind = DirectoryStringFA81C6A96FD6F32DKind.UTF8String,
-        Value = uTF8String,
-    };
-
-    public override string ToString()
-    {
-        return Kind switch
-        {
-            DirectoryStringFA81C6A96FD6F32DKind.TeletexString => Asn1Formatting.Format(Value),
-            DirectoryStringFA81C6A96FD6F32DKind.PrintableString => Asn1Formatting.Format(Value),
-            DirectoryStringFA81C6A96FD6F32DKind.BmpString => Asn1Formatting.Format(Value),
-            DirectoryStringFA81C6A96FD6F32DKind.UniversalString => Asn1Formatting.Format(Value),
-            DirectoryStringFA81C6A96FD6F32DKind.UTF8String => Asn1Formatting.Format(Value),
-            _ => "<unset>",
-        };
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        switch (Kind)
-        {
-            case DirectoryStringFA81C6A96FD6F32DKind.TeletexString:
-                writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
-                break;
-            case DirectoryStringFA81C6A96FD6F32DKind.PrintableString:
-                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
-                break;
-            case DirectoryStringFA81C6A96FD6F32DKind.BmpString:
-                writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
-                break;
-            case DirectoryStringFA81C6A96FD6F32DKind.UniversalString:
-                writer.WriteString(Asn1Tag.UniversalString, Value, Asn1StringForm.Universal);
-                break;
-            case DirectoryStringFA81C6A96FD6F32DKind.UTF8String:
-                writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
-                break;
-            default: throw new Asn1Exception("CHOICE has no alternative.");
-        }
-    }
-
-    public static DirectoryStringFA81C6A96FD6F32D Decode(Asn1Reader reader)
-    {
-        if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
-        var value = new DirectoryStringFA81C6A96FD6F32D();
-        if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
-        {
-            value.Kind = DirectoryStringFA81C6A96FD6F32DKind.TeletexString;
-            value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
-        {
-            value.Kind = DirectoryStringFA81C6A96FD6F32DKind.PrintableString;
-            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
-        {
-            value.Kind = DirectoryStringFA81C6A96FD6F32DKind.BmpString;
-            value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
-        {
-            value.Kind = DirectoryStringFA81C6A96FD6F32DKind.UniversalString;
-            value.Value = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
-        {
-            value.Kind = DirectoryStringFA81C6A96FD6F32DKind.UTF8String;
-            value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
-        }
-        else throw new Asn1Exception("Unknown CHOICE alternative.");
-        return value;
-    }
-}
-
-public enum DirectoryString5C07C6AB34133CF1Kind
-{
-    TeletexString,
-    PrintableString,
-    BmpString,
-    UniversalString,
-    UTF8String,
-}
-
-public sealed class DirectoryString5C07C6AB34133CF1
-{
-    public DirectoryString5C07C6AB34133CF1Kind Kind { get; private set; }
-    public string Value { get; private set; } = "";
-
-    public static DirectoryString5C07C6AB34133CF1 FromTeletexString(string teletexString) => new DirectoryString5C07C6AB34133CF1
-    {
-        Kind = DirectoryString5C07C6AB34133CF1Kind.TeletexString,
-        Value = teletexString,
-    };
-
-    public static DirectoryString5C07C6AB34133CF1 FromPrintableString(string printableString) => new DirectoryString5C07C6AB34133CF1
-    {
-        Kind = DirectoryString5C07C6AB34133CF1Kind.PrintableString,
-        Value = printableString,
-    };
-
-    public static DirectoryString5C07C6AB34133CF1 FromBmpString(string bmpString) => new DirectoryString5C07C6AB34133CF1
-    {
-        Kind = DirectoryString5C07C6AB34133CF1Kind.BmpString,
-        Value = bmpString,
-    };
-
-    public static DirectoryString5C07C6AB34133CF1 FromUniversalString(string universalString) => new DirectoryString5C07C6AB34133CF1
-    {
-        Kind = DirectoryString5C07C6AB34133CF1Kind.UniversalString,
-        Value = universalString,
-    };
-
-    public static DirectoryString5C07C6AB34133CF1 FromUTF8String(string uTF8String) => new DirectoryString5C07C6AB34133CF1
-    {
-        Kind = DirectoryString5C07C6AB34133CF1Kind.UTF8String,
-        Value = uTF8String,
-    };
-
-    public override string ToString()
-    {
-        return Kind switch
-        {
-            DirectoryString5C07C6AB34133CF1Kind.TeletexString => Asn1Formatting.Format(Value),
-            DirectoryString5C07C6AB34133CF1Kind.PrintableString => Asn1Formatting.Format(Value),
-            DirectoryString5C07C6AB34133CF1Kind.BmpString => Asn1Formatting.Format(Value),
-            DirectoryString5C07C6AB34133CF1Kind.UniversalString => Asn1Formatting.Format(Value),
-            DirectoryString5C07C6AB34133CF1Kind.UTF8String => Asn1Formatting.Format(Value),
-            _ => "<unset>",
-        };
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        switch (Kind)
-        {
-            case DirectoryString5C07C6AB34133CF1Kind.TeletexString:
-                writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
-                break;
-            case DirectoryString5C07C6AB34133CF1Kind.PrintableString:
-                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
-                break;
-            case DirectoryString5C07C6AB34133CF1Kind.BmpString:
-                writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
-                break;
-            case DirectoryString5C07C6AB34133CF1Kind.UniversalString:
-                writer.WriteString(Asn1Tag.UniversalString, Value, Asn1StringForm.Universal);
-                break;
-            case DirectoryString5C07C6AB34133CF1Kind.UTF8String:
-                writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
-                break;
-            default: throw new Asn1Exception("CHOICE has no alternative.");
-        }
-    }
-
-    public static DirectoryString5C07C6AB34133CF1 Decode(Asn1Reader reader)
-    {
-        if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
-        var value = new DirectoryString5C07C6AB34133CF1();
-        if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
-        {
-            value.Kind = DirectoryString5C07C6AB34133CF1Kind.TeletexString;
-            value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
-        {
-            value.Kind = DirectoryString5C07C6AB34133CF1Kind.PrintableString;
-            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
-        {
-            value.Kind = DirectoryString5C07C6AB34133CF1Kind.BmpString;
-            value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
-        {
-            value.Kind = DirectoryString5C07C6AB34133CF1Kind.UniversalString;
-            value.Value = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
-        {
-            value.Kind = DirectoryString5C07C6AB34133CF1Kind.UTF8String;
-            value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
-        }
-        else throw new Asn1Exception("Unknown CHOICE alternative.");
-        return value;
-    }
-}
-
-public enum DirectoryString060EEEFB644A71DDKind
-{
-    TeletexString,
-    PrintableString,
-    BmpString,
-    UniversalString,
-    UTF8String,
-}
-
-public sealed class DirectoryString060EEEFB644A71DD
-{
-    public DirectoryString060EEEFB644A71DDKind Kind { get; private set; }
-    public string Value { get; private set; } = "";
-
-    public static DirectoryString060EEEFB644A71DD FromTeletexString(string teletexString) => new DirectoryString060EEEFB644A71DD
-    {
-        Kind = DirectoryString060EEEFB644A71DDKind.TeletexString,
-        Value = teletexString,
-    };
-
-    public static DirectoryString060EEEFB644A71DD FromPrintableString(string printableString) => new DirectoryString060EEEFB644A71DD
-    {
-        Kind = DirectoryString060EEEFB644A71DDKind.PrintableString,
-        Value = printableString,
-    };
-
-    public static DirectoryString060EEEFB644A71DD FromBmpString(string bmpString) => new DirectoryString060EEEFB644A71DD
-    {
-        Kind = DirectoryString060EEEFB644A71DDKind.BmpString,
-        Value = bmpString,
-    };
-
-    public static DirectoryString060EEEFB644A71DD FromUniversalString(string universalString) => new DirectoryString060EEEFB644A71DD
-    {
-        Kind = DirectoryString060EEEFB644A71DDKind.UniversalString,
-        Value = universalString,
-    };
-
-    public static DirectoryString060EEEFB644A71DD FromUTF8String(string uTF8String) => new DirectoryString060EEEFB644A71DD
-    {
-        Kind = DirectoryString060EEEFB644A71DDKind.UTF8String,
-        Value = uTF8String,
-    };
-
-    public override string ToString()
-    {
-        return Kind switch
-        {
-            DirectoryString060EEEFB644A71DDKind.TeletexString => Asn1Formatting.Format(Value),
-            DirectoryString060EEEFB644A71DDKind.PrintableString => Asn1Formatting.Format(Value),
-            DirectoryString060EEEFB644A71DDKind.BmpString => Asn1Formatting.Format(Value),
-            DirectoryString060EEEFB644A71DDKind.UniversalString => Asn1Formatting.Format(Value),
-            DirectoryString060EEEFB644A71DDKind.UTF8String => Asn1Formatting.Format(Value),
-            _ => "<unset>",
-        };
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        switch (Kind)
-        {
-            case DirectoryString060EEEFB644A71DDKind.TeletexString:
-                writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
-                break;
-            case DirectoryString060EEEFB644A71DDKind.PrintableString:
-                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
-                break;
-            case DirectoryString060EEEFB644A71DDKind.BmpString:
-                writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
-                break;
-            case DirectoryString060EEEFB644A71DDKind.UniversalString:
-                writer.WriteString(Asn1Tag.UniversalString, Value, Asn1StringForm.Universal);
-                break;
-            case DirectoryString060EEEFB644A71DDKind.UTF8String:
-                writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
-                break;
-            default: throw new Asn1Exception("CHOICE has no alternative.");
-        }
-    }
-
-    public static DirectoryString060EEEFB644A71DD Decode(Asn1Reader reader)
-    {
-        if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
-        var value = new DirectoryString060EEEFB644A71DD();
-        if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
-        {
-            value.Kind = DirectoryString060EEEFB644A71DDKind.TeletexString;
-            value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
-        {
-            value.Kind = DirectoryString060EEEFB644A71DDKind.PrintableString;
-            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
-        {
-            value.Kind = DirectoryString060EEEFB644A71DDKind.BmpString;
-            value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
-        {
-            value.Kind = DirectoryString060EEEFB644A71DDKind.UniversalString;
-            value.Value = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
-        {
-            value.Kind = DirectoryString060EEEFB644A71DDKind.UTF8String;
-            value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
-        }
-        else throw new Asn1Exception("Unknown CHOICE alternative.");
-        return value;
-    }
-}
-
-public enum DirectoryStringC16AB8C7183509CEKind
-{
-    TeletexString,
-    PrintableString,
-    BmpString,
-    UniversalString,
-    UTF8String,
-}
-
-public sealed class DirectoryStringC16AB8C7183509CE
-{
-    public DirectoryStringC16AB8C7183509CEKind Kind { get; private set; }
-    public string Value { get; private set; } = "";
-
-    public static DirectoryStringC16AB8C7183509CE FromTeletexString(string teletexString) => new DirectoryStringC16AB8C7183509CE
-    {
-        Kind = DirectoryStringC16AB8C7183509CEKind.TeletexString,
-        Value = teletexString,
-    };
-
-    public static DirectoryStringC16AB8C7183509CE FromPrintableString(string printableString) => new DirectoryStringC16AB8C7183509CE
-    {
-        Kind = DirectoryStringC16AB8C7183509CEKind.PrintableString,
-        Value = printableString,
-    };
-
-    public static DirectoryStringC16AB8C7183509CE FromBmpString(string bmpString) => new DirectoryStringC16AB8C7183509CE
-    {
-        Kind = DirectoryStringC16AB8C7183509CEKind.BmpString,
-        Value = bmpString,
-    };
-
-    public static DirectoryStringC16AB8C7183509CE FromUniversalString(string universalString) => new DirectoryStringC16AB8C7183509CE
-    {
-        Kind = DirectoryStringC16AB8C7183509CEKind.UniversalString,
-        Value = universalString,
-    };
-
-    public static DirectoryStringC16AB8C7183509CE FromUTF8String(string uTF8String) => new DirectoryStringC16AB8C7183509CE
-    {
-        Kind = DirectoryStringC16AB8C7183509CEKind.UTF8String,
-        Value = uTF8String,
-    };
-
-    public override string ToString()
-    {
-        return Kind switch
-        {
-            DirectoryStringC16AB8C7183509CEKind.TeletexString => Asn1Formatting.Format(Value),
-            DirectoryStringC16AB8C7183509CEKind.PrintableString => Asn1Formatting.Format(Value),
-            DirectoryStringC16AB8C7183509CEKind.BmpString => Asn1Formatting.Format(Value),
-            DirectoryStringC16AB8C7183509CEKind.UniversalString => Asn1Formatting.Format(Value),
-            DirectoryStringC16AB8C7183509CEKind.UTF8String => Asn1Formatting.Format(Value),
-            _ => "<unset>",
-        };
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        switch (Kind)
-        {
-            case DirectoryStringC16AB8C7183509CEKind.TeletexString:
-                writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
-                break;
-            case DirectoryStringC16AB8C7183509CEKind.PrintableString:
-                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
-                break;
-            case DirectoryStringC16AB8C7183509CEKind.BmpString:
-                writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
-                break;
-            case DirectoryStringC16AB8C7183509CEKind.UniversalString:
-                writer.WriteString(Asn1Tag.UniversalString, Value, Asn1StringForm.Universal);
-                break;
-            case DirectoryStringC16AB8C7183509CEKind.UTF8String:
-                writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
-                break;
-            default: throw new Asn1Exception("CHOICE has no alternative.");
-        }
-    }
-
-    public static DirectoryStringC16AB8C7183509CE Decode(Asn1Reader reader)
-    {
-        if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
-        var value = new DirectoryStringC16AB8C7183509CE();
-        if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
-        {
-            value.Kind = DirectoryStringC16AB8C7183509CEKind.TeletexString;
-            value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
-        {
-            value.Kind = DirectoryStringC16AB8C7183509CEKind.PrintableString;
-            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
-        {
-            value.Kind = DirectoryStringC16AB8C7183509CEKind.BmpString;
-            value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
-        {
-            value.Kind = DirectoryStringC16AB8C7183509CEKind.UniversalString;
-            value.Value = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
-        {
-            value.Kind = DirectoryStringC16AB8C7183509CEKind.UTF8String;
-            value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
-        }
-        else throw new Asn1Exception("Unknown CHOICE alternative.");
-        return value;
-    }
-}
-
-public enum DirectoryString232ACDF3B2406406Kind
-{
-    TeletexString,
-    PrintableString,
-    BmpString,
-    UniversalString,
-    UTF8String,
-}
-
-public sealed class DirectoryString232ACDF3B2406406
-{
-    public DirectoryString232ACDF3B2406406Kind Kind { get; private set; }
-    public string Value { get; private set; } = "";
-
-    public static DirectoryString232ACDF3B2406406 FromTeletexString(string teletexString) => new DirectoryString232ACDF3B2406406
-    {
-        Kind = DirectoryString232ACDF3B2406406Kind.TeletexString,
-        Value = teletexString,
-    };
-
-    public static DirectoryString232ACDF3B2406406 FromPrintableString(string printableString) => new DirectoryString232ACDF3B2406406
-    {
-        Kind = DirectoryString232ACDF3B2406406Kind.PrintableString,
-        Value = printableString,
-    };
-
-    public static DirectoryString232ACDF3B2406406 FromBmpString(string bmpString) => new DirectoryString232ACDF3B2406406
-    {
-        Kind = DirectoryString232ACDF3B2406406Kind.BmpString,
-        Value = bmpString,
-    };
-
-    public static DirectoryString232ACDF3B2406406 FromUniversalString(string universalString) => new DirectoryString232ACDF3B2406406
-    {
-        Kind = DirectoryString232ACDF3B2406406Kind.UniversalString,
-        Value = universalString,
-    };
-
-    public static DirectoryString232ACDF3B2406406 FromUTF8String(string uTF8String) => new DirectoryString232ACDF3B2406406
-    {
-        Kind = DirectoryString232ACDF3B2406406Kind.UTF8String,
-        Value = uTF8String,
-    };
-
-    public override string ToString()
-    {
-        return Kind switch
-        {
-            DirectoryString232ACDF3B2406406Kind.TeletexString => Asn1Formatting.Format(Value),
-            DirectoryString232ACDF3B2406406Kind.PrintableString => Asn1Formatting.Format(Value),
-            DirectoryString232ACDF3B2406406Kind.BmpString => Asn1Formatting.Format(Value),
-            DirectoryString232ACDF3B2406406Kind.UniversalString => Asn1Formatting.Format(Value),
-            DirectoryString232ACDF3B2406406Kind.UTF8String => Asn1Formatting.Format(Value),
-            _ => "<unset>",
-        };
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        switch (Kind)
-        {
-            case DirectoryString232ACDF3B2406406Kind.TeletexString:
-                writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
-                break;
-            case DirectoryString232ACDF3B2406406Kind.PrintableString:
-                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
-                break;
-            case DirectoryString232ACDF3B2406406Kind.BmpString:
-                writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
-                break;
-            case DirectoryString232ACDF3B2406406Kind.UniversalString:
-                writer.WriteString(Asn1Tag.UniversalString, Value, Asn1StringForm.Universal);
-                break;
-            case DirectoryString232ACDF3B2406406Kind.UTF8String:
-                writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
-                break;
-            default: throw new Asn1Exception("CHOICE has no alternative.");
-        }
-    }
-
-    public static DirectoryString232ACDF3B2406406 Decode(Asn1Reader reader)
-    {
-        if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
-        var value = new DirectoryString232ACDF3B2406406();
-        if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
-        {
-            value.Kind = DirectoryString232ACDF3B2406406Kind.TeletexString;
-            value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
-        {
-            value.Kind = DirectoryString232ACDF3B2406406Kind.PrintableString;
-            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
-        {
-            value.Kind = DirectoryString232ACDF3B2406406Kind.BmpString;
-            value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
-        {
-            value.Kind = DirectoryString232ACDF3B2406406Kind.UniversalString;
-            value.Value = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
-        {
-            value.Kind = DirectoryString232ACDF3B2406406Kind.UTF8String;
-            value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
-        }
-        else throw new Asn1Exception("Unknown CHOICE alternative.");
-        return value;
-    }
-}
-
-public enum DirectoryStringF57DD64FFF0EAEACKind
-{
-    TeletexString,
-    PrintableString,
-    BmpString,
-    UniversalString,
-    UTF8String,
-}
-
-public sealed class DirectoryStringF57DD64FFF0EAEAC
-{
-    public DirectoryStringF57DD64FFF0EAEACKind Kind { get; private set; }
-    public string Value { get; private set; } = "";
-
-    public static DirectoryStringF57DD64FFF0EAEAC FromTeletexString(string teletexString) => new DirectoryStringF57DD64FFF0EAEAC
-    {
-        Kind = DirectoryStringF57DD64FFF0EAEACKind.TeletexString,
-        Value = teletexString,
-    };
-
-    public static DirectoryStringF57DD64FFF0EAEAC FromPrintableString(string printableString) => new DirectoryStringF57DD64FFF0EAEAC
-    {
-        Kind = DirectoryStringF57DD64FFF0EAEACKind.PrintableString,
-        Value = printableString,
-    };
-
-    public static DirectoryStringF57DD64FFF0EAEAC FromBmpString(string bmpString) => new DirectoryStringF57DD64FFF0EAEAC
-    {
-        Kind = DirectoryStringF57DD64FFF0EAEACKind.BmpString,
-        Value = bmpString,
-    };
-
-    public static DirectoryStringF57DD64FFF0EAEAC FromUniversalString(string universalString) => new DirectoryStringF57DD64FFF0EAEAC
-    {
-        Kind = DirectoryStringF57DD64FFF0EAEACKind.UniversalString,
-        Value = universalString,
-    };
-
-    public static DirectoryStringF57DD64FFF0EAEAC FromUTF8String(string uTF8String) => new DirectoryStringF57DD64FFF0EAEAC
-    {
-        Kind = DirectoryStringF57DD64FFF0EAEACKind.UTF8String,
-        Value = uTF8String,
-    };
-
-    public override string ToString()
-    {
-        return Kind switch
-        {
-            DirectoryStringF57DD64FFF0EAEACKind.TeletexString => Asn1Formatting.Format(Value),
-            DirectoryStringF57DD64FFF0EAEACKind.PrintableString => Asn1Formatting.Format(Value),
-            DirectoryStringF57DD64FFF0EAEACKind.BmpString => Asn1Formatting.Format(Value),
-            DirectoryStringF57DD64FFF0EAEACKind.UniversalString => Asn1Formatting.Format(Value),
-            DirectoryStringF57DD64FFF0EAEACKind.UTF8String => Asn1Formatting.Format(Value),
-            _ => "<unset>",
-        };
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        switch (Kind)
-        {
-            case DirectoryStringF57DD64FFF0EAEACKind.TeletexString:
-                writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
-                break;
-            case DirectoryStringF57DD64FFF0EAEACKind.PrintableString:
-                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
-                break;
-            case DirectoryStringF57DD64FFF0EAEACKind.BmpString:
-                writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
-                break;
-            case DirectoryStringF57DD64FFF0EAEACKind.UniversalString:
-                writer.WriteString(Asn1Tag.UniversalString, Value, Asn1StringForm.Universal);
-                break;
-            case DirectoryStringF57DD64FFF0EAEACKind.UTF8String:
-                writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
-                break;
-            default: throw new Asn1Exception("CHOICE has no alternative.");
-        }
-    }
-
-    public static DirectoryStringF57DD64FFF0EAEAC Decode(Asn1Reader reader)
-    {
-        if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
-        var value = new DirectoryStringF57DD64FFF0EAEAC();
-        if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
-        {
-            value.Kind = DirectoryStringF57DD64FFF0EAEACKind.TeletexString;
-            value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
-        {
-            value.Kind = DirectoryStringF57DD64FFF0EAEACKind.PrintableString;
-            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
-        {
-            value.Kind = DirectoryStringF57DD64FFF0EAEACKind.BmpString;
-            value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
-        {
-            value.Kind = DirectoryStringF57DD64FFF0EAEACKind.UniversalString;
-            value.Value = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
-        {
-            value.Kind = DirectoryStringF57DD64FFF0EAEACKind.UTF8String;
-            value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
-        }
-        else throw new Asn1Exception("Unknown CHOICE alternative.");
-        return value;
-    }
-}
-
-public sealed class SIGNED3B92C0AAD0549C55
-{
-    public TBSCertificate ToBeSigned { get; set; }
-    public SIGNED3B92C0AAD0549C55_AlgorithmIdentifier AlgorithmIdentifier { get; set; }
-    public Asn1Contained<SIGNED3B92C0AAD0549C55_Signature_Content> Signature { get; set; }
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
+    public T ToBeSigned { get; set; } = default!;
+    public SignedAlgorithmIdentifier AlgorithmIdentifier { get; set; } = new();
+    public Asn1BitString Signature { get; set; }
+    public void Encode(Asn1Writer writer) => Encode(writer, Asn1Tag.Sequence);
     public void Encode(Asn1Writer writer, Asn1Tag tag)
     {
         using (writer.EnterSequence(tag))
         {
-            ToBeSigned.Encode(writer, Asn1Tag.Sequence);
-            AlgorithmIdentifier.Encode(writer, Asn1Tag.Sequence);
-            writer.WriteContained(Asn1Tag.BitString, true, Signature, static (inner, value) =>
-            {
-                value.Encode(inner);
-            });
+            EncodeToBeSigned(writer);
+            AlgorithmIdentifier.Encode(writer);
+            writer.WriteBitString(Asn1Tag.BitString, Signature);
         }
     }
-
-    public static SIGNED3B92C0AAD0549C55 Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static SIGNED3B92C0AAD0549C55 Decode(Asn1Reader reader, Asn1Tag tag)
+    protected abstract void EncodeToBeSigned(Asn1Writer writer);
+    protected static void DecodeTail(Asn1Reader reader, Signed<T> value)
     {
-        using (reader.EnterSequence(tag))
+        value.AlgorithmIdentifier = SignedAlgorithmIdentifier.Decode(reader);
+        value.Signature = reader.ReadBitString(Asn1Tag.BitString);
+    }
+}
+
+public enum X520nameKind
+{
+    TeletexString,
+    PrintableString,
+    BmpString,
+    UniversalString,
+    UTF8String,
+}
+
+public sealed class X520name
+{
+    public X520nameKind Kind { get; private set; }
+    public string Value { get; private set; } = "";
+
+    public static X520name FromTeletexString(string teletexString) => new X520name
+    {
+        Kind = X520nameKind.TeletexString,
+        Value = teletexString,
+    };
+
+    public static X520name FromPrintableString(string printableString) => new X520name
+    {
+        Kind = X520nameKind.PrintableString,
+        Value = printableString,
+    };
+
+    public static X520name FromBmpString(string bmpString) => new X520name
+    {
+        Kind = X520nameKind.BmpString,
+        Value = bmpString,
+    };
+
+    public static X520name FromUniversalString(string universalString) => new X520name
+    {
+        Kind = X520nameKind.UniversalString,
+        Value = universalString,
+    };
+
+    public static X520name FromUTF8String(string uTF8String) => new X520name
+    {
+        Kind = X520nameKind.UTF8String,
+        Value = uTF8String,
+    };
+
+    public override string ToString()
+    {
+        return Kind switch
         {
-            var value = new SIGNED3B92C0AAD0549C55();
-            value.ToBeSigned = Asn1Kit.Modern.PKIX1Explicit2009.TBSCertificate.Decode(reader, Asn1Tag.Sequence);
-            value.AlgorithmIdentifier = Asn1Kit.Modern.PKIX1Explicit2009.SIGNED3B92C0AAD0549C55_AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
-            value.Signature = reader.ReadContained(Asn1Tag.BitString, true, SIGNED3B92C0AAD0549C55_Signature_Content.IsKnown(value.AlgorithmIdentifier.Algorithm), value.AlgorithmIdentifier.Algorithm, static (inner, key) => SIGNED3B92C0AAD0549C55_Signature_Content.Decode(inner, key));
-            reader.ThrowIfNotEmpty();
-            return value;
+            X520nameKind.TeletexString => Asn1Formatting.Format(Value),
+            X520nameKind.PrintableString => Asn1Formatting.Format(Value),
+            X520nameKind.BmpString => Asn1Formatting.Format(Value),
+            X520nameKind.UniversalString => Asn1Formatting.Format(Value),
+            X520nameKind.UTF8String => Asn1Formatting.Format(Value),
+            _ => "<unset>",
+        };
+    }
+
+    public void Encode(Asn1Writer writer)
+    {
+        switch (Kind)
+        {
+            case X520nameKind.TeletexString:
+                writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
+                break;
+            case X520nameKind.PrintableString:
+                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
+                break;
+            case X520nameKind.BmpString:
+                writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
+                break;
+            case X520nameKind.UniversalString:
+                writer.WriteString(Asn1Tag.UniversalString, Value, Asn1StringForm.Universal);
+                break;
+            case X520nameKind.UTF8String:
+                writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
+                break;
+            default: throw new Asn1Exception("CHOICE has no alternative.");
         }
     }
 
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
+    public static X520name Decode(Asn1Reader reader)
+    {
+        if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
+        var value = new X520name();
+        if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
+        {
+            value.Kind = X520nameKind.TeletexString;
+            value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
+        }
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
+        {
+            value.Kind = X520nameKind.PrintableString;
+            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
+        }
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
+        {
+            value.Kind = X520nameKind.BmpString;
+            value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
+        }
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
+        {
+            value.Kind = X520nameKind.UniversalString;
+            value.Value = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
+        }
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
+        {
+            value.Kind = X520nameKind.UTF8String;
+            value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
+        }
+        else throw new Asn1Exception("Unknown CHOICE alternative.");
+        return value;
+    }
+}
+
+public enum X520CommonNameKind
+{
+    TeletexString,
+    PrintableString,
+    BmpString,
+    UniversalString,
+    UTF8String,
+}
+
+public sealed class X520CommonName
+{
+    public X520CommonNameKind Kind { get; private set; }
+    public string Value { get; private set; } = "";
+
+    public static X520CommonName FromTeletexString(string teletexString) => new X520CommonName
+    {
+        Kind = X520CommonNameKind.TeletexString,
+        Value = teletexString,
+    };
+
+    public static X520CommonName FromPrintableString(string printableString) => new X520CommonName
+    {
+        Kind = X520CommonNameKind.PrintableString,
+        Value = printableString,
+    };
+
+    public static X520CommonName FromBmpString(string bmpString) => new X520CommonName
+    {
+        Kind = X520CommonNameKind.BmpString,
+        Value = bmpString,
+    };
+
+    public static X520CommonName FromUniversalString(string universalString) => new X520CommonName
+    {
+        Kind = X520CommonNameKind.UniversalString,
+        Value = universalString,
+    };
+
+    public static X520CommonName FromUTF8String(string uTF8String) => new X520CommonName
+    {
+        Kind = X520CommonNameKind.UTF8String,
+        Value = uTF8String,
+    };
+
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            X520CommonNameKind.TeletexString => Asn1Formatting.Format(Value),
+            X520CommonNameKind.PrintableString => Asn1Formatting.Format(Value),
+            X520CommonNameKind.BmpString => Asn1Formatting.Format(Value),
+            X520CommonNameKind.UniversalString => Asn1Formatting.Format(Value),
+            X520CommonNameKind.UTF8String => Asn1Formatting.Format(Value),
+            _ => "<unset>",
+        };
+    }
+
+    public void Encode(Asn1Writer writer)
+    {
+        switch (Kind)
+        {
+            case X520CommonNameKind.TeletexString:
+                writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
+                break;
+            case X520CommonNameKind.PrintableString:
+                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
+                break;
+            case X520CommonNameKind.BmpString:
+                writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
+                break;
+            case X520CommonNameKind.UniversalString:
+                writer.WriteString(Asn1Tag.UniversalString, Value, Asn1StringForm.Universal);
+                break;
+            case X520CommonNameKind.UTF8String:
+                writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
+                break;
+            default: throw new Asn1Exception("CHOICE has no alternative.");
+        }
+    }
+
+    public static X520CommonName Decode(Asn1Reader reader)
+    {
+        if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
+        var value = new X520CommonName();
+        if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
+        {
+            value.Kind = X520CommonNameKind.TeletexString;
+            value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
+        }
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
+        {
+            value.Kind = X520CommonNameKind.PrintableString;
+            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
+        }
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
+        {
+            value.Kind = X520CommonNameKind.BmpString;
+            value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
+        }
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
+        {
+            value.Kind = X520CommonNameKind.UniversalString;
+            value.Value = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
+        }
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
+        {
+            value.Kind = X520CommonNameKind.UTF8String;
+            value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
+        }
+        else throw new Asn1Exception("Unknown CHOICE alternative.");
+        return value;
+    }
+}
+
+public enum X520LocalityNameKind
+{
+    TeletexString,
+    PrintableString,
+    BmpString,
+    UniversalString,
+    UTF8String,
+}
+
+public sealed class X520LocalityName
+{
+    public X520LocalityNameKind Kind { get; private set; }
+    public string Value { get; private set; } = "";
+
+    public static X520LocalityName FromTeletexString(string teletexString) => new X520LocalityName
+    {
+        Kind = X520LocalityNameKind.TeletexString,
+        Value = teletexString,
+    };
+
+    public static X520LocalityName FromPrintableString(string printableString) => new X520LocalityName
+    {
+        Kind = X520LocalityNameKind.PrintableString,
+        Value = printableString,
+    };
+
+    public static X520LocalityName FromBmpString(string bmpString) => new X520LocalityName
+    {
+        Kind = X520LocalityNameKind.BmpString,
+        Value = bmpString,
+    };
+
+    public static X520LocalityName FromUniversalString(string universalString) => new X520LocalityName
+    {
+        Kind = X520LocalityNameKind.UniversalString,
+        Value = universalString,
+    };
+
+    public static X520LocalityName FromUTF8String(string uTF8String) => new X520LocalityName
+    {
+        Kind = X520LocalityNameKind.UTF8String,
+        Value = uTF8String,
+    };
+
+    public override string ToString()
+    {
+        return Kind switch
+        {
+            X520LocalityNameKind.TeletexString => Asn1Formatting.Format(Value),
+            X520LocalityNameKind.PrintableString => Asn1Formatting.Format(Value),
+            X520LocalityNameKind.BmpString => Asn1Formatting.Format(Value),
+            X520LocalityNameKind.UniversalString => Asn1Formatting.Format(Value),
+            X520LocalityNameKind.UTF8String => Asn1Formatting.Format(Value),
+            _ => "<unset>",
+        };
+    }
+
+    public void Encode(Asn1Writer writer)
+    {
+        switch (Kind)
+        {
+            case X520LocalityNameKind.TeletexString:
+                writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
+                break;
+            case X520LocalityNameKind.PrintableString:
+                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
+                break;
+            case X520LocalityNameKind.BmpString:
+                writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
+                break;
+            case X520LocalityNameKind.UniversalString:
+                writer.WriteString(Asn1Tag.UniversalString, Value, Asn1StringForm.Universal);
+                break;
+            case X520LocalityNameKind.UTF8String:
+                writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
+                break;
+            default: throw new Asn1Exception("CHOICE has no alternative.");
+        }
+    }
+
+    public static X520LocalityName Decode(Asn1Reader reader)
+    {
+        if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
+        var value = new X520LocalityName();
+        if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
+        {
+            value.Kind = X520LocalityNameKind.TeletexString;
+            value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
+        }
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
+        {
+            value.Kind = X520LocalityNameKind.PrintableString;
+            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
+        }
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
+        {
+            value.Kind = X520LocalityNameKind.BmpString;
+            value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
+        }
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
+        {
+            value.Kind = X520LocalityNameKind.UniversalString;
+            value.Value = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
+        }
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
+        {
+            value.Kind = X520LocalityNameKind.UTF8String;
+            value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
+        }
+        else throw new Asn1Exception("Unknown CHOICE alternative.");
+        return value;
+    }
 }
 
 public sealed class TBSCertificate
@@ -1277,19 +676,242 @@ public sealed class TBSCertificate
     public int Version { get; set; } = 0;
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
     public Asn1Integer SerialNumber { get; set; }
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier7C4F553AA4AB3FAC Signature { get; set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Signature { get; set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
-    public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute30071208C05157D5[][] Issuer { get; set; } = Array.Empty<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute30071208C05157D5[]>();
+    public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[][] Issuer { get; set; } = Array.Empty<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[]>();
     public Validity Validity { get; set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
-    public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute30071208C05157D5[][] Subject { get; set; } = Array.Empty<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute30071208C05157D5[]>();
+    public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[][] Subject { get; set; } = Array.Empty<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[]>();
     public SubjectPublicKeyInfo SubjectPublicKeyInfo { get; set; }
     /// <summary>ASN.1 alias UniqueIdentifier ::= BIT STRING.</summary>
     public Asn1BitString? IssuerUniqueID { get; set; }
     /// <summary>ASN.1 alias UniqueIdentifier ::= BIT STRING.</summary>
     public Asn1BitString? SubjectUniqueID { get; set; }
-    /// <summary>ASN.1 alias Extensions-F3EC90E03480DB25 ::= SEQUENCE OF Extension-57013FB2B956F99B.</summary>
-    public Asn1Kit.Modern.PKIXCommonTypes2009.Extension57013FB2B956F99B[]? Extensions { get; set; }
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    public Asn1Kit.Modern.PKIXCommonTypes2009.Extension[]? Extensions { get; set; }
+
+    public bool TryDecodeSignatureParameters<T>(out T value)
+    {
+        value = default!;
+        if (Signature is null || Signature.Parameters is not { } raw) return false;
+        switch (Signature.Algorithm.ToString())
+        {
+            case "1.2.840.113549.1.1.2":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.113549.1.1.4":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.113549.1.1.5":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10040.4.3":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10045.4.1":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "2.16.840.1.101.3.4.3.1":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "2.16.840.1.101.3.4.3.2":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10045.4.3.1":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10045.4.3.2":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10045.4.3.3":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10045.4.3.4":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.113549.1.1.10":
+            {
+                if (typeof(T) != typeof(Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams.Decode(inner, Asn1Tag.Sequence);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            default: return false;
+        }
+    }
+
+    public void SetSignatureParameters<T>(T value)
+    {
+        if (Signature is null) throw new Asn1Exception("Missing Signature.");
+        switch (Signature.Algorithm.ToString())
+        {
+            case "1.2.840.113549.1.1.2":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Signature.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.113549.1.1.4":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Signature.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.113549.1.1.5":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Signature.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10040.4.3":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Signature.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10045.4.1":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Signature.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "2.16.840.1.101.3.4.3.1":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Signature.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "2.16.840.1.101.3.4.3.2":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Signature.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10045.4.3.1":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Signature.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10045.4.3.2":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Signature.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10045.4.3.3":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Signature.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10045.4.3.4":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Signature.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.113549.1.1.10":
+            {
+                if (value is not Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                typed.Encode(writer, Asn1Tag.Sequence);
+                Signature.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            default: throw new Asn1Exception("Unknown open-type key.");
+        }
+    }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1376,10 +998,10 @@ public sealed class TBSCertificate
                 }
             }
             value.SerialNumber = reader.ReadIntegerValue(Asn1Tag.Integer);
-            value.Signature = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier7C4F553AA4AB3FAC.Decode(reader, Asn1Tag.Sequence);
-            value.Issuer = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute30071208C05157D5.Decode(inner, Asn1Tag.Sequence)));
+            value.Signature = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
+            value.Issuer = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute.Decode(inner, Asn1Tag.Sequence)));
             value.Validity = Asn1Kit.Modern.PKIX1Explicit2009.Validity.Decode(reader, Asn1Tag.Sequence);
-            value.Subject = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute30071208C05157D5.Decode(inner, Asn1Tag.Sequence)));
+            value.Subject = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute.Decode(inner, Asn1Tag.Sequence)));
             value.SubjectPublicKeyInfo = Asn1Kit.Modern.PKIX1Explicit2009.SubjectPublicKeyInfo.Decode(reader, Asn1Tag.Sequence);
             List<Asn1Extension>? unknownExtensions = null;
             var nextExtension = 7;
@@ -1402,7 +1024,7 @@ public sealed class TBSCertificate
                     if (nextExtension > 9) throw new Asn1Exception("Duplicate or unordered extension component 'extensions'.");
                     using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
                     {
-                        value.Extensions = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.Extension57013FB2B956F99B.Decode(inner, Asn1Tag.Sequence));
+                        value.Extensions = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.Extension.Decode(inner, Asn1Tag.Sequence));
                         reader.ThrowIfNotEmpty();
                     }
                     nextExtension = 10;
@@ -1531,8 +1153,180 @@ public sealed class Time
 
 public sealed class SubjectPublicKeyInfo
 {
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierF5E0DF0F79DCA438 Algorithm { get; set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Algorithm { get; set; }
     public Asn1BitString SubjectPublicKey { get; set; }
+
+    public bool TryDecodeAlgorithmParameters<T>(out T value)
+    {
+        value = default!;
+        if (Algorithm is null || Algorithm.Parameters is not { } raw) return false;
+        switch (Algorithm.Algorithm.ToString())
+        {
+            case "1.2.840.113549.1.1.1":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10040.4.1":
+            {
+                if (typeof(T) != typeof(Asn1Kit.Modern.PKIXAlgs2009.DSAParams)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Kit.Modern.PKIXAlgs2009.DSAParams.Decode(inner, Asn1Tag.Sequence);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10046.2.1":
+            {
+                if (typeof(T) != typeof(Asn1Kit.Modern.PKIXAlgs2009.DomainParameters)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Kit.Modern.PKIXAlgs2009.DomainParameters.Decode(inner, Asn1Tag.Sequence);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "2.16.840.1.101.2.1.1.22":
+            {
+                if (typeof(T) != typeof(ReadOnlyMemory<byte>)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = inner.ReadOctetString(Asn1Tag.OctetString);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10045.2.1":
+            {
+                if (typeof(T) != typeof(Asn1Oid)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = inner.ReadOid(Asn1Tag.ObjectIdentifier);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.3.132.1.12":
+            {
+                if (typeof(T) != typeof(Asn1Oid)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = inner.ReadOid(Asn1Tag.ObjectIdentifier);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.3.132.1.13":
+            {
+                if (typeof(T) != typeof(Asn1Oid)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = inner.ReadOid(Asn1Tag.ObjectIdentifier);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.113549.1.1.10":
+            {
+                if (typeof(T) != typeof(Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams.Decode(inner, Asn1Tag.Sequence);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.113549.1.1.7":
+            {
+                if (typeof(T) != typeof(Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams.Decode(inner, Asn1Tag.Sequence);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            default: return false;
+        }
+    }
+
+    public void SetAlgorithmParameters<T>(T value)
+    {
+        if (Algorithm is null) throw new Asn1Exception("Missing Algorithm.");
+        switch (Algorithm.Algorithm.ToString())
+        {
+            case "1.2.840.113549.1.1.1":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Algorithm.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10040.4.1":
+            {
+                if (value is not Asn1Kit.Modern.PKIXAlgs2009.DSAParams typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                typed.Encode(writer, Asn1Tag.Sequence);
+                Algorithm.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10046.2.1":
+            {
+                if (value is not Asn1Kit.Modern.PKIXAlgs2009.DomainParameters typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                typed.Encode(writer, Asn1Tag.Sequence);
+                Algorithm.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "2.16.840.1.101.2.1.1.22":
+            {
+                if (value is not ReadOnlyMemory<byte> typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteOctetString(Asn1Tag.OctetString, typed.Span);
+                Algorithm.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10045.2.1":
+            {
+                if (value is not Asn1Oid typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, typed);
+                Algorithm.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.3.132.1.12":
+            {
+                if (value is not Asn1Oid typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, typed);
+                Algorithm.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.3.132.1.13":
+            {
+                if (value is not Asn1Oid typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, typed);
+                Algorithm.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.113549.1.1.10":
+            {
+                if (value is not Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                typed.Encode(writer, Asn1Tag.Sequence);
+                Algorithm.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.113549.1.1.7":
+            {
+                if (value is not Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                typed.Encode(writer, Asn1Tag.Sequence);
+                Algorithm.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            default: throw new Asn1Exception("Unknown open-type key.");
+        }
+    }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1552,47 +1346,8 @@ public sealed class SubjectPublicKeyInfo
         using (reader.EnterSequence(tag))
         {
             var value = new SubjectPublicKeyInfo();
-            value.Algorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierF5E0DF0F79DCA438.Decode(reader, Asn1Tag.Sequence);
+            value.Algorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.SubjectPublicKey = reader.ReadBitString(Asn1Tag.BitString);
-            reader.ThrowIfNotEmpty();
-            return value;
-        }
-    }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
-}
-
-public sealed class SIGNEDB66AD9ADECF950B1
-{
-    public TBSCertList ToBeSigned { get; set; }
-    public SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier AlgorithmIdentifier { get; set; }
-    public Asn1Contained<SIGNEDB66AD9ADECF950B1_Signature_Content> Signature { get; set; }
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
-    {
-        using (writer.EnterSequence(tag))
-        {
-            ToBeSigned.Encode(writer, Asn1Tag.Sequence);
-            AlgorithmIdentifier.Encode(writer, Asn1Tag.Sequence);
-            writer.WriteContained(Asn1Tag.BitString, true, Signature, static (inner, value) =>
-            {
-                value.Encode(inner);
-            });
-        }
-    }
-
-    public static SIGNEDB66AD9ADECF950B1 Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static SIGNEDB66AD9ADECF950B1 Decode(Asn1Reader reader, Asn1Tag tag)
-    {
-        using (reader.EnterSequence(tag))
-        {
-            var value = new SIGNEDB66AD9ADECF950B1();
-            value.ToBeSigned = Asn1Kit.Modern.PKIX1Explicit2009.TBSCertList.Decode(reader, Asn1Tag.Sequence);
-            value.AlgorithmIdentifier = Asn1Kit.Modern.PKIX1Explicit2009.SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
-            value.Signature = reader.ReadContained(Asn1Tag.BitString, true, SIGNEDB66AD9ADECF950B1_Signature_Content.IsKnown(value.AlgorithmIdentifier.Algorithm), value.AlgorithmIdentifier.Algorithm, static (inner, key) => SIGNEDB66AD9ADECF950B1_Signature_Content.Decode(inner, key));
             reader.ThrowIfNotEmpty();
             return value;
         }
@@ -1605,14 +1360,237 @@ public sealed class TBSCertList
 {
     public IReadOnlyList<Asn1Extension> UnknownExtensions { get; set; } = Array.Empty<Asn1Extension>();
     public int? Version { get; set; }
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier7C4F553AA4AB3FAC Signature { get; set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Signature { get; set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
-    public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute30071208C05157D5[][] Issuer { get; set; } = Array.Empty<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute30071208C05157D5[]>();
+    public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[][] Issuer { get; set; } = Array.Empty<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[]>();
     public Time ThisUpdate { get; set; }
     public Time? NextUpdate { get; set; }
     public TBSCertList_RevokedCertificates_Item[]? RevokedCertificates { get; set; }
-    /// <summary>ASN.1 alias Extensions-FE3FA426230040C0 ::= SEQUENCE OF Extension-DDE795EDEB585D49.</summary>
-    public Asn1Kit.Modern.PKIXCommonTypes2009.ExtensionDDE795EDEB585D49[]? CrlExtensions { get; set; }
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    public Asn1Kit.Modern.PKIXCommonTypes2009.Extension[]? CrlExtensions { get; set; }
+
+    public bool TryDecodeSignatureParameters<T>(out T value)
+    {
+        value = default!;
+        if (Signature is null || Signature.Parameters is not { } raw) return false;
+        switch (Signature.Algorithm.ToString())
+        {
+            case "1.2.840.113549.1.1.2":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.113549.1.1.4":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.113549.1.1.5":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10040.4.3":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10045.4.1":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "2.16.840.1.101.3.4.3.1":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "2.16.840.1.101.3.4.3.2":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10045.4.3.1":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10045.4.3.2":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10045.4.3.3":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.10045.4.3.4":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "1.2.840.113549.1.1.10":
+            {
+                if (typeof(T) != typeof(Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams.Decode(inner, Asn1Tag.Sequence);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            default: return false;
+        }
+    }
+
+    public void SetSignatureParameters<T>(T value)
+    {
+        if (Signature is null) throw new Asn1Exception("Missing Signature.");
+        switch (Signature.Algorithm.ToString())
+        {
+            case "1.2.840.113549.1.1.2":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Signature.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.113549.1.1.4":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Signature.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.113549.1.1.5":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Signature.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10040.4.3":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Signature.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10045.4.1":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Signature.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "2.16.840.1.101.3.4.3.1":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Signature.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "2.16.840.1.101.3.4.3.2":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Signature.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10045.4.3.1":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Signature.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10045.4.3.2":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Signature.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10045.4.3.3":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Signature.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.10045.4.3.4":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                Signature.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "1.2.840.113549.1.1.10":
+            {
+                if (value is not Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                typed.Encode(writer, Asn1Tag.Sequence);
+                Signature.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            default: throw new Asn1Exception("Unknown open-type key.");
+        }
+    }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1677,8 +1655,8 @@ public sealed class TBSCertList
             {
                 value.Version = reader.ReadInt32(Asn1Tag.Integer);
             }
-            value.Signature = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier7C4F553AA4AB3FAC.Decode(reader, Asn1Tag.Sequence);
-            value.Issuer = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute30071208C05157D5.Decode(inner, Asn1Tag.Sequence)));
+            value.Signature = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
+            value.Issuer = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute.Decode(inner, Asn1Tag.Sequence)));
             value.ThisUpdate = Asn1Kit.Modern.PKIX1Explicit2009.Time.Decode(reader);
             if (reader.TryPeekTag(out var tag_NextUpdate) && (tag_NextUpdate.MatchesIgnoreConstructed(Asn1Tag.UtcTime) || tag_NextUpdate.MatchesIgnoreConstructed(Asn1Tag.GeneralizedTime)))
             {
@@ -1697,7 +1675,7 @@ public sealed class TBSCertList
                     if (nextExtension > 6) throw new Asn1Exception("Duplicate or unordered extension component 'crlExtensions'.");
                     using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                     {
-                        value.CrlExtensions = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.ExtensionDDE795EDEB585D49.Decode(inner, Asn1Tag.Sequence));
+                        value.CrlExtensions = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.Extension.Decode(inner, Asn1Tag.Sequence));
                         reader.ThrowIfNotEmpty();
                     }
                     nextExtension = 7;
@@ -1715,2141 +1693,14 @@ public sealed class TBSCertList
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public enum DirectoryString774126FAEEE25170Kind
-{
-    TeletexString,
-    PrintableString,
-    BmpString,
-    UniversalString,
-    UTF8String,
-}
-
-public sealed class DirectoryString774126FAEEE25170
-{
-    public DirectoryString774126FAEEE25170Kind Kind { get; private set; }
-    public string Value { get; private set; } = "";
-
-    public static DirectoryString774126FAEEE25170 FromTeletexString(string teletexString) => new DirectoryString774126FAEEE25170
-    {
-        Kind = DirectoryString774126FAEEE25170Kind.TeletexString,
-        Value = teletexString,
-    };
-
-    public static DirectoryString774126FAEEE25170 FromPrintableString(string printableString) => new DirectoryString774126FAEEE25170
-    {
-        Kind = DirectoryString774126FAEEE25170Kind.PrintableString,
-        Value = printableString,
-    };
-
-    public static DirectoryString774126FAEEE25170 FromBmpString(string bmpString) => new DirectoryString774126FAEEE25170
-    {
-        Kind = DirectoryString774126FAEEE25170Kind.BmpString,
-        Value = bmpString,
-    };
-
-    public static DirectoryString774126FAEEE25170 FromUniversalString(string universalString) => new DirectoryString774126FAEEE25170
-    {
-        Kind = DirectoryString774126FAEEE25170Kind.UniversalString,
-        Value = universalString,
-    };
-
-    public static DirectoryString774126FAEEE25170 FromUTF8String(string uTF8String) => new DirectoryString774126FAEEE25170
-    {
-        Kind = DirectoryString774126FAEEE25170Kind.UTF8String,
-        Value = uTF8String,
-    };
-
-    public override string ToString()
-    {
-        return Kind switch
-        {
-            DirectoryString774126FAEEE25170Kind.TeletexString => Asn1Formatting.Format(Value),
-            DirectoryString774126FAEEE25170Kind.PrintableString => Asn1Formatting.Format(Value),
-            DirectoryString774126FAEEE25170Kind.BmpString => Asn1Formatting.Format(Value),
-            DirectoryString774126FAEEE25170Kind.UniversalString => Asn1Formatting.Format(Value),
-            DirectoryString774126FAEEE25170Kind.UTF8String => Asn1Formatting.Format(Value),
-            _ => "<unset>",
-        };
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        switch (Kind)
-        {
-            case DirectoryString774126FAEEE25170Kind.TeletexString:
-                writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
-                break;
-            case DirectoryString774126FAEEE25170Kind.PrintableString:
-                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
-                break;
-            case DirectoryString774126FAEEE25170Kind.BmpString:
-                writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
-                break;
-            case DirectoryString774126FAEEE25170Kind.UniversalString:
-                writer.WriteString(Asn1Tag.UniversalString, Value, Asn1StringForm.Universal);
-                break;
-            case DirectoryString774126FAEEE25170Kind.UTF8String:
-                writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
-                break;
-            default: throw new Asn1Exception("CHOICE has no alternative.");
-        }
-    }
-
-    public static DirectoryString774126FAEEE25170 Decode(Asn1Reader reader)
-    {
-        if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
-        var value = new DirectoryString774126FAEEE25170();
-        if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
-        {
-            value.Kind = DirectoryString774126FAEEE25170Kind.TeletexString;
-            value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
-        {
-            value.Kind = DirectoryString774126FAEEE25170Kind.PrintableString;
-            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
-        {
-            value.Kind = DirectoryString774126FAEEE25170Kind.BmpString;
-            value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
-        {
-            value.Kind = DirectoryString774126FAEEE25170Kind.UniversalString;
-            value.Value = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
-        {
-            value.Kind = DirectoryString774126FAEEE25170Kind.UTF8String;
-            value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
-        }
-        else throw new Asn1Exception("Unknown CHOICE alternative.");
-        return value;
-    }
-}
-
-public sealed class SIGNEDDB18E9FF20086E58
-{
-    public Asn1Kit.Modern.PKIXAttributeCertificate2009.AttributeCertificateInfo ToBeSigned { get; set; }
-    public SIGNEDDB18E9FF20086E58_AlgorithmIdentifier AlgorithmIdentifier { get; set; }
-    public Asn1Contained<SIGNEDDB18E9FF20086E58_Signature_Content> Signature { get; set; }
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
-    {
-        using (writer.EnterSequence(tag))
-        {
-            ToBeSigned.Encode(writer, Asn1Tag.Sequence);
-            AlgorithmIdentifier.Encode(writer, Asn1Tag.Sequence);
-            writer.WriteContained(Asn1Tag.BitString, true, Signature, static (inner, value) =>
-            {
-                value.Encode(inner);
-            });
-        }
-    }
-
-    public static SIGNEDDB18E9FF20086E58 Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static SIGNEDDB18E9FF20086E58 Decode(Asn1Reader reader, Asn1Tag tag)
-    {
-        using (reader.EnterSequence(tag))
-        {
-            var value = new SIGNEDDB18E9FF20086E58();
-            value.ToBeSigned = Asn1Kit.Modern.PKIXAttributeCertificate2009.AttributeCertificateInfo.Decode(reader, Asn1Tag.Sequence);
-            value.AlgorithmIdentifier = Asn1Kit.Modern.PKIX1Explicit2009.SIGNEDDB18E9FF20086E58_AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
-            value.Signature = reader.ReadContained(Asn1Tag.BitString, true, SIGNEDDB18E9FF20086E58_Signature_Content.IsKnown(value.AlgorithmIdentifier.Algorithm), value.AlgorithmIdentifier.Algorithm, static (inner, key) => SIGNEDDB18E9FF20086E58_Signature_Content.Decode(inner, key));
-            reader.ThrowIfNotEmpty();
-            return value;
-        }
-    }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
-}
-
-public sealed class SIGNED8D46A36079F224AC_AlgorithmIdentifier
-{
-    public Asn1Oid Algorithm { get; set; }
-    public SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters? Parameters { get; set; }
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
-    {
-        using (writer.EnterSequence(tag))
-        {
-            writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, Algorithm);
-            if (Parameters != null)
-            {
-                Parameters.Encode(writer);
-            }
-        }
-    }
-
-    public static SIGNED8D46A36079F224AC_AlgorithmIdentifier Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static SIGNED8D46A36079F224AC_AlgorithmIdentifier Decode(Asn1Reader reader, Asn1Tag tag)
-    {
-        using (reader.EnterSequence(tag))
-        {
-            var value = new SIGNED8D46A36079F224AC_AlgorithmIdentifier();
-            value.Algorithm = reader.ReadOid(Asn1Tag.ObjectIdentifier);
-            if (!reader.Eof)
-            {
-                value.Parameters = SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters.Decode(reader, value.Algorithm);
-            }
-            reader.ThrowIfNotEmpty();
-            return value;
-        }
-    }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
-}
-
-public enum SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind
-{
-    None,
-    SaRsaWithMD2,
-    SaRsaWithMD5,
-    SaRsaWithSHA1,
-    SaDsaWithSHA1,
-    SaEcdsaWithSHA1,
-    SaDsaWithSHA224,
-    SaDsaWithSHA256,
-    SaEcdsaWithSHA224,
-    SaEcdsaWithSHA256,
-    SaEcdsaWithSHA384,
-    SaEcdsaWithSHA512,
-    SaRsaSSAPSS,
-    Unknown,
-}
-
-public sealed class SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters
-{
-    public SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind Kind { get; private set; }
-    public Asn1Null? Asn1NullValue { get; private set; }
-    public Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams? SaRsaSSAPSS { get; private set; }
-    public Asn1Any? Unknown { get; private set; }
-
-    public static SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters FromSaRsaWithMD2(Asn1Null saRsaWithMD2 = default) => new SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaRsaWithMD2,
-        Asn1NullValue = saRsaWithMD2,
-    };
-
-    public static SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters FromSaRsaWithMD5(Asn1Null saRsaWithMD5 = default) => new SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaRsaWithMD5,
-        Asn1NullValue = saRsaWithMD5,
-    };
-
-    public static SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters FromSaRsaWithSHA1(Asn1Null saRsaWithSHA1 = default) => new SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaRsaWithSHA1,
-        Asn1NullValue = saRsaWithSHA1,
-    };
-
-    public static SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters FromSaDsaWithSHA1(Asn1Null saDsaWithSHA1 = default) => new SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA1,
-        Asn1NullValue = saDsaWithSHA1,
-    };
-
-    public static SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters FromSaEcdsaWithSHA1(Asn1Null saEcdsaWithSHA1 = default) => new SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA1,
-        Asn1NullValue = saEcdsaWithSHA1,
-    };
-
-    public static SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters FromSaDsaWithSHA224(Asn1Null saDsaWithSHA224 = default) => new SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA224,
-        Asn1NullValue = saDsaWithSHA224,
-    };
-
-    public static SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters FromSaDsaWithSHA256(Asn1Null saDsaWithSHA256 = default) => new SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA256,
-        Asn1NullValue = saDsaWithSHA256,
-    };
-
-    public static SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters FromSaEcdsaWithSHA224(Asn1Null saEcdsaWithSHA224 = default) => new SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA224,
-        Asn1NullValue = saEcdsaWithSHA224,
-    };
-
-    public static SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters FromSaEcdsaWithSHA256(Asn1Null saEcdsaWithSHA256 = default) => new SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA256,
-        Asn1NullValue = saEcdsaWithSHA256,
-    };
-
-    public static SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters FromSaEcdsaWithSHA384(Asn1Null saEcdsaWithSHA384 = default) => new SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA384,
-        Asn1NullValue = saEcdsaWithSHA384,
-    };
-
-    public static SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters FromSaEcdsaWithSHA512(Asn1Null saEcdsaWithSHA512 = default) => new SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA512,
-        Asn1NullValue = saEcdsaWithSHA512,
-    };
-
-    public static SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters FromSaRsaSSAPSS(Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams saRsaSSAPSS) => new SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaRsaSSAPSS,
-        SaRsaSSAPSS = saRsaSSAPSS,
-    };
-
-    public static SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters FromUnknown(Asn1Any value) => new SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.Unknown,
-        Unknown = value,
-    };
-
-    public override string ToString()
-    {
-        return Kind switch
-        {
-            SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaRsaWithMD2 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaRsaWithMD5 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaRsaWithSHA1 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA1 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA1 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA224 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA256 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA224 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA256 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA384 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA512 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaRsaSSAPSS => Asn1Formatting.Format(SaRsaSSAPSS),
-            SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.Unknown => Asn1Formatting.Format(Unknown),
-            _ => "<unset>",
-        };
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        switch (Kind)
-        {
-            case SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaRsaWithMD2:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaRsaWithMD5:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaRsaWithSHA1:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA1:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA1:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA224:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA256:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA224:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA256:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA384:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA512:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.SaRsaSSAPSS:
-                SaRsaSSAPSS!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNED8D46A36079F224AC_AlgorithmIdentifier_ParametersKind.Unknown:
-                if (Unknown is null) throw new Asn1Exception("Open type has no alternative.");
-                writer.WriteAny(Unknown.Value);
-                break;
-            default: throw new Asn1Exception("Open type has no alternative.");
-        }
-    }
-
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_2 = Asn1Oid.Parse("1.2.840.113549.1.1.2");
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_4 = Asn1Oid.Parse("1.2.840.113549.1.1.4");
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_5 = Asn1Oid.Parse("1.2.840.113549.1.1.5");
-    private static readonly Asn1Oid Oid_1_2_840_10040_4_3 = Asn1Oid.Parse("1.2.840.10040.4.3");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_1 = Asn1Oid.Parse("1.2.840.10045.4.1");
-    private static readonly Asn1Oid Oid_2_16_840_1_101_3_4_3_1 = Asn1Oid.Parse("2.16.840.1.101.3.4.3.1");
-    private static readonly Asn1Oid Oid_2_16_840_1_101_3_4_3_2 = Asn1Oid.Parse("2.16.840.1.101.3.4.3.2");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_1 = Asn1Oid.Parse("1.2.840.10045.4.3.1");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_2 = Asn1Oid.Parse("1.2.840.10045.4.3.2");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_3 = Asn1Oid.Parse("1.2.840.10045.4.3.3");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_4 = Asn1Oid.Parse("1.2.840.10045.4.3.4");
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_10 = Asn1Oid.Parse("1.2.840.113549.1.1.10");
-
-    public static bool IsKnown(Asn1Oid key) => key.Equals(Oid_1_2_840_113549_1_1_2) || key.Equals(Oid_1_2_840_113549_1_1_4) || key.Equals(Oid_1_2_840_113549_1_1_5) || key.Equals(Oid_1_2_840_10040_4_3) || key.Equals(Oid_1_2_840_10045_4_1) || key.Equals(Oid_2_16_840_1_101_3_4_3_1) || key.Equals(Oid_2_16_840_1_101_3_4_3_2) || key.Equals(Oid_1_2_840_10045_4_3_1) || key.Equals(Oid_1_2_840_10045_4_3_2) || key.Equals(Oid_1_2_840_10045_4_3_3) || key.Equals(Oid_1_2_840_10045_4_3_4) || key.Equals(Oid_1_2_840_113549_1_1_10);
-    public static SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
-        Decode(reader, definedByKey, expectedTag: null);
-
-    public static SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>
-        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
-
-    private static SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
-    {
-        if (!reader.TryPeekTag(out var peeked))
-            throw new Asn1Exception("Unexpected end of ASN.1 data while decoding open type 'SIGNED8D46A36079F224AC_AlgorithmIdentifier_Parameters': expected an encoded ASN.1 value for key '" + definedByKey + "'.");
-
-        if (definedByKey.Equals(Oid_1_2_840_113549_1_1_2))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaRsaWithMD2(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaRsaWithMD2'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_113549_1_1_4))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaRsaWithMD5(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaRsaWithMD5'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_113549_1_1_5))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaRsaWithSHA1(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaRsaWithSHA1'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10040_4_3))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaDsaWithSHA1(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaDsaWithSHA1'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_1))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaEcdsaWithSHA1(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA1'.");
-        }
-        else if (definedByKey.Equals(Oid_2_16_840_1_101_3_4_3_1))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaDsaWithSHA224(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaDsaWithSHA224'.");
-        }
-        else if (definedByKey.Equals(Oid_2_16_840_1_101_3_4_3_2))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaDsaWithSHA256(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaDsaWithSHA256'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_1))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaEcdsaWithSHA224(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA224'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_2))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaEcdsaWithSHA256(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA256'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_3))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaEcdsaWithSHA384(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA384'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_4))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaEcdsaWithSHA512(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA512'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_113549_1_1_10))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaRsaSSAPSS(Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaRsaSSAPSS(Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaRsaSSAPSS'.");
-        }
-        else {
-            return FromUnknown(reader.ReadAny());
-        }
-    }
-}
-
-public enum SIGNED8D46A36079F224AC_Signature_ContentKind
-{
-    None,
-    SaDsaWithSHA1,
-    SaEcdsaWithSHA1,
-    SaDsaWithSHA224,
-    SaDsaWithSHA256,
-    SaEcdsaWithSHA224,
-    SaEcdsaWithSHA256,
-    SaEcdsaWithSHA384,
-    SaEcdsaWithSHA512,
-    Unknown,
-}
-
-public sealed class SIGNED8D46A36079F224AC_Signature_Content
-{
-    public SIGNED8D46A36079F224AC_Signature_ContentKind Kind { get; private set; }
-    public Asn1Kit.Modern.PKIXAlgs2009.DSASigValue? DSASigValueValue { get; private set; }
-    public Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue? ECDSASigValueValue { get; private set; }
-    public Asn1Any? Unknown { get; private set; }
-
-    public static SIGNED8D46A36079F224AC_Signature_Content FromSaDsaWithSHA1(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue saDsaWithSHA1) => new SIGNED8D46A36079F224AC_Signature_Content
-    {
-        Kind = SIGNED8D46A36079F224AC_Signature_ContentKind.SaDsaWithSHA1,
-        DSASigValueValue = saDsaWithSHA1,
-    };
-
-    public static SIGNED8D46A36079F224AC_Signature_Content FromSaEcdsaWithSHA1(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue saEcdsaWithSHA1) => new SIGNED8D46A36079F224AC_Signature_Content
-    {
-        Kind = SIGNED8D46A36079F224AC_Signature_ContentKind.SaEcdsaWithSHA1,
-        ECDSASigValueValue = saEcdsaWithSHA1,
-    };
-
-    public static SIGNED8D46A36079F224AC_Signature_Content FromSaDsaWithSHA224(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue saDsaWithSHA224) => new SIGNED8D46A36079F224AC_Signature_Content
-    {
-        Kind = SIGNED8D46A36079F224AC_Signature_ContentKind.SaDsaWithSHA224,
-        DSASigValueValue = saDsaWithSHA224,
-    };
-
-    public static SIGNED8D46A36079F224AC_Signature_Content FromSaDsaWithSHA256(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue saDsaWithSHA256) => new SIGNED8D46A36079F224AC_Signature_Content
-    {
-        Kind = SIGNED8D46A36079F224AC_Signature_ContentKind.SaDsaWithSHA256,
-        DSASigValueValue = saDsaWithSHA256,
-    };
-
-    public static SIGNED8D46A36079F224AC_Signature_Content FromSaEcdsaWithSHA224(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue saEcdsaWithSHA224) => new SIGNED8D46A36079F224AC_Signature_Content
-    {
-        Kind = SIGNED8D46A36079F224AC_Signature_ContentKind.SaEcdsaWithSHA224,
-        ECDSASigValueValue = saEcdsaWithSHA224,
-    };
-
-    public static SIGNED8D46A36079F224AC_Signature_Content FromSaEcdsaWithSHA256(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue saEcdsaWithSHA256) => new SIGNED8D46A36079F224AC_Signature_Content
-    {
-        Kind = SIGNED8D46A36079F224AC_Signature_ContentKind.SaEcdsaWithSHA256,
-        ECDSASigValueValue = saEcdsaWithSHA256,
-    };
-
-    public static SIGNED8D46A36079F224AC_Signature_Content FromSaEcdsaWithSHA384(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue saEcdsaWithSHA384) => new SIGNED8D46A36079F224AC_Signature_Content
-    {
-        Kind = SIGNED8D46A36079F224AC_Signature_ContentKind.SaEcdsaWithSHA384,
-        ECDSASigValueValue = saEcdsaWithSHA384,
-    };
-
-    public static SIGNED8D46A36079F224AC_Signature_Content FromSaEcdsaWithSHA512(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue saEcdsaWithSHA512) => new SIGNED8D46A36079F224AC_Signature_Content
-    {
-        Kind = SIGNED8D46A36079F224AC_Signature_ContentKind.SaEcdsaWithSHA512,
-        ECDSASigValueValue = saEcdsaWithSHA512,
-    };
-
-    public static SIGNED8D46A36079F224AC_Signature_Content FromUnknown(Asn1Any value) => new SIGNED8D46A36079F224AC_Signature_Content
-    {
-        Kind = SIGNED8D46A36079F224AC_Signature_ContentKind.Unknown,
-        Unknown = value,
-    };
-
-    public override string ToString()
-    {
-        return Kind switch
-        {
-            SIGNED8D46A36079F224AC_Signature_ContentKind.SaDsaWithSHA1 => Asn1Formatting.Format(DSASigValueValue),
-            SIGNED8D46A36079F224AC_Signature_ContentKind.SaEcdsaWithSHA1 => Asn1Formatting.Format(ECDSASigValueValue),
-            SIGNED8D46A36079F224AC_Signature_ContentKind.SaDsaWithSHA224 => Asn1Formatting.Format(DSASigValueValue),
-            SIGNED8D46A36079F224AC_Signature_ContentKind.SaDsaWithSHA256 => Asn1Formatting.Format(DSASigValueValue),
-            SIGNED8D46A36079F224AC_Signature_ContentKind.SaEcdsaWithSHA224 => Asn1Formatting.Format(ECDSASigValueValue),
-            SIGNED8D46A36079F224AC_Signature_ContentKind.SaEcdsaWithSHA256 => Asn1Formatting.Format(ECDSASigValueValue),
-            SIGNED8D46A36079F224AC_Signature_ContentKind.SaEcdsaWithSHA384 => Asn1Formatting.Format(ECDSASigValueValue),
-            SIGNED8D46A36079F224AC_Signature_ContentKind.SaEcdsaWithSHA512 => Asn1Formatting.Format(ECDSASigValueValue),
-            SIGNED8D46A36079F224AC_Signature_ContentKind.Unknown => Asn1Formatting.Format(Unknown),
-            _ => "<unset>",
-        };
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        switch (Kind)
-        {
-            case SIGNED8D46A36079F224AC_Signature_ContentKind.SaDsaWithSHA1:
-                DSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNED8D46A36079F224AC_Signature_ContentKind.SaEcdsaWithSHA1:
-                ECDSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNED8D46A36079F224AC_Signature_ContentKind.SaDsaWithSHA224:
-                DSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNED8D46A36079F224AC_Signature_ContentKind.SaDsaWithSHA256:
-                DSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNED8D46A36079F224AC_Signature_ContentKind.SaEcdsaWithSHA224:
-                ECDSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNED8D46A36079F224AC_Signature_ContentKind.SaEcdsaWithSHA256:
-                ECDSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNED8D46A36079F224AC_Signature_ContentKind.SaEcdsaWithSHA384:
-                ECDSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNED8D46A36079F224AC_Signature_ContentKind.SaEcdsaWithSHA512:
-                ECDSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNED8D46A36079F224AC_Signature_ContentKind.Unknown:
-                if (Unknown is null) throw new Asn1Exception("Open type has no alternative.");
-                writer.WriteAny(Unknown.Value);
-                break;
-            default: throw new Asn1Exception("Open type has no alternative.");
-        }
-    }
-
-    private static readonly Asn1Oid Oid_1_2_840_10040_4_3 = Asn1Oid.Parse("1.2.840.10040.4.3");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_1 = Asn1Oid.Parse("1.2.840.10045.4.1");
-    private static readonly Asn1Oid Oid_2_16_840_1_101_3_4_3_1 = Asn1Oid.Parse("2.16.840.1.101.3.4.3.1");
-    private static readonly Asn1Oid Oid_2_16_840_1_101_3_4_3_2 = Asn1Oid.Parse("2.16.840.1.101.3.4.3.2");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_1 = Asn1Oid.Parse("1.2.840.10045.4.3.1");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_2 = Asn1Oid.Parse("1.2.840.10045.4.3.2");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_3 = Asn1Oid.Parse("1.2.840.10045.4.3.3");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_4 = Asn1Oid.Parse("1.2.840.10045.4.3.4");
-
-    public static bool IsKnown(Asn1Oid key) => key.Equals(Oid_1_2_840_10040_4_3) || key.Equals(Oid_1_2_840_10045_4_1) || key.Equals(Oid_2_16_840_1_101_3_4_3_1) || key.Equals(Oid_2_16_840_1_101_3_4_3_2) || key.Equals(Oid_1_2_840_10045_4_3_1) || key.Equals(Oid_1_2_840_10045_4_3_2) || key.Equals(Oid_1_2_840_10045_4_3_3) || key.Equals(Oid_1_2_840_10045_4_3_4);
-    public static SIGNED8D46A36079F224AC_Signature_Content Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
-        Decode(reader, definedByKey, expectedTag: null);
-
-    public static SIGNED8D46A36079F224AC_Signature_Content Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>
-        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
-
-    private static SIGNED8D46A36079F224AC_Signature_Content Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
-    {
-        if (!reader.TryPeekTag(out var peeked))
-            throw new Asn1Exception("Unexpected end of ASN.1 data while decoding open type 'SIGNED8D46A36079F224AC_Signature_Content': expected an encoded ASN.1 value for key '" + definedByKey + "'.");
-
-        if (definedByKey.Equals(Oid_1_2_840_10040_4_3))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaDsaWithSHA1(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaDsaWithSHA1(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaDsaWithSHA1'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_1))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaEcdsaWithSHA1(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaEcdsaWithSHA1(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA1'.");
-        }
-        else if (definedByKey.Equals(Oid_2_16_840_1_101_3_4_3_1))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaDsaWithSHA224(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaDsaWithSHA224(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaDsaWithSHA224'.");
-        }
-        else if (definedByKey.Equals(Oid_2_16_840_1_101_3_4_3_2))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaDsaWithSHA256(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaDsaWithSHA256(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaDsaWithSHA256'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_1))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaEcdsaWithSHA224(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaEcdsaWithSHA224(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA224'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_2))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaEcdsaWithSHA256(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaEcdsaWithSHA256(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA256'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_3))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaEcdsaWithSHA384(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaEcdsaWithSHA384(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA384'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_4))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaEcdsaWithSHA512(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaEcdsaWithSHA512(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA512'.");
-        }
-        else {
-            return FromUnknown(reader.ReadAny());
-        }
-    }
-}
-
-public sealed class SIGNED3B92C0AAD0549C55_AlgorithmIdentifier
-{
-    public Asn1Oid Algorithm { get; set; }
-    public SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters? Parameters { get; set; }
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
-    {
-        using (writer.EnterSequence(tag))
-        {
-            writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, Algorithm);
-            if (Parameters != null)
-            {
-                Parameters.Encode(writer);
-            }
-        }
-    }
-
-    public static SIGNED3B92C0AAD0549C55_AlgorithmIdentifier Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static SIGNED3B92C0AAD0549C55_AlgorithmIdentifier Decode(Asn1Reader reader, Asn1Tag tag)
-    {
-        using (reader.EnterSequence(tag))
-        {
-            var value = new SIGNED3B92C0AAD0549C55_AlgorithmIdentifier();
-            value.Algorithm = reader.ReadOid(Asn1Tag.ObjectIdentifier);
-            if (!reader.Eof)
-            {
-                value.Parameters = SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters.Decode(reader, value.Algorithm);
-            }
-            reader.ThrowIfNotEmpty();
-            return value;
-        }
-    }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
-}
-
-public enum SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind
-{
-    None,
-    SaRsaWithMD2,
-    SaRsaWithMD5,
-    SaRsaWithSHA1,
-    SaDsaWithSHA1,
-    SaEcdsaWithSHA1,
-    SaDsaWithSHA224,
-    SaDsaWithSHA256,
-    SaEcdsaWithSHA224,
-    SaEcdsaWithSHA256,
-    SaEcdsaWithSHA384,
-    SaEcdsaWithSHA512,
-    SaRsaSSAPSS,
-    Unknown,
-}
-
-public sealed class SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters
-{
-    public SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind Kind { get; private set; }
-    public Asn1Null? Asn1NullValue { get; private set; }
-    public Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams? SaRsaSSAPSS { get; private set; }
-    public Asn1Any? Unknown { get; private set; }
-
-    public static SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters FromSaRsaWithMD2(Asn1Null saRsaWithMD2 = default) => new SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaRsaWithMD2,
-        Asn1NullValue = saRsaWithMD2,
-    };
-
-    public static SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters FromSaRsaWithMD5(Asn1Null saRsaWithMD5 = default) => new SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaRsaWithMD5,
-        Asn1NullValue = saRsaWithMD5,
-    };
-
-    public static SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters FromSaRsaWithSHA1(Asn1Null saRsaWithSHA1 = default) => new SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaRsaWithSHA1,
-        Asn1NullValue = saRsaWithSHA1,
-    };
-
-    public static SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters FromSaDsaWithSHA1(Asn1Null saDsaWithSHA1 = default) => new SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA1,
-        Asn1NullValue = saDsaWithSHA1,
-    };
-
-    public static SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters FromSaEcdsaWithSHA1(Asn1Null saEcdsaWithSHA1 = default) => new SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA1,
-        Asn1NullValue = saEcdsaWithSHA1,
-    };
-
-    public static SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters FromSaDsaWithSHA224(Asn1Null saDsaWithSHA224 = default) => new SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA224,
-        Asn1NullValue = saDsaWithSHA224,
-    };
-
-    public static SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters FromSaDsaWithSHA256(Asn1Null saDsaWithSHA256 = default) => new SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA256,
-        Asn1NullValue = saDsaWithSHA256,
-    };
-
-    public static SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters FromSaEcdsaWithSHA224(Asn1Null saEcdsaWithSHA224 = default) => new SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA224,
-        Asn1NullValue = saEcdsaWithSHA224,
-    };
-
-    public static SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters FromSaEcdsaWithSHA256(Asn1Null saEcdsaWithSHA256 = default) => new SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA256,
-        Asn1NullValue = saEcdsaWithSHA256,
-    };
-
-    public static SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters FromSaEcdsaWithSHA384(Asn1Null saEcdsaWithSHA384 = default) => new SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA384,
-        Asn1NullValue = saEcdsaWithSHA384,
-    };
-
-    public static SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters FromSaEcdsaWithSHA512(Asn1Null saEcdsaWithSHA512 = default) => new SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA512,
-        Asn1NullValue = saEcdsaWithSHA512,
-    };
-
-    public static SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters FromSaRsaSSAPSS(Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams saRsaSSAPSS) => new SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaRsaSSAPSS,
-        SaRsaSSAPSS = saRsaSSAPSS,
-    };
-
-    public static SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters FromUnknown(Asn1Any value) => new SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.Unknown,
-        Unknown = value,
-    };
-
-    public override string ToString()
-    {
-        return Kind switch
-        {
-            SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaRsaWithMD2 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaRsaWithMD5 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaRsaWithSHA1 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA1 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA1 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA224 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA256 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA224 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA256 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA384 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA512 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaRsaSSAPSS => Asn1Formatting.Format(SaRsaSSAPSS),
-            SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.Unknown => Asn1Formatting.Format(Unknown),
-            _ => "<unset>",
-        };
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        switch (Kind)
-        {
-            case SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaRsaWithMD2:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaRsaWithMD5:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaRsaWithSHA1:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA1:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA1:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA224:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA256:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA224:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA256:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA384:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA512:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.SaRsaSSAPSS:
-                SaRsaSSAPSS!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_ParametersKind.Unknown:
-                if (Unknown is null) throw new Asn1Exception("Open type has no alternative.");
-                writer.WriteAny(Unknown.Value);
-                break;
-            default: throw new Asn1Exception("Open type has no alternative.");
-        }
-    }
-
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_2 = Asn1Oid.Parse("1.2.840.113549.1.1.2");
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_4 = Asn1Oid.Parse("1.2.840.113549.1.1.4");
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_5 = Asn1Oid.Parse("1.2.840.113549.1.1.5");
-    private static readonly Asn1Oid Oid_1_2_840_10040_4_3 = Asn1Oid.Parse("1.2.840.10040.4.3");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_1 = Asn1Oid.Parse("1.2.840.10045.4.1");
-    private static readonly Asn1Oid Oid_2_16_840_1_101_3_4_3_1 = Asn1Oid.Parse("2.16.840.1.101.3.4.3.1");
-    private static readonly Asn1Oid Oid_2_16_840_1_101_3_4_3_2 = Asn1Oid.Parse("2.16.840.1.101.3.4.3.2");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_1 = Asn1Oid.Parse("1.2.840.10045.4.3.1");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_2 = Asn1Oid.Parse("1.2.840.10045.4.3.2");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_3 = Asn1Oid.Parse("1.2.840.10045.4.3.3");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_4 = Asn1Oid.Parse("1.2.840.10045.4.3.4");
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_10 = Asn1Oid.Parse("1.2.840.113549.1.1.10");
-
-    public static bool IsKnown(Asn1Oid key) => key.Equals(Oid_1_2_840_113549_1_1_2) || key.Equals(Oid_1_2_840_113549_1_1_4) || key.Equals(Oid_1_2_840_113549_1_1_5) || key.Equals(Oid_1_2_840_10040_4_3) || key.Equals(Oid_1_2_840_10045_4_1) || key.Equals(Oid_2_16_840_1_101_3_4_3_1) || key.Equals(Oid_2_16_840_1_101_3_4_3_2) || key.Equals(Oid_1_2_840_10045_4_3_1) || key.Equals(Oid_1_2_840_10045_4_3_2) || key.Equals(Oid_1_2_840_10045_4_3_3) || key.Equals(Oid_1_2_840_10045_4_3_4) || key.Equals(Oid_1_2_840_113549_1_1_10);
-    public static SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
-        Decode(reader, definedByKey, expectedTag: null);
-
-    public static SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>
-        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
-
-    private static SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
-    {
-        if (!reader.TryPeekTag(out var peeked))
-            throw new Asn1Exception("Unexpected end of ASN.1 data while decoding open type 'SIGNED3B92C0AAD0549C55_AlgorithmIdentifier_Parameters': expected an encoded ASN.1 value for key '" + definedByKey + "'.");
-
-        if (definedByKey.Equals(Oid_1_2_840_113549_1_1_2))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaRsaWithMD2(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaRsaWithMD2'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_113549_1_1_4))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaRsaWithMD5(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaRsaWithMD5'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_113549_1_1_5))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaRsaWithSHA1(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaRsaWithSHA1'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10040_4_3))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaDsaWithSHA1(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaDsaWithSHA1'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_1))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaEcdsaWithSHA1(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA1'.");
-        }
-        else if (definedByKey.Equals(Oid_2_16_840_1_101_3_4_3_1))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaDsaWithSHA224(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaDsaWithSHA224'.");
-        }
-        else if (definedByKey.Equals(Oid_2_16_840_1_101_3_4_3_2))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaDsaWithSHA256(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaDsaWithSHA256'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_1))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaEcdsaWithSHA224(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA224'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_2))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaEcdsaWithSHA256(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA256'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_3))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaEcdsaWithSHA384(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA384'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_4))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaEcdsaWithSHA512(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA512'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_113549_1_1_10))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaRsaSSAPSS(Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaRsaSSAPSS(Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaRsaSSAPSS'.");
-        }
-        else {
-            return FromUnknown(reader.ReadAny());
-        }
-    }
-}
-
-public enum SIGNED3B92C0AAD0549C55_Signature_ContentKind
-{
-    None,
-    SaDsaWithSHA1,
-    SaEcdsaWithSHA1,
-    SaDsaWithSHA224,
-    SaDsaWithSHA256,
-    SaEcdsaWithSHA224,
-    SaEcdsaWithSHA256,
-    SaEcdsaWithSHA384,
-    SaEcdsaWithSHA512,
-    Unknown,
-}
-
-public sealed class SIGNED3B92C0AAD0549C55_Signature_Content
-{
-    public SIGNED3B92C0AAD0549C55_Signature_ContentKind Kind { get; private set; }
-    public Asn1Kit.Modern.PKIXAlgs2009.DSASigValue? DSASigValueValue { get; private set; }
-    public Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue? ECDSASigValueValue { get; private set; }
-    public Asn1Any? Unknown { get; private set; }
-
-    public static SIGNED3B92C0AAD0549C55_Signature_Content FromSaDsaWithSHA1(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue saDsaWithSHA1) => new SIGNED3B92C0AAD0549C55_Signature_Content
-    {
-        Kind = SIGNED3B92C0AAD0549C55_Signature_ContentKind.SaDsaWithSHA1,
-        DSASigValueValue = saDsaWithSHA1,
-    };
-
-    public static SIGNED3B92C0AAD0549C55_Signature_Content FromSaEcdsaWithSHA1(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue saEcdsaWithSHA1) => new SIGNED3B92C0AAD0549C55_Signature_Content
-    {
-        Kind = SIGNED3B92C0AAD0549C55_Signature_ContentKind.SaEcdsaWithSHA1,
-        ECDSASigValueValue = saEcdsaWithSHA1,
-    };
-
-    public static SIGNED3B92C0AAD0549C55_Signature_Content FromSaDsaWithSHA224(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue saDsaWithSHA224) => new SIGNED3B92C0AAD0549C55_Signature_Content
-    {
-        Kind = SIGNED3B92C0AAD0549C55_Signature_ContentKind.SaDsaWithSHA224,
-        DSASigValueValue = saDsaWithSHA224,
-    };
-
-    public static SIGNED3B92C0AAD0549C55_Signature_Content FromSaDsaWithSHA256(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue saDsaWithSHA256) => new SIGNED3B92C0AAD0549C55_Signature_Content
-    {
-        Kind = SIGNED3B92C0AAD0549C55_Signature_ContentKind.SaDsaWithSHA256,
-        DSASigValueValue = saDsaWithSHA256,
-    };
-
-    public static SIGNED3B92C0AAD0549C55_Signature_Content FromSaEcdsaWithSHA224(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue saEcdsaWithSHA224) => new SIGNED3B92C0AAD0549C55_Signature_Content
-    {
-        Kind = SIGNED3B92C0AAD0549C55_Signature_ContentKind.SaEcdsaWithSHA224,
-        ECDSASigValueValue = saEcdsaWithSHA224,
-    };
-
-    public static SIGNED3B92C0AAD0549C55_Signature_Content FromSaEcdsaWithSHA256(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue saEcdsaWithSHA256) => new SIGNED3B92C0AAD0549C55_Signature_Content
-    {
-        Kind = SIGNED3B92C0AAD0549C55_Signature_ContentKind.SaEcdsaWithSHA256,
-        ECDSASigValueValue = saEcdsaWithSHA256,
-    };
-
-    public static SIGNED3B92C0AAD0549C55_Signature_Content FromSaEcdsaWithSHA384(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue saEcdsaWithSHA384) => new SIGNED3B92C0AAD0549C55_Signature_Content
-    {
-        Kind = SIGNED3B92C0AAD0549C55_Signature_ContentKind.SaEcdsaWithSHA384,
-        ECDSASigValueValue = saEcdsaWithSHA384,
-    };
-
-    public static SIGNED3B92C0AAD0549C55_Signature_Content FromSaEcdsaWithSHA512(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue saEcdsaWithSHA512) => new SIGNED3B92C0AAD0549C55_Signature_Content
-    {
-        Kind = SIGNED3B92C0AAD0549C55_Signature_ContentKind.SaEcdsaWithSHA512,
-        ECDSASigValueValue = saEcdsaWithSHA512,
-    };
-
-    public static SIGNED3B92C0AAD0549C55_Signature_Content FromUnknown(Asn1Any value) => new SIGNED3B92C0AAD0549C55_Signature_Content
-    {
-        Kind = SIGNED3B92C0AAD0549C55_Signature_ContentKind.Unknown,
-        Unknown = value,
-    };
-
-    public override string ToString()
-    {
-        return Kind switch
-        {
-            SIGNED3B92C0AAD0549C55_Signature_ContentKind.SaDsaWithSHA1 => Asn1Formatting.Format(DSASigValueValue),
-            SIGNED3B92C0AAD0549C55_Signature_ContentKind.SaEcdsaWithSHA1 => Asn1Formatting.Format(ECDSASigValueValue),
-            SIGNED3B92C0AAD0549C55_Signature_ContentKind.SaDsaWithSHA224 => Asn1Formatting.Format(DSASigValueValue),
-            SIGNED3B92C0AAD0549C55_Signature_ContentKind.SaDsaWithSHA256 => Asn1Formatting.Format(DSASigValueValue),
-            SIGNED3B92C0AAD0549C55_Signature_ContentKind.SaEcdsaWithSHA224 => Asn1Formatting.Format(ECDSASigValueValue),
-            SIGNED3B92C0AAD0549C55_Signature_ContentKind.SaEcdsaWithSHA256 => Asn1Formatting.Format(ECDSASigValueValue),
-            SIGNED3B92C0AAD0549C55_Signature_ContentKind.SaEcdsaWithSHA384 => Asn1Formatting.Format(ECDSASigValueValue),
-            SIGNED3B92C0AAD0549C55_Signature_ContentKind.SaEcdsaWithSHA512 => Asn1Formatting.Format(ECDSASigValueValue),
-            SIGNED3B92C0AAD0549C55_Signature_ContentKind.Unknown => Asn1Formatting.Format(Unknown),
-            _ => "<unset>",
-        };
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        switch (Kind)
-        {
-            case SIGNED3B92C0AAD0549C55_Signature_ContentKind.SaDsaWithSHA1:
-                DSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNED3B92C0AAD0549C55_Signature_ContentKind.SaEcdsaWithSHA1:
-                ECDSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNED3B92C0AAD0549C55_Signature_ContentKind.SaDsaWithSHA224:
-                DSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNED3B92C0AAD0549C55_Signature_ContentKind.SaDsaWithSHA256:
-                DSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNED3B92C0AAD0549C55_Signature_ContentKind.SaEcdsaWithSHA224:
-                ECDSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNED3B92C0AAD0549C55_Signature_ContentKind.SaEcdsaWithSHA256:
-                ECDSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNED3B92C0AAD0549C55_Signature_ContentKind.SaEcdsaWithSHA384:
-                ECDSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNED3B92C0AAD0549C55_Signature_ContentKind.SaEcdsaWithSHA512:
-                ECDSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNED3B92C0AAD0549C55_Signature_ContentKind.Unknown:
-                if (Unknown is null) throw new Asn1Exception("Open type has no alternative.");
-                writer.WriteAny(Unknown.Value);
-                break;
-            default: throw new Asn1Exception("Open type has no alternative.");
-        }
-    }
-
-    private static readonly Asn1Oid Oid_1_2_840_10040_4_3 = Asn1Oid.Parse("1.2.840.10040.4.3");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_1 = Asn1Oid.Parse("1.2.840.10045.4.1");
-    private static readonly Asn1Oid Oid_2_16_840_1_101_3_4_3_1 = Asn1Oid.Parse("2.16.840.1.101.3.4.3.1");
-    private static readonly Asn1Oid Oid_2_16_840_1_101_3_4_3_2 = Asn1Oid.Parse("2.16.840.1.101.3.4.3.2");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_1 = Asn1Oid.Parse("1.2.840.10045.4.3.1");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_2 = Asn1Oid.Parse("1.2.840.10045.4.3.2");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_3 = Asn1Oid.Parse("1.2.840.10045.4.3.3");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_4 = Asn1Oid.Parse("1.2.840.10045.4.3.4");
-
-    public static bool IsKnown(Asn1Oid key) => key.Equals(Oid_1_2_840_10040_4_3) || key.Equals(Oid_1_2_840_10045_4_1) || key.Equals(Oid_2_16_840_1_101_3_4_3_1) || key.Equals(Oid_2_16_840_1_101_3_4_3_2) || key.Equals(Oid_1_2_840_10045_4_3_1) || key.Equals(Oid_1_2_840_10045_4_3_2) || key.Equals(Oid_1_2_840_10045_4_3_3) || key.Equals(Oid_1_2_840_10045_4_3_4);
-    public static SIGNED3B92C0AAD0549C55_Signature_Content Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
-        Decode(reader, definedByKey, expectedTag: null);
-
-    public static SIGNED3B92C0AAD0549C55_Signature_Content Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>
-        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
-
-    private static SIGNED3B92C0AAD0549C55_Signature_Content Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
-    {
-        if (!reader.TryPeekTag(out var peeked))
-            throw new Asn1Exception("Unexpected end of ASN.1 data while decoding open type 'SIGNED3B92C0AAD0549C55_Signature_Content': expected an encoded ASN.1 value for key '" + definedByKey + "'.");
-
-        if (definedByKey.Equals(Oid_1_2_840_10040_4_3))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaDsaWithSHA1(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaDsaWithSHA1(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaDsaWithSHA1'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_1))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaEcdsaWithSHA1(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaEcdsaWithSHA1(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA1'.");
-        }
-        else if (definedByKey.Equals(Oid_2_16_840_1_101_3_4_3_1))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaDsaWithSHA224(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaDsaWithSHA224(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaDsaWithSHA224'.");
-        }
-        else if (definedByKey.Equals(Oid_2_16_840_1_101_3_4_3_2))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaDsaWithSHA256(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaDsaWithSHA256(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaDsaWithSHA256'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_1))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaEcdsaWithSHA224(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaEcdsaWithSHA224(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA224'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_2))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaEcdsaWithSHA256(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaEcdsaWithSHA256(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA256'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_3))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaEcdsaWithSHA384(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaEcdsaWithSHA384(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA384'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_4))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaEcdsaWithSHA512(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaEcdsaWithSHA512(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA512'.");
-        }
-        else {
-            return FromUnknown(reader.ReadAny());
-        }
-    }
-}
-
-public sealed class SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier
-{
-    public Asn1Oid Algorithm { get; set; }
-    public SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters? Parameters { get; set; }
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
-    {
-        using (writer.EnterSequence(tag))
-        {
-            writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, Algorithm);
-            if (Parameters != null)
-            {
-                Parameters.Encode(writer);
-            }
-        }
-    }
-
-    public static SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier Decode(Asn1Reader reader, Asn1Tag tag)
-    {
-        using (reader.EnterSequence(tag))
-        {
-            var value = new SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier();
-            value.Algorithm = reader.ReadOid(Asn1Tag.ObjectIdentifier);
-            if (!reader.Eof)
-            {
-                value.Parameters = SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters.Decode(reader, value.Algorithm);
-            }
-            reader.ThrowIfNotEmpty();
-            return value;
-        }
-    }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
-}
-
-public enum SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind
-{
-    None,
-    SaRsaWithMD2,
-    SaRsaWithMD5,
-    SaRsaWithSHA1,
-    SaDsaWithSHA1,
-    SaEcdsaWithSHA1,
-    SaDsaWithSHA224,
-    SaDsaWithSHA256,
-    SaEcdsaWithSHA224,
-    SaEcdsaWithSHA256,
-    SaEcdsaWithSHA384,
-    SaEcdsaWithSHA512,
-    SaRsaSSAPSS,
-    Unknown,
-}
-
-public sealed class SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters
-{
-    public SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind Kind { get; private set; }
-    public Asn1Null? Asn1NullValue { get; private set; }
-    public Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams? SaRsaSSAPSS { get; private set; }
-    public Asn1Any? Unknown { get; private set; }
-
-    public static SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters FromSaRsaWithMD2(Asn1Null saRsaWithMD2 = default) => new SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaRsaWithMD2,
-        Asn1NullValue = saRsaWithMD2,
-    };
-
-    public static SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters FromSaRsaWithMD5(Asn1Null saRsaWithMD5 = default) => new SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaRsaWithMD5,
-        Asn1NullValue = saRsaWithMD5,
-    };
-
-    public static SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters FromSaRsaWithSHA1(Asn1Null saRsaWithSHA1 = default) => new SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaRsaWithSHA1,
-        Asn1NullValue = saRsaWithSHA1,
-    };
-
-    public static SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters FromSaDsaWithSHA1(Asn1Null saDsaWithSHA1 = default) => new SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA1,
-        Asn1NullValue = saDsaWithSHA1,
-    };
-
-    public static SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters FromSaEcdsaWithSHA1(Asn1Null saEcdsaWithSHA1 = default) => new SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA1,
-        Asn1NullValue = saEcdsaWithSHA1,
-    };
-
-    public static SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters FromSaDsaWithSHA224(Asn1Null saDsaWithSHA224 = default) => new SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA224,
-        Asn1NullValue = saDsaWithSHA224,
-    };
-
-    public static SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters FromSaDsaWithSHA256(Asn1Null saDsaWithSHA256 = default) => new SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA256,
-        Asn1NullValue = saDsaWithSHA256,
-    };
-
-    public static SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters FromSaEcdsaWithSHA224(Asn1Null saEcdsaWithSHA224 = default) => new SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA224,
-        Asn1NullValue = saEcdsaWithSHA224,
-    };
-
-    public static SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters FromSaEcdsaWithSHA256(Asn1Null saEcdsaWithSHA256 = default) => new SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA256,
-        Asn1NullValue = saEcdsaWithSHA256,
-    };
-
-    public static SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters FromSaEcdsaWithSHA384(Asn1Null saEcdsaWithSHA384 = default) => new SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA384,
-        Asn1NullValue = saEcdsaWithSHA384,
-    };
-
-    public static SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters FromSaEcdsaWithSHA512(Asn1Null saEcdsaWithSHA512 = default) => new SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA512,
-        Asn1NullValue = saEcdsaWithSHA512,
-    };
-
-    public static SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters FromSaRsaSSAPSS(Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams saRsaSSAPSS) => new SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaRsaSSAPSS,
-        SaRsaSSAPSS = saRsaSSAPSS,
-    };
-
-    public static SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters FromUnknown(Asn1Any value) => new SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.Unknown,
-        Unknown = value,
-    };
-
-    public override string ToString()
-    {
-        return Kind switch
-        {
-            SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaRsaWithMD2 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaRsaWithMD5 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaRsaWithSHA1 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA1 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA1 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA224 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA256 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA224 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA256 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA384 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA512 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaRsaSSAPSS => Asn1Formatting.Format(SaRsaSSAPSS),
-            SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.Unknown => Asn1Formatting.Format(Unknown),
-            _ => "<unset>",
-        };
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        switch (Kind)
-        {
-            case SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaRsaWithMD2:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaRsaWithMD5:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaRsaWithSHA1:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA1:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA1:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA224:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA256:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA224:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA256:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA384:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA512:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.SaRsaSSAPSS:
-                SaRsaSSAPSS!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_ParametersKind.Unknown:
-                if (Unknown is null) throw new Asn1Exception("Open type has no alternative.");
-                writer.WriteAny(Unknown.Value);
-                break;
-            default: throw new Asn1Exception("Open type has no alternative.");
-        }
-    }
-
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_2 = Asn1Oid.Parse("1.2.840.113549.1.1.2");
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_4 = Asn1Oid.Parse("1.2.840.113549.1.1.4");
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_5 = Asn1Oid.Parse("1.2.840.113549.1.1.5");
-    private static readonly Asn1Oid Oid_1_2_840_10040_4_3 = Asn1Oid.Parse("1.2.840.10040.4.3");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_1 = Asn1Oid.Parse("1.2.840.10045.4.1");
-    private static readonly Asn1Oid Oid_2_16_840_1_101_3_4_3_1 = Asn1Oid.Parse("2.16.840.1.101.3.4.3.1");
-    private static readonly Asn1Oid Oid_2_16_840_1_101_3_4_3_2 = Asn1Oid.Parse("2.16.840.1.101.3.4.3.2");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_1 = Asn1Oid.Parse("1.2.840.10045.4.3.1");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_2 = Asn1Oid.Parse("1.2.840.10045.4.3.2");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_3 = Asn1Oid.Parse("1.2.840.10045.4.3.3");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_4 = Asn1Oid.Parse("1.2.840.10045.4.3.4");
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_10 = Asn1Oid.Parse("1.2.840.113549.1.1.10");
-
-    public static bool IsKnown(Asn1Oid key) => key.Equals(Oid_1_2_840_113549_1_1_2) || key.Equals(Oid_1_2_840_113549_1_1_4) || key.Equals(Oid_1_2_840_113549_1_1_5) || key.Equals(Oid_1_2_840_10040_4_3) || key.Equals(Oid_1_2_840_10045_4_1) || key.Equals(Oid_2_16_840_1_101_3_4_3_1) || key.Equals(Oid_2_16_840_1_101_3_4_3_2) || key.Equals(Oid_1_2_840_10045_4_3_1) || key.Equals(Oid_1_2_840_10045_4_3_2) || key.Equals(Oid_1_2_840_10045_4_3_3) || key.Equals(Oid_1_2_840_10045_4_3_4) || key.Equals(Oid_1_2_840_113549_1_1_10);
-    public static SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
-        Decode(reader, definedByKey, expectedTag: null);
-
-    public static SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>
-        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
-
-    private static SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
-    {
-        if (!reader.TryPeekTag(out var peeked))
-            throw new Asn1Exception("Unexpected end of ASN.1 data while decoding open type 'SIGNEDB66AD9ADECF950B1_AlgorithmIdentifier_Parameters': expected an encoded ASN.1 value for key '" + definedByKey + "'.");
-
-        if (definedByKey.Equals(Oid_1_2_840_113549_1_1_2))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaRsaWithMD2(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaRsaWithMD2'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_113549_1_1_4))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaRsaWithMD5(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaRsaWithMD5'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_113549_1_1_5))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaRsaWithSHA1(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaRsaWithSHA1'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10040_4_3))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaDsaWithSHA1(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaDsaWithSHA1'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_1))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaEcdsaWithSHA1(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA1'.");
-        }
-        else if (definedByKey.Equals(Oid_2_16_840_1_101_3_4_3_1))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaDsaWithSHA224(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaDsaWithSHA224'.");
-        }
-        else if (definedByKey.Equals(Oid_2_16_840_1_101_3_4_3_2))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaDsaWithSHA256(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaDsaWithSHA256'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_1))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaEcdsaWithSHA224(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA224'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_2))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaEcdsaWithSHA256(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA256'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_3))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaEcdsaWithSHA384(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA384'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_4))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaEcdsaWithSHA512(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA512'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_113549_1_1_10))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaRsaSSAPSS(Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaRsaSSAPSS(Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaRsaSSAPSS'.");
-        }
-        else {
-            return FromUnknown(reader.ReadAny());
-        }
-    }
-}
-
-public enum SIGNEDB66AD9ADECF950B1_Signature_ContentKind
-{
-    None,
-    SaDsaWithSHA1,
-    SaEcdsaWithSHA1,
-    SaDsaWithSHA224,
-    SaDsaWithSHA256,
-    SaEcdsaWithSHA224,
-    SaEcdsaWithSHA256,
-    SaEcdsaWithSHA384,
-    SaEcdsaWithSHA512,
-    Unknown,
-}
-
-public sealed class SIGNEDB66AD9ADECF950B1_Signature_Content
-{
-    public SIGNEDB66AD9ADECF950B1_Signature_ContentKind Kind { get; private set; }
-    public Asn1Kit.Modern.PKIXAlgs2009.DSASigValue? DSASigValueValue { get; private set; }
-    public Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue? ECDSASigValueValue { get; private set; }
-    public Asn1Any? Unknown { get; private set; }
-
-    public static SIGNEDB66AD9ADECF950B1_Signature_Content FromSaDsaWithSHA1(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue saDsaWithSHA1) => new SIGNEDB66AD9ADECF950B1_Signature_Content
-    {
-        Kind = SIGNEDB66AD9ADECF950B1_Signature_ContentKind.SaDsaWithSHA1,
-        DSASigValueValue = saDsaWithSHA1,
-    };
-
-    public static SIGNEDB66AD9ADECF950B1_Signature_Content FromSaEcdsaWithSHA1(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue saEcdsaWithSHA1) => new SIGNEDB66AD9ADECF950B1_Signature_Content
-    {
-        Kind = SIGNEDB66AD9ADECF950B1_Signature_ContentKind.SaEcdsaWithSHA1,
-        ECDSASigValueValue = saEcdsaWithSHA1,
-    };
-
-    public static SIGNEDB66AD9ADECF950B1_Signature_Content FromSaDsaWithSHA224(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue saDsaWithSHA224) => new SIGNEDB66AD9ADECF950B1_Signature_Content
-    {
-        Kind = SIGNEDB66AD9ADECF950B1_Signature_ContentKind.SaDsaWithSHA224,
-        DSASigValueValue = saDsaWithSHA224,
-    };
-
-    public static SIGNEDB66AD9ADECF950B1_Signature_Content FromSaDsaWithSHA256(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue saDsaWithSHA256) => new SIGNEDB66AD9ADECF950B1_Signature_Content
-    {
-        Kind = SIGNEDB66AD9ADECF950B1_Signature_ContentKind.SaDsaWithSHA256,
-        DSASigValueValue = saDsaWithSHA256,
-    };
-
-    public static SIGNEDB66AD9ADECF950B1_Signature_Content FromSaEcdsaWithSHA224(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue saEcdsaWithSHA224) => new SIGNEDB66AD9ADECF950B1_Signature_Content
-    {
-        Kind = SIGNEDB66AD9ADECF950B1_Signature_ContentKind.SaEcdsaWithSHA224,
-        ECDSASigValueValue = saEcdsaWithSHA224,
-    };
-
-    public static SIGNEDB66AD9ADECF950B1_Signature_Content FromSaEcdsaWithSHA256(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue saEcdsaWithSHA256) => new SIGNEDB66AD9ADECF950B1_Signature_Content
-    {
-        Kind = SIGNEDB66AD9ADECF950B1_Signature_ContentKind.SaEcdsaWithSHA256,
-        ECDSASigValueValue = saEcdsaWithSHA256,
-    };
-
-    public static SIGNEDB66AD9ADECF950B1_Signature_Content FromSaEcdsaWithSHA384(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue saEcdsaWithSHA384) => new SIGNEDB66AD9ADECF950B1_Signature_Content
-    {
-        Kind = SIGNEDB66AD9ADECF950B1_Signature_ContentKind.SaEcdsaWithSHA384,
-        ECDSASigValueValue = saEcdsaWithSHA384,
-    };
-
-    public static SIGNEDB66AD9ADECF950B1_Signature_Content FromSaEcdsaWithSHA512(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue saEcdsaWithSHA512) => new SIGNEDB66AD9ADECF950B1_Signature_Content
-    {
-        Kind = SIGNEDB66AD9ADECF950B1_Signature_ContentKind.SaEcdsaWithSHA512,
-        ECDSASigValueValue = saEcdsaWithSHA512,
-    };
-
-    public static SIGNEDB66AD9ADECF950B1_Signature_Content FromUnknown(Asn1Any value) => new SIGNEDB66AD9ADECF950B1_Signature_Content
-    {
-        Kind = SIGNEDB66AD9ADECF950B1_Signature_ContentKind.Unknown,
-        Unknown = value,
-    };
-
-    public override string ToString()
-    {
-        return Kind switch
-        {
-            SIGNEDB66AD9ADECF950B1_Signature_ContentKind.SaDsaWithSHA1 => Asn1Formatting.Format(DSASigValueValue),
-            SIGNEDB66AD9ADECF950B1_Signature_ContentKind.SaEcdsaWithSHA1 => Asn1Formatting.Format(ECDSASigValueValue),
-            SIGNEDB66AD9ADECF950B1_Signature_ContentKind.SaDsaWithSHA224 => Asn1Formatting.Format(DSASigValueValue),
-            SIGNEDB66AD9ADECF950B1_Signature_ContentKind.SaDsaWithSHA256 => Asn1Formatting.Format(DSASigValueValue),
-            SIGNEDB66AD9ADECF950B1_Signature_ContentKind.SaEcdsaWithSHA224 => Asn1Formatting.Format(ECDSASigValueValue),
-            SIGNEDB66AD9ADECF950B1_Signature_ContentKind.SaEcdsaWithSHA256 => Asn1Formatting.Format(ECDSASigValueValue),
-            SIGNEDB66AD9ADECF950B1_Signature_ContentKind.SaEcdsaWithSHA384 => Asn1Formatting.Format(ECDSASigValueValue),
-            SIGNEDB66AD9ADECF950B1_Signature_ContentKind.SaEcdsaWithSHA512 => Asn1Formatting.Format(ECDSASigValueValue),
-            SIGNEDB66AD9ADECF950B1_Signature_ContentKind.Unknown => Asn1Formatting.Format(Unknown),
-            _ => "<unset>",
-        };
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        switch (Kind)
-        {
-            case SIGNEDB66AD9ADECF950B1_Signature_ContentKind.SaDsaWithSHA1:
-                DSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNEDB66AD9ADECF950B1_Signature_ContentKind.SaEcdsaWithSHA1:
-                ECDSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNEDB66AD9ADECF950B1_Signature_ContentKind.SaDsaWithSHA224:
-                DSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNEDB66AD9ADECF950B1_Signature_ContentKind.SaDsaWithSHA256:
-                DSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNEDB66AD9ADECF950B1_Signature_ContentKind.SaEcdsaWithSHA224:
-                ECDSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNEDB66AD9ADECF950B1_Signature_ContentKind.SaEcdsaWithSHA256:
-                ECDSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNEDB66AD9ADECF950B1_Signature_ContentKind.SaEcdsaWithSHA384:
-                ECDSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNEDB66AD9ADECF950B1_Signature_ContentKind.SaEcdsaWithSHA512:
-                ECDSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNEDB66AD9ADECF950B1_Signature_ContentKind.Unknown:
-                if (Unknown is null) throw new Asn1Exception("Open type has no alternative.");
-                writer.WriteAny(Unknown.Value);
-                break;
-            default: throw new Asn1Exception("Open type has no alternative.");
-        }
-    }
-
-    private static readonly Asn1Oid Oid_1_2_840_10040_4_3 = Asn1Oid.Parse("1.2.840.10040.4.3");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_1 = Asn1Oid.Parse("1.2.840.10045.4.1");
-    private static readonly Asn1Oid Oid_2_16_840_1_101_3_4_3_1 = Asn1Oid.Parse("2.16.840.1.101.3.4.3.1");
-    private static readonly Asn1Oid Oid_2_16_840_1_101_3_4_3_2 = Asn1Oid.Parse("2.16.840.1.101.3.4.3.2");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_1 = Asn1Oid.Parse("1.2.840.10045.4.3.1");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_2 = Asn1Oid.Parse("1.2.840.10045.4.3.2");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_3 = Asn1Oid.Parse("1.2.840.10045.4.3.3");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_4 = Asn1Oid.Parse("1.2.840.10045.4.3.4");
-
-    public static bool IsKnown(Asn1Oid key) => key.Equals(Oid_1_2_840_10040_4_3) || key.Equals(Oid_1_2_840_10045_4_1) || key.Equals(Oid_2_16_840_1_101_3_4_3_1) || key.Equals(Oid_2_16_840_1_101_3_4_3_2) || key.Equals(Oid_1_2_840_10045_4_3_1) || key.Equals(Oid_1_2_840_10045_4_3_2) || key.Equals(Oid_1_2_840_10045_4_3_3) || key.Equals(Oid_1_2_840_10045_4_3_4);
-    public static SIGNEDB66AD9ADECF950B1_Signature_Content Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
-        Decode(reader, definedByKey, expectedTag: null);
-
-    public static SIGNEDB66AD9ADECF950B1_Signature_Content Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>
-        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
-
-    private static SIGNEDB66AD9ADECF950B1_Signature_Content Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
-    {
-        if (!reader.TryPeekTag(out var peeked))
-            throw new Asn1Exception("Unexpected end of ASN.1 data while decoding open type 'SIGNEDB66AD9ADECF950B1_Signature_Content': expected an encoded ASN.1 value for key '" + definedByKey + "'.");
-
-        if (definedByKey.Equals(Oid_1_2_840_10040_4_3))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaDsaWithSHA1(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaDsaWithSHA1(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaDsaWithSHA1'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_1))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaEcdsaWithSHA1(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaEcdsaWithSHA1(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA1'.");
-        }
-        else if (definedByKey.Equals(Oid_2_16_840_1_101_3_4_3_1))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaDsaWithSHA224(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaDsaWithSHA224(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaDsaWithSHA224'.");
-        }
-        else if (definedByKey.Equals(Oid_2_16_840_1_101_3_4_3_2))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaDsaWithSHA256(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaDsaWithSHA256(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaDsaWithSHA256'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_1))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaEcdsaWithSHA224(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaEcdsaWithSHA224(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA224'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_2))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaEcdsaWithSHA256(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaEcdsaWithSHA256(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA256'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_3))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaEcdsaWithSHA384(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaEcdsaWithSHA384(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA384'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_4))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaEcdsaWithSHA512(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaEcdsaWithSHA512(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA512'.");
-        }
-        else {
-            return FromUnknown(reader.ReadAny());
-        }
-    }
-}
-
 public sealed class TBSCertList_RevokedCertificates_Item
 {
     public IReadOnlyList<Asn1Extension> UnknownExtensions { get; set; } = Array.Empty<Asn1Extension>();
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
     public Asn1Integer UserCertificate { get; set; }
     public Time RevocationDate { get; set; }
-    /// <summary>ASN.1 alias Extensions-2DE3997F47B1BA75 ::= SEQUENCE OF Extension-120CBDA7722AB0AE.</summary>
-    public Asn1Kit.Modern.PKIXCommonTypes2009.Extension120CBDA7722AB0AE[]? CrlEntryExtensions { get; set; }
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    public Asn1Kit.Modern.PKIXCommonTypes2009.Extension[]? CrlEntryExtensions { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -3894,7 +1745,7 @@ public sealed class TBSCertList_RevokedCertificates_Item
                 if (extensionTag.MatchesIgnoreConstructed(Asn1Tag.Sequence))
                 {
                     if (nextExtension > 2) throw new Asn1Exception("Duplicate or unordered extension component 'crlEntryExtensions'.");
-                    value.CrlEntryExtensions = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.Extension120CBDA7722AB0AE.Decode(inner, Asn1Tag.Sequence));
+                    value.CrlEntryExtensions = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.Extension.Decode(inner, Asn1Tag.Sequence));
                     nextExtension = 3;
                 }
                 else {
@@ -3910,661 +1761,45 @@ public sealed class TBSCertList_RevokedCertificates_Item
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class SIGNEDDB18E9FF20086E58_AlgorithmIdentifier
+public sealed class Certificate : Asn1Kit.Modern.PKIX1Explicit2009.Signed<TBSCertificate>
 {
-    public Asn1Oid Algorithm { get; set; }
-    public SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters? Parameters { get; set; }
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
+    protected override void EncodeToBeSigned(Asn1Writer writer)
     {
-        using (writer.EnterSequence(tag))
-        {
-            writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, Algorithm);
-            if (Parameters != null)
-            {
-                Parameters.Encode(writer);
-            }
-        }
+        ToBeSigned.Encode(writer, Asn1Tag.Sequence);
     }
-
-    public static SIGNEDDB18E9FF20086E58_AlgorithmIdentifier Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static SIGNEDDB18E9FF20086E58_AlgorithmIdentifier Decode(Asn1Reader reader, Asn1Tag tag)
+    public static Certificate Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
+    public static Certificate Decode(Asn1Reader reader, Asn1Tag tag)
     {
         using (reader.EnterSequence(tag))
         {
-            var value = new SIGNEDDB18E9FF20086E58_AlgorithmIdentifier();
-            value.Algorithm = reader.ReadOid(Asn1Tag.ObjectIdentifier);
-            if (!reader.Eof)
-            {
-                value.Parameters = SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters.Decode(reader, value.Algorithm);
-            }
+            var value = new Certificate();
+            value.ToBeSigned = Asn1Kit.Modern.PKIX1Explicit2009.TBSCertificate.Decode(reader, Asn1Tag.Sequence);
+            DecodeTail(reader, value);
             reader.ThrowIfNotEmpty();
             return value;
         }
     }
-
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public enum SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind
+public sealed class CertificateList : Asn1Kit.Modern.PKIX1Explicit2009.Signed<TBSCertList>
 {
-    None,
-    SaRsaWithMD2,
-    SaRsaWithMD5,
-    SaRsaWithSHA1,
-    SaDsaWithSHA1,
-    SaEcdsaWithSHA1,
-    SaDsaWithSHA224,
-    SaDsaWithSHA256,
-    SaEcdsaWithSHA224,
-    SaEcdsaWithSHA256,
-    SaEcdsaWithSHA384,
-    SaEcdsaWithSHA512,
-    SaRsaSSAPSS,
-    Unknown,
-}
-
-public sealed class SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters
-{
-    public SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind Kind { get; private set; }
-    public Asn1Null? Asn1NullValue { get; private set; }
-    public Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams? SaRsaSSAPSS { get; private set; }
-    public Asn1Any? Unknown { get; private set; }
-
-    public static SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters FromSaRsaWithMD2(Asn1Null saRsaWithMD2 = default) => new SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters
+    protected override void EncodeToBeSigned(Asn1Writer writer)
     {
-        Kind = SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaRsaWithMD2,
-        Asn1NullValue = saRsaWithMD2,
-    };
-
-    public static SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters FromSaRsaWithMD5(Asn1Null saRsaWithMD5 = default) => new SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaRsaWithMD5,
-        Asn1NullValue = saRsaWithMD5,
-    };
-
-    public static SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters FromSaRsaWithSHA1(Asn1Null saRsaWithSHA1 = default) => new SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaRsaWithSHA1,
-        Asn1NullValue = saRsaWithSHA1,
-    };
-
-    public static SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters FromSaDsaWithSHA1(Asn1Null saDsaWithSHA1 = default) => new SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA1,
-        Asn1NullValue = saDsaWithSHA1,
-    };
-
-    public static SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters FromSaEcdsaWithSHA1(Asn1Null saEcdsaWithSHA1 = default) => new SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA1,
-        Asn1NullValue = saEcdsaWithSHA1,
-    };
-
-    public static SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters FromSaDsaWithSHA224(Asn1Null saDsaWithSHA224 = default) => new SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA224,
-        Asn1NullValue = saDsaWithSHA224,
-    };
-
-    public static SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters FromSaDsaWithSHA256(Asn1Null saDsaWithSHA256 = default) => new SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA256,
-        Asn1NullValue = saDsaWithSHA256,
-    };
-
-    public static SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters FromSaEcdsaWithSHA224(Asn1Null saEcdsaWithSHA224 = default) => new SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA224,
-        Asn1NullValue = saEcdsaWithSHA224,
-    };
-
-    public static SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters FromSaEcdsaWithSHA256(Asn1Null saEcdsaWithSHA256 = default) => new SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA256,
-        Asn1NullValue = saEcdsaWithSHA256,
-    };
-
-    public static SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters FromSaEcdsaWithSHA384(Asn1Null saEcdsaWithSHA384 = default) => new SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA384,
-        Asn1NullValue = saEcdsaWithSHA384,
-    };
-
-    public static SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters FromSaEcdsaWithSHA512(Asn1Null saEcdsaWithSHA512 = default) => new SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA512,
-        Asn1NullValue = saEcdsaWithSHA512,
-    };
-
-    public static SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters FromSaRsaSSAPSS(Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams saRsaSSAPSS) => new SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaRsaSSAPSS,
-        SaRsaSSAPSS = saRsaSSAPSS,
-    };
-
-    public static SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters FromUnknown(Asn1Any value) => new SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters
-    {
-        Kind = SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.Unknown,
-        Unknown = value,
-    };
-
-    public override string ToString()
-    {
-        return Kind switch
-        {
-            SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaRsaWithMD2 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaRsaWithMD5 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaRsaWithSHA1 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA1 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA1 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA224 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA256 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA224 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA256 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA384 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA512 => Asn1Formatting.Format(Asn1NullValue),
-            SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaRsaSSAPSS => Asn1Formatting.Format(SaRsaSSAPSS),
-            SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.Unknown => Asn1Formatting.Format(Unknown),
-            _ => "<unset>",
-        };
+        ToBeSigned.Encode(writer, Asn1Tag.Sequence);
     }
-
-    public void Encode(Asn1Writer writer)
+    public static CertificateList Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
+    public static CertificateList Decode(Asn1Reader reader, Asn1Tag tag)
     {
-        switch (Kind)
+        using (reader.EnterSequence(tag))
         {
-            case SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaRsaWithMD2:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaRsaWithMD5:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaRsaWithSHA1:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA1:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA1:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA224:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaDsaWithSHA256:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA224:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA256:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA384:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaEcdsaWithSHA512:
-                writer.WriteNull(Asn1Tag.Null);
-                break;
-            case SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.SaRsaSSAPSS:
-                SaRsaSSAPSS!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_ParametersKind.Unknown:
-                if (Unknown is null) throw new Asn1Exception("Open type has no alternative.");
-                writer.WriteAny(Unknown.Value);
-                break;
-            default: throw new Asn1Exception("Open type has no alternative.");
+            var value = new CertificateList();
+            value.ToBeSigned = Asn1Kit.Modern.PKIX1Explicit2009.TBSCertList.Decode(reader, Asn1Tag.Sequence);
+            DecodeTail(reader, value);
+            reader.ThrowIfNotEmpty();
+            return value;
         }
     }
-
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_2 = Asn1Oid.Parse("1.2.840.113549.1.1.2");
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_4 = Asn1Oid.Parse("1.2.840.113549.1.1.4");
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_5 = Asn1Oid.Parse("1.2.840.113549.1.1.5");
-    private static readonly Asn1Oid Oid_1_2_840_10040_4_3 = Asn1Oid.Parse("1.2.840.10040.4.3");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_1 = Asn1Oid.Parse("1.2.840.10045.4.1");
-    private static readonly Asn1Oid Oid_2_16_840_1_101_3_4_3_1 = Asn1Oid.Parse("2.16.840.1.101.3.4.3.1");
-    private static readonly Asn1Oid Oid_2_16_840_1_101_3_4_3_2 = Asn1Oid.Parse("2.16.840.1.101.3.4.3.2");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_1 = Asn1Oid.Parse("1.2.840.10045.4.3.1");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_2 = Asn1Oid.Parse("1.2.840.10045.4.3.2");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_3 = Asn1Oid.Parse("1.2.840.10045.4.3.3");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_4 = Asn1Oid.Parse("1.2.840.10045.4.3.4");
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_10 = Asn1Oid.Parse("1.2.840.113549.1.1.10");
-
-    public static bool IsKnown(Asn1Oid key) => key.Equals(Oid_1_2_840_113549_1_1_2) || key.Equals(Oid_1_2_840_113549_1_1_4) || key.Equals(Oid_1_2_840_113549_1_1_5) || key.Equals(Oid_1_2_840_10040_4_3) || key.Equals(Oid_1_2_840_10045_4_1) || key.Equals(Oid_2_16_840_1_101_3_4_3_1) || key.Equals(Oid_2_16_840_1_101_3_4_3_2) || key.Equals(Oid_1_2_840_10045_4_3_1) || key.Equals(Oid_1_2_840_10045_4_3_2) || key.Equals(Oid_1_2_840_10045_4_3_3) || key.Equals(Oid_1_2_840_10045_4_3_4) || key.Equals(Oid_1_2_840_113549_1_1_10);
-    public static SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
-        Decode(reader, definedByKey, expectedTag: null);
-
-    public static SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>
-        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
-
-    private static SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
-    {
-        if (!reader.TryPeekTag(out var peeked))
-            throw new Asn1Exception("Unexpected end of ASN.1 data while decoding open type 'SIGNEDDB18E9FF20086E58_AlgorithmIdentifier_Parameters': expected an encoded ASN.1 value for key '" + definedByKey + "'.");
-
-        if (definedByKey.Equals(Oid_1_2_840_113549_1_1_2))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaRsaWithMD2(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaRsaWithMD2'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_113549_1_1_4))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaRsaWithMD5(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaRsaWithMD5'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_113549_1_1_5))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaRsaWithSHA1(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaRsaWithSHA1'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10040_4_3))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaDsaWithSHA1(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaDsaWithSHA1'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_1))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaEcdsaWithSHA1(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA1'.");
-        }
-        else if (definedByKey.Equals(Oid_2_16_840_1_101_3_4_3_1))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaDsaWithSHA224(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaDsaWithSHA224'.");
-        }
-        else if (definedByKey.Equals(Oid_2_16_840_1_101_3_4_3_2))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaDsaWithSHA256(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaDsaWithSHA256'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_1))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaEcdsaWithSHA224(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA224'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_2))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaEcdsaWithSHA256(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA256'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_3))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaEcdsaWithSHA384(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA384'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_4))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSaEcdsaWithSHA512(Asn1Null.Decode(reader, tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA512'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_113549_1_1_10))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaRsaSSAPSS(Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaRsaSSAPSS(Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaRsaSSAPSS'.");
-        }
-        else {
-            return FromUnknown(reader.ReadAny());
-        }
-    }
-}
-
-public enum SIGNEDDB18E9FF20086E58_Signature_ContentKind
-{
-    None,
-    SaDsaWithSHA1,
-    SaEcdsaWithSHA1,
-    SaDsaWithSHA224,
-    SaDsaWithSHA256,
-    SaEcdsaWithSHA224,
-    SaEcdsaWithSHA256,
-    SaEcdsaWithSHA384,
-    SaEcdsaWithSHA512,
-    Unknown,
-}
-
-public sealed class SIGNEDDB18E9FF20086E58_Signature_Content
-{
-    public SIGNEDDB18E9FF20086E58_Signature_ContentKind Kind { get; private set; }
-    public Asn1Kit.Modern.PKIXAlgs2009.DSASigValue? DSASigValueValue { get; private set; }
-    public Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue? ECDSASigValueValue { get; private set; }
-    public Asn1Any? Unknown { get; private set; }
-
-    public static SIGNEDDB18E9FF20086E58_Signature_Content FromSaDsaWithSHA1(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue saDsaWithSHA1) => new SIGNEDDB18E9FF20086E58_Signature_Content
-    {
-        Kind = SIGNEDDB18E9FF20086E58_Signature_ContentKind.SaDsaWithSHA1,
-        DSASigValueValue = saDsaWithSHA1,
-    };
-
-    public static SIGNEDDB18E9FF20086E58_Signature_Content FromSaEcdsaWithSHA1(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue saEcdsaWithSHA1) => new SIGNEDDB18E9FF20086E58_Signature_Content
-    {
-        Kind = SIGNEDDB18E9FF20086E58_Signature_ContentKind.SaEcdsaWithSHA1,
-        ECDSASigValueValue = saEcdsaWithSHA1,
-    };
-
-    public static SIGNEDDB18E9FF20086E58_Signature_Content FromSaDsaWithSHA224(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue saDsaWithSHA224) => new SIGNEDDB18E9FF20086E58_Signature_Content
-    {
-        Kind = SIGNEDDB18E9FF20086E58_Signature_ContentKind.SaDsaWithSHA224,
-        DSASigValueValue = saDsaWithSHA224,
-    };
-
-    public static SIGNEDDB18E9FF20086E58_Signature_Content FromSaDsaWithSHA256(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue saDsaWithSHA256) => new SIGNEDDB18E9FF20086E58_Signature_Content
-    {
-        Kind = SIGNEDDB18E9FF20086E58_Signature_ContentKind.SaDsaWithSHA256,
-        DSASigValueValue = saDsaWithSHA256,
-    };
-
-    public static SIGNEDDB18E9FF20086E58_Signature_Content FromSaEcdsaWithSHA224(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue saEcdsaWithSHA224) => new SIGNEDDB18E9FF20086E58_Signature_Content
-    {
-        Kind = SIGNEDDB18E9FF20086E58_Signature_ContentKind.SaEcdsaWithSHA224,
-        ECDSASigValueValue = saEcdsaWithSHA224,
-    };
-
-    public static SIGNEDDB18E9FF20086E58_Signature_Content FromSaEcdsaWithSHA256(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue saEcdsaWithSHA256) => new SIGNEDDB18E9FF20086E58_Signature_Content
-    {
-        Kind = SIGNEDDB18E9FF20086E58_Signature_ContentKind.SaEcdsaWithSHA256,
-        ECDSASigValueValue = saEcdsaWithSHA256,
-    };
-
-    public static SIGNEDDB18E9FF20086E58_Signature_Content FromSaEcdsaWithSHA384(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue saEcdsaWithSHA384) => new SIGNEDDB18E9FF20086E58_Signature_Content
-    {
-        Kind = SIGNEDDB18E9FF20086E58_Signature_ContentKind.SaEcdsaWithSHA384,
-        ECDSASigValueValue = saEcdsaWithSHA384,
-    };
-
-    public static SIGNEDDB18E9FF20086E58_Signature_Content FromSaEcdsaWithSHA512(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue saEcdsaWithSHA512) => new SIGNEDDB18E9FF20086E58_Signature_Content
-    {
-        Kind = SIGNEDDB18E9FF20086E58_Signature_ContentKind.SaEcdsaWithSHA512,
-        ECDSASigValueValue = saEcdsaWithSHA512,
-    };
-
-    public static SIGNEDDB18E9FF20086E58_Signature_Content FromUnknown(Asn1Any value) => new SIGNEDDB18E9FF20086E58_Signature_Content
-    {
-        Kind = SIGNEDDB18E9FF20086E58_Signature_ContentKind.Unknown,
-        Unknown = value,
-    };
-
-    public override string ToString()
-    {
-        return Kind switch
-        {
-            SIGNEDDB18E9FF20086E58_Signature_ContentKind.SaDsaWithSHA1 => Asn1Formatting.Format(DSASigValueValue),
-            SIGNEDDB18E9FF20086E58_Signature_ContentKind.SaEcdsaWithSHA1 => Asn1Formatting.Format(ECDSASigValueValue),
-            SIGNEDDB18E9FF20086E58_Signature_ContentKind.SaDsaWithSHA224 => Asn1Formatting.Format(DSASigValueValue),
-            SIGNEDDB18E9FF20086E58_Signature_ContentKind.SaDsaWithSHA256 => Asn1Formatting.Format(DSASigValueValue),
-            SIGNEDDB18E9FF20086E58_Signature_ContentKind.SaEcdsaWithSHA224 => Asn1Formatting.Format(ECDSASigValueValue),
-            SIGNEDDB18E9FF20086E58_Signature_ContentKind.SaEcdsaWithSHA256 => Asn1Formatting.Format(ECDSASigValueValue),
-            SIGNEDDB18E9FF20086E58_Signature_ContentKind.SaEcdsaWithSHA384 => Asn1Formatting.Format(ECDSASigValueValue),
-            SIGNEDDB18E9FF20086E58_Signature_ContentKind.SaEcdsaWithSHA512 => Asn1Formatting.Format(ECDSASigValueValue),
-            SIGNEDDB18E9FF20086E58_Signature_ContentKind.Unknown => Asn1Formatting.Format(Unknown),
-            _ => "<unset>",
-        };
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        switch (Kind)
-        {
-            case SIGNEDDB18E9FF20086E58_Signature_ContentKind.SaDsaWithSHA1:
-                DSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNEDDB18E9FF20086E58_Signature_ContentKind.SaEcdsaWithSHA1:
-                ECDSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNEDDB18E9FF20086E58_Signature_ContentKind.SaDsaWithSHA224:
-                DSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNEDDB18E9FF20086E58_Signature_ContentKind.SaDsaWithSHA256:
-                DSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNEDDB18E9FF20086E58_Signature_ContentKind.SaEcdsaWithSHA224:
-                ECDSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNEDDB18E9FF20086E58_Signature_ContentKind.SaEcdsaWithSHA256:
-                ECDSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNEDDB18E9FF20086E58_Signature_ContentKind.SaEcdsaWithSHA384:
-                ECDSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNEDDB18E9FF20086E58_Signature_ContentKind.SaEcdsaWithSHA512:
-                ECDSASigValueValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case SIGNEDDB18E9FF20086E58_Signature_ContentKind.Unknown:
-                if (Unknown is null) throw new Asn1Exception("Open type has no alternative.");
-                writer.WriteAny(Unknown.Value);
-                break;
-            default: throw new Asn1Exception("Open type has no alternative.");
-        }
-    }
-
-    private static readonly Asn1Oid Oid_1_2_840_10040_4_3 = Asn1Oid.Parse("1.2.840.10040.4.3");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_1 = Asn1Oid.Parse("1.2.840.10045.4.1");
-    private static readonly Asn1Oid Oid_2_16_840_1_101_3_4_3_1 = Asn1Oid.Parse("2.16.840.1.101.3.4.3.1");
-    private static readonly Asn1Oid Oid_2_16_840_1_101_3_4_3_2 = Asn1Oid.Parse("2.16.840.1.101.3.4.3.2");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_1 = Asn1Oid.Parse("1.2.840.10045.4.3.1");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_2 = Asn1Oid.Parse("1.2.840.10045.4.3.2");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_3 = Asn1Oid.Parse("1.2.840.10045.4.3.3");
-    private static readonly Asn1Oid Oid_1_2_840_10045_4_3_4 = Asn1Oid.Parse("1.2.840.10045.4.3.4");
-
-    public static bool IsKnown(Asn1Oid key) => key.Equals(Oid_1_2_840_10040_4_3) || key.Equals(Oid_1_2_840_10045_4_1) || key.Equals(Oid_2_16_840_1_101_3_4_3_1) || key.Equals(Oid_2_16_840_1_101_3_4_3_2) || key.Equals(Oid_1_2_840_10045_4_3_1) || key.Equals(Oid_1_2_840_10045_4_3_2) || key.Equals(Oid_1_2_840_10045_4_3_3) || key.Equals(Oid_1_2_840_10045_4_3_4);
-    public static SIGNEDDB18E9FF20086E58_Signature_Content Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
-        Decode(reader, definedByKey, expectedTag: null);
-
-    public static SIGNEDDB18E9FF20086E58_Signature_Content Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>
-        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
-
-    private static SIGNEDDB18E9FF20086E58_Signature_Content Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
-    {
-        if (!reader.TryPeekTag(out var peeked))
-            throw new Asn1Exception("Unexpected end of ASN.1 data while decoding open type 'SIGNEDDB18E9FF20086E58_Signature_Content': expected an encoded ASN.1 value for key '" + definedByKey + "'.");
-
-        if (definedByKey.Equals(Oid_1_2_840_10040_4_3))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaDsaWithSHA1(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaDsaWithSHA1(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaDsaWithSHA1'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_1))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaEcdsaWithSHA1(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaEcdsaWithSHA1(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA1'.");
-        }
-        else if (definedByKey.Equals(Oid_2_16_840_1_101_3_4_3_1))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaDsaWithSHA224(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaDsaWithSHA224(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaDsaWithSHA224'.");
-        }
-        else if (definedByKey.Equals(Oid_2_16_840_1_101_3_4_3_2))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaDsaWithSHA256(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaDsaWithSHA256(Asn1Kit.Modern.PKIXAlgs2009.DSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaDsaWithSHA256'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_1))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaEcdsaWithSHA224(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaEcdsaWithSHA224(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA224'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_2))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaEcdsaWithSHA256(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaEcdsaWithSHA256(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA256'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_3))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaEcdsaWithSHA384(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaEcdsaWithSHA384(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA384'.");
-        }
-        else if (definedByKey.Equals(Oid_1_2_840_10045_4_3_4))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSaEcdsaWithSHA512(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSaEcdsaWithSHA512(Asn1Kit.Modern.PKIXAlgs2009.ECDSASigValue.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SaEcdsaWithSHA512'.");
-        }
-        else {
-            return FromUnknown(reader.ReadAny());
-        }
-    }
+    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 

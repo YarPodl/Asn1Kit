@@ -31,7 +31,7 @@ END";
         var document = new Asn1Compiler().CompileText(Example);
         var module = Assert.Single(document.Modules);
         Assert.DoesNotContain(module.Types, t => t.Name == "ENTRY" || t.Name == "Record");
-        var specialization = module.Types.Single(t => t.Name.StartsWith("Record-", StringComparison.Ordinal));
+        var specialization = module.Types.Single(t => t.Name == "R");
         var sequence = Assert.IsType<SequenceType>(specialization.Type);
         var open = Assert.IsType<AnyType>(Assert.IsType<SetOfType>(sequence.Components[1].Type).Element);
         Assert.Equal("1.2.3", Assert.Single(open.Bindings!).Key);
@@ -60,7 +60,7 @@ END";
     {
         var document = new Asn1Compiler().CompileText(Example);
         var assembly = CompileGenerated(new CSharpBackend().Generate(document).Select(f => f.Contents).ToArray());
-        var record = assembly.GetTypes().Single(t => t.Name.StartsWith("Record", StringComparison.Ordinal) && t.GetProperty("Values") is not null);
+        var record = assembly.GetType("Modern.R")!;
         var bytes = Convert.FromHexString("300E06022A03310302012A040302012A");
         var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
         var value = record.GetMethod("Decode", new[] {typeof(Asn1Reader)})!.Invoke(null, new object[] {reader})!;
@@ -228,8 +228,8 @@ END";
         IrDocument Compile(IEnumerable<string> source) => new Asn1Compiler().CompileTexts(source.Select(s => (s, (string?)null)));
         var forward = Compile(inputs);
         var reverse = Compile(inputs.Reverse());
-        var templates = forward.Modules.Single(m => m.Name == "Lib").Types.Where(t => t.Name.StartsWith("R-", StringComparison.Ordinal)).ToArray();
-        Assert.Equal(2, templates.Length);
+        var templates = forward.Modules.Single(m => m.Name == "Lib").Types.Where(t => t.Name == "R").ToArray();
+        Assert.Single(templates);
         var use = forward.Modules.Single(m => m.Name == "Use");
         Assert.Equal(Assert.IsType<RefType>(use.Types[0].Type).Name, Assert.IsType<RefType>(use.Types[2].Type).Name);
         Assert.Equal(templates.Select(t => t.Name).OrderBy(n => n), reverse.Modules.Single(m => m.Name == "Lib").Types.Select(t => t.Name).OrderBy(n => n));
@@ -239,9 +239,69 @@ END";
         Assert.Throws<CompileException>(() => Compile(new[] {library, first, second, consumer.Replace("First.Items", "Items")}));
         const string another = "Another DEFINITIONS ::= BEGIN IMPORTS R{} FROM Lib Items FROM First; Same ::= R{Items} END";
         var shared = Compile(inputs.Append(another));
-        Assert.Equal(2, shared.Modules.Single(m => m.Name == "Lib").Types.Count(t => t.Name.StartsWith("R-", StringComparison.Ordinal)));
+        Assert.Single(shared.Modules.Single(m => m.Name == "Lib").Types.Where(t => t.Name == "R"));
         Assert.Equal(Assert.IsType<RefType>(shared.Modules.Single(m => m.Name == "Use").Types[0].Type).Name,
             Assert.IsType<RefType>(shared.Modules.Single(m => m.Name == "Another").Types[0].Type).Name);
+    }
+
+    [Fact]
+    public void TableOnlySpecializationsShareTypeAndDecodeAtTheirUseSites()
+    {
+        const string source = @"M DEFINITIONS ::= BEGIN
+          C ::= CLASS { &id OBJECT IDENTIFIER UNIQUE, &T } WITH SYNTAX { &T IDENTIFIED BY &id }
+          integerEntry C ::= { INTEGER (0..100) IDENTIFIED BY {1 2 3} }
+          booleanEntry C ::= { BOOLEAN IDENTIFIED BY {1 2 4} }
+          Integers C ::= {integerEntry} Booleans C ::= {booleanEntry}
+          Box{C:S} ::= SEQUENCE { id C.&id({S}), value C.&T({S}{@id}) }
+          A ::= SEQUENCE { item Box{Integers} }
+          B ::= SET { item Box{Booleans} }
+          END";
+        var document = new Asn1Compiler().CompileText(source);
+        var module = Assert.Single(document.Modules);
+        Assert.Single(module.Types.Where(t => t.Name == "Box"));
+        Assert.DoesNotContain(module.Types, t => t.Name.Contains('-', StringComparison.Ordinal));
+        var a = Assert.IsType<SequenceType>(module.Types.Single(t => t.Name == "A").Type);
+        var b = Assert.IsType<SetType>(module.Types.Single(t => t.Name == "B").Type);
+        Assert.Equal("1.2.3", Assert.Single(Assert.Single(Assert.IsType<RefType>(a.Components[0].Type).OpenTypes!).Bindings).Key);
+        Assert.Equal("1.2.4", Assert.Single(Assert.Single(Assert.IsType<RefType>(b.Components[0].Type).OpenTypes!).Bindings).Key);
+        var json = IrSerializer.ToJson(document);
+        IrSerializer.ValidateSchema(json);
+        Assert.Equal(json, IrSerializer.ToJson(IrSerializer.FromJson(json)));
+        var usePath = Assert.Single(Assert.IsType<RefType>(a.Components[0].Type).OpenTypes!).Path;
+        usePath[0] = "missing";
+        Assert.Throws<IrException>(() => IrValidator.Validate(document));
+        usePath[0] = "value";
+
+        var code = new CSharpBackend().Generate(document).Single().Contents;
+        Assert.DoesNotContain("Box-", code, StringComparison.Ordinal);
+        var assembly = CompileGenerated(code);
+        var aType = assembly.GetType("M.A")!;
+        var bType = assembly.GetType("M.B")!;
+        object Decode(Type type, string hex) => type.GetMethod("Decode", new[] {typeof(Asn1Reader)})!
+            .Invoke(null, new object[] {new Asn1Reader(Convert.FromHexString(hex))})!;
+        var aValue = Decode(aType, "3009300706022A0302012A");
+        var bValue = Decode(bType, "3109300706022A040101FF");
+        object?[] aArgs = { null };
+        object?[] bArgs = { null };
+        Assert.True((bool)aType.GetMethod("TryDecodeItemValue")!.MakeGenericMethod(typeof(int)).Invoke(aValue, aArgs)!);
+        Assert.Equal(42, aArgs[0]);
+        Assert.True((bool)bType.GetMethod("TryDecodeItemValue")!.MakeGenericMethod(typeof(bool)).Invoke(bValue, bArgs)!);
+        Assert.Equal(true, bArgs[0]);
+        Assert.False((bool)aType.GetMethod("TryDecodeItemValue")!.MakeGenericMethod(typeof(bool))
+            .Invoke(aValue, new object?[] { null })!);
+
+        var unknown = Decode(aType, "3009300706022A0502012A");
+        Assert.False((bool)aType.GetMethod("TryDecodeItemValue")!.MakeGenericMethod(typeof(int))
+            .Invoke(unknown, new object?[] { null })!);
+        var malformed = Decode(aType, "3009300706022A030101FF");
+        var error = Assert.Throws<TargetInvocationException>(() => aType.GetMethod("TryDecodeItemValue")!
+            .MakeGenericMethod(typeof(int)).Invoke(malformed, new object?[] { null }));
+        Assert.IsType<Asn1Exception>(error.InnerException);
+
+        aType.GetMethod("SetItemValue")!.MakeGenericMethod(typeof(int)).Invoke(aValue, new object[] { 42 });
+        var writer = new Asn1Writer();
+        aType.GetMethod("Encode", new[] {typeof(Asn1Writer)})!.Invoke(aValue, new object[] { writer });
+        Assert.Equal("3009300706022A0302012A", Convert.ToHexString(writer.Encode()));
     }
 
     [Fact]
@@ -257,7 +317,7 @@ END";
     public void EmptyExtensibleTableRemainsEmptyAndUnknownOptionsSurvive()
     {
         var document = new Asn1Compiler().CompileText(Example.Replace("R ::= Record{Entries}", "R ::= Record{{...}}"));
-        var type = Assert.IsType<SequenceType>(document.Modules[0].Types.Single(t => t.Name.StartsWith("Record-", StringComparison.Ordinal)).Type);
+        var type = Assert.IsType<SequenceType>(document.Modules[0].Types.Single(t => t.Name == "R").Type);
         Assert.Empty(Assert.IsType<AnyType>(Assert.IsType<SetOfType>(type.Components[1].Type).Element).Bindings!);
         document.Options = new System.Text.Json.Nodes.JsonObject { ["future"] = new System.Text.Json.Nodes.JsonObject { ["enabled"] = true } };
         var json = IrSerializer.ToJson(document);
@@ -270,7 +330,7 @@ END";
         var source = Example.Replace("Record{ENTRY:Table} ::= SEQUENCE", "Record{ENTRY:Table} ::= SET")
             .Replace("id ENTRY.&id", "id [1] IMPLICIT ENTRY.&id").Replace("values SET OF", "values [0] IMPLICIT SET OF");
         var assembly = CompileGenerated(new CSharpBackend().Generate(new Asn1Compiler().CompileText(source)).Single().Contents);
-        var type = assembly.GetTypes().Single(t => t.Name.StartsWith("Record", StringComparison.Ordinal) && t.GetProperty("Values") is not null);
+        var type = assembly.GetType("Modern.R")!;
         var bytes = Convert.FromHexString("3109A00302012A81022A03");
         var value = type.GetMethod("Decode", new[] {typeof(Asn1Reader)})!.Invoke(null, new object[] {new Asn1Reader(bytes, Asn1Encoding.Der)});
         var items = (Array)type.GetProperty("Values")!.GetValue(value)!;
@@ -345,7 +405,7 @@ END";
     {
         var compiler = new Asn1Compiler();
         var document = compiler.CompileText("M DEFINITIONS ::= BEGIN Node{T} ::= SEQUENCE { value T, next Node{T} OPTIONAL } Root ::= Node{INTEGER} END");
-        Assert.Single(document.Modules[0].Types.Where(t => t.Name.StartsWith("Node-", StringComparison.Ordinal)));
+        Assert.Single(document.Modules[0].Types.Where(t => t.Name == "Root"));
         CompileGenerated(new CSharpBackend().Generate(document).Single().Contents);
         var error = Assert.Throws<CompileException>(() => compiler.CompileText("M DEFINITIONS ::= BEGIN P{T} ::= SEQUENCE { next P{SEQUENCE OF T} OPTIONAL } R ::= P{INTEGER} END"));
         Assert.Contains("limit", error.Message);
@@ -405,7 +465,7 @@ END";
     public void GeneratedContainingReadsBerAndKeepsUnknownContents(string hex, bool known, string contents)
     {
         var assembly = CompileGenerated(new CSharpBackend().Generate(new Asn1Compiler().CompileText(Example)).Single().Contents);
-        var type = assembly.GetTypes().Single(t => t.Name.StartsWith("Record", StringComparison.Ordinal) && t.GetProperty("Payload") is not null);
+        var type = assembly.GetType("Modern.R")!;
         var value = type.GetMethod("Decode", new[] {typeof(Asn1Reader)})!.Invoke(null, new object[] {new Asn1Reader(Convert.FromHexString(hex), Asn1Encoding.Ber)})!;
         var payload = type.GetProperty("Payload")!.GetValue(value)!;
         Assert.Equal(known, payload.GetType().GetProperty("HasValue")!.GetValue(payload));
@@ -416,7 +476,7 @@ END";
     public void GeneratedContainingRejectsDamagedKnownContents()
     {
         var assembly = CompileGenerated(new CSharpBackend().Generate(new Asn1Compiler().CompileText(Example)).Single().Contents);
-        var type = assembly.GetTypes().Single(t => t.Name.StartsWith("Record", StringComparison.Ordinal) && t.GetProperty("Payload") is not null);
+        var type = assembly.GetType("Modern.R")!;
         var error = Assert.Throws<TargetInvocationException>(() => type.GetMethod("Decode", new[] {typeof(Asn1Reader)})!.Invoke(null,
             new object[] {new Asn1Reader(Convert.FromHexString("300A06022A03310004020201"))}));
         Assert.IsType<Asn1Exception>(error.InnerException);
@@ -433,12 +493,12 @@ END";
         };
         var document = new Asn1Compiler().CompileTexts(source.Select(s => (s, (string?)null)));
         var library = document.Modules.Single(m => m.Name == "Lib");
-        Assert.Equal(2, library.Types.Count);
+        Assert.Empty(library.Types);
         var assembly = CompileGenerated(new CSharpBackend().Generate(document).Select(f => f.Contents).ToArray());
         foreach (var (moduleName, hex) in new[] { ("Auto", "3005300380012A"), ("Explicit", "3005300302012A") })
         {
-            var reference = Assert.IsType<RefType>(document.Modules.Single(m => m.Name == moduleName).Types.Single(t => t.Name == "R").Type);
-            var type = assembly.GetType("Lib." + reference.Name.Replace("-", ""))!;
+            Assert.IsType<SequenceType>(document.Modules.Single(m => m.Name == moduleName).Types.Single(t => t.Name == "R").Type);
+            var type = assembly.GetType(moduleName + ".R")!;
             var bytes = Convert.FromHexString(hex);
             var value = type.GetMethod("Decode", new[] {typeof(Asn1Reader)})!.Invoke(null, new object[] {new Asn1Reader(bytes)})!;
             var writer = new Asn1Writer(); type.GetMethod("Encode", new[] {typeof(Asn1Writer)})!.Invoke(value, new object[] {writer});

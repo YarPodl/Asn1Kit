@@ -24,11 +24,26 @@ public sealed class ModernRfcTests
     public void WholeRfcCorpusMatchesIrAndGeneratedGoldenSources()
     {
         Assert.Equal(35, Corpus.Value.Modules.Count);
+        Assert.DoesNotContain(Corpus.Value.Modules.SelectMany(m => m.Types),
+            t => System.Text.RegularExpressions.Regex.IsMatch(t.Name, "-[0-9A-F]{16}$"));
+        var algorithmModule = Corpus.Value.Modules.Single(m => m.Name == "AlgorithmInformation-2009");
+        Assert.Single(algorithmModule.Types.Where(t => t.Name == "AlgorithmIdentifier"));
+        Assert.Equal(4, Corpus.Value.Modules.SelectMany(m => m.Types)
+            .Count(t => t.Specialization is { Name: "SIGNED" }));
         Assert.Equal(File.ReadAllText(TestData.RepoPath("compiler/fixtures/ir/modern-pkix-cms.json")).TrimEnd(), IrSerializer.ToJson(Corpus.Value));
         var files = new CSharpBackend().Generate(Corpus.Value);
+        Assert.DoesNotContain(files.SelectMany(f => System.Text.RegularExpressions.Regex.Matches(f.Contents,
+            @"public (?:sealed|abstract) class [A-Za-z_][A-Za-z0-9_]*[0-9A-F]{16}\b").Cast<System.Text.RegularExpressions.Match>()),
+            match => match.Success);
         foreach (var file in files)
             Assert.Equal(File.ReadAllText(TestData.RepoPath("runtime-csharp/generated/Asn1Kit.Modern/" + file.RelativePath)).Replace("\r\n", "\n"), file.Contents.Replace("\r\n", "\n"));
         Assert.NotNull(Assembly.Value);
+        var signedBase = Assembly.Value.GetType("Asn1Kit.Modern.PKIX1Explicit2009.Signed`1")!;
+        foreach (var (moduleName, typeName) in new[] {
+            ("PKIX1Explicit-2009", "Certificate"), ("PKIX1Explicit-2009", "CertificateList"),
+            ("PKIXAttributeCertificate-2009", "AttributeCertificate"),
+            ("AttributeCertificateVersion1-2009", "AttributeCertificateV1") })
+            Assert.Equal(signedBase, ResolveType(moduleName, typeName).BaseType!.GetGenericTypeDefinition());
     }
 
     [Theory]

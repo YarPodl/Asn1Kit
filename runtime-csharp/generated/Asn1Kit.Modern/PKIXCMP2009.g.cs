@@ -40,10 +40,9 @@ public sealed class CMPCertificate
     public CMPCertificateKind Kind { get; private set; }
     public Asn1Any? Unknown { get; private set; }
     public static CMPCertificate FromUnknown(Asn1Any value) => new CMPCertificate { Kind = CMPCertificateKind.Unknown, Unknown = value };
-    /// <summary>ASN.1 alias Certificate ::= SIGNED-3B92C0AAD0549C55.</summary>
-    public Asn1Kit.Modern.PKIX1Explicit2009.SIGNED3B92C0AAD0549C55? X509v3PKCert { get; private set; }
+    public Asn1Kit.Modern.PKIX1Explicit2009.Certificate? X509v3PKCert { get; private set; }
 
-    public static CMPCertificate FromX509v3PKCert(Asn1Kit.Modern.PKIX1Explicit2009.SIGNED3B92C0AAD0549C55 x509v3PKCert) => new CMPCertificate
+    public static CMPCertificate FromX509v3PKCert(Asn1Kit.Modern.PKIX1Explicit2009.Certificate x509v3PKCert) => new CMPCertificate
     {
         Kind = CMPCertificateKind.X509v3PKCert,
         X509v3PKCert = x509v3PKCert,
@@ -79,7 +78,7 @@ public sealed class CMPCertificate
         if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
         {
             value.Kind = CMPCertificateKind.X509v3PKCert;
-            value.X509v3PKCert = Asn1Kit.Modern.PKIX1Explicit2009.SIGNED3B92C0AAD0549C55.Decode(reader, Asn1Tag.Sequence);
+            value.X509v3PKCert = Asn1Kit.Modern.PKIX1Explicit2009.Certificate.Decode(reader, Asn1Tag.Sequence);
         }
         else return FromUnknown(reader.ReadAny());
         return value;
@@ -161,7 +160,7 @@ public sealed class PKIHeader
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName Sender { get; set; }
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName Recipient { get; set; }
     public DateTimeOffset? MessageTime { get; set; }
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier4DD576B2E470B5D8? ProtectionAlg { get; set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? ProtectionAlg { get; set; }
     /// <summary>ASN.1 alias KeyIdentifier ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte>? SenderKID { get; set; }
     /// <summary>ASN.1 alias KeyIdentifier ::= OCTET STRING.</summary>
@@ -276,7 +275,7 @@ public sealed class PKIHeader
             {
                 using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
                 {
-                    value.ProtectionAlg = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier4DD576B2E470B5D8.Decode(reader, Asn1Tag.Sequence);
+                    value.ProtectionAlg = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
                     reader.ThrowIfNotEmpty();
                 }
             }
@@ -406,7 +405,7 @@ public sealed class PKIBody
     public CMPCertificate? Cann { get; private set; }
     public RevAnnContent? Rann { get; private set; }
     /// <summary>ASN.1 alias CRLAnnContent ::= SEQUENCE OF CertificateList.</summary>
-    public Asn1Kit.Modern.PKIX1Explicit2009.SIGNEDB66AD9ADECF950B1[]? Crlann { get; private set; }
+    public Asn1Kit.Modern.PKIX1Explicit2009.CertificateList[]? Crlann { get; private set; }
     /// <summary>ASN.1 alias PKIConfirmContent ::= NULL.</summary>
     public Asn1Null? Pkiconf { get; private set; }
     /// <summary>ASN.1 alias NestedMessageContent ::= PKIMessages.</summary>
@@ -531,7 +530,7 @@ public sealed class PKIBody
         Rann = rann,
     };
 
-    public static PKIBody FromCrlann(Asn1Kit.Modern.PKIX1Explicit2009.SIGNEDB66AD9ADECF950B1[] crlann) => new PKIBody
+    public static PKIBody FromCrlann(Asn1Kit.Modern.PKIX1Explicit2009.CertificateList[] crlann) => new PKIBody
     {
         Kind = PKIBodyKind.Crlann,
         Crlann = crlann,
@@ -1006,7 +1005,7 @@ public sealed class PKIBody
             value.Kind = PKIBodyKind.Crlann;
             using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 18, true)))
             {
-                value.Crlann = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIX1Explicit2009.SIGNEDB66AD9ADECF950B1.Decode(inner, Asn1Tag.Sequence));
+                value.Crlann = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIX1Explicit2009.CertificateList.Decode(inner, Asn1Tag.Sequence));
                 reader.ThrowIfNotEmpty();
             }
         }
@@ -1123,9 +1122,9 @@ public sealed class ProtectedPart
 public sealed class PBMParameter
 {
     public ReadOnlyMemory<byte> Salt { get; set; }
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier2C7D8D811C578515 Owf { get; set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Owf { get; set; }
     public Asn1Integer IterationCount { get; set; }
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierDE2835A6587B817C Mac { get; set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Mac { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1148,9 +1147,9 @@ public sealed class PBMParameter
         {
             var value = new PBMParameter();
             value.Salt = reader.ReadOctetString(Asn1Tag.OctetString);
-            value.Owf = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier2C7D8D811C578515.Decode(reader, Asn1Tag.Sequence);
+            value.Owf = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.IterationCount = reader.ReadIntegerValue(Asn1Tag.Integer);
-            value.Mac = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierDE2835A6587B817C.Decode(reader, Asn1Tag.Sequence);
+            value.Mac = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             reader.ThrowIfNotEmpty();
             return value;
         }
@@ -1161,8 +1160,8 @@ public sealed class PBMParameter
 
 public sealed class DHBMParameter
 {
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier2C7D8D811C578515 Owf { get; set; }
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierDE2835A6587B817C Mac { get; set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Owf { get; set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Mac { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1182,8 +1181,8 @@ public sealed class DHBMParameter
         using (reader.EnterSequence(tag))
         {
             var value = new DHBMParameter();
-            value.Owf = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier2C7D8D811C578515.Decode(reader, Asn1Tag.Sequence);
-            value.Mac = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierDE2835A6587B817C.Decode(reader, Asn1Tag.Sequence);
+            value.Owf = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
+            value.Mac = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             reader.ThrowIfNotEmpty();
             return value;
         }
@@ -1422,7 +1421,7 @@ public sealed class PKIStatusInfo
 
 public sealed class OOBCertHash
 {
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier2C7D8D811C578515? HashAlg { get; set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? HashAlg { get; set; }
     public Asn1Kit.Modern.PKIXCRMF2009.CertId? CertId { get; set; }
     public Asn1BitString HashVal { get; set; }
 
@@ -1461,7 +1460,7 @@ public sealed class OOBCertHash
             {
                 using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                 {
-                    value.HashAlg = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier2C7D8D811C578515.Decode(reader, Asn1Tag.Sequence);
+                    value.HashAlg = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
                     reader.ThrowIfNotEmpty();
                 }
             }
@@ -1484,7 +1483,7 @@ public sealed class OOBCertHash
 
 public sealed class Challenge
 {
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier2C7D8D811C578515? Owf { get; set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? Owf { get; set; }
     public ReadOnlyMemory<byte> Witness { get; set; }
     public ReadOnlyMemory<byte> ChallengeValue { get; set; }
 
@@ -1512,7 +1511,7 @@ public sealed class Challenge
             var value = new Challenge();
             if (reader.TryPeekTag(out var tag_Owf) && tag_Owf.MatchesIgnoreConstructed(Asn1Tag.Sequence))
             {
-                value.Owf = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier2C7D8D811C578515.Decode(reader, Asn1Tag.Sequence);
+                value.Owf = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             }
             value.Witness = reader.ReadOctetString(Asn1Tag.OctetString);
             value.ChallengeValue = reader.ReadOctetString(Asn1Tag.OctetString);
@@ -1857,8 +1856,8 @@ public sealed class KeyRecRepContent
 public sealed class RevDetails
 {
     public Asn1Kit.Modern.PKIXCRMF2009.CertTemplate CertDetails { get; set; }
-    /// <summary>ASN.1 alias Extensions-A17A96597961FFD0 ::= SEQUENCE OF Extension-6C69C724B89EAA10.</summary>
-    public Asn1Kit.Modern.PKIXCommonTypes2009.Extension6C69C724B89EAA10[]? CrlEntryDetails { get; set; }
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    public Asn1Kit.Modern.PKIXCommonTypes2009.Extension[]? CrlEntryDetails { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1887,7 +1886,7 @@ public sealed class RevDetails
             value.CertDetails = Asn1Kit.Modern.PKIXCRMF2009.CertTemplate.Decode(reader, Asn1Tag.Sequence);
             if (reader.TryPeekTag(out var tag_CrlEntryDetails) && tag_CrlEntryDetails.MatchesIgnoreConstructed(Asn1Tag.Sequence))
             {
-                value.CrlEntryDetails = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.Extension6C69C724B89EAA10.Decode(inner, Asn1Tag.Sequence));
+                value.CrlEntryDetails = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.Extension.Decode(inner, Asn1Tag.Sequence));
             }
             reader.ThrowIfNotEmpty();
             return value;
@@ -1901,7 +1900,7 @@ public sealed class RevRepContent
 {
     public PKIStatusInfo[] Status { get; set; } = Array.Empty<PKIStatusInfo>();
     public Asn1Kit.Modern.PKIXCRMF2009.CertId[]? RevCerts { get; set; }
-    public Asn1Kit.Modern.PKIX1Explicit2009.SIGNEDB66AD9ADECF950B1[]? Crls { get; set; }
+    public Asn1Kit.Modern.PKIX1Explicit2009.CertificateList[]? Crls { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1956,7 +1955,7 @@ public sealed class RevRepContent
             {
                 using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
                 {
-                    value.Crls = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIX1Explicit2009.SIGNEDB66AD9ADECF950B1.Decode(inner, Asn1Tag.Sequence));
+                    value.Crls = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIX1Explicit2009.CertificateList.Decode(inner, Asn1Tag.Sequence));
                     reader.ThrowIfNotEmpty();
                 }
             }
@@ -2010,8 +2009,8 @@ public sealed class RevAnnContent
     public Asn1Kit.Modern.PKIXCRMF2009.CertId CertId { get; set; }
     public DateTimeOffset WillBeRevokedAt { get; set; }
     public DateTimeOffset BadSinceDate { get; set; }
-    /// <summary>ASN.1 alias Extensions-A17A96597961FFD0 ::= SEQUENCE OF Extension-6C69C724B89EAA10.</summary>
-    public Asn1Kit.Modern.PKIXCommonTypes2009.Extension6C69C724B89EAA10[]? CrlDetails { get; set; }
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    public Asn1Kit.Modern.PKIXCommonTypes2009.Extension[]? CrlDetails { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -2046,7 +2045,7 @@ public sealed class RevAnnContent
             value.BadSinceDate = reader.ReadTime(Asn1Tag.GeneralizedTime, Asn1TimeForm.Generalized);
             if (reader.TryPeekTag(out var tag_CrlDetails) && tag_CrlDetails.MatchesIgnoreConstructed(Asn1Tag.Sequence))
             {
-                value.CrlDetails = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.Extension6C69C724B89EAA10.Decode(inner, Asn1Tag.Sequence));
+                value.CrlDetails = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.Extension.Decode(inner, Asn1Tag.Sequence));
             }
             reader.ThrowIfNotEmpty();
             return value;

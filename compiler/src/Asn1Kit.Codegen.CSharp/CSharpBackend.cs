@@ -48,6 +48,10 @@ public sealed partial class CSharpBackend : ILanguageBackend
             }
 
             var typeName = IrOptions.CSharpTypeName(type.Options) ?? SanitizeIdentifier(type.Name);
+            if (IsSignedSpecialization(type))
+            {
+                continue;
+            }
             if (IsCollapsibleAlias(type.Type))
             {
                 // SEQUENCE OF / SET OF aliases collapse to T[], but nested element types
@@ -70,6 +74,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
             }
 
             CollectNested(document, module, name, type, queue);
+            CollectOpenTypeUseNested(document, module, name, type, queue);
             nested.Add((name, type));
         }
 
@@ -88,15 +93,118 @@ public sealed partial class CSharpBackend : ILanguageBackend
         }
 
         PlanDecodeContexts(nested);
+        if (document.Modules.SelectMany(m => m.Types).Any(t => IsSignedSpecialization(t) && t.Specialization!.Module == module.Name))
+        {
+            EmitSignedBase(builder);
+        }
         foreach (var (name, type) in nested)
         {
             _activeDecodeOwner = name;
             EmitType(builder, document, module, name, type);
             builder.AppendLine();
         }
+        foreach (var definition in module.Types.Where(IsSignedSpecialization))
+        {
+            EmitSignedSpecialization(builder, document, module, definition);
+            builder.AppendLine();
+        }
         EmitEncodedDefaults(builder, module);
 
         return new GeneratedFile(SanitizeIdentifier(module.Name) + ".g.cs", builder.ToString());
+    }
+
+    private static bool IsSignedSpecialization(IrTypeDef definition) =>
+        definition.Specialization is { Name: "SIGNED" } &&
+        definition.Type is SequenceType { Components.Count: 3, Extensible: false, Tag: null } sequence &&
+        sequence.Components[0] is { Name: "toBeSigned", Optional: false } &&
+        sequence.Components[1] is { Name: "algorithmIdentifier", Optional: false,
+            Type: SequenceType { Components.Count: 2, Extensible: false, Tag: null } } &&
+        sequence.Components[1].Type is SequenceType algorithm &&
+        algorithm.Components[0] is { Name: "algorithm", Optional: false, Type: OidType { Tag: null } } &&
+        algorithm.Components[1] is { Name: "parameters", Optional: true, Type: AnyType { Tag: null } } &&
+        sequence.Components[2] is { Name: "signature", Optional: false, Type: BitStringType { Tag: null } };
+
+    private static void EmitSignedBase(StringBuilder sb)
+    {
+        sb.AppendLine("public sealed class SignedAlgorithmIdentifier");
+        sb.AppendLine("{");
+        sb.AppendLine("    public Asn1Oid Algorithm { get; set; }");
+        sb.AppendLine("    public Asn1Any? Parameters { get; set; }");
+        sb.AppendLine("    public void Encode(Asn1Writer writer)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        using (writer.EnterSequence(Asn1Tag.Sequence))");
+        sb.AppendLine("        {");
+        sb.AppendLine("            writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, Algorithm);");
+        sb.AppendLine("            if (Parameters is { } parameters) writer.WriteAny(parameters);");
+        sb.AppendLine("        }");
+        sb.AppendLine("    }");
+        sb.AppendLine("    public static SignedAlgorithmIdentifier Decode(Asn1Reader reader)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        using (reader.EnterSequence(Asn1Tag.Sequence))");
+        sb.AppendLine("        {");
+        sb.AppendLine("            var value = new SignedAlgorithmIdentifier { Algorithm = reader.ReadOid(Asn1Tag.ObjectIdentifier) };");
+        sb.AppendLine("            if (!reader.Eof) value.Parameters = reader.ReadAny();");
+        sb.AppendLine("            reader.ThrowIfNotEmpty();");
+        sb.AppendLine("            return value;");
+        sb.AppendLine("        }");
+        sb.AppendLine("    }");
+        sb.AppendLine("}");
+        sb.AppendLine();
+        sb.AppendLine("public abstract class Signed<T>");
+        sb.AppendLine("{");
+        sb.AppendLine("    public T ToBeSigned { get; set; } = default!;");
+        sb.AppendLine("    public SignedAlgorithmIdentifier AlgorithmIdentifier { get; set; } = new();");
+        sb.AppendLine("    public Asn1BitString Signature { get; set; }");
+        sb.AppendLine("    public void Encode(Asn1Writer writer) => Encode(writer, Asn1Tag.Sequence);");
+        sb.AppendLine("    public void Encode(Asn1Writer writer, Asn1Tag tag)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        using (writer.EnterSequence(tag))");
+        sb.AppendLine("        {");
+        sb.AppendLine("            EncodeToBeSigned(writer);");
+        sb.AppendLine("            AlgorithmIdentifier.Encode(writer);");
+        sb.AppendLine("            writer.WriteBitString(Asn1Tag.BitString, Signature);");
+        sb.AppendLine("        }");
+        sb.AppendLine("    }");
+        sb.AppendLine("    protected abstract void EncodeToBeSigned(Asn1Writer writer);");
+        sb.AppendLine("    protected static void DecodeTail(Asn1Reader reader, Signed<T> value)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        value.AlgorithmIdentifier = SignedAlgorithmIdentifier.Decode(reader);");
+        sb.AppendLine("        value.Signature = reader.ReadBitString(Asn1Tag.BitString);");
+        sb.AppendLine("    }");
+        sb.AppendLine("}");
+        sb.AppendLine();
+    }
+
+    private void EmitSignedSpecialization(StringBuilder sb, IrDocument document, IrModule module, IrTypeDef definition)
+    {
+        var sequence = (SequenceType)definition.Type;
+        var name = IrOptions.CSharpTypeName(definition.Options) ?? SanitizeIdentifier(definition.Name);
+        var tbs = sequence.Components[0].Type;
+        var tbsType = CsType(document, module, name, "ToBeSigned", tbs, false);
+        var origin = document.Modules.Single(m => m.Name == definition.Specialization!.Module);
+        var baseName = ModuleNamespace(origin) + ".Signed<" + tbsType + ">";
+        sb.AppendLine($"public sealed class {name} : {baseName}");
+        sb.AppendLine("{");
+        sb.AppendLine("    protected override void EncodeToBeSigned(Asn1Writer writer)");
+        sb.AppendLine("    {");
+        EmitEncodeValue(sb, document, module, name, "ToBeSigned", tbs, "        ", "writer", "ToBeSigned");
+        sb.AppendLine("    }");
+        sb.AppendLine($"    public static {name} Decode(Asn1Reader reader) => Decode(reader, DefaultTag);");
+        sb.AppendLine($"    public static {name} Decode(Asn1Reader reader, Asn1Tag tag)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        using (reader.EnterSequence(tag))");
+        sb.AppendLine("        {");
+        sb.AppendLine($"            var value = new {name}();");
+        sb.Append("            value.ToBeSigned = ");
+        EmitDecodeExpr(sb, document, module, name, "ToBeSigned", tbs, "reader");
+        sb.AppendLine(";");
+        sb.AppendLine("            DecodeTail(reader, value);");
+        sb.AppendLine("            reader.ThrowIfNotEmpty();");
+        sb.AppendLine("            return value;");
+        sb.AppendLine("        }");
+        sb.AppendLine("    }");
+        sb.AppendLine("    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;");
+        sb.AppendLine("}");
     }
 
     private static List<(IrValueDef Definition, IrOidValue Value, string Member)> CollectOidValues(IrModule module)
@@ -419,6 +527,8 @@ public sealed partial class CSharpBackend : ILanguageBackend
                 privateSetter: false);
         }
 
+        EmitOpenTypeUseMethods(sb, document, module, typeName, type.Components);
+
         sb.AppendLine();
         sb.AppendLine("    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);");
         sb.AppendLine();
@@ -515,6 +625,8 @@ public sealed partial class CSharpBackend : ILanguageBackend
                 (field.Optional || field.ExtensionAddition == true) && field.Default is null,
                 privateSetter: false);
         }
+
+        EmitOpenTypeUseMethods(sb, document, module, typeName, type.Components);
 
         sb.AppendLine();
         sb.AppendLine("    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);");

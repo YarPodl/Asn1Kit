@@ -52,7 +52,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-modern.ps
 | `fixtures/ir/example.json` | **Ручная**: `options.csharp.*`; компилятором не пересобирать |
 | `../runtime-csharp/generated/Asn1Kit.Pkix/*.g.cs` | **Golden C#**: PKIX/CMS/DVCS и зависимости из полного `.asn`-графа + `dvcs.patch.json`, руками не править |
 | `../runtime-csharp/generated/Asn1Kit.Pkix.Bench/*.g.cs` | **Bench C#**: из patch / `cms-2004-bench.json`, руками не править |
-| `../runtime-csharp/generated/Asn1Kit.Modern/*.g.cs` | **Modern C#**: конкретные специализации/IOC-таблицы из корпуса; руками не править |
+| `../runtime-csharp/generated/Asn1Kit.Modern/*.g.cs` | **Modern C#**: общие структурные типы и методы доступа к IOC-таблицам из корпуса; руками не править |
 
 Golden IR сверяют `PkixExplicit88Tests` / `PkixImplicit88Tests` / `Cms2004Tests`; golden C# — `PkixGeneratedCodeTests`; bench IR — `Cms2004BenchTests` / `IrOptionsPatchTests`. Diff фикстуры — часть ревью.
 

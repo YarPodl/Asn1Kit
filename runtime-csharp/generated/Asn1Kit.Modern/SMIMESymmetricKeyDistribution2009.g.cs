@@ -327,8 +327,8 @@ public sealed class GLKeyAttributes
     public bool RecipientsNotMutuallyAware { get; set; } = true;
     public Asn1Integer Duration { get; set; } = Asn1Integer.FromInt64(0L);
     public Asn1Integer GenerationCounter { get; set; } = Asn1Integer.FromInt64(2L);
-    /// <summary>ASN.1 alias KeyWrapAlgorithm ::= SMIMECapability-732430E1BDB64441.</summary>
-    public Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability732430E1BDB64441 RequestedAlgorithm { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability732430E1BDB64441 { CapabilityID = SMIMESymmetricKeyDistribution2009Defaults.Value0 };
+    /// <summary>ASN.1 alias KeyWrapAlgorithm ::= SMIMECapability.</summary>
+    public Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability RequestedAlgorithm { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability { CapabilityID = SMIMESymmetricKeyDistribution2009Defaults.Value0 };
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -384,7 +384,7 @@ public sealed class GLKeyAttributes
             }
             if (reader.TryPeekTag(out var tag_RequestedAlgorithm) && tag_RequestedAlgorithm.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true)))
             {
-                value.RequestedAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability732430E1BDB64441.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true));
+                value.RequestedAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true));
             }
             reader.ThrowIfNotEmpty();
             return value;
@@ -477,9 +477,8 @@ public sealed class GLMember
 
 public sealed class Certificates
 {
-    /// <summary>ASN.1 alias Certificate ::= SIGNED-3B92C0AAD0549C55.</summary>
-    public Asn1Kit.Modern.PKIX1Explicit2009.SIGNED3B92C0AAD0549C55? PKC { get; set; }
-    public Asn1Kit.Modern.PKIX1Explicit2009.SIGNEDDB18E9FF20086E58[]? AC { get; set; }
+    public Asn1Kit.Modern.PKIX1Explicit2009.Certificate? PKC { get; set; }
+    public Asn1Kit.Modern.PKIXAttributeCertificate2009.AttributeCertificate[]? AC { get; set; }
     /// <summary>ASN.1 alias CertificateSet ::= SET OF CertificateChoices.</summary>
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.CertificateChoices[]? CertPath { get; set; }
 
@@ -519,11 +518,11 @@ public sealed class Certificates
             var value = new Certificates();
             if (reader.TryPeekTag(out var tag_PKC) && tag_PKC.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
-                value.PKC = Asn1Kit.Modern.PKIX1Explicit2009.SIGNED3B92C0AAD0549C55.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                value.PKC = Asn1Kit.Modern.PKIX1Explicit2009.Certificate.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
             }
             if (reader.TryPeekTag(out var tag_AC) && tag_AC.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
             {
-                value.AC = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), static inner => Asn1Kit.Modern.PKIX1Explicit2009.SIGNEDDB18E9FF20086E58.Decode(inner, Asn1Tag.Sequence));
+                value.AC = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), static inner => Asn1Kit.Modern.PKIXAttributeCertificate2009.AttributeCertificate.Decode(inner, Asn1Tag.Sequence));
             }
             if (reader.TryPeekTag(out var tag_CertPath) && tag_CertPath.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
             {
@@ -633,8 +632,8 @@ public sealed class GLNewKeyAttributes
     public bool? RecipientsNotMutuallyAware { get; set; }
     public Asn1Integer? Duration { get; set; }
     public Asn1Integer? GenerationCounter { get; set; }
-    /// <summary>ASN.1 alias KeyWrapAlgorithm ::= SMIMECapability-732430E1BDB64441.</summary>
-    public Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability732430E1BDB64441? RequestedAlgorithm { get; set; }
+    /// <summary>ASN.1 alias KeyWrapAlgorithm ::= SMIMECapability.</summary>
+    public Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability? RequestedAlgorithm { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -690,7 +689,7 @@ public sealed class GLNewKeyAttributes
             }
             if (reader.TryPeekTag(out var tag_RequestedAlgorithm) && tag_RequestedAlgorithm.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true)))
             {
-                value.RequestedAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability732430E1BDB64441.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true));
+                value.RequestedAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true));
             }
             reader.ThrowIfNotEmpty();
             return value;
@@ -913,8 +912,8 @@ public sealed class GLKey
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.KEKIdentifier GlIdentifier { get; set; }
     /// <summary>ASN.1 alias RecipientInfos ::= SET OF RecipientInfo.</summary>
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.RecipientInfo[] GlkWrapped { get; set; } = Array.Empty<Asn1Kit.Modern.CryptographicMessageSyntax2009.RecipientInfo>();
-    /// <summary>ASN.1 alias KeyWrapAlgorithm ::= SMIMECapability-732430E1BDB64441.</summary>
-    public Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability732430E1BDB64441 GlkAlgorithm { get; set; }
+    /// <summary>ASN.1 alias KeyWrapAlgorithm ::= SMIMECapability.</summary>
+    public Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability GlkAlgorithm { get; set; }
     public DateTimeOffset GlkNotBefore { get; set; }
     public DateTimeOffset GlkNotAfter { get; set; }
 
@@ -946,7 +945,7 @@ public sealed class GLKey
             value.GlName = Asn1Kit.Modern.PKIX1Implicit2009.GeneralName.Decode(reader);
             value.GlIdentifier = Asn1Kit.Modern.CryptographicMessageSyntax2009.KEKIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.GlkWrapped = reader.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.CryptographicMessageSyntax2009.RecipientInfo.Decode(inner));
-            value.GlkAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability732430E1BDB64441.Decode(reader, Asn1Tag.Sequence);
+            value.GlkAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability.Decode(reader, Asn1Tag.Sequence);
             value.GlkNotBefore = reader.ReadTime(Asn1Tag.GeneralizedTime, Asn1TimeForm.Generalized);
             value.GlkNotAfter = reader.ReadTime(Asn1Tag.GeneralizedTime, Asn1TimeForm.Generalized);
             reader.ThrowIfNotEmpty();
@@ -1055,10 +1054,10 @@ public sealed class GLAQueryRequest_GlaRequestValue
 
 public sealed class GLAQueryResponse_GlaResponseValue
 {
-    public Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability732430E1BDB64441? SkdAlgResponse { get; private set; }
+    public Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability? SkdAlgResponse { get; private set; }
     public Asn1Any? Unknown { get; private set; }
 
-    public static GLAQueryResponse_GlaResponseValue FromSkdAlgResponse(Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability732430E1BDB64441 skdAlgResponse) => new GLAQueryResponse_GlaResponseValue
+    public static GLAQueryResponse_GlaResponseValue FromSkdAlgResponse(Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability skdAlgResponse) => new GLAQueryResponse_GlaResponseValue
     {
         SkdAlgResponse = skdAlgResponse,
     };
@@ -1106,14 +1105,14 @@ public sealed class GLAQueryResponse_GlaResponseValue
             {
                 if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
                 {
-                    return FromSkdAlgResponse(Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability732430E1BDB64441.Decode(reader, Asn1Tag.Sequence));
+                    return FromSkdAlgResponse(Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability.Decode(reader, Asn1Tag.Sequence));
                 }
             }
             else
             {
                 if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
                 {
-                    return FromSkdAlgResponse(Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability732430E1BDB64441.Decode(reader, expectedTag.Value));
+                    return FromSkdAlgResponse(Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability.Decode(reader, expectedTag.Value));
                 }
             }
             throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SkdAlgResponse'.");

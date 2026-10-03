@@ -26,14 +26,13 @@ public sealed class AuthEnvelopedData
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.OriginatorInfo? OriginatorInfo { get; set; }
     /// <summary>ASN.1 alias RecipientInfos ::= SET OF RecipientInfo.</summary>
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.RecipientInfo[] RecipientInfos { get; set; } = Array.Empty<Asn1Kit.Modern.CryptographicMessageSyntax2009.RecipientInfo>();
-    /// <summary>ASN.1 alias EncryptedContentInfo ::= EncryptedContentInfoType-5F95BB1E8946976E.</summary>
-    public Asn1Kit.Modern.CryptographicMessageSyntax2010.EncryptedContentInfoType5F95BB1E8946976E AuthEncryptedContentInfo { get; set; }
-    /// <summary>ASN.1 alias AuthAttributes ::= Attributes-376B52E5D51DE4DA.</summary>
-    public Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute3E74D713091476DE[]? AuthAttrs { get; set; }
+    public EncryptedContentInfo AuthEncryptedContentInfo { get; set; }
+    /// <summary>ASN.1 alias AuthAttributes ::= Attributes.</summary>
+    public Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[]? AuthAttrs { get; set; }
     /// <summary>ASN.1 alias MessageAuthenticationCode ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> Mac { get; set; }
-    /// <summary>ASN.1 alias UnauthAttributes ::= Attributes-21C1E5179F1FDC52.</summary>
-    public Asn1Kit.Modern.CryptographicMessageSyntax2010.AttributeB886FFAF35FCD072[]? UnauthAttrs { get; set; }
+    /// <summary>ASN.1 alias UnauthAttributes ::= Attributes.</summary>
+    public Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[]? UnauthAttrs { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -82,15 +81,179 @@ public sealed class AuthEnvelopedData
                 value.OriginatorInfo = Asn1Kit.Modern.CryptographicMessageSyntax2009.OriginatorInfo.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
             }
             value.RecipientInfos = reader.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.CryptographicMessageSyntax2009.RecipientInfo.Decode(inner));
-            value.AuthEncryptedContentInfo = Asn1Kit.Modern.CryptographicMessageSyntax2010.EncryptedContentInfoType5F95BB1E8946976E.Decode(reader, Asn1Tag.Sequence);
+            value.AuthEncryptedContentInfo = Asn1Kit.Modern.CMSAuthEnvelopedData2010.EncryptedContentInfo.Decode(reader, Asn1Tag.Sequence);
             if (reader.TryPeekTag(out var tag_AuthAttrs) && tag_AuthAttrs.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
             {
-                value.AuthAttrs = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), static inner => Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute3E74D713091476DE.Decode(inner, Asn1Tag.Sequence));
+                value.AuthAttrs = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), static inner => Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute.Decode(inner, Asn1Tag.Sequence));
             }
             value.Mac = reader.ReadOctetString(Asn1Tag.OctetString);
             if (reader.TryPeekTag(out var tag_UnauthAttrs) && tag_UnauthAttrs.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
             {
-                value.UnauthAttrs = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), static inner => Asn1Kit.Modern.CryptographicMessageSyntax2010.AttributeB886FFAF35FCD072.Decode(inner, Asn1Tag.Sequence));
+                value.UnauthAttrs = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), static inner => Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute.Decode(inner, Asn1Tag.Sequence));
+            }
+            reader.ThrowIfNotEmpty();
+            return value;
+        }
+    }
+
+    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
+}
+
+public sealed class EncryptedContentInfo
+{
+    public Asn1Oid ContentType { get; set; }
+    /// <summary>ASN.1 alias AuthContentEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier ContentEncryptionAlgorithm { get; set; }
+    public ReadOnlyMemory<byte>? EncryptedContent { get; set; }
+
+    public bool TryDecodeContentEncryptionAlgorithmParameters<T>(out T value)
+    {
+        value = default!;
+        if (ContentEncryptionAlgorithm is null || ContentEncryptionAlgorithm.Parameters is not { } raw) return false;
+        switch (ContentEncryptionAlgorithm.Algorithm.ToString())
+        {
+            case "2.16.840.1.101.3.4.1.7":
+            {
+                if (typeof(T) != typeof(Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters.Decode(inner, Asn1Tag.Sequence);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "2.16.840.1.101.3.4.1.27":
+            {
+                if (typeof(T) != typeof(Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters.Decode(inner, Asn1Tag.Sequence);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "2.16.840.1.101.3.4.1.47":
+            {
+                if (typeof(T) != typeof(Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters.Decode(inner, Asn1Tag.Sequence);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "2.16.840.1.101.3.4.1.6":
+            {
+                if (typeof(T) != typeof(Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters.Decode(inner, Asn1Tag.Sequence);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "2.16.840.1.101.3.4.1.26":
+            {
+                if (typeof(T) != typeof(Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters.Decode(inner, Asn1Tag.Sequence);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            case "2.16.840.1.101.3.4.1.46":
+            {
+                if (typeof(T) != typeof(Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters.Decode(inner, Asn1Tag.Sequence);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            default: return false;
+        }
+    }
+
+    public void SetContentEncryptionAlgorithmParameters<T>(T value)
+    {
+        if (ContentEncryptionAlgorithm is null) throw new Asn1Exception("Missing ContentEncryptionAlgorithm.");
+        switch (ContentEncryptionAlgorithm.Algorithm.ToString())
+        {
+            case "2.16.840.1.101.3.4.1.7":
+            {
+                if (value is not Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                typed.Encode(writer, Asn1Tag.Sequence);
+                ContentEncryptionAlgorithm.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "2.16.840.1.101.3.4.1.27":
+            {
+                if (value is not Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                typed.Encode(writer, Asn1Tag.Sequence);
+                ContentEncryptionAlgorithm.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "2.16.840.1.101.3.4.1.47":
+            {
+                if (value is not Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                typed.Encode(writer, Asn1Tag.Sequence);
+                ContentEncryptionAlgorithm.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "2.16.840.1.101.3.4.1.6":
+            {
+                if (value is not Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                typed.Encode(writer, Asn1Tag.Sequence);
+                ContentEncryptionAlgorithm.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "2.16.840.1.101.3.4.1.26":
+            {
+                if (value is not Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                typed.Encode(writer, Asn1Tag.Sequence);
+                ContentEncryptionAlgorithm.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            case "2.16.840.1.101.3.4.1.46":
+            {
+                if (value is not Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                typed.Encode(writer, Asn1Tag.Sequence);
+                ContentEncryptionAlgorithm.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            default: throw new Asn1Exception("Unknown open-type key.");
+        }
+    }
+
+    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
+
+    public void Encode(Asn1Writer writer, Asn1Tag tag)
+    {
+        using (writer.EnterSequence(tag))
+        {
+            writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, ContentType);
+            ContentEncryptionAlgorithm.Encode(writer, Asn1Tag.Sequence);
+            if (EncryptedContent != null)
+            {
+                writer.WriteOctetString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), EncryptedContent.Value.Span);
+            }
+        }
+    }
+
+    public static EncryptedContentInfo Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
+
+    public static EncryptedContentInfo Decode(Asn1Reader reader, Asn1Tag tag)
+    {
+        using (reader.EnterSequence(tag))
+        {
+            var value = new EncryptedContentInfo();
+            value.ContentType = reader.ReadOid(Asn1Tag.ObjectIdentifier);
+            value.ContentEncryptionAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
+            if (reader.TryPeekTag(out var tag_EncryptedContent) && tag_EncryptedContent.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false)))
+            {
+                value.EncryptedContent = reader.ReadOctetString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
             }
             reader.ThrowIfNotEmpty();
             return value;

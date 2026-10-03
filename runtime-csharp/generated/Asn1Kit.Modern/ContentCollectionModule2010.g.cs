@@ -32,7 +32,7 @@ public static class ContentCollectionModule2010Oids
 public sealed class ContentWithAttributes
 {
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.ContentInfo Content { get; set; }
-    public Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet1BB31049B7D628B1[] Attrs { get; set; } = Array.Empty<Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet1BB31049B7D628B1>();
+    public Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet[] Attrs { get; set; } = Array.Empty<Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet>();
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -56,7 +56,7 @@ public sealed class ContentWithAttributes
         {
             var value = new ContentWithAttributes();
             value.Content = Asn1Kit.Modern.CryptographicMessageSyntax2009.ContentInfo.Decode(reader, Asn1Tag.Sequence);
-            value.Attrs = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet1BB31049B7D628B1.Decode(inner, Asn1Tag.Sequence));
+            value.Attrs = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet.Decode(inner, Asn1Tag.Sequence));
             reader.ThrowIfNotEmpty();
             return value;
         }

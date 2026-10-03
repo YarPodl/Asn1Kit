@@ -365,8 +365,8 @@ public sealed class ESSSecurityLabel
     public Asn1Oid SecurityPolicyIdentifier { get; set; }
     public int? SecurityClassification { get; set; }
     public ESSPrivacyMark? PrivacyMark { get; set; }
-    /// <summary>ASN.1 alias SecurityCategories ::= SET OF SecurityCategory-89888901C178B774.</summary>
-    public Asn1Kit.Modern.PKIXCommonTypes2009.SecurityCategory89888901C178B774[]? SecurityCategories { get; set; }
+    /// <summary>ASN.1 alias SecurityCategories ::= SET OF SecurityCategory.</summary>
+    public Asn1Kit.Modern.PKIXCommonTypes2009.SecurityCategory[]? SecurityCategories { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -426,7 +426,7 @@ public sealed class ESSSecurityLabel
                 else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Set))
                 {
                     if (value.SecurityCategories != null) throw new Asn1Exception("Duplicate SET component 'security-categories'.");
-                    value.SecurityCategories = reader.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SecurityCategory89888901C178B774.Decode(inner, Asn1Tag.Sequence));
+                    value.SecurityCategories = reader.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SecurityCategory.Decode(inner, Asn1Tag.Sequence));
                 }
                 else throw new Asn1Exception("Unknown SET component.");
             }
@@ -818,11 +818,47 @@ public sealed class SigningCertificateV2
 
 public sealed class ESSCertIDv2
 {
-    /// <summary>ASN.1 alias HashAlgorithm ::= AlgorithmIdentifier-23D599C67C5D1B75.</summary>
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier23D599C67C5D1B75 HashAlgorithm { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier23D599C67C5D1B75 { Algorithm = ExtendedSecurityServices2009Defaults.Value0 };
+    /// <summary>ASN.1 alias HashAlgorithm ::= AlgorithmIdentifier.</summary>
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier HashAlgorithm { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = ExtendedSecurityServices2009Defaults.Value0 };
     /// <summary>ASN.1 alias Hash ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> CertHash { get; set; }
     public IssuerSerial? IssuerSerial { get; set; }
+
+    public bool TryDecodeHashAlgorithmParameters<T>(out T value)
+    {
+        value = default!;
+        if (HashAlgorithm is null || HashAlgorithm.Parameters is not { } raw) return false;
+        switch (HashAlgorithm.Algorithm.ToString())
+        {
+            case "2.16.840.1.101.3.4.2.1":
+            {
+                if (typeof(T) != typeof(Asn1Null)) return false;
+                var inner = new Asn1Reader(raw.EncodedMemory);
+                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
+                inner.ThrowIfNotEmpty();
+                value = (T)(object)decoded;
+                return true;
+            }
+            default: return false;
+        }
+    }
+
+    public void SetHashAlgorithmParameters<T>(T value)
+    {
+        if (HashAlgorithm is null) throw new Asn1Exception("Missing HashAlgorithm.");
+        switch (HashAlgorithm.Algorithm.ToString())
+        {
+            case "2.16.840.1.101.3.4.2.1":
+            {
+                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
+                var writer = new Asn1Writer();
+                writer.WriteNull(Asn1Tag.Null);
+                HashAlgorithm.Parameters = new Asn1Any(writer.Encode());
+                return;
+            }
+            default: throw new Asn1Exception("Unknown open-type key.");
+        }
+    }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -851,7 +887,7 @@ public sealed class ESSCertIDv2
             var value = new ESSCertIDv2();
             if (reader.TryPeekTag(out var tag_HashAlgorithm) && tag_HashAlgorithm.MatchesIgnoreConstructed(Asn1Tag.Sequence))
             {
-                value.HashAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier23D599C67C5D1B75.Decode(reader, Asn1Tag.Sequence);
+                value.HashAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             }
             value.CertHash = reader.ReadOctetString(Asn1Tag.OctetString);
             if (reader.TryPeekTag(out var tag_IssuerSerial) && tag_IssuerSerial.MatchesIgnoreConstructed(Asn1Tag.Sequence))

@@ -22,10 +22,10 @@ public static class MultipleSignatures2010Oids
 
 public sealed class MultipleSignatures
 {
-    /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier-B003DC33558B2058.</summary>
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierB003DC33558B2058 BodyHashAlg { get; set; }
-    /// <summary>ASN.1 alias SignatureAlgorithmIdentifier ::= AlgorithmIdentifier-F1E4F3361A20E071.</summary>
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierF1E4F3361A20E071 SignAlg { get; set; }
+    /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier BodyHashAlg { get; set; }
+    /// <summary>ASN.1 alias SignatureAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier SignAlg { get; set; }
     public SignAttrsHash SignAttrsHash { get; set; }
     public Asn1Kit.Modern.ExtendedSecurityServices2009.ESSCertIDv2? Cert { get; set; }
 
@@ -52,8 +52,8 @@ public sealed class MultipleSignatures
         using (reader.EnterSequence(tag))
         {
             var value = new MultipleSignatures();
-            value.BodyHashAlg = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierB003DC33558B2058.Decode(reader, Asn1Tag.Sequence);
-            value.SignAlg = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierF1E4F3361A20E071.Decode(reader, Asn1Tag.Sequence);
+            value.BodyHashAlg = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
+            value.SignAlg = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.SignAttrsHash = Asn1Kit.Modern.MultipleSignatures2010.SignAttrsHash.Decode(reader, Asn1Tag.Sequence);
             if (reader.TryPeekTag(out var tag_Cert) && tag_Cert.MatchesIgnoreConstructed(Asn1Tag.Sequence))
             {
@@ -69,8 +69,8 @@ public sealed class MultipleSignatures
 
 public sealed class SignAttrsHash
 {
-    /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier-B003DC33558B2058.</summary>
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierB003DC33558B2058 AlgID { get; set; }
+    /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier AlgID { get; set; }
     public ReadOnlyMemory<byte> Hash { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -91,7 +91,7 @@ public sealed class SignAttrsHash
         using (reader.EnterSequence(tag))
         {
             var value = new SignAttrsHash();
-            value.AlgID = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifierB003DC33558B2058.Decode(reader, Asn1Tag.Sequence);
+            value.AlgID = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.Hash = reader.ReadOctetString(Asn1Tag.OctetString);
             reader.ThrowIfNotEmpty();
             return value;

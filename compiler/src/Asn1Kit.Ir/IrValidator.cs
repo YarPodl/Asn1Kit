@@ -69,6 +69,11 @@ public static class IrValidator
                 throw new IrException($"Type '{type.Name}' is missing a type expression.");
             }
 
+            if (type.Specialization is { } specialization &&
+                (string.IsNullOrWhiteSpace(specialization.Module) || string.IsNullOrWhiteSpace(specialization.Name) ||
+                 document.Modules.All(m => m.Name != specialization.Module)))
+                throw new IrException($"Invalid specialization origin on '{module.Name}.{type.Name}'.");
+
             ValidateExpr(document, module, type.Type, type.Name, ownerComponents: null);
         }
 
@@ -151,6 +156,27 @@ public static class IrValidator
                 if (!ResolveRef(document, module, reference))
                 {
                     throw new IrException($"Unresolved type '{FormatRef(reference)}' referenced from {context}.");
+                }
+
+                if (reference.OpenTypes is not null)
+                {
+                    var paths = new HashSet<string>(StringComparer.Ordinal);
+                    foreach (var use in reference.OpenTypes)
+                    {
+                        if (use.Path.Count == 0 || use.Path.Any(string.IsNullOrWhiteSpace) ||
+                            !paths.Add(string.Join("/", use.Path)))
+                            throw new IrException($"Invalid or duplicate open-type path in '{context}'.");
+                        if (ResolveOpenTypePath(document, module, reference, use.Path) is not AnyType)
+                            throw new IrException($"Open-type path in '{context}' does not select ANY.");
+                        var keys = new HashSet<string>(StringComparer.Ordinal);
+                        foreach (var binding in use.Bindings)
+                        {
+                            if (string.IsNullOrWhiteSpace(binding.Key) || !keys.Add(binding.Key) ||
+                                binding.Name is not null && string.IsNullOrWhiteSpace(binding.Name) || binding.Type is null)
+                                throw new IrException($"Invalid open-type binding in '{context}'.");
+                            ValidateExpr(document, module, binding.Type, context + ".openTypes", ownerComponents: null);
+                        }
+                    }
                 }
 
                 break;
@@ -439,6 +465,48 @@ public static class IrValidator
         }
 
         return false;
+    }
+
+    private static TypeExpr? ResolveOpenTypePath(IrDocument document, IrModule module, RefType reference,
+        IReadOnlyList<string> path)
+    {
+        TypeExpr current = reference;
+        var currentModule = module;
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var part in path)
+        {
+            while (current is RefType link)
+            {
+                var targetModule = document.Modules.FirstOrDefault(m => m.Name == (link.Module ?? currentModule.Name));
+                var key = (link.Module ?? currentModule.Name) + "." + link.Name;
+                if (targetModule is null || !seen.Add(key)) return null;
+                current = targetModule.Types.FirstOrDefault(t => t.Name == link.Name)?.Type!;
+                if (current is null) return null;
+                currentModule = targetModule;
+            }
+            current = part switch
+            {
+                "[]" when current is SequenceOfType sequenceOf => sequenceOf.Element,
+                "[]" when current is SetOfType setOf => setOf.Element,
+                "containing" when current is OctetStringType octets => octets.Containing!,
+                "containing" when current is BitStringType bits => bits.Containing!,
+                _ when current is SequenceType sequence => sequence.Components.FirstOrDefault(c => c.Name == part)?.Type!,
+                _ when current is SetType set => set.Components.FirstOrDefault(c => c.Name == part)?.Type!,
+                _ when current is ChoiceType choice => choice.Components.FirstOrDefault(c => c.Name == part)?.Type!,
+                _ => null!
+            };
+            if (current is null) return null;
+        }
+        while (current is RefType link)
+        {
+            var targetModule = document.Modules.FirstOrDefault(m => m.Name == (link.Module ?? currentModule.Name));
+            var key = (link.Module ?? currentModule.Name) + "." + link.Name;
+            if (targetModule is null || !seen.Add(key)) return null;
+            current = targetModule.Types.FirstOrDefault(t => t.Name == link.Name)?.Type!;
+            if (current is null) return null;
+            currentModule = targetModule;
+        }
+        return current;
     }
 
     private static string FormatRef(RefType reference) =>

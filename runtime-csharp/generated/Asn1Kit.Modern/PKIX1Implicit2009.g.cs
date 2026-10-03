@@ -846,7 +846,7 @@ public sealed class GeneralName
     public string? DNSName { get; private set; }
     public Asn1Kit.Modern.PKIXX400Address2009.ORAddress? X400Address { get; private set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
-    public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute30071208C05157D5[][]? DirectoryName { get; private set; }
+    public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[][]? DirectoryName { get; private set; }
     public EDIPartyName? EdiPartyName { get; private set; }
     public string? UniformResourceIdentifier { get; private set; }
     public ReadOnlyMemory<byte>? IPAddress { get; private set; }
@@ -876,7 +876,7 @@ public sealed class GeneralName
         X400Address = x400Address,
     };
 
-    public static GeneralName FromDirectoryName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute30071208C05157D5[][] directoryName) => new GeneralName
+    public static GeneralName FromDirectoryName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[][] directoryName) => new GeneralName
     {
         Kind = GeneralNameKind.DirectoryName,
         DirectoryName = directoryName,
@@ -996,7 +996,7 @@ public sealed class GeneralName
             value.Kind = GeneralNameKind.DirectoryName;
             using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true)))
             {
-                value.DirectoryName = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute30071208C05157D5.Decode(inner, Asn1Tag.Sequence)));
+                value.DirectoryName = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute.Decode(inner, Asn1Tag.Sequence)));
                 reader.ThrowIfNotEmpty();
             }
         }
@@ -1027,8 +1027,8 @@ public sealed class GeneralName
 
 public sealed class EDIPartyName
 {
-    public Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString774126FAEEE25170? NameAssigner { get; set; }
-    public Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString774126FAEEE25170 PartyName { get; set; }
+    public Asn1Kit.Modern.PKIX1Explicit2009.X520name? NameAssigner { get; set; }
+    public Asn1Kit.Modern.PKIX1Explicit2009.X520name PartyName { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1061,13 +1061,13 @@ public sealed class EDIPartyName
             {
                 using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                 {
-                    value.NameAssigner = Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString774126FAEEE25170.Decode(reader);
+                    value.NameAssigner = Asn1Kit.Modern.PKIX1Explicit2009.X520name.Decode(reader);
                     reader.ThrowIfNotEmpty();
                 }
             }
             using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
             {
-                value.PartyName = Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString774126FAEEE25170.Decode(reader);
+                value.PartyName = Asn1Kit.Modern.PKIX1Explicit2009.X520name.Decode(reader);
                 reader.ThrowIfNotEmpty();
             }
             reader.ThrowIfNotEmpty();
@@ -1349,8 +1349,8 @@ public sealed class DistributionPointName
     public DistributionPointNameKind Kind { get; private set; }
     /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName.</summary>
     public GeneralName[]? FullName { get; private set; }
-    /// <summary>ASN.1 alias RelativeDistinguishedName ::= SET OF SingleAttribute-30071208C05157D5.</summary>
-    public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute30071208C05157D5[]? NameRelativeToCRLIssuer { get; private set; }
+    /// <summary>ASN.1 alias RelativeDistinguishedName ::= SET OF SingleAttribute.</summary>
+    public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[]? NameRelativeToCRLIssuer { get; private set; }
 
     public static DistributionPointName FromFullName(GeneralName[] fullName) => new DistributionPointName
     {
@@ -1358,7 +1358,7 @@ public sealed class DistributionPointName
         FullName = fullName,
     };
 
-    public static DistributionPointName FromNameRelativeToCRLIssuer(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute30071208C05157D5[] nameRelativeToCRLIssuer) => new DistributionPointName
+    public static DistributionPointName FromNameRelativeToCRLIssuer(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] nameRelativeToCRLIssuer) => new DistributionPointName
     {
         Kind = DistributionPointNameKind.NameRelativeToCRLIssuer,
         NameRelativeToCRLIssuer = nameRelativeToCRLIssuer,
@@ -1406,7 +1406,7 @@ public sealed class DistributionPointName
         else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
         {
             value.Kind = DistributionPointNameKind.NameRelativeToCRLIssuer;
-            value.NameRelativeToCRLIssuer = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute30071208C05157D5.Decode(inner, Asn1Tag.Sequence));
+            value.NameRelativeToCRLIssuer = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute.Decode(inner, Asn1Tag.Sequence));
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;

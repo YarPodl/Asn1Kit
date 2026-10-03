@@ -24,6 +24,7 @@ public sealed class Asn1Compiler
         }
 
         var document = new IrBuilder(new InformationResolver(modules).Resolve()).Build();
+        SpecializationCompactor.Compact(document);
         IrValidator.Validate(document);
         IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
         return document;
