@@ -31,10 +31,12 @@ public static class CmsSignedDataInspector
         {
             try
             {
-                VerifySigner(signedData, signedData.SignerInfos[index], content.Value, verifier, availableCertificates, trustedRoots);
+                var certificate = VerifySigner(signedData, signedData.SignerInfos[index], content.Value, verifier, availableCertificates, trustedRoots);
                 results.Add(new CmsSignerResult(index + 1, true, trustedRoots is null
                     ? "structure accepted; stub accepted digest and signature"
-                    : "certificate chain and CMS signature accepted"));
+                    : "certificate chain and CMS signature accepted",
+                    RdnSequenceFormatter.Format(certificate.TbsCertificate.Value.Issuer.Value),
+                    RdnSequenceFormatter.Format(certificate.TbsCertificate.Value.Subject.Value)));
             }
             catch (Exception ex) when (ex is InvalidDataException or Asn1Exception)
             {
@@ -45,7 +47,7 @@ public static class CmsSignedDataInspector
         return results;
     }
 
-    private static void VerifySigner(SignedData signedData, SignerInfo signer, ReadOnlyMemory<byte> content,
+    private static Certificate VerifySigner(SignedData signedData, SignerInfo signer, ReadOnlyMemory<byte> content,
         ICmsCryptoVerifier<Certificate> verifier, IReadOnlyCollection<Asn1Value<Certificate>>? availableCertificates,
         IReadOnlyCollection<Asn1Value<Certificate>>? trustedRoots)
     {
@@ -75,6 +77,7 @@ public static class CmsSignedDataInspector
 
         if (!verifier.VerifySignature(signer.SignatureAlgorithm.Algorithm, signedBytes, signer.Signature, certificate))
             throw new InvalidDataException("Signature was rejected by the educational stub.");
+        return certificate;
     }
 
     private static ReadOnlyMemory<byte> ReadSignedAttributes(CmsAttribute[] attributes, Asn1Oid contentType)

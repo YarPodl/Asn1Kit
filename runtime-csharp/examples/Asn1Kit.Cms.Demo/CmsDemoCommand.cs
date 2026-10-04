@@ -58,6 +58,11 @@ public static class CmsDemoCommand
             foreach (var result in results)
             {
                 output.WriteLine($"Signer {result.SignerNumber}: {(result.Accepted ? "accepted" : "rejected")} by {(rootPaths.Count == 0 ? "educational stub" : "RSA/SHA-256 verifier")}: {result.Reason}");
+                if (result.Issuer is not null)
+                {
+                    output.WriteLine($"  Issuer: {result.Issuer}");
+                    output.WriteLine($"  Subject: {result.Subject}");
+                }
                 accepted &= result.Accepted;
             }
 

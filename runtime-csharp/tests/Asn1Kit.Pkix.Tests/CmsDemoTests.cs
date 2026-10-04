@@ -12,6 +12,50 @@ public sealed class CmsDemoTests
     private static byte[] Fixture => File.ReadAllBytes(TestData.RepoPath("runtime-csharp/fixtures/cms/attached-signeddata.p7m"));
 
     [Fact]
+    public void RdnSequence_PrintsRfc4514InBothGeneratedModels()
+    {
+        var cn = Asn1Oid.Parse("2.5.4.3");
+        var ou = Asn1Oid.Parse("2.5.4.11");
+        var unknown = Asn1Oid.Parse("1.2.3.4");
+        var bench = new[]
+        {
+            new[] { new Asn1Kit.Pkix.Bench.AttributeTypeAndValue
+                { Type = ou, Value = Asn1Kit.Pkix.Bench.AttributeTypeAndValue_Value.FromUtf8String(" Root ") } },
+            new[]
+            {
+                new Asn1Kit.Pkix.Bench.AttributeTypeAndValue
+                    { Type = cn, Value = Asn1Kit.Pkix.Bench.AttributeTypeAndValue_Value.FromUtf8String("Doe, Jane+Jr") },
+                new Asn1Kit.Pkix.Bench.AttributeTypeAndValue
+                    { Type = unknown, Value = Asn1Kit.Pkix.Bench.AttributeTypeAndValue_Value.FromPrintableString("X") }
+            }
+        };
+        var modern = new[]
+        {
+            new[] { new Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute
+                { Type = ou, Value = Asn1Any.FromValue(" Root ", static (writer, value) => writer.WriteString(Asn1Tag.Utf8String, value, Asn1StringForm.Utf8)) } },
+            new[]
+            {
+                new Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute
+                    { Type = cn, Value = Asn1Any.FromValue("Doe, Jane+Jr", static (writer, value) => writer.WriteString(Asn1Tag.Utf8String, value, Asn1StringForm.Utf8)) },
+                new Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute
+                    { Type = unknown, Value = Asn1Any.FromValue("X", static (writer, value) => writer.WriteString(Asn1Tag.PrintableString, value, Asn1StringForm.Printable)) }
+            }
+        };
+        const string expected = "CN=Doe\\, Jane\\+Jr+1.2.3.4=#130158,OU=\\ Root\\ ";
+        Assert.Equal(expected, RdnSequenceFormatter.Format(bench));
+        Assert.Equal(expected, RdnSequenceFormatter.Format(modern));
+
+        var path = TestData.RepoPath("runtime-csharp/fixtures/cms/attached-signeddata.p7m");
+        foreach (var args in new[] { new[] { path }, new[] { "--modern", path } })
+        {
+            var output = new StringWriter();
+            Assert.Equal(0, CmsDemoCommand.Run(args, output, new StringWriter()));
+            Assert.Contains("  Issuer: CN=Asn1Kit CMS Bench", output.ToString());
+            Assert.Contains("  Subject: CN=Asn1Kit CMS Bench", output.ToString());
+        }
+    }
+
+    [Fact]
     public void AttachedFixture_PassesStructureAndSuppliesContentWithoutSignedAttributes()
     {
         var verifier = new RecordingVerifier();

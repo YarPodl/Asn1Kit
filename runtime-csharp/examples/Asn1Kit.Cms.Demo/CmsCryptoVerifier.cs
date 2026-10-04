@@ -50,6 +50,6 @@ public sealed class RsaSha256CryptoVerifier<TCertificate> : ICmsCryptoVerifier<T
     }
 }
 
-public sealed record CmsSignerResult(int SignerNumber, bool Accepted, string Reason);
+public sealed record CmsSignerResult(int SignerNumber, bool Accepted, string Reason, string? Issuer = null, string? Subject = null);
 
 internal readonly record struct EncodedCertificate<T>(T Value, ReadOnlyMemory<byte> OriginalEncoding) where T : notnull;

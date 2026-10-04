@@ -33,10 +33,12 @@ public static class CmsModernSignedDataInspector
         {
             try
             {
-                VerifySigner(signedData, signedData.SignerInfos[index], content.Value, verifier, availableCertificates, trustedRoots);
+                var certificate = VerifySigner(signedData, signedData.SignerInfos[index], content.Value, verifier, availableCertificates, trustedRoots);
                 results.Add(new CmsSignerResult(index + 1, true, trustedRoots is null
                     ? "structure accepted; stub accepted digest and signature"
-                    : "certificate chain and CMS signature accepted"));
+                    : "certificate chain and CMS signature accepted",
+                    RdnSequenceFormatter.Format(certificate.ToBeSigned.Issuer.Value),
+                    RdnSequenceFormatter.Format(certificate.ToBeSigned.Subject.Value)));
             }
             catch (Exception ex) when (ex is InvalidDataException or Asn1Exception)
             {
@@ -47,7 +49,7 @@ public static class CmsModernSignedDataInspector
         return results;
     }
 
-    private static void VerifySigner(ModernCms.SignedData signedData, ModernCms.SignerInfo signer, ReadOnlyMemory<byte> content,
+    private static ModernPkix.Certificate VerifySigner(ModernCms.SignedData signedData, ModernCms.SignerInfo signer, ReadOnlyMemory<byte> content,
         ICmsCryptoVerifier<ModernPkix.Certificate> verifier,
         IReadOnlyCollection<Asn1Value<ModernPkix.Certificate>>? availableCertificates,
         IReadOnlyCollection<Asn1Value<ModernPkix.Certificate>>? trustedRoots)
@@ -78,6 +80,7 @@ public static class CmsModernSignedDataInspector
 
         if (!verifier.VerifySignature(signer.SignatureAlgorithm.Algorithm, signedBytes, signer.Signature, certificate))
             throw new InvalidDataException("Signature was rejected by the educational stub.");
+        return certificate;
     }
 
     private static ReadOnlyMemory<byte> ReadSignedAttributes(ModernCms.Attribute[] attributes, Asn1Oid contentType)
