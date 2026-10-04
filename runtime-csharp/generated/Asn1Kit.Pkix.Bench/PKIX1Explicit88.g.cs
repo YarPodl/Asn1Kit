@@ -1382,7 +1382,7 @@ public sealed class DirectoryString
 
 public sealed class Certificate
 {
-    public TBSCertificate TbsCertificate { get; set; }
+    public Asn1Value<TBSCertificate> TbsCertificate { get; set; }
     public AlgorithmIdentifier SignatureAlgorithm { get; set; }
     public Asn1BitString Signature { get; set; }
 
@@ -1392,7 +1392,7 @@ public sealed class Certificate
     {
         using (writer.EnterSequence(tag))
         {
-            TbsCertificate.Encode(writer, Asn1Tag.Sequence);
+            TbsCertificate.Value.Encode(writer, Asn1Tag.Sequence);
             SignatureAlgorithm.Encode(writer, Asn1Tag.Sequence);
             writer.WriteBitString(Asn1Tag.BitString, Signature);
         }
@@ -1405,7 +1405,10 @@ public sealed class Certificate
         using (reader.EnterSequence(tag))
         {
             var value = new Certificate();
-            value.TbsCertificate = Asn1Kit.Pkix.Bench.TBSCertificate.Decode(reader, Asn1Tag.Sequence);
+            value.TbsCertificate = reader.ReadWithOriginalEncoding(r =>
+            {
+                return Asn1Kit.Pkix.Bench.TBSCertificate.Decode(r, Asn1Tag.Sequence);
+            });
             value.SignatureAlgorithm = Asn1Kit.Pkix.Bench.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.Signature = reader.ReadBitString(Asn1Tag.BitString);
             reader.ThrowIfNotEmpty();

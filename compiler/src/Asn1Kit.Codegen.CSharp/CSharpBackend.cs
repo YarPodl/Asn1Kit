@@ -180,11 +180,14 @@ public sealed partial class CSharpBackend : ILanguageBackend
         var sequence = (SequenceType)definition.Type;
         var name = IrOptions.CSharpTypeName(definition.Options) ?? SanitizeIdentifier(definition.Name);
         var tbs = sequence.Components[0].Type;
+        var retainTbs = ShouldEmitRetainEncoded(document, module, tbs, sequence.Components[0].Options);
         var tbsType = CsType(document, module, name, "ToBeSigned", tbs, false);
         var origin = document.Modules.Single(m => m.Name == definition.Specialization!.Module);
         var baseName = ModuleNamespace(origin) + ".Signed<" + tbsType + ">";
         sb.AppendLine($"public sealed class {name} : {baseName}");
         sb.AppendLine("{");
+        if (retainTbs)
+            sb.AppendLine("    public ReadOnlyMemory<byte> ToBeSignedOriginalEncoding { get; private set; }");
         sb.AppendLine("    protected override void EncodeToBeSigned(Asn1Writer writer)");
         sb.AppendLine("    {");
         EmitEncodeValue(sb, document, module, name, "ToBeSigned", tbs, "        ", "writer", "ToBeSigned");
@@ -195,9 +198,20 @@ public sealed partial class CSharpBackend : ILanguageBackend
         sb.AppendLine("        using (reader.EnterSequence(tag))");
         sb.AppendLine("        {");
         sb.AppendLine($"            var value = new {name}();");
-        sb.Append("            value.ToBeSigned = ");
-        EmitDecodeExpr(sb, document, module, name, "ToBeSigned", tbs, "reader");
-        sb.AppendLine(";");
+        if (retainTbs)
+        {
+            sb.Append("            var retained = reader.ReadWithOriginalEncoding(r => ");
+            EmitDecodeExpr(sb, document, module, name, "ToBeSigned", tbs, "r");
+            sb.AppendLine(");");
+            sb.AppendLine("            value.ToBeSigned = retained.Value;");
+            sb.AppendLine("            value.ToBeSignedOriginalEncoding = retained.OriginalEncoding;");
+        }
+        else
+        {
+            sb.Append("            value.ToBeSigned = ");
+            EmitDecodeExpr(sb, document, module, name, "ToBeSigned", tbs, "reader");
+            sb.AppendLine(";");
+        }
         sb.AppendLine("            DecodeTail(reader, value);");
         sb.AppendLine("            reader.ThrowIfNotEmpty();");
         sb.AppendLine("            return value;");

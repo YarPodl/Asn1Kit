@@ -1,0 +1,31 @@
+{
+  "fields": {
+    "PKIX1Explicit-2009.TBSCertificate.issuer": {
+      "retainEncoded": true
+    },
+    "PKIX1Explicit-2009.TBSCertificate.subject": {
+      "retainEncoded": true
+    },
+    "PKIX1Explicit-2009.TBSCertificate.subjectPublicKeyInfo": {
+      "retainEncoded": true
+    },
+    "PKIX1Explicit-2009.Certificate.toBeSigned": {
+      "retainEncoded": true
+    },
+    "CryptographicMessageSyntax-2009.CertificateChoices.certificate": {
+      "retainEncoded": true
+    },
+    "CryptographicMessageSyntax-2009.IssuerAndSerialNumber.issuer": {
+      "retainEncoded": true
+    },
+    "CryptographicMessageSyntax-2009.SignerInfo.signedAttrs": {
+      "retainEncoded": true
+    },
+    "CryptographicMessageSyntax-2010.IssuerAndSerialNumber.issuer": {
+      "retainEncoded": true
+    },
+    "CryptographicMessageSyntax-2010.SignerInfo.signedAttrs": {
+      "retainEncoded": true
+    }
+  }
+}

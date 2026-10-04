@@ -79,9 +79,13 @@ Runtime-значения и обёртки поддерживают полезн
 
 Не soft (default reject): non-minimal length, OID overlong base-128. Всегда reject: BOOLEAN length≠1 / constructed; empty INTEGER; truncated EOC; indefinite в DER. BER: indefinite, constructed строки/BIT STRING, время без секунд / `±hhmm`.
 
+## Демонстрация проверки CMS
+
+Демонстрационный проект [Asn1Kit.Cms.Demo](../runtime-csharp/examples/Asn1Kit.Cms.Demo/) проверяет один сценарий attached `SignedData` в двух режимах: `Asn1Kit.Pkix.Bench` и `Asn1Kit.Modern` (`--modern`). Он проверяет структуру, атрибуты и связь подписанта с вложенным сертификатом. С переданными `--trusted-root` и `--certificate` инспекторы строят цепочку из generated-типов, сопоставляют `AuthorityKeyIdentifier` с `SubjectKeyIdentifier` либо парой issuer/serial и используют сохранённые исходные TLV сертификата, TBS, имён и SPKI; общий verifier проверяет подписи RSA/SHA-256. Без доверенных корней работает учебная заглушка. Ограничения алгоритма и различия API перечислены в README проекта.
+
 ## Бенчмарки PKIX/CMS
 
-[runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks](../runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks/) — BenchmarkDotNet Decode/Encode для `Certificate`, `CertificateList`, CMS `ContentInfo` (attached SignedData). Типы из [Asn1Kit.Pkix.Bench](../runtime-csharp/generated/Asn1Kit.Pkix.Bench/) (`Asn1Kit.Pkix.Bench` / `Asn1Kit.Cms.Bench`), собранного из golden `cms-2004.json` + [cms-2004-bench.patch.json](../compiler/fixtures/ir/cms-2004-bench.patch.json) (lazy на `CertificateChoices.certificate`; `retainEncoded` на TBS Name/SPKI/Extensions; `AttributeTypeAndValue` как `struct`). Encode Cert/CRL — hand-built object graph (не decode→encode). CMS-группы: Lazy / Lazy+Materialize / Eager (golden) / BCL ± materialize / BouncyCastle. Не в gate `dotnet test`.
+[runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks](../runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks/) — BenchmarkDotNet Decode/Encode для `Certificate`, `CertificateList`, CMS `ContentInfo` (attached SignedData). Типы из [Asn1Kit.Pkix.Bench](../runtime-csharp/generated/Asn1Kit.Pkix.Bench/) (`Asn1Kit.Pkix.Bench` / `Asn1Kit.Cms.Bench`), собранного из golden `cms-2004.json` + [cms-2004-bench.patch.json](../compiler/fixtures/ir/cms-2004-bench.patch.json) (lazy на `CertificateChoices.certificate`; `retainEncoded` на `Certificate.tbsCertificate` и TBS Name/SPKI/Extensions; `AttributeTypeAndValue` как `struct`). Encode Cert/CRL — hand-built object graph (не decode→encode). CMS-группы: Lazy / Lazy+Materialize / Eager (golden) / BCL ± materialize / BouncyCastle. Не в gate `dotnet test`.
 
 ```powershell
 dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks

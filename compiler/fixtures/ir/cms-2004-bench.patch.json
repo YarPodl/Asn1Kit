@@ -20,6 +20,12 @@
     "CryptographicMessageSyntax2004.CertificateChoices.certificate": {
       "lazy": true
     },
+    "CryptographicMessageSyntax2004.IssuerAndSerialNumber.issuer": {
+      "retainEncoded": true
+    },
+    "CryptographicMessageSyntax2004.SignerInfo.signedAttrs": {
+      "retainEncoded": true
+    },
     "PKIX1Explicit88.TBSCertificate.issuer": {
       "retainEncoded": true
     },
@@ -30,6 +36,9 @@
       "retainEncoded": true
     },
     "PKIX1Explicit88.TBSCertificate.subjectPublicKeyInfo": {
+      "retainEncoded": true
+    },
+    "PKIX1Explicit88.Certificate.tbsCertificate": {
       "retainEncoded": true
     }
   },

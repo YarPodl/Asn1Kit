@@ -72,7 +72,7 @@ internal static class Smoke
         }
 
         // Touch .Value once — encode must still succeed (HasEncoded path).
-        _ = lazyCert.Value.TbsCertificate.SerialNumber;
+        _ = lazyCert.Value.TbsCertificate.Value.SerialNumber;
         if (!lazyCert.IsMaterialized)
         {
             throw new InvalidOperationException("Expected certificate materialization after .Value.");

@@ -126,7 +126,7 @@ public class CmsBenchmarks
         {
             if (choice.Certificate is not null)
             {
-                _ = choice.Certificate.Value.TbsCertificate.SerialNumber;
+                _ = choice.Certificate.Value.TbsCertificate.Value.SerialNumber;
             }
         }
 

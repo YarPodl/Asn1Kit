@@ -8,6 +8,8 @@ CONTAINING представлен `Asn1Contained<T>` с исходными `Cont
 
 Происхождение и исправления: [корпус ASN.1](../../../compiler/fixtures/asn1/modern/README.md). Профиль и ограничения: [docs/status.md](../../../docs/status.md). Криптографическая проверка и полная валидация ASN.1 constraints в сборку не входят.
 
+Options patch [modern-pkix-cms.patch.json](../../../compiler/fixtures/ir/modern-pkix-cms.patch.json) сохраняет исходные TLV для PKIX `Certificate.toBeSigned`, `TBSCertificate.issuer/subject/subjectPublicKeyInfo` и CMS `CertificateChoices.certificate` (`-2009`), `IssuerAndSerialNumber.issuer` и `SignerInfo.signedAttrs` (`-2009` и `-2010`).
+
 Каноническая регенерация из корня репозитория:
 
 ```powershell

@@ -89,6 +89,16 @@ public readonly struct Asn1Any : IEquatable<Asn1Any>
     /// <summary>Returns a copy that does not alias an external buffer.</summary>
     public Asn1Any Clone() => new(ToArray());
 
+    /// <summary>Decodes the complete TLV as one value and rejects unconsumed bytes.</summary>
+    public T DecodeValue<T>(Func<Asn1Reader, T> decode, Asn1Encoding encoding = Asn1Encoding.Ber)
+    {
+        if (decode is null) throw new ArgumentNullException(nameof(decode));
+        var reader = new Asn1Reader(_encoded, encoding);
+        var value = decode(reader);
+        reader.ThrowIfNotEmpty();
+        return value;
+    }
+
     /// <summary>Encodes the ASN.1 value.</summary>
     public static void Encode(Asn1Writer writer, Asn1Any value) => writer.WriteAny(value);
 

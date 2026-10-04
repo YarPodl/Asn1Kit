@@ -678,11 +678,11 @@ public sealed class TBSCertificate
     public Asn1Integer SerialNumber { get; set; }
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Signature { get; set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
-    public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[][] Issuer { get; set; } = Array.Empty<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[]>();
+    public Asn1Value<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[][]> Issuer { get; set; }
     public Validity Validity { get; set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
-    public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[][] Subject { get; set; } = Array.Empty<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[]>();
-    public SubjectPublicKeyInfo SubjectPublicKeyInfo { get; set; }
+    public Asn1Value<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[][]> Subject { get; set; }
+    public Asn1Value<SubjectPublicKeyInfo> SubjectPublicKeyInfo { get; set; }
     /// <summary>ASN.1 alias UniqueIdentifier ::= BIT STRING.</summary>
     public Asn1BitString? IssuerUniqueID { get; set; }
     /// <summary>ASN.1 alias UniqueIdentifier ::= BIT STRING.</summary>
@@ -929,7 +929,7 @@ public sealed class TBSCertificate
             }
             writer.WriteInteger(Asn1Tag.Integer, SerialNumber);
             Signature.Encode(writer, Asn1Tag.Sequence);
-            writer.WriteSequenceOf(Asn1Tag.Sequence, Issuer, static (inner, item) =>
+            writer.WriteSequenceOf(Asn1Tag.Sequence, Issuer.Value, static (inner, item) =>
             {
                 inner.WriteSetOf(Asn1Tag.Set, item, static (inner, item) =>
                 {
@@ -937,14 +937,14 @@ public sealed class TBSCertificate
                 });
             });
             Validity.Encode(writer, Asn1Tag.Sequence);
-            writer.WriteSequenceOf(Asn1Tag.Sequence, Subject, static (inner, item) =>
+            writer.WriteSequenceOf(Asn1Tag.Sequence, Subject.Value, static (inner, item) =>
             {
                 inner.WriteSetOf(Asn1Tag.Set, item, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
             });
-            SubjectPublicKeyInfo.Encode(writer, Asn1Tag.Sequence);
+            SubjectPublicKeyInfo.Value.Encode(writer, Asn1Tag.Sequence);
             while (unknownIndex < UnknownExtensions.Count && UnknownExtensions[unknownIndex].Position <= 7)
             {
                 writer.WriteAny(UnknownExtensions[unknownIndex++].Value);
@@ -999,10 +999,19 @@ public sealed class TBSCertificate
             }
             value.SerialNumber = reader.ReadIntegerValue(Asn1Tag.Integer);
             value.Signature = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
-            value.Issuer = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute.Decode(inner, Asn1Tag.Sequence)));
+            value.Issuer = reader.ReadWithOriginalEncoding(r =>
+            {
+                return r.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute.Decode(inner, Asn1Tag.Sequence)));
+            });
             value.Validity = Asn1Kit.Modern.PKIX1Explicit2009.Validity.Decode(reader, Asn1Tag.Sequence);
-            value.Subject = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute.Decode(inner, Asn1Tag.Sequence)));
-            value.SubjectPublicKeyInfo = Asn1Kit.Modern.PKIX1Explicit2009.SubjectPublicKeyInfo.Decode(reader, Asn1Tag.Sequence);
+            value.Subject = reader.ReadWithOriginalEncoding(r =>
+            {
+                return r.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute.Decode(inner, Asn1Tag.Sequence)));
+            });
+            value.SubjectPublicKeyInfo = reader.ReadWithOriginalEncoding(r =>
+            {
+                return Asn1Kit.Modern.PKIX1Explicit2009.SubjectPublicKeyInfo.Decode(r, Asn1Tag.Sequence);
+            });
             List<Asn1Extension>? unknownExtensions = null;
             var nextExtension = 7;
             while (reader.TryPeekTag(out var extensionTag))
@@ -1763,6 +1772,7 @@ public sealed class TBSCertList_RevokedCertificates_Item
 
 public sealed class Certificate : Asn1Kit.Modern.PKIX1Explicit2009.Signed<TBSCertificate>
 {
+    public ReadOnlyMemory<byte> ToBeSignedOriginalEncoding { get; private set; }
     protected override void EncodeToBeSigned(Asn1Writer writer)
     {
         ToBeSigned.Encode(writer, Asn1Tag.Sequence);
@@ -1773,7 +1783,9 @@ public sealed class Certificate : Asn1Kit.Modern.PKIX1Explicit2009.Signed<TBSCer
         using (reader.EnterSequence(tag))
         {
             var value = new Certificate();
-            value.ToBeSigned = Asn1Kit.Modern.PKIX1Explicit2009.TBSCertificate.Decode(reader, Asn1Tag.Sequence);
+            var retained = reader.ReadWithOriginalEncoding(r => Asn1Kit.Modern.PKIX1Explicit2009.TBSCertificate.Decode(r, Asn1Tag.Sequence));
+            value.ToBeSigned = retained.Value;
+            value.ToBeSignedOriginalEncoding = retained.OriginalEncoding;
             DecodeTail(reader, value);
             reader.ThrowIfNotEmpty();
             return value;

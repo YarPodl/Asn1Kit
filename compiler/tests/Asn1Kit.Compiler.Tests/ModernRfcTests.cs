@@ -16,9 +16,25 @@ public sealed class ModernRfcTests
             var identifier = string.Concat(module.Name.Split('-', '_').Select(p => char.ToUpperInvariant(p[0]) + p.Substring(1)));
             module.Options = IrOptions.SetCSharp(module.Options, "namespace", "Asn1Kit.Modern." + identifier);
         }
+        IrOptionsPatch.ApplyFile(document, TestData.RepoPath("compiler/fixtures/ir/modern-pkix-cms.patch.json"));
         return document;
     });
     private static readonly Lazy<Assembly> Assembly = new(() => ModernAsn1Tests.CompileGenerated(new CSharpBackend().Generate(Corpus.Value).Select(f => f.Contents).ToArray()));
+
+    [Fact]
+    public void ModernCmsPatchRetainsIssuerAndSignedAttributesInBothVersions()
+    {
+        foreach (var year in new[] { "2009", "2010" })
+        {
+            var module = Corpus.Value.Modules.Single(m => m.Name == "CryptographicMessageSyntax-" + year);
+            var issuer = Assert.IsType<SequenceType>(module.Types.Single(t => t.Name == "IssuerAndSerialNumber").Type)
+                .Components.Single(c => c.Name == "issuer");
+            var signedAttrs = Assert.IsType<SequenceType>(module.Types.Single(t => t.Name == "SignerInfo").Type)
+                .Components.Single(c => c.Name == "signedAttrs");
+            Assert.True(IrOptions.IsRetainEncoded(issuer.Options));
+            Assert.True(IrOptions.IsRetainEncoded(signedAttrs.Options));
+        }
+    }
 
     [Fact]
     public void WholeRfcCorpusMatchesIrAndGeneratedGoldenSources()

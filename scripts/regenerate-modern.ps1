@@ -24,7 +24,8 @@ try {
         $modules[$name] = @{ csharp = @{ namespace = 'Asn1Kit.Modern.' + $identifier } }
     }
     [IO.File]::WriteAllText($patchPath, (@{ modules = $modules } | ConvertTo-Json -Depth 6), (New-Object Text.UTF8Encoding($false)))
-    $arguments += @('--patch', $patchPath, '-o', 'compiler/fixtures/ir/modern-pkix-cms.json')
+    $arguments += @('--patch', $patchPath, '--patch', 'compiler/fixtures/ir/modern-pkix-cms.patch.json',
+        '-o', 'compiler/fixtures/ir/modern-pkix-cms.json')
     Invoke-DotNet $arguments
     Invoke-DotNet @('run', '--project', 'compiler/src/Asn1Kit.Cli', '--', 'generate',
         '-i', 'compiler/fixtures/ir/modern-pkix-cms.json', '--lang', 'csharp', '-o', 'runtime-csharp/generated/Asn1Kit.Modern')

@@ -57,7 +57,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `Asn1ReaderOptions` (`Default` / `Strict` / `AllowNonMinimalLength` / `AllowOverlongOidBase128`) | warm | immutable flags |
 | `ReadOctetString → ReadOnlyMemory` / `TryReadOctetString(Span)` | hot | primitive view / copy-out; short destination → `false`, `bytesWritten=0`, reader не продвигается; constructed BER — owned |
 | `ReadAny` | hot/cold | единственный raw TLV escape hatch: tag + encoded/contents views |
-| `Asn1Any.EncodedMemory` / `ContentsMemory` / `ToArray` | hot | view полного TLV / срез V / detach |
+| `Asn1Any.EncodedMemory` / `ContentsMemory` / `ToArray` / `DecodeValue<T>` | hot/warm | view полного TLV / срез V / detach; `DecodeValue<T>` создаёт reader поверх TLV без копии и требует полного потребления |
 | `Asn1Lazy<T>` / `ReadLazy` / `HasEncoded` / `Value` / `WriteTo` | hot | отложенный decode полного TLV (`options.lazy`); view до `.Value` |
 | `Asn1Value<T>` / `ReadWithOriginalEncoding` / `Value` / `OriginalEncoding` | hot | allocation-free eager decode + view исходного полного TLV (`options.retainEncoded`); encode использует `Value`, `T` неявно оборачивается без исходного TLV |
 | `Asn1Oid` / `Parse` / `ParseArcs` / `EncodeContents` / `ReadOid` / `WriteObjectIdentifier` | hot | единственный OID-codec (string↔arcs↔contents); dotted string — warm `Encode(string)` / `DecodeString` / `ReadObjectIdentifier` |

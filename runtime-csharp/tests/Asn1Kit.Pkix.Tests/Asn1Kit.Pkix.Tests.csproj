@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\generated\Asn1Kit.Pkix\Asn1Kit.Pkix.csproj" />
+    <ProjectReference Include="..\..\examples\Asn1Kit.Cms.Demo\Asn1Kit.Cms.Demo.csproj" />
   </ItemGroup>
 
 </Project>

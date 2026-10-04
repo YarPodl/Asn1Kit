@@ -21,4 +21,4 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- generate `
   -o runtime-csharp/generated/Asn1Kit.Pkix.Bench
 ```
 
-Used by [Asn1Kit.Pkix.Benchmarks](../../benchmarks/Asn1Kit.Pkix.Benchmarks/). Golden [`Asn1Kit.Pkix`](../Asn1Kit.Pkix/) remains for tests.
+Сборку используют [Asn1Kit.Pkix.Benchmarks](../../benchmarks/Asn1Kit.Pkix.Benchmarks/) и [Asn1Kit.Cms.Demo](../../examples/Asn1Kit.Cms.Demo/). Демонстрация CMS опирается на `retainEncoded` для TBS, SPKI, имён и атрибутов подписи. Golden [`Asn1Kit.Pkix`](../Asn1Kit.Pkix/) остаётся сборкой для тестов кодека.

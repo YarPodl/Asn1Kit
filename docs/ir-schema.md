@@ -130,6 +130,8 @@ CLASS, WITH SYNTAX, information objects/sets и формальные парам�
 | `options.openType.mismatch` | модуль / документ / legacy `any` | При известном ключе bindings, если **тег** TLV не совпал с типом: `soft` (default) → `Unknown`/`Asn1Any`; `strict` → `Asn1Exception`. Современные таблицы всегда отвергают несовместимый известный тип. |
 | `options.lazy` | поле / тип / модуль | `true` — отложенный разбор SEQUENCE/SET и SEQUENCE OF/SET OF (C#: `Asn1Lazy<T>` / `Asn1Lazy<T[]>`). Разрешение: component → TypeExpr → typedef → module; default `false`. |
 | `options.retainEncoded` | поле / тип / модуль | `true` — eager-разбор SEQUENCE/SET/OF с сохранением исходного полного TLV для хеширования или проверки подписи (C#: `Asn1Value<T>` / `Asn1Value<T[]>`). Encode всегда строится из текущего `Value`. Игнорируется, если `lazy` уже включён. Та же цепочка разрешения, что у `lazy`; default `false`. |
+
+Для специализации `SIGNED<T>` опция на поле `toBeSigned` сохраняет привычное свойство `ToBeSigned: T` и добавляет `ToBeSignedOriginalEncoding: ReadOnlyMemory<byte>` с исходным TLV. Остальные поля используют `Asn1Value<T>`.
 | `options.csharp.valueType` | typedef SEQUENCE/SET | `true` — эмит `struct` вместо `sealed class`. |
 
 Sidecar open-type bindings (CLI `--bindings`, API `OpenTypeBindings`) адресует поле как

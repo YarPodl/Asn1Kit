@@ -278,7 +278,7 @@ public sealed class SignerInfo
     /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
     public Asn1Kit.Pkix.Bench.AlgorithmIdentifier DigestAlgorithm { get; set; }
     /// <summary>ASN.1 alias SignedAttributes ::= SET OF Attribute.</summary>
-    public Attribute[]? SignedAttrs { get; set; }
+    public Asn1Value<Attribute[]>? SignedAttrs { get; set; }
     /// <summary>ASN.1 alias SignatureAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
     public Asn1Kit.Pkix.Bench.AlgorithmIdentifier SignatureAlgorithm { get; set; }
     /// <summary>ASN.1 alias SignatureValue ::= OCTET STRING.</summary>
@@ -297,7 +297,7 @@ public sealed class SignerInfo
             DigestAlgorithm.Encode(writer, Asn1Tag.Sequence);
             if (SignedAttrs != null)
             {
-                writer.WriteSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), SignedAttrs, static (inner, item) =>
+                writer.WriteSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), SignedAttrs.Value.Value, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
@@ -326,7 +326,10 @@ public sealed class SignerInfo
             value.DigestAlgorithm = Asn1Kit.Pkix.Bench.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             if (reader.TryPeekTag(out var tag_SignedAttrs) && tag_SignedAttrs.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
-                value.SignedAttrs = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), static inner => Asn1Kit.Cms.Bench.Attribute.Decode(inner, Asn1Tag.Sequence));
+                value.SignedAttrs = reader.ReadWithOriginalEncoding(r =>
+                {
+                    return r.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), static inner => Asn1Kit.Cms.Bench.Attribute.Decode(inner, Asn1Tag.Sequence));
+                });
             }
             value.SignatureAlgorithm = Asn1Kit.Pkix.Bench.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.Signature = reader.ReadOctetString(Asn1Tag.OctetString);
@@ -1749,7 +1752,7 @@ public sealed class OtherCertificateFormat
 public sealed class IssuerAndSerialNumber
 {
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
-    public Asn1Kit.Pkix.Bench.AttributeTypeAndValue[][] Issuer { get; set; } = Array.Empty<Asn1Kit.Pkix.Bench.AttributeTypeAndValue[]>();
+    public Asn1Value<Asn1Kit.Pkix.Bench.AttributeTypeAndValue[][]> Issuer { get; set; }
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
     public Asn1Integer SerialNumber { get; set; }
 
@@ -1759,7 +1762,7 @@ public sealed class IssuerAndSerialNumber
     {
         using (writer.EnterSequence(tag))
         {
-            writer.WriteSequenceOf(Asn1Tag.Sequence, Issuer, static (inner, item) =>
+            writer.WriteSequenceOf(Asn1Tag.Sequence, Issuer.Value, static (inner, item) =>
             {
                 inner.WriteSetOf(Asn1Tag.Set, item, static (inner, item) =>
                 {
@@ -1777,7 +1780,10 @@ public sealed class IssuerAndSerialNumber
         using (reader.EnterSequence(tag))
         {
             var value = new IssuerAndSerialNumber();
-            value.Issuer = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Pkix.Bench.AttributeTypeAndValue.Decode(inner, Asn1Tag.Sequence)));
+            value.Issuer = reader.ReadWithOriginalEncoding(r =>
+            {
+                return r.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Pkix.Bench.AttributeTypeAndValue.Decode(inner, Asn1Tag.Sequence)));
+            });
             value.SerialNumber = reader.ReadIntegerValue(Asn1Tag.Integer);
             reader.ThrowIfNotEmpty();
             return value;

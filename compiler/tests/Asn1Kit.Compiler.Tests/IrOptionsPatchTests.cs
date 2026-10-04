@@ -27,6 +27,10 @@ public sealed class IrOptionsPatchTests
         var choices = Assert.IsType<ChoiceType>(cms.Types.Single(t => t.Name == "CertificateChoices").Type);
         var certificate = choices.Components.Single(c => c.Name == "certificate");
         Assert.True(IrOptions.IsLazy(certificate.Options));
+        var signerInfo = Assert.IsType<SequenceType>(cms.Types.Single(t => t.Name == "SignerInfo").Type);
+        Assert.True(IrOptions.IsRetainEncoded(signerInfo.Components.Single(c => c.Name == "signedAttrs").Options));
+        var issuerAndSerial = Assert.IsType<SequenceType>(cms.Types.Single(t => t.Name == "IssuerAndSerialNumber").Type);
+        Assert.True(IrOptions.IsRetainEncoded(issuerAndSerial.Components.Single(c => c.Name == "issuer").Options));
 
         var pkix = document.Modules.Single(m => m.Name == "PKIX1Explicit88");
         var tbs = Assert.IsType<SequenceType>(pkix.Types.Single(t => t.Name == "TBSCertificate").Type);
@@ -108,6 +112,8 @@ public sealed class IrOptionsPatchTests
             "Asn1Lazy<Asn1Kit.Pkix.Bench.Certificate>",
             cmsFile.Contents,
             StringComparison.Ordinal);
+        Assert.Contains("Asn1Value<Attribute[]>? SignedAttrs", cmsFile.Contents, StringComparison.Ordinal);
+        Assert.Contains("Asn1Value<Asn1Kit.Pkix.Bench.AttributeTypeAndValue[][]> Issuer", cmsFile.Contents, StringComparison.Ordinal);
 
         var pkixFile = files.Single(f => f.RelativePath.Contains("PKIX1Explicit88", StringComparison.Ordinal));
         Assert.Contains("Asn1Value<", pkixFile.Contents, StringComparison.Ordinal);

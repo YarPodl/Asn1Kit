@@ -1060,7 +1060,10 @@
                   "kind": "ref",
                   "name": "TBSCertificate"
                 },
-                "optional": false
+                "optional": false,
+                "options": {
+                  "retainEncoded": true
+                }
               },
               {
                 "name": "signatureAlgorithm",
@@ -5580,7 +5583,10 @@
                     "mode": "implicit"
                   }
                 },
-                "optional": true
+                "optional": true,
+                "options": {
+                  "retainEncoded": true
+                }
               },
               {
                 "name": "signatureAlgorithm",
@@ -6820,7 +6826,10 @@
                   "kind": "ref",
                   "name": "Name"
                 },
-                "optional": false
+                "optional": false,
+                "options": {
+                  "retainEncoded": true
+                }
               },
               {
                 "name": "serialNumber",
