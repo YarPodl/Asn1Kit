@@ -1,26 +1,13 @@
-using Asn1Kit.Compiler;
 using Asn1Kit.Ir;
 
 namespace Asn1Kit.Tests;
 
 public sealed class Cms2004Tests
 {
-    private static readonly string[] AsnPaths =
-    {
-        "compiler/fixtures/asn1/pkix1-explicit88.asn",
-        "compiler/fixtures/asn1/pkix1-implicit88.asn",
-        "compiler/fixtures/asn1/cms-2004.asn"
-    };
-
     [Fact]
     public void CompilesAndMatchesGoldenIr()
     {
-        var paths = AsnPaths.Select(TestData.RepoPath).ToArray();
-        var document = new Asn1Compiler().CompileFiles(paths);
-        OpenTypeBindings.ApplyFile(document, TestData.RepoPath("compiler/fixtures/opentype/pkix-bindings.json"));
-        OpenTypeBindings.ApplyFile(document, TestData.RepoPath("compiler/fixtures/opentype/cms-bindings.json"));
-        ApplyCmsGoldenNamespaces(document);
-
+        var document = Cms2004TestData.CompileGolden();
         var actual = IrSerializer.ToJson(document);
         IrSerializer.ValidateSchema(actual);
 
@@ -31,7 +18,7 @@ public sealed class Cms2004Tests
     [Fact]
     public void SpotChecksCmsShapesAndImports()
     {
-        var document = new Asn1Compiler().CompileFiles(AsnPaths.Select(TestData.RepoPath));
+        var document = Cms2004TestData.CompileRaw();
         Assert.Equal(3, document.Modules.Count);
 
         var module = document.Modules.Single(m => m.Name == "CryptographicMessageSyntax2004");
@@ -77,16 +64,5 @@ public sealed class Cms2004Tests
         // Same simple name in PKIX and CMS is allowed (module-scoped).
         Assert.Contains(document.Modules, m => m.Types.Any(t => t.Name == "Attribute"));
         Assert.Equal(2, document.Modules.Count(m => m.Types.Any(t => t.Name == "Attribute")));
-    }
-
-    private static void ApplyCmsGoldenNamespaces(IrDocument document)
-    {
-        foreach (var module in document.Modules)
-        {
-            var ns = module.Name == "CryptographicMessageSyntax2004"
-                ? "Asn1Kit.Cms"
-                : "Asn1Kit.Pkix";
-            module.Options = IrOptions.SetCSharp(module.Options, "namespace", ns);
-        }
     }
 }

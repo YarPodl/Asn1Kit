@@ -3,8 +3,6 @@ using Asn1Kit.Codegen.CSharp;
 using Asn1Kit.Compiler;
 using Asn1Kit.Ir;
 using Asn1Kit.Runtime;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Asn1Kit.Tests;
 
@@ -77,16 +75,8 @@ END";
         Assert.Equal("3000", Convert.ToHexString(writer.Encode()));
     }
 
-    internal static Assembly CompileGenerated(params string[] sources)
-    {
-        var compilation = CSharpCompilation.Create("ModernGenerated" + Guid.NewGuid().ToString("N"),
-            sources.Select(s => CSharpSyntaxTree.ParseText(s)), GeneratedCompilation.References,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
-        using var stream = new MemoryStream();
-        var result = compilation.Emit(stream);
-        if (!result.Success) throw new InvalidOperationException(string.Join("\n", result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error)));
-        return Assembly.Load(stream.ToArray());
-    }
+    internal static Assembly CompileGenerated(params string[] sources) =>
+        GeneratedCompilation.CompileSources(sources);
 
     [Fact]
     public void ChoiceAndSetOfDefaultsCompareStructurallyAndAreIndependent()

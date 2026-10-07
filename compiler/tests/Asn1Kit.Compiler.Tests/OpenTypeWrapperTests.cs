@@ -27,13 +27,31 @@ public sealed class OpenTypeBindingTests
 
     private static object? Run(string body, Action<IrDocument>? configure = null, string source = Source)
     {
-        var document = new Asn1Compiler().CompileText(source);
-        configure?.Invoke(document);
-        IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
-        var files = new CSharpBackend().Generate(document);
         var probe = @"using System; using Asn1Kit.Runtime; namespace M;
           public static class Probe { public static object Run() { " + body + " } }";
-        var assembly = ModernAsn1Tests.CompileGenerated(files.Select(f => f.Contents).Append(probe).ToArray());
+        Assembly assembly;
+        if (configure is null)
+        {
+            // Cache CompileText+Generate+Emit of the ASN module; only probe is re-emitted.
+            assembly = GeneratedCompilation.CompileProbeAgainstCachedModule(
+                source,
+                () =>
+                {
+                    var document = new Asn1Compiler().CompileText(source);
+                    IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
+                    return new CSharpBackend().Generate(document).Select(f => f.Contents).ToArray();
+                },
+                probe);
+        }
+        else
+        {
+            var document = new Asn1Compiler().CompileText(source);
+            configure(document);
+            IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
+            var files = new CSharpBackend().Generate(document).Select(f => f.Contents).Append(probe).ToArray();
+            assembly = ModernAsn1Tests.CompileGenerated(files);
+        }
+
         try { return assembly.GetType("M.Probe")!.GetMethod("Run")!.Invoke(null, null); }
         catch (TargetInvocationException ex) when (ex.InnerException is not null)
         { System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(ex.InnerException).Throw(); throw; }

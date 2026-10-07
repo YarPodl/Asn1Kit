@@ -1,19 +1,13 @@
-using Asn1Kit.Compiler;
 using Asn1Kit.Ir;
 
 namespace Asn1Kit.Tests;
 
 public sealed class PkixExplicit88Tests
 {
-    private static readonly string BindingsPath =
-        "compiler/fixtures/opentype/pkix-bindings.json";
-
     [Fact]
     public void CompilesAndMatchesGoldenIr()
     {
-        var asnPath = TestData.RepoPath("compiler/fixtures/asn1/pkix1-explicit88.asn");
-        var document = new Asn1Compiler().CompileFiles(new[] { asnPath });
-        OpenTypeBindings.ApplyFile(document, TestData.RepoPath(BindingsPath));
+        var document = PkixExplicit88TestData.CompileWithBindings();
         var actual = IrSerializer.ToJson(document);
         IrSerializer.ValidateSchema(actual);
 
@@ -24,11 +18,7 @@ public sealed class PkixExplicit88Tests
     [Fact]
     public void DnAttributeValueBindingsCoverRfc5280NamingAttributes()
     {
-        var document = new Asn1Compiler().CompileFiles(new[]
-        {
-            TestData.RepoPath("compiler/fixtures/asn1/pkix1-explicit88.asn")
-        });
-        OpenTypeBindings.ApplyFile(document, TestData.RepoPath(BindingsPath));
+        var document = PkixExplicit88TestData.CompileWithBindings();
 
         var module = Assert.Single(document.Modules);
         var atv = Assert.IsType<SequenceType>(
@@ -47,10 +37,7 @@ public sealed class PkixExplicit88Tests
     [Fact]
     public void SpotChecksPkixShapes()
     {
-        var document = new Asn1Compiler().CompileFiles(new[]
-        {
-            TestData.RepoPath("compiler/fixtures/asn1/pkix1-explicit88.asn")
-        });
+        var document = PkixExplicit88TestData.CompileRaw();
         var module = document.Modules.Single();
         Assert.Equal("PKIX1Explicit88", module.Name);
         Assert.Equal("1.3.6.1.5.5.7.0.18", module.Oid);

@@ -1,22 +1,13 @@
-using Asn1Kit.Compiler;
 using Asn1Kit.Ir;
 
 namespace Asn1Kit.Tests;
 
 public sealed class PkixImplicit88Tests
 {
-    private static readonly string[] AsnPaths =
-    {
-        "compiler/fixtures/asn1/pkix1-explicit88.asn",
-        "compiler/fixtures/asn1/pkix1-implicit88.asn"
-    };
-
     [Fact]
     public void CompilesAndMatchesGoldenIr()
     {
-        var paths = AsnPaths.Select(TestData.RepoPath).ToArray();
-        var document = new Asn1Compiler().CompileFiles(paths);
-        OpenTypeBindings.ApplyFile(document, TestData.RepoPath("compiler/fixtures/opentype/pkix-bindings.json"));
+        var document = PkixImplicit88TestData.CompileWithBindings();
         var actual = IrSerializer.ToJson(document);
         IrSerializer.ValidateSchema(actual);
 
@@ -27,7 +18,7 @@ public sealed class PkixImplicit88Tests
     [Fact]
     public void SpotChecksPkixShapesAndImports()
     {
-        var document = new Asn1Compiler().CompileFiles(AsnPaths.Select(TestData.RepoPath));
+        var document = PkixImplicit88TestData.CompileRaw();
         Assert.Equal(2, document.Modules.Count);
 
         var module = document.Modules.Single(m => m.Name == "PKIX1Implicit88");

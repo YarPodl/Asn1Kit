@@ -3,6 +3,10 @@ using Asn1Kit.Codegen.CSharp;
 using Asn1Kit.Compiler;
 using Asn1Kit.Ir;
 using Asn1Kit.Runtime;
+using ModernCertificate = Asn1Kit.Modern.PKIX1Explicit2009.Certificate;
+using ModernCertificateList = Asn1Kit.Modern.PKIX1Explicit2009.CertificateList;
+using ModernAttributeCertificate = Asn1Kit.Modern.PKIXAttributeCertificate2009.AttributeCertificate;
+using ModernAttributeCertificateV1 = Asn1Kit.Modern.AttributeCertificateVersion12009.AttributeCertificateV1;
 
 namespace Asn1Kit.Tests;
 
@@ -19,7 +23,8 @@ public sealed class ModernRfcTests
         IrOptionsPatch.ApplyFile(document, TestData.RepoPath("compiler/fixtures/ir/modern-pkix-cms.patch.json"));
         return document;
     });
-    private static readonly Lazy<Assembly> Assembly = new(() => ModernAsn1Tests.CompileGenerated(new CSharpBackend().Generate(Corpus.Value).Select(f => f.Contents).ToArray()));
+
+    private static readonly Assembly ModernAssembly = typeof(ModernCertificate).Assembly;
 
     [Fact]
     public void ModernCmsPatchRetainsIssuerAndSignedAttributesInBothVersions()
@@ -51,15 +56,25 @@ public sealed class ModernRfcTests
         Assert.DoesNotContain(files.SelectMany(f => System.Text.RegularExpressions.Regex.Matches(f.Contents,
             @"public (?:sealed|abstract) class [A-Za-z_][A-Za-z0-9_]*[0-9A-F]{16}\b").Cast<System.Text.RegularExpressions.Match>()),
             match => match.Success);
+        var goldenDir = TestData.RepoPath("runtime-csharp/generated/Asn1Kit.Modern");
         foreach (var file in files)
-            Assert.Equal(File.ReadAllText(TestData.RepoPath("runtime-csharp/generated/Asn1Kit.Modern/" + file.RelativePath)).Replace("\r\n", "\n"), file.Contents.Replace("\r\n", "\n"));
-        Assert.NotNull(Assembly.Value);
-        var signedBase = Assembly.Value.GetType("Asn1Kit.Modern.PKIX1Explicit2009.Signed`1")!;
-        foreach (var (moduleName, typeName) in new[] {
-            ("PKIX1Explicit-2009", "Certificate"), ("PKIX1Explicit-2009", "CertificateList"),
-            ("PKIXAttributeCertificate-2009", "AttributeCertificate"),
-            ("AttributeCertificateVersion1-2009", "AttributeCertificateV1") })
-            Assert.Equal(signedBase, ResolveType(moduleName, typeName).BaseType!.GetGenericTypeDefinition());
+            Assert.Equal(File.ReadAllText(Path.Combine(goldenDir, file.RelativePath)).Replace("\r\n", "\n"), file.Contents.Replace("\r\n", "\n"));
+        var goldenFiles = Directory.GetFiles(goldenDir, "*.g.cs")
+            .Select(Path.GetFileName)
+            .OrderBy(n => n, StringComparer.Ordinal)
+            .ToArray();
+        var generatedNames = files.Select(f => f.RelativePath).OrderBy(n => n, StringComparer.Ordinal).ToArray();
+        Assert.Equal(goldenFiles, generatedNames);
+
+        var signedBase = typeof(Asn1Kit.Modern.PKIX1Explicit2009.Signed<>);
+        foreach (var type in new[]
+        {
+            typeof(ModernCertificate),
+            typeof(ModernCertificateList),
+            typeof(ModernAttributeCertificate),
+            typeof(ModernAttributeCertificateV1)
+        })
+            Assert.Equal(signedBase, type.BaseType!.GetGenericTypeDefinition());
     }
 
     [Theory]
@@ -102,7 +117,7 @@ public sealed class ModernRfcTests
             definition = module.Types.Single(t => t.Name == reference.Name);
         }
         var typeName = IrOptions.CSharpTypeName(definition.Options) ?? string.Concat(definition.Name.Split('-', '_').Select(p => char.ToUpperInvariant(p[0]) + p.Substring(1)));
-        return Assembly.Value.GetType(IrOptions.CSharpNamespace(module.Options) + "." + typeName, throwOnError: true)!;
+        return ModernAssembly.GetType(IrOptions.CSharpNamespace(module.Options) + "." + typeName, throwOnError: true)!;
     }
 
     private static byte[] RoundTrip(Type type, byte[] bytes)
