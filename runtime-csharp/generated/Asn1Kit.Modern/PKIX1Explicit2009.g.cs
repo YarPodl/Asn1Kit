@@ -672,7 +672,6 @@ public sealed class X520LocalityName
 
 public sealed class TBSCertificate
 {
-    public IReadOnlyList<Asn1Extension> UnknownExtensions { get; set; } = Array.Empty<Asn1Extension>();
     public int Version { get; set; } = 0;
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
     public Asn1Integer SerialNumber { get; set; }
@@ -753,7 +752,6 @@ public sealed class TBSCertificate
     {
         using (writer.EnterSequence(tag))
         {
-            var unknownIndex = 0;
             if (Version != 0)
             {
                 using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
@@ -779,25 +777,13 @@ public sealed class TBSCertificate
                 });
             });
             SubjectPublicKeyInfo.Value.Encode(writer, Asn1Tag.Sequence);
-            while (unknownIndex < UnknownExtensions.Count && UnknownExtensions[unknownIndex].Position <= 7)
-            {
-                writer.WriteAny(UnknownExtensions[unknownIndex++].Value);
-            }
             if (IssuerUniqueID != null)
             {
                 writer.WriteBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), IssuerUniqueID.Value);
             }
-            while (unknownIndex < UnknownExtensions.Count && UnknownExtensions[unknownIndex].Position <= 8)
-            {
-                writer.WriteAny(UnknownExtensions[unknownIndex++].Value);
-            }
             if (SubjectUniqueID != null)
             {
                 writer.WriteBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false), SubjectUniqueID.Value);
-            }
-            while (unknownIndex < UnknownExtensions.Count && UnknownExtensions[unknownIndex].Position <= 9)
-            {
-                writer.WriteAny(UnknownExtensions[unknownIndex++].Value);
             }
             if (Extensions != null)
             {
@@ -808,10 +794,6 @@ public sealed class TBSCertificate
                         item.Encode(inner, Asn1Tag.Sequence);
                     });
                 }
-            }
-            while (unknownIndex < UnknownExtensions.Count && UnknownExtensions[unknownIndex].Position <= 10)
-            {
-                writer.WriteAny(UnknownExtensions[unknownIndex++].Value);
             }
         }
     }
@@ -846,7 +828,6 @@ public sealed class TBSCertificate
             {
                 return Asn1Kit.Modern.PKIX1Explicit2009.SubjectPublicKeyInfo.Decode(r, Asn1Tag.Sequence);
             });
-            List<Asn1Extension>? unknownExtensions = null;
             var nextExtension = 7;
             while (reader.TryPeekTag(out var extensionTag))
             {
@@ -873,10 +854,9 @@ public sealed class TBSCertificate
                     nextExtension = 10;
                 }
                 else {
-                    (unknownExtensions ??= new List<Asn1Extension>()).Add(new Asn1Extension(nextExtension, reader.ReadAny()));
+                    _ = reader.ReadAny();
                 }
             }
-            if (unknownExtensions != null) value.UnknownExtensions = unknownExtensions;
             reader.ThrowIfNotEmpty();
             return value;
         }
@@ -1103,7 +1083,6 @@ public sealed class SubjectPublicKeyInfo
 
 public sealed class TBSCertList
 {
-    public IReadOnlyList<Asn1Extension> UnknownExtensions { get; set; } = Array.Empty<Asn1Extension>();
     public int? Version { get; set; }
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Signature { get; set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
@@ -1177,7 +1156,6 @@ public sealed class TBSCertList
     {
         using (writer.EnterSequence(tag))
         {
-            var unknownIndex = 0;
             if (Version != null)
             {
                 writer.WriteInteger(Asn1Tag.Integer, Version.Value);
@@ -1202,10 +1180,6 @@ public sealed class TBSCertList
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
             }
-            while (unknownIndex < UnknownExtensions.Count && UnknownExtensions[unknownIndex].Position <= 6)
-            {
-                writer.WriteAny(UnknownExtensions[unknownIndex++].Value);
-            }
             if (CrlExtensions != null)
             {
                 using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
@@ -1215,10 +1189,6 @@ public sealed class TBSCertList
                         item.Encode(inner, Asn1Tag.Sequence);
                     });
                 }
-            }
-            while (unknownIndex < UnknownExtensions.Count && UnknownExtensions[unknownIndex].Position <= 7)
-            {
-                writer.WriteAny(UnknownExtensions[unknownIndex++].Value);
             }
         }
     }
@@ -1245,7 +1215,6 @@ public sealed class TBSCertList
             {
                 value.RevokedCertificates = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIX1Explicit2009.TBSCertList_RevokedCertificates_Item.Decode(inner, Asn1Tag.Sequence));
             }
-            List<Asn1Extension>? unknownExtensions = null;
             var nextExtension = 6;
             while (reader.TryPeekTag(out var extensionTag))
             {
@@ -1260,10 +1229,9 @@ public sealed class TBSCertList
                     nextExtension = 7;
                 }
                 else {
-                    (unknownExtensions ??= new List<Asn1Extension>()).Add(new Asn1Extension(nextExtension, reader.ReadAny()));
+                    _ = reader.ReadAny();
                 }
             }
-            if (unknownExtensions != null) value.UnknownExtensions = unknownExtensions;
             reader.ThrowIfNotEmpty();
             return value;
         }
@@ -1274,7 +1242,6 @@ public sealed class TBSCertList
 
 public sealed class TBSCertList_RevokedCertificates_Item
 {
-    public IReadOnlyList<Asn1Extension> UnknownExtensions { get; set; } = Array.Empty<Asn1Extension>();
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
     public Asn1Integer UserCertificate { get; set; }
     public Time RevocationDate { get; set; }
@@ -1287,23 +1254,14 @@ public sealed class TBSCertList_RevokedCertificates_Item
     {
         using (writer.EnterSequence(tag))
         {
-            var unknownIndex = 0;
             writer.WriteInteger(Asn1Tag.Integer, UserCertificate);
             RevocationDate.Encode(writer);
-            while (unknownIndex < UnknownExtensions.Count && UnknownExtensions[unknownIndex].Position <= 2)
-            {
-                writer.WriteAny(UnknownExtensions[unknownIndex++].Value);
-            }
             if (CrlEntryExtensions != null)
             {
                 writer.WriteSequenceOf(Asn1Tag.Sequence, CrlEntryExtensions, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
-            }
-            while (unknownIndex < UnknownExtensions.Count && UnknownExtensions[unknownIndex].Position <= 3)
-            {
-                writer.WriteAny(UnknownExtensions[unknownIndex++].Value);
             }
         }
     }
@@ -1317,7 +1275,6 @@ public sealed class TBSCertList_RevokedCertificates_Item
             var value = new TBSCertList_RevokedCertificates_Item();
             value.UserCertificate = reader.ReadIntegerValue(Asn1Tag.Integer);
             value.RevocationDate = Asn1Kit.Modern.PKIX1Explicit2009.Time.Decode(reader);
-            List<Asn1Extension>? unknownExtensions = null;
             var nextExtension = 2;
             while (reader.TryPeekTag(out var extensionTag))
             {
@@ -1328,10 +1285,9 @@ public sealed class TBSCertList_RevokedCertificates_Item
                     nextExtension = 3;
                 }
                 else {
-                    (unknownExtensions ??= new List<Asn1Extension>()).Add(new Asn1Extension(nextExtension, reader.ReadAny()));
+                    _ = reader.ReadAny();
                 }
             }
-            if (unknownExtensions != null) value.UnknownExtensions = unknownExtensions;
             reader.ThrowIfNotEmpty();
             return value;
         }

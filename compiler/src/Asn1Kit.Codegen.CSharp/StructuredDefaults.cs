@@ -120,7 +120,6 @@ public sealed partial class CSharpBackend
             var components = type is SequenceType seq ? seq.Components : ((SetType)type).Components;
             var tests = new List<string>();
             if (!IrOptions.IsCSharpValueType(type.Options)) tests.Add(actual + " != null");
-            if (type is SequenceType { Extensible: true } or SetType { Extensible: true }) tests.Add(actual + ".UnknownExtensions.Count == 0");
             foreach (var field in components)
             {
                 var access = actual + "." + PropertyName(field, csType);

@@ -988,8 +988,6 @@ public sealed partial class CSharpBackend
             var original = source + (lazy || retained ? ".Value" : "");
             foreach (var member in fields)
                 sb.AppendLine($"            {copy}.{PropertyName(member, named)} = {original}.{PropertyName(member, named)};");
-            if (type is SequenceType {Extensible: true} or SetType {Extensible: true})
-                sb.AppendLine($"            {copy}.UnknownExtensions = {original}.UnknownExtensions;");
             sb.AppendLine("        }");
             var assignment = lazy
                 ? "Asn1Lazy<" + named + ">.FromValue(" + copy + ")"

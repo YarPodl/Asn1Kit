@@ -457,7 +457,6 @@ public sealed class SignerIdentifier
 
 public sealed class EnvelopedData
 {
-    public IReadOnlyList<Asn1Extension> UnknownExtensions { get; set; } = Array.Empty<Asn1Extension>();
     public int Version { get; set; }
     public OriginatorInfo? OriginatorInfo { get; set; }
     /// <summary>ASN.1 alias RecipientInfos ::= SET OF RecipientInfo.</summary>
@@ -472,7 +471,6 @@ public sealed class EnvelopedData
     {
         using (writer.EnterSequence(tag))
         {
-            var unknownIndex = 0;
             writer.WriteInteger(Asn1Tag.Integer, Version);
             if (OriginatorInfo != null)
             {
@@ -483,20 +481,12 @@ public sealed class EnvelopedData
                 item.Encode(inner);
             });
             EncryptedContentInfo.Encode(writer, Asn1Tag.Sequence);
-            while (unknownIndex < UnknownExtensions.Count && UnknownExtensions[unknownIndex].Position <= 4)
-            {
-                writer.WriteAny(UnknownExtensions[unknownIndex++].Value);
-            }
             if (UnprotectedAttrs != null)
             {
                 writer.WriteSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), UnprotectedAttrs, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
-            }
-            while (unknownIndex < UnknownExtensions.Count && UnknownExtensions[unknownIndex].Position <= 5)
-            {
-                writer.WriteAny(UnknownExtensions[unknownIndex++].Value);
             }
         }
     }
@@ -515,7 +505,6 @@ public sealed class EnvelopedData
             }
             value.RecipientInfos = reader.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.CryptographicMessageSyntax2010.RecipientInfo.Decode(inner));
             value.EncryptedContentInfo = Asn1Kit.Modern.CryptographicMessageSyntax2010.EncryptedContentInfo.Decode(reader, Asn1Tag.Sequence);
-            List<Asn1Extension>? unknownExtensions = null;
             var nextExtension = 4;
             while (reader.TryPeekTag(out var extensionTag))
             {
@@ -526,10 +515,9 @@ public sealed class EnvelopedData
                     nextExtension = 5;
                 }
                 else {
-                    (unknownExtensions ??= new List<Asn1Extension>()).Add(new Asn1Extension(nextExtension, reader.ReadAny()));
+                    _ = reader.ReadAny();
                 }
             }
-            if (unknownExtensions != null) value.UnknownExtensions = unknownExtensions;
             reader.ThrowIfNotEmpty();
             return value;
         }
@@ -1562,7 +1550,6 @@ public sealed class OtherRecipientInfo
 
 public sealed class DigestedData
 {
-    public IReadOnlyList<Asn1Extension> UnknownExtensions { get; set; } = Array.Empty<Asn1Extension>();
     public int Version { get; set; }
     /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier DigestAlgorithm { get; set; }
@@ -1576,15 +1563,10 @@ public sealed class DigestedData
     {
         using (writer.EnterSequence(tag))
         {
-            var unknownIndex = 0;
             writer.WriteInteger(Asn1Tag.Integer, Version);
             DigestAlgorithm.Encode(writer, Asn1Tag.Sequence);
             EncapContentInfo.Encode(writer, Asn1Tag.Sequence);
             writer.WriteOctetString(Asn1Tag.OctetString, Digest.Span);
-            while (unknownIndex < UnknownExtensions.Count && UnknownExtensions[unknownIndex].Position <= 4)
-            {
-                writer.WriteAny(UnknownExtensions[unknownIndex++].Value);
-            }
         }
     }
 
@@ -1599,15 +1581,13 @@ public sealed class DigestedData
             value.DigestAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.EncapContentInfo = Asn1Kit.Modern.CryptographicMessageSyntax2010.EncapsulatedContentInfo.Decode(reader, Asn1Tag.Sequence);
             value.Digest = reader.ReadOctetString(Asn1Tag.OctetString);
-            List<Asn1Extension>? unknownExtensions = null;
             var nextExtension = 4;
             while (reader.TryPeekTag(out var extensionTag))
             {
                 {
-                    (unknownExtensions ??= new List<Asn1Extension>()).Add(new Asn1Extension(nextExtension, reader.ReadAny()));
+                    _ = reader.ReadAny();
                 }
             }
-            if (unknownExtensions != null) value.UnknownExtensions = unknownExtensions;
             reader.ThrowIfNotEmpty();
             return value;
         }
@@ -1618,7 +1598,6 @@ public sealed class DigestedData
 
 public sealed class EncryptedData
 {
-    public IReadOnlyList<Asn1Extension> UnknownExtensions { get; set; } = Array.Empty<Asn1Extension>();
     public int Version { get; set; }
     public EncryptedContentInfo EncryptedContentInfo { get; set; }
     /// <summary>ASN.1 alias Attributes ::= SET OF Attribute.</summary>
@@ -1630,23 +1609,14 @@ public sealed class EncryptedData
     {
         using (writer.EnterSequence(tag))
         {
-            var unknownIndex = 0;
             writer.WriteInteger(Asn1Tag.Integer, Version);
             EncryptedContentInfo.Encode(writer, Asn1Tag.Sequence);
-            while (unknownIndex < UnknownExtensions.Count && UnknownExtensions[unknownIndex].Position <= 2)
-            {
-                writer.WriteAny(UnknownExtensions[unknownIndex++].Value);
-            }
             if (UnprotectedAttrs != null)
             {
                 writer.WriteSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), UnprotectedAttrs, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
-            }
-            while (unknownIndex < UnknownExtensions.Count && UnknownExtensions[unknownIndex].Position <= 3)
-            {
-                writer.WriteAny(UnknownExtensions[unknownIndex++].Value);
             }
         }
     }
@@ -1660,7 +1630,6 @@ public sealed class EncryptedData
             var value = new EncryptedData();
             value.Version = reader.ReadInt32(Asn1Tag.Integer);
             value.EncryptedContentInfo = Asn1Kit.Modern.CryptographicMessageSyntax2010.EncryptedContentInfo.Decode(reader, Asn1Tag.Sequence);
-            List<Asn1Extension>? unknownExtensions = null;
             var nextExtension = 2;
             while (reader.TryPeekTag(out var extensionTag))
             {
@@ -1671,10 +1640,9 @@ public sealed class EncryptedData
                     nextExtension = 3;
                 }
                 else {
-                    (unknownExtensions ??= new List<Asn1Extension>()).Add(new Asn1Extension(nextExtension, reader.ReadAny()));
+                    _ = reader.ReadAny();
                 }
             }
-            if (unknownExtensions != null) value.UnknownExtensions = unknownExtensions;
             reader.ThrowIfNotEmpty();
             return value;
         }

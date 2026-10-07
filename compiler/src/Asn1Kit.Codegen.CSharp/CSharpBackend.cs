@@ -585,7 +585,6 @@ public sealed partial class CSharpBackend : ILanguageBackend
         sb.AppendLine($"public {typeKeyword} {typeName}");
         sb.AppendLine("{");
         EmitCachedDefaults(sb, document, module, typeName, type.Components);
-        if (type.Extensible) EmitExtensionProperty(sb);
         foreach (var field in type.Components)
         {
             EmitProperty(
@@ -619,15 +618,9 @@ public sealed partial class CSharpBackend : ILanguageBackend
         sb.AppendLine("        using (writer.EnterSequence(tag))");
         sb.AppendLine("        {");
         if (type.Extensible)
-        {
-            sb.AppendLine("            var unknownIndex = 0;");
             EmitExtensionGroupChecks(sb, document, module, typeName, type.Components, "            ", null);
-        }
         foreach (var field in type.Components)
         {
-            if (type.Extensible && (field.ExtensionAddition == true ||
-                (type.Components.IndexOf(field) > 0 && type.Components[type.Components.IndexOf(field) - 1].ExtensionAddition == true)))
-                EmitUnknownExtensionEncode(sb, type.Components.IndexOf(field), "            ");
             if (IsCSharpValueTypeEmit(module, typeName, type))
             {
                 var prop = PropertyName(field, typeName);
@@ -647,8 +640,6 @@ public sealed partial class CSharpBackend : ILanguageBackend
                 EmitEncodeField(sb, document, module, typeName, field, "            ", "writer");
             }
         }
-
-        if (type.Extensible) EmitUnknownExtensionEncode(sb, type.Components.Count, "            ");
 
         sb.AppendLine("        }");
         sb.AppendLine("    }");
@@ -685,7 +676,6 @@ public sealed partial class CSharpBackend : ILanguageBackend
         sb.AppendLine($"public {typeKeyword} {typeName}");
         sb.AppendLine("{");
         EmitCachedDefaults(sb, document, module, typeName, type.Components);
-        if (type.Extensible) EmitExtensionProperty(sb);
         foreach (var field in type.Components)
         {
             EmitProperty(
@@ -741,8 +731,6 @@ public sealed partial class CSharpBackend : ILanguageBackend
             }
         }
 
-        if (type.Extensible) sb.AppendLine("            foreach (var extension in UnknownExtensions) writer.WriteAny(extension.Value);");
-
         sb.AppendLine("        }");
         sb.AppendLine("    }");
         sb.AppendLine();
@@ -753,7 +741,6 @@ public sealed partial class CSharpBackend : ILanguageBackend
         sb.AppendLine("        using (reader.EnterSet(tag))");
         sb.AppendLine("        {");
         sb.AppendLine($"            var value = new {typeName}();");
-        if (type.Extensible) sb.AppendLine("            List<Asn1Extension>? unknownExtensions = null;");
         foreach (var field in type.Components)
         {
             if (!field.Optional || field.Default is not null || deferredFields.Contains(field))
@@ -806,7 +793,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
         }
 
         if (type.Extensible)
-            sb.AppendLine("                else (unknownExtensions ??= new List<Asn1Extension>()).Add(new Asn1Extension(0, reader.ReadAny()));");
+            sb.AppendLine("                else _ = reader.ReadAny();");
         else sb.AppendLine("                else throw new Asn1Exception(\"Unknown SET component.\");");
         sb.AppendLine("            }");
         foreach (var field in type.Components)
@@ -832,10 +819,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
         }
 
         if (type.Extensible)
-        {
-            sb.AppendLine("            if (unknownExtensions != null) value.UnknownExtensions = unknownExtensions;");
             EmitExtensionGroupChecks(sb, document, module, typeName, type.Components, "            ", "value");
-        }
 
         sb.AppendLine("            return value;");
         sb.AppendLine("        }");

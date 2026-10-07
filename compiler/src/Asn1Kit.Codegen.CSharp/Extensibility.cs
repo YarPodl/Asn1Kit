@@ -5,9 +5,6 @@ namespace Asn1Kit.Codegen.CSharp;
 
 public sealed partial class CSharpBackend
 {
-    private static void EmitExtensionProperty(StringBuilder sb) =>
-        sb.AppendLine("    public IReadOnlyList<Asn1Extension> UnknownExtensions { get; set; } = Array.Empty<Asn1Extension>();");
-
     private void EmitExtensionGroupChecks(StringBuilder sb, IrDocument document, IrModule module, string owner,
         IReadOnlyList<IrComponent> fields, string indent, string? target)
     {
@@ -34,7 +31,6 @@ public sealed partial class CSharpBackend
         while (end < fields.Count && fields[end].ExtensionAddition == true) end++;
         foreach (var field in fields.Take(start))
             EmitDecodeField(sb, document, module, owner, field, fields, indent, "reader", "value");
-        sb.AppendLine($"{indent}List<Asn1Extension>? unknownExtensions = null;");
         sb.AppendLine($"{indent}var nextExtension = {start};");
         sb.AppendLine($"{indent}while (reader.TryPeekTag(out var extensionTag))");
         sb.AppendLine($"{indent}{{");
@@ -51,20 +47,11 @@ public sealed partial class CSharpBackend
             sb.AppendLine($"{indent}    }}");
         }
         sb.AppendLine($"{indent}    {(end > start ? "else " : "")}{{");
-        sb.AppendLine($"{indent}        (unknownExtensions ??= new List<Asn1Extension>()).Add(new Asn1Extension(nextExtension, reader.ReadAny()));");
+        sb.AppendLine($"{indent}        _ = reader.ReadAny();");
         sb.AppendLine($"{indent}    }}");
         sb.AppendLine($"{indent}}}");
-        sb.AppendLine($"{indent}if (unknownExtensions != null) value.UnknownExtensions = unknownExtensions;");
         foreach (var field in fields.Skip(end))
             EmitDecodeField(sb, document, module, owner, field, fields, indent, "reader", "value");
         EmitExtensionGroupChecks(sb, document, module, owner, fields, indent, "value");
-    }
-
-    private static void EmitUnknownExtensionEncode(StringBuilder sb, int position, string indent)
-    {
-        sb.AppendLine($"{indent}while (unknownIndex < UnknownExtensions.Count && UnknownExtensions[unknownIndex].Position <= {position})");
-        sb.AppendLine($"{indent}{{");
-        sb.AppendLine($"{indent}    writer.WriteAny(UnknownExtensions[unknownIndex++].Value);");
-        sb.AppendLine($"{indent}}}");
     }
 }

@@ -146,10 +146,12 @@ END";
           END");
         var assembly = CompileGenerated(new CSharpBackend().Generate(document).Single().Contents);
         var type = assembly.GetType("M.E")!;
-        var bytes = Convert.FromHexString("300902010189010082012A");
-        var value = type.GetMethod("Decode", new[] {typeof(Asn1Reader)})!.Invoke(null, new object[] {new Asn1Reader(bytes)})!;
+        var value = type.GetMethod("Decode", new[] {typeof(Asn1Reader)})!.Invoke(null, new object[] {new Asn1Reader(Convert.FromHexString("300902010189010082012A"))})!;
+        Assert.Null(type.GetProperty("A")!.GetValue(value));
+        Assert.Null(type.GetProperty("Tail")!.GetValue(value));
+        Assert.Equal(42, ((Asn1Integer)type.GetProperty("Last")!.GetValue(value)!).GetInt32());
         var writer = new Asn1Writer(); type.GetMethod("Encode", new[] {typeof(Asn1Writer)})!.Invoke(value, new object[] {writer});
-        Assert.Equal(bytes, writer.Encode());
+        Assert.Equal("300602010182012A", Convert.ToHexString(writer.Encode()));
     }
 
     [Theory]
@@ -163,7 +165,7 @@ END";
     }
 
     [Fact]
-    public void PreservesUnknownExtensionsAndValidatesGroups()
+    public void SkipsUnknownExtensionsAndValidatesGroups()
     {
         var document = new Asn1Compiler().CompileText(@"M DEFINITIONS IMPLICIT TAGS ::= BEGIN
           E ::= SEQUENCE { root INTEGER (0..100), ..., [[2: a [0] INTEGER (0..100), b [1] BOOLEAN OPTIONAL]], c [2] NULL }
@@ -171,14 +173,16 @@ END";
           END");
         var assembly = CompileGenerated(new CSharpBackend().Generate(document).Single().Contents);
         var type = assembly.GetType("M.E")!;
+        Assert.Null(type.GetProperty("UnknownExtensions"));
         object Decode(string hex) => type.GetMethod("Decode", new[] {typeof(Asn1Reader)})!.Invoke(null, new object[] {new Asn1Reader(Convert.FromHexString(hex), Asn1Encoding.Der)})!;
         var rootOnly = Decode("3003020101");
         Assert.Null(type.GetProperty("A")!.GetValue(rootOnly));
-        var bytes = "300C0201018001078901FF8101FF";
-        var value = Decode(bytes);
+        var value = Decode("300C0201018001078901FF8101FF");
+        Assert.Equal(7, type.GetProperty("A")!.GetValue(value));
+        Assert.True((bool)type.GetProperty("B")!.GetValue(value)!);
         var writer = new Asn1Writer();
         type.GetMethod("Encode", new[] {typeof(Asn1Writer)})!.Invoke(value, new object[] {writer});
-        Assert.Equal(bytes, Convert.ToHexString(writer.Encode()));
+        Assert.Equal("30090201018001078101FF", Convert.ToHexString(writer.Encode()));
         var error = Assert.Throws<TargetInvocationException>(() => Decode("30060201018101FF"));
         Assert.IsType<Asn1Exception>(error.InnerException);
         var choice = assembly.GetType("M.C")!;

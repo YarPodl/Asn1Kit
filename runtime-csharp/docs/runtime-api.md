@@ -65,7 +65,6 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `Asn1Integer.Span` / `Memory` / `ToArray` | hot | view DER contents / detach |
 | `Asn1Primitives` wrappers (+ `Asn1OctetString.TryDecode`) | warm | делегируют |
 | `Asn1Contained<T>` / `ReadContained` / `WriteContained` | hot | исходные contents + optional typed value; typed decode в том же reader, encode в том же writer |
-| `Asn1Extension(Position, Value)` | hot | raw TLV неизвестного addition и позиция относительно известных компонентов SEQUENCE |
 | `EnterEncoded(ReadOnlyMemory<byte>)` | hot | окно ранее прочитанного TLV для отложенного SET decode; те же encoding/options, scope восстанавливает исходное окно |
 | `Asn1Any.FromValue<T>(T, Action<Asn1Writer,T>)` | warm | owned DER TLV одного значения, используется для констант typed DEFAULT |
 | `Asn1Codec<T>` / `Asn1Codecs` | warm/hot | переиспользуемая пара reader/writer; singleton-кодеки примитивов и общие адаптеры raw open type для ANY, CONTAINING, массивов и decoder-only string CHOICE (`DecodeStringChoice`) |
@@ -77,7 +76,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 
 `ReadContained<T,TState>(tag, bitString, known, state, decode)` использует обычный string decoder, включая constructed BER, и при `known` открывает окно contents с теми же options. `WriteContained<T>(tag, bitString, value, encode)` помещает DER-представление в primitive string, используя тот же буфер. Открытые современные таблицы передают `known` по OID; неизвестное содержимое не декодируется по догадке о теге.
 
-`Asn1Extension.Position` — индекс следующего известного компонента в SEQUENCE. Generated decode сохраняет порядок неизвестных TLV, encode вставляет их перед этим компонентом; в SET position не используется, runtime сортирует все компоненты для DER. Расширяемый CHOICE сохраняет неизвестный полный TLV. Сырые неизвестные TLV пишутся как есть, поэтому канонизация их внутренней ASN.1-структуры без объявленного типа не выполняется.
+Расширяемые SEQUENCE/SET при decode пропускают неизвестные extension additions (`ReadAny` без сохранения); encode пишет только известные компоненты. Расширяемый CHOICE сохраняет неизвестную альтернативу целиком как raw TLV.
 
 ## Заметки
 
