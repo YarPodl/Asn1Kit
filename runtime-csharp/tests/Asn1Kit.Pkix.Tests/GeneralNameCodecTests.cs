@@ -74,7 +74,7 @@ public sealed class GeneralNameCodecTests
     public void SubjectAltName_FromPkits_MatchesCertutil(string fileName, GeneralNameKind kind, string value)
     {
         var certificate = Certificate.Decode(new Asn1Reader(PkixFixtures.ReadDer(fileName), Asn1Encoding.Der));
-        var san = PkixFixtures.RequireExtension(certificate.TbsCertificate.Extensions!, "2.5.29.17");
+        var san = PkixFixtures.RequireExtension(certificate.TbsCertificate.Value.Extensions!.Value.Value, "2.5.29.17");
         var names = PkixFixtures.ExtnValueReader(san)
             .ReadSequenceOf(Asn1Tag.Sequence, static reader => GeneralName.Decode(reader));
         Assert.Single(names);

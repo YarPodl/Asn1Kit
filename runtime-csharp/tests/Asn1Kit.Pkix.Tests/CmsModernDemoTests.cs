@@ -86,14 +86,21 @@ public sealed class CmsModernDemoTests
         var encoded = Mutate(info =>
         {
             var keyIdentifier = new byte[] { 0xA1, 0xB2 };
-            var certificate = info.Content.SignedData!.Certificates!.Single(choice => choice.Certificate is not null).Certificate!;
-            certificate.TbsCertificate.Extensions = (certificate.TbsCertificate.Extensions ?? Array.Empty<Extension>())
+            var certificate = info.Content.SignedData!.Certificates!.Single(choice => choice.Certificate is not null).Certificate!.Value;
+            var extensions = certificate.TbsCertificate.Value.Extensions is { } existing
+                ? existing.Value : Array.Empty<Extension>();
+            certificate.TbsCertificate.Value.Extensions = extensions
+                .Where(extension => extension.ExtnID != PKIX1Implicit88Oids.IdCeSubjectKeyIdentifier)
                 .Append(new Extension
                 {
                     ExtnID = PKIX1Implicit88Oids.IdCeSubjectKeyIdentifier,
                     ExtnValue = Asn1Any.FromValue(keyIdentifier,
                         static (writer, value) => writer.WriteOctetString(Asn1Tag.OctetString, value)).EncodedMemory
                 }).ToArray();
+            info.Content.SignedData.Certificates = new[]
+            {
+                CertificateChoices.FromCertificate(Asn1Lazy<Certificate>.FromValue(certificate))
+            };
             GetSigner(info).Sid = SignerIdentifier.FromSubjectKeyIdentifier(keyIdentifier);
         });
         Assert.True(CmsModernSignedDataInspector.Inspect(encoded, new RecordingVerifier())[0].Accepted);

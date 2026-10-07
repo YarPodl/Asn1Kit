@@ -1,6 +1,6 @@
 ---
 description: C# codegen и generated-код — полнота сценариев и эффективность
-globs: compiler/src/Asn1Kit.Codegen/**/*.cs,compiler/src/Asn1Kit.Codegen.CSharp/**/*.cs,compiler/tests/Asn1Kit.Compiler.Tests/PkixGeneratedCodeTests.cs,compiler/tests/Asn1Kit.Compiler.Tests/OptionalChoiceDecodeTests.cs,compiler/tests/Asn1Kit.Compiler.Tests/Cms2004BenchTests.cs,runtime-csharp/generated/**/*.g.cs,compiler/docs/playbooks/csharp-backend.md
+globs: compiler/src/Asn1Kit.Codegen/**/*.cs,compiler/src/Asn1Kit.Codegen.CSharp/**/*.cs,compiler/tests/Asn1Kit.Compiler.Tests/PkixGeneratedCodeTests.cs,compiler/tests/Asn1Kit.Compiler.Tests/OptionalChoiceDecodeTests.cs,compiler/tests/Asn1Kit.Compiler.Tests/IrOptionsPatchTests.cs,runtime-csharp/generated/**/*.g.cs,compiler/docs/playbooks/csharp-backend.md
 alwaysApply: false
 ---
 
@@ -17,5 +17,5 @@ alwaysApply: false
 
 - Компилируй generated C# через существующий Roslyn test и выполняй encode/decode.
 - Проверяй канонические DER-байты, BER-векторы и явный отказ сломанного входа.
-- Golden PKIX/CMS/DVCS: `scripts/regenerate-csharp-golden.ps1`; bench: `scripts/regenerate-bench.ps1`.
+- Golden PKIX/CMS/DVCS: `scripts/regenerate-csharp-golden.ps1`.
 - Просматривай generated diff перед полным `dotnet test Asn1Kit.sln`.

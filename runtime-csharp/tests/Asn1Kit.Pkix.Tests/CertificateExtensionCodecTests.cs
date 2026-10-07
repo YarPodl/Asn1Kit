@@ -15,11 +15,12 @@ public sealed class CertificateExtensionCodecTests
         var der = PkixFixtures.ReadDer(fileName);
         var expectedCert = PkixFixtures.LoadExpected().Certificates[fileName];
         var certificate = Certificate.Decode(new Asn1Reader(der, Asn1Encoding.Der));
-        Assert.NotNull(certificate.TbsCertificate.Extensions);
+        Assert.NotNull(certificate.TbsCertificate.Value.Extensions);
+        var extensions = certificate.TbsCertificate.Value.Extensions!.Value.Value;
 
         foreach (var expected in expectedCert.Extensions)
         {
-            var extension = PkixFixtures.RequireExtension(certificate.TbsCertificate.Extensions!, expected.Oid);
+            var extension = PkixFixtures.RequireExtension(extensions, expected.Oid);
             Assert.Equal(expected.Critical, extension.Critical);
 
             switch (expected.Oid)
@@ -61,7 +62,7 @@ public sealed class CertificateExtensionCodecTests
         var expectedCert = PkixFixtures.LoadExpected().Certificates[fileName];
         var certificate = Certificate.Decode(new Asn1Reader(der, Asn1Encoding.Der));
         var expected = expectedCert.Extensions.Single(e => e.Oid == "2.5.29.17");
-        var extension = PkixFixtures.RequireExtension(certificate.TbsCertificate.Extensions!, expected.Oid);
+        var extension = PkixFixtures.RequireExtension(certificate.TbsCertificate.Value.Extensions!.Value.Value, expected.Oid);
         AssertSubjectAltName(extension, expected);
 
         var writer = new Asn1Writer(Asn1Encoding.Der);

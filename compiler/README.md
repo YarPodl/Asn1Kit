@@ -30,7 +30,6 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/i
 # составные workflow регенерации
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-ir-goldens.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-csharp-golden.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-bench.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-modern.ps1
 ```
 
@@ -47,15 +46,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-modern.ps
 | `fixtures/ir/pkix1-explicit88.json` | **Golden**: только через CLI (+ `--bindings`), руками не править |
 | `fixtures/ir/pkix1-implicit88.json` | **Golden**: Explicit + Implicit (оба `-i`) + `--bindings`, руками не править |
 | `fixtures/ir/cms-2004.json` | **Golden**: Explicit + Implicit + CMS + оба bindings; namespaces в `options` |
-| `fixtures/ir/cms-2004-bench.patch.json` | Bench options overlay (`*.Bench`, `lazy` на `CertificateChoices.certificate`) |
-| `fixtures/ir/cms-2004-bench.json` | **Производный**: golden + patch; не в `MatchesGoldenIr` |
-| `fixtures/ir/dvcs.patch.json` | Namespace overlay для полного DVCS-графа; отдельный DVCS IR не коммитится |
+| `fixtures/ir/dvcs.patch.json` | Product overlay для полного DVCS-графа: namespaces, lazy cert, retainEncoded, ATV valueType; отдельный DVCS IR не коммитится |
 | `fixtures/ir/example.json` | **Ручная**: `options.csharp.*`; компилятором не пересобирать |
 | `../runtime-csharp/generated/Asn1Kit.Pkix/*.g.cs` | **Golden C#**: PKIX/CMS/DVCS и зависимости из полного `.asn`-графа + `dvcs.patch.json`, руками не править |
-| `../runtime-csharp/generated/Asn1Kit.Pkix.Bench/*.g.cs` | **Bench C#**: из patch / `cms-2004-bench.json`, руками не править |
 | `../runtime-csharp/generated/Asn1Kit.Modern/*.g.cs` | **Modern C#**: общие структурные типы и методы доступа к IOC-таблицам из корпуса; руками не править |
 
-Golden IR сверяют `PkixExplicit88Tests` / `PkixImplicit88Tests` / `Cms2004Tests`; golden C# — `PkixGeneratedCodeTests`; bench IR — `Cms2004BenchTests` / `IrOptionsPatchTests`. Diff фикстуры — часть ревью.
+Golden IR сверяют `PkixExplicit88Tests` / `PkixImplicit88Tests` / `Cms2004Tests`; golden C# — `PkixGeneratedCodeTests`; product options — `IrOptionsPatchTests`. Diff фикстуры — часть ревью.
 
 `ModernRfcTests` компилирует все современные модули, сверяет IR/C# golden, собирает исходники через Roslyn и проверяет внешние DER-векторы. `ModernAsn1Tests` проверяет минимальные конструкции и диагностику. Фронтенд: parser → частный `InformationResolver` → `IrBuilder` → валидаторы; CLASS и шаблоны не передаются генератору. Профиль и ограничения — [status.md](../docs/status.md).
 

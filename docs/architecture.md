@@ -45,7 +45,7 @@ C++ планируется как backend в `compiler/` и runtime в `runtime-
 
 Единственный контракт — JSON со схемой `schemas/asn1kit-ir-v1.json`. Поле `irVersion`. Словари `options` расширяемы. Генератор читает `options.csharp.*` и `options.generate`.
 
-`asn1kit compile` перезаписывает IR из ASN.1. Правки `options` вносите в JSON перед `generate`, либо не пересобирайте IR. Альтернатива — sidecar options-patch (`IrOptionsPatch` / CLI `--patch`): deep-merge в `module.Options` и в `IrComponent.Options` у SEQUENCE/SET/CHOICE (`Module.Type.field`). На `generate` можно записать результат через `--ir-output` (так собирается bench IR).
+`asn1kit compile` перезаписывает IR из ASN.1. Правки `options` вносите в JSON перед `generate`, либо не пересобирайте IR. Альтернатива — sidecar options-patch (`IrOptionsPatch` / CLI `--patch`): deep-merge в `module.Options` и в `IrComponent.Options` у SEQUENCE/SET/CHOICE (`Module.Type.field`), а также в `types` (`Module.Type`). На `generate` можно записать результат через `--ir-output`. Продуктовые options PKIX/CMS/DVCS задаёт [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json).
 
 Компилятор проходит четыре этапа: `Asn1Parser` создаёт AST; `InformationResolver` собирает символы всех модулей, разрешает imports/governors/IOC, специализирует параметризованные типы и превращает object sets в таблицы; `IrBuilder` строит конкретный IR, разворачивает OID-цепочки, bounds и DEFAULT; `SpecializationCompactor` объединяет типы, различающиеся лишь IOC-таблицами, и переносит таблицы на ссылки. После этого выполняются `IrValidator` и проверка JSON Schema. Частные CLASS и шаблоны в публичный IR не попадают. Ссылки вперёд разрешаются после сбора объявлений, генератор не выполняет ASN.1-семантику.
 

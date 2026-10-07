@@ -10,5 +10,38 @@
     "ExtendedSecurityServices": { "csharp": { "namespace": "Asn1Kit.Ess" } },
     "SecureMimeMessageV3": { "csharp": { "namespace": "Asn1Kit.Smime" } },
     "PKIXDVCS": { "csharp": { "namespace": "Asn1Kit.Dvcs" } }
+  },
+  "fields": {
+    "CryptographicMessageSyntax2004.CertificateChoices.certificate": {
+      "lazy": true
+    },
+    "CryptographicMessageSyntax2004.IssuerAndSerialNumber.issuer": {
+      "retainEncoded": true
+    },
+    "CryptographicMessageSyntax2004.SignerInfo.signedAttrs": {
+      "retainEncoded": true
+    },
+    "PKIX1Explicit88.TBSCertificate.issuer": {
+      "retainEncoded": true
+    },
+    "PKIX1Explicit88.TBSCertificate.subject": {
+      "retainEncoded": true
+    },
+    "PKIX1Explicit88.TBSCertificate.extensions": {
+      "retainEncoded": true
+    },
+    "PKIX1Explicit88.TBSCertificate.subjectPublicKeyInfo": {
+      "retainEncoded": true
+    },
+    "PKIX1Explicit88.Certificate.tbsCertificate": {
+      "retainEncoded": true
+    }
+  },
+  "types": {
+    "PKIX1Explicit88.AttributeTypeAndValue": {
+      "csharp": {
+        "valueType": true
+      }
+    }
   }
 }

@@ -4,13 +4,12 @@
 
 ## Что сравнивается (важно)
 
-Типы бенчмарка — [Asn1Kit.Pkix.Bench](../../generated/Asn1Kit.Pkix.Bench/) из golden `cms-2004.json` + [cms-2004-bench.patch.json](../../../compiler/fixtures/ir/cms-2004-bench.patch.json). Это **не** продуктовый golden [`Asn1Kit.Pkix`](../../generated/Asn1Kit.Pkix/) (eager).
+Типы бенчмарка — продуктовый [`Asn1Kit.Pkix`](../../generated/Asn1Kit.Pkix/) с options из [dvcs.patch.json](../../../compiler/fixtures/ir/dvcs.patch.json).
 
 | Путь | Глубина | Peer |
 | --- | --- | --- |
-| CMS `Asn1Kit_Lazy_*` | Bench + `options.lazy` на `CertificateChoices.certificate`; **без** `.Value` | BCL `SignedCms` shell (cert как opaque DER) |
+| CMS `Asn1Kit_Lazy_*` | `options.lazy` на `CertificateChoices.certificate`; **без** `.Value` | BCL `SignedCms` shell (cert как opaque DER) |
 | CMS `Asn1Kit_Lazy_Materialize_*` | то же + обход `Certificate.Value` | BCL + `Certificates` / `SignerInfos` |
-| CMS `Asn1Kit_Eager_*` | golden `Asn1Kit.Cms` (полный typed `Certificate`) | полная глубина ASN.1 tree |
 | CMS BouncyCastle | `Asn1Object` tree + `ContentInfo` | общий ASN.1 codec |
 | Certificate / CRL Decode | полный typed decode | BCL Cert = PAL+lazy (другая модель); peer typed — BouncyCastle |
 | Certificate / CRL Encode | **hand-built** object graph (PKITS-scale test data, no Decode) | BouncyCastle `GetEncoded` after assembly; BCL structural encode нет |
@@ -43,7 +42,7 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 
 | Library | Certificate | CRL | CMS |
 | --- | --- | --- | --- |
-| Asn1Kit Bench / Eager | Decode + Encode (hand-built) | Decode + Encode (hand-built) | Lazy / Materialize / Eager |
+| Asn1Kit | Decode + Encode (hand-built) | Decode + Encode (hand-built) | Lazy / Materialize |
 | BCL (`X509Certificate2` / `SignedCms`) | Decode only | — | Decode ± materialize; Encode |
 | BouncyCastle | Decode + `GetEncoded` (hand-built) | Decode + `GetEncoded` (hand-built) | Decode + `GetEncoded` |
 

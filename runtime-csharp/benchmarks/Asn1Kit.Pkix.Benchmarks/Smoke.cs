@@ -1,11 +1,10 @@
 using Asn1Kit.EncodeBench;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
-using Asn1Kit.Pkix.Bench;
+using Asn1Kit.Pkix;
 using Asn1Kit.Runtime;
 using Org.BouncyCastle.Asn1;
-using BenchContentInfo = Asn1Kit.Cms.Bench.ContentInfo;
-using EagerContentInfo = Asn1Kit.Cms.ContentInfo;
+using CmsContentInfo = Asn1Kit.Cms.ContentInfo;
 using BcContentInfo = Org.BouncyCastle.Asn1.Cms.ContentInfo;
 using BcCertificateList = Org.BouncyCastle.Asn1.X509.CertificateList;
 using BcCertificateStructure = Org.BouncyCastle.Asn1.X509.X509CertificateStructure;
@@ -49,26 +48,26 @@ internal static class Smoke
         _ = BcCertificateList.GetInstance(Asn1Object.FromByteArray(crlDer));
         _ = EncodeSamples.CreateBouncyCastleCertificateList().GetEncoded();
 
-        var bench = BenchContentInfo.Decode(new Asn1Reader(cmsDer, Asn1Encoding.Der));
-        var lazyCert = bench.Content.SignedData!.Certificates!
+        var cms = CmsContentInfo.Decode(new Asn1Reader(cmsDer, Asn1Encoding.Der));
+        var lazyCert = cms.Content.SignedData!.Certificates!
             .Single(c => c.Certificate is not null)
             .Certificate!;
         if (!lazyCert.HasEncoded)
         {
-            throw new InvalidOperationException("Bench CMS decode did not retain certificate TLV.");
+            throw new InvalidOperationException("CMS decode did not retain certificate TLV.");
         }
 
         if (lazyCert.IsMaterialized)
         {
-            throw new InvalidOperationException("Bench CMS decode materialized certificate unexpectedly.");
+            throw new InvalidOperationException("CMS decode materialized certificate unexpectedly.");
         }
 
         var lazyWriter = new Asn1Writer(Asn1Encoding.Der);
-        bench.Encode(lazyWriter);
+        cms.Encode(lazyWriter);
         var lazyEncoded = lazyWriter.Encode();
         if (lazyEncoded.Length == 0)
         {
-            throw new InvalidOperationException("Bench CMS lazy encode produced empty output.");
+            throw new InvalidOperationException("CMS lazy encode produced empty output.");
         }
 
         // Touch .Value once — encode must still succeed (HasEncoded path).
@@ -78,8 +77,6 @@ internal static class Smoke
             throw new InvalidOperationException("Expected certificate materialization after .Value.");
         }
 
-        _ = EagerContentInfo.Decode(new Asn1Reader(cmsDer, Asn1Encoding.Der));
-
         var signedCms = new SignedCms();
         signedCms.Decode(cmsDer);
         _ = signedCms.Encode();
@@ -87,6 +84,6 @@ internal static class Smoke
         _ = BcContentInfo.GetInstance(Asn1Object.FromByteArray(cmsDer));
 
         Console.WriteLine(
-            "Smoke OK: Certificate, CRL, CMS (Bench lazy + Eager golden) under Asn1Kit / BCL / BouncyCastle.");
+            "Smoke OK: Certificate, CRL, CMS (lazy cert + materialize) under Asn1Kit / BCL / BouncyCastle.");
     }
 }

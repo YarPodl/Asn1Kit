@@ -9,7 +9,7 @@ alwaysApply: false
 ## Категории
 
 - `pkix1-explicit88.json`, `pkix1-implicit88.json`, `cms-2004.json` — generated IR golden; вручную не правятся.
-- `cms-2004-bench.json` — производный IR из `cms-2004-bench.patch.json`.
+- `dvcs.patch.json` — product options overlay (namespaces, lazy, retainEncoded, valueType) для generate `Asn1Kit.Pkix`.
 - `example.json` — ручная фикстура; сохраняй её `options` при точечных правках.
 - `runtime-csharp/generated/**/*.g.cs` — generated C#; вручную не правится.
 - Формат BER/DER-векторов описан в `runtime-csharp/fixtures/ber-der/README.md`.
@@ -17,7 +17,7 @@ alwaysApply: false
 ## Workflow
 
 - IR golden регенерируй через `scripts/regenerate-ir-goldens.ps1`.
-- Golden C# регенерируй через `scripts/regenerate-csharp-golden.ps1`, bench — через `scripts/regenerate-bench.ps1`.
+- Golden C# регенерируй через `scripts/regenerate-csharp-golden.ps1`.
 - Любой diff generated-артефакта просмотри; неожиданные строки считай регрессией, а не устаревшей фикстурой.
 - Новый fixture добавляй вместе с тестом, который его читает; мёртвые fixture-файлы запрещены.
 - Воспроизводимый баг закрывай минимальной фикстурой или явным байтовым вектором.

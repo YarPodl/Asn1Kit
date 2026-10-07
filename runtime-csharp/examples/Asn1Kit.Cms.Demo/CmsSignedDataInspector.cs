@@ -1,7 +1,7 @@
-using Asn1Kit.Cms.Bench;
-using Asn1Kit.Pkix.Bench;
+using Asn1Kit.Cms;
+using Asn1Kit.Pkix;
 using Asn1Kit.Runtime;
-using CmsAttribute = Asn1Kit.Cms.Bench.Attribute;
+using CmsAttribute = Asn1Kit.Cms.Attribute;
 
 namespace Asn1Kit.Cms.Demo;
 

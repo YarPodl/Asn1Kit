@@ -1,6 +1,6 @@
 using Asn1Kit.Cms.Demo.Modern;
 using Asn1Kit.Runtime;
-using BenchCertificate = Asn1Kit.Pkix.Bench.Certificate;
+using PkixCertificate = Asn1Kit.Pkix.Certificate;
 using ModernCertificate = Asn1Kit.Modern.PKIX1Explicit2009.Certificate;
 
 namespace Asn1Kit.Cms.Demo;
@@ -46,11 +46,11 @@ public static class CmsDemoCommand
             }
             else
             {
-                var roots = rootPaths.Count == 0 ? null : rootPaths.Select(LoadBenchCertificate).ToArray();
-                var available = certificatePaths.Select(LoadBenchCertificate).ToArray();
+                var roots = rootPaths.Count == 0 ? null : rootPaths.Select(LoadPkixCertificate).ToArray();
+                var available = certificatePaths.Select(LoadPkixCertificate).ToArray();
                 results = CmsSignedDataInspector.Inspect(encoded,
-                    roots is null ? new EducationalCryptoVerifier<BenchCertificate>() :
-                        new RsaSha256CryptoVerifier<BenchCertificate>(certificate =>
+                    roots is null ? new EducationalCryptoVerifier<PkixCertificate>() :
+                        new RsaSha256CryptoVerifier<PkixCertificate>(certificate =>
                             certificate.TbsCertificate.Value.SubjectPublicKeyInfo.OriginalEncoding),
                     available, roots);
             }
@@ -83,10 +83,10 @@ public static class CmsDemoCommand
         }
     }
 
-    private static Asn1Value<BenchCertificate> LoadBenchCertificate(string path)
+    private static Asn1Value<PkixCertificate> LoadPkixCertificate(string path)
     {
         var reader = new Asn1Reader(File.ReadAllBytes(path), Asn1Encoding.Der);
-        var certificate = reader.ReadWithOriginalEncoding(BenchCertificate.Decode);
+        var certificate = reader.ReadWithOriginalEncoding(PkixCertificate.Decode);
         reader.ThrowIfNotEmpty();
         return certificate;
     }

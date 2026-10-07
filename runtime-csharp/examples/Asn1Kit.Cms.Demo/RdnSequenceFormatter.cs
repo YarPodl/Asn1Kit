@@ -1,8 +1,8 @@
 using System.Text;
 using Asn1Kit.Runtime;
 using Asn1Kit.Modern.PKIX1Explicit2009;
-using BenchAttribute = Asn1Kit.Pkix.Bench.AttributeTypeAndValue;
-using BenchValueKind = Asn1Kit.Pkix.Bench.AttributeTypeAndValue_ValueKind;
+using PkixAttribute = Asn1Kit.Pkix.AttributeTypeAndValue;
+using PkixValueKind = Asn1Kit.Pkix.AttributeTypeAndValue_ValueKind;
 using ModernAttribute = Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute;
 
 namespace Asn1Kit.Cms.Demo;
@@ -10,21 +10,21 @@ namespace Asn1Kit.Cms.Demo;
 /// <summary>RFC 4514 display form for the two generated PKIX name models.</summary>
 public static class RdnSequenceFormatter
 {
-    public static string Format(BenchAttribute[][] name) => Format(name, FormatAttribute);
+    public static string Format(PkixAttribute[][] name) => Format(name, FormatAttribute);
 
     public static string Format(ModernAttribute[][] name) => Format(name, FormatAttribute);
 
     private static string Format<T>(T[][] name, Func<T, string> formatAttribute) =>
         string.Join(",", name.Reverse().Select(rdn => string.Join("+", rdn.Select(formatAttribute))));
 
-    private static string FormatAttribute(BenchAttribute attribute)
+    private static string FormatAttribute(PkixAttribute attribute)
     {
         var type = ShortName(attribute.Type);
         if (type is null)
             return HexAttribute(attribute.Type, Asn1Any.FromValue(attribute.Value, static (writer, value) => value.Encode(writer)));
 
         var value = attribute.Value;
-        return type + "=" + (value.Kind == BenchValueKind.Unknown || value.Value is null
+        return type + "=" + (value.Kind == PkixValueKind.Unknown || value.Value is null
             ? Hex(value.Unknown ?? throw new Asn1Exception("Attribute value has no alternative."))
             : Escape(value.Value));
     }

@@ -35,7 +35,7 @@
 - Open-type `bindings`: CLI `--bindings` / overlay; ключи `Module.Type.field`.
 - C# `ANY DEFINED BY`: при неизвестном OID примитив с однозначно подходящей существующей альтернативой декодируется в её свойство по universal-тегу, сохраняя wire-форму и `Kind`. Неоднозначные, составные и нераспознанные значения остаются в `Asn1Any`; IMPLICIT-тег не используется для угадывания типа. Правило действует в soft и strict; mismatch известного binding сохраняет прежнее поведение.
 - Нетегированные `CHOICE` в open-type bindings рекурсивно раскрываются в альтернативы `Owner_Field`, включая именованные, импортированные и inline-типы. Вложенный объект `CHOICE` не создаётся; свойства группируются по CLR-типу, `Kind` сохраняет выбранную wire-альтернативу. OID ограничивает набор допустимых веток; тегированный или рекурсивный `CHOICE` остаётся отдельной альтернативой. Самостоятельные типы `CHOICE` сохраняют свой API.
-- Options patch: CLI `--patch` / `IrOptionsPatch`; `modules`, `fields` (`Module.Type.field`), `types` (`Module.Type`); bench — [cms-2004-bench.patch.json](../compiler/fixtures/ir/cms-2004-bench.patch.json).
+- Options patch: CLI `--patch` / `IrOptionsPatch`; `modules`, `fields` (`Module.Type.field`), `types` (`Module.Type`); продуктовый PKIX/CMS — [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json).
 - `SIZE` / диапазоны → `constraint.size` / `constraint.value`; прочее → `constraint.unsupported`.
 - Вне профиля (явный `CompileException`): `COMPONENTS OF`, `REAL`, `EXTERNAL`, параметризованные значения/объекты и формы IOC, перечисленные ниже.
 
@@ -87,11 +87,11 @@ Runtime-значения и обёртки поддерживают полезн
 
 ## Демонстрация проверки CMS
 
-Демонстрационный проект [Asn1Kit.Cms.Demo](../runtime-csharp/examples/Asn1Kit.Cms.Demo/) проверяет один сценарий attached `SignedData` в двух режимах: `Asn1Kit.Pkix.Bench` и `Asn1Kit.Modern` (`--modern`). Он проверяет структуру, атрибуты и связь подписанта с вложенным сертификатом. С переданными `--trusted-root` и `--certificate` инспекторы строят цепочку из generated-типов, сопоставляют `AuthorityKeyIdentifier` с `SubjectKeyIdentifier` либо парой issuer/serial и используют сохранённые исходные TLV сертификата, TBS, имён и SPKI; общий verifier проверяет подписи RSA/SHA-256. Без доверенных корней работает учебная заглушка. Ограничения алгоритма и различия API перечислены в README проекта.
+Демонстрационный проект [Asn1Kit.Cms.Demo](../runtime-csharp/examples/Asn1Kit.Cms.Demo/) проверяет один сценарий attached `SignedData` в двух режимах: `Asn1Kit.Pkix` и `Asn1Kit.Modern` (`--modern`). Он проверяет структуру, атрибуты и связь подписанта с вложенным сертификатом. С переданными `--trusted-root` и `--certificate` инспекторы строят цепочку из generated-типов, сопоставляют `AuthorityKeyIdentifier` с `SubjectKeyIdentifier` либо парой issuer/serial и используют сохранённые исходные TLV сертификата, TBS, имён и SPKI; общий verifier проверяет подписи RSA/SHA-256. Без доверенных корней работает учебная заглушка. Ограничения алгоритма и различия API перечислены в README проекта.
 
 ## Бенчмарки PKIX/CMS
 
-[runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks](../runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks/) — BenchmarkDotNet Decode/Encode для `Certificate`, `CertificateList`, CMS `ContentInfo` (attached SignedData). Типы из [Asn1Kit.Pkix.Bench](../runtime-csharp/generated/Asn1Kit.Pkix.Bench/) (`Asn1Kit.Pkix.Bench` / `Asn1Kit.Cms.Bench`), собранного из golden `cms-2004.json` + [cms-2004-bench.patch.json](../compiler/fixtures/ir/cms-2004-bench.patch.json) (lazy на `CertificateChoices.certificate`; `retainEncoded` на `Certificate.tbsCertificate` и TBS Name/SPKI/Extensions; `AttributeTypeAndValue` как `struct`). Encode Cert/CRL — hand-built object graph (не decode→encode). CMS-группы: Lazy / Lazy+Materialize / Eager (golden) / BCL ± materialize / BouncyCastle. Не в gate `dotnet test`.
+[runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks](../runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks/) — BenchmarkDotNet Decode/Encode для `Certificate`, `CertificateList`, CMS `ContentInfo` (attached SignedData). Типы из [Asn1Kit.Pkix](../runtime-csharp/generated/Asn1Kit.Pkix/) (`Asn1Kit.Pkix` / `Asn1Kit.Cms`) с продуктовыми options из [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json) (lazy на `CertificateChoices.certificate`; `retainEncoded` на `Certificate.tbsCertificate` и TBS Name/SPKI/Extensions; `AttributeTypeAndValue` как `struct`). Encode Cert/CRL — hand-built object graph (не decode→encode). CMS-группы: Lazy / Lazy+Materialize / BCL ± materialize / BouncyCastle. Не в gate `dotnet test`.
 
 ```powershell
 dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks
@@ -99,7 +99,7 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 
 ## Сгенерированные протокольные модули
 
-Проект [Asn1Kit.Pkix](../runtime-csharp/generated/Asn1Kit.Pkix/) содержит PKIX/CMS и полный граф DVCS: `PKIXDVCS` (RFC 3029), `PKIXCMP` (RFC 2510), `PKIXCRMF` (RFC 2511), `OCSP` (RFC 2560), `ExtendedSecurityServices` (RFC 2634), `SecureMimeMessageV3` (RFC 2633) и предоставленный для CMP модуль PKCS#10 (RFC 2314). Namespace разделены по протоколам; отдельного golden IR для этого графа нет, golden C# воспроизводится из `.asn` + [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json).
+Проект [Asn1Kit.Pkix](../runtime-csharp/generated/Asn1Kit.Pkix/) содержит PKIX/CMS и полный граф DVCS: `PKIXDVCS` (RFC 3029), `PKIXCMP` (RFC 2510), `PKIXCRMF` (RFC 2511), `OCSP` (RFC 2560), `ExtendedSecurityServices` (RFC 2634), `SecureMimeMessageV3` (RFC 2633) и предоставленный для CMP модуль PKCS#10 (RFC 2314). Namespace разделены по протоколам; отдельного golden IR для этого графа нет, golden C# воспроизводится из `.asn` + [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json) (namespaces, lazy cert choice, retainEncoded для verify-пути, `AttributeTypeAndValue` как value type).
 
 DVCS codec-тесты покрывают request `message` / `messageImprint`, обе response-альтернативы, DER round-trip и повреждённый TLV. Криптографическая проверка и транспорт не входят в этот слой.
 

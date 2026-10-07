@@ -7,19 +7,18 @@ namespace Asn1Kit.Tests;
 public sealed class IrOptionsPatchTests
 {
     [Fact]
-    public void Apply_CmsBenchPatch_SetsNamespacesLazyRetainAndValueType()
+    public void Apply_DvcsPatch_SetsNamespacesLazyRetainAndValueType()
     {
-        var document = TestData.LoadIr("compiler/fixtures/ir/cms-2004.json");
-        IrOptionsPatch.ApplyFile(document, TestData.RepoPath("compiler/fixtures/ir/cms-2004-bench.patch.json"));
+        var document = DvcsTestData.Compile();
 
         Assert.Equal(
-            "Asn1Kit.Pkix.Bench",
+            "Asn1Kit.Pkix",
             IrOptions.CSharpNamespace(document.Modules.Single(m => m.Name == "PKIX1Explicit88").Options));
         Assert.Equal(
-            "Asn1Kit.Pkix.Bench",
+            "Asn1Kit.Pkix",
             IrOptions.CSharpNamespace(document.Modules.Single(m => m.Name == "PKIX1Implicit88").Options));
         Assert.Equal(
-            "Asn1Kit.Cms.Bench",
+            "Asn1Kit.Cms",
             IrOptions.CSharpNamespace(
                 document.Modules.Single(m => m.Name == "CryptographicMessageSyntax2004").Options));
 
@@ -38,6 +37,8 @@ public sealed class IrOptionsPatchTests
         Assert.True(IrOptions.IsRetainEncoded(tbs.Components.Single(c => c.Name == "subject").Options));
         Assert.True(IrOptions.IsRetainEncoded(tbs.Components.Single(c => c.Name == "extensions").Options));
         Assert.True(IrOptions.IsRetainEncoded(tbs.Components.Single(c => c.Name == "subjectPublicKeyInfo").Options));
+        var certificateType = Assert.IsType<SequenceType>(pkix.Types.Single(t => t.Name == "Certificate").Type);
+        Assert.True(IrOptions.IsRetainEncoded(certificateType.Components.Single(c => c.Name == "tbsCertificate").Options));
 
         var atv = pkix.Types.Single(t => t.Name == "AttributeTypeAndValue");
         Assert.True(IrOptions.IsCSharpValueType(atv.Options));
@@ -96,24 +97,23 @@ public sealed class IrOptionsPatchTests
     }
 
     [Fact]
-    public void Generate_AfterBenchPatch_EmitsLazyCertificateRetainAndStructAtv()
+    public void Generate_AfterDvcsPatch_EmitsLazyCertificateRetainAndStructAtv()
     {
-        var document = TestData.LoadIr("compiler/fixtures/ir/cms-2004.json");
-        IrOptionsPatch.ApplyFile(document, TestData.RepoPath("compiler/fixtures/ir/cms-2004-bench.patch.json"));
+        var document = DvcsTestData.Compile();
 
         var files = new CSharpBackend().Generate(document);
         var joined = string.Join('\n', files.Select(f => f.Contents));
 
-        Assert.Contains("namespace Asn1Kit.Pkix.Bench", joined, StringComparison.Ordinal);
-        Assert.Contains("namespace Asn1Kit.Cms.Bench", joined, StringComparison.Ordinal);
+        Assert.Contains("namespace Asn1Kit.Pkix", joined, StringComparison.Ordinal);
+        Assert.Contains("namespace Asn1Kit.Cms", joined, StringComparison.Ordinal);
 
         var cmsFile = files.Single(f => f.RelativePath.Contains("CryptographicMessageSyntax", StringComparison.Ordinal));
         Assert.Contains(
-            "Asn1Lazy<Asn1Kit.Pkix.Bench.Certificate>",
+            "Asn1Lazy<Asn1Kit.Pkix.Certificate>",
             cmsFile.Contents,
             StringComparison.Ordinal);
         Assert.Contains("Asn1Value<Attribute[]>? SignedAttrs", cmsFile.Contents, StringComparison.Ordinal);
-        Assert.Contains("Asn1Value<Asn1Kit.Pkix.Bench.AttributeTypeAndValue[][]> Issuer", cmsFile.Contents, StringComparison.Ordinal);
+        Assert.Contains("Asn1Value<Asn1Kit.Pkix.AttributeTypeAndValue[][]> Issuer", cmsFile.Contents, StringComparison.Ordinal);
 
         var pkixFile = files.Single(f => f.RelativePath.Contains("PKIX1Explicit88", StringComparison.Ordinal));
         Assert.Contains("Asn1Value<", pkixFile.Contents, StringComparison.Ordinal);

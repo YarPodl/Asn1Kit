@@ -19,14 +19,14 @@ public sealed class CmsDemoTests
         var unknown = Asn1Oid.Parse("1.2.3.4");
         var bench = new[]
         {
-            new[] { new Asn1Kit.Pkix.Bench.AttributeTypeAndValue
-                { Type = ou, Value = Asn1Kit.Pkix.Bench.AttributeTypeAndValue_Value.FromUtf8String(" Root ") } },
+            new[] { new Asn1Kit.Pkix.AttributeTypeAndValue
+                { Type = ou, Value = Asn1Kit.Pkix.AttributeTypeAndValue_Value.FromUtf8String(" Root ") } },
             new[]
             {
-                new Asn1Kit.Pkix.Bench.AttributeTypeAndValue
-                    { Type = cn, Value = Asn1Kit.Pkix.Bench.AttributeTypeAndValue_Value.FromUtf8String("Doe, Jane+Jr") },
-                new Asn1Kit.Pkix.Bench.AttributeTypeAndValue
-                    { Type = unknown, Value = Asn1Kit.Pkix.Bench.AttributeTypeAndValue_Value.FromPrintableString("X") }
+                new Asn1Kit.Pkix.AttributeTypeAndValue
+                    { Type = cn, Value = Asn1Kit.Pkix.AttributeTypeAndValue_Value.FromUtf8String("Doe, Jane+Jr") },
+                new Asn1Kit.Pkix.AttributeTypeAndValue
+                    { Type = unknown, Value = Asn1Kit.Pkix.AttributeTypeAndValue_Value.FromPrintableString("X") }
             }
         };
         var modern = new[]
@@ -79,7 +79,7 @@ public sealed class CmsDemoTests
         Assert.Equal(new byte[] { 0xAA }, verifier.Digest);
         Assert.Equal(0x31, verifier.SignedBytes[0]);
 
-        var bench = Asn1Kit.Cms.Bench.ContentInfo.Decode(new Asn1Reader(encoded, Asn1Encoding.Ber));
+        var bench = Asn1Kit.Cms.ContentInfo.Decode(new Asn1Reader(encoded, Asn1Encoding.Ber));
         var retained = bench.Content.SignedData!.SignerInfos[0].SignedAttrs!.Value.OriginalEncoding;
         Assert.False(retained.IsEmpty);
         Assert.Equal(new Asn1Any(retained).ContentsMemory.ToArray(), new Asn1Any(verifier.SignedBytes).ContentsMemory.ToArray());
@@ -88,7 +88,7 @@ public sealed class CmsDemoTests
     [Fact]
     public void IssuerNames_RetainOriginalTlvForMatching()
     {
-        var bench = Asn1Kit.Cms.Bench.ContentInfo.Decode(new Asn1Reader(Fixture, Asn1Encoding.Ber));
+        var bench = Asn1Kit.Cms.ContentInfo.Decode(new Asn1Reader(Fixture, Asn1Encoding.Ber));
         var signedData = bench.Content.SignedData!;
         var signerName = signedData.SignerInfos[0].Sid.IssuerAndSerialNumber!.Issuer.OriginalEncoding;
         var certName = signedData.Certificates!.Single(choice => choice.Certificate is not null)
@@ -110,14 +110,12 @@ public sealed class CmsDemoTests
         var encoded = Mutate(info =>
         {
             var keyIdentifier = new byte[] { 0xA1, 0xB2 };
-            var certificate = info.Content.SignedData!.Certificates!.Single(choice => choice.Certificate is not null).Certificate!;
-            var extension = new Extension
+            var certificate = info.Content.SignedData!.Certificates!.Single(choice => choice.Certificate is not null).Certificate!.Value;
+            SetSubjectKeyIdentifier(certificate, keyIdentifier);
+            info.Content.SignedData.Certificates = new[]
             {
-                ExtnID = PKIX1Implicit88Oids.IdCeSubjectKeyIdentifier,
-                ExtnValue = Asn1Any.FromValue(keyIdentifier,
-                    static (writer, value) => writer.WriteOctetString(Asn1Tag.OctetString, value)).EncodedMemory
+                CertificateChoices.FromCertificate(Asn1Lazy<Certificate>.FromValue(certificate))
             };
-            certificate.TbsCertificate.Extensions = (certificate.TbsCertificate.Extensions ?? Array.Empty<Extension>()).Append(extension).ToArray();
             GetSigner(info).Sid = SignerIdentifier.FromSubjectKeyIdentifier(keyIdentifier);
         });
         Assert.True(CmsSignedDataInspector.Inspect(encoded, new RecordingVerifier())[0].Accepted);
@@ -150,7 +148,7 @@ public sealed class CmsDemoTests
     [Fact]
     public void TrustedRoot_EnablesRealSignatureAndChainVerification()
     {
-        var info = Asn1Kit.Cms.Bench.ContentInfo.Decode(new Asn1Reader(Fixture, Asn1Encoding.Ber));
+        var info = Asn1Kit.Cms.ContentInfo.Decode(new Asn1Reader(Fixture, Asn1Encoding.Ber));
         var certificate = info.Content.SignedData!.Certificates!.Single(choice => choice.Certificate is not null).Certificate!.Value;
         Assert.False(certificate.TbsCertificate.OriginalEncoding.IsEmpty);
         Assert.False(certificate.TbsCertificate.Value.SubjectPublicKeyInfo.OriginalEncoding.IsEmpty);
@@ -174,8 +172,8 @@ public sealed class CmsDemoTests
             var invalidCertificateWriter = new Asn1Writer(Asn1Encoding.Der);
             certificate.Encode(invalidCertificateWriter);
             File.WriteAllBytes(rootPath, invalidCertificateWriter.Encode());
-            info.Content.SignedData.Certificates = new[] { Asn1Kit.Cms.Bench.CertificateChoices.FromCertificate(
-                Asn1Lazy<Asn1Kit.Pkix.Bench.Certificate>.FromValue(certificate)) };
+            info.Content.SignedData.Certificates = new[] { Asn1Kit.Cms.CertificateChoices.FromCertificate(
+                Asn1Lazy<Asn1Kit.Pkix.Certificate>.FromValue(certificate)) };
             var invalidChainWriter = new Asn1Writer(Asn1Encoding.Der);
             info.Encode(invalidChainWriter);
             File.WriteAllBytes(invalidCmsPath, invalidChainWriter.Encode());
@@ -190,7 +188,7 @@ public sealed class CmsDemoTests
     [Fact]
     public void ChainUsesSuppliedIntermediateAndRejectsMissingLink()
     {
-        var info = Asn1Kit.Cms.Bench.ContentInfo.Decode(new Asn1Reader(Fixture, Asn1Encoding.Ber));
+        var info = Asn1Kit.Cms.ContentInfo.Decode(new Asn1Reader(Fixture, Asn1Encoding.Ber));
         var root = info.Content.SignedData!.Certificates!.Single(choice => choice.Certificate is not null).Certificate!.Value;
         var intermediate = CloneCertificate(root);
         intermediate.TbsCertificate.Value.Subject = BuildName("Intermediate");
@@ -199,7 +197,7 @@ public sealed class CmsDemoTests
         var leaf = CloneCertificate(root);
         leaf.TbsCertificate.Value.Subject = BuildName("Leaf");
         leaf.TbsCertificate.Value.Issuer = intermediate.TbsCertificate.Value.Subject.Value;
-        info.Content.SignedData.Certificates = new[] { Asn1Kit.Cms.Bench.CertificateChoices.FromCertificate(Asn1Lazy<Asn1Kit.Pkix.Bench.Certificate>.FromValue(leaf)) };
+        info.Content.SignedData.Certificates = new[] { Asn1Kit.Cms.CertificateChoices.FromCertificate(Asn1Lazy<Asn1Kit.Pkix.Certificate>.FromValue(leaf)) };
         info.Content.SignedData.SignerInfos[0].Sid.IssuerAndSerialNumber!.Issuer = intermediate.TbsCertificate.Value.Subject.Value;
         var writer = new Asn1Writer(Asn1Encoding.Der);
         info.Encode(writer);
@@ -209,14 +207,14 @@ public sealed class CmsDemoTests
             new[] { RetainCertificate(intermediate) }, new[] { RetainCertificate(root) });
         Assert.True(Assert.Single(success).Accepted, success[0].Reason);
         var failure = CmsSignedDataInspector.Inspect(encoded, new RecordingVerifier(),
-            Array.Empty<Asn1Value<Asn1Kit.Pkix.Bench.Certificate>>(), new[] { RetainCertificate(root) });
+            Array.Empty<Asn1Value<Asn1Kit.Pkix.Certificate>>(), new[] { RetainCertificate(root) });
         Assert.Contains("issuer is unavailable", Assert.Single(failure).Reason);
     }
 
     [Fact]
     public void AuthorityKeyIdentifier_SelectsIssuerWithMatchingSubjectKeyIdentifier()
     {
-        var info = Asn1Kit.Cms.Bench.ContentInfo.Decode(new Asn1Reader(Fixture, Asn1Encoding.Ber));
+        var info = Asn1Kit.Cms.ContentInfo.Decode(new Asn1Reader(Fixture, Asn1Encoding.Ber));
         var root = info.Content.SignedData!.Certificates!.Single(choice => choice.Certificate is not null).Certificate!.Value;
         var matching = CloneCertificate(root);
         matching.TbsCertificate.Value.Subject = BuildName("Intermediate");
@@ -232,8 +230,8 @@ public sealed class CmsDemoTests
         leaf.TbsCertificate.Value.Subject = BuildName("Leaf");
         leaf.TbsCertificate.Value.Issuer = matching.TbsCertificate.Value.Subject.Value;
         SetAuthorityKeyIdentifier(leaf, new byte[] { 0x11 });
-        info.Content.SignedData.Certificates = new[] { Asn1Kit.Cms.Bench.CertificateChoices.FromCertificate(
-            Asn1Lazy<Asn1Kit.Pkix.Bench.Certificate>.FromValue(leaf)) };
+        info.Content.SignedData.Certificates = new[] { Asn1Kit.Cms.CertificateChoices.FromCertificate(
+            Asn1Lazy<Asn1Kit.Pkix.Certificate>.FromValue(leaf)) };
         info.Content.SignedData.SignerInfos[0].Sid.IssuerAndSerialNumber!.Issuer = matching.TbsCertificate.Value.Subject.Value;
         var writer = new Asn1Writer(Asn1Encoding.Der);
         info.Encode(writer);
@@ -262,9 +260,9 @@ public sealed class CmsDemoTests
         other.TbsCertificate.Value.SerialNumber = Asn1Integer.FromInt32(202);
         benchAvailable = new[] { RetainCertificate(other), RetainCertificate(matching) };
         modernAvailable = benchAvailable.Select(item => RetainModernCertificate(item.OriginalEncoding)).ToArray();
-        SetAuthorityKeyIdentifier(leaf, new Asn1Kit.Pkix.Bench.AuthorityKeyIdentifier
+        SetAuthorityKeyIdentifier(leaf, new Asn1Kit.Pkix.AuthorityKeyIdentifier
         {
-            AuthorityCertIssuer = new[] { Asn1Kit.Pkix.Bench.GeneralName.FromDirectoryName(
+            AuthorityCertIssuer = new[] { Asn1Kit.Pkix.GeneralName.FromDirectoryName(
                 matching.TbsCertificate.Value.Issuer.Value) },
             AuthorityCertSerialNumber = matching.TbsCertificate.Value.SerialNumber
         });
@@ -276,9 +274,9 @@ public sealed class CmsDemoTests
         modernResult = CmsModernSignedDataInspector.Inspect(encoded, new ModernRecordingVerifier(), modernAvailable, modernRoot);
         Assert.True(Assert.Single(modernResult).Accepted, modernResult[0].Reason);
 
-        SetAuthorityKeyIdentifier(leaf, new Asn1Kit.Pkix.Bench.AuthorityKeyIdentifier
+        SetAuthorityKeyIdentifier(leaf, new Asn1Kit.Pkix.AuthorityKeyIdentifier
         {
-            AuthorityCertIssuer = new[] { Asn1Kit.Pkix.Bench.GeneralName.FromDirectoryName(
+            AuthorityCertIssuer = new[] { Asn1Kit.Pkix.GeneralName.FromDirectoryName(
                 matching.TbsCertificate.Value.Issuer.Value) },
             AuthorityCertSerialNumber = Asn1Integer.FromInt32(303)
         });
@@ -291,57 +289,57 @@ public sealed class CmsDemoTests
             encoded, new ModernRecordingVerifier(), modernAvailable, modernRoot)).Reason);
     }
 
-    private static void SetSubjectKeyIdentifier(Asn1Kit.Pkix.Bench.Certificate certificate, byte[] keyIdentifier)
+    private static void SetSubjectKeyIdentifier(Asn1Kit.Pkix.Certificate certificate, byte[] keyIdentifier)
     {
         var encoded = Asn1Any.FromValue(keyIdentifier,
             static (writer, value) => writer.WriteOctetString(Asn1Tag.OctetString, value)).EncodedMemory;
         SetExtension(certificate, PKIX1Implicit88Oids.IdCeSubjectKeyIdentifier, encoded);
     }
 
-    private static void SetAuthorityKeyIdentifier(Asn1Kit.Pkix.Bench.Certificate certificate, byte[] keyIdentifier)
-        => SetAuthorityKeyIdentifier(certificate, new Asn1Kit.Pkix.Bench.AuthorityKeyIdentifier { KeyIdentifier = keyIdentifier });
+    private static void SetAuthorityKeyIdentifier(Asn1Kit.Pkix.Certificate certificate, byte[] keyIdentifier)
+        => SetAuthorityKeyIdentifier(certificate, new Asn1Kit.Pkix.AuthorityKeyIdentifier { KeyIdentifier = keyIdentifier });
 
-    private static void SetAuthorityKeyIdentifier(Asn1Kit.Pkix.Bench.Certificate certificate,
-        Asn1Kit.Pkix.Bench.AuthorityKeyIdentifier identifier)
+    private static void SetAuthorityKeyIdentifier(Asn1Kit.Pkix.Certificate certificate,
+        Asn1Kit.Pkix.AuthorityKeyIdentifier identifier)
     {
         var encoded = Asn1Any.FromValue(identifier,
             static (writer, value) => value.Encode(writer)).EncodedMemory;
         SetExtension(certificate, PKIX1Implicit88Oids.IdCeAuthorityKeyIdentifier, encoded);
     }
 
-    private static void SetExtension(Asn1Kit.Pkix.Bench.Certificate certificate, Asn1Oid oid, ReadOnlyMemory<byte> value)
+    private static void SetExtension(Asn1Kit.Pkix.Certificate certificate, Asn1Oid oid, ReadOnlyMemory<byte> value)
     {
         var extensions = certificate.TbsCertificate.Value.Extensions is { } existing
-            ? existing.Value : Array.Empty<Asn1Kit.Pkix.Bench.Extension>();
+            ? existing.Value : Array.Empty<Asn1Kit.Pkix.Extension>();
         certificate.TbsCertificate.Value.Extensions = extensions
             .Where(extension => extension.ExtnID != oid)
-            .Append(new Asn1Kit.Pkix.Bench.Extension { ExtnID = oid, ExtnValue = value }).ToArray();
+            .Append(new Asn1Kit.Pkix.Extension { ExtnID = oid, ExtnValue = value }).ToArray();
     }
 
     private static Asn1Value<Asn1Kit.Modern.PKIX1Explicit2009.Certificate> RetainModernCertificate(ReadOnlyMemory<byte> encoded) =>
         new Asn1Reader(encoded, Asn1Encoding.Der)
             .ReadWithOriginalEncoding(Asn1Kit.Modern.PKIX1Explicit2009.Certificate.Decode);
 
-    private static Asn1Kit.Pkix.Bench.Certificate CloneCertificate(Asn1Kit.Pkix.Bench.Certificate certificate)
+    private static Asn1Kit.Pkix.Certificate CloneCertificate(Asn1Kit.Pkix.Certificate certificate)
     {
         var writer = new Asn1Writer(Asn1Encoding.Der);
         certificate.Encode(writer);
-        return Asn1Kit.Pkix.Bench.Certificate.Decode(new Asn1Reader(writer.Encode(), Asn1Encoding.Der));
+        return Asn1Kit.Pkix.Certificate.Decode(new Asn1Reader(writer.Encode(), Asn1Encoding.Der));
     }
 
-    private static Asn1Value<Asn1Kit.Pkix.Bench.Certificate> RetainCertificate(Asn1Kit.Pkix.Bench.Certificate certificate)
+    private static Asn1Value<Asn1Kit.Pkix.Certificate> RetainCertificate(Asn1Kit.Pkix.Certificate certificate)
     {
         var writer = new Asn1Writer(Asn1Encoding.Der);
         certificate.Encode(writer);
         return new Asn1Reader(writer.Encode(), Asn1Encoding.Der)
-            .ReadWithOriginalEncoding(Asn1Kit.Pkix.Bench.Certificate.Decode);
+            .ReadWithOriginalEncoding(Asn1Kit.Pkix.Certificate.Decode);
     }
 
-    private static Asn1Kit.Pkix.Bench.AttributeTypeAndValue[][] BuildName(string commonName) =>
-        new[] { new[] { new Asn1Kit.Pkix.Bench.AttributeTypeAndValue
+    private static Asn1Kit.Pkix.AttributeTypeAndValue[][] BuildName(string commonName) =>
+        new[] { new[] { new Asn1Kit.Pkix.AttributeTypeAndValue
         {
             Type = Asn1Oid.Parse("2.5.4.3"),
-            Value = Asn1Kit.Pkix.Bench.AttributeTypeAndValue_Value.FromUtf8String(commonName)
+            Value = Asn1Kit.Pkix.AttributeTypeAndValue_Value.FromUtf8String(commonName)
         } } };
 
     private static SignerInfo GetSigner(ContentInfo info) => info.Content.SignedData!.SignerInfos[0];
@@ -381,21 +379,21 @@ public sealed class CmsDemoTests
         Assert.Contains(reason, result[0].Reason, StringComparison.OrdinalIgnoreCase);
     }
 
-    private sealed class RecordingVerifier : ICmsCryptoVerifier<Asn1Kit.Pkix.Bench.Certificate>
+    private sealed class RecordingVerifier : ICmsCryptoVerifier<Asn1Kit.Pkix.Certificate>
     {
         public byte[] Content { get; private set; } = Array.Empty<byte>();
         public byte[] Digest { get; private set; } = Array.Empty<byte>();
         public byte[] SignedBytes { get; private set; } = Array.Empty<byte>();
         public byte[] Signature { get; private set; } = Array.Empty<byte>();
 
-        public bool VerifyDigest(Asn1Oid algorithm, ReadOnlyMemory<byte> content, ReadOnlyMemory<byte> claimedDigest, Asn1Kit.Pkix.Bench.Certificate certificate)
+        public bool VerifyDigest(Asn1Oid algorithm, ReadOnlyMemory<byte> content, ReadOnlyMemory<byte> claimedDigest, Asn1Kit.Pkix.Certificate certificate)
         {
             Content = content.ToArray();
             Digest = claimedDigest.ToArray();
             return true;
         }
 
-        public bool VerifySignature(Asn1Oid algorithm, ReadOnlyMemory<byte> signedBytes, ReadOnlyMemory<byte> signature, Asn1Kit.Pkix.Bench.Certificate certificate)
+        public bool VerifySignature(Asn1Oid algorithm, ReadOnlyMemory<byte> signedBytes, ReadOnlyMemory<byte> signature, Asn1Kit.Pkix.Certificate certificate)
         {
             SignedBytes = signedBytes.ToArray();
             Signature = signature.ToArray();

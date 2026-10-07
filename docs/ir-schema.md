@@ -151,10 +151,10 @@ Sidecar open-type bindings (CLI `--bindings`, API `OpenTypeBindings`) адрес
 }
 ```
 
-Sidecar options-patch (CLI `--patch`, API `IrOptionsPatch`): JSON `{ "modules": { "<Module>": { … } }, "fields": { "<Module>.<Type>.<field>": { … } } }` — deep-merge в `options`. Неизвестный module/type/field → ошибка. Пример: [cms-2004-bench.patch.json](../compiler/fixtures/ir/cms-2004-bench.patch.json).
+Sidecar options-patch (CLI `--patch`, API `IrOptionsPatch`): JSON `{ "modules": { "<Module>": { … } }, "fields": { "<Module>.<Type>.<field>": { … } }, "types": { "<Module>.<Type>": { … } } }` — deep-merge в `options`. Неизвестный module/type/field → ошибка. Пример: [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json).
 
 ## Примеры
 
 - [compiler/fixtures/ir/example.json](../compiler/fixtures/ir/example.json) — минимальный SEQUENCE
 - [compiler/fixtures/ir/pkix1-explicit88.json](../compiler/fixtures/ir/pkix1-explicit88.json) — RFC 5280 Appendix A.1
-- [compiler/fixtures/ir/cms-2004-bench.json](../compiler/fixtures/ir/cms-2004-bench.json) — производный bench IR (golden + patch)
+- [compiler/fixtures/ir/dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json) — продуктовые namespaces / lazy / retainEncoded / valueType для PKIX/CMS/DVCS

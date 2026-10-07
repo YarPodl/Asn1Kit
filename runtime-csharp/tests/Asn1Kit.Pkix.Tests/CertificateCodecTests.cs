@@ -17,7 +17,9 @@ public sealed class CertificateCodecTests
         var expected = PkixFixtures.LoadExpected().Certificates[fileName];
 
         var certificate = Certificate.Decode(new Asn1Reader(der, Asn1Encoding.Der));
-        var tbs = certificate.TbsCertificate;
+        var tbs = certificate.TbsCertificate.Value;
+        var spki = tbs.SubjectPublicKeyInfo.Value;
+        var extensions = tbs.Extensions!.Value.Value;
 
         Assert.Equal(expected.Asn1Version, tbs.Version);
         Assert.Equal(Asn1Integer.FromInt32(expected.SerialNumber), tbs.SerialNumber);
@@ -25,26 +27,26 @@ public sealed class CertificateCodecTests
         Assert.Equal(expected.SignatureAlgorithm, tbs.Signature.Algorithm.ToString());
         Assert.Equal(expected.NotBeforeUtc, tbs.Validity.NotBefore.Value);
         Assert.Equal(expected.NotAfterUtc, tbs.Validity.NotAfter.Value);
-        AssertDn(expected.Subject, tbs.Subject);
-        AssertDn(expected.Issuer, tbs.Issuer);
+        AssertDn(expected.Subject, tbs.Subject.Value);
+        AssertDn(expected.Issuer, tbs.Issuer.Value);
 
-        Assert.Equal(expected.SubjectPublicKeyAlgorithm, tbs.SubjectPublicKeyInfo.Algorithm.Algorithm.ToString());
+        Assert.Equal(expected.SubjectPublicKeyAlgorithm, spki.Algorithm.Algorithm.ToString());
         if (expected.SubjectPublicKeyParametersNull)
         {
-            Assert.NotNull(tbs.SubjectPublicKeyInfo.Algorithm.Parameters);
-            Assert.NotNull(tbs.SubjectPublicKeyInfo.Algorithm.Parameters!.Null);
+            Assert.NotNull(spki.Algorithm.Parameters);
+            Assert.NotNull(spki.Algorithm.Parameters!.Null);
         }
 
-        Assert.Equal(expected.SubjectPublicKeyUnusedBits, tbs.SubjectPublicKeyInfo.SubjectPublicKey.UnusedBits);
-        Assert.Equal(expected.SubjectPublicKeyByteLength, tbs.SubjectPublicKeyInfo.SubjectPublicKey.Span.Length);
+        Assert.Equal(expected.SubjectPublicKeyUnusedBits, spki.SubjectPublicKey.UnusedBits);
+        Assert.Equal(expected.SubjectPublicKeyByteLength, spki.SubjectPublicKey.Span.Length);
         Assert.Equal(expected.SignatureUnusedBits, certificate.Signature.UnusedBits);
         Assert.Equal(expected.SignatureByteLength, certificate.Signature.Span.Length);
 
         Assert.NotNull(tbs.Extensions);
-        Assert.Equal(expected.ExtensionOids, tbs.Extensions!.Select(e => e.ExtnID.ToString()).ToList());
+        Assert.Equal(expected.ExtensionOids, extensions.Select(e => e.ExtnID.ToString()).ToList());
         foreach (var expectedExt in expected.Extensions)
         {
-            var actual = PkixFixtures.RequireExtension(tbs.Extensions!, expectedExt.Oid);
+            var actual = PkixFixtures.RequireExtension(extensions, expectedExt.Oid);
             Assert.Equal(expectedExt.Critical, actual.Critical);
         }
 
@@ -66,8 +68,8 @@ public sealed class CertificateCodecTests
 
         var again = Certificate.Decode(new Asn1Reader(encoded, Asn1Encoding.Der));
         Assert.Equal(certificate.SignatureAlgorithm.Algorithm, again.SignatureAlgorithm.Algorithm);
-        Assert.Equal(tbs.SerialNumber, again.TbsCertificate.SerialNumber);
-        Assert.Equal(tbs.SubjectPublicKeyInfo.SubjectPublicKey.Span.Length, again.TbsCertificate.SubjectPublicKeyInfo.SubjectPublicKey.Span.Length);
+        Assert.Equal(tbs.SerialNumber, again.TbsCertificate.Value.SerialNumber);
+        Assert.Equal(spki.SubjectPublicKey.Span.Length, again.TbsCertificate.Value.SubjectPublicKeyInfo.Value.SubjectPublicKey.Span.Length);
     }
 
     private static void AssertDn(List<ExpectedDnAttribute> expected, AttributeTypeAndValue[][] actual)

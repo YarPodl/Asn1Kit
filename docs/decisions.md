@@ -157,7 +157,13 @@
 
 **Причина.** RFC 3029 Appendix E соответствует поддерживаемому профилю, но зависит от CMP, CRMF, OCSP, ESS, S/MIME и CMS. Опубликованный модуль имеет verified errata на импорты `DigestAlgorithmIdentifier` и `GeneralNames`, использует разные написания `CertID` / `ESSCertID` и ссылается на старые X.509/CMS module identifiers. RFC 2510, в свою очередь, оставляет модуль для `CertificationRequest` на стороне реализации.
 
-**Последствие.** В [compiler/fixtures/asn1](../compiler/fixtures/asn1/) хранятся полные модули исходных RFC с комментариями о curated-правках: старые X.509 imports направлены на RFC 5280 Explicit88/Implicit88, CMS — на `CryptographicMessageSyntax2004`, а PKCS#10 собран из RFC 2314. Namespace задаёт [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json). Промежуточный DVCS IR не коммитится; `*.g.cs` — golden и сверяется генерацией из полного графа. Замена зависимостей на RFC 5911/5912 потребовала бы изменения module identifiers в этом графе, поэтому современная сборка выпускается отдельно.
+**Последствие.** В [compiler/fixtures/asn1](../compiler/fixtures/asn1/) хранятся полные модули исходных RFC с комментариями о curated-правках: старые X.509 imports направлены на RFC 5280 Explicit88/Implicit88, CMS — на `CryptographicMessageSyntax2004`, а PKCS#10 собран из RFC 2314. Namespace и продуктовые decode-options задаёт [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json). Промежуточный DVCS IR не коммитится; `*.g.cs` — golden и сверяется генерацией из полного графа. Замена зависимостей на RFC 5911/5912 потребовала бы изменения module identifiers в этом графе, поэтому современная сборка выпускается отдельно.
+
+## PKIX product surface — retainEncoded / lazy cert, без отдельной Bench-сборки
+
+**Причина.** Отдельная сборка `Asn1Kit.Pkix.Bench` дублировала Explicit/Implicit/CMS (~300 KB `.g.cs`) ради performance/verify options (`lazy` на `CertificateChoices.certificate`, `retainEncoded` на TBS/Name/SPKI/Extensions/`signedAttrs`, `AttributeTypeAndValue` как `struct`). Demo и бенчмарки уже требовали этот API; eager golden мешал практическому CMS-пути и раздувал репозиторий.
+
+**Последствие.** Те же field/type options входят в [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json) и применяются к продуктовому `Asn1Kit.Pkix` / `Asn1Kit.Cms`. Отдельные `Asn1Kit.Pkix.Bench`, `cms-2004-bench.*` и `regenerate-bench.ps1` сняты. IR-goldens (`cms-2004.json` и др.) остаются без этих options; они накладываются на generate. CMS-бенчмарки сравнивают Lazy / Lazy+Materialize с BCL/BouncyCastle без отдельного Eager-assembly.
 
 ## Современный ASN.1 — частная семантика компилятора, конкретный IR v1
 
