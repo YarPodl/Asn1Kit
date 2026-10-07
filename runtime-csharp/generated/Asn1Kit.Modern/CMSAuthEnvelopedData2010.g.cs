@@ -218,41 +218,15 @@ internal static class __CMSAuthEnvelopedData2010OpenTypeCodecs
 
 }
 
-public delegate T AuthEnvDataAttributeSetDecoder<T>(Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source);
-public delegate Asn1Any[] AuthEnvDataAttributeSetEncoder<T>(T value);
-
-public sealed class AuthEnvDataAttributeSetBinding<T>
-{
-    internal AuthEnvDataAttributeSetBinding(Asn1Oid oid, AuthEnvDataAttributeSetDecoder<T> decoder, AuthEnvDataAttributeSetEncoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal AuthEnvDataAttributeSetDecoder<T> Decoder { get; }
-    internal AuthEnvDataAttributeSetEncoder<T> Encoder { get; }
-}
-
-public sealed class AuthEnvDataAttributeSetDecoderBinding<T>
-{
-    internal AuthEnvDataAttributeSetDecoderBinding(Asn1Oid oid, AuthEnvDataAttributeSetDecoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal AuthEnvDataAttributeSetDecoder<T> Decoder { get; }
-}
+public sealed record AuthEnvDataAttributeSetBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute, T> Decoder, Func<T, Asn1Any[]> Encoder);
+public sealed record AuthEnvDataAttributeSetDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute, T> Decoder);
 
 public static class AuthEnvDataAttributeSetBindings
 {
-    public static AuthEnvDataAttributeSetBinding<T> Create<T>(Asn1Oid oid, AuthEnvDataAttributeSetDecoder<T> decoder, AuthEnvDataAttributeSetEncoder<T> encoder) =>
+    public static AuthEnvDataAttributeSetBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute, T> decoder, Func<T, Asn1Any[]> encoder) =>
         new(oid, decoder, encoder);
 
-    public static AuthEnvDataAttributeSetDecoderBinding<T> Create<T>(Asn1Oid oid, AuthEnvDataAttributeSetDecoder<T> decoder) =>
+    public static AuthEnvDataAttributeSetDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute, T> decoder) =>
         new(oid, decoder);
 
     public static AuthEnvDataAttributeSetBinding<Asn1Oid[]> ContentType { get; } =
@@ -289,41 +263,15 @@ public static class AuthEnvDataAttributeSetBindings
         Asn1Codecs.EncodeEach(value, __CMSAuthEnvelopedData2010OpenTypeCodecs.SigningTimeAttribute);
 }
 
-public delegate T AuthContentEncryptionAlgorithmSetParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
-public delegate Asn1Any AuthContentEncryptionAlgorithmSetParametersEncoder<T>(T value);
-
-public sealed class AuthContentEncryptionAlgorithmSetParametersBinding<T>
-{
-    internal AuthContentEncryptionAlgorithmSetParametersBinding(Asn1Oid oid, AuthContentEncryptionAlgorithmSetParametersDecoder<T> decoder, AuthContentEncryptionAlgorithmSetParametersEncoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal AuthContentEncryptionAlgorithmSetParametersDecoder<T> Decoder { get; }
-    internal AuthContentEncryptionAlgorithmSetParametersEncoder<T> Encoder { get; }
-}
-
-public sealed class AuthContentEncryptionAlgorithmSetParametersDecoderBinding<T>
-{
-    internal AuthContentEncryptionAlgorithmSetParametersDecoderBinding(Asn1Oid oid, AuthContentEncryptionAlgorithmSetParametersDecoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal AuthContentEncryptionAlgorithmSetParametersDecoder<T> Decoder { get; }
-}
+public sealed record AuthContentEncryptionAlgorithmSetParametersBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder, Func<T, Asn1Any> Encoder);
+public sealed record AuthContentEncryptionAlgorithmSetParametersDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder);
 
 public static class AuthContentEncryptionAlgorithmSetParametersBindings
 {
-    public static AuthContentEncryptionAlgorithmSetParametersBinding<T> Create<T>(Asn1Oid oid, AuthContentEncryptionAlgorithmSetParametersDecoder<T> decoder, AuthContentEncryptionAlgorithmSetParametersEncoder<T> encoder) =>
+    public static AuthContentEncryptionAlgorithmSetParametersBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder, Func<T, Asn1Any> encoder) =>
         new(oid, decoder, encoder);
 
-    public static AuthContentEncryptionAlgorithmSetParametersDecoderBinding<T> Create<T>(Asn1Oid oid, AuthContentEncryptionAlgorithmSetParametersDecoder<T> decoder) =>
+    public static AuthContentEncryptionAlgorithmSetParametersDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder) =>
         new(oid, decoder);
 
     public static AuthContentEncryptionAlgorithmSetParametersBinding<Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters> CeaAes128CCM { get; } =

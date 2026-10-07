@@ -1172,41 +1172,15 @@ internal static class __OCSP2009OpenTypeCodecs
 
 }
 
-public delegate T ExtensionExtnValueDecoder<T>(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source);
-public delegate Asn1Contained<Asn1Any> ExtensionExtnValueEncoder<T>(T value);
-
-public sealed class ExtensionExtnValueBinding<T>
-{
-    internal ExtensionExtnValueBinding(Asn1Oid oid, ExtensionExtnValueDecoder<T> decoder, ExtensionExtnValueEncoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal ExtensionExtnValueDecoder<T> Decoder { get; }
-    internal ExtensionExtnValueEncoder<T> Encoder { get; }
-}
-
-public sealed class ExtensionExtnValueDecoderBinding<T>
-{
-    internal ExtensionExtnValueDecoderBinding(Asn1Oid oid, ExtensionExtnValueDecoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal ExtensionExtnValueDecoder<T> Decoder { get; }
-}
+public sealed record ExtensionExtnValueBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> Decoder, Func<T, Asn1Contained<Asn1Any>> Encoder);
+public sealed record ExtensionExtnValueDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> Decoder);
 
 public static class ExtensionExtnValueBindings
 {
-    public static ExtensionExtnValueBinding<T> Create<T>(Asn1Oid oid, ExtensionExtnValueDecoder<T> decoder, ExtensionExtnValueEncoder<T> encoder) =>
+    public static ExtensionExtnValueBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> decoder, Func<T, Asn1Contained<Asn1Any>> encoder) =>
         new(oid, decoder, encoder);
 
-    public static ExtensionExtnValueDecoderBinding<T> Create<T>(Asn1Oid oid, ExtensionExtnValueDecoder<T> decoder) =>
+    public static ExtensionExtnValueDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> decoder) =>
         new(oid, decoder);
 
     public static ExtensionExtnValueBinding<ReadOnlyMemory<byte>> ReOcspNonce { get; } =
@@ -1232,41 +1206,15 @@ public static class ExtensionExtnValueBindings
         Asn1Codecs.EncodeContained(value, __OCSP2009OpenTypeCodecs.ReOcspResponseExtension);
 }
 
-public delegate T ExtensionExtnValueExtensionDecoder<T>(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source);
-public delegate Asn1Contained<Asn1Any> ExtensionExtnValueExtensionEncoder<T>(T value);
-
-public sealed class ExtensionExtnValueExtensionBinding<T>
-{
-    internal ExtensionExtnValueExtensionBinding(Asn1Oid oid, ExtensionExtnValueExtensionDecoder<T> decoder, ExtensionExtnValueExtensionEncoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal ExtensionExtnValueExtensionDecoder<T> Decoder { get; }
-    internal ExtensionExtnValueExtensionEncoder<T> Encoder { get; }
-}
-
-public sealed class ExtensionExtnValueExtensionDecoderBinding<T>
-{
-    internal ExtensionExtnValueExtensionDecoderBinding(Asn1Oid oid, ExtensionExtnValueExtensionDecoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal ExtensionExtnValueExtensionDecoder<T> Decoder { get; }
-}
+public sealed record ExtensionExtnValueExtensionBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> Decoder, Func<T, Asn1Contained<Asn1Any>> Encoder);
+public sealed record ExtensionExtnValueExtensionDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> Decoder);
 
 public static class ExtensionExtnValueExtensionBindings
 {
-    public static ExtensionExtnValueExtensionBinding<T> Create<T>(Asn1Oid oid, ExtensionExtnValueExtensionDecoder<T> decoder, ExtensionExtnValueExtensionEncoder<T> encoder) =>
+    public static ExtensionExtnValueExtensionBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> decoder, Func<T, Asn1Contained<Asn1Any>> encoder) =>
         new(oid, decoder, encoder);
 
-    public static ExtensionExtnValueExtensionDecoderBinding<T> Create<T>(Asn1Oid oid, ExtensionExtnValueExtensionDecoder<T> decoder) =>
+    public static ExtensionExtnValueExtensionDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> decoder) =>
         new(oid, decoder);
 
     public static ExtensionExtnValueExtensionBinding<ServiceLocator> ReOcspServiceLocator { get; } =
@@ -1281,41 +1229,15 @@ public static class ExtensionExtnValueExtensionBindings
         Asn1Codecs.EncodeContained(value, __OCSP2009OpenTypeCodecs.ReOcspServiceLocatorExtension);
 }
 
-public delegate T AlgorithmIdentifierParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
-public delegate Asn1Any AlgorithmIdentifierParametersEncoder<T>(T value);
-
-public sealed class AlgorithmIdentifierParametersBinding<T>
-{
-    internal AlgorithmIdentifierParametersBinding(Asn1Oid oid, AlgorithmIdentifierParametersDecoder<T> decoder, AlgorithmIdentifierParametersEncoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal AlgorithmIdentifierParametersDecoder<T> Decoder { get; }
-    internal AlgorithmIdentifierParametersEncoder<T> Encoder { get; }
-}
-
-public sealed class AlgorithmIdentifierParametersDecoderBinding<T>
-{
-    internal AlgorithmIdentifierParametersDecoderBinding(Asn1Oid oid, AlgorithmIdentifierParametersDecoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal AlgorithmIdentifierParametersDecoder<T> Decoder { get; }
-}
+public sealed record AlgorithmIdentifierParametersBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder, Func<T, Asn1Any> Encoder);
+public sealed record AlgorithmIdentifierParametersDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder);
 
 public static class AlgorithmIdentifierParametersBindings
 {
-    public static AlgorithmIdentifierParametersBinding<T> Create<T>(Asn1Oid oid, AlgorithmIdentifierParametersDecoder<T> decoder, AlgorithmIdentifierParametersEncoder<T> encoder) =>
+    public static AlgorithmIdentifierParametersBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder, Func<T, Asn1Any> encoder) =>
         new(oid, decoder, encoder);
 
-    public static AlgorithmIdentifierParametersDecoderBinding<T> Create<T>(Asn1Oid oid, AlgorithmIdentifierParametersDecoder<T> decoder) =>
+    public static AlgorithmIdentifierParametersDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder) =>
         new(oid, decoder);
 
     public static AlgorithmIdentifierParametersBinding<Asn1Null> SaDsaWithSHA1 { get; } =
@@ -1355,41 +1277,15 @@ public static class AlgorithmIdentifierParametersBindings
     }
 }
 
-public delegate T ExtensionExtnValueExtension2Decoder<T>(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source);
-public delegate Asn1Contained<Asn1Any> ExtensionExtnValueExtension2Encoder<T>(T value);
-
-public sealed class ExtensionExtnValueExtension2Binding<T>
-{
-    internal ExtensionExtnValueExtension2Binding(Asn1Oid oid, ExtensionExtnValueExtension2Decoder<T> decoder, ExtensionExtnValueExtension2Encoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal ExtensionExtnValueExtension2Decoder<T> Decoder { get; }
-    internal ExtensionExtnValueExtension2Encoder<T> Encoder { get; }
-}
-
-public sealed class ExtensionExtnValueExtension2DecoderBinding<T>
-{
-    internal ExtensionExtnValueExtension2DecoderBinding(Asn1Oid oid, ExtensionExtnValueExtension2Decoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal ExtensionExtnValueExtension2Decoder<T> Decoder { get; }
-}
+public sealed record ExtensionExtnValueExtension2Binding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> Decoder, Func<T, Asn1Contained<Asn1Any>> Encoder);
+public sealed record ExtensionExtnValueExtension2DecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> Decoder);
 
 public static class ExtensionExtnValueExtension2Bindings
 {
-    public static ExtensionExtnValueExtension2Binding<T> Create<T>(Asn1Oid oid, ExtensionExtnValueExtension2Decoder<T> decoder, ExtensionExtnValueExtension2Encoder<T> encoder) =>
+    public static ExtensionExtnValueExtension2Binding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> decoder, Func<T, Asn1Contained<Asn1Any>> encoder) =>
         new(oid, decoder, encoder);
 
-    public static ExtensionExtnValueExtension2DecoderBinding<T> Create<T>(Asn1Oid oid, ExtensionExtnValueExtension2Decoder<T> decoder) =>
+    public static ExtensionExtnValueExtension2DecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> decoder) =>
         new(oid, decoder);
 
     public static ExtensionExtnValueExtension2Binding<ReadOnlyMemory<byte>> ReOcspNonce { get; } =
@@ -1404,41 +1300,15 @@ public static class ExtensionExtnValueExtension2Bindings
         Asn1Codecs.EncodeContained(value, Asn1Codecs.OctetString);
 }
 
-public delegate T ExtensionExtnValueExtension3Decoder<T>(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source);
-public delegate Asn1Contained<Asn1Any> ExtensionExtnValueExtension3Encoder<T>(T value);
-
-public sealed class ExtensionExtnValueExtension3Binding<T>
-{
-    internal ExtensionExtnValueExtension3Binding(Asn1Oid oid, ExtensionExtnValueExtension3Decoder<T> decoder, ExtensionExtnValueExtension3Encoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal ExtensionExtnValueExtension3Decoder<T> Decoder { get; }
-    internal ExtensionExtnValueExtension3Encoder<T> Encoder { get; }
-}
-
-public sealed class ExtensionExtnValueExtension3DecoderBinding<T>
-{
-    internal ExtensionExtnValueExtension3DecoderBinding(Asn1Oid oid, ExtensionExtnValueExtension3Decoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal ExtensionExtnValueExtension3Decoder<T> Decoder { get; }
-}
+public sealed record ExtensionExtnValueExtension3Binding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> Decoder, Func<T, Asn1Contained<Asn1Any>> Encoder);
+public sealed record ExtensionExtnValueExtension3DecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> Decoder);
 
 public static class ExtensionExtnValueExtension3Bindings
 {
-    public static ExtensionExtnValueExtension3Binding<T> Create<T>(Asn1Oid oid, ExtensionExtnValueExtension3Decoder<T> decoder, ExtensionExtnValueExtension3Encoder<T> encoder) =>
+    public static ExtensionExtnValueExtension3Binding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> decoder, Func<T, Asn1Contained<Asn1Any>> encoder) =>
         new(oid, decoder, encoder);
 
-    public static ExtensionExtnValueExtension3DecoderBinding<T> Create<T>(Asn1Oid oid, ExtensionExtnValueExtension3Decoder<T> decoder) =>
+    public static ExtensionExtnValueExtension3DecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> decoder) =>
         new(oid, decoder);
 
     public static ExtensionExtnValueExtension3Binding<CrlID> ReOcspCrl { get; } =
@@ -1508,41 +1378,15 @@ public static class ExtensionExtnValueExtension3Bindings
         Asn1Codecs.EncodeContained(value, Asn1Codecs.GeneralizedTime);
 }
 
-public delegate T SupportedAttributesValueDecoder<T>(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source);
-public delegate Asn1Any SupportedAttributesValueEncoder<T>(T value);
-
-public sealed class SupportedAttributesValueBinding<T>
-{
-    internal SupportedAttributesValueBinding(Asn1Oid oid, SupportedAttributesValueDecoder<T> decoder, SupportedAttributesValueEncoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal SupportedAttributesValueDecoder<T> Decoder { get; }
-    internal SupportedAttributesValueEncoder<T> Encoder { get; }
-}
-
-public sealed class SupportedAttributesValueDecoderBinding<T>
-{
-    internal SupportedAttributesValueDecoderBinding(Asn1Oid oid, SupportedAttributesValueDecoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal SupportedAttributesValueDecoder<T> Decoder { get; }
-}
+public sealed record SupportedAttributesValueBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute, T> Decoder, Func<T, Asn1Any> Encoder);
+public sealed record SupportedAttributesValueDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute, T> Decoder);
 
 public static class SupportedAttributesValueBindings
 {
-    public static SupportedAttributesValueBinding<T> Create<T>(Asn1Oid oid, SupportedAttributesValueDecoder<T> decoder, SupportedAttributesValueEncoder<T> encoder) =>
+    public static SupportedAttributesValueBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute, T> decoder, Func<T, Asn1Any> encoder) =>
         new(oid, decoder, encoder);
 
-    public static SupportedAttributesValueDecoderBinding<T> Create<T>(Asn1Oid oid, SupportedAttributesValueDecoder<T> decoder) =>
+    public static SupportedAttributesValueDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute, T> decoder) =>
         new(oid, decoder);
 
     public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> Name { get; } =

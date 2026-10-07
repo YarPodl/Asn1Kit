@@ -2941,41 +2941,15 @@ internal static class __SCVP2009OpenTypeCodecs
 
 }
 
-public delegate T SignatureAlgorithmsParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
-public delegate Asn1Any SignatureAlgorithmsParametersEncoder<T>(T value);
-
-public sealed class SignatureAlgorithmsParametersBinding<T>
-{
-    internal SignatureAlgorithmsParametersBinding(Asn1Oid oid, SignatureAlgorithmsParametersDecoder<T> decoder, SignatureAlgorithmsParametersEncoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal SignatureAlgorithmsParametersDecoder<T> Decoder { get; }
-    internal SignatureAlgorithmsParametersEncoder<T> Encoder { get; }
-}
-
-public sealed class SignatureAlgorithmsParametersDecoderBinding<T>
-{
-    internal SignatureAlgorithmsParametersDecoderBinding(Asn1Oid oid, SignatureAlgorithmsParametersDecoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal SignatureAlgorithmsParametersDecoder<T> Decoder { get; }
-}
+public sealed record SignatureAlgorithmsParametersBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder, Func<T, Asn1Any> Encoder);
+public sealed record SignatureAlgorithmsParametersDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder);
 
 public static class SignatureAlgorithmsParametersBindings
 {
-    public static SignatureAlgorithmsParametersBinding<T> Create<T>(Asn1Oid oid, SignatureAlgorithmsParametersDecoder<T> decoder, SignatureAlgorithmsParametersEncoder<T> encoder) =>
+    public static SignatureAlgorithmsParametersBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder, Func<T, Asn1Any> encoder) =>
         new(oid, decoder, encoder);
 
-    public static SignatureAlgorithmsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, SignatureAlgorithmsParametersDecoder<T> decoder) =>
+    public static SignatureAlgorithmsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder) =>
         new(oid, decoder);
 
     public static SignatureAlgorithmsParametersBinding<Asn1Null> SaRsaWithMD2 { get; } =
@@ -3087,41 +3061,15 @@ public static class SignatureAlgorithmsParametersBindings
     }
 }
 
-public delegate T AlgorithmIdentifierParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
-public delegate Asn1Any AlgorithmIdentifierParametersEncoder<T>(T value);
-
-public sealed class AlgorithmIdentifierParametersBinding<T>
-{
-    internal AlgorithmIdentifierParametersBinding(Asn1Oid oid, AlgorithmIdentifierParametersDecoder<T> decoder, AlgorithmIdentifierParametersEncoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal AlgorithmIdentifierParametersDecoder<T> Decoder { get; }
-    internal AlgorithmIdentifierParametersEncoder<T> Encoder { get; }
-}
-
-public sealed class AlgorithmIdentifierParametersDecoderBinding<T>
-{
-    internal AlgorithmIdentifierParametersDecoderBinding(Asn1Oid oid, AlgorithmIdentifierParametersDecoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal AlgorithmIdentifierParametersDecoder<T> Decoder { get; }
-}
+public sealed record AlgorithmIdentifierParametersBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder, Func<T, Asn1Any> Encoder);
+public sealed record AlgorithmIdentifierParametersDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder);
 
 public static class AlgorithmIdentifierParametersBindings
 {
-    public static AlgorithmIdentifierParametersBinding<T> Create<T>(Asn1Oid oid, AlgorithmIdentifierParametersDecoder<T> decoder, AlgorithmIdentifierParametersEncoder<T> encoder) =>
+    public static AlgorithmIdentifierParametersBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder, Func<T, Asn1Any> encoder) =>
         new(oid, decoder, encoder);
 
-    public static AlgorithmIdentifierParametersDecoderBinding<T> Create<T>(Asn1Oid oid, AlgorithmIdentifierParametersDecoder<T> decoder) =>
+    public static AlgorithmIdentifierParametersDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder) =>
         new(oid, decoder);
 
     public static AlgorithmIdentifierParametersBinding<Asn1Null> MdaSha1 { get; } =

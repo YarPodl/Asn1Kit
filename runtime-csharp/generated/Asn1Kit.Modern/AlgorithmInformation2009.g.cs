@@ -118,41 +118,15 @@ internal static class __AlgorithmInformation2009OpenTypeCodecs
 
 }
 
-public delegate T SMimeCapsSetParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability source);
-public delegate Asn1Any SMimeCapsSetParametersEncoder<T>(T value);
-
-public sealed class SMimeCapsSetParametersBinding<T>
-{
-    internal SMimeCapsSetParametersBinding(Asn1Oid oid, SMimeCapsSetParametersDecoder<T> decoder, SMimeCapsSetParametersEncoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal SMimeCapsSetParametersDecoder<T> Decoder { get; }
-    internal SMimeCapsSetParametersEncoder<T> Encoder { get; }
-}
-
-public sealed class SMimeCapsSetParametersDecoderBinding<T>
-{
-    internal SMimeCapsSetParametersDecoderBinding(Asn1Oid oid, SMimeCapsSetParametersDecoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal SMimeCapsSetParametersDecoder<T> Decoder { get; }
-}
+public sealed record SMimeCapsSetParametersBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability, T> Decoder, Func<T, Asn1Any> Encoder);
+public sealed record SMimeCapsSetParametersDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability, T> Decoder);
 
 public static class SMimeCapsSetParametersBindings
 {
-    public static SMimeCapsSetParametersBinding<T> Create<T>(Asn1Oid oid, SMimeCapsSetParametersDecoder<T> decoder, SMimeCapsSetParametersEncoder<T> encoder) =>
+    public static SMimeCapsSetParametersBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability, T> decoder, Func<T, Asn1Any> encoder) =>
         new(oid, decoder, encoder);
 
-    public static SMimeCapsSetParametersDecoderBinding<T> Create<T>(Asn1Oid oid, SMimeCapsSetParametersDecoder<T> decoder) =>
+    public static SMimeCapsSetParametersDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability, T> decoder) =>
         new(oid, decoder);
 
     public static SMimeCapsSetParametersBinding<Asn1Integer> CapRC2CBC { get; } =

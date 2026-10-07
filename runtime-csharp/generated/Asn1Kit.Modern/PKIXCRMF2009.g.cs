@@ -1817,41 +1817,15 @@ internal static class __PKIXCRMF2009OpenTypeCodecs
 
 }
 
-public delegate T RegInfoSetValueDecoder<T>(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source);
-public delegate Asn1Any RegInfoSetValueEncoder<T>(T value);
-
-public sealed class RegInfoSetValueBinding<T>
-{
-    internal RegInfoSetValueBinding(Asn1Oid oid, RegInfoSetValueDecoder<T> decoder, RegInfoSetValueEncoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal RegInfoSetValueDecoder<T> Decoder { get; }
-    internal RegInfoSetValueEncoder<T> Encoder { get; }
-}
-
-public sealed class RegInfoSetValueDecoderBinding<T>
-{
-    internal RegInfoSetValueDecoderBinding(Asn1Oid oid, RegInfoSetValueDecoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal RegInfoSetValueDecoder<T> Decoder { get; }
-}
+public sealed record RegInfoSetValueBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute, T> Decoder, Func<T, Asn1Any> Encoder);
+public sealed record RegInfoSetValueDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute, T> Decoder);
 
 public static class RegInfoSetValueBindings
 {
-    public static RegInfoSetValueBinding<T> Create<T>(Asn1Oid oid, RegInfoSetValueDecoder<T> decoder, RegInfoSetValueEncoder<T> encoder) =>
+    public static RegInfoSetValueBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute, T> decoder, Func<T, Asn1Any> encoder) =>
         new(oid, decoder, encoder);
 
-    public static RegInfoSetValueDecoderBinding<T> Create<T>(Asn1Oid oid, RegInfoSetValueDecoder<T> decoder) =>
+    public static RegInfoSetValueDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute, T> decoder) =>
         new(oid, decoder);
 
     public static RegInfoSetValueBinding<string> RegInfoUtf8Pairs { get; } =
@@ -1871,41 +1845,15 @@ public static class RegInfoSetValueBindings
     }
 }
 
-public delegate T RegControlSetValueDecoder<T>(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source);
-public delegate Asn1Any RegControlSetValueEncoder<T>(T value);
-
-public sealed class RegControlSetValueBinding<T>
-{
-    internal RegControlSetValueBinding(Asn1Oid oid, RegControlSetValueDecoder<T> decoder, RegControlSetValueEncoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal RegControlSetValueDecoder<T> Decoder { get; }
-    internal RegControlSetValueEncoder<T> Encoder { get; }
-}
-
-public sealed class RegControlSetValueDecoderBinding<T>
-{
-    internal RegControlSetValueDecoderBinding(Asn1Oid oid, RegControlSetValueDecoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal RegControlSetValueDecoder<T> Decoder { get; }
-}
+public sealed record RegControlSetValueBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute, T> Decoder, Func<T, Asn1Any> Encoder);
+public sealed record RegControlSetValueDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute, T> Decoder);
 
 public static class RegControlSetValueBindings
 {
-    public static RegControlSetValueBinding<T> Create<T>(Asn1Oid oid, RegControlSetValueDecoder<T> decoder, RegControlSetValueEncoder<T> encoder) =>
+    public static RegControlSetValueBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute, T> decoder, Func<T, Asn1Any> encoder) =>
         new(oid, decoder, encoder);
 
-    public static RegControlSetValueDecoderBinding<T> Create<T>(Asn1Oid oid, RegControlSetValueDecoder<T> decoder) =>
+    public static RegControlSetValueDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute, T> decoder) =>
         new(oid, decoder);
 
     public static RegControlSetValueBinding<string> RegCtrlRegToken { get; } =
@@ -2012,41 +1960,15 @@ public static class RegControlSetValueBindings
     }
 }
 
-public delegate T SignatureAlgorithmsParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
-public delegate Asn1Any SignatureAlgorithmsParametersEncoder<T>(T value);
-
-public sealed class SignatureAlgorithmsParametersBinding<T>
-{
-    internal SignatureAlgorithmsParametersBinding(Asn1Oid oid, SignatureAlgorithmsParametersDecoder<T> decoder, SignatureAlgorithmsParametersEncoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal SignatureAlgorithmsParametersDecoder<T> Decoder { get; }
-    internal SignatureAlgorithmsParametersEncoder<T> Encoder { get; }
-}
-
-public sealed class SignatureAlgorithmsParametersDecoderBinding<T>
-{
-    internal SignatureAlgorithmsParametersDecoderBinding(Asn1Oid oid, SignatureAlgorithmsParametersDecoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal SignatureAlgorithmsParametersDecoder<T> Decoder { get; }
-}
+public sealed record SignatureAlgorithmsParametersBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder, Func<T, Asn1Any> Encoder);
+public sealed record SignatureAlgorithmsParametersDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder);
 
 public static class SignatureAlgorithmsParametersBindings
 {
-    public static SignatureAlgorithmsParametersBinding<T> Create<T>(Asn1Oid oid, SignatureAlgorithmsParametersDecoder<T> decoder, SignatureAlgorithmsParametersEncoder<T> encoder) =>
+    public static SignatureAlgorithmsParametersBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder, Func<T, Asn1Any> encoder) =>
         new(oid, decoder, encoder);
 
-    public static SignatureAlgorithmsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, SignatureAlgorithmsParametersDecoder<T> decoder) =>
+    public static SignatureAlgorithmsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder) =>
         new(oid, decoder);
 
     public static SignatureAlgorithmsParametersBinding<Asn1Null> SaRsaWithMD2 { get; } =
@@ -2158,41 +2080,15 @@ public static class SignatureAlgorithmsParametersBindings
     }
 }
 
-public delegate T SupportedAttributesValueDecoder<T>(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source);
-public delegate Asn1Any SupportedAttributesValueEncoder<T>(T value);
-
-public sealed class SupportedAttributesValueBinding<T>
-{
-    internal SupportedAttributesValueBinding(Asn1Oid oid, SupportedAttributesValueDecoder<T> decoder, SupportedAttributesValueEncoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal SupportedAttributesValueDecoder<T> Decoder { get; }
-    internal SupportedAttributesValueEncoder<T> Encoder { get; }
-}
-
-public sealed class SupportedAttributesValueDecoderBinding<T>
-{
-    internal SupportedAttributesValueDecoderBinding(Asn1Oid oid, SupportedAttributesValueDecoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal SupportedAttributesValueDecoder<T> Decoder { get; }
-}
+public sealed record SupportedAttributesValueBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute, T> Decoder, Func<T, Asn1Any> Encoder);
+public sealed record SupportedAttributesValueDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute, T> Decoder);
 
 public static class SupportedAttributesValueBindings
 {
-    public static SupportedAttributesValueBinding<T> Create<T>(Asn1Oid oid, SupportedAttributesValueDecoder<T> decoder, SupportedAttributesValueEncoder<T> encoder) =>
+    public static SupportedAttributesValueBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute, T> decoder, Func<T, Asn1Any> encoder) =>
         new(oid, decoder, encoder);
 
-    public static SupportedAttributesValueDecoderBinding<T> Create<T>(Asn1Oid oid, SupportedAttributesValueDecoder<T> decoder) =>
+    public static SupportedAttributesValueDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute, T> decoder) =>
         new(oid, decoder);
 
     public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> Name { get; } =
@@ -2404,41 +2300,15 @@ public static class SupportedAttributesValueBindings
     }
 }
 
-public delegate T CertExtensionsDecoder<T>(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source);
-public delegate Asn1Contained<Asn1Any> CertExtensionsEncoder<T>(T value);
-
-public sealed class CertExtensionsBinding<T>
-{
-    internal CertExtensionsBinding(Asn1Oid oid, CertExtensionsDecoder<T> decoder, CertExtensionsEncoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal CertExtensionsDecoder<T> Decoder { get; }
-    internal CertExtensionsEncoder<T> Encoder { get; }
-}
-
-public sealed class CertExtensionsDecoderBinding<T>
-{
-    internal CertExtensionsDecoderBinding(Asn1Oid oid, CertExtensionsDecoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal CertExtensionsDecoder<T> Decoder { get; }
-}
+public sealed record CertExtensionsBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> Decoder, Func<T, Asn1Contained<Asn1Any>> Encoder);
+public sealed record CertExtensionsDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> Decoder);
 
 public static class CertExtensionsBindings
 {
-    public static CertExtensionsBinding<T> Create<T>(Asn1Oid oid, CertExtensionsDecoder<T> decoder, CertExtensionsEncoder<T> encoder) =>
+    public static CertExtensionsBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> decoder, Func<T, Asn1Contained<Asn1Any>> encoder) =>
         new(oid, decoder, encoder);
 
-    public static CertExtensionsDecoderBinding<T> Create<T>(Asn1Oid oid, CertExtensionsDecoder<T> decoder) =>
+    public static CertExtensionsDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> decoder) =>
         new(oid, decoder);
 
     public static CertExtensionsBinding<Asn1Kit.Modern.PKIX1Implicit2009.AuthorityKeyIdentifier> AuthorityKeyIdentifier { get; } =
@@ -2640,41 +2510,15 @@ public static class CertExtensionsBindings
         Asn1Codecs.EncodeContained(value, __PKIXCRMF2009OpenTypeCodecs.SubjectInfoAccessSyntaxExtension);
 }
 
-public delegate T PasswordMACAlgorithmsParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
-public delegate Asn1Any PasswordMACAlgorithmsParametersEncoder<T>(T value);
-
-public sealed class PasswordMACAlgorithmsParametersBinding<T>
-{
-    internal PasswordMACAlgorithmsParametersBinding(Asn1Oid oid, PasswordMACAlgorithmsParametersDecoder<T> decoder, PasswordMACAlgorithmsParametersEncoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal PasswordMACAlgorithmsParametersDecoder<T> Decoder { get; }
-    internal PasswordMACAlgorithmsParametersEncoder<T> Encoder { get; }
-}
-
-public sealed class PasswordMACAlgorithmsParametersDecoderBinding<T>
-{
-    internal PasswordMACAlgorithmsParametersDecoderBinding(Asn1Oid oid, PasswordMACAlgorithmsParametersDecoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal PasswordMACAlgorithmsParametersDecoder<T> Decoder { get; }
-}
+public sealed record PasswordMACAlgorithmsParametersBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder, Func<T, Asn1Any> Encoder);
+public sealed record PasswordMACAlgorithmsParametersDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder);
 
 public static class PasswordMACAlgorithmsParametersBindings
 {
-    public static PasswordMACAlgorithmsParametersBinding<T> Create<T>(Asn1Oid oid, PasswordMACAlgorithmsParametersDecoder<T> decoder, PasswordMACAlgorithmsParametersEncoder<T> encoder) =>
+    public static PasswordMACAlgorithmsParametersBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder, Func<T, Asn1Any> encoder) =>
         new(oid, decoder, encoder);
 
-    public static PasswordMACAlgorithmsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, PasswordMACAlgorithmsParametersDecoder<T> decoder) =>
+    public static PasswordMACAlgorithmsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder) =>
         new(oid, decoder);
 
     public static PasswordMACAlgorithmsParametersBinding<PBMParameter> PBMParameter { get; } =
@@ -2687,41 +2531,15 @@ public static class PasswordMACAlgorithmsParametersBindings
     }
 }
 
-public delegate T DigestAlgorithmsParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
-public delegate Asn1Any DigestAlgorithmsParametersEncoder<T>(T value);
-
-public sealed class DigestAlgorithmsParametersBinding<T>
-{
-    internal DigestAlgorithmsParametersBinding(Asn1Oid oid, DigestAlgorithmsParametersDecoder<T> decoder, DigestAlgorithmsParametersEncoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal DigestAlgorithmsParametersDecoder<T> Decoder { get; }
-    internal DigestAlgorithmsParametersEncoder<T> Encoder { get; }
-}
-
-public sealed class DigestAlgorithmsParametersDecoderBinding<T>
-{
-    internal DigestAlgorithmsParametersDecoderBinding(Asn1Oid oid, DigestAlgorithmsParametersDecoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal DigestAlgorithmsParametersDecoder<T> Decoder { get; }
-}
+public sealed record DigestAlgorithmsParametersBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder, Func<T, Asn1Any> Encoder);
+public sealed record DigestAlgorithmsParametersDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder);
 
 public static class DigestAlgorithmsParametersBindings
 {
-    public static DigestAlgorithmsParametersBinding<T> Create<T>(Asn1Oid oid, DigestAlgorithmsParametersDecoder<T> decoder, DigestAlgorithmsParametersEncoder<T> encoder) =>
+    public static DigestAlgorithmsParametersBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder, Func<T, Asn1Any> encoder) =>
         new(oid, decoder, encoder);
 
-    public static DigestAlgorithmsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, DigestAlgorithmsParametersDecoder<T> decoder) =>
+    public static DigestAlgorithmsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder) =>
         new(oid, decoder);
 
     public static DigestAlgorithmsParametersBinding<Asn1Null> MdaSha1 { get; } =
@@ -2734,41 +2552,15 @@ public static class DigestAlgorithmsParametersBindings
     }
 }
 
-public delegate T MACAlgorithmsParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
-public delegate Asn1Any MACAlgorithmsParametersEncoder<T>(T value);
-
-public sealed class MACAlgorithmsParametersBinding<T>
-{
-    internal MACAlgorithmsParametersBinding(Asn1Oid oid, MACAlgorithmsParametersDecoder<T> decoder, MACAlgorithmsParametersEncoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal MACAlgorithmsParametersDecoder<T> Decoder { get; }
-    internal MACAlgorithmsParametersEncoder<T> Encoder { get; }
-}
-
-public sealed class MACAlgorithmsParametersDecoderBinding<T>
-{
-    internal MACAlgorithmsParametersDecoderBinding(Asn1Oid oid, MACAlgorithmsParametersDecoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal MACAlgorithmsParametersDecoder<T> Decoder { get; }
-}
+public sealed record MACAlgorithmsParametersBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder, Func<T, Asn1Any> Encoder);
+public sealed record MACAlgorithmsParametersDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder);
 
 public static class MACAlgorithmsParametersBindings
 {
-    public static MACAlgorithmsParametersBinding<T> Create<T>(Asn1Oid oid, MACAlgorithmsParametersDecoder<T> decoder, MACAlgorithmsParametersEncoder<T> encoder) =>
+    public static MACAlgorithmsParametersBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder, Func<T, Asn1Any> encoder) =>
         new(oid, decoder, encoder);
 
-    public static MACAlgorithmsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, MACAlgorithmsParametersDecoder<T> decoder) =>
+    public static MACAlgorithmsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder) =>
         new(oid, decoder);
 
     public static MACAlgorithmsParametersBinding<Asn1Null> MacaHMACSHA1 { get; } =

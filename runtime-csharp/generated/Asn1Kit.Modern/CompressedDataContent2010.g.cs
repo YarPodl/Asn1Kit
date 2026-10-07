@@ -133,41 +133,15 @@ public sealed class EncapsulatedContentInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public delegate T CompressAlgorithmSetParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
-public delegate Asn1Any CompressAlgorithmSetParametersEncoder<T>(T value);
-
-public sealed class CompressAlgorithmSetParametersBinding<T>
-{
-    internal CompressAlgorithmSetParametersBinding(Asn1Oid oid, CompressAlgorithmSetParametersDecoder<T> decoder, CompressAlgorithmSetParametersEncoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal CompressAlgorithmSetParametersDecoder<T> Decoder { get; }
-    internal CompressAlgorithmSetParametersEncoder<T> Encoder { get; }
-}
-
-public sealed class CompressAlgorithmSetParametersDecoderBinding<T>
-{
-    internal CompressAlgorithmSetParametersDecoderBinding(Asn1Oid oid, CompressAlgorithmSetParametersDecoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal CompressAlgorithmSetParametersDecoder<T> Decoder { get; }
-}
+public sealed record CompressAlgorithmSetParametersBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder, Func<T, Asn1Any> Encoder);
+public sealed record CompressAlgorithmSetParametersDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder);
 
 public static class CompressAlgorithmSetParametersBindings
 {
-    public static CompressAlgorithmSetParametersBinding<T> Create<T>(Asn1Oid oid, CompressAlgorithmSetParametersDecoder<T> decoder, CompressAlgorithmSetParametersEncoder<T> encoder) =>
+    public static CompressAlgorithmSetParametersBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder, Func<T, Asn1Any> encoder) =>
         new(oid, decoder, encoder);
 
-    public static CompressAlgorithmSetParametersDecoderBinding<T> Create<T>(Asn1Oid oid, CompressAlgorithmSetParametersDecoder<T> decoder) =>
+    public static CompressAlgorithmSetParametersDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder) =>
         new(oid, decoder);
 
     public static CompressAlgorithmSetParametersBinding<Asn1Null> CpaZlibCompress { get; } =

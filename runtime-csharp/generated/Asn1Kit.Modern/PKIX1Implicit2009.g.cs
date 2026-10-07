@@ -1788,41 +1788,15 @@ internal static class __PKIX1Implicit2009OpenTypeCodecs
 
 }
 
-public delegate T SupportedAttributesDecoder<T>(Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet source);
-public delegate Asn1Any[] SupportedAttributesEncoder<T>(T value);
-
-public sealed class SupportedAttributesBinding<T>
-{
-    internal SupportedAttributesBinding(Asn1Oid oid, SupportedAttributesDecoder<T> decoder, SupportedAttributesEncoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal SupportedAttributesDecoder<T> Decoder { get; }
-    internal SupportedAttributesEncoder<T> Encoder { get; }
-}
-
-public sealed class SupportedAttributesDecoderBinding<T>
-{
-    internal SupportedAttributesDecoderBinding(Asn1Oid oid, SupportedAttributesDecoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal SupportedAttributesDecoder<T> Decoder { get; }
-}
+public sealed record SupportedAttributesBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet, T> Decoder, Func<T, Asn1Any[]> Encoder);
+public sealed record SupportedAttributesDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet, T> Decoder);
 
 public static class SupportedAttributesBindings
 {
-    public static SupportedAttributesBinding<T> Create<T>(Asn1Oid oid, SupportedAttributesDecoder<T> decoder, SupportedAttributesEncoder<T> encoder) =>
+    public static SupportedAttributesBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet, T> decoder, Func<T, Asn1Any[]> encoder) =>
         new(oid, decoder, encoder);
 
-    public static SupportedAttributesDecoderBinding<T> Create<T>(Asn1Oid oid, SupportedAttributesDecoder<T> decoder) =>
+    public static SupportedAttributesDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet, T> decoder) =>
         new(oid, decoder);
 
     public static SupportedAttributesBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name[]> Name { get; } =

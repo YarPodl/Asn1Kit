@@ -266,41 +266,15 @@ public sealed class PBKDF2Params_Salt
     }
 }
 
-public delegate T PBKDF2PRFsParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
-public delegate Asn1Any PBKDF2PRFsParametersEncoder<T>(T value);
-
-public sealed class PBKDF2PRFsParametersBinding<T>
-{
-    internal PBKDF2PRFsParametersBinding(Asn1Oid oid, PBKDF2PRFsParametersDecoder<T> decoder, PBKDF2PRFsParametersEncoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal PBKDF2PRFsParametersDecoder<T> Decoder { get; }
-    internal PBKDF2PRFsParametersEncoder<T> Encoder { get; }
-}
-
-public sealed class PBKDF2PRFsParametersDecoderBinding<T>
-{
-    internal PBKDF2PRFsParametersDecoderBinding(Asn1Oid oid, PBKDF2PRFsParametersDecoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal PBKDF2PRFsParametersDecoder<T> Decoder { get; }
-}
+public sealed record PBKDF2PRFsParametersBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder, Func<T, Asn1Any> Encoder);
+public sealed record PBKDF2PRFsParametersDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder);
 
 public static class PBKDF2PRFsParametersBindings
 {
-    public static PBKDF2PRFsParametersBinding<T> Create<T>(Asn1Oid oid, PBKDF2PRFsParametersDecoder<T> decoder, PBKDF2PRFsParametersEncoder<T> encoder) =>
+    public static PBKDF2PRFsParametersBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder, Func<T, Asn1Any> encoder) =>
         new(oid, decoder, encoder);
 
-    public static PBKDF2PRFsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, PBKDF2PRFsParametersDecoder<T> decoder) =>
+    public static PBKDF2PRFsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder) =>
         new(oid, decoder);
 
     public static PBKDF2PRFsParametersBinding<Asn1Null> AlgHMACSHA1 { get; } =
@@ -313,41 +287,15 @@ public static class PBKDF2PRFsParametersBindings
     }
 }
 
-public delegate T KeyWrapAlgsParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
-public delegate Asn1Any KeyWrapAlgsParametersEncoder<T>(T value);
-
-public sealed class KeyWrapAlgsParametersBinding<T>
-{
-    internal KeyWrapAlgsParametersBinding(Asn1Oid oid, KeyWrapAlgsParametersDecoder<T> decoder, KeyWrapAlgsParametersEncoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal KeyWrapAlgsParametersDecoder<T> Decoder { get; }
-    internal KeyWrapAlgsParametersEncoder<T> Encoder { get; }
-}
-
-public sealed class KeyWrapAlgsParametersDecoderBinding<T>
-{
-    internal KeyWrapAlgsParametersDecoderBinding(Asn1Oid oid, KeyWrapAlgsParametersDecoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal KeyWrapAlgsParametersDecoder<T> Decoder { get; }
-}
+public sealed record KeyWrapAlgsParametersBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder, Func<T, Asn1Any> Encoder);
+public sealed record KeyWrapAlgsParametersDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder);
 
 public static class KeyWrapAlgsParametersBindings
 {
-    public static KeyWrapAlgsParametersBinding<T> Create<T>(Asn1Oid oid, KeyWrapAlgsParametersDecoder<T> decoder, KeyWrapAlgsParametersEncoder<T> encoder) =>
+    public static KeyWrapAlgsParametersBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder, Func<T, Asn1Any> encoder) =>
         new(oid, decoder, encoder);
 
-    public static KeyWrapAlgsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, KeyWrapAlgsParametersDecoder<T> decoder) =>
+    public static KeyWrapAlgsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder) =>
         new(oid, decoder);
 
     public static KeyWrapAlgsParametersBinding<Asn1Null> Kwa3DESWrap { get; } =

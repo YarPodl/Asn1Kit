@@ -242,26 +242,11 @@ public sealed partial class CSharpBackend
             var keyName = keyType == "Asn1Oid" ? "Oid" : "Key";
             var keyParameter = CamelCaseIdentifier(keyName);
             var stem = plan.BindingStem;
-            sb.AppendLine($"public delegate T {stem}Decoder<T>(Asn1Any raw);");
-            sb.AppendLine($"public delegate Asn1Any {stem}Encoder<T>(T value);");
-            sb.AppendLine();
-            sb.AppendLine($"public sealed class {stem}Binding<T>");
-            sb.AppendLine("{");
-            sb.AppendLine($"    internal {stem}Binding({keyType} {keyParameter}, {stem}Decoder<T> decoder, {stem}Encoder<T> encoder)");
-            sb.AppendLine("    {");
-            sb.AppendLine($"        {keyName} = {keyParameter};");
-            sb.AppendLine("        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));");
-            sb.AppendLine("        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));");
-            sb.AppendLine("    }");
-            sb.AppendLine();
-            sb.AppendLine($"    public {keyType} {keyName} {{ get; }}");
-            sb.AppendLine($"    internal {stem}Decoder<T> Decoder {{ get; }}");
-            sb.AppendLine($"    internal {stem}Encoder<T> Encoder {{ get; }}");
-            sb.AppendLine("}");
+            sb.AppendLine($"public sealed record {stem}Binding<T>({keyType} {keyName}, Func<Asn1Any, T> Decoder, Func<T, Asn1Any> Encoder);");
             sb.AppendLine();
             sb.AppendLine($"public static class {stem}Bindings");
             sb.AppendLine("{");
-            sb.AppendLine($"    public static {stem}Binding<T> Create<T>({keyType} {keyParameter}, {stem}Decoder<T> decoder, {stem}Encoder<T> encoder) =>");
+            sb.AppendLine($"    public static {stem}Binding<T> Create<T>({keyType} {keyParameter}, Func<Asn1Any, T> decoder, Func<T, Asn1Any> encoder) =>");
             sb.AppendLine($"        new({keyParameter}, decoder, encoder);");
             foreach (var member in plan.Members)
             {

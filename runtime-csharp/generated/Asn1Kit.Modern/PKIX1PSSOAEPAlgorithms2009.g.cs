@@ -453,41 +453,15 @@ internal static class __PKIX1PSSOAEPAlgorithms2009OpenTypeCodecs
 
 }
 
-public delegate T HashAlgorithmsParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
-public delegate Asn1Any HashAlgorithmsParametersEncoder<T>(T value);
-
-public sealed class HashAlgorithmsParametersBinding<T>
-{
-    internal HashAlgorithmsParametersBinding(Asn1Oid oid, HashAlgorithmsParametersDecoder<T> decoder, HashAlgorithmsParametersEncoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal HashAlgorithmsParametersDecoder<T> Decoder { get; }
-    internal HashAlgorithmsParametersEncoder<T> Encoder { get; }
-}
-
-public sealed class HashAlgorithmsParametersDecoderBinding<T>
-{
-    internal HashAlgorithmsParametersDecoderBinding(Asn1Oid oid, HashAlgorithmsParametersDecoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal HashAlgorithmsParametersDecoder<T> Decoder { get; }
-}
+public sealed record HashAlgorithmsParametersBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder, Func<T, Asn1Any> Encoder);
+public sealed record HashAlgorithmsParametersDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder);
 
 public static class HashAlgorithmsParametersBindings
 {
-    public static HashAlgorithmsParametersBinding<T> Create<T>(Asn1Oid oid, HashAlgorithmsParametersDecoder<T> decoder, HashAlgorithmsParametersEncoder<T> encoder) =>
+    public static HashAlgorithmsParametersBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder, Func<T, Asn1Any> encoder) =>
         new(oid, decoder, encoder);
 
-    public static HashAlgorithmsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, HashAlgorithmsParametersDecoder<T> decoder) =>
+    public static HashAlgorithmsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder) =>
         new(oid, decoder);
 
     public static HashAlgorithmsParametersBinding<Asn1Null> Oid13143226 { get; } =
@@ -536,41 +510,15 @@ public static class HashAlgorithmsParametersBindings
     }
 }
 
-public delegate T PKCS1MGFAlgorithmsParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
-public delegate Asn1Any PKCS1MGFAlgorithmsParametersEncoder<T>(T value);
-
-public sealed class PKCS1MGFAlgorithmsParametersBinding<T>
-{
-    internal PKCS1MGFAlgorithmsParametersBinding(Asn1Oid oid, PKCS1MGFAlgorithmsParametersDecoder<T> decoder, PKCS1MGFAlgorithmsParametersEncoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal PKCS1MGFAlgorithmsParametersDecoder<T> Decoder { get; }
-    internal PKCS1MGFAlgorithmsParametersEncoder<T> Encoder { get; }
-}
-
-public sealed class PKCS1MGFAlgorithmsParametersDecoderBinding<T>
-{
-    internal PKCS1MGFAlgorithmsParametersDecoderBinding(Asn1Oid oid, PKCS1MGFAlgorithmsParametersDecoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal PKCS1MGFAlgorithmsParametersDecoder<T> Decoder { get; }
-}
+public sealed record PKCS1MGFAlgorithmsParametersBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder, Func<T, Asn1Any> Encoder);
+public sealed record PKCS1MGFAlgorithmsParametersDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder);
 
 public static class PKCS1MGFAlgorithmsParametersBindings
 {
-    public static PKCS1MGFAlgorithmsParametersBinding<T> Create<T>(Asn1Oid oid, PKCS1MGFAlgorithmsParametersDecoder<T> decoder, PKCS1MGFAlgorithmsParametersEncoder<T> encoder) =>
+    public static PKCS1MGFAlgorithmsParametersBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder, Func<T, Asn1Any> encoder) =>
         new(oid, decoder, encoder);
 
-    public static PKCS1MGFAlgorithmsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, PKCS1MGFAlgorithmsParametersDecoder<T> decoder) =>
+    public static PKCS1MGFAlgorithmsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder) =>
         new(oid, decoder);
 
     public static PKCS1MGFAlgorithmsParametersBinding<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier> HashAlgorithm { get; } =
@@ -583,41 +531,15 @@ public static class PKCS1MGFAlgorithmsParametersBindings
     }
 }
 
-public delegate T PSSSourceAlgorithmsParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
-public delegate Asn1Any PSSSourceAlgorithmsParametersEncoder<T>(T value);
-
-public sealed class PSSSourceAlgorithmsParametersBinding<T>
-{
-    internal PSSSourceAlgorithmsParametersBinding(Asn1Oid oid, PSSSourceAlgorithmsParametersDecoder<T> decoder, PSSSourceAlgorithmsParametersEncoder<T> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal PSSSourceAlgorithmsParametersDecoder<T> Decoder { get; }
-    internal PSSSourceAlgorithmsParametersEncoder<T> Encoder { get; }
-}
-
-public sealed class PSSSourceAlgorithmsParametersDecoderBinding<T>
-{
-    internal PSSSourceAlgorithmsParametersDecoderBinding(Asn1Oid oid, PSSSourceAlgorithmsParametersDecoder<T> decoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-    }
-
-    public Asn1Oid Oid { get; }
-    internal PSSSourceAlgorithmsParametersDecoder<T> Decoder { get; }
-}
+public sealed record PSSSourceAlgorithmsParametersBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder, Func<T, Asn1Any> Encoder);
+public sealed record PSSSourceAlgorithmsParametersDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder);
 
 public static class PSSSourceAlgorithmsParametersBindings
 {
-    public static PSSSourceAlgorithmsParametersBinding<T> Create<T>(Asn1Oid oid, PSSSourceAlgorithmsParametersDecoder<T> decoder, PSSSourceAlgorithmsParametersEncoder<T> encoder) =>
+    public static PSSSourceAlgorithmsParametersBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder, Func<T, Asn1Any> encoder) =>
         new(oid, decoder, encoder);
 
-    public static PSSSourceAlgorithmsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, PSSSourceAlgorithmsParametersDecoder<T> decoder) =>
+    public static PSSSourceAlgorithmsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder) =>
         new(oid, decoder);
 
     public static PSSSourceAlgorithmsParametersBinding<ReadOnlyMemory<byte>> EncodingParameters { get; } =

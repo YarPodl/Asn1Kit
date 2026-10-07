@@ -78,7 +78,7 @@ public sealed class OpenTypeBindingTests
         Assert.Contains("public sealed class AlgorithmInfo", generated);
         Assert.DoesNotContain("public sealed class DataEntryAlgorithmInfo", generated);
         Assert.DoesNotContain("public sealed class EmptyEntryAlgorithmInfo", generated);
-        Assert.Contains("public sealed class MixedParametersBinding<T>", generated);
+        Assert.Contains("public sealed record MixedParametersBinding<T>", generated);
         Assert.DoesNotContain("BindingCodec", generated);
         Assert.DoesNotContain("Decode0(", generated);
         Assert.Contains("Asn1Codecs.Null", generated);
@@ -313,7 +313,7 @@ public sealed class OpenTypeBindingTests
     {
         var document = new Asn1Compiler().CompileText(Source);
         var generated = Assert.Single(new CSharpBackend().Generate(document)).Contents;
-        Assert.Contains("public sealed class NumbersPayloadBinding<T>", generated);
+        Assert.Contains("public sealed record NumbersPayloadBinding<T>", generated);
         Assert.Contains("public static NumbersPayloadBinding<int> IntegerEntry", generated);
         Assert.Contains("TryGetExtensions<T>(this Holder source, NumbersPayloadBinding<T> binding, out T value)", generated);
         Assert.Contains("TryGetExtensionsIntegerEntry(this Holder source, out int value)", generated);

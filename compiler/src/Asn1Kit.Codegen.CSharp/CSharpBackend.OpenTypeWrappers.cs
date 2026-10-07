@@ -721,42 +721,18 @@ public sealed partial class CSharpBackend
         var keyName = keyType == "Asn1Oid" ? "Oid" : "Key";
         var keyParameter = CamelCaseIdentifier(keyName);
         var parameters = $"{site.Container.CsType} source{OpenParentParameters(site)}";
+        var decoderFunc = OpenBindingDecoderFunc(site);
+        var encoderFunc = $"Func<T, {site.Payload.RawType}>";
         var members = OpenDecodeBindingMembers(document, module, site);
-        sb.AppendLine($"public delegate T {stem}Decoder<T>({parameters});");
-        sb.AppendLine($"public delegate {site.Payload.RawType} {stem}Encoder<T>(T value);");
-        sb.AppendLine();
-        sb.AppendLine($"public sealed class {stem}Binding<T>");
-        sb.AppendLine("{");
-        sb.AppendLine($"    internal {stem}Binding({keyType} {keyParameter}, {stem}Decoder<T> decoder, {stem}Encoder<T> encoder)");
-        sb.AppendLine("    {");
-        sb.AppendLine($"        {keyName} = {keyParameter};");
-        sb.AppendLine("        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));");
-        sb.AppendLine("        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));");
-        sb.AppendLine("    }");
-        sb.AppendLine();
-        sb.AppendLine($"    public {keyType} {keyName} {{ get; }}");
-        sb.AppendLine($"    internal {stem}Decoder<T> Decoder {{ get; }}");
-        sb.AppendLine($"    internal {stem}Encoder<T> Encoder {{ get; }}");
-        sb.AppendLine("}");
-        sb.AppendLine();
-        sb.AppendLine($"public sealed class {stem}DecoderBinding<T>");
-        sb.AppendLine("{");
-        sb.AppendLine($"    internal {stem}DecoderBinding({keyType} {keyParameter}, {stem}Decoder<T> decoder)");
-        sb.AppendLine("    {");
-        sb.AppendLine($"        {keyName} = {keyParameter};");
-        sb.AppendLine("        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));");
-        sb.AppendLine("    }");
-        sb.AppendLine();
-        sb.AppendLine($"    public {keyType} {keyName} {{ get; }}");
-        sb.AppendLine($"    internal {stem}Decoder<T> Decoder {{ get; }}");
-        sb.AppendLine("}");
+        sb.AppendLine($"public sealed record {stem}Binding<T>({keyType} {keyName}, {decoderFunc} Decoder, {encoderFunc} Encoder);");
+        sb.AppendLine($"public sealed record {stem}DecoderBinding<T>({keyType} {keyName}, {decoderFunc} Decoder);");
         sb.AppendLine();
         sb.AppendLine($"public static class {stem}Bindings");
         sb.AppendLine("{");
-        sb.AppendLine($"    public static {stem}Binding<T> Create<T>({keyType} {keyParameter}, {stem}Decoder<T> decoder, {stem}Encoder<T> encoder) =>");
+        sb.AppendLine($"    public static {stem}Binding<T> Create<T>({keyType} {keyParameter}, {decoderFunc} decoder, {encoderFunc} encoder) =>");
         sb.AppendLine($"        new({keyParameter}, decoder, encoder);");
         sb.AppendLine();
-        sb.AppendLine($"    public static {stem}DecoderBinding<T> Create<T>({keyType} {keyParameter}, {stem}Decoder<T> decoder) =>");
+        sb.AppendLine($"    public static {stem}DecoderBinding<T> Create<T>({keyType} {keyParameter}, {decoderFunc} decoder) =>");
         sb.AppendLine($"        new({keyParameter}, decoder);");
         foreach (var member in members)
         {
@@ -966,6 +942,8 @@ public sealed partial class CSharpBackend
         string.Concat(site.Parents.Select((p, i) => $", {p.CsType} parent{i}"));
     private static string OpenParentArguments(OpenWrapperSite site) =>
         string.Concat(site.Parents.Select((_, i) => $", parent{i}"));
+    private static string OpenBindingDecoderFunc(OpenWrapperSite site) =>
+        $"Func<{site.Container.CsType}{string.Concat(site.Parents.Select(static p => $", {p.CsType}"))}, T>";
 
     private void EmitOpenKeyOwnerCopies(StringBuilder sb, IrDocument document, IrModule module, OpenWrapperSite site)
     {
