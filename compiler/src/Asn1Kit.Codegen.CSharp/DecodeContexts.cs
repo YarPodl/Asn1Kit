@@ -31,7 +31,8 @@ public sealed partial class CSharpBackend
             };
             foreach (var any in fields.SelectMany(f => OpenFields(f.Type)))
             {
-                if (any.Selector is not { Levels: > 0 } selector) continue;
+                // Deferred raw ANY does not need a discriminator until its typed conversion is requested.
+                if (any.Bindings is not { Count: > 0 } || any.Selector is not { Levels: > 0 } selector) continue;
                 var route = SelectorRoute(owner, selector.Levels);
                 if (selector.Path.Count > route.Count && selector.Path.Take(route.Count).SequenceEqual(route)) continue;
                 depth = Math.Max(depth, selector.Levels);

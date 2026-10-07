@@ -18,7 +18,6 @@ public sealed class DvcsTests
                 "SecureMimeMessageV3", "PKIXDVCS"
             },
             document.Modules.Select(m => m.Name));
-        IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
     }
 
     [Fact]

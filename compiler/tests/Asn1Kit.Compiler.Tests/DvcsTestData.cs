@@ -5,6 +5,10 @@ namespace Asn1Kit.Tests;
 
 internal static class DvcsTestData
 {
+    private static readonly Lazy<string> ValidatedDocumentJson = new(
+        CompileAndSerialize,
+        LazyThreadSafetyMode.ExecutionAndPublication);
+
     public static readonly string[] AsnPaths =
     {
         "compiler/fixtures/asn1/pkix1-explicit88.asn",
@@ -19,12 +23,17 @@ internal static class DvcsTestData
         "compiler/fixtures/asn1/dvcs.asn"
     };
 
-    public static IrDocument Compile()
+    public static IrDocument Compile() =>
+        IrSerializer.FromJson(ValidatedDocumentJson.Value, validateSchema: false);
+
+    private static string CompileAndSerialize()
     {
         var document = new Asn1Compiler().CompileFiles(AsnPaths.Select(TestData.RepoPath));
         OpenTypeBindings.ApplyFile(document, TestData.RepoPath("compiler/fixtures/opentype/pkix-bindings.json"));
         OpenTypeBindings.ApplyFile(document, TestData.RepoPath("compiler/fixtures/opentype/cms-bindings.json"));
         IrOptionsPatch.ApplyFile(document, TestData.RepoPath("compiler/fixtures/ir/dvcs.patch.json"));
-        return document;
+        var json = IrSerializer.ToJson(document);
+        IrSerializer.ValidateSchema(json);
+        return json;
     }
 }

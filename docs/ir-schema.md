@@ -46,7 +46,7 @@
 
 ### Результат разрешения IOC и параметризации
 
-CLASS, WITH SYNTAX, information objects/sets и формальные параметры остаются внутри компилятора. В `module.types` записываются только структурно различные конкретные типы; специализации, различающиеся лишь IOC-таблицами, используют общий тип. `ref.openTypes` хранит таблицу для конкретного места использования: `[{ path: string[], bindings: [{ key, name?, type }], tableExtensible? }]`. Путь идёт от целевого типа ссылки по именам компонентов; `[]` обозначает элемент OF, `containing` — содержимое OCTET/BIT STRING. У общих типов соответствующий `any` не содержит `bindings` и `tableExtensible`. Bindings могут поступать из ASN.1 object sets и из legacy overlay.
+CLASS, WITH SYNTAX, information objects/sets и формальные параметры остаются внутри компилятора. В `module.types` записываются только структурно различные конкретные типы; специализации, различающиеся лишь IOC-таблицами, используют общий тип. `ref.openTypes` хранит таблицу для конкретного места использования: `[{ path: string[], bindings: [{ key, name?, type }], table?, tableExtensible? }]`. Путь идёт от целевого типа ссылки по именам компонентов; `[]` обозначает элемент OF, `containing` — содержимое OCTET/BIT STRING. Опциональный `table` — имя ASN.1 object set, если таблица взята из именованной ссылки (`SignatureAlgorithms`, `CertExtensions`); анонимные `{...}` и объединения имя не получают. У общих типов соответствующий `any` не содержит `bindings`, `table` и `tableExtensible`. Bindings могут поступать из ASN.1 object sets и из legacy overlay.
 
 `typeDef.specialization: { module, name }` у структурно различной специализации сообщает исходный шаблон. Это семантическая связь, без C#-имён или правил кодирования; генератор может выделить общую основу для семейства, например `SIGNED`.
 
@@ -56,6 +56,7 @@ CLASS, WITH SYNTAX, information objects/sets и формальные парам�
 | --- | --- | --- |
 | `selector: { levels, path[] }` | `any` | `levels = 0` — владелец, `1` — его родитель и т.д.; считаются SEQUENCE/SET/CHOICE, OF прозрачен. `path` — непустой путь имён компонентов к OID/INTEGER. |
 | `tableExtensible: boolean` | `any` | Наличие поля обозначает современную IOC-таблицу, значение сохраняет её `...`. Неизвестный ключ всегда raw; закрытость пока не исполняется. Отсутствие поля сохраняет legacy fallback/mismatch. |
+| `table: string` | `any`, `ref.openTypes[]` | Имя именованного object set, породившего bindings. Для codegen — человекочитаемый stem каталога; на идентичность таблицы не влияет. |
 | `containing: type` | `octetString`, `bitString` | Содержимое закодировано внутри contents внешнего string-типа; может быть `any` с selector/bindings. BIT STRING с типизированным содержимым выровнен по октетам. |
 | `extensionAddition: true` | компонент | Компонент между первой и второй границами расширения; компоненты trailing root не получают эту метку. |
 | `extensionGroup: integer >= 0` | компонент addition | Принадлежность к группе `[[n: ...]]`; номер без явно заданной версии назначается компилятором. |

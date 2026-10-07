@@ -1740,10 +1740,7 @@ public sealed class PolicyQualifierInfo_Qualifier
         else throw new Asn1Exception("Open type has no alternative.");
     }
 
-    private static readonly Asn1Oid Oid_1_3_6_1_5_5_7_2_1 = Asn1Oid.Parse("1.3.6.1.5.5.7.2.1");
-    private static readonly Asn1Oid Oid_1_3_6_1_5_5_7_2_2 = Asn1Oid.Parse("1.3.6.1.5.5.7.2.2");
-
-    public static bool IsKnown(Asn1Oid key) => key.Equals(Oid_1_3_6_1_5_5_7_2_1) || key.Equals(Oid_1_3_6_1_5_5_7_2_2);
+    public static bool IsKnown(Asn1Oid key) => key.Equals(global::Asn1Kit.Pkix.Bench.PKIX1Explicit88Oids.IdQtCps) || key.Equals(global::Asn1Kit.Pkix.Bench.PKIX1Explicit88Oids.IdQtUnotice);
     public static PolicyQualifierInfo_Qualifier Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
         Decode(reader, definedByKey, expectedTag: null);
 
@@ -1755,7 +1752,7 @@ public sealed class PolicyQualifierInfo_Qualifier
         if (!reader.TryPeekTag(out var peeked))
             throw new Asn1Exception("Unexpected end of ASN.1 data while decoding open type 'PolicyQualifierInfo_Qualifier': expected an encoded ASN.1 value for key '" + definedByKey + "'.");
 
-        if (definedByKey.Equals(Oid_1_3_6_1_5_5_7_2_1))
+        if (definedByKey.Equals(global::Asn1Kit.Pkix.Bench.PKIX1Explicit88Oids.IdQtCps))
         {
             var tag = expectedTag ?? Asn1Tag.Ia5String;
             if (peeked.MatchesIgnoreConstructed(tag))
@@ -1764,7 +1761,7 @@ public sealed class PolicyQualifierInfo_Qualifier
             }
             return FromUnknown(reader.ReadAny());
         }
-        else if (definedByKey.Equals(Oid_1_3_6_1_5_5_7_2_2))
+        else if (definedByKey.Equals(global::Asn1Kit.Pkix.Bench.PKIX1Explicit88Oids.IdQtUnotice))
         {
             if (expectedTag is null)
             {

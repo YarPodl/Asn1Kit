@@ -100,6 +100,8 @@ internal sealed class AnyTypeAst : TypeAst
     public string? DefinedBy { get; }
     public List<OpenTypeBindingAst>? Bindings { get; set; }
     public Asn1Kit.Ir.IrOpenTypeSelector? Selector { get; set; }
+    /// <summary>ASN.1 object-set name when bindings came from a named set reference.</summary>
+    public string? Table { get; set; }
     public bool? TableExtensible { get; set; }
 }
 

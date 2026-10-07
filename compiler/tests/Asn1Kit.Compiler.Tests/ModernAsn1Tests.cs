@@ -79,11 +79,8 @@ END";
 
     internal static Assembly CompileGenerated(params string[] sources)
     {
-        var references = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator)
-            .Where(File.Exists).Select(p => MetadataReference.CreateFromFile(p))
-            .Concat(new[] { MetadataReference.CreateFromFile(typeof(Asn1Writer).Assembly.Location) });
         var compilation = CSharpCompilation.Create("ModernGenerated" + Guid.NewGuid().ToString("N"),
-            sources.Select(s => CSharpSyntaxTree.ParseText(s)), references,
+            sources.Select(s => CSharpSyntaxTree.ParseText(s)), GeneratedCompilation.References,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
         using var stream = new MemoryStream();
         var result = compilation.Emit(stream);
@@ -281,24 +278,27 @@ END";
             .Invoke(null, new object[] {new Asn1Reader(Convert.FromHexString(hex))})!;
         var aValue = Decode(aType, "3009300706022A0302012A");
         var bValue = Decode(bType, "3109300706022A040101FF");
-        object?[] aArgs = { null };
-        object?[] bArgs = { null };
-        Assert.True((bool)aType.GetMethod("TryDecodeItemValue")!.MakeGenericMethod(typeof(int)).Invoke(aValue, aArgs)!);
-        Assert.Equal(42, aArgs[0]);
-        Assert.True((bool)bType.GetMethod("TryDecodeItemValue")!.MakeGenericMethod(typeof(bool)).Invoke(bValue, bArgs)!);
-        Assert.Equal(true, bArgs[0]);
-        Assert.False((bool)aType.GetMethod("TryDecodeItemValue")!.MakeGenericMethod(typeof(bool))
-            .Invoke(aValue, new object?[] { null })!);
+        var aBinding = assembly.GetType("M.IntegersValueBindings")!.GetProperty("IntegerEntry")!.GetValue(null)!;
+        var bBinding = assembly.GetType("M.BooleansValueBindings")!.GetProperty("BooleanEntry")!.GetValue(null)!;
+        var aDecode = aType.GetMethod("TryDecodeItemValue")!.MakeGenericMethod(typeof(int));
+        var bDecode = bType.GetMethod("TryDecodeItemValue")!.MakeGenericMethod(typeof(bool));
+        object?[] aArgs = { aBinding, null };
+        object?[] bArgs = { bBinding, null };
+        Assert.True((bool)aDecode.Invoke(aValue, aArgs)!);
+        Assert.Equal(42, aArgs[1]);
+        Assert.True((bool)bDecode.Invoke(bValue, bArgs)!);
+        Assert.Equal(true, bArgs[1]);
+        Assert.Throws<ArgumentException>(() => aDecode.Invoke(aValue, new[] {bBinding, null}));
 
         var unknown = Decode(aType, "3009300706022A0502012A");
-        Assert.False((bool)aType.GetMethod("TryDecodeItemValue")!.MakeGenericMethod(typeof(int))
-            .Invoke(unknown, new object?[] { null })!);
+        Assert.False((bool)aDecode.Invoke(unknown, new[] {aBinding, null})!);
         var malformed = Decode(aType, "3009300706022A030101FF");
-        var error = Assert.Throws<TargetInvocationException>(() => aType.GetMethod("TryDecodeItemValue")!
-            .MakeGenericMethod(typeof(int)).Invoke(malformed, new object?[] { null }));
+        var error = Assert.Throws<TargetInvocationException>(() =>
+            aDecode.Invoke(malformed, new[] {aBinding, null}));
         Assert.IsType<Asn1Exception>(error.InnerException);
 
-        aType.GetMethod("SetItemValue")!.MakeGenericMethod(typeof(int)).Invoke(aValue, new object[] { 42 });
+        aType.GetMethod("SetItemValue")!.MakeGenericMethod(typeof(int))
+            .Invoke(aValue, new[] {aBinding, (object)42});
         var writer = new Asn1Writer();
         aType.GetMethod("Encode", new[] {typeof(Asn1Writer)})!.Invoke(aValue, new object[] { writer });
         Assert.Equal("3009300706022A0302012A", Convert.ToHexString(writer.Encode()));

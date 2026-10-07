@@ -356,7 +356,8 @@ internal sealed class IrBuilder
 
         return new AnyType
         {
-            DefinedBy = any.DefinedBy, Selector = any.Selector, TableExtensible = any.TableExtensible,
+            DefinedBy = any.DefinedBy, Selector = any.Selector, Table = any.Table,
+            TableExtensible = any.TableExtensible,
             Bindings = any.Bindings?.Select(ConvertBinding).ToList()
         };
     }

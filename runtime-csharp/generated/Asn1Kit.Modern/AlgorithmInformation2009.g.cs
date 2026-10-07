@@ -102,3 +102,152 @@ public sealed class SMIMECapability
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
+internal static class __AlgorithmInformation2009OpenTypeCodecs
+{
+    internal static Asn1Codec<AlgorithmIdentifier> SmimeCapsSMIMECapability { get; } = new(
+        static reader =>
+        {
+            AlgorithmIdentifier decoded;
+            decoded = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
+            return decoded;
+        },
+        static (writer, value) =>
+        {
+            value.Encode(writer, Asn1Tag.Sequence);
+        });
+
+}
+
+public delegate T SMimeCapsSetParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability source);
+public delegate Asn1Any SMimeCapsSetParametersEncoder<T>(T value);
+
+public sealed class SMimeCapsSetParametersBinding<T>
+{
+    internal SMimeCapsSetParametersBinding(Asn1Oid oid, SMimeCapsSetParametersDecoder<T> decoder, SMimeCapsSetParametersEncoder<T> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal SMimeCapsSetParametersDecoder<T> Decoder { get; }
+    internal SMimeCapsSetParametersEncoder<T> Encoder { get; }
+}
+
+public sealed class SMimeCapsSetParametersDecoderBinding<T>
+{
+    internal SMimeCapsSetParametersDecoderBinding(Asn1Oid oid, SMimeCapsSetParametersDecoder<T> decoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal SMimeCapsSetParametersDecoder<T> Decoder { get; }
+}
+
+public static class SMimeCapsSetParametersBindings
+{
+    public static SMimeCapsSetParametersBinding<T> Create<T>(Asn1Oid oid, SMimeCapsSetParametersDecoder<T> decoder, SMimeCapsSetParametersEncoder<T> encoder) =>
+        new(oid, decoder, encoder);
+
+    public static SMimeCapsSetParametersDecoderBinding<T> Create<T>(Asn1Oid oid, SMimeCapsSetParametersDecoder<T> decoder) =>
+        new(oid, decoder);
+
+    public static SMimeCapsSetParametersBinding<Asn1Integer> CapRC2CBC { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.Rc2Cbc, DecodeCapRC2CBC, Asn1Codecs.Integer.Encode);
+
+    private static Asn1Integer DecodeCapRC2CBC(Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return Asn1Codecs.Integer.Decode(raw);
+    }
+
+    public static SMimeCapsSetParametersBinding<AlgorithmIdentifier> SmimeCaps { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.IdAlgESDH, DecodeSmimeCaps, __AlgorithmInformation2009OpenTypeCodecs.SmimeCapsSMIMECapability.Encode);
+
+    private static AlgorithmIdentifier DecodeSmimeCaps(Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return __AlgorithmInformation2009OpenTypeCodecs.SmimeCapsSMIMECapability.Decode(raw);
+    }
+}
+
+public static class AlgorithmInformation2009OpenTypeExtensions
+{
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability source, SMimeCapsSetParametersBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.CapabilityID.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability source, SMimeCapsSetParametersDecoderBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.CapabilityID.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeParametersCapRC2CBC(this Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability source, out Asn1Integer value) =>
+        TryDecodeParameters(source, SMimeCapsSetParametersBindings.CapRC2CBC, out value);
+
+    public static bool TryDecodeParametersSmimeCaps(this Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability source, out AlgorithmIdentifier value) =>
+        TryDecodeParameters(source, SMimeCapsSetParametersBindings.SmimeCaps, out value);
+
+    public static void SetParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability source, SMimeCapsSetParametersBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.CapabilityID = binding.Oid;
+        result.Parameters = binding.Encoder(value);
+    }
+
+    public static void SetParametersCapRC2CBC(this Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability source, Asn1Integer value) =>
+        SetParameters(source, SMimeCapsSetParametersBindings.CapRC2CBC, value);
+
+    public static void SetParametersSmimeCaps(this Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability source, AlgorithmIdentifier value) =>
+        SetParameters(source, SMimeCapsSetParametersBindings.SmimeCaps, value);
+    public static bool TryGet<T>(this Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability[] source, SMimeCapsSetParametersBinding<T> binding, out T value)
+        => TryGet(source, binding, out value, out _);
+
+    public static bool TryGet<T>(this Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability[] source, SMimeCapsSetParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability? match = null;
+        foreach (var item in source)
+        {
+            if (item.CapabilityID.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
+                match = item;
+            }
+        }
+        if (match is null) return false;
+        if (match.Parameters is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+    public static bool TryGetCapRC2CBC(this Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability[] source, out Asn1Integer value) =>
+        TryGet(source, SMimeCapsSetParametersBindings.CapRC2CBC, out value);
+
+    public static bool TryGetSmimeCaps(this Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability[] source, out AlgorithmIdentifier value) =>
+        TryGet(source, SMimeCapsSetParametersBindings.SmimeCaps, out value);
+
+}
+

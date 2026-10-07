@@ -99,3 +99,213 @@ public sealed class AuthEnvelopedData
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
+internal static class __CMSAuthEnvelopedData2009OpenTypeCodecs
+{
+    internal static Asn1Codec<Asn1Kit.Modern.CryptographicMessageSyntax2009.Time> SigningTimeAttribute { get; } = new(
+        static reader =>
+        {
+            Asn1Kit.Modern.CryptographicMessageSyntax2009.Time decoded;
+            decoded = Asn1Kit.Modern.CryptographicMessageSyntax2009.Time.Decode(reader);
+            return decoded;
+        },
+        static (writer, value) =>
+        {
+            value.Encode(writer);
+        });
+
+}
+
+public delegate T AuthEnvDataAttributeSetDecoder<T>(Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source);
+public delegate Asn1Any[] AuthEnvDataAttributeSetEncoder<T>(T value);
+
+public sealed class AuthEnvDataAttributeSetBinding<T>
+{
+    internal AuthEnvDataAttributeSetBinding(Asn1Oid oid, AuthEnvDataAttributeSetDecoder<T> decoder, AuthEnvDataAttributeSetEncoder<T> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal AuthEnvDataAttributeSetDecoder<T> Decoder { get; }
+    internal AuthEnvDataAttributeSetEncoder<T> Encoder { get; }
+}
+
+public sealed class AuthEnvDataAttributeSetDecoderBinding<T>
+{
+    internal AuthEnvDataAttributeSetDecoderBinding(Asn1Oid oid, AuthEnvDataAttributeSetDecoder<T> decoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal AuthEnvDataAttributeSetDecoder<T> Decoder { get; }
+}
+
+public static class AuthEnvDataAttributeSetBindings
+{
+    public static AuthEnvDataAttributeSetBinding<T> Create<T>(Asn1Oid oid, AuthEnvDataAttributeSetDecoder<T> decoder, AuthEnvDataAttributeSetEncoder<T> encoder) =>
+        new(oid, decoder, encoder);
+
+    public static AuthEnvDataAttributeSetDecoderBinding<T> Create<T>(Asn1Oid oid, AuthEnvDataAttributeSetDecoder<T> decoder) =>
+        new(oid, decoder);
+
+    public static AuthEnvDataAttributeSetBinding<Asn1Oid[]> ContentType { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntax2009.CryptographicMessageSyntax2009Oids.IdContentType, DecodeContentType, EncodeContentType);
+
+    private static Asn1Oid[] DecodeContentType(Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source)
+    {
+        return Asn1Codecs.DecodeEach(source.AttrValues, Asn1Codecs.ObjectIdentifier);
+    }
+
+    private static Asn1Any[] EncodeContentType(Asn1Oid[] value) =>
+        Asn1Codecs.EncodeEach(value, Asn1Codecs.ObjectIdentifier);
+
+    public static AuthEnvDataAttributeSetBinding<ReadOnlyMemory<byte>[]> MessageDigest { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntax2009.CryptographicMessageSyntax2009Oids.IdMessageDigest, DecodeMessageDigest, EncodeMessageDigest);
+
+    private static ReadOnlyMemory<byte>[] DecodeMessageDigest(Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source)
+    {
+        return Asn1Codecs.DecodeEach(source.AttrValues, Asn1Codecs.OctetString);
+    }
+
+    private static Asn1Any[] EncodeMessageDigest(ReadOnlyMemory<byte>[] value) =>
+        Asn1Codecs.EncodeEach(value, Asn1Codecs.OctetString);
+
+    public static AuthEnvDataAttributeSetBinding<Asn1Kit.Modern.CryptographicMessageSyntax2009.Time[]> SigningTime { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntax2009.CryptographicMessageSyntax2009Oids.IdSigningTime, DecodeSigningTime, EncodeSigningTime);
+
+    private static Asn1Kit.Modern.CryptographicMessageSyntax2009.Time[] DecodeSigningTime(Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source)
+    {
+        return Asn1Codecs.DecodeEach(source.AttrValues, __CMSAuthEnvelopedData2009OpenTypeCodecs.SigningTimeAttribute);
+    }
+
+    private static Asn1Any[] EncodeSigningTime(Asn1Kit.Modern.CryptographicMessageSyntax2009.Time[] value) =>
+        Asn1Codecs.EncodeEach(value, __CMSAuthEnvelopedData2009OpenTypeCodecs.SigningTimeAttribute);
+}
+
+public static class CMSAuthEnvelopedData2009OpenTypeExtensions
+{
+    public static bool TryDecodeAttrValues<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, AuthEnvDataAttributeSetBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.AttrType.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeAttrValues<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, AuthEnvDataAttributeSetDecoderBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.AttrType.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeAttrValuesContentType(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, out Asn1Oid[] value) =>
+        TryDecodeAttrValues(source, AuthEnvDataAttributeSetBindings.ContentType, out value);
+
+    public static bool TryDecodeAttrValuesMessageDigest(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, out ReadOnlyMemory<byte>[] value) =>
+        TryDecodeAttrValues(source, AuthEnvDataAttributeSetBindings.MessageDigest, out value);
+
+    public static bool TryDecodeAttrValuesSigningTime(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, out Asn1Kit.Modern.CryptographicMessageSyntax2009.Time[] value) =>
+        TryDecodeAttrValues(source, AuthEnvDataAttributeSetBindings.SigningTime, out value);
+
+    public static void SetAttrValues<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, AuthEnvDataAttributeSetBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.AttrType = binding.Oid;
+        result.AttrValues = binding.Encoder(value);
+    }
+
+    public static void SetAttrValuesContentType(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, Asn1Oid[] value) =>
+        SetAttrValues(source, AuthEnvDataAttributeSetBindings.ContentType, value);
+
+    public static void SetAttrValuesMessageDigest(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, ReadOnlyMemory<byte>[] value) =>
+        SetAttrValues(source, AuthEnvDataAttributeSetBindings.MessageDigest, value);
+
+    public static void SetAttrValuesSigningTime(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, Asn1Kit.Modern.CryptographicMessageSyntax2009.Time[] value) =>
+        SetAttrValues(source, AuthEnvDataAttributeSetBindings.SigningTime, value);
+    public static bool TryGet<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[] source, AuthEnvDataAttributeSetBinding<T> binding, out T value)
+        => TryGet(source, binding, out value, out _);
+
+    public static bool TryGet<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[] source, AuthEnvDataAttributeSetBinding<T> binding, out T value, out Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute? match = null;
+        foreach (var item in source)
+        {
+            if (item.AttrType.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
+                match = item;
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+    public static bool TryGetContentType(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[] source, out Asn1Oid[] value) =>
+        TryGet(source, AuthEnvDataAttributeSetBindings.ContentType, out value);
+
+    public static bool TryGetMessageDigest(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[] source, out ReadOnlyMemory<byte>[] value) =>
+        TryGet(source, AuthEnvDataAttributeSetBindings.MessageDigest, out value);
+
+    public static bool TryGetSigningTime(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[] source, out Asn1Kit.Modern.CryptographicMessageSyntax2009.Time[] value) =>
+        TryGet(source, AuthEnvDataAttributeSetBindings.SigningTime, out value);
+
+}
+
+public static class AuthEnvelopedDataOpenTypeExtensions
+{
+    public static bool TryGetAuthAttrs<T>(this AuthEnvelopedData source, AuthEnvDataAttributeSetBinding<T> binding, out T value)
+        => TryGetAuthAttrs(source, binding, out value, out _);
+
+    public static bool TryGetAuthAttrs<T>(this AuthEnvelopedData source, AuthEnvDataAttributeSetBinding<T> binding, out T value, out Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute? match = null;
+        if (source.AuthAttrs is { } node0)
+        {
+            foreach (var node1 in node0)
+            {
+                if (node1.AttrType.Equals(binding.Oid))
+                {
+                    if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetAuthAttrs.");
+                    match = node1;
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+    public static bool TryGetAuthAttrsContentType(this AuthEnvelopedData source, out Asn1Oid[] value) =>
+        TryGetAuthAttrs(source, AuthEnvDataAttributeSetBindings.ContentType, out value);
+
+    public static bool TryGetAuthAttrsMessageDigest(this AuthEnvelopedData source, out ReadOnlyMemory<byte>[] value) =>
+        TryGetAuthAttrs(source, AuthEnvDataAttributeSetBindings.MessageDigest, out value);
+
+    public static bool TryGetAuthAttrsSigningTime(this AuthEnvelopedData source, out Asn1Kit.Modern.CryptographicMessageSyntax2009.Time[] value) =>
+        TryGetAuthAttrs(source, AuthEnvDataAttributeSetBindings.SigningTime, out value);
+
+}
+

@@ -819,46 +819,31 @@ public sealed class SigningCertificateV2
 public sealed class ESSCertIDv2
 {
     /// <summary>ASN.1 alias HashAlgorithm ::= AlgorithmIdentifier.</summary>
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier HashAlgorithm { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = ExtendedSecurityServices2009Defaults.Value0 };
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier HashAlgorithm { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdSha256 };
     /// <summary>ASN.1 alias Hash ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> CertHash { get; set; }
     public IssuerSerial? IssuerSerial { get; set; }
 
-    public bool TryDecodeHashAlgorithmParameters<T>(out T value)
+    public bool TryDecodeHashAlgorithmParameters<T>(AlgorithmIdentifierParametersBinding<T> binding, out T value)
     {
         value = default!;
-        if (HashAlgorithm is null || HashAlgorithm.Parameters is not { } raw) return false;
-        switch (HashAlgorithm.Algorithm.ToString())
-        {
-            case "2.16.840.1.101.3.4.2.1":
-            {
-                if (typeof(T) != typeof(Asn1Null)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            default: return false;
-        }
+        ArgumentNullException.ThrowIfNull(binding);
+        if (HashAlgorithm is null) return false;
+        var container = HashAlgorithm;
+        return container.TryDecodeParameters(binding, out value);
     }
 
-    public void SetHashAlgorithmParameters<T>(T value)
+    public void SetHashAlgorithmParameters<T>(AlgorithmIdentifierParametersBinding<T> binding, T value)
     {
+        ArgumentNullException.ThrowIfNull(binding);
         if (HashAlgorithm is null) throw new Asn1Exception("Missing HashAlgorithm.");
-        switch (HashAlgorithm.Algorithm.ToString())
-        {
-            case "2.16.840.1.101.3.4.2.1":
-            {
-                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                writer.WriteNull(Asn1Tag.Null);
-                HashAlgorithm.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            default: throw new Asn1Exception("Unknown open-type key.");
-        }
+        var container = HashAlgorithm;
+        container.SetParameters(binding, value);
+        HashAlgorithm = container;
     }
+
+    public void SetHashAlgorithmParametersMdaSha256() =>
+        SetHashAlgorithmParameters(AlgorithmIdentifierParametersBindings.MdaSha256, Asn1Null.Value);
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -866,7 +851,7 @@ public sealed class ESSCertIDv2
     {
         using (writer.EnterSequence(tag))
         {
-            if (!((HashAlgorithm != null && HashAlgorithm.Algorithm == ExtendedSecurityServices2009Defaults.Value0 && HashAlgorithm.Parameters == null)))
+            if (!((HashAlgorithm != null && HashAlgorithm.Algorithm == global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdSha256 && HashAlgorithm.Parameters == null)))
             {
                 HashAlgorithm.Encode(writer, Asn1Tag.Sequence);
             }
@@ -980,7 +965,116 @@ public sealed class IssuerSerial
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-internal static class ExtendedSecurityServices2009Defaults
+public delegate T AlgorithmIdentifierParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
+public delegate Asn1Any AlgorithmIdentifierParametersEncoder<T>(T value);
+
+public sealed class AlgorithmIdentifierParametersBinding<T>
 {
-    internal static readonly Asn1Oid Value0 = Asn1Oid.Parse("2.16.840.1.101.3.4.2.1");
+    internal AlgorithmIdentifierParametersBinding(Asn1Oid oid, AlgorithmIdentifierParametersDecoder<T> decoder, AlgorithmIdentifierParametersEncoder<T> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal AlgorithmIdentifierParametersDecoder<T> Decoder { get; }
+    internal AlgorithmIdentifierParametersEncoder<T> Encoder { get; }
 }
+
+public sealed class AlgorithmIdentifierParametersDecoderBinding<T>
+{
+    internal AlgorithmIdentifierParametersDecoderBinding(Asn1Oid oid, AlgorithmIdentifierParametersDecoder<T> decoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal AlgorithmIdentifierParametersDecoder<T> Decoder { get; }
+}
+
+public static class AlgorithmIdentifierParametersBindings
+{
+    public static AlgorithmIdentifierParametersBinding<T> Create<T>(Asn1Oid oid, AlgorithmIdentifierParametersDecoder<T> decoder, AlgorithmIdentifierParametersEncoder<T> encoder) =>
+        new(oid, decoder, encoder);
+
+    public static AlgorithmIdentifierParametersDecoderBinding<T> Create<T>(Asn1Oid oid, AlgorithmIdentifierParametersDecoder<T> decoder) =>
+        new(oid, decoder);
+
+    public static AlgorithmIdentifierParametersBinding<Asn1Null> MdaSha256 { get; } =
+        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdSha256, DecodeMdaSha256, Asn1Codecs.Null.Encode);
+
+    private static Asn1Null DecodeMdaSha256(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return Asn1Codecs.Null.Decode(raw);
+    }
+}
+
+public static class ExtendedSecurityServices2009OpenTypeExtensions
+{
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, AlgorithmIdentifierParametersBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, AlgorithmIdentifierParametersDecoderBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static void SetParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, AlgorithmIdentifierParametersBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.Algorithm = binding.Oid;
+        result.Parameters = binding.Encoder(value);
+    }
+
+    public static void SetParametersMdaSha256(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
+        SetParameters(source, AlgorithmIdentifierParametersBindings.MdaSha256, Asn1Null.Value);
+}
+
+public static class ESSCertIDv2OpenTypeExtensions
+{
+    public static bool TryGetHashAlgorithm<T>(this ESSCertIDv2 source, AlgorithmIdentifierParametersBinding<T> binding, out T value)
+        => TryGetHashAlgorithm(source, binding, out value, out _);
+
+    public static bool TryGetHashAlgorithm<T>(this ESSCertIDv2 source, AlgorithmIdentifierParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
+        if (source.HashAlgorithm is { } node0)
+        {
+            if (node0.Algorithm.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetHashAlgorithm.");
+                match = node0;
+            }
+        }
+        if (match is null) return false;
+        if (match.Parameters is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+}
+

@@ -476,228 +476,62 @@ public sealed class CVRequest
     public Asn1Oid? HashAlg { get; set; }
     public string? RequestorText { get; set; }
 
-    public bool TryDecodeSignatureAlgParameters<T>(out T value)
+    public bool TryDecodeSignatureAlgParameters<T>(SignatureAlgorithmsParametersBinding<T> binding, out T value)
     {
         value = default!;
-        if (SignatureAlg is null || SignatureAlg.Parameters is not { } raw) return false;
-        switch (SignatureAlg.Algorithm.ToString())
-        {
-            case "1.2.840.113549.1.1.2":
-            {
-                if (typeof(T) != typeof(Asn1Null)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            case "1.2.840.113549.1.1.4":
-            {
-                if (typeof(T) != typeof(Asn1Null)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            case "1.2.840.113549.1.1.5":
-            {
-                if (typeof(T) != typeof(Asn1Null)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            case "1.2.840.10040.4.3":
-            {
-                if (typeof(T) != typeof(Asn1Null)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            case "1.2.840.10045.4.1":
-            {
-                if (typeof(T) != typeof(Asn1Null)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            case "2.16.840.1.101.3.4.3.1":
-            {
-                if (typeof(T) != typeof(Asn1Null)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            case "2.16.840.1.101.3.4.3.2":
-            {
-                if (typeof(T) != typeof(Asn1Null)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            case "1.2.840.10045.4.3.1":
-            {
-                if (typeof(T) != typeof(Asn1Null)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            case "1.2.840.10045.4.3.2":
-            {
-                if (typeof(T) != typeof(Asn1Null)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            case "1.2.840.10045.4.3.3":
-            {
-                if (typeof(T) != typeof(Asn1Null)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            case "1.2.840.10045.4.3.4":
-            {
-                if (typeof(T) != typeof(Asn1Null)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            case "1.2.840.113549.1.1.10":
-            {
-                if (typeof(T) != typeof(Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams.Decode(inner, Asn1Tag.Sequence);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            default: return false;
-        }
+        ArgumentNullException.ThrowIfNull(binding);
+        if (SignatureAlg is null) return false;
+        var container = SignatureAlg;
+        return container.TryDecodeParameters(binding, out value);
     }
 
-    public void SetSignatureAlgParameters<T>(T value)
+    public bool TryDecodeSignatureAlgParametersSaRsaSSAPSS(out Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams value) =>
+        TryDecodeSignatureAlgParameters(SignatureAlgorithmsParametersBindings.SaRsaSSAPSS, out value);
+
+    public void SetSignatureAlgParameters<T>(SignatureAlgorithmsParametersBinding<T> binding, T value)
     {
+        ArgumentNullException.ThrowIfNull(binding);
         if (SignatureAlg is null) throw new Asn1Exception("Missing SignatureAlg.");
-        switch (SignatureAlg.Algorithm.ToString())
-        {
-            case "1.2.840.113549.1.1.2":
-            {
-                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                writer.WriteNull(Asn1Tag.Null);
-                SignatureAlg.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            case "1.2.840.113549.1.1.4":
-            {
-                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                writer.WriteNull(Asn1Tag.Null);
-                SignatureAlg.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            case "1.2.840.113549.1.1.5":
-            {
-                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                writer.WriteNull(Asn1Tag.Null);
-                SignatureAlg.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            case "1.2.840.10040.4.3":
-            {
-                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                writer.WriteNull(Asn1Tag.Null);
-                SignatureAlg.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            case "1.2.840.10045.4.1":
-            {
-                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                writer.WriteNull(Asn1Tag.Null);
-                SignatureAlg.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            case "2.16.840.1.101.3.4.3.1":
-            {
-                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                writer.WriteNull(Asn1Tag.Null);
-                SignatureAlg.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            case "2.16.840.1.101.3.4.3.2":
-            {
-                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                writer.WriteNull(Asn1Tag.Null);
-                SignatureAlg.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            case "1.2.840.10045.4.3.1":
-            {
-                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                writer.WriteNull(Asn1Tag.Null);
-                SignatureAlg.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            case "1.2.840.10045.4.3.2":
-            {
-                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                writer.WriteNull(Asn1Tag.Null);
-                SignatureAlg.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            case "1.2.840.10045.4.3.3":
-            {
-                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                writer.WriteNull(Asn1Tag.Null);
-                SignatureAlg.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            case "1.2.840.10045.4.3.4":
-            {
-                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                writer.WriteNull(Asn1Tag.Null);
-                SignatureAlg.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            case "1.2.840.113549.1.1.10":
-            {
-                if (value is not Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                typed.Encode(writer, Asn1Tag.Sequence);
-                SignatureAlg.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            default: throw new Asn1Exception("Unknown open-type key.");
-        }
+        var container = SignatureAlg;
+        container.SetParameters(binding, value);
+        SignatureAlg = container;
     }
+
+    public void SetSignatureAlgParametersSaRsaWithMD2() =>
+        SetSignatureAlgParameters(SignatureAlgorithmsParametersBindings.SaRsaWithMD2, Asn1Null.Value);
+
+    public void SetSignatureAlgParametersSaRsaWithMD5() =>
+        SetSignatureAlgParameters(SignatureAlgorithmsParametersBindings.SaRsaWithMD5, Asn1Null.Value);
+
+    public void SetSignatureAlgParametersSaRsaWithSHA1() =>
+        SetSignatureAlgParameters(SignatureAlgorithmsParametersBindings.SaRsaWithSHA1, Asn1Null.Value);
+
+    public void SetSignatureAlgParametersSaDsaWithSHA1() =>
+        SetSignatureAlgParameters(SignatureAlgorithmsParametersBindings.SaDsaWithSHA1, Asn1Null.Value);
+
+    public void SetSignatureAlgParametersSaEcdsaWithSHA1() =>
+        SetSignatureAlgParameters(SignatureAlgorithmsParametersBindings.SaEcdsaWithSHA1, Asn1Null.Value);
+
+    public void SetSignatureAlgParametersSaDsaWithSHA224() =>
+        SetSignatureAlgParameters(SignatureAlgorithmsParametersBindings.SaDsaWithSHA224, Asn1Null.Value);
+
+    public void SetSignatureAlgParametersSaDsaWithSHA256() =>
+        SetSignatureAlgParameters(SignatureAlgorithmsParametersBindings.SaDsaWithSHA256, Asn1Null.Value);
+
+    public void SetSignatureAlgParametersSaEcdsaWithSHA224() =>
+        SetSignatureAlgParameters(SignatureAlgorithmsParametersBindings.SaEcdsaWithSHA224, Asn1Null.Value);
+
+    public void SetSignatureAlgParametersSaEcdsaWithSHA256() =>
+        SetSignatureAlgParameters(SignatureAlgorithmsParametersBindings.SaEcdsaWithSHA256, Asn1Null.Value);
+
+    public void SetSignatureAlgParametersSaEcdsaWithSHA384() =>
+        SetSignatureAlgParameters(SignatureAlgorithmsParametersBindings.SaEcdsaWithSHA384, Asn1Null.Value);
+
+    public void SetSignatureAlgParametersSaEcdsaWithSHA512() =>
+        SetSignatureAlgParameters(SignatureAlgorithmsParametersBindings.SaEcdsaWithSHA512, Asn1Null.Value);
+
+    public void SetSignatureAlgParametersSaRsaSSAPSS(Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams value) =>
+        SetSignatureAlgParameters(SignatureAlgorithmsParametersBindings.SaRsaSSAPSS, value);
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1224,43 +1058,28 @@ public sealed class SCVPCertID
     public ReadOnlyMemory<byte> CertHash { get; set; }
     public SCVPIssuerSerial IssuerSerial { get; set; }
     /// <summary>ASN.1 alias HashAlgorithm ::= AlgorithmIdentifier.</summary>
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier HashAlgorithm { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = SCVP2009Defaults.Value0 };
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier HashAlgorithm { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdSha1 };
 
-    public bool TryDecodeHashAlgorithmParameters<T>(out T value)
+    public bool TryDecodeHashAlgorithmParameters<T>(AlgorithmIdentifierParametersBinding<T> binding, out T value)
     {
         value = default!;
-        if (HashAlgorithm is null || HashAlgorithm.Parameters is not { } raw) return false;
-        switch (HashAlgorithm.Algorithm.ToString())
-        {
-            case "1.3.14.3.2.26":
-            {
-                if (typeof(T) != typeof(Asn1Null)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            default: return false;
-        }
+        ArgumentNullException.ThrowIfNull(binding);
+        if (HashAlgorithm is null) return false;
+        var container = HashAlgorithm;
+        return container.TryDecodeParameters(binding, out value);
     }
 
-    public void SetHashAlgorithmParameters<T>(T value)
+    public void SetHashAlgorithmParameters<T>(AlgorithmIdentifierParametersBinding<T> binding, T value)
     {
+        ArgumentNullException.ThrowIfNull(binding);
         if (HashAlgorithm is null) throw new Asn1Exception("Missing HashAlgorithm.");
-        switch (HashAlgorithm.Algorithm.ToString())
-        {
-            case "1.3.14.3.2.26":
-            {
-                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                writer.WriteNull(Asn1Tag.Null);
-                HashAlgorithm.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            default: throw new Asn1Exception("Unknown open-type key.");
-        }
+        var container = HashAlgorithm;
+        container.SetParameters(binding, value);
+        HashAlgorithm = container;
     }
+
+    public void SetHashAlgorithmParametersMdaSha1() =>
+        SetHashAlgorithmParameters(AlgorithmIdentifierParametersBindings.MdaSha1, Asn1Null.Value);
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1270,7 +1089,7 @@ public sealed class SCVPCertID
         {
             writer.WriteOctetString(Asn1Tag.OctetString, CertHash.Span);
             IssuerSerial.Encode(writer, Asn1Tag.Sequence);
-            if (!((HashAlgorithm != null && HashAlgorithm.Algorithm == SCVP2009Defaults.Value0 && HashAlgorithm.Parameters == null)))
+            if (!((HashAlgorithm != null && HashAlgorithm.Algorithm == global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdSha1 && HashAlgorithm.Parameters == null)))
             {
                 HashAlgorithm.Encode(writer, Asn1Tag.Sequence);
             }
@@ -2141,44 +1960,29 @@ public sealed class RequestReference
 public sealed class HashValue
 {
     /// <summary>ASN.1 alias HashAlgorithm ::= AlgorithmIdentifier.</summary>
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Algorithm { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = SCVP2009Defaults.Value0 };
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Algorithm { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdSha1 };
     public ReadOnlyMemory<byte> Value { get; set; }
 
-    public bool TryDecodeAlgorithmParameters<T>(out T value)
+    public bool TryDecodeAlgorithmParameters<T>(AlgorithmIdentifierParametersBinding<T> binding, out T value)
     {
         value = default!;
-        if (Algorithm is null || Algorithm.Parameters is not { } raw) return false;
-        switch (Algorithm.Algorithm.ToString())
-        {
-            case "1.3.14.3.2.26":
-            {
-                if (typeof(T) != typeof(Asn1Null)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            default: return false;
-        }
+        ArgumentNullException.ThrowIfNull(binding);
+        if (Algorithm is null) return false;
+        var container = Algorithm;
+        return container.TryDecodeParameters(binding, out value);
     }
 
-    public void SetAlgorithmParameters<T>(T value)
+    public void SetAlgorithmParameters<T>(AlgorithmIdentifierParametersBinding<T> binding, T value)
     {
+        ArgumentNullException.ThrowIfNull(binding);
         if (Algorithm is null) throw new Asn1Exception("Missing Algorithm.");
-        switch (Algorithm.Algorithm.ToString())
-        {
-            case "1.3.14.3.2.26":
-            {
-                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                writer.WriteNull(Asn1Tag.Null);
-                Algorithm.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            default: throw new Asn1Exception("Unknown open-type key.");
-        }
+        var container = Algorithm;
+        container.SetParameters(binding, value);
+        Algorithm = container;
     }
+
+    public void SetAlgorithmParametersMdaSha1() =>
+        SetAlgorithmParameters(AlgorithmIdentifierParametersBindings.MdaSha1, Asn1Null.Value);
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -2186,7 +1990,7 @@ public sealed class HashValue
     {
         using (writer.EnterSequence(tag))
         {
-            if (!((Algorithm != null && Algorithm.Algorithm == SCVP2009Defaults.Value0 && Algorithm.Parameters == null)))
+            if (!((Algorithm != null && Algorithm.Algorithm == global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdSha1 && Algorithm.Parameters == null)))
             {
                 Algorithm.Encode(writer, Asn1Tag.Sequence);
             }
@@ -3130,7 +2934,465 @@ public sealed class ReplyWantBack_Value_Content
     }
 }
 
-internal static class SCVP2009Defaults
+internal static class __SCVP2009OpenTypeCodecs
 {
-    internal static readonly Asn1Oid Value0 = Asn1Oid.Parse("1.3.14.3.2.26");
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams> SaRsaSSAPSSAlgorithmIdentifier { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams.Decode(reader), static (writer, value) => value.Encode(writer));
+
 }
+
+public delegate T SignatureAlgorithmsParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
+public delegate Asn1Any SignatureAlgorithmsParametersEncoder<T>(T value);
+
+public sealed class SignatureAlgorithmsParametersBinding<T>
+{
+    internal SignatureAlgorithmsParametersBinding(Asn1Oid oid, SignatureAlgorithmsParametersDecoder<T> decoder, SignatureAlgorithmsParametersEncoder<T> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal SignatureAlgorithmsParametersDecoder<T> Decoder { get; }
+    internal SignatureAlgorithmsParametersEncoder<T> Encoder { get; }
+}
+
+public sealed class SignatureAlgorithmsParametersDecoderBinding<T>
+{
+    internal SignatureAlgorithmsParametersDecoderBinding(Asn1Oid oid, SignatureAlgorithmsParametersDecoder<T> decoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal SignatureAlgorithmsParametersDecoder<T> Decoder { get; }
+}
+
+public static class SignatureAlgorithmsParametersBindings
+{
+    public static SignatureAlgorithmsParametersBinding<T> Create<T>(Asn1Oid oid, SignatureAlgorithmsParametersDecoder<T> decoder, SignatureAlgorithmsParametersEncoder<T> encoder) =>
+        new(oid, decoder, encoder);
+
+    public static SignatureAlgorithmsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, SignatureAlgorithmsParametersDecoder<T> decoder) =>
+        new(oid, decoder);
+
+    public static SignatureAlgorithmsParametersBinding<Asn1Null> SaRsaWithMD2 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.Md2WithRSAEncryption, DecodeSaRsaWithMD2, Asn1Codecs.Null.Encode);
+
+    private static Asn1Null DecodeSaRsaWithMD2(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return Asn1Codecs.Null.Decode(raw);
+    }
+
+    public static SignatureAlgorithmsParametersBinding<Asn1Null> SaRsaWithMD5 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.Md5WithRSAEncryption, DecodeSaRsaWithMD5, Asn1Codecs.Null.Encode);
+
+    private static Asn1Null DecodeSaRsaWithMD5(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return Asn1Codecs.Null.Decode(raw);
+    }
+
+    public static SignatureAlgorithmsParametersBinding<Asn1Null> SaRsaWithSHA1 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.Sha1WithRSAEncryption, DecodeSaRsaWithSHA1, Asn1Codecs.Null.Encode);
+
+    private static Asn1Null DecodeSaRsaWithSHA1(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return Asn1Codecs.Null.Decode(raw);
+    }
+
+    public static SignatureAlgorithmsParametersBinding<Asn1Null> SaDsaWithSHA1 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.DsaWithSha1, DecodeSaDsaWithSHA1, Asn1Codecs.Null.Encode);
+
+    private static Asn1Null DecodeSaDsaWithSHA1(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return Asn1Codecs.Null.Decode(raw);
+    }
+
+    public static SignatureAlgorithmsParametersBinding<Asn1Null> SaEcdsaWithSHA1 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.EcdsaWithSHA1, DecodeSaEcdsaWithSHA1, Asn1Codecs.Null.Encode);
+
+    private static Asn1Null DecodeSaEcdsaWithSHA1(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return Asn1Codecs.Null.Decode(raw);
+    }
+
+    public static SignatureAlgorithmsParametersBinding<Asn1Null> SaDsaWithSHA224 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.DsaWithSha224, DecodeSaDsaWithSHA224, Asn1Codecs.Null.Encode);
+
+    private static Asn1Null DecodeSaDsaWithSHA224(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return Asn1Codecs.Null.Decode(raw);
+    }
+
+    public static SignatureAlgorithmsParametersBinding<Asn1Null> SaDsaWithSHA256 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.DsaWithSha256, DecodeSaDsaWithSHA256, Asn1Codecs.Null.Encode);
+
+    private static Asn1Null DecodeSaDsaWithSHA256(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return Asn1Codecs.Null.Decode(raw);
+    }
+
+    public static SignatureAlgorithmsParametersBinding<Asn1Null> SaEcdsaWithSHA224 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.EcdsaWithSHA224, DecodeSaEcdsaWithSHA224, Asn1Codecs.Null.Encode);
+
+    private static Asn1Null DecodeSaEcdsaWithSHA224(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return Asn1Codecs.Null.Decode(raw);
+    }
+
+    public static SignatureAlgorithmsParametersBinding<Asn1Null> SaEcdsaWithSHA256 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.EcdsaWithSHA256, DecodeSaEcdsaWithSHA256, Asn1Codecs.Null.Encode);
+
+    private static Asn1Null DecodeSaEcdsaWithSHA256(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return Asn1Codecs.Null.Decode(raw);
+    }
+
+    public static SignatureAlgorithmsParametersBinding<Asn1Null> SaEcdsaWithSHA384 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.EcdsaWithSHA384, DecodeSaEcdsaWithSHA384, Asn1Codecs.Null.Encode);
+
+    private static Asn1Null DecodeSaEcdsaWithSHA384(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return Asn1Codecs.Null.Decode(raw);
+    }
+
+    public static SignatureAlgorithmsParametersBinding<Asn1Null> SaEcdsaWithSHA512 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.EcdsaWithSHA512, DecodeSaEcdsaWithSHA512, Asn1Codecs.Null.Encode);
+
+    private static Asn1Null DecodeSaEcdsaWithSHA512(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return Asn1Codecs.Null.Decode(raw);
+    }
+
+    public static SignatureAlgorithmsParametersBinding<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams> SaRsaSSAPSS { get; } =
+        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSASSAPSS, DecodeSaRsaSSAPSS, __SCVP2009OpenTypeCodecs.SaRsaSSAPSSAlgorithmIdentifier.Encode);
+
+    private static Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams DecodeSaRsaSSAPSS(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return __SCVP2009OpenTypeCodecs.SaRsaSSAPSSAlgorithmIdentifier.Decode(raw);
+    }
+}
+
+public delegate T AlgorithmIdentifierParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
+public delegate Asn1Any AlgorithmIdentifierParametersEncoder<T>(T value);
+
+public sealed class AlgorithmIdentifierParametersBinding<T>
+{
+    internal AlgorithmIdentifierParametersBinding(Asn1Oid oid, AlgorithmIdentifierParametersDecoder<T> decoder, AlgorithmIdentifierParametersEncoder<T> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal AlgorithmIdentifierParametersDecoder<T> Decoder { get; }
+    internal AlgorithmIdentifierParametersEncoder<T> Encoder { get; }
+}
+
+public sealed class AlgorithmIdentifierParametersDecoderBinding<T>
+{
+    internal AlgorithmIdentifierParametersDecoderBinding(Asn1Oid oid, AlgorithmIdentifierParametersDecoder<T> decoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal AlgorithmIdentifierParametersDecoder<T> Decoder { get; }
+}
+
+public static class AlgorithmIdentifierParametersBindings
+{
+    public static AlgorithmIdentifierParametersBinding<T> Create<T>(Asn1Oid oid, AlgorithmIdentifierParametersDecoder<T> decoder, AlgorithmIdentifierParametersEncoder<T> encoder) =>
+        new(oid, decoder, encoder);
+
+    public static AlgorithmIdentifierParametersDecoderBinding<T> Create<T>(Asn1Oid oid, AlgorithmIdentifierParametersDecoder<T> decoder) =>
+        new(oid, decoder);
+
+    public static AlgorithmIdentifierParametersBinding<Asn1Null> MdaSha1 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdSha1, DecodeMdaSha1, Asn1Codecs.Null.Encode);
+
+    private static Asn1Null DecodeMdaSha1(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return Asn1Codecs.Null.Decode(raw);
+    }
+}
+
+public static class SCVP2009OpenTypeExtensions
+{
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, SignatureAlgorithmsParametersBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, SignatureAlgorithmsParametersDecoderBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeParametersSaRsaSSAPSS(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, out Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams value) =>
+        TryDecodeParameters(source, SignatureAlgorithmsParametersBindings.SaRsaSSAPSS, out value);
+
+    public static void SetParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, SignatureAlgorithmsParametersBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.Algorithm = binding.Oid;
+        result.Parameters = binding.Encoder(value);
+    }
+
+    public static void SetParametersSaRsaWithMD2(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
+        SetParameters(source, SignatureAlgorithmsParametersBindings.SaRsaWithMD2, Asn1Null.Value);
+
+    public static void SetParametersSaRsaWithMD5(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
+        SetParameters(source, SignatureAlgorithmsParametersBindings.SaRsaWithMD5, Asn1Null.Value);
+
+    public static void SetParametersSaRsaWithSHA1(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
+        SetParameters(source, SignatureAlgorithmsParametersBindings.SaRsaWithSHA1, Asn1Null.Value);
+
+    public static void SetParametersSaDsaWithSHA1(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
+        SetParameters(source, SignatureAlgorithmsParametersBindings.SaDsaWithSHA1, Asn1Null.Value);
+
+    public static void SetParametersSaEcdsaWithSHA1(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
+        SetParameters(source, SignatureAlgorithmsParametersBindings.SaEcdsaWithSHA1, Asn1Null.Value);
+
+    public static void SetParametersSaDsaWithSHA224(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
+        SetParameters(source, SignatureAlgorithmsParametersBindings.SaDsaWithSHA224, Asn1Null.Value);
+
+    public static void SetParametersSaDsaWithSHA256(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
+        SetParameters(source, SignatureAlgorithmsParametersBindings.SaDsaWithSHA256, Asn1Null.Value);
+
+    public static void SetParametersSaEcdsaWithSHA224(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
+        SetParameters(source, SignatureAlgorithmsParametersBindings.SaEcdsaWithSHA224, Asn1Null.Value);
+
+    public static void SetParametersSaEcdsaWithSHA256(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
+        SetParameters(source, SignatureAlgorithmsParametersBindings.SaEcdsaWithSHA256, Asn1Null.Value);
+
+    public static void SetParametersSaEcdsaWithSHA384(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
+        SetParameters(source, SignatureAlgorithmsParametersBindings.SaEcdsaWithSHA384, Asn1Null.Value);
+
+    public static void SetParametersSaEcdsaWithSHA512(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
+        SetParameters(source, SignatureAlgorithmsParametersBindings.SaEcdsaWithSHA512, Asn1Null.Value);
+
+    public static void SetParametersSaRsaSSAPSS(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams value) =>
+        SetParameters(source, SignatureAlgorithmsParametersBindings.SaRsaSSAPSS, value);
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, AlgorithmIdentifierParametersBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, AlgorithmIdentifierParametersDecoderBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static void SetParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, AlgorithmIdentifierParametersBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.Algorithm = binding.Oid;
+        result.Parameters = binding.Encoder(value);
+    }
+
+    public static void SetParametersMdaSha1(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
+        SetParameters(source, AlgorithmIdentifierParametersBindings.MdaSha1, Asn1Null.Value);
+}
+
+public static class CVRequestOpenTypeExtensions
+{
+    public static bool TryGetSignatureAlg<T>(this CVRequest source, SignatureAlgorithmsParametersBinding<T> binding, out T value)
+        => TryGetSignatureAlg(source, binding, out value, out _);
+
+    public static bool TryGetSignatureAlg<T>(this CVRequest source, SignatureAlgorithmsParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
+        if (source.SignatureAlg is { } node0)
+        {
+            if (node0.Algorithm.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetSignatureAlg.");
+                match = node0;
+            }
+        }
+        if (match is null) return false;
+        if (match.Parameters is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+    public static bool TryGetSignatureAlgSaRsaSSAPSS(this CVRequest source, out Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams value) =>
+        TryGetSignatureAlg(source, SignatureAlgorithmsParametersBindings.SaRsaSSAPSS, out value);
+
+}
+
+public static class SCVPCertIDOpenTypeExtensions
+{
+    public static bool TryGetHashAlgorithm<T>(this SCVPCertID source, AlgorithmIdentifierParametersBinding<T> binding, out T value)
+        => TryGetHashAlgorithm(source, binding, out value, out _);
+
+    public static bool TryGetHashAlgorithm<T>(this SCVPCertID source, AlgorithmIdentifierParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
+        if (source.HashAlgorithm is { } node0)
+        {
+            if (node0.Algorithm.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetHashAlgorithm.");
+                match = node0;
+            }
+        }
+        if (match is null) return false;
+        if (match.Parameters is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+}
+
+public static class HashValueOpenTypeExtensions
+{
+    public static bool TryGetAlgorithm<T>(this HashValue source, AlgorithmIdentifierParametersBinding<T> binding, out T value)
+        => TryGetAlgorithm(source, binding, out value, out _);
+
+    public static bool TryGetAlgorithm<T>(this HashValue source, AlgorithmIdentifierParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
+        if (source.Algorithm is { } node0)
+        {
+            if (node0.Algorithm.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetAlgorithm.");
+                match = node0;
+            }
+        }
+        if (match is null) return false;
+        if (match.Parameters is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+}
+
+public static class ValPolResponseOpenTypeExtensions
+{
+    public static bool TryGetSignatureGeneration<T>(this ValPolResponse source, SignatureAlgorithmsParametersBinding<T> binding, out T value)
+        => TryGetSignatureGeneration(source, binding, out value, out _);
+
+    public static bool TryGetSignatureGeneration<T>(this ValPolResponse source, SignatureAlgorithmsParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
+        if (source.SignatureGeneration is { } node0)
+        {
+            foreach (var node1 in node0)
+            {
+                if (node1.Algorithm.Equals(binding.Oid))
+                {
+                    if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetSignatureGeneration.");
+                    match = node1;
+                }
+            }
+        }
+        if (match is null) return false;
+        if (match.Parameters is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+    public static bool TryGetSignatureGenerationSaRsaSSAPSS(this ValPolResponse source, out Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams value) =>
+        TryGetSignatureGeneration(source, SignatureAlgorithmsParametersBindings.SaRsaSSAPSS, out value);
+
+    public static bool TryGetSignatureVerification<T>(this ValPolResponse source, SignatureAlgorithmsParametersBinding<T> binding, out T value)
+        => TryGetSignatureVerification(source, binding, out value, out _);
+
+    public static bool TryGetSignatureVerification<T>(this ValPolResponse source, SignatureAlgorithmsParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
+        if (source.SignatureVerification is { } node0)
+        {
+            foreach (var node1 in node0)
+            {
+                if (node1.Algorithm.Equals(binding.Oid))
+                {
+                    if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetSignatureVerification.");
+                    match = node1;
+                }
+            }
+        }
+        if (match is null) return false;
+        if (match.Parameters is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+    public static bool TryGetSignatureVerificationSaRsaSSAPSS(this ValPolResponse source, out Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams value) =>
+        TryGetSignatureVerification(source, SignatureAlgorithmsParametersBindings.SaRsaSSAPSS, out value);
+
+}
+

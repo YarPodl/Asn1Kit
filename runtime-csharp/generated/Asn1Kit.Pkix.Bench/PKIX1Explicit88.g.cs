@@ -324,6 +324,12 @@ public struct AttributeTypeAndValue
     public Asn1Oid Type { get; set; }
     public AttributeTypeAndValue_Value Value { get; set; }
 
+    public AttributeTypeAndValue()
+    {
+        Type = default!;
+        Value = default!;
+    }
+
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)

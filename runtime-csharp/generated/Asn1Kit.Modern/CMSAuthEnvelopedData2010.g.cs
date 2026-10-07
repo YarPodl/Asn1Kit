@@ -106,126 +106,59 @@ public sealed class EncryptedContentInfo
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier ContentEncryptionAlgorithm { get; set; }
     public ReadOnlyMemory<byte>? EncryptedContent { get; set; }
 
-    public bool TryDecodeContentEncryptionAlgorithmParameters<T>(out T value)
+    public bool TryDecodeContentEncryptionAlgorithmParameters<T>(AuthContentEncryptionAlgorithmSetParametersBinding<T> binding, out T value)
     {
         value = default!;
-        if (ContentEncryptionAlgorithm is null || ContentEncryptionAlgorithm.Parameters is not { } raw) return false;
-        switch (ContentEncryptionAlgorithm.Algorithm.ToString())
-        {
-            case "2.16.840.1.101.3.4.1.7":
-            {
-                if (typeof(T) != typeof(Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters.Decode(inner, Asn1Tag.Sequence);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            case "2.16.840.1.101.3.4.1.27":
-            {
-                if (typeof(T) != typeof(Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters.Decode(inner, Asn1Tag.Sequence);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            case "2.16.840.1.101.3.4.1.47":
-            {
-                if (typeof(T) != typeof(Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters.Decode(inner, Asn1Tag.Sequence);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            case "2.16.840.1.101.3.4.1.6":
-            {
-                if (typeof(T) != typeof(Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters.Decode(inner, Asn1Tag.Sequence);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            case "2.16.840.1.101.3.4.1.26":
-            {
-                if (typeof(T) != typeof(Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters.Decode(inner, Asn1Tag.Sequence);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            case "2.16.840.1.101.3.4.1.46":
-            {
-                if (typeof(T) != typeof(Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters.Decode(inner, Asn1Tag.Sequence);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            default: return false;
-        }
+        ArgumentNullException.ThrowIfNull(binding);
+        if (ContentEncryptionAlgorithm is null) return false;
+        var container = ContentEncryptionAlgorithm;
+        return container.TryDecodeParameters(binding, out value);
     }
 
-    public void SetContentEncryptionAlgorithmParameters<T>(T value)
+    public bool TryDecodeContentEncryptionAlgorithmParametersCeaAes128CCM(out Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters value) =>
+        TryDecodeContentEncryptionAlgorithmParameters(AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes128CCM, out value);
+
+    public bool TryDecodeContentEncryptionAlgorithmParametersCeaAes192CCM(out Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters value) =>
+        TryDecodeContentEncryptionAlgorithmParameters(AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes192CCM, out value);
+
+    public bool TryDecodeContentEncryptionAlgorithmParametersCeaAes256CCM(out Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters value) =>
+        TryDecodeContentEncryptionAlgorithmParameters(AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes256CCM, out value);
+
+    public bool TryDecodeContentEncryptionAlgorithmParametersCeaAes128GCM(out Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters value) =>
+        TryDecodeContentEncryptionAlgorithmParameters(AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes128GCM, out value);
+
+    public bool TryDecodeContentEncryptionAlgorithmParametersCeaAes192GCM(out Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters value) =>
+        TryDecodeContentEncryptionAlgorithmParameters(AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes192GCM, out value);
+
+    public bool TryDecodeContentEncryptionAlgorithmParametersCeaAes256GCM(out Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters value) =>
+        TryDecodeContentEncryptionAlgorithmParameters(AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes256GCM, out value);
+
+    public void SetContentEncryptionAlgorithmParameters<T>(AuthContentEncryptionAlgorithmSetParametersBinding<T> binding, T value)
     {
+        ArgumentNullException.ThrowIfNull(binding);
         if (ContentEncryptionAlgorithm is null) throw new Asn1Exception("Missing ContentEncryptionAlgorithm.");
-        switch (ContentEncryptionAlgorithm.Algorithm.ToString())
-        {
-            case "2.16.840.1.101.3.4.1.7":
-            {
-                if (value is not Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                typed.Encode(writer, Asn1Tag.Sequence);
-                ContentEncryptionAlgorithm.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            case "2.16.840.1.101.3.4.1.27":
-            {
-                if (value is not Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                typed.Encode(writer, Asn1Tag.Sequence);
-                ContentEncryptionAlgorithm.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            case "2.16.840.1.101.3.4.1.47":
-            {
-                if (value is not Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                typed.Encode(writer, Asn1Tag.Sequence);
-                ContentEncryptionAlgorithm.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            case "2.16.840.1.101.3.4.1.6":
-            {
-                if (value is not Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                typed.Encode(writer, Asn1Tag.Sequence);
-                ContentEncryptionAlgorithm.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            case "2.16.840.1.101.3.4.1.26":
-            {
-                if (value is not Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                typed.Encode(writer, Asn1Tag.Sequence);
-                ContentEncryptionAlgorithm.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            case "2.16.840.1.101.3.4.1.46":
-            {
-                if (value is not Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                typed.Encode(writer, Asn1Tag.Sequence);
-                ContentEncryptionAlgorithm.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            default: throw new Asn1Exception("Unknown open-type key.");
-        }
+        var container = ContentEncryptionAlgorithm;
+        container.SetParameters(binding, value);
+        ContentEncryptionAlgorithm = container;
     }
+
+    public void SetContentEncryptionAlgorithmParametersCeaAes128CCM(Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters value) =>
+        SetContentEncryptionAlgorithmParameters(AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes128CCM, value);
+
+    public void SetContentEncryptionAlgorithmParametersCeaAes192CCM(Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters value) =>
+        SetContentEncryptionAlgorithmParameters(AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes192CCM, value);
+
+    public void SetContentEncryptionAlgorithmParametersCeaAes256CCM(Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters value) =>
+        SetContentEncryptionAlgorithmParameters(AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes256CCM, value);
+
+    public void SetContentEncryptionAlgorithmParametersCeaAes128GCM(Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters value) =>
+        SetContentEncryptionAlgorithmParameters(AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes128GCM, value);
+
+    public void SetContentEncryptionAlgorithmParametersCeaAes192GCM(Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters value) =>
+        SetContentEncryptionAlgorithmParameters(AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes192GCM, value);
+
+    public void SetContentEncryptionAlgorithmParametersCeaAes256GCM(Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters value) =>
+        SetContentEncryptionAlgorithmParameters(AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes256GCM, value);
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -261,5 +194,426 @@ public sealed class EncryptedContentInfo
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
+}
+
+internal static class __CMSAuthEnvelopedData2010OpenTypeCodecs
+{
+    internal static Asn1Codec<Asn1Kit.Modern.CryptographicMessageSyntax2009.Time> SigningTimeAttribute { get; } = new(
+        static reader =>
+        {
+            Asn1Kit.Modern.CryptographicMessageSyntax2009.Time decoded;
+            decoded = Asn1Kit.Modern.CryptographicMessageSyntax2009.Time.Decode(reader);
+            return decoded;
+        },
+        static (writer, value) =>
+        {
+            value.Encode(writer);
+        });
+
+    internal static Asn1Codec<Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters> CeaAes128CCMAlgorithmIdentifier { get; } =
+        new(static reader => Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters> CeaAes128GCMAlgorithmIdentifier { get; } =
+        new(static reader => Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters.Decode(reader), static (writer, value) => value.Encode(writer));
+
+}
+
+public delegate T AuthEnvDataAttributeSetDecoder<T>(Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source);
+public delegate Asn1Any[] AuthEnvDataAttributeSetEncoder<T>(T value);
+
+public sealed class AuthEnvDataAttributeSetBinding<T>
+{
+    internal AuthEnvDataAttributeSetBinding(Asn1Oid oid, AuthEnvDataAttributeSetDecoder<T> decoder, AuthEnvDataAttributeSetEncoder<T> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal AuthEnvDataAttributeSetDecoder<T> Decoder { get; }
+    internal AuthEnvDataAttributeSetEncoder<T> Encoder { get; }
+}
+
+public sealed class AuthEnvDataAttributeSetDecoderBinding<T>
+{
+    internal AuthEnvDataAttributeSetDecoderBinding(Asn1Oid oid, AuthEnvDataAttributeSetDecoder<T> decoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal AuthEnvDataAttributeSetDecoder<T> Decoder { get; }
+}
+
+public static class AuthEnvDataAttributeSetBindings
+{
+    public static AuthEnvDataAttributeSetBinding<T> Create<T>(Asn1Oid oid, AuthEnvDataAttributeSetDecoder<T> decoder, AuthEnvDataAttributeSetEncoder<T> encoder) =>
+        new(oid, decoder, encoder);
+
+    public static AuthEnvDataAttributeSetDecoderBinding<T> Create<T>(Asn1Oid oid, AuthEnvDataAttributeSetDecoder<T> decoder) =>
+        new(oid, decoder);
+
+    public static AuthEnvDataAttributeSetBinding<Asn1Oid[]> ContentType { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntax2010.CryptographicMessageSyntax2010Oids.IdContentType, DecodeContentType, EncodeContentType);
+
+    private static Asn1Oid[] DecodeContentType(Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source)
+    {
+        return Asn1Codecs.DecodeEach(source.AttrValues, Asn1Codecs.ObjectIdentifier);
+    }
+
+    private static Asn1Any[] EncodeContentType(Asn1Oid[] value) =>
+        Asn1Codecs.EncodeEach(value, Asn1Codecs.ObjectIdentifier);
+
+    public static AuthEnvDataAttributeSetBinding<ReadOnlyMemory<byte>[]> MessageDigest { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntax2010.CryptographicMessageSyntax2010Oids.IdMessageDigest, DecodeMessageDigest, EncodeMessageDigest);
+
+    private static ReadOnlyMemory<byte>[] DecodeMessageDigest(Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source)
+    {
+        return Asn1Codecs.DecodeEach(source.AttrValues, Asn1Codecs.OctetString);
+    }
+
+    private static Asn1Any[] EncodeMessageDigest(ReadOnlyMemory<byte>[] value) =>
+        Asn1Codecs.EncodeEach(value, Asn1Codecs.OctetString);
+
+    public static AuthEnvDataAttributeSetBinding<Asn1Kit.Modern.CryptographicMessageSyntax2009.Time[]> SigningTime { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntax2010.CryptographicMessageSyntax2010Oids.IdSigningTime, DecodeSigningTime, EncodeSigningTime);
+
+    private static Asn1Kit.Modern.CryptographicMessageSyntax2009.Time[] DecodeSigningTime(Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source)
+    {
+        return Asn1Codecs.DecodeEach(source.AttrValues, __CMSAuthEnvelopedData2010OpenTypeCodecs.SigningTimeAttribute);
+    }
+
+    private static Asn1Any[] EncodeSigningTime(Asn1Kit.Modern.CryptographicMessageSyntax2009.Time[] value) =>
+        Asn1Codecs.EncodeEach(value, __CMSAuthEnvelopedData2010OpenTypeCodecs.SigningTimeAttribute);
+}
+
+public delegate T AuthContentEncryptionAlgorithmSetParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
+public delegate Asn1Any AuthContentEncryptionAlgorithmSetParametersEncoder<T>(T value);
+
+public sealed class AuthContentEncryptionAlgorithmSetParametersBinding<T>
+{
+    internal AuthContentEncryptionAlgorithmSetParametersBinding(Asn1Oid oid, AuthContentEncryptionAlgorithmSetParametersDecoder<T> decoder, AuthContentEncryptionAlgorithmSetParametersEncoder<T> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal AuthContentEncryptionAlgorithmSetParametersDecoder<T> Decoder { get; }
+    internal AuthContentEncryptionAlgorithmSetParametersEncoder<T> Encoder { get; }
+}
+
+public sealed class AuthContentEncryptionAlgorithmSetParametersDecoderBinding<T>
+{
+    internal AuthContentEncryptionAlgorithmSetParametersDecoderBinding(Asn1Oid oid, AuthContentEncryptionAlgorithmSetParametersDecoder<T> decoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal AuthContentEncryptionAlgorithmSetParametersDecoder<T> Decoder { get; }
+}
+
+public static class AuthContentEncryptionAlgorithmSetParametersBindings
+{
+    public static AuthContentEncryptionAlgorithmSetParametersBinding<T> Create<T>(Asn1Oid oid, AuthContentEncryptionAlgorithmSetParametersDecoder<T> decoder, AuthContentEncryptionAlgorithmSetParametersEncoder<T> encoder) =>
+        new(oid, decoder, encoder);
+
+    public static AuthContentEncryptionAlgorithmSetParametersDecoderBinding<T> Create<T>(Asn1Oid oid, AuthContentEncryptionAlgorithmSetParametersDecoder<T> decoder) =>
+        new(oid, decoder);
+
+    public static AuthContentEncryptionAlgorithmSetParametersBinding<Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters> CeaAes128CCM { get; } =
+        new(global::Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CMSAESCCMAndAESGCM2009Oids.IdAes128CCM, DecodeCeaAes128CCM, __CMSAuthEnvelopedData2010OpenTypeCodecs.CeaAes128CCMAlgorithmIdentifier.Encode);
+
+    private static Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters DecodeCeaAes128CCM(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return __CMSAuthEnvelopedData2010OpenTypeCodecs.CeaAes128CCMAlgorithmIdentifier.Decode(raw);
+    }
+
+    public static AuthContentEncryptionAlgorithmSetParametersBinding<Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters> CeaAes192CCM { get; } =
+        new(global::Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CMSAESCCMAndAESGCM2009Oids.IdAes192CCM, DecodeCeaAes192CCM, __CMSAuthEnvelopedData2010OpenTypeCodecs.CeaAes128CCMAlgorithmIdentifier.Encode);
+
+    private static Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters DecodeCeaAes192CCM(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return __CMSAuthEnvelopedData2010OpenTypeCodecs.CeaAes128CCMAlgorithmIdentifier.Decode(raw);
+    }
+
+    public static AuthContentEncryptionAlgorithmSetParametersBinding<Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters> CeaAes256CCM { get; } =
+        new(global::Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CMSAESCCMAndAESGCM2009Oids.IdAes256CCM, DecodeCeaAes256CCM, __CMSAuthEnvelopedData2010OpenTypeCodecs.CeaAes128CCMAlgorithmIdentifier.Encode);
+
+    private static Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters DecodeCeaAes256CCM(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return __CMSAuthEnvelopedData2010OpenTypeCodecs.CeaAes128CCMAlgorithmIdentifier.Decode(raw);
+    }
+
+    public static AuthContentEncryptionAlgorithmSetParametersBinding<Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters> CeaAes128GCM { get; } =
+        new(global::Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CMSAESCCMAndAESGCM2009Oids.IdAes128GCM, DecodeCeaAes128GCM, __CMSAuthEnvelopedData2010OpenTypeCodecs.CeaAes128GCMAlgorithmIdentifier.Encode);
+
+    private static Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters DecodeCeaAes128GCM(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return __CMSAuthEnvelopedData2010OpenTypeCodecs.CeaAes128GCMAlgorithmIdentifier.Decode(raw);
+    }
+
+    public static AuthContentEncryptionAlgorithmSetParametersBinding<Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters> CeaAes192GCM { get; } =
+        new(global::Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CMSAESCCMAndAESGCM2009Oids.IdAes192GCM, DecodeCeaAes192GCM, __CMSAuthEnvelopedData2010OpenTypeCodecs.CeaAes128GCMAlgorithmIdentifier.Encode);
+
+    private static Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters DecodeCeaAes192GCM(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return __CMSAuthEnvelopedData2010OpenTypeCodecs.CeaAes128GCMAlgorithmIdentifier.Decode(raw);
+    }
+
+    public static AuthContentEncryptionAlgorithmSetParametersBinding<Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters> CeaAes256GCM { get; } =
+        new(global::Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CMSAESCCMAndAESGCM2009Oids.IdAes256GCM, DecodeCeaAes256GCM, __CMSAuthEnvelopedData2010OpenTypeCodecs.CeaAes128GCMAlgorithmIdentifier.Encode);
+
+    private static Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters DecodeCeaAes256GCM(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return __CMSAuthEnvelopedData2010OpenTypeCodecs.CeaAes128GCMAlgorithmIdentifier.Decode(raw);
+    }
+}
+
+public static class CMSAuthEnvelopedData2010OpenTypeExtensions
+{
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, AuthContentEncryptionAlgorithmSetParametersBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, AuthContentEncryptionAlgorithmSetParametersDecoderBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeParametersCeaAes128CCM(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, out Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters value) =>
+        TryDecodeParameters(source, AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes128CCM, out value);
+
+    public static bool TryDecodeParametersCeaAes192CCM(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, out Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters value) =>
+        TryDecodeParameters(source, AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes192CCM, out value);
+
+    public static bool TryDecodeParametersCeaAes256CCM(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, out Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters value) =>
+        TryDecodeParameters(source, AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes256CCM, out value);
+
+    public static bool TryDecodeParametersCeaAes128GCM(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, out Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters value) =>
+        TryDecodeParameters(source, AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes128GCM, out value);
+
+    public static bool TryDecodeParametersCeaAes192GCM(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, out Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters value) =>
+        TryDecodeParameters(source, AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes192GCM, out value);
+
+    public static bool TryDecodeParametersCeaAes256GCM(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, out Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters value) =>
+        TryDecodeParameters(source, AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes256GCM, out value);
+
+    public static void SetParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, AuthContentEncryptionAlgorithmSetParametersBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.Algorithm = binding.Oid;
+        result.Parameters = binding.Encoder(value);
+    }
+
+    public static void SetParametersCeaAes128CCM(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters value) =>
+        SetParameters(source, AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes128CCM, value);
+
+    public static void SetParametersCeaAes192CCM(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters value) =>
+        SetParameters(source, AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes192CCM, value);
+
+    public static void SetParametersCeaAes256CCM(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters value) =>
+        SetParameters(source, AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes256CCM, value);
+
+    public static void SetParametersCeaAes128GCM(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters value) =>
+        SetParameters(source, AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes128GCM, value);
+
+    public static void SetParametersCeaAes192GCM(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters value) =>
+        SetParameters(source, AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes192GCM, value);
+
+    public static void SetParametersCeaAes256GCM(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters value) =>
+        SetParameters(source, AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes256GCM, value);
+    public static bool TryDecodeAttrValues<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, AuthEnvDataAttributeSetBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.AttrType.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeAttrValues<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, AuthEnvDataAttributeSetDecoderBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.AttrType.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeAttrValuesContentType(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, out Asn1Oid[] value) =>
+        TryDecodeAttrValues(source, AuthEnvDataAttributeSetBindings.ContentType, out value);
+
+    public static bool TryDecodeAttrValuesMessageDigest(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, out ReadOnlyMemory<byte>[] value) =>
+        TryDecodeAttrValues(source, AuthEnvDataAttributeSetBindings.MessageDigest, out value);
+
+    public static bool TryDecodeAttrValuesSigningTime(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, out Asn1Kit.Modern.CryptographicMessageSyntax2009.Time[] value) =>
+        TryDecodeAttrValues(source, AuthEnvDataAttributeSetBindings.SigningTime, out value);
+
+    public static void SetAttrValues<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, AuthEnvDataAttributeSetBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.AttrType = binding.Oid;
+        result.AttrValues = binding.Encoder(value);
+    }
+
+    public static void SetAttrValuesContentType(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, Asn1Oid[] value) =>
+        SetAttrValues(source, AuthEnvDataAttributeSetBindings.ContentType, value);
+
+    public static void SetAttrValuesMessageDigest(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, ReadOnlyMemory<byte>[] value) =>
+        SetAttrValues(source, AuthEnvDataAttributeSetBindings.MessageDigest, value);
+
+    public static void SetAttrValuesSigningTime(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, Asn1Kit.Modern.CryptographicMessageSyntax2009.Time[] value) =>
+        SetAttrValues(source, AuthEnvDataAttributeSetBindings.SigningTime, value);
+    public static bool TryGet<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[] source, AuthEnvDataAttributeSetBinding<T> binding, out T value)
+        => TryGet(source, binding, out value, out _);
+
+    public static bool TryGet<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[] source, AuthEnvDataAttributeSetBinding<T> binding, out T value, out Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute? match = null;
+        foreach (var item in source)
+        {
+            if (item.AttrType.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
+                match = item;
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+    public static bool TryGetContentType(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[] source, out Asn1Oid[] value) =>
+        TryGet(source, AuthEnvDataAttributeSetBindings.ContentType, out value);
+
+    public static bool TryGetMessageDigest(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[] source, out ReadOnlyMemory<byte>[] value) =>
+        TryGet(source, AuthEnvDataAttributeSetBindings.MessageDigest, out value);
+
+    public static bool TryGetSigningTime(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[] source, out Asn1Kit.Modern.CryptographicMessageSyntax2009.Time[] value) =>
+        TryGet(source, AuthEnvDataAttributeSetBindings.SigningTime, out value);
+
+}
+
+public static class AuthEnvelopedDataOpenTypeExtensions
+{
+    public static bool TryGetAuthAttrs<T>(this AuthEnvelopedData source, AuthEnvDataAttributeSetBinding<T> binding, out T value)
+        => TryGetAuthAttrs(source, binding, out value, out _);
+
+    public static bool TryGetAuthAttrs<T>(this AuthEnvelopedData source, AuthEnvDataAttributeSetBinding<T> binding, out T value, out Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute? match = null;
+        if (source.AuthAttrs is { } node0)
+        {
+            foreach (var node1 in node0)
+            {
+                if (node1.AttrType.Equals(binding.Oid))
+                {
+                    if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetAuthAttrs.");
+                    match = node1;
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+    public static bool TryGetAuthAttrsContentType(this AuthEnvelopedData source, out Asn1Oid[] value) =>
+        TryGetAuthAttrs(source, AuthEnvDataAttributeSetBindings.ContentType, out value);
+
+    public static bool TryGetAuthAttrsMessageDigest(this AuthEnvelopedData source, out ReadOnlyMemory<byte>[] value) =>
+        TryGetAuthAttrs(source, AuthEnvDataAttributeSetBindings.MessageDigest, out value);
+
+    public static bool TryGetAuthAttrsSigningTime(this AuthEnvelopedData source, out Asn1Kit.Modern.CryptographicMessageSyntax2009.Time[] value) =>
+        TryGetAuthAttrs(source, AuthEnvDataAttributeSetBindings.SigningTime, out value);
+
+}
+
+public static class EncryptedContentInfoOpenTypeExtensions
+{
+    public static bool TryGetContentEncryptionAlgorithm<T>(this EncryptedContentInfo source, AuthContentEncryptionAlgorithmSetParametersBinding<T> binding, out T value)
+        => TryGetContentEncryptionAlgorithm(source, binding, out value, out _);
+
+    public static bool TryGetContentEncryptionAlgorithm<T>(this EncryptedContentInfo source, AuthContentEncryptionAlgorithmSetParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
+        if (source.ContentEncryptionAlgorithm is { } node0)
+        {
+            if (node0.Algorithm.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetContentEncryptionAlgorithm.");
+                match = node0;
+            }
+        }
+        if (match is null) return false;
+        if (match.Parameters is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+    public static bool TryGetContentEncryptionAlgorithmCeaAes128CCM(this EncryptedContentInfo source, out Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters value) =>
+        TryGetContentEncryptionAlgorithm(source, AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes128CCM, out value);
+
+    public static bool TryGetContentEncryptionAlgorithmCeaAes192CCM(this EncryptedContentInfo source, out Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters value) =>
+        TryGetContentEncryptionAlgorithm(source, AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes192CCM, out value);
+
+    public static bool TryGetContentEncryptionAlgorithmCeaAes256CCM(this EncryptedContentInfo source, out Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters value) =>
+        TryGetContentEncryptionAlgorithm(source, AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes256CCM, out value);
+
+    public static bool TryGetContentEncryptionAlgorithmCeaAes128GCM(this EncryptedContentInfo source, out Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters value) =>
+        TryGetContentEncryptionAlgorithm(source, AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes128GCM, out value);
+
+    public static bool TryGetContentEncryptionAlgorithmCeaAes192GCM(this EncryptedContentInfo source, out Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters value) =>
+        TryGetContentEncryptionAlgorithm(source, AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes192GCM, out value);
+
+    public static bool TryGetContentEncryptionAlgorithmCeaAes256GCM(this EncryptedContentInfo source, out Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters value) =>
+        TryGetContentEncryptionAlgorithm(source, AuthContentEncryptionAlgorithmSetParametersBindings.CeaAes256GCM, out value);
+
 }
 

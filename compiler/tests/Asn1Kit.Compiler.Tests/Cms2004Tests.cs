@@ -16,7 +16,6 @@ public sealed class Cms2004Tests
     public void CompilesAndMatchesGoldenIr()
     {
         var paths = AsnPaths.Select(TestData.RepoPath).ToArray();
-        var goldenPath = TestData.RepoPath("compiler/fixtures/ir/cms-2004.json");
         var document = new Asn1Compiler().CompileFiles(paths);
         OpenTypeBindings.ApplyFile(document, TestData.RepoPath("compiler/fixtures/opentype/pkix-bindings.json"));
         OpenTypeBindings.ApplyFile(document, TestData.RepoPath("compiler/fixtures/opentype/cms-bindings.json"));
@@ -25,9 +24,7 @@ public sealed class Cms2004Tests
         var actual = IrSerializer.ToJson(document);
         IrSerializer.ValidateSchema(actual);
 
-        var golden = File.ReadAllText(goldenPath);
-        IrSerializer.ValidateSchema(golden);
-        var expected = IrSerializer.ToJson(IrSerializer.FromJson(golden));
+        var expected = IrSerializer.ToJson(TestData.LoadIr("compiler/fixtures/ir/cms-2004.json"));
         Assert.Equal(expected, actual);
     }
 

@@ -1,5 +1,6 @@
 using System.Text;
 using Asn1Kit.Runtime;
+using Asn1Kit.Modern.PKIX1Explicit2009;
 using BenchAttribute = Asn1Kit.Pkix.Bench.AttributeTypeAndValue;
 using BenchValueKind = Asn1Kit.Pkix.Bench.AttributeTypeAndValue_ValueKind;
 using ModernAttribute = Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute;
@@ -34,22 +35,45 @@ public static class RdnSequenceFormatter
         if (type is null)
             return HexAttribute(attribute.Type, attribute.Value);
 
-        var value = attribute.Value;
-        var form = value.Tag.Equals(Asn1Tag.Utf8String) ? Asn1StringForm.Utf8
-            : value.Tag.Equals(Asn1Tag.PrintableString) ? Asn1StringForm.Printable
-            : value.Tag.Equals(Asn1Tag.TeletexString) ? Asn1StringForm.Teletex
-            : value.Tag.Equals(Asn1Tag.Ia5String) ? Asn1StringForm.Ia5
-            : value.Tag.Equals(Asn1Tag.BmpString) ? Asn1StringForm.Bmp
-            : value.Tag.Equals(Asn1Tag.UniversalString) ? Asn1StringForm.Universal
-            : (Asn1StringForm?)null;
-        if (form is null) return type + "=" + Hex(value);
         try
         {
-            return type + "=" + Escape(value.DecodeValue(reader => reader.ReadString(value.Tag, form.Value)));
+            return type + "=" + (TryDecodeStringAttribute(attribute, type, out var value)
+                ? Escape(value) : Hex(attribute.Value));
         }
         catch (Asn1Exception)
         {
-            return type + "=" + Hex(value);
+            return type + "=" + Hex(attribute.Value);
+        }
+    }
+
+    private static bool TryDecodeStringAttribute(ModernAttribute attribute, string type, out string value)
+    {
+        switch (type)
+        {
+            case "CN":
+                return attribute.TryDecodeValue(
+                    SupportedAttributesValueBindings.X520CommonNameStringValue, out value);
+            case "C":
+                return attribute.TryDecodeValue(
+                    SupportedAttributesValueBindings.X520countryName, out value);
+            case "L":
+                return attribute.TryDecodeValue(
+                    SupportedAttributesValueBindings.X520LocalityNameStringValue, out value);
+            case "ST":
+                return attribute.TryDecodeValue(
+                    SupportedAttributesValueBindings.X520StateOrProvinceNameStringValue, out value);
+            case "O":
+                return attribute.TryDecodeValue(
+                    SupportedAttributesValueBindings.X520OrganizationNameStringValue, out value);
+            case "OU":
+                return attribute.TryDecodeValue(
+                    SupportedAttributesValueBindings.X520OrganizationalUnitNameStringValue, out value);
+            case "DC":
+                return attribute.TryDecodeValue(
+                    SupportedAttributesValueBindings.DomainComponent, out value);
+            default:
+                value = default!;
+                return false;
         }
     }
 

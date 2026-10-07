@@ -259,7 +259,10 @@ internal sealed class InformationResolver
             case EnumeratedTypeAst enumeration: result = new EnumeratedTypeAst(enumeration.Values) { Extensible = enumeration.Extensible }; break;
             case StringTypeAst text: result = new StringTypeAst(text.StringType); break;
             case TimeTypeAst time: result = new TimeTypeAst(time.TimeType); break;
-            case AnyTypeAst any: result = new AnyTypeAst(any.DefinedBy) { Selector = any.Selector, TableExtensible = any.TableExtensible, Bindings = any.Bindings }; break;
+            case AnyTypeAst any: result = new AnyTypeAst(any.DefinedBy)
+            {
+                Selector = any.Selector, Table = any.Table, TableExtensible = any.TableExtensible, Bindings = any.Bindings
+            }; break;
             default: result = type; break;
         }
         if (!ReferenceEquals(result, type)) { result.Line = type.Line; result.Column = type.Column; }
@@ -450,7 +453,9 @@ internal sealed class InformationResolver
             Line = field.Line, Column = field.Column
         };
         if (field.Table is null) return any;
-        var set = ResolveSet(new RawValueAst { Tokens = ExpandTokens(field.Table, scope) }, cls, scope);
+        var tableTokens = ExpandTokens(field.Table, scope);
+        any.Table = ObjectSetName(tableTokens, scope, field);
+        var set = ResolveSet(new RawValueAst { Tokens = tableTokens }, cls, scope);
         any.TableExtensible = set.Extensible;
         var uniqueFields = cls.Fields.Where(f => f.Unique).ToArray();
         if (uniqueFields.Length != 1) throw Error(field, "Open-type table requires exactly one UNIQUE class field.");
@@ -706,6 +711,49 @@ internal sealed class InformationResolver
     {
         var groups = Asn1Parser.SplitTopLevel(tokens, TokenKind.Union);
         return groups.SelectMany(g => Asn1Parser.SplitTopLevel(g, TokenKind.Comma)).ToList();
+    }
+
+    /// <summary>
+    /// Returns the object-set identifier when <paramref name="tokens"/> name a single set
+    /// (including <c>{Set}</c> / <c>{{Set}}</c> wrappers). Anonymous unions and inline sets yield null.
+    /// </summary>
+    private string? ObjectSetName(IReadOnlyList<Token> tokens, Scope scope, AstNode position)
+    {
+        while (true)
+        {
+            if (tokens.Count == 1 && scope.Arguments?.TryGetValue(tokens[0].Text, out var argument) == true)
+            {
+                tokens = argument.Tokens;
+                scope = argument.Scope;
+                continue;
+            }
+            if (IsBraceGroup(tokens))
+            {
+                var body = tokens.Skip(1).Take(tokens.Count - 2).ToArray();
+                // {{Set}} actual-parameter wrapper, or {Set} around a named reference.
+                if (body.Length > 0 && IsBraceGroup(body))
+                {
+                    tokens = body;
+                    continue;
+                }
+                tokens = body;
+                if (tokens.Count == 0) return null;
+                // Named reference only — unions / ellipsis / inline objects are anonymous.
+                if (tokens.Any(static t => t.Kind is TokenKind.Union or TokenKind.Comma or TokenKind.Ellipsis or
+                        TokenKind.LBrace))
+                    return null;
+            }
+            if (tokens.Count == 0) return null;
+            try
+            {
+                var reference = ResolveReference(tokens, scope, position);
+                return char.IsUpper(reference.Name[0]) ? reference.Name : null;
+            }
+            catch (CompileException)
+            {
+                return null;
+            }
+        }
     }
 
     private (string Name, IReadOnlyList<Token> Tokens, Scope Scope, InformationClassAst Class) ResolveReference(IReadOnlyList<Token> tokens, Scope scope, AstNode position)

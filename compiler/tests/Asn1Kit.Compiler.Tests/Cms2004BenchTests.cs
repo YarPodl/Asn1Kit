@@ -7,7 +7,7 @@ public sealed class Cms2004BenchTests
     [Fact]
     public void CommittedBenchIr_MatchesGoldenPlusPatch()
     {
-        var document = IrSerializer.Load(TestData.RepoPath("compiler/fixtures/ir/cms-2004.json"));
+        var document = TestData.LoadIr("compiler/fixtures/ir/cms-2004.json");
         IrOptionsPatch.ApplyFile(document, TestData.RepoPath("compiler/fixtures/ir/cms-2004-bench.patch.json"));
 
         var expected = IrSerializer.ToJson(document);
@@ -15,9 +15,7 @@ public sealed class Cms2004BenchTests
 
         var committedPath = TestData.RepoPath("compiler/fixtures/ir/cms-2004-bench.json");
         Assert.True(File.Exists(committedPath), $"Missing bench IR: {committedPath}");
-        var committed = File.ReadAllText(committedPath);
-        IrSerializer.ValidateSchema(committed);
-        var actual = IrSerializer.ToJson(IrSerializer.FromJson(committed));
+        var actual = IrSerializer.ToJson(TestData.LoadIr("compiler/fixtures/ir/cms-2004-bench.json"));
         Assert.Equal(expected, actual);
     }
 }

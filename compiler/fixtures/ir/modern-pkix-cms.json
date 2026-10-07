@@ -186,6 +186,7 @@
                       }
                     }
                   ],
+                  "table": "SMimeCapsSet",
                   "tableExtensible": true
                 }
               ]
@@ -364,6 +365,7 @@
                             "algorithm"
                           ]
                         },
+                        "table": "SignatureAlgorithms",
                         "tableExtensible": true
                       },
                       "optional": true
@@ -460,6 +462,7 @@
                         "algorithm"
                       ]
                     },
+                    "table": "SignatureAlgorithms",
                     "tableExtensible": true
                   },
                   "constraint": {}
@@ -584,6 +587,7 @@
                           "[]"
                         ],
                         "bindings": [],
+                        "table": "AttrList",
                         "tableExtensible": true
                       }
                     ]
@@ -613,6 +617,7 @@
                         "containing"
                       ],
                       "bindings": [],
+                      "table": "AttributeCertExtensionsV1",
                       "tableExtensible": true
                     }
                   ]
@@ -1186,6 +1191,7 @@
                     }
                   }
                 ],
+                "table": "AuthContentEncryptionAlgorithmSet",
                 "tableExtensible": true
               }
             ]
@@ -1233,6 +1239,7 @@
                     }
                   }
                 ],
+                "table": "AuthEnvDataAttributeSet",
                 "tableExtensible": true
               }
             ]
@@ -1252,6 +1259,7 @@
                   "[]"
                 ],
                 "bindings": [],
+                "table": "UnauthEnvDataAttributeSet",
                 "tableExtensible": true
               }
             ]
@@ -2285,6 +2293,7 @@
                     }
                   }
                 ],
+                "table": "CompressAlgorithmSet",
                 "tableExtensible": true
               }
             ]
@@ -2375,6 +2384,7 @@
                           "[]"
                         ],
                         "bindings": [],
+                        "table": "ContentAttributeSet",
                         "tableExtensible": true
                       }
                     ]
@@ -2532,6 +2542,7 @@
                       "contentType"
                     ]
                   },
+                  "table": "ContentSet",
                   "tableExtensible": true,
                   "tag": {
                     "class": "context",
@@ -2699,6 +2710,7 @@
                         "eContentType"
                       ]
                     },
+                    "table": "ContentSet",
                     "tableExtensible": true
                   },
                   "tag": {
@@ -2799,6 +2811,7 @@
                           }
                         }
                       ],
+                      "table": "UnsignedAttributes",
                       "tableExtensible": true
                     }
                   ],
@@ -2856,6 +2869,7 @@
                     }
                   }
                 ],
+                "table": "SignedAttributesSet",
                 "tableExtensible": true
               }
             ]
@@ -3008,6 +3022,7 @@
                         "[]"
                       ],
                       "bindings": [],
+                      "table": "UnprotectedAttributes",
                       "tableExtensible": true
                     }
                   ],
@@ -3236,6 +3251,7 @@
                           }
                         }
                       ],
+                      "table": "KeyTransportAlgorithmSet",
                       "tableExtensible": true
                     }
                   ]
@@ -3356,6 +3372,7 @@
                           }
                         }
                       ],
+                      "table": "KeyAgreementAlgorithmSet",
                       "tableExtensible": true
                     }
                   ]
@@ -3444,6 +3461,7 @@
                           }
                         }
                       ],
+                      "table": "OriginatorKeySet",
                       "tableExtensible": true
                     }
                   ]
@@ -3710,6 +3728,7 @@
                       "oriType"
                     ]
                   },
+                  "table": "SupportedOtherRecipInfo",
                   "tableExtensible": true
                 },
                 "optional": false
@@ -3802,6 +3821,7 @@
                         "[]"
                       ],
                       "bindings": [],
+                      "table": "UnprotectedAttributes",
                       "tableExtensible": true
                     }
                   ],
@@ -3961,6 +3981,7 @@
                       }
                     }
                   ],
+                  "table": "AuthAttributeSet",
                   "tableExtensible": true
                 }
               ]
@@ -3993,6 +4014,7 @@
                     "[]"
                   ],
                   "bindings": [],
+                  "table": "UnauthAttributeSet",
                   "tableExtensible": true
                 }
               ]
@@ -4016,6 +4038,7 @@
                   "parameters"
                 ],
                 "bindings": [],
+                "table": "DigestAlgorithmSet",
                 "tableExtensible": true
               }
             ]
@@ -4033,6 +4056,7 @@
                   "parameters"
                 ],
                 "bindings": [],
+                "table": "SignatureAlgorithmSet",
                 "tableExtensible": true
               }
             ]
@@ -4067,6 +4091,7 @@
                     }
                   }
                 ],
+                "table": "KeyEncryptionAlgorithmSet",
                 "tableExtensible": true
               }
             ]
@@ -4103,6 +4128,7 @@
                     }
                   }
                 ],
+                "table": "ContentEncryptionAlgorithmSet",
                 "tableExtensible": true
               }
             ]
@@ -4128,6 +4154,7 @@
                     }
                   }
                 ],
+                "table": "MessageAuthenticationCodeAlgorithmSet",
                 "tableExtensible": true
               }
             ]
@@ -4228,6 +4255,7 @@
                       "otherRevInfoFormat"
                     ]
                   },
+                  "table": "SupportedOtherRevokInfo",
                   "tableExtensible": true
                 },
                 "optional": false
@@ -4347,6 +4375,7 @@
                       "otherCertFormat"
                     ]
                   },
+                  "table": "SupportedCertFormats",
                   "tableExtensible": true
                 },
                 "optional": false
@@ -4457,6 +4486,7 @@
                       "keyAttrId"
                     ]
                   },
+                  "table": "SupportedKeyAttributes",
                   "tableExtensible": true
                 },
                 "optional": false
@@ -4878,6 +4908,7 @@
                       "contentType"
                     ]
                   },
+                  "table": "ContentSet",
                   "tableExtensible": true,
                   "tag": {
                     "class": "context",
@@ -5045,6 +5076,7 @@
                         "eContentType"
                       ]
                     },
+                    "table": "ContentSet",
                     "tableExtensible": true
                   },
                   "tag": {
@@ -5145,6 +5177,7 @@
                           }
                         }
                       ],
+                      "table": "UnsignedAttributes",
                       "tableExtensible": true
                     }
                   ],
@@ -5218,6 +5251,7 @@
                     }
                   }
                 ],
+                "table": "SignedAttributesSet",
                 "tableExtensible": true
               }
             ]
@@ -5319,6 +5353,7 @@
                         "[]"
                       ],
                       "bindings": [],
+                      "table": "UnprotectedEnvAttributes",
                       "tableExtensible": true
                     }
                   ],
@@ -5552,6 +5587,7 @@
                           }
                         }
                       ],
+                      "table": "KeyTransportAlgorithmSet",
                       "tableExtensible": true
                     }
                   ]
@@ -5672,6 +5708,7 @@
                           }
                         }
                       ],
+                      "table": "KeyAgreementAlgorithmSet",
                       "tableExtensible": true
                     }
                   ]
@@ -5760,6 +5797,7 @@
                           }
                         }
                       ],
+                      "table": "OriginatorKeySet",
                       "tableExtensible": true
                     }
                   ]
@@ -6026,6 +6064,7 @@
                       "oriType"
                     ]
                   },
+                  "table": "SupportedOtherRecipInfo",
                   "tableExtensible": true
                 },
                 "optional": false
@@ -6118,6 +6157,7 @@
                         "[]"
                       ],
                       "bindings": [],
+                      "table": "UnprotectedEncAttributes",
                       "tableExtensible": true
                     }
                   ],
@@ -6277,6 +6317,7 @@
                       }
                     }
                   ],
+                  "table": "AuthAttributeSet",
                   "tableExtensible": true
                 }
               ]
@@ -6309,6 +6350,7 @@
                     "[]"
                   ],
                   "bindings": [],
+                  "table": "UnauthAttributeSet",
                   "tableExtensible": true
                 }
               ]
@@ -6332,6 +6374,7 @@
                   "parameters"
                 ],
                 "bindings": [],
+                "table": "DigestAlgorithmSet",
                 "tableExtensible": true
               }
             ]
@@ -6349,6 +6392,7 @@
                   "parameters"
                 ],
                 "bindings": [],
+                "table": "SignatureAlgorithmSet",
                 "tableExtensible": true
               }
             ]
@@ -6383,6 +6427,7 @@
                     }
                   }
                 ],
+                "table": "KeyEncryptionAlgorithmSet",
                 "tableExtensible": true
               }
             ]
@@ -6419,6 +6464,7 @@
                     }
                   }
                 ],
+                "table": "ContentEncryptionAlgorithmSet",
                 "tableExtensible": true
               }
             ]
@@ -6444,6 +6490,7 @@
                     }
                   }
                 ],
+                "table": "MessageAuthenticationCodeAlgorithmSet",
                 "tableExtensible": true
               }
             ]
@@ -6544,6 +6591,7 @@
                       "otherRevInfoFormat"
                     ]
                   },
+                  "table": "SupportedOtherRevokInfo",
                   "tableExtensible": true
                 },
                 "optional": false
@@ -6660,6 +6708,7 @@
                       "otherCertFormat"
                     ]
                   },
+                  "table": "SupportedCertFormats",
                   "tableExtensible": true
                 },
                 "optional": false
@@ -6770,6 +6819,7 @@
                       "keyAttrId"
                     ]
                   },
+                  "table": "SupportedKeyAttributes",
                   "tableExtensible": true
                 },
                 "optional": false
@@ -7096,6 +7146,7 @@
                     }
                   }
                 ],
+                "table": "KeyWrapAlgs",
                 "tableExtensible": true
               }
             ]
@@ -7176,6 +7227,7 @@
                     }
                   }
                 ],
+                "table": "PBKDF2-PRFs",
                 "tableExtensible": true
               }
             ]
@@ -7198,6 +7250,7 @@
                   "parameters"
                 ],
                 "bindings": [],
+                "table": "PBKDF2-SaltSources",
                 "tableExtensible": true
               }
             ]
@@ -7687,6 +7740,7 @@
                       "encryptionInfoType"
                     ]
                   },
+                  "table": "SupportedEncryptionAlgorithms",
                   "tableExtensible": true
                 },
                 "optional": false
@@ -8145,6 +8199,7 @@
                         "attrType"
                       ]
                     },
+                    "table": "Cmc-Control-Set",
                     "tableExtensible": true
                   }
                 },
@@ -8219,6 +8274,7 @@
                             "requestMessageType"
                           ]
                         },
+                        "table": "OtherRequests",
                         "tableExtensible": true
                       },
                       "optional": false
@@ -8384,6 +8440,7 @@
                                       }
                                     }
                                   ],
+                                  "table": "PublicKeyAlgorithms",
                                   "tableExtensible": true
                                 }
                               ]
@@ -8427,6 +8484,7 @@
                                   }
                                 }
                               ],
+                              "table": "AttributeList",
                               "tableExtensible": true
                             }
                           ]
@@ -8543,6 +8601,7 @@
                           }
                         }
                       ],
+                      "table": "SignatureAlgorithms",
                       "tableExtensible": true
                     }
                   ]
@@ -8619,6 +8678,7 @@
                       "otherMsgType"
                     ]
                   },
+                  "table": "OtherMsgSet",
                   "tableExtensible": true
                 },
                 "optional": false
@@ -9084,6 +9144,7 @@
                             }
                           }
                         ],
+                        "table": "CertExtensions",
                         "tableExtensible": true
                       }
                     ]
@@ -9136,6 +9197,7 @@
                           }
                         }
                       ],
+                      "table": "POPAlgs",
                       "tableExtensible": true
                     }
                   ]
@@ -9162,6 +9224,7 @@
                           }
                         }
                       ],
+                      "table": "WitnessAlgs",
                       "tableExtensible": true
                     }
                   ]
@@ -9212,6 +9275,7 @@
                           }
                         }
                       ],
+                      "table": "POPAlgs",
                       "tableExtensible": true
                     }
                   ]
@@ -9562,6 +9626,7 @@
                       }
                     }
                   ],
+                  "table": "CertExtensions",
                   "tableExtensible": true
                 }
               ]
@@ -9696,6 +9761,7 @@
                                   "failInfoOID"
                                 ]
                               },
+                              "table": "ExtendedFailures",
                               "tableExtensible": true
                             },
                             "optional": false
@@ -9798,6 +9864,7 @@
                           }
                         }
                       ],
+                      "table": "HashAlgorithms",
                       "tableExtensible": true
                     }
                   ]
@@ -9872,6 +9939,7 @@
                           }
                         }
                       ],
+                      "table": "HashAlgorithms",
                       "tableExtensible": true
                     }
                   ]
@@ -9994,6 +10062,7 @@
                           }
                         }
                       ],
+                      "table": "WitnessAlgs",
                       "tableExtensible": true
                     }
                   ]
@@ -10020,6 +10089,7 @@
                           }
                         }
                       ],
+                      "table": "POPAlgs",
                       "tableExtensible": true
                     }
                   ]
@@ -10064,6 +10134,7 @@
                           }
                         }
                       ],
+                      "table": "KeyDevAlgs",
                       "tableExtensible": true
                     }
                   ]
@@ -10090,6 +10161,7 @@
                           }
                         }
                       ],
+                      "table": "POPAlgs",
                       "tableExtensible": true
                     }
                   ]
@@ -10881,6 +10953,7 @@
                     "value"
                   ],
                   "bindings": [],
+                  "table": "SupportedSecurityCategories",
                   "tableExtensible": true
                 }
               ]
@@ -12271,6 +12344,7 @@
                         "responseType"
                       ]
                     },
+                    "table": "ResponseSet",
                     "tableExtensible": true
                   },
                   "constraint": {}
@@ -12921,6 +12995,7 @@
                         "parameters"
                       ],
                       "bindings": [],
+                      "table": "PKInfoAlgorithms",
                       "tableExtensible": true
                     }
                   ]
@@ -12970,6 +13045,7 @@
                         "type"
                       ]
                     },
+                    "table": "CRIAttributes",
                     "tableExtensible": true
                   },
                   "constraint": {
@@ -13084,6 +13160,7 @@
                         "parameters"
                       ],
                       "bindings": [],
+                      "table": "SignatureAlgorithms",
                       "tableExtensible": true
                     }
                   ]
@@ -14365,6 +14442,7 @@
                       "extension-attribute-type"
                     ]
                   },
+                  "table": "SupportedExtensionAttributes",
                   "tableExtensible": true,
                   "tag": {
                     "class": "context",
@@ -14879,6 +14957,7 @@
                     }
                   }
                 ],
+                "table": "HashAlgorithms",
                 "tableExtensible": false
               }
             ]
@@ -14905,6 +14984,7 @@
                     }
                   }
                 ],
+                "table": "PKCS1MGFAlgorithms",
                 "tableExtensible": true
               }
             ]
@@ -14931,6 +15011,7 @@
                     }
                   }
                 ],
+                "table": "PSS-SourceAlgorithms",
                 "tableExtensible": true
               }
             ]
@@ -15949,6 +16030,7 @@
                       }
                     }
                   ],
+                  "table": "SupportedAttributes",
                   "tableExtensible": true
                 }
               ]
@@ -16091,6 +16173,7 @@
                             "algorithm"
                           ]
                         },
+                        "table": "SignatureAlgorithms",
                         "tableExtensible": true
                       },
                       "optional": true
@@ -16187,6 +16270,7 @@
                         "algorithm"
                       ]
                     },
+                    "table": "SignatureAlgorithms",
                     "tableExtensible": true
                   },
                   "constraint": {}
@@ -16330,6 +16414,7 @@
                           }
                         }
                       ],
+                      "table": "SignatureAlgorithms",
                       "tableExtensible": true
                     }
                   ]
@@ -16586,6 +16671,7 @@
                           }
                         }
                       ],
+                      "table": "CertExtensions",
                       "tableExtensible": true
                     }
                   ],
@@ -16780,6 +16866,7 @@
                           }
                         }
                       ],
+                      "table": "PublicKeyAlgorithms",
                       "tableExtensible": true
                     }
                   ]
@@ -16925,6 +17012,7 @@
                             "algorithm"
                           ]
                         },
+                        "table": "SignatureAlgorithms",
                         "tableExtensible": true
                       },
                       "optional": true
@@ -17021,6 +17109,7 @@
                         "algorithm"
                       ]
                     },
+                    "table": "SignatureAlgorithms",
                     "tableExtensible": true
                   },
                   "constraint": {}
@@ -17147,6 +17236,7 @@
                           }
                         }
                       ],
+                      "table": "SignatureAlgorithms",
                       "tableExtensible": true
                     }
                   ]
@@ -17250,6 +17340,7 @@
                                   }
                                 }
                               ],
+                              "table": "CrlEntryExtensions",
                               "tableExtensible": true
                             }
                           ]
@@ -17341,6 +17432,7 @@
                           }
                         }
                       ],
+                      "table": "CrlExtensions",
                       "tableExtensible": true
                     }
                   ],
@@ -18047,6 +18139,7 @@
                       "policyQualifierId"
                     ]
                   },
+                  "table": "PolicyQualifierId",
                   "tableExtensible": true
                 },
                 "optional": false
@@ -18592,6 +18685,7 @@
                       }
                     }
                   ],
+                  "table": "SupportedAttributes",
                   "tableExtensible": true
                 }
               ]
@@ -20323,6 +20417,7 @@
                             "algorithm"
                           ]
                         },
+                        "table": "SignatureAlgorithms",
                         "tableExtensible": true
                       },
                       "optional": true
@@ -20419,6 +20514,7 @@
                         "algorithm"
                       ]
                     },
+                    "table": "SignatureAlgorithms",
                     "tableExtensible": true
                   },
                   "constraint": {}
@@ -20561,6 +20657,7 @@
                           }
                         }
                       ],
+                      "table": "SignatureAlgorithms",
                       "tableExtensible": true
                     }
                   ]
@@ -20662,6 +20759,7 @@
                             }
                           }
                         ],
+                        "table": "AttributesDefined",
                         "tableExtensible": true
                       }
                     ]
@@ -20760,6 +20858,7 @@
                           }
                         }
                       ],
+                      "table": "AttributeCertExtensions",
                       "tableExtensible": true
                     }
                   ]
@@ -21353,6 +21452,7 @@
                           "value"
                         ],
                         "bindings": [],
+                        "table": "SupportedSecurityCategories",
                         "tableExtensible": true
                       }
                     ]
@@ -21395,6 +21495,7 @@
                       "type"
                     ]
                   },
+                  "table": "SupportedSecurityCategories",
                   "tableExtensible": true,
                   "tag": {
                     "class": "context",
@@ -21603,6 +21704,7 @@
                             }
                           }
                         ],
+                        "table": "AttributesDefined",
                         "tableExtensible": true
                       }
                     ]
@@ -23373,6 +23475,7 @@
                       "infoType"
                     ]
                   },
+                  "table": "SupportedInfoSet",
                   "tableExtensible": true
                 },
                 "optional": false
@@ -23657,6 +23760,7 @@
                             }
                           }
                         ],
+                        "table": "RegInfoSet",
                         "tableExtensible": false
                       }
                     ]
@@ -23834,6 +23938,7 @@
                           }
                         }
                       ],
+                      "table": "SignatureAlgorithms",
                       "tableExtensible": true
                     }
                   ],
@@ -24100,6 +24205,7 @@
                           }
                         }
                       ],
+                      "table": "CertExtensions",
                       "tableExtensible": true
                     }
                   ],
@@ -24219,6 +24325,7 @@
                       }
                     }
                   ],
+                  "table": "RegControlSet",
                   "tableExtensible": true
                 }
               ]
@@ -24407,6 +24514,7 @@
                           }
                         }
                       ],
+                      "table": "SignatureAlgorithms",
                       "tableExtensible": true
                     }
                   ]
@@ -24498,6 +24606,7 @@
                           }
                         }
                       ],
+                      "table": "Password-MACAlgorithms",
                       "tableExtensible": true
                     }
                   ]
@@ -24547,6 +24656,7 @@
                           }
                         }
                       ],
+                      "table": "DigestAlgorithms",
                       "tableExtensible": true
                     }
                   ]
@@ -24580,6 +24690,7 @@
                           }
                         }
                       ],
+                      "table": "MACAlgorithms",
                       "tableExtensible": true
                     }
                   ]
@@ -24790,6 +24901,7 @@
                     "[]"
                   ],
                   "bindings": [],
+                  "table": "PrivateKeyAttributes",
                   "tableExtensible": true
                 }
               ]
@@ -25429,6 +25541,7 @@
                         "containing"
                       ],
                       "bindings": [],
+                      "table": "RequestExtensions",
                       "tableExtensible": true
                     }
                   ],
@@ -25539,6 +25652,7 @@
                           }
                         }
                       ],
+                      "table": "SignatureAlgorithms",
                       "tableExtensible": true
                     }
                   ],
@@ -25713,6 +25827,7 @@
                         "containing"
                       ],
                       "bindings": [],
+                      "table": "QueryExtensions",
                       "tableExtensible": true
                     }
                   ],
@@ -26255,6 +26370,7 @@
                         "parameters"
                       ],
                       "bindings": [],
+                      "table": "SupportedKeyAgreePublicKeys",
                       "tableExtensible": true
                     }
                   ]
@@ -26280,6 +26396,7 @@
                         "parameters"
                       ],
                       "bindings": [],
+                      "table": "SupportedMACAlgorithms",
                       "tableExtensible": true
                     }
                   ]
@@ -26298,6 +26415,7 @@
                         "parameters"
                       ],
                       "bindings": [],
+                      "table": "SupportedKeyDerivationFunctions",
                       "tableExtensible": true
                     }
                   ]
@@ -26635,6 +26753,7 @@
                         "containing"
                       ],
                       "bindings": [],
+                      "table": "CVResponseExtensions",
                       "tableExtensible": true
                     }
                   ],
@@ -27258,6 +27377,7 @@
                         "wb"
                       ]
                     },
+                    "table": "AllWantBacks",
                     "tableExtensible": true
                   },
                   "constraint": {}
@@ -27566,6 +27686,7 @@
                             }
                           }
                         ],
+                        "table": "SignatureAlgorithms",
                         "tableExtensible": true
                       }
                     ]
@@ -27674,6 +27795,7 @@
                             }
                           }
                         ],
+                        "table": "SignatureAlgorithms",
                         "tableExtensible": true
                       }
                     ]
@@ -28464,6 +28586,7 @@
                   "parameters"
                 ],
                 "bindings": [],
+                "table": "SKD-Caps",
                 "tableExtensible": true
               }
             ]
@@ -28946,6 +29069,7 @@
                       "glaRequestType"
                     ]
                   },
+                  "table": "SkdQuerySet",
                   "tableExtensible": true
                 },
                 "optional": false
@@ -28987,6 +29111,7 @@
                               "parameters"
                             ],
                             "bindings": [],
+                            "table": "SKD-Caps",
                             "tableExtensible": true
                           }
                         ]
@@ -28999,6 +29124,7 @@
                       "glaResponseType"
                     ]
                   },
+                  "table": "SkdResponseSet",
                   "tableExtensible": true
                 },
                 "optional": false

@@ -598,58 +598,35 @@ public sealed class EncryptedContentInfo
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier ContentEncryptionAlgorithm { get; set; }
     public ReadOnlyMemory<byte>? EncryptedContent { get; set; }
 
-    public bool TryDecodeContentEncryptionAlgorithmParameters<T>(out T value)
+    public bool TryDecodeContentEncryptionAlgorithmParameters<T>(ContentEncryptionAlgorithmSetParametersBinding<T> binding, out T value)
     {
         value = default!;
-        if (ContentEncryptionAlgorithm is null || ContentEncryptionAlgorithm.Parameters is not { } raw) return false;
-        switch (ContentEncryptionAlgorithm.Algorithm.ToString())
-        {
-            case "1.2.840.113549.3.7":
-            {
-                if (typeof(T) != typeof(ReadOnlyMemory<byte>)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = inner.ReadOctetString(Asn1Tag.OctetString);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            case "1.2.840.113549.3.2":
-            {
-                if (typeof(T) != typeof(Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.RC2CBCParameter)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.RC2CBCParameter.Decode(inner, Asn1Tag.Sequence);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            default: return false;
-        }
+        ArgumentNullException.ThrowIfNull(binding);
+        if (ContentEncryptionAlgorithm is null) return false;
+        var container = ContentEncryptionAlgorithm;
+        return container.TryDecodeParameters(binding, out value);
     }
 
-    public void SetContentEncryptionAlgorithmParameters<T>(T value)
+    public bool TryDecodeContentEncryptionAlgorithmParametersCea3DESCbc(out ReadOnlyMemory<byte> value) =>
+        TryDecodeContentEncryptionAlgorithmParameters(ContentEncryptionAlgorithmSetParametersBindings.Cea3DESCbc, out value);
+
+    public bool TryDecodeContentEncryptionAlgorithmParametersCeaRC2Cbc(out Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.RC2CBCParameter value) =>
+        TryDecodeContentEncryptionAlgorithmParameters(ContentEncryptionAlgorithmSetParametersBindings.CeaRC2Cbc, out value);
+
+    public void SetContentEncryptionAlgorithmParameters<T>(ContentEncryptionAlgorithmSetParametersBinding<T> binding, T value)
     {
+        ArgumentNullException.ThrowIfNull(binding);
         if (ContentEncryptionAlgorithm is null) throw new Asn1Exception("Missing ContentEncryptionAlgorithm.");
-        switch (ContentEncryptionAlgorithm.Algorithm.ToString())
-        {
-            case "1.2.840.113549.3.7":
-            {
-                if (value is not ReadOnlyMemory<byte> typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                writer.WriteOctetString(Asn1Tag.OctetString, typed.Span);
-                ContentEncryptionAlgorithm.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            case "1.2.840.113549.3.2":
-            {
-                if (value is not Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.RC2CBCParameter typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                typed.Encode(writer, Asn1Tag.Sequence);
-                ContentEncryptionAlgorithm.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            default: throw new Asn1Exception("Unknown open-type key.");
-        }
+        var container = ContentEncryptionAlgorithm;
+        container.SetParameters(binding, value);
+        ContentEncryptionAlgorithm = container;
     }
+
+    public void SetContentEncryptionAlgorithmParametersCea3DESCbc(ReadOnlyMemory<byte> value) =>
+        SetContentEncryptionAlgorithmParameters(ContentEncryptionAlgorithmSetParametersBindings.Cea3DESCbc, value);
+
+    public void SetContentEncryptionAlgorithmParametersCeaRC2Cbc(Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.RC2CBCParameter value) =>
+        SetContentEncryptionAlgorithmParameters(ContentEncryptionAlgorithmSetParametersBindings.CeaRC2Cbc, value);
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -819,41 +796,26 @@ public sealed class KeyTransRecipientInfo
     /// <summary>ASN.1 alias EncryptedKey ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> EncryptedKey { get; set; }
 
-    public bool TryDecodeKeyEncryptionAlgorithmParameters<T>(out T value)
+    public bool TryDecodeKeyEncryptionAlgorithmParameters<T>(KeyTransportAlgorithmSetParametersBinding<T> binding, out T value)
     {
         value = default!;
-        if (KeyEncryptionAlgorithm is null || KeyEncryptionAlgorithm.Parameters is not { } raw) return false;
-        switch (KeyEncryptionAlgorithm.Algorithm.ToString())
-        {
-            case "1.2.840.113549.1.1.1":
-            {
-                if (typeof(T) != typeof(Asn1Null)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            default: return false;
-        }
+        ArgumentNullException.ThrowIfNull(binding);
+        if (KeyEncryptionAlgorithm is null) return false;
+        var container = KeyEncryptionAlgorithm;
+        return container.TryDecodeParameters(binding, out value);
     }
 
-    public void SetKeyEncryptionAlgorithmParameters<T>(T value)
+    public void SetKeyEncryptionAlgorithmParameters<T>(KeyTransportAlgorithmSetParametersBinding<T> binding, T value)
     {
+        ArgumentNullException.ThrowIfNull(binding);
         if (KeyEncryptionAlgorithm is null) throw new Asn1Exception("Missing KeyEncryptionAlgorithm.");
-        switch (KeyEncryptionAlgorithm.Algorithm.ToString())
-        {
-            case "1.2.840.113549.1.1.1":
-            {
-                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                writer.WriteNull(Asn1Tag.Null);
-                KeyEncryptionAlgorithm.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            default: throw new Asn1Exception("Unknown open-type key.");
-        }
+        var container = KeyEncryptionAlgorithm;
+        container.SetParameters(binding, value);
+        KeyEncryptionAlgorithm = container;
     }
+
+    public void SetKeyEncryptionAlgorithmParametersKtRsa() =>
+        SetKeyEncryptionAlgorithmParameters(KeyTransportAlgorithmSetParametersBindings.KtRsa, Asn1Null.Value);
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -971,58 +933,35 @@ public sealed class KeyAgreeRecipientInfo
     /// <summary>ASN.1 alias RecipientEncryptedKeys ::= SEQUENCE OF RecipientEncryptedKey.</summary>
     public RecipientEncryptedKey[] RecipientEncryptedKeys { get; set; } = Array.Empty<RecipientEncryptedKey>();
 
-    public bool TryDecodeKeyEncryptionAlgorithmParameters<T>(out T value)
+    public bool TryDecodeKeyEncryptionAlgorithmParameters<T>(KeyAgreementAlgorithmSetParametersBinding<T> binding, out T value)
     {
         value = default!;
-        if (KeyEncryptionAlgorithm is null || KeyEncryptionAlgorithm.Parameters is not { } raw) return false;
-        switch (KeyEncryptionAlgorithm.Algorithm.ToString())
-        {
-            case "1.2.840.113549.1.9.16.3.5":
-            {
-                if (typeof(T) != typeof(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(inner, Asn1Tag.Sequence);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            case "1.2.840.113549.1.9.16.3.10":
-            {
-                if (typeof(T) != typeof(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(inner, Asn1Tag.Sequence);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            default: return false;
-        }
+        ArgumentNullException.ThrowIfNull(binding);
+        if (KeyEncryptionAlgorithm is null) return false;
+        var container = KeyEncryptionAlgorithm;
+        return container.TryDecodeParameters(binding, out value);
     }
 
-    public void SetKeyEncryptionAlgorithmParameters<T>(T value)
+    public bool TryDecodeKeyEncryptionAlgorithmParametersKaaEsdh(out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier value) =>
+        TryDecodeKeyEncryptionAlgorithmParameters(KeyAgreementAlgorithmSetParametersBindings.KaaEsdh, out value);
+
+    public bool TryDecodeKeyEncryptionAlgorithmParametersKaaSsdh(out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier value) =>
+        TryDecodeKeyEncryptionAlgorithmParameters(KeyAgreementAlgorithmSetParametersBindings.KaaSsdh, out value);
+
+    public void SetKeyEncryptionAlgorithmParameters<T>(KeyAgreementAlgorithmSetParametersBinding<T> binding, T value)
     {
+        ArgumentNullException.ThrowIfNull(binding);
         if (KeyEncryptionAlgorithm is null) throw new Asn1Exception("Missing KeyEncryptionAlgorithm.");
-        switch (KeyEncryptionAlgorithm.Algorithm.ToString())
-        {
-            case "1.2.840.113549.1.9.16.3.5":
-            {
-                if (value is not Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                typed.Encode(writer, Asn1Tag.Sequence);
-                KeyEncryptionAlgorithm.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            case "1.2.840.113549.1.9.16.3.10":
-            {
-                if (value is not Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                typed.Encode(writer, Asn1Tag.Sequence);
-                KeyEncryptionAlgorithm.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            default: throw new Asn1Exception("Unknown open-type key.");
-        }
+        var container = KeyEncryptionAlgorithm;
+        container.SetParameters(binding, value);
+        KeyEncryptionAlgorithm = container;
     }
+
+    public void SetKeyEncryptionAlgorithmParametersKaaEsdh(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier value) =>
+        SetKeyEncryptionAlgorithmParameters(KeyAgreementAlgorithmSetParametersBindings.KaaEsdh, value);
+
+    public void SetKeyEncryptionAlgorithmParametersKaaSsdh(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier value) =>
+        SetKeyEncryptionAlgorithmParameters(KeyAgreementAlgorithmSetParametersBindings.KaaSsdh, value);
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1171,41 +1110,29 @@ public sealed class OriginatorPublicKey
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Algorithm { get; set; }
     public Asn1BitString PublicKey { get; set; }
 
-    public bool TryDecodeAlgorithmParameters<T>(out T value)
+    public bool TryDecodeAlgorithmParameters<T>(OriginatorKeySetParametersBinding<T> binding, out T value)
     {
         value = default!;
-        if (Algorithm is null || Algorithm.Parameters is not { } raw) return false;
-        switch (Algorithm.Algorithm.ToString())
-        {
-            case "1.2.840.10046.2.1":
-            {
-                if (typeof(T) != typeof(Asn1Kit.Modern.PKIXAlgs2009.DomainParameters)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Kit.Modern.PKIXAlgs2009.DomainParameters.Decode(inner, Asn1Tag.Sequence);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            default: return false;
-        }
+        ArgumentNullException.ThrowIfNull(binding);
+        if (Algorithm is null) return false;
+        var container = Algorithm;
+        return container.TryDecodeParameters(binding, out value);
     }
 
-    public void SetAlgorithmParameters<T>(T value)
+    public bool TryDecodeAlgorithmParametersPkDh(out Asn1Kit.Modern.PKIXAlgs2009.DomainParameters value) =>
+        TryDecodeAlgorithmParameters(OriginatorKeySetParametersBindings.PkDh, out value);
+
+    public void SetAlgorithmParameters<T>(OriginatorKeySetParametersBinding<T> binding, T value)
     {
+        ArgumentNullException.ThrowIfNull(binding);
         if (Algorithm is null) throw new Asn1Exception("Missing Algorithm.");
-        switch (Algorithm.Algorithm.ToString())
-        {
-            case "1.2.840.10046.2.1":
-            {
-                if (value is not Asn1Kit.Modern.PKIXAlgs2009.DomainParameters typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                typed.Encode(writer, Asn1Tag.Sequence);
-                Algorithm.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            default: throw new Asn1Exception("Unknown open-type key.");
-        }
+        var container = Algorithm;
+        container.SetParameters(binding, value);
+        Algorithm = container;
     }
+
+    public void SetAlgorithmParametersPkDh(Asn1Kit.Modern.PKIXAlgs2009.DomainParameters value) =>
+        SetAlgorithmParameters(OriginatorKeySetParametersBindings.PkDh, value);
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1394,58 +1321,32 @@ public sealed class KEKRecipientInfo
     /// <summary>ASN.1 alias EncryptedKey ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> EncryptedKey { get; set; }
 
-    public bool TryDecodeKeyEncryptionAlgorithmParameters<T>(out T value)
+    public bool TryDecodeKeyEncryptionAlgorithmParameters<T>(KeyEncryptionAlgorithmSetParametersBinding<T> binding, out T value)
     {
         value = default!;
-        if (KeyEncryptionAlgorithm is null || KeyEncryptionAlgorithm.Parameters is not { } raw) return false;
-        switch (KeyEncryptionAlgorithm.Algorithm.ToString())
-        {
-            case "1.2.840.113549.1.9.16.3.6":
-            {
-                if (typeof(T) != typeof(Asn1Null)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            case "1.2.840.113549.1.9.16.3.7":
-            {
-                if (typeof(T) != typeof(Asn1Integer)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = inner.ReadIntegerValue(Asn1Tag.Integer);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            default: return false;
-        }
+        ArgumentNullException.ThrowIfNull(binding);
+        if (KeyEncryptionAlgorithm is null) return false;
+        var container = KeyEncryptionAlgorithm;
+        return container.TryDecodeParameters(binding, out value);
     }
 
-    public void SetKeyEncryptionAlgorithmParameters<T>(T value)
+    public bool TryDecodeKeyEncryptionAlgorithmParametersKwaRC2Wrap(out Asn1Integer value) =>
+        TryDecodeKeyEncryptionAlgorithmParameters(KeyEncryptionAlgorithmSetParametersBindings.KwaRC2Wrap, out value);
+
+    public void SetKeyEncryptionAlgorithmParameters<T>(KeyEncryptionAlgorithmSetParametersBinding<T> binding, T value)
     {
+        ArgumentNullException.ThrowIfNull(binding);
         if (KeyEncryptionAlgorithm is null) throw new Asn1Exception("Missing KeyEncryptionAlgorithm.");
-        switch (KeyEncryptionAlgorithm.Algorithm.ToString())
-        {
-            case "1.2.840.113549.1.9.16.3.6":
-            {
-                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                writer.WriteNull(Asn1Tag.Null);
-                KeyEncryptionAlgorithm.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            case "1.2.840.113549.1.9.16.3.7":
-            {
-                if (value is not Asn1Integer typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                writer.WriteInteger(Asn1Tag.Integer, typed);
-                KeyEncryptionAlgorithm.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            default: throw new Asn1Exception("Unknown open-type key.");
-        }
+        var container = KeyEncryptionAlgorithm;
+        container.SetParameters(binding, value);
+        KeyEncryptionAlgorithm = container;
     }
+
+    public void SetKeyEncryptionAlgorithmParametersKwa3DESWrap() =>
+        SetKeyEncryptionAlgorithmParameters(KeyEncryptionAlgorithmSetParametersBindings.Kwa3DESWrap, Asn1Null.Value);
+
+    public void SetKeyEncryptionAlgorithmParametersKwaRC2Wrap(Asn1Integer value) =>
+        SetKeyEncryptionAlgorithmParameters(KeyEncryptionAlgorithmSetParametersBindings.KwaRC2Wrap, value);
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1537,94 +1438,56 @@ public sealed class PasswordRecipientInfo
     /// <summary>ASN.1 alias EncryptedKey ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> EncryptedKey { get; set; }
 
-    public bool TryDecodeKeyDerivationAlgorithmParameters<T>(out T value)
+    public bool TryDecodeKeyDerivationAlgorithmParameters<T>(AlgorithmIdentifierParametersBinding<T> binding, out T value)
     {
         value = default!;
-        if (KeyDerivationAlgorithm is null || KeyDerivationAlgorithm.Parameters is not { } raw) return false;
-        switch (KeyDerivationAlgorithm.Algorithm.ToString())
-        {
-            case "1.2.840.113549.1.5.12":
-            {
-                if (typeof(T) != typeof(Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params.Decode(inner, Asn1Tag.Sequence);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            default: return false;
-        }
+        ArgumentNullException.ThrowIfNull(binding);
+        if (KeyDerivationAlgorithm is null) return false;
+        var container = KeyDerivationAlgorithm;
+        return container.TryDecodeParameters(binding, out value);
     }
 
-    public void SetKeyDerivationAlgorithmParameters<T>(T value)
+    public bool TryDecodeKeyDerivationAlgorithmParametersKdaPBKDF2(out Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params value) =>
+        TryDecodeKeyDerivationAlgorithmParameters(AlgorithmIdentifierParametersBindings.KdaPBKDF2, out value);
+
+    public void SetKeyDerivationAlgorithmParameters<T>(AlgorithmIdentifierParametersBinding<T> binding, T value)
     {
+        ArgumentNullException.ThrowIfNull(binding);
         if (KeyDerivationAlgorithm is null) throw new Asn1Exception("Missing KeyDerivationAlgorithm.");
-        switch (KeyDerivationAlgorithm.Algorithm.ToString())
-        {
-            case "1.2.840.113549.1.5.12":
-            {
-                if (value is not Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                typed.Encode(writer, Asn1Tag.Sequence);
-                KeyDerivationAlgorithm.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            default: throw new Asn1Exception("Unknown open-type key.");
-        }
+        var container = KeyDerivationAlgorithm;
+        container.SetParameters(binding, value);
+        KeyDerivationAlgorithm = container;
     }
 
-    public bool TryDecodeKeyEncryptionAlgorithmParameters<T>(out T value)
+    public void SetKeyDerivationAlgorithmParametersKdaPBKDF2(Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params value) =>
+        SetKeyDerivationAlgorithmParameters(AlgorithmIdentifierParametersBindings.KdaPBKDF2, value);
+
+    public bool TryDecodeKeyEncryptionAlgorithmParameters<T>(KeyEncryptionAlgorithmSetParametersBinding<T> binding, out T value)
     {
         value = default!;
-        if (KeyEncryptionAlgorithm is null || KeyEncryptionAlgorithm.Parameters is not { } raw) return false;
-        switch (KeyEncryptionAlgorithm.Algorithm.ToString())
-        {
-            case "1.2.840.113549.1.9.16.3.6":
-            {
-                if (typeof(T) != typeof(Asn1Null)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            case "1.2.840.113549.1.9.16.3.7":
-            {
-                if (typeof(T) != typeof(Asn1Integer)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = inner.ReadIntegerValue(Asn1Tag.Integer);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            default: return false;
-        }
+        ArgumentNullException.ThrowIfNull(binding);
+        if (KeyEncryptionAlgorithm is null) return false;
+        var container = KeyEncryptionAlgorithm;
+        return container.TryDecodeParameters(binding, out value);
     }
 
-    public void SetKeyEncryptionAlgorithmParameters<T>(T value)
+    public bool TryDecodeKeyEncryptionAlgorithmParametersKwaRC2Wrap(out Asn1Integer value) =>
+        TryDecodeKeyEncryptionAlgorithmParameters(KeyEncryptionAlgorithmSetParametersBindings.KwaRC2Wrap, out value);
+
+    public void SetKeyEncryptionAlgorithmParameters<T>(KeyEncryptionAlgorithmSetParametersBinding<T> binding, T value)
     {
+        ArgumentNullException.ThrowIfNull(binding);
         if (KeyEncryptionAlgorithm is null) throw new Asn1Exception("Missing KeyEncryptionAlgorithm.");
-        switch (KeyEncryptionAlgorithm.Algorithm.ToString())
-        {
-            case "1.2.840.113549.1.9.16.3.6":
-            {
-                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                writer.WriteNull(Asn1Tag.Null);
-                KeyEncryptionAlgorithm.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            case "1.2.840.113549.1.9.16.3.7":
-            {
-                if (value is not Asn1Integer typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                writer.WriteInteger(Asn1Tag.Integer, typed);
-                KeyEncryptionAlgorithm.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            default: throw new Asn1Exception("Unknown open-type key.");
-        }
+        var container = KeyEncryptionAlgorithm;
+        container.SetParameters(binding, value);
+        KeyEncryptionAlgorithm = container;
     }
+
+    public void SetKeyEncryptionAlgorithmParametersKwa3DESWrap() =>
+        SetKeyEncryptionAlgorithmParameters(KeyEncryptionAlgorithmSetParametersBindings.Kwa3DESWrap, Asn1Null.Value);
+
+    public void SetKeyEncryptionAlgorithmParametersKwaRC2Wrap(Asn1Integer value) =>
+        SetKeyEncryptionAlgorithmParameters(KeyEncryptionAlgorithmSetParametersBindings.KwaRC2Wrap, value);
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1838,41 +1701,26 @@ public sealed class AuthenticatedData
     /// <summary>ASN.1 alias UnauthAttributes ::= SET OF Attribute.</summary>
     public Attribute[]? UnauthAttrs { get; set; }
 
-    public bool TryDecodeMacAlgorithmParameters<T>(out T value)
+    public bool TryDecodeMacAlgorithmParameters<T>(MessageAuthenticationCodeAlgorithmSetParametersBinding<T> binding, out T value)
     {
         value = default!;
-        if (MacAlgorithm is null || MacAlgorithm.Parameters is not { } raw) return false;
-        switch (MacAlgorithm.Algorithm.ToString())
-        {
-            case "1.3.6.1.5.5.8.1.2":
-            {
-                if (typeof(T) != typeof(Asn1Null)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            default: return false;
-        }
+        ArgumentNullException.ThrowIfNull(binding);
+        if (MacAlgorithm is null) return false;
+        var container = MacAlgorithm;
+        return container.TryDecodeParameters(binding, out value);
     }
 
-    public void SetMacAlgorithmParameters<T>(T value)
+    public void SetMacAlgorithmParameters<T>(MessageAuthenticationCodeAlgorithmSetParametersBinding<T> binding, T value)
     {
+        ArgumentNullException.ThrowIfNull(binding);
         if (MacAlgorithm is null) throw new Asn1Exception("Missing MacAlgorithm.");
-        switch (MacAlgorithm.Algorithm.ToString())
-        {
-            case "1.3.6.1.5.5.8.1.2":
-            {
-                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                writer.WriteNull(Asn1Tag.Null);
-                MacAlgorithm.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            default: throw new Asn1Exception("Unknown open-type key.");
-        }
+        var container = MacAlgorithm;
+        container.SetParameters(binding, value);
+        MacAlgorithm = container;
     }
+
+    public void SetMacAlgorithmParametersMacaHMACSHA1() =>
+        SetMacAlgorithmParameters(MessageAuthenticationCodeAlgorithmSetParametersBindings.MacaHMACSHA1, Asn1Null.Value);
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -2889,5 +2737,1961 @@ public sealed class EncapsulatedContentInfo_EContent_Content
             return FromUnknown(reader.ReadAny());
         }
     }
+}
+
+internal static class __CryptographicMessageSyntax2010OpenTypeCodecs
+{
+    internal static Asn1Codec<Time> SigningTimeAttribute { get; } = new(
+        static reader =>
+        {
+            Time decoded;
+            decoded = Asn1Kit.Modern.CryptographicMessageSyntax2010.Time.Decode(reader);
+            return decoded;
+        },
+        static (writer, value) =>
+        {
+            value.Encode(writer);
+        });
+
+    internal static Asn1Codec<SignerInfo> CountersignatureAttribute { get; } = new(
+        static reader =>
+        {
+            SignerInfo decoded;
+            decoded = Asn1Kit.Modern.CryptographicMessageSyntax2010.SignerInfo.Decode(reader, Asn1Tag.Sequence);
+            return decoded;
+        },
+        static (writer, value) =>
+        {
+            value.Encode(writer, Asn1Tag.Sequence);
+        });
+
+    internal static Asn1Codec<Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.RC2CBCParameter> CeaRC2CbcAlgorithmIdentifier { get; } =
+        new(static reader => Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.RC2CBCParameter.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier> KaaEsdhAlgorithmIdentifier { get; } = new(
+        static reader =>
+        {
+            Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier decoded;
+            decoded = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
+            return decoded;
+        },
+        static (writer, value) =>
+        {
+            value.Encode(writer, Asn1Tag.Sequence);
+        });
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIXAlgs2009.DomainParameters> PkDhAlgorithmIdentifier { get; } =
+        new(static reader => Asn1Kit.Modern.PKIXAlgs2009.DomainParameters.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params> KdaPBKDF2AlgorithmIdentifier { get; } =
+        new(static reader => Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.X520name> NameSingleAttribute { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.X520name.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520CommonNameSingleAttribute { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName> X520LocalityNameSingleAttribute { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName.Decode(reader), static (writer, value) => value.Encode(writer));
+
+}
+
+public delegate T SignedAttributesSetDecoder<T>(Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source);
+public delegate Asn1Any[] SignedAttributesSetEncoder<T>(T value);
+
+public sealed class SignedAttributesSetBinding<T>
+{
+    internal SignedAttributesSetBinding(Asn1Oid oid, SignedAttributesSetDecoder<T> decoder, SignedAttributesSetEncoder<T> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal SignedAttributesSetDecoder<T> Decoder { get; }
+    internal SignedAttributesSetEncoder<T> Encoder { get; }
+}
+
+public sealed class SignedAttributesSetDecoderBinding<T>
+{
+    internal SignedAttributesSetDecoderBinding(Asn1Oid oid, SignedAttributesSetDecoder<T> decoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal SignedAttributesSetDecoder<T> Decoder { get; }
+}
+
+public static class SignedAttributesSetBindings
+{
+    public static SignedAttributesSetBinding<T> Create<T>(Asn1Oid oid, SignedAttributesSetDecoder<T> decoder, SignedAttributesSetEncoder<T> encoder) =>
+        new(oid, decoder, encoder);
+
+    public static SignedAttributesSetDecoderBinding<T> Create<T>(Asn1Oid oid, SignedAttributesSetDecoder<T> decoder) =>
+        new(oid, decoder);
+
+    public static SignedAttributesSetBinding<Time[]> SigningTime { get; } =
+        new(CryptographicMessageSyntax2010Oids.IdSigningTime, DecodeSigningTime, EncodeSigningTime);
+
+    private static Time[] DecodeSigningTime(Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source)
+    {
+        return Asn1Codecs.DecodeEach(source.AttrValues, __CryptographicMessageSyntax2010OpenTypeCodecs.SigningTimeAttribute);
+    }
+
+    private static Asn1Any[] EncodeSigningTime(Time[] value) =>
+        Asn1Codecs.EncodeEach(value, __CryptographicMessageSyntax2010OpenTypeCodecs.SigningTimeAttribute);
+
+    public static SignedAttributesSetBinding<ReadOnlyMemory<byte>[]> MessageDigest { get; } =
+        new(CryptographicMessageSyntax2010Oids.IdMessageDigest, DecodeMessageDigest, EncodeMessageDigest);
+
+    private static ReadOnlyMemory<byte>[] DecodeMessageDigest(Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source)
+    {
+        return Asn1Codecs.DecodeEach(source.AttrValues, Asn1Codecs.OctetString);
+    }
+
+    private static Asn1Any[] EncodeMessageDigest(ReadOnlyMemory<byte>[] value) =>
+        Asn1Codecs.EncodeEach(value, Asn1Codecs.OctetString);
+
+    public static SignedAttributesSetBinding<Asn1Oid[]> ContentType { get; } =
+        new(CryptographicMessageSyntax2010Oids.IdContentType, DecodeContentType, EncodeContentType);
+
+    private static Asn1Oid[] DecodeContentType(Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source)
+    {
+        return Asn1Codecs.DecodeEach(source.AttrValues, Asn1Codecs.ObjectIdentifier);
+    }
+
+    private static Asn1Any[] EncodeContentType(Asn1Oid[] value) =>
+        Asn1Codecs.EncodeEach(value, Asn1Codecs.ObjectIdentifier);
+}
+
+public delegate T UnsignedAttributesDecoder<T>(Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source);
+public delegate Asn1Any[] UnsignedAttributesEncoder<T>(T value);
+
+public sealed class UnsignedAttributesBinding<T>
+{
+    internal UnsignedAttributesBinding(Asn1Oid oid, UnsignedAttributesDecoder<T> decoder, UnsignedAttributesEncoder<T> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal UnsignedAttributesDecoder<T> Decoder { get; }
+    internal UnsignedAttributesEncoder<T> Encoder { get; }
+}
+
+public sealed class UnsignedAttributesDecoderBinding<T>
+{
+    internal UnsignedAttributesDecoderBinding(Asn1Oid oid, UnsignedAttributesDecoder<T> decoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal UnsignedAttributesDecoder<T> Decoder { get; }
+}
+
+public static class UnsignedAttributesBindings
+{
+    public static UnsignedAttributesBinding<T> Create<T>(Asn1Oid oid, UnsignedAttributesDecoder<T> decoder, UnsignedAttributesEncoder<T> encoder) =>
+        new(oid, decoder, encoder);
+
+    public static UnsignedAttributesDecoderBinding<T> Create<T>(Asn1Oid oid, UnsignedAttributesDecoder<T> decoder) =>
+        new(oid, decoder);
+
+    public static UnsignedAttributesBinding<SignerInfo[]> Countersignature { get; } =
+        new(CryptographicMessageSyntax2010Oids.IdCountersignature, DecodeCountersignature, EncodeCountersignature);
+
+    private static SignerInfo[] DecodeCountersignature(Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source)
+    {
+        return Asn1Codecs.DecodeEach(source.AttrValues, __CryptographicMessageSyntax2010OpenTypeCodecs.CountersignatureAttribute);
+    }
+
+    private static Asn1Any[] EncodeCountersignature(SignerInfo[] value) =>
+        Asn1Codecs.EncodeEach(value, __CryptographicMessageSyntax2010OpenTypeCodecs.CountersignatureAttribute);
+}
+
+public delegate T ContentEncryptionAlgorithmSetParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
+public delegate Asn1Any ContentEncryptionAlgorithmSetParametersEncoder<T>(T value);
+
+public sealed class ContentEncryptionAlgorithmSetParametersBinding<T>
+{
+    internal ContentEncryptionAlgorithmSetParametersBinding(Asn1Oid oid, ContentEncryptionAlgorithmSetParametersDecoder<T> decoder, ContentEncryptionAlgorithmSetParametersEncoder<T> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal ContentEncryptionAlgorithmSetParametersDecoder<T> Decoder { get; }
+    internal ContentEncryptionAlgorithmSetParametersEncoder<T> Encoder { get; }
+}
+
+public sealed class ContentEncryptionAlgorithmSetParametersDecoderBinding<T>
+{
+    internal ContentEncryptionAlgorithmSetParametersDecoderBinding(Asn1Oid oid, ContentEncryptionAlgorithmSetParametersDecoder<T> decoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal ContentEncryptionAlgorithmSetParametersDecoder<T> Decoder { get; }
+}
+
+public static class ContentEncryptionAlgorithmSetParametersBindings
+{
+    public static ContentEncryptionAlgorithmSetParametersBinding<T> Create<T>(Asn1Oid oid, ContentEncryptionAlgorithmSetParametersDecoder<T> decoder, ContentEncryptionAlgorithmSetParametersEncoder<T> encoder) =>
+        new(oid, decoder, encoder);
+
+    public static ContentEncryptionAlgorithmSetParametersDecoderBinding<T> Create<T>(Asn1Oid oid, ContentEncryptionAlgorithmSetParametersDecoder<T> decoder) =>
+        new(oid, decoder);
+
+    public static ContentEncryptionAlgorithmSetParametersBinding<ReadOnlyMemory<byte>> Cea3DESCbc { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.DesEde3Cbc, DecodeCea3DESCbc, Asn1Codecs.OctetString.Encode);
+
+    private static ReadOnlyMemory<byte> DecodeCea3DESCbc(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return Asn1Codecs.OctetString.Decode(raw);
+    }
+
+    public static ContentEncryptionAlgorithmSetParametersBinding<Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.RC2CBCParameter> CeaRC2Cbc { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.Rc2Cbc, DecodeCeaRC2Cbc, __CryptographicMessageSyntax2010OpenTypeCodecs.CeaRC2CbcAlgorithmIdentifier.Encode);
+
+    private static Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.RC2CBCParameter DecodeCeaRC2Cbc(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return __CryptographicMessageSyntax2010OpenTypeCodecs.CeaRC2CbcAlgorithmIdentifier.Decode(raw);
+    }
+}
+
+public delegate T KeyTransportAlgorithmSetParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
+public delegate Asn1Any KeyTransportAlgorithmSetParametersEncoder<T>(T value);
+
+public sealed class KeyTransportAlgorithmSetParametersBinding<T>
+{
+    internal KeyTransportAlgorithmSetParametersBinding(Asn1Oid oid, KeyTransportAlgorithmSetParametersDecoder<T> decoder, KeyTransportAlgorithmSetParametersEncoder<T> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal KeyTransportAlgorithmSetParametersDecoder<T> Decoder { get; }
+    internal KeyTransportAlgorithmSetParametersEncoder<T> Encoder { get; }
+}
+
+public sealed class KeyTransportAlgorithmSetParametersDecoderBinding<T>
+{
+    internal KeyTransportAlgorithmSetParametersDecoderBinding(Asn1Oid oid, KeyTransportAlgorithmSetParametersDecoder<T> decoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal KeyTransportAlgorithmSetParametersDecoder<T> Decoder { get; }
+}
+
+public static class KeyTransportAlgorithmSetParametersBindings
+{
+    public static KeyTransportAlgorithmSetParametersBinding<T> Create<T>(Asn1Oid oid, KeyTransportAlgorithmSetParametersDecoder<T> decoder, KeyTransportAlgorithmSetParametersEncoder<T> encoder) =>
+        new(oid, decoder, encoder);
+
+    public static KeyTransportAlgorithmSetParametersDecoderBinding<T> Create<T>(Asn1Oid oid, KeyTransportAlgorithmSetParametersDecoder<T> decoder) =>
+        new(oid, decoder);
+
+    public static KeyTransportAlgorithmSetParametersBinding<Asn1Null> KtRsa { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.RsaEncryption, DecodeKtRsa, Asn1Codecs.Null.Encode);
+
+    private static Asn1Null DecodeKtRsa(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return Asn1Codecs.Null.Decode(raw);
+    }
+}
+
+public delegate T KeyAgreementAlgorithmSetParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
+public delegate Asn1Any KeyAgreementAlgorithmSetParametersEncoder<T>(T value);
+
+public sealed class KeyAgreementAlgorithmSetParametersBinding<T>
+{
+    internal KeyAgreementAlgorithmSetParametersBinding(Asn1Oid oid, KeyAgreementAlgorithmSetParametersDecoder<T> decoder, KeyAgreementAlgorithmSetParametersEncoder<T> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal KeyAgreementAlgorithmSetParametersDecoder<T> Decoder { get; }
+    internal KeyAgreementAlgorithmSetParametersEncoder<T> Encoder { get; }
+}
+
+public sealed class KeyAgreementAlgorithmSetParametersDecoderBinding<T>
+{
+    internal KeyAgreementAlgorithmSetParametersDecoderBinding(Asn1Oid oid, KeyAgreementAlgorithmSetParametersDecoder<T> decoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal KeyAgreementAlgorithmSetParametersDecoder<T> Decoder { get; }
+}
+
+public static class KeyAgreementAlgorithmSetParametersBindings
+{
+    public static KeyAgreementAlgorithmSetParametersBinding<T> Create<T>(Asn1Oid oid, KeyAgreementAlgorithmSetParametersDecoder<T> decoder, KeyAgreementAlgorithmSetParametersEncoder<T> encoder) =>
+        new(oid, decoder, encoder);
+
+    public static KeyAgreementAlgorithmSetParametersDecoderBinding<T> Create<T>(Asn1Oid oid, KeyAgreementAlgorithmSetParametersDecoder<T> decoder) =>
+        new(oid, decoder);
+
+    public static KeyAgreementAlgorithmSetParametersBinding<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier> KaaEsdh { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.IdAlgESDH, DecodeKaaEsdh, __CryptographicMessageSyntax2010OpenTypeCodecs.KaaEsdhAlgorithmIdentifier.Encode);
+
+    private static Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier DecodeKaaEsdh(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return __CryptographicMessageSyntax2010OpenTypeCodecs.KaaEsdhAlgorithmIdentifier.Decode(raw);
+    }
+
+    public static KeyAgreementAlgorithmSetParametersBinding<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier> KaaSsdh { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.IdAlgSSDH, DecodeKaaSsdh, __CryptographicMessageSyntax2010OpenTypeCodecs.KaaEsdhAlgorithmIdentifier.Encode);
+
+    private static Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier DecodeKaaSsdh(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return __CryptographicMessageSyntax2010OpenTypeCodecs.KaaEsdhAlgorithmIdentifier.Decode(raw);
+    }
+}
+
+public delegate T OriginatorKeySetParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
+public delegate Asn1Any OriginatorKeySetParametersEncoder<T>(T value);
+
+public sealed class OriginatorKeySetParametersBinding<T>
+{
+    internal OriginatorKeySetParametersBinding(Asn1Oid oid, OriginatorKeySetParametersDecoder<T> decoder, OriginatorKeySetParametersEncoder<T> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal OriginatorKeySetParametersDecoder<T> Decoder { get; }
+    internal OriginatorKeySetParametersEncoder<T> Encoder { get; }
+}
+
+public sealed class OriginatorKeySetParametersDecoderBinding<T>
+{
+    internal OriginatorKeySetParametersDecoderBinding(Asn1Oid oid, OriginatorKeySetParametersDecoder<T> decoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal OriginatorKeySetParametersDecoder<T> Decoder { get; }
+}
+
+public static class OriginatorKeySetParametersBindings
+{
+    public static OriginatorKeySetParametersBinding<T> Create<T>(Asn1Oid oid, OriginatorKeySetParametersDecoder<T> decoder, OriginatorKeySetParametersEncoder<T> encoder) =>
+        new(oid, decoder, encoder);
+
+    public static OriginatorKeySetParametersDecoderBinding<T> Create<T>(Asn1Oid oid, OriginatorKeySetParametersDecoder<T> decoder) =>
+        new(oid, decoder);
+
+    public static OriginatorKeySetParametersBinding<Asn1Kit.Modern.PKIXAlgs2009.DomainParameters> PkDh { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.DhPublicNumber, DecodePkDh, __CryptographicMessageSyntax2010OpenTypeCodecs.PkDhAlgorithmIdentifier.Encode);
+
+    private static Asn1Kit.Modern.PKIXAlgs2009.DomainParameters DecodePkDh(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return __CryptographicMessageSyntax2010OpenTypeCodecs.PkDhAlgorithmIdentifier.Decode(raw);
+    }
+}
+
+public delegate T KeyEncryptionAlgorithmSetParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
+public delegate Asn1Any KeyEncryptionAlgorithmSetParametersEncoder<T>(T value);
+
+public sealed class KeyEncryptionAlgorithmSetParametersBinding<T>
+{
+    internal KeyEncryptionAlgorithmSetParametersBinding(Asn1Oid oid, KeyEncryptionAlgorithmSetParametersDecoder<T> decoder, KeyEncryptionAlgorithmSetParametersEncoder<T> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal KeyEncryptionAlgorithmSetParametersDecoder<T> Decoder { get; }
+    internal KeyEncryptionAlgorithmSetParametersEncoder<T> Encoder { get; }
+}
+
+public sealed class KeyEncryptionAlgorithmSetParametersDecoderBinding<T>
+{
+    internal KeyEncryptionAlgorithmSetParametersDecoderBinding(Asn1Oid oid, KeyEncryptionAlgorithmSetParametersDecoder<T> decoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal KeyEncryptionAlgorithmSetParametersDecoder<T> Decoder { get; }
+}
+
+public static class KeyEncryptionAlgorithmSetParametersBindings
+{
+    public static KeyEncryptionAlgorithmSetParametersBinding<T> Create<T>(Asn1Oid oid, KeyEncryptionAlgorithmSetParametersDecoder<T> decoder, KeyEncryptionAlgorithmSetParametersEncoder<T> encoder) =>
+        new(oid, decoder, encoder);
+
+    public static KeyEncryptionAlgorithmSetParametersDecoderBinding<T> Create<T>(Asn1Oid oid, KeyEncryptionAlgorithmSetParametersDecoder<T> decoder) =>
+        new(oid, decoder);
+
+    public static KeyEncryptionAlgorithmSetParametersBinding<Asn1Null> Kwa3DESWrap { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.IdAlgCMS3DESwrap, DecodeKwa3DESWrap, Asn1Codecs.Null.Encode);
+
+    private static Asn1Null DecodeKwa3DESWrap(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return Asn1Codecs.Null.Decode(raw);
+    }
+
+    public static KeyEncryptionAlgorithmSetParametersBinding<Asn1Integer> KwaRC2Wrap { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.IdAlgCMSRC2wrap, DecodeKwaRC2Wrap, Asn1Codecs.Integer.Encode);
+
+    private static Asn1Integer DecodeKwaRC2Wrap(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return Asn1Codecs.Integer.Decode(raw);
+    }
+}
+
+public delegate T AlgorithmIdentifierParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
+public delegate Asn1Any AlgorithmIdentifierParametersEncoder<T>(T value);
+
+public sealed class AlgorithmIdentifierParametersBinding<T>
+{
+    internal AlgorithmIdentifierParametersBinding(Asn1Oid oid, AlgorithmIdentifierParametersDecoder<T> decoder, AlgorithmIdentifierParametersEncoder<T> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal AlgorithmIdentifierParametersDecoder<T> Decoder { get; }
+    internal AlgorithmIdentifierParametersEncoder<T> Encoder { get; }
+}
+
+public sealed class AlgorithmIdentifierParametersDecoderBinding<T>
+{
+    internal AlgorithmIdentifierParametersDecoderBinding(Asn1Oid oid, AlgorithmIdentifierParametersDecoder<T> decoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal AlgorithmIdentifierParametersDecoder<T> Decoder { get; }
+}
+
+public static class AlgorithmIdentifierParametersBindings
+{
+    public static AlgorithmIdentifierParametersBinding<T> Create<T>(Asn1Oid oid, AlgorithmIdentifierParametersDecoder<T> decoder, AlgorithmIdentifierParametersEncoder<T> encoder) =>
+        new(oid, decoder, encoder);
+
+    public static AlgorithmIdentifierParametersDecoderBinding<T> Create<T>(Asn1Oid oid, AlgorithmIdentifierParametersDecoder<T> decoder) =>
+        new(oid, decoder);
+
+    public static AlgorithmIdentifierParametersBinding<Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params> KdaPBKDF2 { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.IdPBKDF2, DecodeKdaPBKDF2, __CryptographicMessageSyntax2010OpenTypeCodecs.KdaPBKDF2AlgorithmIdentifier.Encode);
+
+    private static Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params DecodeKdaPBKDF2(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return __CryptographicMessageSyntax2010OpenTypeCodecs.KdaPBKDF2AlgorithmIdentifier.Decode(raw);
+    }
+}
+
+public delegate T MessageAuthenticationCodeAlgorithmSetParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
+public delegate Asn1Any MessageAuthenticationCodeAlgorithmSetParametersEncoder<T>(T value);
+
+public sealed class MessageAuthenticationCodeAlgorithmSetParametersBinding<T>
+{
+    internal MessageAuthenticationCodeAlgorithmSetParametersBinding(Asn1Oid oid, MessageAuthenticationCodeAlgorithmSetParametersDecoder<T> decoder, MessageAuthenticationCodeAlgorithmSetParametersEncoder<T> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal MessageAuthenticationCodeAlgorithmSetParametersDecoder<T> Decoder { get; }
+    internal MessageAuthenticationCodeAlgorithmSetParametersEncoder<T> Encoder { get; }
+}
+
+public sealed class MessageAuthenticationCodeAlgorithmSetParametersDecoderBinding<T>
+{
+    internal MessageAuthenticationCodeAlgorithmSetParametersDecoderBinding(Asn1Oid oid, MessageAuthenticationCodeAlgorithmSetParametersDecoder<T> decoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal MessageAuthenticationCodeAlgorithmSetParametersDecoder<T> Decoder { get; }
+}
+
+public static class MessageAuthenticationCodeAlgorithmSetParametersBindings
+{
+    public static MessageAuthenticationCodeAlgorithmSetParametersBinding<T> Create<T>(Asn1Oid oid, MessageAuthenticationCodeAlgorithmSetParametersDecoder<T> decoder, MessageAuthenticationCodeAlgorithmSetParametersEncoder<T> encoder) =>
+        new(oid, decoder, encoder);
+
+    public static MessageAuthenticationCodeAlgorithmSetParametersDecoderBinding<T> Create<T>(Asn1Oid oid, MessageAuthenticationCodeAlgorithmSetParametersDecoder<T> decoder) =>
+        new(oid, decoder);
+
+    public static MessageAuthenticationCodeAlgorithmSetParametersBinding<Asn1Null> MacaHMACSHA1 { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.HMACSHA1, DecodeMacaHMACSHA1, Asn1Codecs.Null.Encode);
+
+    private static Asn1Null DecodeMacaHMACSHA1(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return Asn1Codecs.Null.Decode(raw);
+    }
+}
+
+public delegate T AuthAttributeSetDecoder<T>(Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source);
+public delegate Asn1Any[] AuthAttributeSetEncoder<T>(T value);
+
+public sealed class AuthAttributeSetBinding<T>
+{
+    internal AuthAttributeSetBinding(Asn1Oid oid, AuthAttributeSetDecoder<T> decoder, AuthAttributeSetEncoder<T> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal AuthAttributeSetDecoder<T> Decoder { get; }
+    internal AuthAttributeSetEncoder<T> Encoder { get; }
+}
+
+public sealed class AuthAttributeSetDecoderBinding<T>
+{
+    internal AuthAttributeSetDecoderBinding(Asn1Oid oid, AuthAttributeSetDecoder<T> decoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal AuthAttributeSetDecoder<T> Decoder { get; }
+}
+
+public static class AuthAttributeSetBindings
+{
+    public static AuthAttributeSetBinding<T> Create<T>(Asn1Oid oid, AuthAttributeSetDecoder<T> decoder, AuthAttributeSetEncoder<T> encoder) =>
+        new(oid, decoder, encoder);
+
+    public static AuthAttributeSetDecoderBinding<T> Create<T>(Asn1Oid oid, AuthAttributeSetDecoder<T> decoder) =>
+        new(oid, decoder);
+
+    public static AuthAttributeSetBinding<Asn1Oid[]> ContentType { get; } =
+        new(CryptographicMessageSyntax2010Oids.IdContentType, DecodeContentType, EncodeContentType);
+
+    private static Asn1Oid[] DecodeContentType(Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source)
+    {
+        return Asn1Codecs.DecodeEach(source.AttrValues, Asn1Codecs.ObjectIdentifier);
+    }
+
+    private static Asn1Any[] EncodeContentType(Asn1Oid[] value) =>
+        Asn1Codecs.EncodeEach(value, Asn1Codecs.ObjectIdentifier);
+
+    public static AuthAttributeSetBinding<ReadOnlyMemory<byte>[]> MessageDigest { get; } =
+        new(CryptographicMessageSyntax2010Oids.IdMessageDigest, DecodeMessageDigest, EncodeMessageDigest);
+
+    private static ReadOnlyMemory<byte>[] DecodeMessageDigest(Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source)
+    {
+        return Asn1Codecs.DecodeEach(source.AttrValues, Asn1Codecs.OctetString);
+    }
+
+    private static Asn1Any[] EncodeMessageDigest(ReadOnlyMemory<byte>[] value) =>
+        Asn1Codecs.EncodeEach(value, Asn1Codecs.OctetString);
+
+    public static AuthAttributeSetBinding<Time[]> SigningTime { get; } =
+        new(CryptographicMessageSyntax2010Oids.IdSigningTime, DecodeSigningTime, EncodeSigningTime);
+
+    private static Time[] DecodeSigningTime(Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source)
+    {
+        return Asn1Codecs.DecodeEach(source.AttrValues, __CryptographicMessageSyntax2010OpenTypeCodecs.SigningTimeAttribute);
+    }
+
+    private static Asn1Any[] EncodeSigningTime(Time[] value) =>
+        Asn1Codecs.EncodeEach(value, __CryptographicMessageSyntax2010OpenTypeCodecs.SigningTimeAttribute);
+}
+
+public delegate T SupportedAttributesValueDecoder<T>(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source);
+public delegate Asn1Any SupportedAttributesValueEncoder<T>(T value);
+
+public sealed class SupportedAttributesValueBinding<T>
+{
+    internal SupportedAttributesValueBinding(Asn1Oid oid, SupportedAttributesValueDecoder<T> decoder, SupportedAttributesValueEncoder<T> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal SupportedAttributesValueDecoder<T> Decoder { get; }
+    internal SupportedAttributesValueEncoder<T> Encoder { get; }
+}
+
+public sealed class SupportedAttributesValueDecoderBinding<T>
+{
+    internal SupportedAttributesValueDecoderBinding(Asn1Oid oid, SupportedAttributesValueDecoder<T> decoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal SupportedAttributesValueDecoder<T> Decoder { get; }
+}
+
+public static class SupportedAttributesValueBindings
+{
+    public static SupportedAttributesValueBinding<T> Create<T>(Asn1Oid oid, SupportedAttributesValueDecoder<T> decoder, SupportedAttributesValueEncoder<T> encoder) =>
+        new(oid, decoder, encoder);
+
+    public static SupportedAttributesValueDecoderBinding<T> Create<T>(Asn1Oid oid, SupportedAttributesValueDecoder<T> decoder) =>
+        new(oid, decoder);
+
+    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> Name { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtName, DecodeName, __CryptographicMessageSyntax2010OpenTypeCodecs.NameSingleAttribute.Encode);
+
+    private static Asn1Kit.Modern.PKIX1Explicit2009.X520name DecodeName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return __CryptographicMessageSyntax2010OpenTypeCodecs.NameSingleAttribute.Decode(source.Value);
+    }
+
+    public static SupportedAttributesValueDecoderBinding<string> NameStringValue { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtName, DecodeNameStringValue);
+
+    private static string DecodeNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
+        DecodeName(source).Value;
+
+    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> Surname { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtSurname, DecodeSurname, __CryptographicMessageSyntax2010OpenTypeCodecs.NameSingleAttribute.Encode);
+
+    private static Asn1Kit.Modern.PKIX1Explicit2009.X520name DecodeSurname(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return __CryptographicMessageSyntax2010OpenTypeCodecs.NameSingleAttribute.Decode(source.Value);
+    }
+
+    public static SupportedAttributesValueDecoderBinding<string> SurnameStringValue { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtSurname, DecodeSurnameStringValue);
+
+    private static string DecodeSurnameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
+        DecodeSurname(source).Value;
+
+    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> GivenName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGivenName, DecodeGivenName, __CryptographicMessageSyntax2010OpenTypeCodecs.NameSingleAttribute.Encode);
+
+    private static Asn1Kit.Modern.PKIX1Explicit2009.X520name DecodeGivenName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return __CryptographicMessageSyntax2010OpenTypeCodecs.NameSingleAttribute.Decode(source.Value);
+    }
+
+    public static SupportedAttributesValueDecoderBinding<string> GivenNameStringValue { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGivenName, DecodeGivenNameStringValue);
+
+    private static string DecodeGivenNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
+        DecodeGivenName(source).Value;
+
+    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> Initials { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtInitials, DecodeInitials, __CryptographicMessageSyntax2010OpenTypeCodecs.NameSingleAttribute.Encode);
+
+    private static Asn1Kit.Modern.PKIX1Explicit2009.X520name DecodeInitials(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return __CryptographicMessageSyntax2010OpenTypeCodecs.NameSingleAttribute.Decode(source.Value);
+    }
+
+    public static SupportedAttributesValueDecoderBinding<string> InitialsStringValue { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtInitials, DecodeInitialsStringValue);
+
+    private static string DecodeInitialsStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
+        DecodeInitials(source).Value;
+
+    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> GenerationQualifier { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGenerationQualifier, DecodeGenerationQualifier, __CryptographicMessageSyntax2010OpenTypeCodecs.NameSingleAttribute.Encode);
+
+    private static Asn1Kit.Modern.PKIX1Explicit2009.X520name DecodeGenerationQualifier(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return __CryptographicMessageSyntax2010OpenTypeCodecs.NameSingleAttribute.Decode(source.Value);
+    }
+
+    public static SupportedAttributesValueDecoderBinding<string> GenerationQualifierStringValue { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGenerationQualifier, DecodeGenerationQualifierStringValue);
+
+    private static string DecodeGenerationQualifierStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
+        DecodeGenerationQualifier(source).Value;
+
+    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520CommonName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtCommonName, DecodeX520CommonName, __CryptographicMessageSyntax2010OpenTypeCodecs.X520CommonNameSingleAttribute.Encode);
+
+    private static Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName DecodeX520CommonName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return __CryptographicMessageSyntax2010OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value);
+    }
+
+    public static SupportedAttributesValueDecoderBinding<string> X520CommonNameStringValue { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtCommonName, DecodeX520CommonNameStringValue);
+
+    private static string DecodeX520CommonNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
+        DecodeX520CommonName(source).Value;
+
+    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName> X520LocalityName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtLocalityName, DecodeX520LocalityName, __CryptographicMessageSyntax2010OpenTypeCodecs.X520LocalityNameSingleAttribute.Encode);
+
+    private static Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName DecodeX520LocalityName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return __CryptographicMessageSyntax2010OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value);
+    }
+
+    public static SupportedAttributesValueDecoderBinding<string> X520LocalityNameStringValue { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtLocalityName, DecodeX520LocalityNameStringValue);
+
+    private static string DecodeX520LocalityNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
+        DecodeX520LocalityName(source).Value;
+
+    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName> X520StateOrProvinceName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtStateOrProvinceName, DecodeX520StateOrProvinceName, __CryptographicMessageSyntax2010OpenTypeCodecs.X520LocalityNameSingleAttribute.Encode);
+
+    private static Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName DecodeX520StateOrProvinceName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return __CryptographicMessageSyntax2010OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value);
+    }
+
+    public static SupportedAttributesValueDecoderBinding<string> X520StateOrProvinceNameStringValue { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtStateOrProvinceName, DecodeX520StateOrProvinceNameStringValue);
+
+    private static string DecodeX520StateOrProvinceNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
+        DecodeX520StateOrProvinceName(source).Value;
+
+    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520OrganizationName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationName, DecodeX520OrganizationName, __CryptographicMessageSyntax2010OpenTypeCodecs.X520CommonNameSingleAttribute.Encode);
+
+    private static Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName DecodeX520OrganizationName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return __CryptographicMessageSyntax2010OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value);
+    }
+
+    public static SupportedAttributesValueDecoderBinding<string> X520OrganizationNameStringValue { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationName, DecodeX520OrganizationNameStringValue);
+
+    private static string DecodeX520OrganizationNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
+        DecodeX520OrganizationName(source).Value;
+
+    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520OrganizationalUnitName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationalUnitName, DecodeX520OrganizationalUnitName, __CryptographicMessageSyntax2010OpenTypeCodecs.X520CommonNameSingleAttribute.Encode);
+
+    private static Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName DecodeX520OrganizationalUnitName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return __CryptographicMessageSyntax2010OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value);
+    }
+
+    public static SupportedAttributesValueDecoderBinding<string> X520OrganizationalUnitNameStringValue { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationalUnitName, DecodeX520OrganizationalUnitNameStringValue);
+
+    private static string DecodeX520OrganizationalUnitNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
+        DecodeX520OrganizationalUnitName(source).Value;
+
+    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520Title { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtTitle, DecodeX520Title, __CryptographicMessageSyntax2010OpenTypeCodecs.X520CommonNameSingleAttribute.Encode);
+
+    private static Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName DecodeX520Title(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return __CryptographicMessageSyntax2010OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value);
+    }
+
+    public static SupportedAttributesValueDecoderBinding<string> X520TitleStringValue { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtTitle, DecodeX520TitleStringValue);
+
+    private static string DecodeX520TitleStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
+        DecodeX520Title(source).Value;
+
+    public static SupportedAttributesValueBinding<string> X520dnQualifier { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtDnQualifier, DecodeX520dnQualifier, Asn1Codecs.PrintableString.Encode);
+
+    private static string DecodeX520dnQualifier(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return Asn1Codecs.PrintableString.Decode(source.Value);
+    }
+
+    public static SupportedAttributesValueBinding<string> X520countryName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtCountryName, DecodeX520countryName, Asn1Codecs.PrintableString.Encode);
+
+    private static string DecodeX520countryName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return Asn1Codecs.PrintableString.Decode(source.Value);
+    }
+
+    public static SupportedAttributesValueBinding<string> X520SerialNumber { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtSerialNumber, DecodeX520SerialNumber, Asn1Codecs.PrintableString.Encode);
+
+    private static string DecodeX520SerialNumber(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return Asn1Codecs.PrintableString.Decode(source.Value);
+    }
+
+    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName> X520Pseudonym { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtPseudonym, DecodeX520Pseudonym, __CryptographicMessageSyntax2010OpenTypeCodecs.X520LocalityNameSingleAttribute.Encode);
+
+    private static Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName DecodeX520Pseudonym(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return __CryptographicMessageSyntax2010OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value);
+    }
+
+    public static SupportedAttributesValueDecoderBinding<string> X520PseudonymStringValue { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtPseudonym, DecodeX520PseudonymStringValue);
+
+    private static string DecodeX520PseudonymStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
+        DecodeX520Pseudonym(source).Value;
+
+    public static SupportedAttributesValueBinding<string> DomainComponent { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdDomainComponent, DecodeDomainComponent, Asn1Codecs.Ia5String.Encode);
+
+    private static string DecodeDomainComponent(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return Asn1Codecs.Ia5String.Decode(source.Value);
+    }
+
+    public static SupportedAttributesValueBinding<string> EmailAddress { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdEmailAddress, DecodeEmailAddress, Asn1Codecs.Ia5String.Encode);
+
+    private static string DecodeEmailAddress(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return Asn1Codecs.Ia5String.Decode(source.Value);
+    }
+}
+
+public static class CryptographicMessageSyntax2010OpenTypeExtensions
+{
+    public static bool TryDecodeAttrValues<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, UnsignedAttributesBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.AttrType.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeAttrValues<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, UnsignedAttributesDecoderBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.AttrType.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeAttrValuesCountersignature(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, out SignerInfo[] value) =>
+        TryDecodeAttrValues(source, UnsignedAttributesBindings.Countersignature, out value);
+
+    public static void SetAttrValues<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, UnsignedAttributesBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.AttrType = binding.Oid;
+        result.AttrValues = binding.Encoder(value);
+    }
+
+    public static void SetAttrValuesCountersignature(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, SignerInfo[] value) =>
+        SetAttrValues(source, UnsignedAttributesBindings.Countersignature, value);
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, KeyTransportAlgorithmSetParametersBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, KeyTransportAlgorithmSetParametersDecoderBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static void SetParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, KeyTransportAlgorithmSetParametersBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.Algorithm = binding.Oid;
+        result.Parameters = binding.Encoder(value);
+    }
+
+    public static void SetParametersKtRsa(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
+        SetParameters(source, KeyTransportAlgorithmSetParametersBindings.KtRsa, Asn1Null.Value);
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, KeyAgreementAlgorithmSetParametersBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, KeyAgreementAlgorithmSetParametersDecoderBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeParametersKaaEsdh(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier value) =>
+        TryDecodeParameters(source, KeyAgreementAlgorithmSetParametersBindings.KaaEsdh, out value);
+
+    public static bool TryDecodeParametersKaaSsdh(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier value) =>
+        TryDecodeParameters(source, KeyAgreementAlgorithmSetParametersBindings.KaaSsdh, out value);
+
+    public static void SetParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, KeyAgreementAlgorithmSetParametersBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.Algorithm = binding.Oid;
+        result.Parameters = binding.Encoder(value);
+    }
+
+    public static void SetParametersKaaEsdh(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier value) =>
+        SetParameters(source, KeyAgreementAlgorithmSetParametersBindings.KaaEsdh, value);
+
+    public static void SetParametersKaaSsdh(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier value) =>
+        SetParameters(source, KeyAgreementAlgorithmSetParametersBindings.KaaSsdh, value);
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, OriginatorKeySetParametersBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, OriginatorKeySetParametersDecoderBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeParametersPkDh(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, out Asn1Kit.Modern.PKIXAlgs2009.DomainParameters value) =>
+        TryDecodeParameters(source, OriginatorKeySetParametersBindings.PkDh, out value);
+
+    public static void SetParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, OriginatorKeySetParametersBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.Algorithm = binding.Oid;
+        result.Parameters = binding.Encoder(value);
+    }
+
+    public static void SetParametersPkDh(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, Asn1Kit.Modern.PKIXAlgs2009.DomainParameters value) =>
+        SetParameters(source, OriginatorKeySetParametersBindings.PkDh, value);
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, KeyEncryptionAlgorithmSetParametersBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, KeyEncryptionAlgorithmSetParametersDecoderBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeParametersKwaRC2Wrap(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, out Asn1Integer value) =>
+        TryDecodeParameters(source, KeyEncryptionAlgorithmSetParametersBindings.KwaRC2Wrap, out value);
+
+    public static void SetParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, KeyEncryptionAlgorithmSetParametersBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.Algorithm = binding.Oid;
+        result.Parameters = binding.Encoder(value);
+    }
+
+    public static void SetParametersKwa3DESWrap(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
+        SetParameters(source, KeyEncryptionAlgorithmSetParametersBindings.Kwa3DESWrap, Asn1Null.Value);
+
+    public static void SetParametersKwaRC2Wrap(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, Asn1Integer value) =>
+        SetParameters(source, KeyEncryptionAlgorithmSetParametersBindings.KwaRC2Wrap, value);
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, MessageAuthenticationCodeAlgorithmSetParametersBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, MessageAuthenticationCodeAlgorithmSetParametersDecoderBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static void SetParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, MessageAuthenticationCodeAlgorithmSetParametersBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.Algorithm = binding.Oid;
+        result.Parameters = binding.Encoder(value);
+    }
+
+    public static void SetParametersMacaHMACSHA1(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
+        SetParameters(source, MessageAuthenticationCodeAlgorithmSetParametersBindings.MacaHMACSHA1, Asn1Null.Value);
+    public static bool TryDecodeValue<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, SupportedAttributesValueBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.Type.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeValue<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, SupportedAttributesValueDecoderBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.Type.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeValueName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
+        TryDecodeValue(source, SupportedAttributesValueBindings.Name, out value);
+
+    public static bool TryDecodeValueSurname(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
+        TryDecodeValue(source, SupportedAttributesValueBindings.Surname, out value);
+
+    public static bool TryDecodeValueGivenName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
+        TryDecodeValue(source, SupportedAttributesValueBindings.GivenName, out value);
+
+    public static bool TryDecodeValueInitials(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
+        TryDecodeValue(source, SupportedAttributesValueBindings.Initials, out value);
+
+    public static bool TryDecodeValueGenerationQualifier(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
+        TryDecodeValue(source, SupportedAttributesValueBindings.GenerationQualifier, out value);
+
+    public static bool TryDecodeValueX520CommonName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
+        TryDecodeValue(source, SupportedAttributesValueBindings.X520CommonName, out value);
+
+    public static bool TryDecodeValueX520LocalityName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
+        TryDecodeValue(source, SupportedAttributesValueBindings.X520LocalityName, out value);
+
+    public static bool TryDecodeValueX520StateOrProvinceName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
+        TryDecodeValue(source, SupportedAttributesValueBindings.X520StateOrProvinceName, out value);
+
+    public static bool TryDecodeValueX520OrganizationName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
+        TryDecodeValue(source, SupportedAttributesValueBindings.X520OrganizationName, out value);
+
+    public static bool TryDecodeValueX520OrganizationalUnitName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
+        TryDecodeValue(source, SupportedAttributesValueBindings.X520OrganizationalUnitName, out value);
+
+    public static bool TryDecodeValueX520Title(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
+        TryDecodeValue(source, SupportedAttributesValueBindings.X520Title, out value);
+
+    public static bool TryDecodeValueX520dnQualifier(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out string value) =>
+        TryDecodeValue(source, SupportedAttributesValueBindings.X520dnQualifier, out value);
+
+    public static bool TryDecodeValueX520countryName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out string value) =>
+        TryDecodeValue(source, SupportedAttributesValueBindings.X520countryName, out value);
+
+    public static bool TryDecodeValueX520SerialNumber(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out string value) =>
+        TryDecodeValue(source, SupportedAttributesValueBindings.X520SerialNumber, out value);
+
+    public static bool TryDecodeValueX520Pseudonym(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
+        TryDecodeValue(source, SupportedAttributesValueBindings.X520Pseudonym, out value);
+
+    public static bool TryDecodeValueDomainComponent(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out string value) =>
+        TryDecodeValue(source, SupportedAttributesValueBindings.DomainComponent, out value);
+
+    public static bool TryDecodeValueEmailAddress(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out string value) =>
+        TryDecodeValue(source, SupportedAttributesValueBindings.EmailAddress, out value);
+
+    public static void SetValue<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, SupportedAttributesValueBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.Type = binding.Oid;
+        result.Value = binding.Encoder(value);
+    }
+
+    public static void SetValueName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
+        SetValue(source, SupportedAttributesValueBindings.Name, value);
+
+    public static void SetValueSurname(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
+        SetValue(source, SupportedAttributesValueBindings.Surname, value);
+
+    public static void SetValueGivenName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
+        SetValue(source, SupportedAttributesValueBindings.GivenName, value);
+
+    public static void SetValueInitials(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
+        SetValue(source, SupportedAttributesValueBindings.Initials, value);
+
+    public static void SetValueGenerationQualifier(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
+        SetValue(source, SupportedAttributesValueBindings.GenerationQualifier, value);
+
+    public static void SetValueX520CommonName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
+        SetValue(source, SupportedAttributesValueBindings.X520CommonName, value);
+
+    public static void SetValueX520LocalityName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
+        SetValue(source, SupportedAttributesValueBindings.X520LocalityName, value);
+
+    public static void SetValueX520StateOrProvinceName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
+        SetValue(source, SupportedAttributesValueBindings.X520StateOrProvinceName, value);
+
+    public static void SetValueX520OrganizationName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
+        SetValue(source, SupportedAttributesValueBindings.X520OrganizationName, value);
+
+    public static void SetValueX520OrganizationalUnitName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
+        SetValue(source, SupportedAttributesValueBindings.X520OrganizationalUnitName, value);
+
+    public static void SetValueX520Title(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
+        SetValue(source, SupportedAttributesValueBindings.X520Title, value);
+
+    public static void SetValueX520dnQualifier(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, string value) =>
+        SetValue(source, SupportedAttributesValueBindings.X520dnQualifier, value);
+
+    public static void SetValueX520countryName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, string value) =>
+        SetValue(source, SupportedAttributesValueBindings.X520countryName, value);
+
+    public static void SetValueX520SerialNumber(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, string value) =>
+        SetValue(source, SupportedAttributesValueBindings.X520SerialNumber, value);
+
+    public static void SetValueX520Pseudonym(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
+        SetValue(source, SupportedAttributesValueBindings.X520Pseudonym, value);
+
+    public static void SetValueDomainComponent(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, string value) =>
+        SetValue(source, SupportedAttributesValueBindings.DomainComponent, value);
+
+    public static void SetValueEmailAddress(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, string value) =>
+        SetValue(source, SupportedAttributesValueBindings.EmailAddress, value);
+    public static bool TryDecodeAttrValues<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, SignedAttributesSetBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.AttrType.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeAttrValues<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, SignedAttributesSetDecoderBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.AttrType.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeAttrValuesSigningTime(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, out Time[] value) =>
+        TryDecodeAttrValues(source, SignedAttributesSetBindings.SigningTime, out value);
+
+    public static bool TryDecodeAttrValuesMessageDigest(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, out ReadOnlyMemory<byte>[] value) =>
+        TryDecodeAttrValues(source, SignedAttributesSetBindings.MessageDigest, out value);
+
+    public static bool TryDecodeAttrValuesContentType(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, out Asn1Oid[] value) =>
+        TryDecodeAttrValues(source, SignedAttributesSetBindings.ContentType, out value);
+
+    public static void SetAttrValues<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, SignedAttributesSetBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.AttrType = binding.Oid;
+        result.AttrValues = binding.Encoder(value);
+    }
+
+    public static void SetAttrValuesSigningTime(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, Time[] value) =>
+        SetAttrValues(source, SignedAttributesSetBindings.SigningTime, value);
+
+    public static void SetAttrValuesMessageDigest(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, ReadOnlyMemory<byte>[] value) =>
+        SetAttrValues(source, SignedAttributesSetBindings.MessageDigest, value);
+
+    public static void SetAttrValuesContentType(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, Asn1Oid[] value) =>
+        SetAttrValues(source, SignedAttributesSetBindings.ContentType, value);
+    public static bool TryDecodeAttrValues<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, AuthAttributeSetBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.AttrType.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeAttrValues<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, AuthAttributeSetDecoderBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.AttrType.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static void SetAttrValues<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute source, AuthAttributeSetBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.AttrType = binding.Oid;
+        result.AttrValues = binding.Encoder(value);
+    }
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, ContentEncryptionAlgorithmSetParametersBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, ContentEncryptionAlgorithmSetParametersDecoderBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeParametersCea3DESCbc(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, out ReadOnlyMemory<byte> value) =>
+        TryDecodeParameters(source, ContentEncryptionAlgorithmSetParametersBindings.Cea3DESCbc, out value);
+
+    public static bool TryDecodeParametersCeaRC2Cbc(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, out Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.RC2CBCParameter value) =>
+        TryDecodeParameters(source, ContentEncryptionAlgorithmSetParametersBindings.CeaRC2Cbc, out value);
+
+    public static void SetParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, ContentEncryptionAlgorithmSetParametersBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.Algorithm = binding.Oid;
+        result.Parameters = binding.Encoder(value);
+    }
+
+    public static void SetParametersCea3DESCbc(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, ReadOnlyMemory<byte> value) =>
+        SetParameters(source, ContentEncryptionAlgorithmSetParametersBindings.Cea3DESCbc, value);
+
+    public static void SetParametersCeaRC2Cbc(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.RC2CBCParameter value) =>
+        SetParameters(source, ContentEncryptionAlgorithmSetParametersBindings.CeaRC2Cbc, value);
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, AlgorithmIdentifierParametersBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, AlgorithmIdentifierParametersDecoderBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeParametersKdaPBKDF2(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, out Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params value) =>
+        TryDecodeParameters(source, AlgorithmIdentifierParametersBindings.KdaPBKDF2, out value);
+
+    public static void SetParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, AlgorithmIdentifierParametersBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.Algorithm = binding.Oid;
+        result.Parameters = binding.Encoder(value);
+    }
+
+    public static void SetParametersKdaPBKDF2(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params value) =>
+        SetParameters(source, AlgorithmIdentifierParametersBindings.KdaPBKDF2, value);
+    public static bool TryGet<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[] source, UnsignedAttributesBinding<T> binding, out T value)
+        => TryGet(source, binding, out value, out _);
+
+    public static bool TryGet<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[] source, UnsignedAttributesBinding<T> binding, out T value, out Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute? match = null;
+        foreach (var item in source)
+        {
+            if (item.AttrType.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
+                match = item;
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+    public static bool TryGetCountersignature(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[] source, out SignerInfo[] value) =>
+        TryGet(source, UnsignedAttributesBindings.Countersignature, out value);
+
+    public static bool TryGet<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, SupportedAttributesValueBinding<T> binding, out T value)
+        => TryGet(source, binding, out value, out _);
+
+    public static bool TryGet<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, SupportedAttributesValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute? match = null;
+        foreach (var item in source)
+        {
+            if (item.Type.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
+                match = item;
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+    public static bool TryGetName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
+        TryGet(source, SupportedAttributesValueBindings.Name, out value);
+
+    public static bool TryGetSurname(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
+        TryGet(source, SupportedAttributesValueBindings.Surname, out value);
+
+    public static bool TryGetGivenName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
+        TryGet(source, SupportedAttributesValueBindings.GivenName, out value);
+
+    public static bool TryGetInitials(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
+        TryGet(source, SupportedAttributesValueBindings.Initials, out value);
+
+    public static bool TryGetGenerationQualifier(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
+        TryGet(source, SupportedAttributesValueBindings.GenerationQualifier, out value);
+
+    public static bool TryGetX520CommonName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
+        TryGet(source, SupportedAttributesValueBindings.X520CommonName, out value);
+
+    public static bool TryGetX520LocalityName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
+        TryGet(source, SupportedAttributesValueBindings.X520LocalityName, out value);
+
+    public static bool TryGetX520StateOrProvinceName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
+        TryGet(source, SupportedAttributesValueBindings.X520StateOrProvinceName, out value);
+
+    public static bool TryGetX520OrganizationName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
+        TryGet(source, SupportedAttributesValueBindings.X520OrganizationName, out value);
+
+    public static bool TryGetX520OrganizationalUnitName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
+        TryGet(source, SupportedAttributesValueBindings.X520OrganizationalUnitName, out value);
+
+    public static bool TryGetX520Title(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
+        TryGet(source, SupportedAttributesValueBindings.X520Title, out value);
+
+    public static bool TryGetX520dnQualifier(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out string value) =>
+        TryGet(source, SupportedAttributesValueBindings.X520dnQualifier, out value);
+
+    public static bool TryGetX520countryName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out string value) =>
+        TryGet(source, SupportedAttributesValueBindings.X520countryName, out value);
+
+    public static bool TryGetX520SerialNumber(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out string value) =>
+        TryGet(source, SupportedAttributesValueBindings.X520SerialNumber, out value);
+
+    public static bool TryGetX520Pseudonym(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
+        TryGet(source, SupportedAttributesValueBindings.X520Pseudonym, out value);
+
+    public static bool TryGetDomainComponent(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out string value) =>
+        TryGet(source, SupportedAttributesValueBindings.DomainComponent, out value);
+
+    public static bool TryGetEmailAddress(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out string value) =>
+        TryGet(source, SupportedAttributesValueBindings.EmailAddress, out value);
+
+    public static bool TryGet<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[] source, SignedAttributesSetBinding<T> binding, out T value)
+        => TryGet(source, binding, out value, out _);
+
+    public static bool TryGet<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[] source, SignedAttributesSetBinding<T> binding, out T value, out Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute? match = null;
+        foreach (var item in source)
+        {
+            if (item.AttrType.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
+                match = item;
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+    public static bool TryGetSigningTime(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[] source, out Time[] value) =>
+        TryGet(source, SignedAttributesSetBindings.SigningTime, out value);
+
+    public static bool TryGetMessageDigest(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[] source, out ReadOnlyMemory<byte>[] value) =>
+        TryGet(source, SignedAttributesSetBindings.MessageDigest, out value);
+
+    public static bool TryGetContentType(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[] source, out Asn1Oid[] value) =>
+        TryGet(source, SignedAttributesSetBindings.ContentType, out value);
+
+    public static bool TryGet<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[] source, AuthAttributeSetBinding<T> binding, out T value)
+        => TryGet(source, binding, out value, out _);
+
+    public static bool TryGet<T>(this Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[] source, AuthAttributeSetBinding<T> binding, out T value, out Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute? match = null;
+        foreach (var item in source)
+        {
+            if (item.AttrType.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
+                match = item;
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+}
+
+public static class SignerInfoOpenTypeExtensions
+{
+    public static bool TryGetSignedAttrs<T>(this SignerInfo source, SignedAttributesSetBinding<T> binding, out T value)
+        => TryGetSignedAttrs(source, binding, out value, out _);
+
+    public static bool TryGetSignedAttrs<T>(this SignerInfo source, SignedAttributesSetBinding<T> binding, out T value, out Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute? match = null;
+        if (source.SignedAttrs is { } node0)
+        {
+            foreach (var node1 in node0.Value)
+            {
+                if (node1.AttrType.Equals(binding.Oid))
+                {
+                    if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetSignedAttrs.");
+                    match = node1;
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+    public static bool TryGetSignedAttrsSigningTime(this SignerInfo source, out Time[] value) =>
+        TryGetSignedAttrs(source, SignedAttributesSetBindings.SigningTime, out value);
+
+    public static bool TryGetSignedAttrsMessageDigest(this SignerInfo source, out ReadOnlyMemory<byte>[] value) =>
+        TryGetSignedAttrs(source, SignedAttributesSetBindings.MessageDigest, out value);
+
+    public static bool TryGetSignedAttrsContentType(this SignerInfo source, out Asn1Oid[] value) =>
+        TryGetSignedAttrs(source, SignedAttributesSetBindings.ContentType, out value);
+
+    public static bool TryGetUnsignedAttrs<T>(this SignerInfo source, UnsignedAttributesBinding<T> binding, out T value)
+        => TryGetUnsignedAttrs(source, binding, out value, out _);
+
+    public static bool TryGetUnsignedAttrs<T>(this SignerInfo source, UnsignedAttributesBinding<T> binding, out T value, out Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute? match = null;
+        if (source.UnsignedAttrs is { } node0)
+        {
+            foreach (var node1 in node0)
+            {
+                if (node1.AttrType.Equals(binding.Oid))
+                {
+                    if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetUnsignedAttrs.");
+                    match = node1;
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+    public static bool TryGetUnsignedAttrsCountersignature(this SignerInfo source, out SignerInfo[] value) =>
+        TryGetUnsignedAttrs(source, UnsignedAttributesBindings.Countersignature, out value);
+
+}
+
+public static class EncryptedContentInfoOpenTypeExtensions
+{
+    public static bool TryGetContentEncryptionAlgorithm<T>(this EncryptedContentInfo source, ContentEncryptionAlgorithmSetParametersBinding<T> binding, out T value)
+        => TryGetContentEncryptionAlgorithm(source, binding, out value, out _);
+
+    public static bool TryGetContentEncryptionAlgorithm<T>(this EncryptedContentInfo source, ContentEncryptionAlgorithmSetParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
+        if (source.ContentEncryptionAlgorithm is { } node0)
+        {
+            if (node0.Algorithm.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetContentEncryptionAlgorithm.");
+                match = node0;
+            }
+        }
+        if (match is null) return false;
+        if (match.Parameters is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+    public static bool TryGetContentEncryptionAlgorithmCea3DESCbc(this EncryptedContentInfo source, out ReadOnlyMemory<byte> value) =>
+        TryGetContentEncryptionAlgorithm(source, ContentEncryptionAlgorithmSetParametersBindings.Cea3DESCbc, out value);
+
+    public static bool TryGetContentEncryptionAlgorithmCeaRC2Cbc(this EncryptedContentInfo source, out Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.RC2CBCParameter value) =>
+        TryGetContentEncryptionAlgorithm(source, ContentEncryptionAlgorithmSetParametersBindings.CeaRC2Cbc, out value);
+
+}
+
+public static class KeyTransRecipientInfoOpenTypeExtensions
+{
+    public static bool TryGetKeyEncryptionAlgorithm<T>(this KeyTransRecipientInfo source, KeyTransportAlgorithmSetParametersBinding<T> binding, out T value)
+        => TryGetKeyEncryptionAlgorithm(source, binding, out value, out _);
+
+    public static bool TryGetKeyEncryptionAlgorithm<T>(this KeyTransRecipientInfo source, KeyTransportAlgorithmSetParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
+        if (source.KeyEncryptionAlgorithm is { } node0)
+        {
+            if (node0.Algorithm.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetKeyEncryptionAlgorithm.");
+                match = node0;
+            }
+        }
+        if (match is null) return false;
+        if (match.Parameters is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+}
+
+public static class KeyAgreeRecipientInfoOpenTypeExtensions
+{
+    public static bool TryGetKeyEncryptionAlgorithm<T>(this KeyAgreeRecipientInfo source, KeyAgreementAlgorithmSetParametersBinding<T> binding, out T value)
+        => TryGetKeyEncryptionAlgorithm(source, binding, out value, out _);
+
+    public static bool TryGetKeyEncryptionAlgorithm<T>(this KeyAgreeRecipientInfo source, KeyAgreementAlgorithmSetParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
+        if (source.KeyEncryptionAlgorithm is { } node0)
+        {
+            if (node0.Algorithm.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetKeyEncryptionAlgorithm.");
+                match = node0;
+            }
+        }
+        if (match is null) return false;
+        if (match.Parameters is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+    public static bool TryGetKeyEncryptionAlgorithmKaaEsdh(this KeyAgreeRecipientInfo source, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier value) =>
+        TryGetKeyEncryptionAlgorithm(source, KeyAgreementAlgorithmSetParametersBindings.KaaEsdh, out value);
+
+    public static bool TryGetKeyEncryptionAlgorithmKaaSsdh(this KeyAgreeRecipientInfo source, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier value) =>
+        TryGetKeyEncryptionAlgorithm(source, KeyAgreementAlgorithmSetParametersBindings.KaaSsdh, out value);
+
+}
+
+public static class OriginatorPublicKeyOpenTypeExtensions
+{
+    public static bool TryGetAlgorithm<T>(this OriginatorPublicKey source, OriginatorKeySetParametersBinding<T> binding, out T value)
+        => TryGetAlgorithm(source, binding, out value, out _);
+
+    public static bool TryGetAlgorithm<T>(this OriginatorPublicKey source, OriginatorKeySetParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
+        if (source.Algorithm is { } node0)
+        {
+            if (node0.Algorithm.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetAlgorithm.");
+                match = node0;
+            }
+        }
+        if (match is null) return false;
+        if (match.Parameters is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+    public static bool TryGetAlgorithmPkDh(this OriginatorPublicKey source, out Asn1Kit.Modern.PKIXAlgs2009.DomainParameters value) =>
+        TryGetAlgorithm(source, OriginatorKeySetParametersBindings.PkDh, out value);
+
+}
+
+public static class KEKRecipientInfoOpenTypeExtensions
+{
+    public static bool TryGetKeyEncryptionAlgorithm<T>(this KEKRecipientInfo source, KeyEncryptionAlgorithmSetParametersBinding<T> binding, out T value)
+        => TryGetKeyEncryptionAlgorithm(source, binding, out value, out _);
+
+    public static bool TryGetKeyEncryptionAlgorithm<T>(this KEKRecipientInfo source, KeyEncryptionAlgorithmSetParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
+        if (source.KeyEncryptionAlgorithm is { } node0)
+        {
+            if (node0.Algorithm.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetKeyEncryptionAlgorithm.");
+                match = node0;
+            }
+        }
+        if (match is null) return false;
+        if (match.Parameters is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+    public static bool TryGetKeyEncryptionAlgorithmKwaRC2Wrap(this KEKRecipientInfo source, out Asn1Integer value) =>
+        TryGetKeyEncryptionAlgorithm(source, KeyEncryptionAlgorithmSetParametersBindings.KwaRC2Wrap, out value);
+
+}
+
+public static class PasswordRecipientInfoOpenTypeExtensions
+{
+    public static bool TryGetKeyDerivationAlgorithm<T>(this PasswordRecipientInfo source, AlgorithmIdentifierParametersBinding<T> binding, out T value)
+        => TryGetKeyDerivationAlgorithm(source, binding, out value, out _);
+
+    public static bool TryGetKeyDerivationAlgorithm<T>(this PasswordRecipientInfo source, AlgorithmIdentifierParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
+        if (source.KeyDerivationAlgorithm is { } node0)
+        {
+            if (node0.Algorithm.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetKeyDerivationAlgorithm.");
+                match = node0;
+            }
+        }
+        if (match is null) return false;
+        if (match.Parameters is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+    public static bool TryGetKeyDerivationAlgorithmKdaPBKDF2(this PasswordRecipientInfo source, out Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params value) =>
+        TryGetKeyDerivationAlgorithm(source, AlgorithmIdentifierParametersBindings.KdaPBKDF2, out value);
+
+    public static bool TryGetKeyEncryptionAlgorithm<T>(this PasswordRecipientInfo source, KeyEncryptionAlgorithmSetParametersBinding<T> binding, out T value)
+        => TryGetKeyEncryptionAlgorithm(source, binding, out value, out _);
+
+    public static bool TryGetKeyEncryptionAlgorithm<T>(this PasswordRecipientInfo source, KeyEncryptionAlgorithmSetParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
+        if (source.KeyEncryptionAlgorithm is { } node0)
+        {
+            if (node0.Algorithm.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetKeyEncryptionAlgorithm.");
+                match = node0;
+            }
+        }
+        if (match is null) return false;
+        if (match.Parameters is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+    public static bool TryGetKeyEncryptionAlgorithmKwaRC2Wrap(this PasswordRecipientInfo source, out Asn1Integer value) =>
+        TryGetKeyEncryptionAlgorithm(source, KeyEncryptionAlgorithmSetParametersBindings.KwaRC2Wrap, out value);
+
+}
+
+public static class AuthenticatedDataOpenTypeExtensions
+{
+    public static bool TryGetMacAlgorithm<T>(this AuthenticatedData source, MessageAuthenticationCodeAlgorithmSetParametersBinding<T> binding, out T value)
+        => TryGetMacAlgorithm(source, binding, out value, out _);
+
+    public static bool TryGetMacAlgorithm<T>(this AuthenticatedData source, MessageAuthenticationCodeAlgorithmSetParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
+        if (source.MacAlgorithm is { } node0)
+        {
+            if (node0.Algorithm.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetMacAlgorithm.");
+                match = node0;
+            }
+        }
+        if (match is null) return false;
+        if (match.Parameters is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+    public static bool TryGetAuthAttrs<T>(this AuthenticatedData source, AuthAttributeSetBinding<T> binding, out T value)
+        => TryGetAuthAttrs(source, binding, out value, out _);
+
+    public static bool TryGetAuthAttrs<T>(this AuthenticatedData source, AuthAttributeSetBinding<T> binding, out T value, out Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute? match = null;
+        if (source.AuthAttrs is { } node0)
+        {
+            foreach (var node1 in node0)
+            {
+                if (node1.AttrType.Equals(binding.Oid))
+                {
+                    if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetAuthAttrs.");
+                    match = node1;
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+    public static bool TryGetAuthAttrsContentType(this AuthenticatedData source, out Asn1Oid[] value) =>
+        TryGetAuthAttrs(source, AuthAttributeSetBindings.ContentType, out value);
+
+    public static bool TryGetAuthAttrsMessageDigest(this AuthenticatedData source, out ReadOnlyMemory<byte>[] value) =>
+        TryGetAuthAttrs(source, AuthAttributeSetBindings.MessageDigest, out value);
+
+    public static bool TryGetAuthAttrsSigningTime(this AuthenticatedData source, out Time[] value) =>
+        TryGetAuthAttrs(source, AuthAttributeSetBindings.SigningTime, out value);
+
+}
+
+public static class IssuerAndSerialNumberOpenTypeExtensions
+{
+    public static bool TryGetIssuer<T>(this IssuerAndSerialNumber source, SupportedAttributesValueBinding<T> binding, out T value)
+        => TryGetIssuer(source, binding, out value, out _);
+
+    public static bool TryGetIssuer<T>(this IssuerAndSerialNumber source, SupportedAttributesValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute? match = null;
+        if (source.Issuer is { } node0)
+        {
+            foreach (var node1 in node0.Value)
+            {
+                foreach (var node2 in node1)
+                {
+                    if (node2.Type.Equals(binding.Oid))
+                    {
+                        if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetIssuer.");
+                        match = node2;
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+    public static bool TryGetIssuerName(this IssuerAndSerialNumber source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
+        TryGetIssuer(source, SupportedAttributesValueBindings.Name, out value);
+
+    public static bool TryGetIssuerSurname(this IssuerAndSerialNumber source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
+        TryGetIssuer(source, SupportedAttributesValueBindings.Surname, out value);
+
+    public static bool TryGetIssuerGivenName(this IssuerAndSerialNumber source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
+        TryGetIssuer(source, SupportedAttributesValueBindings.GivenName, out value);
+
+    public static bool TryGetIssuerInitials(this IssuerAndSerialNumber source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
+        TryGetIssuer(source, SupportedAttributesValueBindings.Initials, out value);
+
+    public static bool TryGetIssuerGenerationQualifier(this IssuerAndSerialNumber source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
+        TryGetIssuer(source, SupportedAttributesValueBindings.GenerationQualifier, out value);
+
+    public static bool TryGetIssuerX520CommonName(this IssuerAndSerialNumber source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
+        TryGetIssuer(source, SupportedAttributesValueBindings.X520CommonName, out value);
+
+    public static bool TryGetIssuerX520LocalityName(this IssuerAndSerialNumber source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
+        TryGetIssuer(source, SupportedAttributesValueBindings.X520LocalityName, out value);
+
+    public static bool TryGetIssuerX520StateOrProvinceName(this IssuerAndSerialNumber source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
+        TryGetIssuer(source, SupportedAttributesValueBindings.X520StateOrProvinceName, out value);
+
+    public static bool TryGetIssuerX520OrganizationName(this IssuerAndSerialNumber source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
+        TryGetIssuer(source, SupportedAttributesValueBindings.X520OrganizationName, out value);
+
+    public static bool TryGetIssuerX520OrganizationalUnitName(this IssuerAndSerialNumber source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
+        TryGetIssuer(source, SupportedAttributesValueBindings.X520OrganizationalUnitName, out value);
+
+    public static bool TryGetIssuerX520Title(this IssuerAndSerialNumber source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
+        TryGetIssuer(source, SupportedAttributesValueBindings.X520Title, out value);
+
+    public static bool TryGetIssuerX520dnQualifier(this IssuerAndSerialNumber source, out string value) =>
+        TryGetIssuer(source, SupportedAttributesValueBindings.X520dnQualifier, out value);
+
+    public static bool TryGetIssuerX520countryName(this IssuerAndSerialNumber source, out string value) =>
+        TryGetIssuer(source, SupportedAttributesValueBindings.X520countryName, out value);
+
+    public static bool TryGetIssuerX520SerialNumber(this IssuerAndSerialNumber source, out string value) =>
+        TryGetIssuer(source, SupportedAttributesValueBindings.X520SerialNumber, out value);
+
+    public static bool TryGetIssuerX520Pseudonym(this IssuerAndSerialNumber source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
+        TryGetIssuer(source, SupportedAttributesValueBindings.X520Pseudonym, out value);
+
+    public static bool TryGetIssuerDomainComponent(this IssuerAndSerialNumber source, out string value) =>
+        TryGetIssuer(source, SupportedAttributesValueBindings.DomainComponent, out value);
+
+    public static bool TryGetIssuerEmailAddress(this IssuerAndSerialNumber source, out string value) =>
+        TryGetIssuer(source, SupportedAttributesValueBindings.EmailAddress, out value);
+
 }
 

@@ -102,6 +102,7 @@ internal static class SpecializationCompactor
         if (node is JsonObject obj)
         {
             obj.Remove("bindings");
+            obj.Remove("table");
             obj.Remove("tableExtensible");
             obj.Remove("openTypes");
             foreach (var value in obj.ToArray())
@@ -123,11 +124,19 @@ internal static class SpecializationCompactor
             switch (expression)
             {
                 case AnyType any when any.Bindings is not null || any.TableExtensible.HasValue:
-                    result.Add(new IrOpenTypeUse { Path = path.ToList(), Bindings = any.Bindings ?? new(), TableExtensible = any.TableExtensible });
+                    result.Add(new IrOpenTypeUse
+                    {
+                        Path = path.ToList(), Bindings = any.Bindings ?? new(), Table = any.Table,
+                        TableExtensible = any.TableExtensible
+                    });
                     break;
                 case RefType reference when reference.OpenTypes is not null:
                     foreach (var use in reference.OpenTypes)
-                        result.Add(new IrOpenTypeUse { Path = path.Concat(use.Path).ToList(), Bindings = use.Bindings, TableExtensible = use.TableExtensible });
+                        result.Add(new IrOpenTypeUse
+                        {
+                            Path = path.Concat(use.Path).ToList(), Bindings = use.Bindings, Table = use.Table,
+                            TableExtensible = use.TableExtensible
+                        });
                     break;
                 case SequenceType sequence:
                     foreach (var field in sequence.Components) Visit(field.Type, path.Append(field.Name).ToList());
@@ -157,6 +166,7 @@ internal static class SpecializationCompactor
     private static void StripTables(TypeExpr type) => Walk(type, _ => { }, any =>
     {
         any.Bindings = null;
+        any.Table = null;
         any.TableExtensible = null;
     }, stripReferences: true);
 

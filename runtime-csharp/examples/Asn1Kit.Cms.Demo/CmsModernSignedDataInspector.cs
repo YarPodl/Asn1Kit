@@ -1,5 +1,7 @@
 using Asn1Kit.Runtime;
 using Asn1Kit.Cms.Demo;
+using Asn1Kit.Modern.CryptographicMessageSyntax2009;
+using Asn1Kit.Modern.PKIX1Explicit2009;
 using ModernCms = Asn1Kit.Modern.CryptographicMessageSyntax2009;
 using Common = Asn1Kit.Modern.PKIXCommonTypes2009;
 using ModernPkix = Asn1Kit.Modern.PKIX1Explicit2009;
@@ -70,7 +72,7 @@ public static class CmsModernSignedDataInspector
         if (signer.SignedAttrs is not null)
         {
             var signedAttrs = signer.SignedAttrs.Value;
-            var claimedDigest = ReadSignedAttributes(signedAttrs.Value, signedData.EncapContentInfo.EContentType);
+            var claimedDigest = ReadSignedAttributes(signer, signedData.EncapContentInfo.EContentType);
             if (!verifier.VerifyDigest(signer.DigestAlgorithm.Algorithm, content, claimedDigest, certificate))
                 throw new InvalidDataException("Digest was rejected by the educational stub.");
 
@@ -83,31 +85,19 @@ public static class CmsModernSignedDataInspector
         return certificate;
     }
 
-    private static ReadOnlyMemory<byte> ReadSignedAttributes(ModernCms.Attribute[] attributes, Asn1Oid contentType)
+    private static ReadOnlyMemory<byte> ReadSignedAttributes(ModernCms.SignerInfo signer, Asn1Oid contentType)
     {
-        Asn1Oid? declaredContentType = null;
-        ReadOnlyMemory<byte>? digest = null;
-        foreach (var attribute in attributes)
-        {
-            if (attribute.AttrType == ModernCms.CryptographicMessageSyntax2009Oids.IdContentType)
-            {
-                if (declaredContentType is not null || attribute.AttrValues.Length != 1)
-                    throw new InvalidDataException("SignedAttrs must contain exactly one contentType value.");
-                declaredContentType = attribute.AttrValues[0].DecodeValue(static reader => reader.ReadOid(Asn1Tag.ObjectIdentifier));
-            }
-            else if (attribute.AttrType == ModernCms.CryptographicMessageSyntax2009Oids.IdMessageDigest)
-            {
-                if (digest is not null || attribute.AttrValues.Length != 1)
-                    throw new InvalidDataException("SignedAttrs must contain exactly one messageDigest value.");
-                digest = attribute.AttrValues[0].DecodeValue(static reader => reader.ReadOctetString(Asn1Tag.OctetString));
-            }
-        }
-
-        if (declaredContentType is null || digest is null)
+        if (!signer.TryGetSignedAttrs(
+                ModernCms.SignedAttributesSetBindings.ContentType, out var declaredContentType) ||
+            !signer.TryGetSignedAttrsMessageDigest(out var digest))
             throw new InvalidDataException("SignedAttrs requires contentType and messageDigest.");
-        if (declaredContentType.Value != contentType)
+        if (declaredContentType.Length != 1)
+            throw new InvalidDataException("SignedAttrs must contain exactly one contentType value.");
+        if (digest.Length != 1)
+            throw new InvalidDataException("SignedAttrs must contain exactly one messageDigest value.");
+        if (declaredContentType[0] != contentType)
             throw new InvalidDataException("SignedAttrs contentType differs from eContentType.");
-        return digest.Value;
+        return digest[0];
     }
 
     private static Asn1Value<ModernPkix.Certificate>? FindCertificate(ModernCms.CertificateChoices[]? choices, ModernCms.SignerIdentifier sid)
@@ -145,21 +135,16 @@ public static class CmsModernSignedDataInspector
 
     private static ReadOnlyMemory<byte>? ReadSubjectKeyIdentifier(ModernPkix.Certificate certificate)
     {
-        var extension = FindExtension(certificate, ModernImplicit.PKIX1Implicit2009Oids.IdCeSubjectKeyIdentifier);
-        if (extension is null) return null;
-        var reader = new Asn1Reader(extension.ExtnValue.Contents, Asn1Encoding.Ber);
-        var keyIdentifier = reader.ReadOctetString(Asn1Tag.OctetString);
-        reader.ThrowIfNotEmpty();
-        return keyIdentifier;
+        return certificate.ToBeSigned.TryGetExtensionsSubjectKeyIdentifier(out var extension)
+            ? extension : null;
     }
 
     private static ModernImplicit.AuthorityKeyIdentifier? ReadAuthorityKeyIdentifier(ModernPkix.Certificate certificate)
     {
-        var extension = FindExtension(certificate, ModernImplicit.PKIX1Implicit2009Oids.IdCeAuthorityKeyIdentifier);
-        if (extension is null) return null;
-        var reader = new Asn1Reader(extension.ExtnValue.Contents, Asn1Encoding.Ber);
-        var identifier = ModernImplicit.AuthorityKeyIdentifier.Decode(reader);
-        reader.ThrowIfNotEmpty();
+        if (!certificate.ToBeSigned.TryGetExtensions(
+                ModernPkix.CertExtensionsBindings.AuthorityKeyIdentifier, out var extension))
+            return null;
+        var identifier = extension;
         if ((identifier.AuthorityCertIssuer is null) != (identifier.AuthorityCertSerialNumber is null) ||
             (identifier.KeyIdentifier is null && identifier.AuthorityCertIssuer is null))
             throw new InvalidDataException("Certificate AuthorityKeyIdentifier has incomplete issuer identification.");
@@ -193,19 +178,6 @@ public static class CmsModernSignedDataInspector
             }
         }
         return true;
-    }
-
-    private static Common.Extension? FindExtension(ModernPkix.Certificate certificate, Asn1Oid oid)
-    {
-        Common.Extension? match = null;
-        foreach (var extension in certificate.ToBeSigned.Extensions ?? Array.Empty<Common.Extension>())
-        {
-            if (extension.ExtnID != oid) continue;
-            if (match is not null)
-                throw new InvalidDataException("Certificate has duplicate key identifier extensions.");
-            match = extension;
-        }
-        return match;
     }
 
     private static void VerifyChain(EncodedCertificate<ModernPkix.Certificate> signer, ModernCms.CertificateChoices[]? embedded,

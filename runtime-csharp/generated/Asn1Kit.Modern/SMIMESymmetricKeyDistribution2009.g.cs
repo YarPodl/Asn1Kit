@@ -328,7 +328,7 @@ public sealed class GLKeyAttributes
     public Asn1Integer Duration { get; set; } = Asn1Integer.FromInt64(0L);
     public Asn1Integer GenerationCounter { get; set; } = Asn1Integer.FromInt64(2L);
     /// <summary>ASN.1 alias KeyWrapAlgorithm ::= SMIMECapability.</summary>
-    public Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability RequestedAlgorithm { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability { CapabilityID = SMIMESymmetricKeyDistribution2009Defaults.Value0 };
+    public Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability RequestedAlgorithm { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability { CapabilityID = global::Asn1Kit.Modern.CMSAesRsaesOaep2009.CMSAesRsaesOaep2009Oids.IdAes128Wrap };
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -352,7 +352,7 @@ public sealed class GLKeyAttributes
             {
                 writer.WriteInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false), GenerationCounter);
             }
-            if (!((RequestedAlgorithm != null && RequestedAlgorithm.CapabilityID == SMIMESymmetricKeyDistribution2009Defaults.Value0 && RequestedAlgorithm.Parameters == null)))
+            if (!((RequestedAlgorithm != null && RequestedAlgorithm.CapabilityID == global::Asn1Kit.Modern.CMSAesRsaesOaep2009.CMSAesRsaesOaep2009Oids.IdAes128Wrap && RequestedAlgorithm.Parameters == null)))
             {
                 RequestedAlgorithm.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true));
             }
@@ -1123,7 +1123,3 @@ public sealed class GLAQueryResponse_GlaResponseValue
     }
 }
 
-internal static class SMIMESymmetricKeyDistribution2009Defaults
-{
-    internal static readonly Asn1Oid Value0 = Asn1Oid.Parse("2.16.840.1.101.3.4.1.5");
-}

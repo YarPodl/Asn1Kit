@@ -84,8 +84,8 @@ public sealed partial class CSharpBackend
         if (value is IrOctetStringValue octets)
             return ConstantDefault(module, octets.Hex, "ReadOnlyMemory<byte>", $"new ReadOnlyMemory<byte>(Convert.FromHexString(\"{octets.Hex}\"))");
         if (value is IrOidValue oid)
-            return KnownOidExpression(module, oid.Value) is { } known
-                ? ModuleNamespace(module) + "." + known
+            return KnownOidExpression(document, module, oid.Value, qualifyLocal: true) is { } known
+                ? known
                 : ConstantDefault(module, oid.Value, "Asn1Oid", $"Asn1Oid.Parse(\"{EscapeCSharpString(oid.Value)}\")");
         if (value is IrIntegerValue integer && type is IntegerType &&
             (TryResolveIntegerRepresentation(document, module, declared) ?? IrOptions.IntegerRepresentations.Der) == IrOptions.IntegerRepresentations.Der)

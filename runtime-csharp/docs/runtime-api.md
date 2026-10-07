@@ -68,6 +68,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `Asn1Extension(Position, Value)` | hot | raw TLV неизвестного addition и позиция относительно известных компонентов SEQUENCE |
 | `EnterEncoded(ReadOnlyMemory<byte>)` | hot | окно ранее прочитанного TLV для отложенного SET decode; те же encoding/options, scope восстанавливает исходное окно |
 | `Asn1Any.FromValue<T>(T, Action<Asn1Writer,T>)` | warm | owned DER TLV одного значения, используется для констант typed DEFAULT |
+| `Asn1Codec<T>` / `Asn1Codecs` | warm/hot | переиспользуемая пара reader/writer; singleton-кодеки примитивов и общие адаптеры raw open type для ANY, CONTAINING, массивов и decoder-only string CHOICE (`DecodeStringChoice`) |
 | `Asn1Collection.Count<T>(IReadOnlyList<T>, Func<T,bool>)` | hot | подсчёт без временных коллекций для структурного сравнения SET OF DEFAULT |
 
 ## CONTAINING и неизвестные расширения

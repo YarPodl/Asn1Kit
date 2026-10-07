@@ -74,17 +74,10 @@ END
 
     private static Assembly CompileGenerated(string source)
     {
-        var tpa = (string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!;
-        var references = tpa.Split(Path.PathSeparator)
-            .Where(File.Exists)
-            .Select(p => MetadataReference.CreateFromFile(p))
-            .Concat(new[] { MetadataReference.CreateFromFile(typeof(Asn1Writer).Assembly.Location) })
-            .ToList();
-
         var compilation = CSharpCompilation.Create(
             "GeneratedOptionalChoice",
             new[] { CSharpSyntaxTree.ParseText(source) },
-            references,
+            GeneratedCompilation.References,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         using var stream = new MemoryStream();

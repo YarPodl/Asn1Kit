@@ -131,43 +131,28 @@ public sealed class PBKDF2Params
     public Asn1Integer IterationCount { get; set; }
     public Asn1Integer? KeyLength { get; set; }
     /// <summary>ASN.1 alias PBKDF2-PRFsAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
-    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Prf { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = CryptographicMessageSyntaxAlgorithms2009Defaults.Value0, Parameters = CryptographicMessageSyntaxAlgorithms2009Defaults.Value1 };
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Prf { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.HMACSHA1, Parameters = CryptographicMessageSyntaxAlgorithms2009Defaults.Value0 };
 
-    public bool TryDecodePrfParameters<T>(out T value)
+    public bool TryDecodePrfParameters<T>(PBKDF2PRFsParametersBinding<T> binding, out T value)
     {
         value = default!;
-        if (Prf is null || Prf.Parameters is not { } raw) return false;
-        switch (Prf.Algorithm.ToString())
-        {
-            case "1.3.6.1.5.5.8.1.2":
-            {
-                if (typeof(T) != typeof(Asn1Null)) return false;
-                var inner = new Asn1Reader(raw.EncodedMemory);
-                var decoded = Asn1Null.Decode(inner, Asn1Tag.Null);
-                inner.ThrowIfNotEmpty();
-                value = (T)(object)decoded;
-                return true;
-            }
-            default: return false;
-        }
+        ArgumentNullException.ThrowIfNull(binding);
+        if (Prf is null) return false;
+        var container = Prf;
+        return container.TryDecodeParameters(binding, out value);
     }
 
-    public void SetPrfParameters<T>(T value)
+    public void SetPrfParameters<T>(PBKDF2PRFsParametersBinding<T> binding, T value)
     {
+        ArgumentNullException.ThrowIfNull(binding);
         if (Prf is null) throw new Asn1Exception("Missing Prf.");
-        switch (Prf.Algorithm.ToString())
-        {
-            case "1.3.6.1.5.5.8.1.2":
-            {
-                if (value is not Asn1Null typed) throw new ArgumentException("Value type does not match the selected open-type binding.", nameof(value));
-                var writer = new Asn1Writer();
-                writer.WriteNull(Asn1Tag.Null);
-                Prf.Parameters = new Asn1Any(writer.Encode());
-                return;
-            }
-            default: throw new Asn1Exception("Unknown open-type key.");
-        }
+        var container = Prf;
+        container.SetParameters(binding, value);
+        Prf = container;
     }
+
+    public void SetPrfParametersAlgHMACSHA1() =>
+        SetPrfParameters(PBKDF2PRFsParametersBindings.AlgHMACSHA1, Asn1Null.Value);
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -181,7 +166,7 @@ public sealed class PBKDF2Params
             {
                 writer.WriteInteger(Asn1Tag.Integer, KeyLength.Value);
             }
-            if (!((Prf != null && Prf.Algorithm == CryptographicMessageSyntaxAlgorithms2009Defaults.Value0 && Prf.Parameters != null && Prf.Parameters.Value.Equals(CryptographicMessageSyntaxAlgorithms2009Defaults.Value1))))
+            if (!((Prf != null && Prf.Algorithm == global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.HMACSHA1 && Prf.Parameters != null && Prf.Parameters.Value.Equals(CryptographicMessageSyntaxAlgorithms2009Defaults.Value0))))
             {
                 Prf.Encode(writer, Asn1Tag.Sequence);
             }
@@ -281,9 +266,216 @@ public sealed class PBKDF2Params_Salt
     }
 }
 
+public delegate T PBKDF2PRFsParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
+public delegate Asn1Any PBKDF2PRFsParametersEncoder<T>(T value);
+
+public sealed class PBKDF2PRFsParametersBinding<T>
+{
+    internal PBKDF2PRFsParametersBinding(Asn1Oid oid, PBKDF2PRFsParametersDecoder<T> decoder, PBKDF2PRFsParametersEncoder<T> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal PBKDF2PRFsParametersDecoder<T> Decoder { get; }
+    internal PBKDF2PRFsParametersEncoder<T> Encoder { get; }
+}
+
+public sealed class PBKDF2PRFsParametersDecoderBinding<T>
+{
+    internal PBKDF2PRFsParametersDecoderBinding(Asn1Oid oid, PBKDF2PRFsParametersDecoder<T> decoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal PBKDF2PRFsParametersDecoder<T> Decoder { get; }
+}
+
+public static class PBKDF2PRFsParametersBindings
+{
+    public static PBKDF2PRFsParametersBinding<T> Create<T>(Asn1Oid oid, PBKDF2PRFsParametersDecoder<T> decoder, PBKDF2PRFsParametersEncoder<T> encoder) =>
+        new(oid, decoder, encoder);
+
+    public static PBKDF2PRFsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, PBKDF2PRFsParametersDecoder<T> decoder) =>
+        new(oid, decoder);
+
+    public static PBKDF2PRFsParametersBinding<Asn1Null> AlgHMACSHA1 { get; } =
+        new(CryptographicMessageSyntaxAlgorithms2009Oids.HMACSHA1, DecodeAlgHMACSHA1, Asn1Codecs.Null.Encode);
+
+    private static Asn1Null DecodeAlgHMACSHA1(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return Asn1Codecs.Null.Decode(raw);
+    }
+}
+
+public delegate T KeyWrapAlgsParametersDecoder<T>(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source);
+public delegate Asn1Any KeyWrapAlgsParametersEncoder<T>(T value);
+
+public sealed class KeyWrapAlgsParametersBinding<T>
+{
+    internal KeyWrapAlgsParametersBinding(Asn1Oid oid, KeyWrapAlgsParametersDecoder<T> decoder, KeyWrapAlgsParametersEncoder<T> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal KeyWrapAlgsParametersDecoder<T> Decoder { get; }
+    internal KeyWrapAlgsParametersEncoder<T> Encoder { get; }
+}
+
+public sealed class KeyWrapAlgsParametersDecoderBinding<T>
+{
+    internal KeyWrapAlgsParametersDecoderBinding(Asn1Oid oid, KeyWrapAlgsParametersDecoder<T> decoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+    }
+
+    public Asn1Oid Oid { get; }
+    internal KeyWrapAlgsParametersDecoder<T> Decoder { get; }
+}
+
+public static class KeyWrapAlgsParametersBindings
+{
+    public static KeyWrapAlgsParametersBinding<T> Create<T>(Asn1Oid oid, KeyWrapAlgsParametersDecoder<T> decoder, KeyWrapAlgsParametersEncoder<T> encoder) =>
+        new(oid, decoder, encoder);
+
+    public static KeyWrapAlgsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, KeyWrapAlgsParametersDecoder<T> decoder) =>
+        new(oid, decoder);
+
+    public static KeyWrapAlgsParametersBinding<Asn1Null> Kwa3DESWrap { get; } =
+        new(CryptographicMessageSyntaxAlgorithms2009Oids.IdAlgCMS3DESwrap, DecodeKwa3DESWrap, Asn1Codecs.Null.Encode);
+
+    private static Asn1Null DecodeKwa3DESWrap(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return Asn1Codecs.Null.Decode(raw);
+    }
+
+    public static KeyWrapAlgsParametersBinding<Asn1Integer> KwaRC2Wrap { get; } =
+        new(CryptographicMessageSyntaxAlgorithms2009Oids.IdAlgCMSRC2wrap, DecodeKwaRC2Wrap, Asn1Codecs.Integer.Encode);
+
+    private static Asn1Integer DecodeKwaRC2Wrap(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
+    {
+        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
+        return Asn1Codecs.Integer.Decode(raw);
+    }
+}
+
+public static class CryptographicMessageSyntaxAlgorithms2009OpenTypeExtensions
+{
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, KeyWrapAlgsParametersBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, KeyWrapAlgsParametersDecoderBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeParametersKwaRC2Wrap(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, out Asn1Integer value) =>
+        TryDecodeParameters(source, KeyWrapAlgsParametersBindings.KwaRC2Wrap, out value);
+
+    public static void SetParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, KeyWrapAlgsParametersBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.Algorithm = binding.Oid;
+        result.Parameters = binding.Encoder(value);
+    }
+
+    public static void SetParametersKwa3DESWrap(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
+        SetParameters(source, KeyWrapAlgsParametersBindings.Kwa3DESWrap, Asn1Null.Value);
+
+    public static void SetParametersKwaRC2Wrap(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, Asn1Integer value) =>
+        SetParameters(source, KeyWrapAlgsParametersBindings.KwaRC2Wrap, value);
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, PBKDF2PRFsParametersBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, PBKDF2PRFsParametersDecoderBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static void SetParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, PBKDF2PRFsParametersBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.Algorithm = binding.Oid;
+        result.Parameters = binding.Encoder(value);
+    }
+
+    public static void SetParametersAlgHMACSHA1(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
+        SetParameters(source, PBKDF2PRFsParametersBindings.AlgHMACSHA1, Asn1Null.Value);
+}
+
+public static class PBKDF2ParamsOpenTypeExtensions
+{
+    public static bool TryGetPrf<T>(this PBKDF2Params source, PBKDF2PRFsParametersBinding<T> binding, out T value)
+        => TryGetPrf(source, binding, out value, out _);
+
+    public static bool TryGetPrf<T>(this PBKDF2Params source, PBKDF2PRFsParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
+        if (source.Prf is { } node0)
+        {
+            if (node0.Algorithm.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetPrf.");
+                match = node0;
+            }
+        }
+        if (match is null) return false;
+        if (match.Parameters is null) return false;
+        raw = match;
+        value = binding.Decoder(match);
+        return true;
+    }
+
+}
+
 internal static class CryptographicMessageSyntaxAlgorithms2009Defaults
 {
-    internal static readonly Asn1Oid Value0 = Asn1Oid.Parse("1.3.6.1.5.5.8.1.2");
-    internal static readonly Asn1Any Value1 = Asn1Any.FromValue(Asn1Null.Value, static (writer, value) => { writer.WriteNull(Asn1Tag.Null);
+    internal static readonly Asn1Any Value0 = Asn1Any.FromValue(Asn1Null.Value, static (writer, value) => { writer.WriteNull(Asn1Tag.Null);
  });
 }

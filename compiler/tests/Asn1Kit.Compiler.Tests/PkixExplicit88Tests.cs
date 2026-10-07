@@ -12,15 +12,12 @@ public sealed class PkixExplicit88Tests
     public void CompilesAndMatchesGoldenIr()
     {
         var asnPath = TestData.RepoPath("compiler/fixtures/asn1/pkix1-explicit88.asn");
-        var goldenPath = TestData.RepoPath("compiler/fixtures/ir/pkix1-explicit88.json");
         var document = new Asn1Compiler().CompileFiles(new[] { asnPath });
         OpenTypeBindings.ApplyFile(document, TestData.RepoPath(BindingsPath));
         var actual = IrSerializer.ToJson(document);
         IrSerializer.ValidateSchema(actual);
 
-        var golden = File.ReadAllText(goldenPath);
-        IrSerializer.ValidateSchema(golden);
-        var expected = IrSerializer.ToJson(IrSerializer.FromJson(golden));
+        var expected = IrSerializer.ToJson(TestData.LoadIr("compiler/fixtures/ir/pkix1-explicit88.json"));
         Assert.Equal(expected, actual);
     }
 

@@ -224,6 +224,46 @@ END
     }
 
     [Fact]
+    public void GeneratedCSharp_ReusesForeignOidCatalogForDefaultsAndOpenTypeKeys()
+    {
+        var document = new Asn1Compiler().CompileTexts(new (string Text, string? FileName)[]
+        {
+            (@"Provider DEFINITIONS ::= BEGIN
+              id-name OBJECT IDENTIFIER ::= {2 5 4 41} END", "provider.asn"),
+            (@"Consumer DEFINITIONS ::= BEGIN
+              IMPORTS id-name FROM Provider;
+              Sample ::= SEQUENCE {
+                algorithm OBJECT IDENTIFIER DEFAULT id-name,
+                parameters ANY DEFINED BY algorithm OPTIONAL }
+              Structured ::= SEQUENCE { item Sample DEFAULT {algorithm id-name} }
+              END", "consumer.asn")
+        });
+        document.Modules[0].Options = IrOptions.SetCSharp(document.Modules[0].Options,
+            "namespace", "Catalog.Known");
+        OpenTypeBindings.ApplyJson(document, @"{
+          ""Consumer.Sample.parameters"": [
+            { ""key"": ""2.5.4.41"", ""type"": {""kind"": ""null""} }
+          ]
+        }");
+        IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
+        var files = new CSharpBackend().Generate(document);
+        var consumer = files.Single(f => f.RelativePath == "Consumer.g.cs").Contents;
+        Assert.Contains("s_defaultAlgorithm = global::Catalog.Known.ProviderOids.IdName;", consumer);
+        Assert.Contains("definedByKey.Equals(global::Catalog.Known.ProviderOids.IdName)", consumer);
+        Assert.Contains("Algorithm = global::Catalog.Known.ProviderOids.IdName", consumer);
+        Assert.DoesNotContain("Asn1Oid.Parse", consumer);
+        var assembly = CompileGenerated(files.Select(f => f.Contents).ToArray());
+        foreach (var name in new[] {"Consumer.Sample", "Consumer.Structured"})
+        {
+            var type = assembly.GetType(name)!;
+            var instance = Activator.CreateInstance(type)!;
+            var writer = new Asn1Writer();
+            type.GetMethod("Encode", new[] {typeof(Asn1Writer)})!.Invoke(instance, new object[] {writer});
+            Assert.Equal(Convert.FromHexString("3000"), writer.Encode());
+        }
+    }
+
+    [Fact]
     public void GeneratedCSharp_DefaultComponents_AreValuesAndAreOmittedFromDer()
     {
         const string asn = @"
@@ -318,7 +358,7 @@ END
     [Fact]
     public void GeneratedCSharp_CompilesAndRoundTripsPerson()
     {
-        var document = IrSerializer.Load(TestData.RepoPath("compiler/fixtures/ir/example.json"));
+        var document = TestData.LoadIr("compiler/fixtures/ir/example.json");
         var files = new CSharpBackend().Generate(document);
         var source = files.Single().Contents;
         Assert.Contains("class Person", source);
@@ -2068,17 +2108,10 @@ END");
 
     private static Assembly CompileGenerated(params string[] sources)
     {
-        var tpa = (string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!;
-        var references = tpa.Split(Path.PathSeparator)
-            .Where(File.Exists)
-            .Select(p => MetadataReference.CreateFromFile(p))
-            .Concat(new[] { MetadataReference.CreateFromFile(typeof(Asn1Writer).Assembly.Location) })
-            .ToList();
-
         var compilation = CSharpCompilation.Create(
             "GeneratedAsn1",
             sources.Select(source => CSharpSyntaxTree.ParseText(source)),
-            references,
+            GeneratedCompilation.References,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         using var stream = new MemoryStream();

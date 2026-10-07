@@ -292,6 +292,8 @@ public sealed class AnyType : TypeExpr
     /// <summary>Open-type table: sibling OID/INTEGER key → concrete type (from overlay or hand-authored IR).</summary>
     public List<IrOpenTypeBinding>? Bindings { get; set; }
     public IrOpenTypeSelector? Selector { get; set; }
+    /// <summary>ASN.1 object-set name that produced the bindings, when the set was a named reference.</summary>
+    public string? Table { get; set; }
     public bool? TableExtensible { get; set; }
 }
 
@@ -372,6 +374,9 @@ public sealed class IrOpenTypeUse
     public List<string> Path { get; set; } = new();
 
     public List<IrOpenTypeBinding> Bindings { get; set; } = new();
+
+    /// <summary>ASN.1 object-set name that produced the bindings, when the set was a named reference.</summary>
+    public string? Table { get; set; }
 
     public bool? TableExtensible { get; set; }
 }

@@ -9,7 +9,7 @@ public sealed class IrOptionsPatchTests
     [Fact]
     public void Apply_CmsBenchPatch_SetsNamespacesLazyRetainAndValueType()
     {
-        var document = IrSerializer.Load(TestData.RepoPath("compiler/fixtures/ir/cms-2004.json"));
+        var document = TestData.LoadIr("compiler/fixtures/ir/cms-2004.json");
         IrOptionsPatch.ApplyFile(document, TestData.RepoPath("compiler/fixtures/ir/cms-2004-bench.patch.json"));
 
         Assert.Equal(
@@ -46,7 +46,7 @@ public sealed class IrOptionsPatchTests
     [Fact]
     public void Apply_UnknownField_Throws()
     {
-        var document = IrSerializer.Load(TestData.RepoPath("compiler/fixtures/ir/cms-2004.json"));
+        var document = TestData.LoadIr("compiler/fixtures/ir/cms-2004.json");
         var patch = new JsonObject
         {
             ["fields"] = new JsonObject
@@ -98,7 +98,7 @@ public sealed class IrOptionsPatchTests
     [Fact]
     public void Generate_AfterBenchPatch_EmitsLazyCertificateRetainAndStructAtv()
     {
-        var document = IrSerializer.Load(TestData.RepoPath("compiler/fixtures/ir/cms-2004.json"));
+        var document = TestData.LoadIr("compiler/fixtures/ir/cms-2004.json");
         IrOptionsPatch.ApplyFile(document, TestData.RepoPath("compiler/fixtures/ir/cms-2004-bench.patch.json"));
 
         var files = new CSharpBackend().Generate(document);
