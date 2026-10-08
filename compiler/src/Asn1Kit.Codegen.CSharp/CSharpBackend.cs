@@ -18,7 +18,44 @@ public sealed partial class CSharpBackend : ILanguageBackend
 
     public IReadOnlyList<GeneratedFile> Generate(IrDocument document)
     {
+        _carrierShapes.Clear();
+        _carrierBindingNamesByModule.Clear();
+        foreach (var module in document.Modules)
+        {
+            if (!module.Types.Any(static type => IrOptions.ShouldGenerate(type.Options))) continue;
+            CollectOpenCarrierShapes(document, module);
+        }
+        AssignOpenCarrierBindingStems();
         return document.Modules.Select(module => GenerateModule(document, module)).ToList();
+    }
+
+    private void CollectOpenCarrierShapes(IrDocument document, IrModule module)
+    {
+        var queue = new Queue<(string Name, TypeExpr Type)>();
+        foreach (var type in module.Types)
+        {
+            if (!IrOptions.ShouldGenerate(type.Options)) continue;
+            if (IsSignedSpecialization(type)) continue;
+            var typeName = IrOptions.CSharpTypeName(type.Options) ?? SanitizeIdentifier(type.Name);
+            if (IsCollapsibleAlias(type.Type))
+            {
+                CollectNested(document, module, typeName, type.Type, queue);
+                continue;
+            }
+            queue.Enqueue((typeName, type.Type));
+        }
+        var emitted = new HashSet<string>(StringComparer.Ordinal);
+        var nested = new List<(string Name, TypeExpr Type)>();
+        while (queue.Count > 0)
+        {
+            var (name, type) = queue.Dequeue();
+            if (!emitted.Add(name)) continue;
+            CollectNested(document, module, name, type, queue);
+            CollectOpenTypeUseNested(document, module, name, type, queue);
+            nested.Add((name, type));
+        }
+        var plan = PlanOpenTypeWrappers(document, module, nested, emitted);
+        RegisterOpenCarrierShapes(plan);
     }
 
     private GeneratedFile GenerateModule(IrDocument document, IrModule module)

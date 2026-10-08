@@ -162,3 +162,274 @@ public sealed class Extension
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
+public sealed record ExtnValueBinding<T>
+{
+    public Asn1Oid Oid { get; }
+    public Asn1Codec<T>? Codec { get; }
+    public Func<Extension, T>? Decoder { get; }
+    public Func<T, Asn1Contained<Asn1Any>>? Encoder { get; }
+
+    public ExtnValueBinding(Asn1Oid oid, Asn1Codec<T> codec)
+    {
+        Oid = oid;
+        Codec = codec ?? throw new ArgumentNullException(nameof(codec));
+    }
+
+    public ExtnValueBinding(Asn1Oid oid, Func<Extension, T> decoder, Func<T, Asn1Contained<Asn1Any>> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+}
+
+public sealed record ExtnValueDecoderBinding<T>(Asn1Oid Oid, Func<Extension, T> Decoder);
+
+public sealed record ValueBinding<T>
+{
+    public Asn1Oid Oid { get; }
+    public Asn1Codec<T>? Codec { get; }
+    public Func<SingleAttribute, T>? Decoder { get; }
+    public Func<T, Asn1Any>? Encoder { get; }
+
+    public ValueBinding(Asn1Oid oid, Asn1Codec<T> codec)
+    {
+        Oid = oid;
+        Codec = codec ?? throw new ArgumentNullException(nameof(codec));
+    }
+
+    public ValueBinding(Asn1Oid oid, Func<SingleAttribute, T> decoder, Func<T, Asn1Any> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+}
+
+public sealed record ValueDecoderBinding<T>(Asn1Oid Oid, Func<SingleAttribute, T> Decoder);
+
+public sealed record ValuesBinding<T>
+{
+    public Asn1Oid Oid { get; }
+    public Asn1Codec<T>? Codec { get; }
+    public Func<AttributeSet, T[]>? Decoder { get; }
+    public Func<T[], Asn1Any[]>? Encoder { get; }
+
+    public ValuesBinding(Asn1Oid oid, Asn1Codec<T> codec)
+    {
+        Oid = oid;
+        Codec = codec ?? throw new ArgumentNullException(nameof(codec));
+    }
+
+    public ValuesBinding(Asn1Oid oid, Func<AttributeSet, T[]> decoder, Func<T[], Asn1Any[]> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+}
+
+public sealed record ValuesDecoderBinding<T>(Asn1Oid Oid, Func<AttributeSet, T> Decoder);
+
+public static class PKIXCommonTypes2009OpenTypeExtensions
+{
+    public static bool TryDecodeExtnValue<T>(this Extension source, ExtnValueBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.ExtnID.Equals(binding.Oid))) return false;
+        if (binding.Codec is { } codec)
+        {
+            value = Asn1Codecs.DecodeContained(source.ExtnValue, codec);
+        }
+        else
+            value = binding.Decoder!(source);
+        return true;
+    }
+
+    public static bool TryDecodeExtnValue<T>(this Extension source, ExtnValueDecoderBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.ExtnID.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static void SetExtnValue<T>(this Extension source, ExtnValueBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.ExtnID = binding.Oid;
+        var encoded = binding.Codec is { } codec
+            ? Asn1Codecs.EncodeContained(value, codec)
+            : binding.Encoder!(value);
+        result.ExtnValue = encoded;
+    }
+
+    public static bool TryGet<T>(this Extension[]? source, ExtnValueBinding<T> binding, out T value)
+        => TryGet(source, binding, out value, out _);
+
+    public static bool TryGet<T>(this Extension[]? source, ExtnValueBinding<T> binding, out T value, out Extension raw)
+    {
+        value = default!;
+        raw = default!;
+        if (source is null) return false;
+        ArgumentNullException.ThrowIfNull(binding);
+        Extension? match = null;
+        foreach (var item in source)
+        {
+            if (item.ExtnID.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
+                match = item;
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = Asn1Codecs.DecodeContained(match.ExtnValue, codec);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
+    public static bool TryDecodeValue<T>(this SingleAttribute source, ValueBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.Type.Equals(binding.Oid))) return false;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(source.Value);
+        }
+        else
+            value = binding.Decoder!(source);
+        return true;
+    }
+
+    public static bool TryDecodeValue<T>(this SingleAttribute source, ValueDecoderBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.Type.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static void SetValue<T>(this SingleAttribute source, ValueBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.Type = binding.Oid;
+        var encoded = binding.Codec is { } codec
+            ? codec.Encode(value)
+            : binding.Encoder!(value);
+        result.Value = encoded;
+    }
+
+    public static bool TryGet<T>(this SingleAttribute[]? source, ValueBinding<T> binding, out T value)
+        => TryGet(source, binding, out value, out _);
+
+    public static bool TryGet<T>(this SingleAttribute[]? source, ValueBinding<T> binding, out T value, out SingleAttribute raw)
+    {
+        value = default!;
+        raw = default!;
+        if (source is null) return false;
+        ArgumentNullException.ThrowIfNull(binding);
+        SingleAttribute? match = null;
+        foreach (var item in source)
+        {
+            if (item.Type.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
+                match = item;
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
+    public static bool TryDecodeValues<T>(this AttributeSet source, ValuesBinding<T> binding, out T[] value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.Type.Equals(binding.Oid))) return false;
+        if (binding.Codec is { } codec)
+        {
+            value = Asn1Codecs.DecodeEach(source.Values, codec);
+        }
+        else
+            value = binding.Decoder!(source);
+        return true;
+    }
+
+    public static bool TryDecodeValues<T>(this AttributeSet source, ValuesDecoderBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.Type.Equals(binding.Oid))) return false;
+        value = binding.Decoder(source);
+        return true;
+    }
+
+    public static void SetValues<T>(this AttributeSet source, ValuesBinding<T> binding, T[] value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.Type = binding.Oid;
+        var encoded = binding.Codec is { } codec
+            ? Asn1Codecs.EncodeEach(value, codec)
+            : binding.Encoder!(value);
+        result.Values = encoded;
+    }
+
+    public static bool TryGet<T>(this AttributeSet[]? source, ValuesBinding<T> binding, out T[] value)
+        => TryGet(source, binding, out value, out _);
+
+    public static bool TryGet<T>(this AttributeSet[]? source, ValuesBinding<T> binding, out T[] value, out AttributeSet raw)
+    {
+        value = default!;
+        raw = default!;
+        if (source is null) return false;
+        ArgumentNullException.ThrowIfNull(binding);
+        AttributeSet? match = null;
+        foreach (var item in source)
+        {
+            if (item.Type.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
+                match = item;
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = Asn1Codecs.DecodeEach(match.Values, codec);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
+}
+

@@ -2,6 +2,7 @@ using Asn1Kit.Runtime;
 using Asn1Kit.Cms.Demo;
 using Asn1Kit.Modern.CryptographicMessageSyntax2009;
 using Asn1Kit.Modern.PKIX1Explicit2009;
+using Asn1Kit.Modern.PKIXCommonTypes2009;
 using ModernCms = Asn1Kit.Modern.CryptographicMessageSyntax2009;
 using Common = Asn1Kit.Modern.PKIXCommonTypes2009;
 using ModernPkix = Asn1Kit.Modern.PKIX1Explicit2009;
@@ -87,9 +88,10 @@ public static class CmsModernSignedDataInspector
 
     private static ReadOnlyMemory<byte> ReadSignedAttributes(ModernCms.SignerInfo signer, Asn1Oid contentType)
     {
-        if (!signer.TryGetSignedAttrs(
-                ModernCms.SignedAttributesSetBindings.ContentType, out var declaredContentType) ||
-            !signer.TryGetSignedAttrsMessageDigest(out var digest))
+        if (signer.SignedAttrs?.Value.TryGet(
+                ModernCms.SignedAttributesSetBindings.ContentType, out var declaredContentType) != true ||
+            signer.SignedAttrs?.Value.TryGet(
+                ModernCms.SignedAttributesSetBindings.MessageDigest, out var digest) != true)
             throw new InvalidDataException("SignedAttrs requires contentType and messageDigest.");
         if (declaredContentType.Length != 1)
             throw new InvalidDataException("SignedAttrs must contain exactly one contentType value.");
@@ -135,13 +137,14 @@ public static class CmsModernSignedDataInspector
 
     private static ReadOnlyMemory<byte>? ReadSubjectKeyIdentifier(ModernPkix.Certificate certificate)
     {
-        return certificate.ToBeSigned.TryGetExtensionsSubjectKeyIdentifier(out var extension)
+        return certificate.ToBeSigned.Extensions.TryGet(
+                ModernPkix.CertExtensionsBindings.SubjectKeyIdentifier, out var extension)
             ? extension : null;
     }
 
     private static ModernImplicit.AuthorityKeyIdentifier? ReadAuthorityKeyIdentifier(ModernPkix.Certificate certificate)
     {
-        if (!certificate.ToBeSigned.TryGetExtensions(
+        if (!certificate.ToBeSigned.Extensions.TryGet(
                 ModernPkix.CertExtensionsBindings.AuthorityKeyIdentifier, out var extension))
             return null;
         var identifier = extension;

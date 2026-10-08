@@ -568,63 +568,6 @@ public sealed class CertificationRequest
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier SignatureAlgorithm { get; set; }
     public Asn1BitString Signature { get; set; }
 
-    public bool TryDecodeSignatureAlgorithmParameters<T>(SignatureAlgorithmsParametersBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(binding);
-        if (SignatureAlgorithm is null) return false;
-        var container = SignatureAlgorithm;
-        return container.TryDecodeParameters(binding, out value);
-    }
-
-    public bool TryDecodeSignatureAlgorithmParametersSaRsaSSAPSS(out Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams value) =>
-        TryDecodeSignatureAlgorithmParameters(SignatureAlgorithmsParametersBindings.SaRsaSSAPSS, out value);
-
-    public void SetSignatureAlgorithmParameters<T>(SignatureAlgorithmsParametersBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(binding);
-        if (SignatureAlgorithm is null) throw new Asn1Exception("Missing SignatureAlgorithm.");
-        var container = SignatureAlgorithm;
-        container.SetParameters(binding, value);
-        SignatureAlgorithm = container;
-    }
-
-    public void SetSignatureAlgorithmParametersSaRsaWithMD2() =>
-        SetSignatureAlgorithmParameters(SignatureAlgorithmsParametersBindings.SaRsaWithMD2, Asn1Null.Value);
-
-    public void SetSignatureAlgorithmParametersSaRsaWithMD5() =>
-        SetSignatureAlgorithmParameters(SignatureAlgorithmsParametersBindings.SaRsaWithMD5, Asn1Null.Value);
-
-    public void SetSignatureAlgorithmParametersSaRsaWithSHA1() =>
-        SetSignatureAlgorithmParameters(SignatureAlgorithmsParametersBindings.SaRsaWithSHA1, Asn1Null.Value);
-
-    public void SetSignatureAlgorithmParametersSaDsaWithSHA1() =>
-        SetSignatureAlgorithmParameters(SignatureAlgorithmsParametersBindings.SaDsaWithSHA1, Asn1Null.Value);
-
-    public void SetSignatureAlgorithmParametersSaEcdsaWithSHA1() =>
-        SetSignatureAlgorithmParameters(SignatureAlgorithmsParametersBindings.SaEcdsaWithSHA1, Asn1Null.Value);
-
-    public void SetSignatureAlgorithmParametersSaDsaWithSHA224() =>
-        SetSignatureAlgorithmParameters(SignatureAlgorithmsParametersBindings.SaDsaWithSHA224, Asn1Null.Value);
-
-    public void SetSignatureAlgorithmParametersSaDsaWithSHA256() =>
-        SetSignatureAlgorithmParameters(SignatureAlgorithmsParametersBindings.SaDsaWithSHA256, Asn1Null.Value);
-
-    public void SetSignatureAlgorithmParametersSaEcdsaWithSHA224() =>
-        SetSignatureAlgorithmParameters(SignatureAlgorithmsParametersBindings.SaEcdsaWithSHA224, Asn1Null.Value);
-
-    public void SetSignatureAlgorithmParametersSaEcdsaWithSHA256() =>
-        SetSignatureAlgorithmParameters(SignatureAlgorithmsParametersBindings.SaEcdsaWithSHA256, Asn1Null.Value);
-
-    public void SetSignatureAlgorithmParametersSaEcdsaWithSHA384() =>
-        SetSignatureAlgorithmParameters(SignatureAlgorithmsParametersBindings.SaEcdsaWithSHA384, Asn1Null.Value);
-
-    public void SetSignatureAlgorithmParametersSaEcdsaWithSHA512() =>
-        SetSignatureAlgorithmParameters(SignatureAlgorithmsParametersBindings.SaEcdsaWithSHA512, Asn1Null.Value);
-
-    public void SetSignatureAlgorithmParametersSaRsaSSAPSS(Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams value) =>
-        SetSignatureAlgorithmParameters(SignatureAlgorithmsParametersBindings.SaRsaSSAPSS, value);
-
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
@@ -959,48 +902,6 @@ public sealed class EncryptedPOP
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier WitnessAlgID { get; set; }
     public ReadOnlyMemory<byte> Witness { get; set; }
 
-    public bool TryDecodeThePOPAlgIDParameters<T>(POPAlgsParametersBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(binding);
-        if (ThePOPAlgID is null) return false;
-        var container = ThePOPAlgID;
-        return container.TryDecodeParameters(binding, out value);
-    }
-
-    public void SetThePOPAlgIDParameters<T>(POPAlgsParametersBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(binding);
-        if (ThePOPAlgID is null) throw new Asn1Exception("Missing ThePOPAlgID.");
-        var container = ThePOPAlgID;
-        container.SetParameters(binding, value);
-        ThePOPAlgID = container;
-    }
-
-    public void SetThePOPAlgIDParametersMacaHMACSHA1() =>
-        SetThePOPAlgIDParameters(POPAlgsParametersBindings.MacaHMACSHA1, Asn1Null.Value);
-
-    public bool TryDecodeWitnessAlgIDParameters<T>(WitnessAlgsParametersBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(binding);
-        if (WitnessAlgID is null) return false;
-        var container = WitnessAlgID;
-        return container.TryDecodeParameters(binding, out value);
-    }
-
-    public void SetWitnessAlgIDParameters<T>(WitnessAlgsParametersBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(binding);
-        if (WitnessAlgID is null) throw new Asn1Exception("Missing WitnessAlgID.");
-        var container = WitnessAlgID;
-        container.SetParameters(binding, value);
-        WitnessAlgID = container;
-    }
-
-    public void SetWitnessAlgIDParametersMdaSha1() =>
-        SetWitnessAlgIDParameters(WitnessAlgsParametersBindings.MdaSha1, Asn1Null.Value);
-
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
@@ -1041,27 +942,6 @@ public sealed class DecryptedPOP
     public uint BodyPartID { get; set; }
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier ThePOPAlgID { get; set; }
     public ReadOnlyMemory<byte> ThePOP { get; set; }
-
-    public bool TryDecodeThePOPAlgIDParameters<T>(POPAlgsParametersBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(binding);
-        if (ThePOPAlgID is null) return false;
-        var container = ThePOPAlgID;
-        return container.TryDecodeParameters(binding, out value);
-    }
-
-    public void SetThePOPAlgIDParameters<T>(POPAlgsParametersBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(binding);
-        if (ThePOPAlgID is null) throw new Asn1Exception("Missing ThePOPAlgID.");
-        var container = ThePOPAlgID;
-        container.SetParameters(binding, value);
-        ThePOPAlgID = container;
-    }
-
-    public void SetThePOPAlgIDParametersMacaHMACSHA1() =>
-        SetThePOPAlgIDParameters(POPAlgsParametersBindings.MacaHMACSHA1, Asn1Null.Value);
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1469,30 +1349,6 @@ public sealed class PublishTrustAnchors
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier HashAlgorithm { get; set; }
     public ReadOnlyMemory<byte>[] AnchorHashes { get; set; } = Array.Empty<ReadOnlyMemory<byte>>();
 
-    public bool TryDecodeHashAlgorithmParameters<T>(HashAlgorithmsParametersBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(binding);
-        if (HashAlgorithm is null) return false;
-        var container = HashAlgorithm;
-        return container.TryDecodeParameters(binding, out value);
-    }
-
-    public void SetHashAlgorithmParameters<T>(HashAlgorithmsParametersBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(binding);
-        if (HashAlgorithm is null) throw new Asn1Exception("Missing HashAlgorithm.");
-        var container = HashAlgorithm;
-        container.SetParameters(binding, value);
-        HashAlgorithm = container;
-    }
-
-    public void SetHashAlgorithmParametersMdaSha1() =>
-        SetHashAlgorithmParameters(HashAlgorithmsParametersBindings.MdaSha1, Asn1Null.Value);
-
-    public void SetHashAlgorithmParametersMdaSha256() =>
-        SetHashAlgorithmParameters(HashAlgorithmsParametersBindings.MdaSha256, Asn1Null.Value);
-
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
@@ -1531,30 +1387,6 @@ public sealed class CMCPublicationInfo
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier HashAlg { get; set; }
     public ReadOnlyMemory<byte>[] CertHashes { get; set; } = Array.Empty<ReadOnlyMemory<byte>>();
     public Asn1Kit.Modern.PKIXCRMF2009.PKIPublicationInfo PubInfo { get; set; }
-
-    public bool TryDecodeHashAlgParameters<T>(HashAlgorithmsParametersBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(binding);
-        if (HashAlg is null) return false;
-        var container = HashAlg;
-        return container.TryDecodeParameters(binding, out value);
-    }
-
-    public void SetHashAlgParameters<T>(HashAlgorithmsParametersBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(binding);
-        if (HashAlg is null) throw new Asn1Exception("Missing HashAlg.");
-        var container = HashAlg;
-        container.SetParameters(binding, value);
-        HashAlg = container;
-    }
-
-    public void SetHashAlgParametersMdaSha1() =>
-        SetHashAlgParameters(HashAlgorithmsParametersBindings.MdaSha1, Asn1Null.Value);
-
-    public void SetHashAlgParametersMdaSha256() =>
-        SetHashAlgParameters(HashAlgorithmsParametersBindings.MdaSha256, Asn1Null.Value);
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1681,48 +1513,6 @@ public sealed class IdentityProofV2
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier MacAlgId { get; set; }
     public ReadOnlyMemory<byte> Witness { get; set; }
 
-    public bool TryDecodeProofAlgIDParameters<T>(WitnessAlgsParametersBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(binding);
-        if (ProofAlgID is null) return false;
-        var container = ProofAlgID;
-        return container.TryDecodeParameters(binding, out value);
-    }
-
-    public void SetProofAlgIDParameters<T>(WitnessAlgsParametersBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(binding);
-        if (ProofAlgID is null) throw new Asn1Exception("Missing ProofAlgID.");
-        var container = ProofAlgID;
-        container.SetParameters(binding, value);
-        ProofAlgID = container;
-    }
-
-    public void SetProofAlgIDParametersMdaSha1() =>
-        SetProofAlgIDParameters(WitnessAlgsParametersBindings.MdaSha1, Asn1Null.Value);
-
-    public bool TryDecodeMacAlgIdParameters<T>(POPAlgsParametersBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(binding);
-        if (MacAlgId is null) return false;
-        var container = MacAlgId;
-        return container.TryDecodeParameters(binding, out value);
-    }
-
-    public void SetMacAlgIdParameters<T>(POPAlgsParametersBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(binding);
-        if (MacAlgId is null) throw new Asn1Exception("Missing MacAlgId.");
-        var container = MacAlgId;
-        container.SetParameters(binding, value);
-        MacAlgId = container;
-    }
-
-    public void SetMacAlgIdParametersMacaHMACSHA1() =>
-        SetMacAlgIdParameters(POPAlgsParametersBindings.MacaHMACSHA1, Asn1Null.Value);
-
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
@@ -1758,51 +1548,6 @@ public sealed class PopLinkWitnessV2
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier KeyGenAlgorithm { get; set; }
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier MacAlgorithm { get; set; }
     public ReadOnlyMemory<byte> Witness { get; set; }
-
-    public bool TryDecodeKeyGenAlgorithmParameters<T>(KeyDevAlgsParametersBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(binding);
-        if (KeyGenAlgorithm is null) return false;
-        var container = KeyGenAlgorithm;
-        return container.TryDecodeParameters(binding, out value);
-    }
-
-    public bool TryDecodeKeyGenAlgorithmParametersKdaPBKDF2(out Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params value) =>
-        TryDecodeKeyGenAlgorithmParameters(KeyDevAlgsParametersBindings.KdaPBKDF2, out value);
-
-    public void SetKeyGenAlgorithmParameters<T>(KeyDevAlgsParametersBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(binding);
-        if (KeyGenAlgorithm is null) throw new Asn1Exception("Missing KeyGenAlgorithm.");
-        var container = KeyGenAlgorithm;
-        container.SetParameters(binding, value);
-        KeyGenAlgorithm = container;
-    }
-
-    public void SetKeyGenAlgorithmParametersKdaPBKDF2(Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params value) =>
-        SetKeyGenAlgorithmParameters(KeyDevAlgsParametersBindings.KdaPBKDF2, value);
-
-    public bool TryDecodeMacAlgorithmParameters<T>(POPAlgsParametersBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(binding);
-        if (MacAlgorithm is null) return false;
-        var container = MacAlgorithm;
-        return container.TryDecodeParameters(binding, out value);
-    }
-
-    public void SetMacAlgorithmParameters<T>(POPAlgsParametersBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(binding);
-        if (MacAlgorithm is null) throw new Asn1Exception("Missing MacAlgorithm.");
-        var container = MacAlgorithm;
-        container.SetParameters(binding, value);
-        MacAlgorithm = container;
-    }
-
-    public void SetMacAlgorithmParametersMacaHMACSHA1() =>
-        SetMacAlgorithmParameters(POPAlgsParametersBindings.MacaHMACSHA1, Asn1Null.Value);
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -2770,80 +2515,6 @@ public sealed class CertificationRequest_CertificationRequestInfo_SubjectPublicK
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Algorithm { get; set; }
     public Asn1BitString SubjectPublicKey { get; set; }
 
-    public bool TryDecodeAlgorithmParameters<T>(PublicKeyAlgorithmsParameters2Binding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(binding);
-        if (Algorithm is null) return false;
-        var container = Algorithm;
-        if (container.Parameters is not { } raw) return false;
-        if (!(container.Algorithm.Equals(binding.Oid))) return false;
-        value = binding.Decoder(raw);
-        return true;
-    }
-
-    public bool TryDecodeAlgorithmParametersPkDsa(out Asn1Kit.Modern.PKIXAlgs2009.DSAParams value) =>
-        TryDecodeAlgorithmParameters(PublicKeyAlgorithmsParameters2Bindings.PkDsa, out value);
-
-    public bool TryDecodeAlgorithmParametersPkDh(out Asn1Kit.Modern.PKIXAlgs2009.DomainParameters value) =>
-        TryDecodeAlgorithmParameters(PublicKeyAlgorithmsParameters2Bindings.PkDh, out value);
-
-    public bool TryDecodeAlgorithmParametersPkKea(out ReadOnlyMemory<byte> value) =>
-        TryDecodeAlgorithmParameters(PublicKeyAlgorithmsParameters2Bindings.PkKea, out value);
-
-    public bool TryDecodeAlgorithmParametersPkEc(out Asn1Oid value) =>
-        TryDecodeAlgorithmParameters(PublicKeyAlgorithmsParameters2Bindings.PkEc, out value);
-
-    public bool TryDecodeAlgorithmParametersPkEcDH(out Asn1Oid value) =>
-        TryDecodeAlgorithmParameters(PublicKeyAlgorithmsParameters2Bindings.PkEcDH, out value);
-
-    public bool TryDecodeAlgorithmParametersPkEcMQV(out Asn1Oid value) =>
-        TryDecodeAlgorithmParameters(PublicKeyAlgorithmsParameters2Bindings.PkEcMQV, out value);
-
-    public bool TryDecodeAlgorithmParametersPkRsaSSAPSS(out Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams value) =>
-        TryDecodeAlgorithmParameters(PublicKeyAlgorithmsParameters2Bindings.PkRsaSSAPSS, out value);
-
-    public bool TryDecodeAlgorithmParametersPkRsaESOAEP(out Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams value) =>
-        TryDecodeAlgorithmParameters(PublicKeyAlgorithmsParameters2Bindings.PkRsaESOAEP, out value);
-
-    public void SetAlgorithmParameters<T>(PublicKeyAlgorithmsParameters2Binding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(binding);
-        if (Algorithm is null) throw new Asn1Exception("Missing Algorithm.");
-        var container = Algorithm;
-        if (!(container.Algorithm.Equals(binding.Oid)))
-            throw new ArgumentException("Descriptor key does not match the selected open-type binding.", nameof(binding));
-        container.Parameters = binding.Encoder(value);
-        Algorithm = container;
-    }
-
-    public void SetAlgorithmParametersPkRsa() =>
-        SetAlgorithmParameters(PublicKeyAlgorithmsParameters2Bindings.PkRsa, Asn1Null.Value);
-
-    public void SetAlgorithmParametersPkDsa(Asn1Kit.Modern.PKIXAlgs2009.DSAParams value) =>
-        SetAlgorithmParameters(PublicKeyAlgorithmsParameters2Bindings.PkDsa, value);
-
-    public void SetAlgorithmParametersPkDh(Asn1Kit.Modern.PKIXAlgs2009.DomainParameters value) =>
-        SetAlgorithmParameters(PublicKeyAlgorithmsParameters2Bindings.PkDh, value);
-
-    public void SetAlgorithmParametersPkKea(ReadOnlyMemory<byte> value) =>
-        SetAlgorithmParameters(PublicKeyAlgorithmsParameters2Bindings.PkKea, value);
-
-    public void SetAlgorithmParametersPkEc(Asn1Oid value) =>
-        SetAlgorithmParameters(PublicKeyAlgorithmsParameters2Bindings.PkEc, value);
-
-    public void SetAlgorithmParametersPkEcDH(Asn1Oid value) =>
-        SetAlgorithmParameters(PublicKeyAlgorithmsParameters2Bindings.PkEcDH, value);
-
-    public void SetAlgorithmParametersPkEcMQV(Asn1Oid value) =>
-        SetAlgorithmParameters(PublicKeyAlgorithmsParameters2Bindings.PkEcMQV, value);
-
-    public void SetAlgorithmParametersPkRsaSSAPSS(Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams value) =>
-        SetAlgorithmParameters(PublicKeyAlgorithmsParameters2Bindings.PkRsaSSAPSS, value);
-
-    public void SetAlgorithmParametersPkRsaESOAEP(Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams value) =>
-        SetAlgorithmParameters(PublicKeyAlgorithmsParameters2Bindings.PkRsaESOAEP, value);
-
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
@@ -3241,9 +2912,6 @@ public sealed record PublicKeyAlgorithmsParameters2Binding<T>(Asn1Oid Oid, Func<
 
 public static class PublicKeyAlgorithmsParameters2Bindings
 {
-    public static PublicKeyAlgorithmsParameters2Binding<T> Create<T>(Asn1Oid oid, Func<Asn1Any, T> decoder, Func<T, Asn1Any> encoder) =>
-        new(oid, decoder, encoder);
-
     public static PublicKeyAlgorithmsParameters2Binding<Asn1Null> PkRsa { get; } =
         new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.RsaEncryption, Asn1Codecs.Null.Decode, Asn1Codecs.Null.Encode);
 
@@ -3272,1734 +2940,321 @@ public static class PublicKeyAlgorithmsParameters2Bindings
         new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSAESOAEP, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkRsaESOAEP.Decode, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkRsaESOAEP.Encode);
 }
 
-public sealed record SignatureAlgorithmsParametersBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder, Func<T, Asn1Any> Encoder);
-public sealed record SignatureAlgorithmsParametersDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder);
-
 public static class SignatureAlgorithmsParametersBindings
 {
-    public static SignatureAlgorithmsParametersBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder, Func<T, Asn1Any> encoder) =>
-        new(oid, decoder, encoder);
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> SaRsaWithMD2 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.Md2WithRSAEncryption, Asn1Codecs.Null);
 
-    public static SignatureAlgorithmsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder) =>
-        new(oid, decoder);
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> SaRsaWithMD5 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.Md5WithRSAEncryption, Asn1Codecs.Null);
 
-    public static SignatureAlgorithmsParametersBinding<Asn1Null> SaRsaWithMD2 { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.Md2WithRSAEncryption, DecodeSaRsaWithMD2, Asn1Codecs.Null.Encode);
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> SaRsaWithSHA1 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.Sha1WithRSAEncryption, Asn1Codecs.Null);
 
-    private static Asn1Null DecodeSaRsaWithMD2(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.Null.Decode(raw);
-    }
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> SaDsaWithSHA1 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.DsaWithSha1, Asn1Codecs.Null);
 
-    public static SignatureAlgorithmsParametersBinding<Asn1Null> SaRsaWithMD5 { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.Md5WithRSAEncryption, DecodeSaRsaWithMD5, Asn1Codecs.Null.Encode);
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> SaEcdsaWithSHA1 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.EcdsaWithSHA1, Asn1Codecs.Null);
 
-    private static Asn1Null DecodeSaRsaWithMD5(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.Null.Decode(raw);
-    }
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> SaDsaWithSHA224 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.DsaWithSha224, Asn1Codecs.Null);
 
-    public static SignatureAlgorithmsParametersBinding<Asn1Null> SaRsaWithSHA1 { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.Sha1WithRSAEncryption, DecodeSaRsaWithSHA1, Asn1Codecs.Null.Encode);
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> SaDsaWithSHA256 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.DsaWithSha256, Asn1Codecs.Null);
 
-    private static Asn1Null DecodeSaRsaWithSHA1(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.Null.Decode(raw);
-    }
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> SaEcdsaWithSHA224 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.EcdsaWithSHA224, Asn1Codecs.Null);
 
-    public static SignatureAlgorithmsParametersBinding<Asn1Null> SaDsaWithSHA1 { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.DsaWithSha1, DecodeSaDsaWithSHA1, Asn1Codecs.Null.Encode);
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> SaEcdsaWithSHA256 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.EcdsaWithSHA256, Asn1Codecs.Null);
 
-    private static Asn1Null DecodeSaDsaWithSHA1(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.Null.Decode(raw);
-    }
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> SaEcdsaWithSHA384 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.EcdsaWithSHA384, Asn1Codecs.Null);
 
-    public static SignatureAlgorithmsParametersBinding<Asn1Null> SaEcdsaWithSHA1 { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.EcdsaWithSHA1, DecodeSaEcdsaWithSHA1, Asn1Codecs.Null.Encode);
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> SaEcdsaWithSHA512 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.EcdsaWithSHA512, Asn1Codecs.Null);
 
-    private static Asn1Null DecodeSaEcdsaWithSHA1(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.Null.Decode(raw);
-    }
-
-    public static SignatureAlgorithmsParametersBinding<Asn1Null> SaDsaWithSHA224 { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.DsaWithSha224, DecodeSaDsaWithSHA224, Asn1Codecs.Null.Encode);
-
-    private static Asn1Null DecodeSaDsaWithSHA224(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.Null.Decode(raw);
-    }
-
-    public static SignatureAlgorithmsParametersBinding<Asn1Null> SaDsaWithSHA256 { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.DsaWithSha256, DecodeSaDsaWithSHA256, Asn1Codecs.Null.Encode);
-
-    private static Asn1Null DecodeSaDsaWithSHA256(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.Null.Decode(raw);
-    }
-
-    public static SignatureAlgorithmsParametersBinding<Asn1Null> SaEcdsaWithSHA224 { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.EcdsaWithSHA224, DecodeSaEcdsaWithSHA224, Asn1Codecs.Null.Encode);
-
-    private static Asn1Null DecodeSaEcdsaWithSHA224(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.Null.Decode(raw);
-    }
-
-    public static SignatureAlgorithmsParametersBinding<Asn1Null> SaEcdsaWithSHA256 { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.EcdsaWithSHA256, DecodeSaEcdsaWithSHA256, Asn1Codecs.Null.Encode);
-
-    private static Asn1Null DecodeSaEcdsaWithSHA256(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.Null.Decode(raw);
-    }
-
-    public static SignatureAlgorithmsParametersBinding<Asn1Null> SaEcdsaWithSHA384 { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.EcdsaWithSHA384, DecodeSaEcdsaWithSHA384, Asn1Codecs.Null.Encode);
-
-    private static Asn1Null DecodeSaEcdsaWithSHA384(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.Null.Decode(raw);
-    }
-
-    public static SignatureAlgorithmsParametersBinding<Asn1Null> SaEcdsaWithSHA512 { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.EcdsaWithSHA512, DecodeSaEcdsaWithSHA512, Asn1Codecs.Null.Encode);
-
-    private static Asn1Null DecodeSaEcdsaWithSHA512(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.Null.Decode(raw);
-    }
-
-    public static SignatureAlgorithmsParametersBinding<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams> SaRsaSSAPSS { get; } =
-        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSASSAPSS, DecodeSaRsaSSAPSS, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkRsaSSAPSS.Encode);
-
-    private static Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams DecodeSaRsaSSAPSS(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return __EnrollmentMessageSyntax2009OpenTypeCodecs.PkRsaSSAPSS.Decode(raw);
-    }
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams> SaRsaSSAPSS { get; } =
+        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSASSAPSS, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkRsaSSAPSS);
 }
-
-public sealed record CertExtensionsExtnValueBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> Decoder, Func<T, Asn1Contained<Asn1Any>> Encoder);
-public sealed record CertExtensionsExtnValueDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> Decoder);
 
 public static class CertExtensionsExtnValueBindings
 {
-    public static CertExtensionsExtnValueBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> decoder, Func<T, Asn1Contained<Asn1Any>> encoder) =>
-        new(oid, decoder, encoder);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.AuthorityKeyIdentifier> AuthorityKeyIdentifier { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeAuthorityKeyIdentifier, __EnrollmentMessageSyntax2009OpenTypeCodecs.AuthorityKeyIdentifierExtension);
 
-    public static CertExtensionsExtnValueDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> decoder) =>
-        new(oid, decoder);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<ReadOnlyMemory<byte>> SubjectKeyIdentifier { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeSubjectKeyIdentifier, Asn1Codecs.OctetString);
 
-    public static CertExtensionsExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.AuthorityKeyIdentifier> AuthorityKeyIdentifier { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeAuthorityKeyIdentifier, DecodeAuthorityKeyIdentifier, EncodeAuthorityKeyIdentifier);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.KeyUsage> KeyUsage { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeKeyUsage, __EnrollmentMessageSyntax2009OpenTypeCodecs.KeyUsageExtension);
 
-    private static Asn1Kit.Modern.PKIX1Implicit2009.AuthorityKeyIdentifier DecodeAuthorityKeyIdentifier(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, __EnrollmentMessageSyntax2009OpenTypeCodecs.AuthorityKeyIdentifierExtension);
-    }
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.PrivateKeyUsagePeriod> PrivateKeyUsagePeriod { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCePrivateKeyUsagePeriod, __EnrollmentMessageSyntax2009OpenTypeCodecs.PrivateKeyUsagePeriodExtension);
 
-    private static Asn1Contained<Asn1Any> EncodeAuthorityKeyIdentifier(Asn1Kit.Modern.PKIX1Implicit2009.AuthorityKeyIdentifier value) =>
-        Asn1Codecs.EncodeContained(value, __EnrollmentMessageSyntax2009OpenTypeCodecs.AuthorityKeyIdentifierExtension);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.PolicyInformation[]> CertificatePolicies { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeCertificatePolicies, __EnrollmentMessageSyntax2009OpenTypeCodecs.CertificatePoliciesExtension);
 
-    public static CertExtensionsExtnValueBinding<ReadOnlyMemory<byte>> SubjectKeyIdentifier { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeSubjectKeyIdentifier, DecodeSubjectKeyIdentifier, EncodeSubjectKeyIdentifier);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.PolicyMappings_Item[]> PolicyMappings { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCePolicyMappings, __EnrollmentMessageSyntax2009OpenTypeCodecs.PolicyMappingsExtension);
 
-    private static ReadOnlyMemory<byte> DecodeSubjectKeyIdentifier(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, Asn1Codecs.OctetString);
-    }
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]> SubjectAltName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeSubjectAltName, __EnrollmentMessageSyntax2009OpenTypeCodecs.SubjectAltNameExtension);
 
-    private static Asn1Contained<Asn1Any> EncodeSubjectKeyIdentifier(ReadOnlyMemory<byte> value) =>
-        Asn1Codecs.EncodeContained(value, Asn1Codecs.OctetString);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]> IssuerAltName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeIssuerAltName, __EnrollmentMessageSyntax2009OpenTypeCodecs.SubjectAltNameExtension);
 
-    public static CertExtensionsExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.KeyUsage> KeyUsage { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeKeyUsage, DecodeKeyUsage, EncodeKeyUsage);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet[]> SubjectDirectoryAttributes { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeSubjectDirectoryAttributes, __EnrollmentMessageSyntax2009OpenTypeCodecs.SubjectDirectoryAttributesExtension);
 
-    private static Asn1Kit.Modern.PKIX1Implicit2009.KeyUsage DecodeKeyUsage(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, __EnrollmentMessageSyntax2009OpenTypeCodecs.KeyUsageExtension);
-    }
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.BasicConstraints> BasicConstraints { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeBasicConstraints, __EnrollmentMessageSyntax2009OpenTypeCodecs.BasicConstraintsExtension);
 
-    private static Asn1Contained<Asn1Any> EncodeKeyUsage(Asn1Kit.Modern.PKIX1Implicit2009.KeyUsage value) =>
-        Asn1Codecs.EncodeContained(value, __EnrollmentMessageSyntax2009OpenTypeCodecs.KeyUsageExtension);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.NameConstraints> NameConstraints { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeNameConstraints, __EnrollmentMessageSyntax2009OpenTypeCodecs.NameConstraintsExtension);
 
-    public static CertExtensionsExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.PrivateKeyUsagePeriod> PrivateKeyUsagePeriod { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCePrivateKeyUsagePeriod, DecodePrivateKeyUsagePeriod, EncodePrivateKeyUsagePeriod);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.PolicyConstraints> PolicyConstraints { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCePolicyConstraints, __EnrollmentMessageSyntax2009OpenTypeCodecs.PolicyConstraintsExtension);
 
-    private static Asn1Kit.Modern.PKIX1Implicit2009.PrivateKeyUsagePeriod DecodePrivateKeyUsagePeriod(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, __EnrollmentMessageSyntax2009OpenTypeCodecs.PrivateKeyUsagePeriodExtension);
-    }
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Oid[]> ExtKeyUsage { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeExtKeyUsage, __EnrollmentMessageSyntax2009OpenTypeCodecs.ExtKeyUsageExtension);
 
-    private static Asn1Contained<Asn1Any> EncodePrivateKeyUsagePeriod(Asn1Kit.Modern.PKIX1Implicit2009.PrivateKeyUsagePeriod value) =>
-        Asn1Codecs.EncodeContained(value, __EnrollmentMessageSyntax2009OpenTypeCodecs.PrivateKeyUsagePeriodExtension);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[]> CRLDistributionPoints { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeCRLDistributionPoints, __EnrollmentMessageSyntax2009OpenTypeCodecs.CRLDistributionPointsExtension);
 
-    public static CertExtensionsExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.PolicyInformation[]> CertificatePolicies { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeCertificatePolicies, DecodeCertificatePolicies, EncodeCertificatePolicies);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Integer> InhibitAnyPolicy { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeInhibitAnyPolicy, Asn1Codecs.Integer);
 
-    private static Asn1Kit.Modern.PKIX1Implicit2009.PolicyInformation[] DecodeCertificatePolicies(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, __EnrollmentMessageSyntax2009OpenTypeCodecs.CertificatePoliciesExtension);
-    }
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[]> FreshestCRL { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeFreshestCRL, __EnrollmentMessageSyntax2009OpenTypeCodecs.CRLDistributionPointsExtension);
 
-    private static Asn1Contained<Asn1Any> EncodeCertificatePolicies(Asn1Kit.Modern.PKIX1Implicit2009.PolicyInformation[] value) =>
-        Asn1Codecs.EncodeContained(value, __EnrollmentMessageSyntax2009OpenTypeCodecs.CertificatePoliciesExtension);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[]> AuthorityInfoAccess { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdPeAuthorityInfoAccess, __EnrollmentMessageSyntax2009OpenTypeCodecs.AuthorityInfoAccessExtension);
 
-    public static CertExtensionsExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.PolicyMappings_Item[]> PolicyMappings { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCePolicyMappings, DecodePolicyMappings, EncodePolicyMappings);
-
-    private static Asn1Kit.Modern.PKIX1Implicit2009.PolicyMappings_Item[] DecodePolicyMappings(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, __EnrollmentMessageSyntax2009OpenTypeCodecs.PolicyMappingsExtension);
-    }
-
-    private static Asn1Contained<Asn1Any> EncodePolicyMappings(Asn1Kit.Modern.PKIX1Implicit2009.PolicyMappings_Item[] value) =>
-        Asn1Codecs.EncodeContained(value, __EnrollmentMessageSyntax2009OpenTypeCodecs.PolicyMappingsExtension);
-
-    public static CertExtensionsExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]> SubjectAltName { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeSubjectAltName, DecodeSubjectAltName, EncodeSubjectAltName);
-
-    private static Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[] DecodeSubjectAltName(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, __EnrollmentMessageSyntax2009OpenTypeCodecs.SubjectAltNameExtension);
-    }
-
-    private static Asn1Contained<Asn1Any> EncodeSubjectAltName(Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[] value) =>
-        Asn1Codecs.EncodeContained(value, __EnrollmentMessageSyntax2009OpenTypeCodecs.SubjectAltNameExtension);
-
-    public static CertExtensionsExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]> IssuerAltName { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeIssuerAltName, DecodeIssuerAltName, EncodeIssuerAltName);
-
-    private static Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[] DecodeIssuerAltName(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, __EnrollmentMessageSyntax2009OpenTypeCodecs.SubjectAltNameExtension);
-    }
-
-    private static Asn1Contained<Asn1Any> EncodeIssuerAltName(Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[] value) =>
-        Asn1Codecs.EncodeContained(value, __EnrollmentMessageSyntax2009OpenTypeCodecs.SubjectAltNameExtension);
-
-    public static CertExtensionsExtnValueBinding<Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet[]> SubjectDirectoryAttributes { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeSubjectDirectoryAttributes, DecodeSubjectDirectoryAttributes, EncodeSubjectDirectoryAttributes);
-
-    private static Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet[] DecodeSubjectDirectoryAttributes(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, __EnrollmentMessageSyntax2009OpenTypeCodecs.SubjectDirectoryAttributesExtension);
-    }
-
-    private static Asn1Contained<Asn1Any> EncodeSubjectDirectoryAttributes(Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet[] value) =>
-        Asn1Codecs.EncodeContained(value, __EnrollmentMessageSyntax2009OpenTypeCodecs.SubjectDirectoryAttributesExtension);
-
-    public static CertExtensionsExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.BasicConstraints> BasicConstraints { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeBasicConstraints, DecodeBasicConstraints, EncodeBasicConstraints);
-
-    private static Asn1Kit.Modern.PKIX1Implicit2009.BasicConstraints DecodeBasicConstraints(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, __EnrollmentMessageSyntax2009OpenTypeCodecs.BasicConstraintsExtension);
-    }
-
-    private static Asn1Contained<Asn1Any> EncodeBasicConstraints(Asn1Kit.Modern.PKIX1Implicit2009.BasicConstraints value) =>
-        Asn1Codecs.EncodeContained(value, __EnrollmentMessageSyntax2009OpenTypeCodecs.BasicConstraintsExtension);
-
-    public static CertExtensionsExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.NameConstraints> NameConstraints { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeNameConstraints, DecodeNameConstraints, EncodeNameConstraints);
-
-    private static Asn1Kit.Modern.PKIX1Implicit2009.NameConstraints DecodeNameConstraints(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, __EnrollmentMessageSyntax2009OpenTypeCodecs.NameConstraintsExtension);
-    }
-
-    private static Asn1Contained<Asn1Any> EncodeNameConstraints(Asn1Kit.Modern.PKIX1Implicit2009.NameConstraints value) =>
-        Asn1Codecs.EncodeContained(value, __EnrollmentMessageSyntax2009OpenTypeCodecs.NameConstraintsExtension);
-
-    public static CertExtensionsExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.PolicyConstraints> PolicyConstraints { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCePolicyConstraints, DecodePolicyConstraints, EncodePolicyConstraints);
-
-    private static Asn1Kit.Modern.PKIX1Implicit2009.PolicyConstraints DecodePolicyConstraints(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, __EnrollmentMessageSyntax2009OpenTypeCodecs.PolicyConstraintsExtension);
-    }
-
-    private static Asn1Contained<Asn1Any> EncodePolicyConstraints(Asn1Kit.Modern.PKIX1Implicit2009.PolicyConstraints value) =>
-        Asn1Codecs.EncodeContained(value, __EnrollmentMessageSyntax2009OpenTypeCodecs.PolicyConstraintsExtension);
-
-    public static CertExtensionsExtnValueBinding<Asn1Oid[]> ExtKeyUsage { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeExtKeyUsage, DecodeExtKeyUsage, EncodeExtKeyUsage);
-
-    private static Asn1Oid[] DecodeExtKeyUsage(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, __EnrollmentMessageSyntax2009OpenTypeCodecs.ExtKeyUsageExtension);
-    }
-
-    private static Asn1Contained<Asn1Any> EncodeExtKeyUsage(Asn1Oid[] value) =>
-        Asn1Codecs.EncodeContained(value, __EnrollmentMessageSyntax2009OpenTypeCodecs.ExtKeyUsageExtension);
-
-    public static CertExtensionsExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[]> CRLDistributionPoints { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeCRLDistributionPoints, DecodeCRLDistributionPoints, EncodeCRLDistributionPoints);
-
-    private static Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[] DecodeCRLDistributionPoints(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, __EnrollmentMessageSyntax2009OpenTypeCodecs.CRLDistributionPointsExtension);
-    }
-
-    private static Asn1Contained<Asn1Any> EncodeCRLDistributionPoints(Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[] value) =>
-        Asn1Codecs.EncodeContained(value, __EnrollmentMessageSyntax2009OpenTypeCodecs.CRLDistributionPointsExtension);
-
-    public static CertExtensionsExtnValueBinding<Asn1Integer> InhibitAnyPolicy { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeInhibitAnyPolicy, DecodeInhibitAnyPolicy, EncodeInhibitAnyPolicy);
-
-    private static Asn1Integer DecodeInhibitAnyPolicy(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, Asn1Codecs.Integer);
-    }
-
-    private static Asn1Contained<Asn1Any> EncodeInhibitAnyPolicy(Asn1Integer value) =>
-        Asn1Codecs.EncodeContained(value, Asn1Codecs.Integer);
-
-    public static CertExtensionsExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[]> FreshestCRL { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeFreshestCRL, DecodeFreshestCRL, EncodeFreshestCRL);
-
-    private static Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[] DecodeFreshestCRL(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, __EnrollmentMessageSyntax2009OpenTypeCodecs.CRLDistributionPointsExtension);
-    }
-
-    private static Asn1Contained<Asn1Any> EncodeFreshestCRL(Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[] value) =>
-        Asn1Codecs.EncodeContained(value, __EnrollmentMessageSyntax2009OpenTypeCodecs.CRLDistributionPointsExtension);
-
-    public static CertExtensionsExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[]> AuthorityInfoAccess { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdPeAuthorityInfoAccess, DecodeAuthorityInfoAccess, EncodeAuthorityInfoAccess);
-
-    private static Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[] DecodeAuthorityInfoAccess(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, __EnrollmentMessageSyntax2009OpenTypeCodecs.AuthorityInfoAccessExtension);
-    }
-
-    private static Asn1Contained<Asn1Any> EncodeAuthorityInfoAccess(Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[] value) =>
-        Asn1Codecs.EncodeContained(value, __EnrollmentMessageSyntax2009OpenTypeCodecs.AuthorityInfoAccessExtension);
-
-    public static CertExtensionsExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[]> SubjectInfoAccessSyntax { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdPeSubjectInfoAccess, DecodeSubjectInfoAccessSyntax, EncodeSubjectInfoAccessSyntax);
-
-    private static Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[] DecodeSubjectInfoAccessSyntax(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, __EnrollmentMessageSyntax2009OpenTypeCodecs.SubjectInfoAccessSyntaxExtension);
-    }
-
-    private static Asn1Contained<Asn1Any> EncodeSubjectInfoAccessSyntax(Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[] value) =>
-        Asn1Codecs.EncodeContained(value, __EnrollmentMessageSyntax2009OpenTypeCodecs.SubjectInfoAccessSyntaxExtension);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[]> SubjectInfoAccessSyntax { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdPeSubjectInfoAccess, __EnrollmentMessageSyntax2009OpenTypeCodecs.SubjectInfoAccessSyntaxExtension);
 }
-
-public sealed record POPAlgsParametersBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder, Func<T, Asn1Any> Encoder);
-public sealed record POPAlgsParametersDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder);
-
-public static class POPAlgsParametersBindings
-{
-    public static POPAlgsParametersBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder, Func<T, Asn1Any> encoder) =>
-        new(oid, decoder, encoder);
-
-    public static POPAlgsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder) =>
-        new(oid, decoder);
-
-    public static POPAlgsParametersBinding<Asn1Null> MacaHMACSHA1 { get; } =
-        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.HMACSHA1, DecodeMacaHMACSHA1, Asn1Codecs.Null.Encode);
-
-    private static Asn1Null DecodeMacaHMACSHA1(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.Null.Decode(raw);
-    }
-}
-
-public sealed record WitnessAlgsParametersBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder, Func<T, Asn1Any> Encoder);
-public sealed record WitnessAlgsParametersDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder);
 
 public static class WitnessAlgsParametersBindings
 {
-    public static WitnessAlgsParametersBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder, Func<T, Asn1Any> encoder) =>
-        new(oid, decoder, encoder);
-
-    public static WitnessAlgsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder) =>
-        new(oid, decoder);
-
-    public static WitnessAlgsParametersBinding<Asn1Null> MdaSha1 { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdSha1, DecodeMdaSha1, Asn1Codecs.Null.Encode);
-
-    private static Asn1Null DecodeMdaSha1(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.Null.Decode(raw);
-    }
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> MdaSha1 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdSha1, Asn1Codecs.Null);
 }
 
-public sealed record SupportedAttributesValueBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute, T> Decoder, Func<T, Asn1Any> Encoder);
-public sealed record SupportedAttributesValueDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute, T> Decoder);
-
-public static class SupportedAttributesValueBindings
+public static class POPAlgsParametersBindings
 {
-    public static SupportedAttributesValueBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute, T> decoder, Func<T, Asn1Any> encoder) =>
-        new(oid, decoder, encoder);
-
-    public static SupportedAttributesValueDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute, T> decoder) =>
-        new(oid, decoder);
-
-    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> Name { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtName, DecodeName, __EnrollmentMessageSyntax2009OpenTypeCodecs.NameSingleAttribute.Encode);
-
-    private static Asn1Kit.Modern.PKIX1Explicit2009.X520name DecodeName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __EnrollmentMessageSyntax2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value);
-    }
-
-    public static SupportedAttributesValueDecoderBinding<string> NameStringValue { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtName, DecodeNameStringValue);
-
-    private static string DecodeNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
-        DecodeName(source).Value;
-
-    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> Surname { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtSurname, DecodeSurname, __EnrollmentMessageSyntax2009OpenTypeCodecs.NameSingleAttribute.Encode);
-
-    private static Asn1Kit.Modern.PKIX1Explicit2009.X520name DecodeSurname(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __EnrollmentMessageSyntax2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value);
-    }
-
-    public static SupportedAttributesValueDecoderBinding<string> SurnameStringValue { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtSurname, DecodeSurnameStringValue);
-
-    private static string DecodeSurnameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
-        DecodeSurname(source).Value;
-
-    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> GivenName { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGivenName, DecodeGivenName, __EnrollmentMessageSyntax2009OpenTypeCodecs.NameSingleAttribute.Encode);
-
-    private static Asn1Kit.Modern.PKIX1Explicit2009.X520name DecodeGivenName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __EnrollmentMessageSyntax2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value);
-    }
-
-    public static SupportedAttributesValueDecoderBinding<string> GivenNameStringValue { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGivenName, DecodeGivenNameStringValue);
-
-    private static string DecodeGivenNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
-        DecodeGivenName(source).Value;
-
-    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> Initials { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtInitials, DecodeInitials, __EnrollmentMessageSyntax2009OpenTypeCodecs.NameSingleAttribute.Encode);
-
-    private static Asn1Kit.Modern.PKIX1Explicit2009.X520name DecodeInitials(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __EnrollmentMessageSyntax2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value);
-    }
-
-    public static SupportedAttributesValueDecoderBinding<string> InitialsStringValue { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtInitials, DecodeInitialsStringValue);
-
-    private static string DecodeInitialsStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
-        DecodeInitials(source).Value;
-
-    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> GenerationQualifier { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGenerationQualifier, DecodeGenerationQualifier, __EnrollmentMessageSyntax2009OpenTypeCodecs.NameSingleAttribute.Encode);
-
-    private static Asn1Kit.Modern.PKIX1Explicit2009.X520name DecodeGenerationQualifier(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __EnrollmentMessageSyntax2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value);
-    }
-
-    public static SupportedAttributesValueDecoderBinding<string> GenerationQualifierStringValue { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGenerationQualifier, DecodeGenerationQualifierStringValue);
-
-    private static string DecodeGenerationQualifierStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
-        DecodeGenerationQualifier(source).Value;
-
-    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520CommonName { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtCommonName, DecodeX520CommonName, __EnrollmentMessageSyntax2009OpenTypeCodecs.X520CommonNameSingleAttribute.Encode);
-
-    private static Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName DecodeX520CommonName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __EnrollmentMessageSyntax2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value);
-    }
-
-    public static SupportedAttributesValueDecoderBinding<string> X520CommonNameStringValue { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtCommonName, DecodeX520CommonNameStringValue);
-
-    private static string DecodeX520CommonNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
-        DecodeX520CommonName(source).Value;
-
-    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName> X520LocalityName { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtLocalityName, DecodeX520LocalityName, __EnrollmentMessageSyntax2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Encode);
-
-    private static Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName DecodeX520LocalityName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __EnrollmentMessageSyntax2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value);
-    }
-
-    public static SupportedAttributesValueDecoderBinding<string> X520LocalityNameStringValue { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtLocalityName, DecodeX520LocalityNameStringValue);
-
-    private static string DecodeX520LocalityNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
-        DecodeX520LocalityName(source).Value;
-
-    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName> X520StateOrProvinceName { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtStateOrProvinceName, DecodeX520StateOrProvinceName, __EnrollmentMessageSyntax2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Encode);
-
-    private static Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName DecodeX520StateOrProvinceName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __EnrollmentMessageSyntax2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value);
-    }
-
-    public static SupportedAttributesValueDecoderBinding<string> X520StateOrProvinceNameStringValue { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtStateOrProvinceName, DecodeX520StateOrProvinceNameStringValue);
-
-    private static string DecodeX520StateOrProvinceNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
-        DecodeX520StateOrProvinceName(source).Value;
-
-    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520OrganizationName { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationName, DecodeX520OrganizationName, __EnrollmentMessageSyntax2009OpenTypeCodecs.X520CommonNameSingleAttribute.Encode);
-
-    private static Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName DecodeX520OrganizationName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __EnrollmentMessageSyntax2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value);
-    }
-
-    public static SupportedAttributesValueDecoderBinding<string> X520OrganizationNameStringValue { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationName, DecodeX520OrganizationNameStringValue);
-
-    private static string DecodeX520OrganizationNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
-        DecodeX520OrganizationName(source).Value;
-
-    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520OrganizationalUnitName { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationalUnitName, DecodeX520OrganizationalUnitName, __EnrollmentMessageSyntax2009OpenTypeCodecs.X520CommonNameSingleAttribute.Encode);
-
-    private static Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName DecodeX520OrganizationalUnitName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __EnrollmentMessageSyntax2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value);
-    }
-
-    public static SupportedAttributesValueDecoderBinding<string> X520OrganizationalUnitNameStringValue { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationalUnitName, DecodeX520OrganizationalUnitNameStringValue);
-
-    private static string DecodeX520OrganizationalUnitNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
-        DecodeX520OrganizationalUnitName(source).Value;
-
-    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520Title { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtTitle, DecodeX520Title, __EnrollmentMessageSyntax2009OpenTypeCodecs.X520CommonNameSingleAttribute.Encode);
-
-    private static Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName DecodeX520Title(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __EnrollmentMessageSyntax2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value);
-    }
-
-    public static SupportedAttributesValueDecoderBinding<string> X520TitleStringValue { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtTitle, DecodeX520TitleStringValue);
-
-    private static string DecodeX520TitleStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
-        DecodeX520Title(source).Value;
-
-    public static SupportedAttributesValueBinding<string> X520dnQualifier { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtDnQualifier, DecodeX520dnQualifier, Asn1Codecs.PrintableString.Encode);
-
-    private static string DecodeX520dnQualifier(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return Asn1Codecs.PrintableString.Decode(source.Value);
-    }
-
-    public static SupportedAttributesValueBinding<string> X520countryName { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtCountryName, DecodeX520countryName, Asn1Codecs.PrintableString.Encode);
-
-    private static string DecodeX520countryName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return Asn1Codecs.PrintableString.Decode(source.Value);
-    }
-
-    public static SupportedAttributesValueBinding<string> X520SerialNumber { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtSerialNumber, DecodeX520SerialNumber, Asn1Codecs.PrintableString.Encode);
-
-    private static string DecodeX520SerialNumber(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return Asn1Codecs.PrintableString.Decode(source.Value);
-    }
-
-    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName> X520Pseudonym { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtPseudonym, DecodeX520Pseudonym, __EnrollmentMessageSyntax2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Encode);
-
-    private static Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName DecodeX520Pseudonym(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __EnrollmentMessageSyntax2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value);
-    }
-
-    public static SupportedAttributesValueDecoderBinding<string> X520PseudonymStringValue { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtPseudonym, DecodeX520PseudonymStringValue);
-
-    private static string DecodeX520PseudonymStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
-        DecodeX520Pseudonym(source).Value;
-
-    public static SupportedAttributesValueBinding<string> DomainComponent { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdDomainComponent, DecodeDomainComponent, Asn1Codecs.Ia5String.Encode);
-
-    private static string DecodeDomainComponent(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return Asn1Codecs.Ia5String.Decode(source.Value);
-    }
-
-    public static SupportedAttributesValueBinding<string> EmailAddress { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdEmailAddress, DecodeEmailAddress, Asn1Codecs.Ia5String.Encode);
-
-    private static string DecodeEmailAddress(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return Asn1Codecs.Ia5String.Decode(source.Value);
-    }
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> MacaHMACSHA1 { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.HMACSHA1, Asn1Codecs.Null);
 }
-
-public sealed record HashAlgorithmsParametersBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder, Func<T, Asn1Any> Encoder);
-public sealed record HashAlgorithmsParametersDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder);
 
 public static class HashAlgorithmsParametersBindings
 {
-    public static HashAlgorithmsParametersBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder, Func<T, Asn1Any> encoder) =>
-        new(oid, decoder, encoder);
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> MdaSha1 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdSha1, Asn1Codecs.Null);
 
-    public static HashAlgorithmsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder) =>
-        new(oid, decoder);
-
-    public static HashAlgorithmsParametersBinding<Asn1Null> MdaSha1 { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdSha1, DecodeMdaSha1, Asn1Codecs.Null.Encode);
-
-    private static Asn1Null DecodeMdaSha1(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.Null.Decode(raw);
-    }
-
-    public static HashAlgorithmsParametersBinding<Asn1Null> MdaSha256 { get; } =
-        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdSha256, DecodeMdaSha256, Asn1Codecs.Null.Encode);
-
-    private static Asn1Null DecodeMdaSha256(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.Null.Decode(raw);
-    }
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> MdaSha256 { get; } =
+        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdSha256, Asn1Codecs.Null);
 }
-
-public sealed record KeyDevAlgsParametersBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder, Func<T, Asn1Any> Encoder);
-public sealed record KeyDevAlgsParametersDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder);
 
 public static class KeyDevAlgsParametersBindings
 {
-    public static KeyDevAlgsParametersBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder, Func<T, Asn1Any> encoder) =>
-        new(oid, decoder, encoder);
-
-    public static KeyDevAlgsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder) =>
-        new(oid, decoder);
-
-    public static KeyDevAlgsParametersBinding<Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params> KdaPBKDF2 { get; } =
-        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.IdPBKDF2, DecodeKdaPBKDF2, __EnrollmentMessageSyntax2009OpenTypeCodecs.KdaPBKDF2AlgorithmIdentifier.Encode);
-
-    private static Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params DecodeKdaPBKDF2(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return __EnrollmentMessageSyntax2009OpenTypeCodecs.KdaPBKDF2AlgorithmIdentifier.Decode(raw);
-    }
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params> KdaPBKDF2 { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.IdPBKDF2, __EnrollmentMessageSyntax2009OpenTypeCodecs.KdaPBKDF2AlgorithmIdentifier);
 }
 
-public sealed record AttributeListBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet, T> Decoder, Func<T, Asn1Any[]> Encoder);
-public sealed record AttributeListDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet, T> Decoder);
+public static class SupportedAttributesValueBindings
+{
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> Name { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtName, __EnrollmentMessageSyntax2009OpenTypeCodecs.NameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> NameStringValue { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtName, DecodeNameStringValue);
+
+    private static string DecodeNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return __EnrollmentMessageSyntax2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
+    }
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> Surname { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtSurname, __EnrollmentMessageSyntax2009OpenTypeCodecs.NameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> SurnameStringValue { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtSurname, DecodeSurnameStringValue);
+
+    private static string DecodeSurnameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return __EnrollmentMessageSyntax2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
+    }
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> GivenName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGivenName, __EnrollmentMessageSyntax2009OpenTypeCodecs.NameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> GivenNameStringValue { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGivenName, DecodeGivenNameStringValue);
+
+    private static string DecodeGivenNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return __EnrollmentMessageSyntax2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
+    }
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> Initials { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtInitials, __EnrollmentMessageSyntax2009OpenTypeCodecs.NameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> InitialsStringValue { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtInitials, DecodeInitialsStringValue);
+
+    private static string DecodeInitialsStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return __EnrollmentMessageSyntax2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
+    }
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> GenerationQualifier { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGenerationQualifier, __EnrollmentMessageSyntax2009OpenTypeCodecs.NameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> GenerationQualifierStringValue { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGenerationQualifier, DecodeGenerationQualifierStringValue);
+
+    private static string DecodeGenerationQualifierStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return __EnrollmentMessageSyntax2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
+    }
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520CommonName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtCommonName, __EnrollmentMessageSyntax2009OpenTypeCodecs.X520CommonNameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> X520CommonNameStringValue { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtCommonName, DecodeX520CommonNameStringValue);
+
+    private static string DecodeX520CommonNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return __EnrollmentMessageSyntax2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value).Value;
+    }
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName> X520LocalityName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtLocalityName, __EnrollmentMessageSyntax2009OpenTypeCodecs.X520LocalityNameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> X520LocalityNameStringValue { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtLocalityName, DecodeX520LocalityNameStringValue);
+
+    private static string DecodeX520LocalityNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return __EnrollmentMessageSyntax2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value).Value;
+    }
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName> X520StateOrProvinceName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtStateOrProvinceName, __EnrollmentMessageSyntax2009OpenTypeCodecs.X520LocalityNameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> X520StateOrProvinceNameStringValue { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtStateOrProvinceName, DecodeX520StateOrProvinceNameStringValue);
+
+    private static string DecodeX520StateOrProvinceNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return __EnrollmentMessageSyntax2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value).Value;
+    }
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520OrganizationName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationName, __EnrollmentMessageSyntax2009OpenTypeCodecs.X520CommonNameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> X520OrganizationNameStringValue { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationName, DecodeX520OrganizationNameStringValue);
+
+    private static string DecodeX520OrganizationNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return __EnrollmentMessageSyntax2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value).Value;
+    }
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520OrganizationalUnitName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationalUnitName, __EnrollmentMessageSyntax2009OpenTypeCodecs.X520CommonNameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> X520OrganizationalUnitNameStringValue { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationalUnitName, DecodeX520OrganizationalUnitNameStringValue);
+
+    private static string DecodeX520OrganizationalUnitNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return __EnrollmentMessageSyntax2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value).Value;
+    }
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520Title { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtTitle, __EnrollmentMessageSyntax2009OpenTypeCodecs.X520CommonNameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> X520TitleStringValue { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtTitle, DecodeX520TitleStringValue);
+
+    private static string DecodeX520TitleStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return __EnrollmentMessageSyntax2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value).Value;
+    }
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520dnQualifier { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtDnQualifier, Asn1Codecs.PrintableString);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520countryName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtCountryName, Asn1Codecs.PrintableString);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520SerialNumber { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtSerialNumber, Asn1Codecs.PrintableString);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName> X520Pseudonym { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtPseudonym, __EnrollmentMessageSyntax2009OpenTypeCodecs.X520LocalityNameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> X520PseudonymStringValue { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtPseudonym, DecodeX520PseudonymStringValue);
+
+    private static string DecodeX520PseudonymStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    {
+        return __EnrollmentMessageSyntax2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value).Value;
+    }
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> DomainComponent { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdDomainComponent, Asn1Codecs.Ia5String);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> EmailAddress { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdEmailAddress, Asn1Codecs.Ia5String);
+}
 
 public static class AttributeListBindings
 {
-    public static AttributeListBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet, T> decoder, Func<T, Asn1Any[]> encoder) =>
-        new(oid, decoder, encoder);
-
-    public static AttributeListDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet, T> decoder) =>
-        new(oid, decoder);
-
-    public static AttributeListBinding<Asn1Kit.Modern.PKIXCommonTypes2009.Extension[][]> ExtensionReq { get; } =
-        new(EnrollmentMessageSyntax2009Oids.IdExtensionReq, DecodeExtensionReq, EncodeExtensionReq);
-
-    private static Asn1Kit.Modern.PKIXCommonTypes2009.Extension[][] DecodeExtensionReq(Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet source)
-    {
-        return Asn1Codecs.DecodeEach(source.Values, __EnrollmentMessageSyntax2009OpenTypeCodecs.ExtensionReqAttributeSet);
-    }
-
-    private static Asn1Any[] EncodeExtensionReq(Asn1Kit.Modern.PKIXCommonTypes2009.Extension[][] value) =>
-        Asn1Codecs.EncodeEach(value, __EnrollmentMessageSyntax2009OpenTypeCodecs.ExtensionReqAttributeSet);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIXCommonTypes2009.Extension[]> ExtensionReq { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdExtensionReq, __EnrollmentMessageSyntax2009OpenTypeCodecs.ExtensionReqAttributeSet);
 }
-
-public sealed record PublicKeyAlgorithmsParametersBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder, Func<T, Asn1Any> Encoder);
-public sealed record PublicKeyAlgorithmsParametersDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder);
 
 public static class PublicKeyAlgorithmsParametersBindings
 {
-    public static PublicKeyAlgorithmsParametersBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder, Func<T, Asn1Any> encoder) =>
-        new(oid, decoder, encoder);
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> PkRsa { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.RsaEncryption, Asn1Codecs.Null);
 
-    public static PublicKeyAlgorithmsParametersDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder) =>
-        new(oid, decoder);
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.PKIXAlgs2009.DSAParams> PkDsa { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdDsa, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkDsa);
 
-    public static PublicKeyAlgorithmsParametersBinding<Asn1Null> PkRsa { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.RsaEncryption, DecodePkRsa, Asn1Codecs.Null.Encode);
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.PKIXAlgs2009.DomainParameters> PkDh { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.DhPublicNumber, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkDh);
 
-    private static Asn1Null DecodePkRsa(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.Null.Decode(raw);
-    }
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<ReadOnlyMemory<byte>> PkKea { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdKeyExchangeAlgorithm, Asn1Codecs.OctetString);
 
-    public static PublicKeyAlgorithmsParametersBinding<Asn1Kit.Modern.PKIXAlgs2009.DSAParams> PkDsa { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdDsa, DecodePkDsa, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkDsa.Encode);
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Oid> PkEc { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdEcPublicKey, Asn1Codecs.ObjectIdentifier);
 
-    private static Asn1Kit.Modern.PKIXAlgs2009.DSAParams DecodePkDsa(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return __EnrollmentMessageSyntax2009OpenTypeCodecs.PkDsa.Decode(raw);
-    }
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Oid> PkEcDH { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdEcDH, Asn1Codecs.ObjectIdentifier);
 
-    public static PublicKeyAlgorithmsParametersBinding<Asn1Kit.Modern.PKIXAlgs2009.DomainParameters> PkDh { get; } =
-        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.DhPublicNumber, DecodePkDh, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkDh.Encode);
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Oid> PkEcMQV { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdEcMQV, Asn1Codecs.ObjectIdentifier);
 
-    private static Asn1Kit.Modern.PKIXAlgs2009.DomainParameters DecodePkDh(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return __EnrollmentMessageSyntax2009OpenTypeCodecs.PkDh.Decode(raw);
-    }
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams> SaRsaSSAPSS { get; } =
+        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSASSAPSS, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkRsaSSAPSS);
 
-    public static PublicKeyAlgorithmsParametersBinding<ReadOnlyMemory<byte>> PkKea { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdKeyExchangeAlgorithm, DecodePkKea, Asn1Codecs.OctetString.Encode);
-
-    private static ReadOnlyMemory<byte> DecodePkKea(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.OctetString.Decode(raw);
-    }
-
-    public static PublicKeyAlgorithmsParametersBinding<Asn1Oid> PkEc { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdEcPublicKey, DecodePkEc, Asn1Codecs.ObjectIdentifier.Encode);
-
-    private static Asn1Oid DecodePkEc(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.ObjectIdentifier.Decode(raw);
-    }
-
-    public static PublicKeyAlgorithmsParametersBinding<Asn1Oid> PkEcDH { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdEcDH, DecodePkEcDH, Asn1Codecs.ObjectIdentifier.Encode);
-
-    private static Asn1Oid DecodePkEcDH(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.ObjectIdentifier.Decode(raw);
-    }
-
-    public static PublicKeyAlgorithmsParametersBinding<Asn1Oid> PkEcMQV { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdEcMQV, DecodePkEcMQV, Asn1Codecs.ObjectIdentifier.Encode);
-
-    private static Asn1Oid DecodePkEcMQV(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.ObjectIdentifier.Decode(raw);
-    }
-
-    public static PublicKeyAlgorithmsParametersBinding<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams> SaRsaSSAPSS { get; } =
-        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSASSAPSS, DecodeSaRsaSSAPSS, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkRsaSSAPSS.Encode);
-
-    private static Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams DecodeSaRsaSSAPSS(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return __EnrollmentMessageSyntax2009OpenTypeCodecs.PkRsaSSAPSS.Decode(raw);
-    }
-
-    public static PublicKeyAlgorithmsParametersBinding<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams> PkRsaESOAEP { get; } =
-        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSAESOAEP, DecodePkRsaESOAEP, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkRsaESOAEP.Encode);
-
-    private static Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams DecodePkRsaESOAEP(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return __EnrollmentMessageSyntax2009OpenTypeCodecs.PkRsaESOAEP.Decode(raw);
-    }
-}
-
-public static class EnrollmentMessageSyntax2009OpenTypeExtensions
-{
-    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, SignatureAlgorithmsParametersBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (source.Parameters is null) return false;
-        if (!(source.Algorithm.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, SignatureAlgorithmsParametersDecoderBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (source.Parameters is null) return false;
-        if (!(source.Algorithm.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeParametersSaRsaSSAPSS(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, out Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams value) =>
-        TryDecodeParameters(source, SignatureAlgorithmsParametersBindings.SaRsaSSAPSS, out value);
-
-    public static void SetParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, SignatureAlgorithmsParametersBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        var result = source;
-        result.Algorithm = binding.Oid;
-        result.Parameters = binding.Encoder(value);
-    }
-
-    public static void SetParametersSaRsaWithMD2(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
-        SetParameters(source, SignatureAlgorithmsParametersBindings.SaRsaWithMD2, Asn1Null.Value);
-
-    public static void SetParametersSaRsaWithMD5(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
-        SetParameters(source, SignatureAlgorithmsParametersBindings.SaRsaWithMD5, Asn1Null.Value);
-
-    public static void SetParametersSaRsaWithSHA1(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
-        SetParameters(source, SignatureAlgorithmsParametersBindings.SaRsaWithSHA1, Asn1Null.Value);
-
-    public static void SetParametersSaDsaWithSHA1(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
-        SetParameters(source, SignatureAlgorithmsParametersBindings.SaDsaWithSHA1, Asn1Null.Value);
-
-    public static void SetParametersSaEcdsaWithSHA1(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
-        SetParameters(source, SignatureAlgorithmsParametersBindings.SaEcdsaWithSHA1, Asn1Null.Value);
-
-    public static void SetParametersSaDsaWithSHA224(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
-        SetParameters(source, SignatureAlgorithmsParametersBindings.SaDsaWithSHA224, Asn1Null.Value);
-
-    public static void SetParametersSaDsaWithSHA256(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
-        SetParameters(source, SignatureAlgorithmsParametersBindings.SaDsaWithSHA256, Asn1Null.Value);
-
-    public static void SetParametersSaEcdsaWithSHA224(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
-        SetParameters(source, SignatureAlgorithmsParametersBindings.SaEcdsaWithSHA224, Asn1Null.Value);
-
-    public static void SetParametersSaEcdsaWithSHA256(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
-        SetParameters(source, SignatureAlgorithmsParametersBindings.SaEcdsaWithSHA256, Asn1Null.Value);
-
-    public static void SetParametersSaEcdsaWithSHA384(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
-        SetParameters(source, SignatureAlgorithmsParametersBindings.SaEcdsaWithSHA384, Asn1Null.Value);
-
-    public static void SetParametersSaEcdsaWithSHA512(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
-        SetParameters(source, SignatureAlgorithmsParametersBindings.SaEcdsaWithSHA512, Asn1Null.Value);
-
-    public static void SetParametersSaRsaSSAPSS(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams value) =>
-        SetParameters(source, SignatureAlgorithmsParametersBindings.SaRsaSSAPSS, value);
-    public static bool TryDecodeExtnValue<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, CertExtensionsExtnValueBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (!(source.ExtnID.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeExtnValue<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, CertExtensionsExtnValueDecoderBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (!(source.ExtnID.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeExtnValueAuthorityKeyIdentifier(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out Asn1Kit.Modern.PKIX1Implicit2009.AuthorityKeyIdentifier value) =>
-        TryDecodeExtnValue(source, CertExtensionsExtnValueBindings.AuthorityKeyIdentifier, out value);
-
-    public static bool TryDecodeExtnValueSubjectKeyIdentifier(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out ReadOnlyMemory<byte> value) =>
-        TryDecodeExtnValue(source, CertExtensionsExtnValueBindings.SubjectKeyIdentifier, out value);
-
-    public static bool TryDecodeExtnValueKeyUsage(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out Asn1Kit.Modern.PKIX1Implicit2009.KeyUsage value) =>
-        TryDecodeExtnValue(source, CertExtensionsExtnValueBindings.KeyUsage, out value);
-
-    public static bool TryDecodeExtnValuePrivateKeyUsagePeriod(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out Asn1Kit.Modern.PKIX1Implicit2009.PrivateKeyUsagePeriod value) =>
-        TryDecodeExtnValue(source, CertExtensionsExtnValueBindings.PrivateKeyUsagePeriod, out value);
-
-    public static bool TryDecodeExtnValueCertificatePolicies(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out Asn1Kit.Modern.PKIX1Implicit2009.PolicyInformation[] value) =>
-        TryDecodeExtnValue(source, CertExtensionsExtnValueBindings.CertificatePolicies, out value);
-
-    public static bool TryDecodeExtnValuePolicyMappings(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out Asn1Kit.Modern.PKIX1Implicit2009.PolicyMappings_Item[] value) =>
-        TryDecodeExtnValue(source, CertExtensionsExtnValueBindings.PolicyMappings, out value);
-
-    public static bool TryDecodeExtnValueSubjectAltName(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[] value) =>
-        TryDecodeExtnValue(source, CertExtensionsExtnValueBindings.SubjectAltName, out value);
-
-    public static bool TryDecodeExtnValueIssuerAltName(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[] value) =>
-        TryDecodeExtnValue(source, CertExtensionsExtnValueBindings.IssuerAltName, out value);
-
-    public static bool TryDecodeExtnValueSubjectDirectoryAttributes(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet[] value) =>
-        TryDecodeExtnValue(source, CertExtensionsExtnValueBindings.SubjectDirectoryAttributes, out value);
-
-    public static bool TryDecodeExtnValueBasicConstraints(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out Asn1Kit.Modern.PKIX1Implicit2009.BasicConstraints value) =>
-        TryDecodeExtnValue(source, CertExtensionsExtnValueBindings.BasicConstraints, out value);
-
-    public static bool TryDecodeExtnValueNameConstraints(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out Asn1Kit.Modern.PKIX1Implicit2009.NameConstraints value) =>
-        TryDecodeExtnValue(source, CertExtensionsExtnValueBindings.NameConstraints, out value);
-
-    public static bool TryDecodeExtnValuePolicyConstraints(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out Asn1Kit.Modern.PKIX1Implicit2009.PolicyConstraints value) =>
-        TryDecodeExtnValue(source, CertExtensionsExtnValueBindings.PolicyConstraints, out value);
-
-    public static bool TryDecodeExtnValueExtKeyUsage(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out Asn1Oid[] value) =>
-        TryDecodeExtnValue(source, CertExtensionsExtnValueBindings.ExtKeyUsage, out value);
-
-    public static bool TryDecodeExtnValueCRLDistributionPoints(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[] value) =>
-        TryDecodeExtnValue(source, CertExtensionsExtnValueBindings.CRLDistributionPoints, out value);
-
-    public static bool TryDecodeExtnValueInhibitAnyPolicy(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out Asn1Integer value) =>
-        TryDecodeExtnValue(source, CertExtensionsExtnValueBindings.InhibitAnyPolicy, out value);
-
-    public static bool TryDecodeExtnValueFreshestCRL(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[] value) =>
-        TryDecodeExtnValue(source, CertExtensionsExtnValueBindings.FreshestCRL, out value);
-
-    public static bool TryDecodeExtnValueAuthorityInfoAccess(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[] value) =>
-        TryDecodeExtnValue(source, CertExtensionsExtnValueBindings.AuthorityInfoAccess, out value);
-
-    public static bool TryDecodeExtnValueSubjectInfoAccessSyntax(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[] value) =>
-        TryDecodeExtnValue(source, CertExtensionsExtnValueBindings.SubjectInfoAccessSyntax, out value);
-
-    public static void SetExtnValue<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, CertExtensionsExtnValueBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        var result = source;
-        result.ExtnID = binding.Oid;
-        result.ExtnValue = binding.Encoder(value);
-    }
-
-    public static void SetExtnValueAuthorityKeyIdentifier(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, Asn1Kit.Modern.PKIX1Implicit2009.AuthorityKeyIdentifier value) =>
-        SetExtnValue(source, CertExtensionsExtnValueBindings.AuthorityKeyIdentifier, value);
-
-    public static void SetExtnValueSubjectKeyIdentifier(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, ReadOnlyMemory<byte> value) =>
-        SetExtnValue(source, CertExtensionsExtnValueBindings.SubjectKeyIdentifier, value);
-
-    public static void SetExtnValueKeyUsage(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, Asn1Kit.Modern.PKIX1Implicit2009.KeyUsage value) =>
-        SetExtnValue(source, CertExtensionsExtnValueBindings.KeyUsage, value);
-
-    public static void SetExtnValuePrivateKeyUsagePeriod(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, Asn1Kit.Modern.PKIX1Implicit2009.PrivateKeyUsagePeriod value) =>
-        SetExtnValue(source, CertExtensionsExtnValueBindings.PrivateKeyUsagePeriod, value);
-
-    public static void SetExtnValueCertificatePolicies(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, Asn1Kit.Modern.PKIX1Implicit2009.PolicyInformation[] value) =>
-        SetExtnValue(source, CertExtensionsExtnValueBindings.CertificatePolicies, value);
-
-    public static void SetExtnValuePolicyMappings(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, Asn1Kit.Modern.PKIX1Implicit2009.PolicyMappings_Item[] value) =>
-        SetExtnValue(source, CertExtensionsExtnValueBindings.PolicyMappings, value);
-
-    public static void SetExtnValueSubjectAltName(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[] value) =>
-        SetExtnValue(source, CertExtensionsExtnValueBindings.SubjectAltName, value);
-
-    public static void SetExtnValueIssuerAltName(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[] value) =>
-        SetExtnValue(source, CertExtensionsExtnValueBindings.IssuerAltName, value);
-
-    public static void SetExtnValueSubjectDirectoryAttributes(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet[] value) =>
-        SetExtnValue(source, CertExtensionsExtnValueBindings.SubjectDirectoryAttributes, value);
-
-    public static void SetExtnValueBasicConstraints(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, Asn1Kit.Modern.PKIX1Implicit2009.BasicConstraints value) =>
-        SetExtnValue(source, CertExtensionsExtnValueBindings.BasicConstraints, value);
-
-    public static void SetExtnValueNameConstraints(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, Asn1Kit.Modern.PKIX1Implicit2009.NameConstraints value) =>
-        SetExtnValue(source, CertExtensionsExtnValueBindings.NameConstraints, value);
-
-    public static void SetExtnValuePolicyConstraints(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, Asn1Kit.Modern.PKIX1Implicit2009.PolicyConstraints value) =>
-        SetExtnValue(source, CertExtensionsExtnValueBindings.PolicyConstraints, value);
-
-    public static void SetExtnValueExtKeyUsage(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, Asn1Oid[] value) =>
-        SetExtnValue(source, CertExtensionsExtnValueBindings.ExtKeyUsage, value);
-
-    public static void SetExtnValueCRLDistributionPoints(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[] value) =>
-        SetExtnValue(source, CertExtensionsExtnValueBindings.CRLDistributionPoints, value);
-
-    public static void SetExtnValueInhibitAnyPolicy(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, Asn1Integer value) =>
-        SetExtnValue(source, CertExtensionsExtnValueBindings.InhibitAnyPolicy, value);
-
-    public static void SetExtnValueFreshestCRL(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[] value) =>
-        SetExtnValue(source, CertExtensionsExtnValueBindings.FreshestCRL, value);
-
-    public static void SetExtnValueAuthorityInfoAccess(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[] value) =>
-        SetExtnValue(source, CertExtensionsExtnValueBindings.AuthorityInfoAccess, value);
-
-    public static void SetExtnValueSubjectInfoAccessSyntax(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[] value) =>
-        SetExtnValue(source, CertExtensionsExtnValueBindings.SubjectInfoAccessSyntax, value);
-    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, WitnessAlgsParametersBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (source.Parameters is null) return false;
-        if (!(source.Algorithm.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, WitnessAlgsParametersDecoderBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (source.Parameters is null) return false;
-        if (!(source.Algorithm.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static void SetParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, WitnessAlgsParametersBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        var result = source;
-        result.Algorithm = binding.Oid;
-        result.Parameters = binding.Encoder(value);
-    }
-
-    public static void SetParametersMdaSha1(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
-        SetParameters(source, WitnessAlgsParametersBindings.MdaSha1, Asn1Null.Value);
-    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, POPAlgsParametersBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (source.Parameters is null) return false;
-        if (!(source.Algorithm.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, POPAlgsParametersDecoderBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (source.Parameters is null) return false;
-        if (!(source.Algorithm.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static void SetParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, POPAlgsParametersBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        var result = source;
-        result.Algorithm = binding.Oid;
-        result.Parameters = binding.Encoder(value);
-    }
-
-    public static void SetParametersMacaHMACSHA1(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
-        SetParameters(source, POPAlgsParametersBindings.MacaHMACSHA1, Asn1Null.Value);
-    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, HashAlgorithmsParametersBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (source.Parameters is null) return false;
-        if (!(source.Algorithm.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, HashAlgorithmsParametersDecoderBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (source.Parameters is null) return false;
-        if (!(source.Algorithm.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static void SetParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, HashAlgorithmsParametersBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        var result = source;
-        result.Algorithm = binding.Oid;
-        result.Parameters = binding.Encoder(value);
-    }
-
-    public static void SetParametersMdaSha256(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
-        SetParameters(source, HashAlgorithmsParametersBindings.MdaSha256, Asn1Null.Value);
-    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, KeyDevAlgsParametersBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (source.Parameters is null) return false;
-        if (!(source.Algorithm.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, KeyDevAlgsParametersDecoderBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (source.Parameters is null) return false;
-        if (!(source.Algorithm.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeParametersKdaPBKDF2(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, out Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params value) =>
-        TryDecodeParameters(source, KeyDevAlgsParametersBindings.KdaPBKDF2, out value);
-
-    public static void SetParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, KeyDevAlgsParametersBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        var result = source;
-        result.Algorithm = binding.Oid;
-        result.Parameters = binding.Encoder(value);
-    }
-
-    public static void SetParametersKdaPBKDF2(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params value) =>
-        SetParameters(source, KeyDevAlgsParametersBindings.KdaPBKDF2, value);
-    public static bool TryDecodeValue<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, SupportedAttributesValueBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (!(source.Type.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeValue<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, SupportedAttributesValueDecoderBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (!(source.Type.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeValueName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.Name, out value);
-
-    public static bool TryDecodeValueSurname(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.Surname, out value);
-
-    public static bool TryDecodeValueGivenName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.GivenName, out value);
-
-    public static bool TryDecodeValueInitials(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.Initials, out value);
-
-    public static bool TryDecodeValueGenerationQualifier(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.GenerationQualifier, out value);
-
-    public static bool TryDecodeValueX520CommonName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.X520CommonName, out value);
-
-    public static bool TryDecodeValueX520LocalityName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.X520LocalityName, out value);
-
-    public static bool TryDecodeValueX520StateOrProvinceName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.X520StateOrProvinceName, out value);
-
-    public static bool TryDecodeValueX520OrganizationName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.X520OrganizationName, out value);
-
-    public static bool TryDecodeValueX520OrganizationalUnitName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.X520OrganizationalUnitName, out value);
-
-    public static bool TryDecodeValueX520Title(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.X520Title, out value);
-
-    public static bool TryDecodeValueX520dnQualifier(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out string value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.X520dnQualifier, out value);
-
-    public static bool TryDecodeValueX520countryName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out string value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.X520countryName, out value);
-
-    public static bool TryDecodeValueX520SerialNumber(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out string value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.X520SerialNumber, out value);
-
-    public static bool TryDecodeValueX520Pseudonym(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.X520Pseudonym, out value);
-
-    public static bool TryDecodeValueDomainComponent(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out string value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.DomainComponent, out value);
-
-    public static bool TryDecodeValueEmailAddress(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out string value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.EmailAddress, out value);
-
-    public static void SetValue<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, SupportedAttributesValueBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        var result = source;
-        result.Type = binding.Oid;
-        result.Value = binding.Encoder(value);
-    }
-
-    public static void SetValueName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        SetValue(source, SupportedAttributesValueBindings.Name, value);
-
-    public static void SetValueSurname(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        SetValue(source, SupportedAttributesValueBindings.Surname, value);
-
-    public static void SetValueGivenName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        SetValue(source, SupportedAttributesValueBindings.GivenName, value);
-
-    public static void SetValueInitials(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        SetValue(source, SupportedAttributesValueBindings.Initials, value);
-
-    public static void SetValueGenerationQualifier(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        SetValue(source, SupportedAttributesValueBindings.GenerationQualifier, value);
-
-    public static void SetValueX520CommonName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        SetValue(source, SupportedAttributesValueBindings.X520CommonName, value);
-
-    public static void SetValueX520LocalityName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        SetValue(source, SupportedAttributesValueBindings.X520LocalityName, value);
-
-    public static void SetValueX520StateOrProvinceName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        SetValue(source, SupportedAttributesValueBindings.X520StateOrProvinceName, value);
-
-    public static void SetValueX520OrganizationName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        SetValue(source, SupportedAttributesValueBindings.X520OrganizationName, value);
-
-    public static void SetValueX520OrganizationalUnitName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        SetValue(source, SupportedAttributesValueBindings.X520OrganizationalUnitName, value);
-
-    public static void SetValueX520Title(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        SetValue(source, SupportedAttributesValueBindings.X520Title, value);
-
-    public static void SetValueX520dnQualifier(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, string value) =>
-        SetValue(source, SupportedAttributesValueBindings.X520dnQualifier, value);
-
-    public static void SetValueX520countryName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, string value) =>
-        SetValue(source, SupportedAttributesValueBindings.X520countryName, value);
-
-    public static void SetValueX520SerialNumber(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, string value) =>
-        SetValue(source, SupportedAttributesValueBindings.X520SerialNumber, value);
-
-    public static void SetValueX520Pseudonym(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        SetValue(source, SupportedAttributesValueBindings.X520Pseudonym, value);
-
-    public static void SetValueDomainComponent(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, string value) =>
-        SetValue(source, SupportedAttributesValueBindings.DomainComponent, value);
-
-    public static void SetValueEmailAddress(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, string value) =>
-        SetValue(source, SupportedAttributesValueBindings.EmailAddress, value);
-    public static bool TryDecodeValues<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet source, AttributeListBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (!(source.Type.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeValues<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet source, AttributeListDecoderBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (!(source.Type.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeValuesExtensionReq(this Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet source, out Asn1Kit.Modern.PKIXCommonTypes2009.Extension[][] value) =>
-        TryDecodeValues(source, AttributeListBindings.ExtensionReq, out value);
-
-    public static void SetValues<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet source, AttributeListBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        var result = source;
-        result.Type = binding.Oid;
-        result.Values = binding.Encoder(value);
-    }
-
-    public static void SetValuesExtensionReq(this Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet source, Asn1Kit.Modern.PKIXCommonTypes2009.Extension[][] value) =>
-        SetValues(source, AttributeListBindings.ExtensionReq, value);
-    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, PublicKeyAlgorithmsParametersBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (source.Parameters is null) return false;
-        if (!(source.Algorithm.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, PublicKeyAlgorithmsParametersDecoderBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (source.Parameters is null) return false;
-        if (!(source.Algorithm.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeParametersPkDsa(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, out Asn1Kit.Modern.PKIXAlgs2009.DSAParams value) =>
-        TryDecodeParameters(source, PublicKeyAlgorithmsParametersBindings.PkDsa, out value);
-
-    public static bool TryDecodeParametersPkDh(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, out Asn1Kit.Modern.PKIXAlgs2009.DomainParameters value) =>
-        TryDecodeParameters(source, PublicKeyAlgorithmsParametersBindings.PkDh, out value);
-
-    public static bool TryDecodeParametersPkKea(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, out ReadOnlyMemory<byte> value) =>
-        TryDecodeParameters(source, PublicKeyAlgorithmsParametersBindings.PkKea, out value);
-
-    public static bool TryDecodeParametersPkEc(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, out Asn1Oid value) =>
-        TryDecodeParameters(source, PublicKeyAlgorithmsParametersBindings.PkEc, out value);
-
-    public static bool TryDecodeParametersPkEcDH(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, out Asn1Oid value) =>
-        TryDecodeParameters(source, PublicKeyAlgorithmsParametersBindings.PkEcDH, out value);
-
-    public static bool TryDecodeParametersPkEcMQV(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, out Asn1Oid value) =>
-        TryDecodeParameters(source, PublicKeyAlgorithmsParametersBindings.PkEcMQV, out value);
-
-    public static bool TryDecodeParametersPkRsaESOAEP(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, out Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams value) =>
-        TryDecodeParameters(source, PublicKeyAlgorithmsParametersBindings.PkRsaESOAEP, out value);
-
-    public static void SetParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, PublicKeyAlgorithmsParametersBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        var result = source;
-        result.Algorithm = binding.Oid;
-        result.Parameters = binding.Encoder(value);
-    }
-
-    public static void SetParametersPkRsa(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
-        SetParameters(source, PublicKeyAlgorithmsParametersBindings.PkRsa, Asn1Null.Value);
-
-    public static void SetParametersPkDsa(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, Asn1Kit.Modern.PKIXAlgs2009.DSAParams value) =>
-        SetParameters(source, PublicKeyAlgorithmsParametersBindings.PkDsa, value);
-
-    public static void SetParametersPkDh(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, Asn1Kit.Modern.PKIXAlgs2009.DomainParameters value) =>
-        SetParameters(source, PublicKeyAlgorithmsParametersBindings.PkDh, value);
-
-    public static void SetParametersPkKea(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, ReadOnlyMemory<byte> value) =>
-        SetParameters(source, PublicKeyAlgorithmsParametersBindings.PkKea, value);
-
-    public static void SetParametersPkEc(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, Asn1Oid value) =>
-        SetParameters(source, PublicKeyAlgorithmsParametersBindings.PkEc, value);
-
-    public static void SetParametersPkEcDH(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, Asn1Oid value) =>
-        SetParameters(source, PublicKeyAlgorithmsParametersBindings.PkEcDH, value);
-
-    public static void SetParametersPkEcMQV(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, Asn1Oid value) =>
-        SetParameters(source, PublicKeyAlgorithmsParametersBindings.PkEcMQV, value);
-
-    public static void SetParametersPkRsaESOAEP(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams value) =>
-        SetParameters(source, PublicKeyAlgorithmsParametersBindings.PkRsaESOAEP, value);
-    public static bool TryGet<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, CertExtensionsExtnValueBinding<T> binding, out T value)
-        => TryGet(source, binding, out value, out _);
-
-    public static bool TryGet<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, CertExtensionsExtnValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.Extension raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.PKIXCommonTypes2009.Extension? match = null;
-        foreach (var item in source)
-        {
-            if (item.ExtnID.Equals(binding.Oid))
-            {
-                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
-                match = item;
-            }
-        }
-        if (match is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-    public static bool TryGetAuthorityKeyIdentifier(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out Asn1Kit.Modern.PKIX1Implicit2009.AuthorityKeyIdentifier value) =>
-        TryGet(source, CertExtensionsExtnValueBindings.AuthorityKeyIdentifier, out value);
-
-    public static bool TryGetSubjectKeyIdentifier(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out ReadOnlyMemory<byte> value) =>
-        TryGet(source, CertExtensionsExtnValueBindings.SubjectKeyIdentifier, out value);
-
-    public static bool TryGetKeyUsage(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out Asn1Kit.Modern.PKIX1Implicit2009.KeyUsage value) =>
-        TryGet(source, CertExtensionsExtnValueBindings.KeyUsage, out value);
-
-    public static bool TryGetPrivateKeyUsagePeriod(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out Asn1Kit.Modern.PKIX1Implicit2009.PrivateKeyUsagePeriod value) =>
-        TryGet(source, CertExtensionsExtnValueBindings.PrivateKeyUsagePeriod, out value);
-
-    public static bool TryGetCertificatePolicies(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out Asn1Kit.Modern.PKIX1Implicit2009.PolicyInformation[] value) =>
-        TryGet(source, CertExtensionsExtnValueBindings.CertificatePolicies, out value);
-
-    public static bool TryGetPolicyMappings(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out Asn1Kit.Modern.PKIX1Implicit2009.PolicyMappings_Item[] value) =>
-        TryGet(source, CertExtensionsExtnValueBindings.PolicyMappings, out value);
-
-    public static bool TryGetSubjectAltName(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[] value) =>
-        TryGet(source, CertExtensionsExtnValueBindings.SubjectAltName, out value);
-
-    public static bool TryGetIssuerAltName(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[] value) =>
-        TryGet(source, CertExtensionsExtnValueBindings.IssuerAltName, out value);
-
-    public static bool TryGetSubjectDirectoryAttributes(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet[] value) =>
-        TryGet(source, CertExtensionsExtnValueBindings.SubjectDirectoryAttributes, out value);
-
-    public static bool TryGetBasicConstraints(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out Asn1Kit.Modern.PKIX1Implicit2009.BasicConstraints value) =>
-        TryGet(source, CertExtensionsExtnValueBindings.BasicConstraints, out value);
-
-    public static bool TryGetNameConstraints(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out Asn1Kit.Modern.PKIX1Implicit2009.NameConstraints value) =>
-        TryGet(source, CertExtensionsExtnValueBindings.NameConstraints, out value);
-
-    public static bool TryGetPolicyConstraints(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out Asn1Kit.Modern.PKIX1Implicit2009.PolicyConstraints value) =>
-        TryGet(source, CertExtensionsExtnValueBindings.PolicyConstraints, out value);
-
-    public static bool TryGetExtKeyUsage(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out Asn1Oid[] value) =>
-        TryGet(source, CertExtensionsExtnValueBindings.ExtKeyUsage, out value);
-
-    public static bool TryGetCRLDistributionPoints(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[] value) =>
-        TryGet(source, CertExtensionsExtnValueBindings.CRLDistributionPoints, out value);
-
-    public static bool TryGetInhibitAnyPolicy(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out Asn1Integer value) =>
-        TryGet(source, CertExtensionsExtnValueBindings.InhibitAnyPolicy, out value);
-
-    public static bool TryGetFreshestCRL(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[] value) =>
-        TryGet(source, CertExtensionsExtnValueBindings.FreshestCRL, out value);
-
-    public static bool TryGetAuthorityInfoAccess(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[] value) =>
-        TryGet(source, CertExtensionsExtnValueBindings.AuthorityInfoAccess, out value);
-
-    public static bool TryGetSubjectInfoAccessSyntax(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[] value) =>
-        TryGet(source, CertExtensionsExtnValueBindings.SubjectInfoAccessSyntax, out value);
-
-    public static bool TryGet<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, SupportedAttributesValueBinding<T> binding, out T value)
-        => TryGet(source, binding, out value, out _);
-
-    public static bool TryGet<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, SupportedAttributesValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute? match = null;
-        foreach (var item in source)
-        {
-            if (item.Type.Equals(binding.Oid))
-            {
-                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
-                match = item;
-            }
-        }
-        if (match is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-    public static bool TryGetName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGet(source, SupportedAttributesValueBindings.Name, out value);
-
-    public static bool TryGetSurname(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGet(source, SupportedAttributesValueBindings.Surname, out value);
-
-    public static bool TryGetGivenName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGet(source, SupportedAttributesValueBindings.GivenName, out value);
-
-    public static bool TryGetInitials(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGet(source, SupportedAttributesValueBindings.Initials, out value);
-
-    public static bool TryGetGenerationQualifier(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGet(source, SupportedAttributesValueBindings.GenerationQualifier, out value);
-
-    public static bool TryGetX520CommonName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryGet(source, SupportedAttributesValueBindings.X520CommonName, out value);
-
-    public static bool TryGetX520LocalityName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        TryGet(source, SupportedAttributesValueBindings.X520LocalityName, out value);
-
-    public static bool TryGetX520StateOrProvinceName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        TryGet(source, SupportedAttributesValueBindings.X520StateOrProvinceName, out value);
-
-    public static bool TryGetX520OrganizationName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryGet(source, SupportedAttributesValueBindings.X520OrganizationName, out value);
-
-    public static bool TryGetX520OrganizationalUnitName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryGet(source, SupportedAttributesValueBindings.X520OrganizationalUnitName, out value);
-
-    public static bool TryGetX520Title(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryGet(source, SupportedAttributesValueBindings.X520Title, out value);
-
-    public static bool TryGetX520dnQualifier(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out string value) =>
-        TryGet(source, SupportedAttributesValueBindings.X520dnQualifier, out value);
-
-    public static bool TryGetX520countryName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out string value) =>
-        TryGet(source, SupportedAttributesValueBindings.X520countryName, out value);
-
-    public static bool TryGetX520SerialNumber(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out string value) =>
-        TryGet(source, SupportedAttributesValueBindings.X520SerialNumber, out value);
-
-    public static bool TryGetX520Pseudonym(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        TryGet(source, SupportedAttributesValueBindings.X520Pseudonym, out value);
-
-    public static bool TryGetDomainComponent(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out string value) =>
-        TryGet(source, SupportedAttributesValueBindings.DomainComponent, out value);
-
-    public static bool TryGetEmailAddress(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out string value) =>
-        TryGet(source, SupportedAttributesValueBindings.EmailAddress, out value);
-
-    public static bool TryGet<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet[] source, AttributeListBinding<T> binding, out T value)
-        => TryGet(source, binding, out value, out _);
-
-    public static bool TryGet<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet[] source, AttributeListBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet? match = null;
-        foreach (var item in source)
-        {
-            if (item.Type.Equals(binding.Oid))
-            {
-                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
-                match = item;
-            }
-        }
-        if (match is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-    public static bool TryGetExtensionReq(this Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet[] source, out Asn1Kit.Modern.PKIXCommonTypes2009.Extension[][] value) =>
-        TryGet(source, AttributeListBindings.ExtensionReq, out value);
-
-}
-
-public static class CertificationRequestOpenTypeExtensions
-{
-    public static bool TryGetSignatureAlgorithm<T>(this CertificationRequest source, SignatureAlgorithmsParametersBinding<T> binding, out T value)
-        => TryGetSignatureAlgorithm(source, binding, out value, out _);
-
-    public static bool TryGetSignatureAlgorithm<T>(this CertificationRequest source, SignatureAlgorithmsParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
-        if (source.SignatureAlgorithm is { } node0)
-        {
-            if (node0.Algorithm.Equals(binding.Oid))
-            {
-                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetSignatureAlgorithm.");
-                match = node0;
-            }
-        }
-        if (match is null) return false;
-        if (match.Parameters is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-    public static bool TryGetSignatureAlgorithmSaRsaSSAPSS(this CertificationRequest source, out Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams value) =>
-        TryGetSignatureAlgorithm(source, SignatureAlgorithmsParametersBindings.SaRsaSSAPSS, out value);
-
-}
-
-public static class AddExtensionsOpenTypeExtensions
-{
-    public static bool TryGetExtensions<T>(this AddExtensions source, CertExtensionsExtnValueBinding<T> binding, out T value)
-        => TryGetExtensions(source, binding, out value, out _);
-
-    public static bool TryGetExtensions<T>(this AddExtensions source, CertExtensionsExtnValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.Extension raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.PKIXCommonTypes2009.Extension? match = null;
-        if (source.Extensions is { } node0)
-        {
-            foreach (var node1 in node0)
-            {
-                if (node1.ExtnID.Equals(binding.Oid))
-                {
-                    if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetExtensions.");
-                    match = node1;
-                }
-            }
-        }
-        if (match is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-    public static bool TryGetExtensionsAuthorityKeyIdentifier(this AddExtensions source, out Asn1Kit.Modern.PKIX1Implicit2009.AuthorityKeyIdentifier value) =>
-        TryGetExtensions(source, CertExtensionsExtnValueBindings.AuthorityKeyIdentifier, out value);
-
-    public static bool TryGetExtensionsSubjectKeyIdentifier(this AddExtensions source, out ReadOnlyMemory<byte> value) =>
-        TryGetExtensions(source, CertExtensionsExtnValueBindings.SubjectKeyIdentifier, out value);
-
-    public static bool TryGetExtensionsKeyUsage(this AddExtensions source, out Asn1Kit.Modern.PKIX1Implicit2009.KeyUsage value) =>
-        TryGetExtensions(source, CertExtensionsExtnValueBindings.KeyUsage, out value);
-
-    public static bool TryGetExtensionsPrivateKeyUsagePeriod(this AddExtensions source, out Asn1Kit.Modern.PKIX1Implicit2009.PrivateKeyUsagePeriod value) =>
-        TryGetExtensions(source, CertExtensionsExtnValueBindings.PrivateKeyUsagePeriod, out value);
-
-    public static bool TryGetExtensionsCertificatePolicies(this AddExtensions source, out Asn1Kit.Modern.PKIX1Implicit2009.PolicyInformation[] value) =>
-        TryGetExtensions(source, CertExtensionsExtnValueBindings.CertificatePolicies, out value);
-
-    public static bool TryGetExtensionsPolicyMappings(this AddExtensions source, out Asn1Kit.Modern.PKIX1Implicit2009.PolicyMappings_Item[] value) =>
-        TryGetExtensions(source, CertExtensionsExtnValueBindings.PolicyMappings, out value);
-
-    public static bool TryGetExtensionsSubjectAltName(this AddExtensions source, out Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[] value) =>
-        TryGetExtensions(source, CertExtensionsExtnValueBindings.SubjectAltName, out value);
-
-    public static bool TryGetExtensionsIssuerAltName(this AddExtensions source, out Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[] value) =>
-        TryGetExtensions(source, CertExtensionsExtnValueBindings.IssuerAltName, out value);
-
-    public static bool TryGetExtensionsSubjectDirectoryAttributes(this AddExtensions source, out Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet[] value) =>
-        TryGetExtensions(source, CertExtensionsExtnValueBindings.SubjectDirectoryAttributes, out value);
-
-    public static bool TryGetExtensionsBasicConstraints(this AddExtensions source, out Asn1Kit.Modern.PKIX1Implicit2009.BasicConstraints value) =>
-        TryGetExtensions(source, CertExtensionsExtnValueBindings.BasicConstraints, out value);
-
-    public static bool TryGetExtensionsNameConstraints(this AddExtensions source, out Asn1Kit.Modern.PKIX1Implicit2009.NameConstraints value) =>
-        TryGetExtensions(source, CertExtensionsExtnValueBindings.NameConstraints, out value);
-
-    public static bool TryGetExtensionsPolicyConstraints(this AddExtensions source, out Asn1Kit.Modern.PKIX1Implicit2009.PolicyConstraints value) =>
-        TryGetExtensions(source, CertExtensionsExtnValueBindings.PolicyConstraints, out value);
-
-    public static bool TryGetExtensionsExtKeyUsage(this AddExtensions source, out Asn1Oid[] value) =>
-        TryGetExtensions(source, CertExtensionsExtnValueBindings.ExtKeyUsage, out value);
-
-    public static bool TryGetExtensionsCRLDistributionPoints(this AddExtensions source, out Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[] value) =>
-        TryGetExtensions(source, CertExtensionsExtnValueBindings.CRLDistributionPoints, out value);
-
-    public static bool TryGetExtensionsInhibitAnyPolicy(this AddExtensions source, out Asn1Integer value) =>
-        TryGetExtensions(source, CertExtensionsExtnValueBindings.InhibitAnyPolicy, out value);
-
-    public static bool TryGetExtensionsFreshestCRL(this AddExtensions source, out Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[] value) =>
-        TryGetExtensions(source, CertExtensionsExtnValueBindings.FreshestCRL, out value);
-
-    public static bool TryGetExtensionsAuthorityInfoAccess(this AddExtensions source, out Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[] value) =>
-        TryGetExtensions(source, CertExtensionsExtnValueBindings.AuthorityInfoAccess, out value);
-
-    public static bool TryGetExtensionsSubjectInfoAccessSyntax(this AddExtensions source, out Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[] value) =>
-        TryGetExtensions(source, CertExtensionsExtnValueBindings.SubjectInfoAccessSyntax, out value);
-
-}
-
-public static class EncryptedPOPOpenTypeExtensions
-{
-    public static bool TryGetThePOPAlgID<T>(this EncryptedPOP source, POPAlgsParametersBinding<T> binding, out T value)
-        => TryGetThePOPAlgID(source, binding, out value, out _);
-
-    public static bool TryGetThePOPAlgID<T>(this EncryptedPOP source, POPAlgsParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
-        if (source.ThePOPAlgID is { } node0)
-        {
-            if (node0.Algorithm.Equals(binding.Oid))
-            {
-                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetThePOPAlgID.");
-                match = node0;
-            }
-        }
-        if (match is null) return false;
-        if (match.Parameters is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-    public static bool TryGetWitnessAlgID<T>(this EncryptedPOP source, WitnessAlgsParametersBinding<T> binding, out T value)
-        => TryGetWitnessAlgID(source, binding, out value, out _);
-
-    public static bool TryGetWitnessAlgID<T>(this EncryptedPOP source, WitnessAlgsParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
-        if (source.WitnessAlgID is { } node0)
-        {
-            if (node0.Algorithm.Equals(binding.Oid))
-            {
-                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetWitnessAlgID.");
-                match = node0;
-            }
-        }
-        if (match is null) return false;
-        if (match.Parameters is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-}
-
-public static class DecryptedPOPOpenTypeExtensions
-{
-    public static bool TryGetThePOPAlgID<T>(this DecryptedPOP source, POPAlgsParametersBinding<T> binding, out T value)
-        => TryGetThePOPAlgID(source, binding, out value, out _);
-
-    public static bool TryGetThePOPAlgID<T>(this DecryptedPOP source, POPAlgsParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
-        if (source.ThePOPAlgID is { } node0)
-        {
-            if (node0.Algorithm.Equals(binding.Oid))
-            {
-                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetThePOPAlgID.");
-                match = node0;
-            }
-        }
-        if (match is null) return false;
-        if (match.Parameters is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams> PkRsaESOAEP { get; } =
+        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSAESOAEP, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkRsaESOAEP);
 }
 
 public static class GetCRLOpenTypeExtensions
 {
-    public static bool TryGetIssuerName<T>(this GetCRL source, SupportedAttributesValueBinding<T> binding, out T value)
+    public static bool TryGetIssuerName<T>(this GetCRL source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value)
         => TryGetIssuerName(source, binding, out value, out _);
 
-    public static bool TryGetIssuerName<T>(this GetCRL source, SupportedAttributesValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
+    public static bool TryGetIssuerName<T>(this GetCRL source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
     {
         value = default!;
         raw = default!;
@@ -5022,69 +3277,23 @@ public static class GetCRLOpenTypeExtensions
         }
         if (match is null) return false;
         raw = match;
-        value = binding.Decoder(match);
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value);
+        }
+        else
+            value = binding.Decoder!(match);
         return true;
     }
-
-    public static bool TryGetIssuerNameName(this GetCRL source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.Name, out value);
-
-    public static bool TryGetIssuerNameSurname(this GetCRL source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.Surname, out value);
-
-    public static bool TryGetIssuerNameGivenName(this GetCRL source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.GivenName, out value);
-
-    public static bool TryGetIssuerNameInitials(this GetCRL source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.Initials, out value);
-
-    public static bool TryGetIssuerNameGenerationQualifier(this GetCRL source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.GenerationQualifier, out value);
-
-    public static bool TryGetIssuerNameX520CommonName(this GetCRL source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.X520CommonName, out value);
-
-    public static bool TryGetIssuerNameX520LocalityName(this GetCRL source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.X520LocalityName, out value);
-
-    public static bool TryGetIssuerNameX520StateOrProvinceName(this GetCRL source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.X520StateOrProvinceName, out value);
-
-    public static bool TryGetIssuerNameX520OrganizationName(this GetCRL source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.X520OrganizationName, out value);
-
-    public static bool TryGetIssuerNameX520OrganizationalUnitName(this GetCRL source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.X520OrganizationalUnitName, out value);
-
-    public static bool TryGetIssuerNameX520Title(this GetCRL source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.X520Title, out value);
-
-    public static bool TryGetIssuerNameX520dnQualifier(this GetCRL source, out string value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.X520dnQualifier, out value);
-
-    public static bool TryGetIssuerNameX520countryName(this GetCRL source, out string value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.X520countryName, out value);
-
-    public static bool TryGetIssuerNameX520SerialNumber(this GetCRL source, out string value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.X520SerialNumber, out value);
-
-    public static bool TryGetIssuerNameX520Pseudonym(this GetCRL source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.X520Pseudonym, out value);
-
-    public static bool TryGetIssuerNameDomainComponent(this GetCRL source, out string value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.DomainComponent, out value);
-
-    public static bool TryGetIssuerNameEmailAddress(this GetCRL source, out string value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.EmailAddress, out value);
 
 }
 
 public static class RevokeRequestOpenTypeExtensions
 {
-    public static bool TryGetIssuerName<T>(this RevokeRequest source, SupportedAttributesValueBinding<T> binding, out T value)
+    public static bool TryGetIssuerName<T>(this RevokeRequest source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value)
         => TryGetIssuerName(source, binding, out value, out _);
 
-    public static bool TryGetIssuerName<T>(this RevokeRequest source, SupportedAttributesValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
+    public static bool TryGetIssuerName<T>(this RevokeRequest source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
     {
         value = default!;
         raw = default!;
@@ -5107,227 +3316,12 @@ public static class RevokeRequestOpenTypeExtensions
         }
         if (match is null) return false;
         raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-    public static bool TryGetIssuerNameName(this RevokeRequest source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.Name, out value);
-
-    public static bool TryGetIssuerNameSurname(this RevokeRequest source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.Surname, out value);
-
-    public static bool TryGetIssuerNameGivenName(this RevokeRequest source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.GivenName, out value);
-
-    public static bool TryGetIssuerNameInitials(this RevokeRequest source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.Initials, out value);
-
-    public static bool TryGetIssuerNameGenerationQualifier(this RevokeRequest source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.GenerationQualifier, out value);
-
-    public static bool TryGetIssuerNameX520CommonName(this RevokeRequest source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.X520CommonName, out value);
-
-    public static bool TryGetIssuerNameX520LocalityName(this RevokeRequest source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.X520LocalityName, out value);
-
-    public static bool TryGetIssuerNameX520StateOrProvinceName(this RevokeRequest source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.X520StateOrProvinceName, out value);
-
-    public static bool TryGetIssuerNameX520OrganizationName(this RevokeRequest source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.X520OrganizationName, out value);
-
-    public static bool TryGetIssuerNameX520OrganizationalUnitName(this RevokeRequest source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.X520OrganizationalUnitName, out value);
-
-    public static bool TryGetIssuerNameX520Title(this RevokeRequest source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.X520Title, out value);
-
-    public static bool TryGetIssuerNameX520dnQualifier(this RevokeRequest source, out string value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.X520dnQualifier, out value);
-
-    public static bool TryGetIssuerNameX520countryName(this RevokeRequest source, out string value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.X520countryName, out value);
-
-    public static bool TryGetIssuerNameX520SerialNumber(this RevokeRequest source, out string value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.X520SerialNumber, out value);
-
-    public static bool TryGetIssuerNameX520Pseudonym(this RevokeRequest source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.X520Pseudonym, out value);
-
-    public static bool TryGetIssuerNameDomainComponent(this RevokeRequest source, out string value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.DomainComponent, out value);
-
-    public static bool TryGetIssuerNameEmailAddress(this RevokeRequest source, out string value) =>
-        TryGetIssuerName(source, SupportedAttributesValueBindings.EmailAddress, out value);
-
-}
-
-public static class PublishTrustAnchorsOpenTypeExtensions
-{
-    public static bool TryGetHashAlgorithm<T>(this PublishTrustAnchors source, HashAlgorithmsParametersBinding<T> binding, out T value)
-        => TryGetHashAlgorithm(source, binding, out value, out _);
-
-    public static bool TryGetHashAlgorithm<T>(this PublishTrustAnchors source, HashAlgorithmsParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
-        if (source.HashAlgorithm is { } node0)
+        if (binding.Codec is { } codec)
         {
-            if (node0.Algorithm.Equals(binding.Oid))
-            {
-                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetHashAlgorithm.");
-                match = node0;
-            }
+            value = codec.Decode(match.Value);
         }
-        if (match is null) return false;
-        if (match.Parameters is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-}
-
-public static class CMCPublicationInfoOpenTypeExtensions
-{
-    public static bool TryGetHashAlg<T>(this CMCPublicationInfo source, HashAlgorithmsParametersBinding<T> binding, out T value)
-        => TryGetHashAlg(source, binding, out value, out _);
-
-    public static bool TryGetHashAlg<T>(this CMCPublicationInfo source, HashAlgorithmsParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
-        if (source.HashAlg is { } node0)
-        {
-            if (node0.Algorithm.Equals(binding.Oid))
-            {
-                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetHashAlg.");
-                match = node0;
-            }
-        }
-        if (match is null) return false;
-        if (match.Parameters is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-}
-
-public static class IdentityProofV2OpenTypeExtensions
-{
-    public static bool TryGetProofAlgID<T>(this IdentityProofV2 source, WitnessAlgsParametersBinding<T> binding, out T value)
-        => TryGetProofAlgID(source, binding, out value, out _);
-
-    public static bool TryGetProofAlgID<T>(this IdentityProofV2 source, WitnessAlgsParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
-        if (source.ProofAlgID is { } node0)
-        {
-            if (node0.Algorithm.Equals(binding.Oid))
-            {
-                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetProofAlgID.");
-                match = node0;
-            }
-        }
-        if (match is null) return false;
-        if (match.Parameters is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-    public static bool TryGetMacAlgId<T>(this IdentityProofV2 source, POPAlgsParametersBinding<T> binding, out T value)
-        => TryGetMacAlgId(source, binding, out value, out _);
-
-    public static bool TryGetMacAlgId<T>(this IdentityProofV2 source, POPAlgsParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
-        if (source.MacAlgId is { } node0)
-        {
-            if (node0.Algorithm.Equals(binding.Oid))
-            {
-                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetMacAlgId.");
-                match = node0;
-            }
-        }
-        if (match is null) return false;
-        if (match.Parameters is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-}
-
-public static class PopLinkWitnessV2OpenTypeExtensions
-{
-    public static bool TryGetKeyGenAlgorithm<T>(this PopLinkWitnessV2 source, KeyDevAlgsParametersBinding<T> binding, out T value)
-        => TryGetKeyGenAlgorithm(source, binding, out value, out _);
-
-    public static bool TryGetKeyGenAlgorithm<T>(this PopLinkWitnessV2 source, KeyDevAlgsParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
-        if (source.KeyGenAlgorithm is { } node0)
-        {
-            if (node0.Algorithm.Equals(binding.Oid))
-            {
-                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetKeyGenAlgorithm.");
-                match = node0;
-            }
-        }
-        if (match is null) return false;
-        if (match.Parameters is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-    public static bool TryGetKeyGenAlgorithmKdaPBKDF2(this PopLinkWitnessV2 source, out Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params value) =>
-        TryGetKeyGenAlgorithm(source, KeyDevAlgsParametersBindings.KdaPBKDF2, out value);
-
-    public static bool TryGetMacAlgorithm<T>(this PopLinkWitnessV2 source, POPAlgsParametersBinding<T> binding, out T value)
-        => TryGetMacAlgorithm(source, binding, out value, out _);
-
-    public static bool TryGetMacAlgorithm<T>(this PopLinkWitnessV2 source, POPAlgsParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
-        if (source.MacAlgorithm is { } node0)
-        {
-            if (node0.Algorithm.Equals(binding.Oid))
-            {
-                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetMacAlgorithm.");
-                match = node0;
-            }
-        }
-        if (match is null) return false;
-        if (match.Parameters is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
+        else
+            value = binding.Decoder!(match);
         return true;
     }
 
@@ -5335,10 +3329,10 @@ public static class PopLinkWitnessV2OpenTypeExtensions
 
 public static class CertificationRequest_CertificationRequestInfoOpenTypeExtensions
 {
-    public static bool TryGetSubject<T>(this CertificationRequest_CertificationRequestInfo source, SupportedAttributesValueBinding<T> binding, out T value)
+    public static bool TryGetSubject<T>(this CertificationRequest_CertificationRequestInfo source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value)
         => TryGetSubject(source, binding, out value, out _);
 
-    public static bool TryGetSubject<T>(this CertificationRequest_CertificationRequestInfo source, SupportedAttributesValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
+    public static bool TryGetSubject<T>(this CertificationRequest_CertificationRequestInfo source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
     {
         value = default!;
         raw = default!;
@@ -5361,143 +3355,14 @@ public static class CertificationRequest_CertificationRequestInfoOpenTypeExtensi
         }
         if (match is null) return false;
         raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-    public static bool TryGetSubjectName(this CertificationRequest_CertificationRequestInfo source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGetSubject(source, SupportedAttributesValueBindings.Name, out value);
-
-    public static bool TryGetSubjectSurname(this CertificationRequest_CertificationRequestInfo source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGetSubject(source, SupportedAttributesValueBindings.Surname, out value);
-
-    public static bool TryGetSubjectGivenName(this CertificationRequest_CertificationRequestInfo source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGetSubject(source, SupportedAttributesValueBindings.GivenName, out value);
-
-    public static bool TryGetSubjectInitials(this CertificationRequest_CertificationRequestInfo source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGetSubject(source, SupportedAttributesValueBindings.Initials, out value);
-
-    public static bool TryGetSubjectGenerationQualifier(this CertificationRequest_CertificationRequestInfo source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGetSubject(source, SupportedAttributesValueBindings.GenerationQualifier, out value);
-
-    public static bool TryGetSubjectX520CommonName(this CertificationRequest_CertificationRequestInfo source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryGetSubject(source, SupportedAttributesValueBindings.X520CommonName, out value);
-
-    public static bool TryGetSubjectX520LocalityName(this CertificationRequest_CertificationRequestInfo source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        TryGetSubject(source, SupportedAttributesValueBindings.X520LocalityName, out value);
-
-    public static bool TryGetSubjectX520StateOrProvinceName(this CertificationRequest_CertificationRequestInfo source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        TryGetSubject(source, SupportedAttributesValueBindings.X520StateOrProvinceName, out value);
-
-    public static bool TryGetSubjectX520OrganizationName(this CertificationRequest_CertificationRequestInfo source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryGetSubject(source, SupportedAttributesValueBindings.X520OrganizationName, out value);
-
-    public static bool TryGetSubjectX520OrganizationalUnitName(this CertificationRequest_CertificationRequestInfo source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryGetSubject(source, SupportedAttributesValueBindings.X520OrganizationalUnitName, out value);
-
-    public static bool TryGetSubjectX520Title(this CertificationRequest_CertificationRequestInfo source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryGetSubject(source, SupportedAttributesValueBindings.X520Title, out value);
-
-    public static bool TryGetSubjectX520dnQualifier(this CertificationRequest_CertificationRequestInfo source, out string value) =>
-        TryGetSubject(source, SupportedAttributesValueBindings.X520dnQualifier, out value);
-
-    public static bool TryGetSubjectX520countryName(this CertificationRequest_CertificationRequestInfo source, out string value) =>
-        TryGetSubject(source, SupportedAttributesValueBindings.X520countryName, out value);
-
-    public static bool TryGetSubjectX520SerialNumber(this CertificationRequest_CertificationRequestInfo source, out string value) =>
-        TryGetSubject(source, SupportedAttributesValueBindings.X520SerialNumber, out value);
-
-    public static bool TryGetSubjectX520Pseudonym(this CertificationRequest_CertificationRequestInfo source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        TryGetSubject(source, SupportedAttributesValueBindings.X520Pseudonym, out value);
-
-    public static bool TryGetSubjectDomainComponent(this CertificationRequest_CertificationRequestInfo source, out string value) =>
-        TryGetSubject(source, SupportedAttributesValueBindings.DomainComponent, out value);
-
-    public static bool TryGetSubjectEmailAddress(this CertificationRequest_CertificationRequestInfo source, out string value) =>
-        TryGetSubject(source, SupportedAttributesValueBindings.EmailAddress, out value);
-
-    public static bool TryGetAttributes<T>(this CertificationRequest_CertificationRequestInfo source, AttributeListBinding<T> binding, out T value)
-        => TryGetAttributes(source, binding, out value, out _);
-
-    public static bool TryGetAttributes<T>(this CertificationRequest_CertificationRequestInfo source, AttributeListBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet? match = null;
-        if (source.Attributes is { } node0)
+        if (binding.Codec is { } codec)
         {
-            foreach (var node1 in node0)
-            {
-                if (node1.Type.Equals(binding.Oid))
-                {
-                    if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetAttributes.");
-                    match = node1;
-                }
-            }
+            value = codec.Decode(match.Value);
         }
-        if (match is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
+        else
+            value = binding.Decoder!(match);
         return true;
     }
-
-    public static bool TryGetAttributesExtensionReq(this CertificationRequest_CertificationRequestInfo source, out Asn1Kit.Modern.PKIXCommonTypes2009.Extension[][] value) =>
-        TryGetAttributes(source, AttributeListBindings.ExtensionReq, out value);
-
-}
-
-public static class CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfoOpenTypeExtensions
-{
-    public static bool TryGetAlgorithm<T>(this CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo source, PublicKeyAlgorithmsParametersBinding<T> binding, out T value)
-        => TryGetAlgorithm(source, binding, out value, out _);
-
-    public static bool TryGetAlgorithm<T>(this CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo source, PublicKeyAlgorithmsParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
-        if (source.Algorithm is { } node0)
-        {
-            if (node0.Algorithm.Equals(binding.Oid))
-            {
-                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetAlgorithm.");
-                match = node0;
-            }
-        }
-        if (match is null) return false;
-        if (match.Parameters is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-    public static bool TryGetAlgorithmPkDsa(this CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo source, out Asn1Kit.Modern.PKIXAlgs2009.DSAParams value) =>
-        TryGetAlgorithm(source, PublicKeyAlgorithmsParametersBindings.PkDsa, out value);
-
-    public static bool TryGetAlgorithmPkDh(this CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo source, out Asn1Kit.Modern.PKIXAlgs2009.DomainParameters value) =>
-        TryGetAlgorithm(source, PublicKeyAlgorithmsParametersBindings.PkDh, out value);
-
-    public static bool TryGetAlgorithmPkKea(this CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo source, out ReadOnlyMemory<byte> value) =>
-        TryGetAlgorithm(source, PublicKeyAlgorithmsParametersBindings.PkKea, out value);
-
-    public static bool TryGetAlgorithmPkEc(this CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo source, out Asn1Oid value) =>
-        TryGetAlgorithm(source, PublicKeyAlgorithmsParametersBindings.PkEc, out value);
-
-    public static bool TryGetAlgorithmPkEcDH(this CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo source, out Asn1Oid value) =>
-        TryGetAlgorithm(source, PublicKeyAlgorithmsParametersBindings.PkEcDH, out value);
-
-    public static bool TryGetAlgorithmPkEcMQV(this CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo source, out Asn1Oid value) =>
-        TryGetAlgorithm(source, PublicKeyAlgorithmsParametersBindings.PkEcMQV, out value);
-
-    public static bool TryGetAlgorithmSaRsaSSAPSS(this CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo source, out Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams value) =>
-        TryGetAlgorithm(source, PublicKeyAlgorithmsParametersBindings.SaRsaSSAPSS, out value);
-
-    public static bool TryGetAlgorithmPkRsaESOAEP(this CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo source, out Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams value) =>
-        TryGetAlgorithm(source, PublicKeyAlgorithmsParametersBindings.PkRsaESOAEP, out value);
 
 }
 

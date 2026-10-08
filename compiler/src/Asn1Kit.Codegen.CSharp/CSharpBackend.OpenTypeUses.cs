@@ -30,6 +30,7 @@ public sealed partial class CSharpBackend
         string Owner,
         OpenTypeUseSite Site,
         string Method,
+        string CatalogStem,
         string BindingStem,
         string ContainerDecodeMethod,
         bool SharedCatalog,
@@ -130,21 +131,24 @@ public sealed partial class CSharpBackend
                 for (var suffix = 2; !methods.Add(method); suffix++) method = methodBase + suffix;
 
                 var matched = FindMatchingWrapperSite(wrappers, site);
-                string stem;
+                string catalogStem;
+                string bindingStem;
                 string containerDecode;
                 bool shared;
                 if (matched is not null)
                 {
-                    stem = matched.DecodeBindingStem!;
+                    catalogStem = matched.CatalogStem!;
+                    bindingStem = matched.BindingStem!;
                     containerDecode = matched.DecodeMethod;
                     shared = true;
                 }
                 else
                 {
                     var stemBase = PreferredOpenTypeUseStem(site, owner);
-                    stem = stemBase;
-                    for (var suffix = 2; !ReserveOpenTypeUseBindingNames(stem, names); suffix++)
-                        stem = stemBase + suffix;
+                    catalogStem = stemBase;
+                    for (var suffix = 2; !ReserveOpenTypeUseBindingNames(catalogStem, names); suffix++)
+                        catalogStem = stemBase + suffix;
+                    bindingStem = catalogStem;
                     containerDecode = "TryDecode" + PropertyName(site.OpenField, site.ContainerOwner).TrimStart('@');
                     shared = false;
                 }
@@ -163,7 +167,8 @@ public sealed partial class CSharpBackend
 
                 if (!_openTypeUsePlans.TryGetValue(owner, out var plans))
                     _openTypeUsePlans.Add(owner, plans = new List<OpenTypeUsePlan>());
-                plans.Add(new OpenTypeUsePlan(owner, site, method, stem, containerDecode, shared, members));
+                plans.Add(new OpenTypeUsePlan(owner, site, method, catalogStem, bindingStem, containerDecode,
+                    shared, members));
             }
         }
     }
@@ -186,7 +191,7 @@ public sealed partial class CSharpBackend
                 continue;
             if (!string.Equals(site.Field.Name, use.OpenField.Name, StringComparison.Ordinal)) continue;
             if (site.Selector.Levels != 0 || site.Selector.Path.Count != 1) continue;
-            if (site.DecodeBindingStem is null || site.DecodeMethod.Length == 0) continue;
+            if (site.CatalogStem is null || site.BindingStem is null || site.DecodeMethod.Length == 0) continue;
             var wrapperBindings = string.Join("\n", site.Wrappers.Select(static wrapper =>
                 wrapper.Binding.Key + "\t" + (wrapper.Binding.Name ?? "") + "\t" +
                 JsonSerializer.Serialize(wrapper.Binding.Type, IrSerializer.JsonOptions)));
@@ -231,7 +236,7 @@ public sealed partial class CSharpBackend
     {
         var plans = _openTypeUsePlans.Values.SelectMany(static plans => plans)
             .Where(static plan => !plan.SharedCatalog)
-            .GroupBy(static plan => plan.BindingStem, StringComparer.Ordinal)
+            .GroupBy(static plan => plan.CatalogStem, StringComparer.Ordinal)
             .Select(static group => group.First())
             .ToList();
         if (plans.Count == 0) return;
@@ -240,20 +245,18 @@ public sealed partial class CSharpBackend
         {
             var keyType = plan.Site.KeyType is OidType ? "Asn1Oid" : "BigInteger";
             var keyName = keyType == "Asn1Oid" ? "Oid" : "Key";
-            var keyParameter = CamelCaseIdentifier(keyName);
-            var stem = plan.BindingStem;
+            var stem = plan.CatalogStem;
             sb.AppendLine($"public sealed record {stem}Binding<T>({keyType} {keyName}, Func<Asn1Any, T> Decoder, Func<T, Asn1Any> Encoder);");
             sb.AppendLine();
             sb.AppendLine($"public static class {stem}Bindings");
             sb.AppendLine("{");
-            sb.AppendLine($"    public static {stem}Binding<T> Create<T>({keyType} {keyParameter}, Func<Asn1Any, T> decoder, Func<T, Asn1Any> encoder) =>");
-            sb.AppendLine($"        new({keyParameter}, decoder, encoder);");
-            foreach (var member in plan.Members)
+            for (var index = 0; index < plan.Members.Count; index++)
             {
+                var member = plan.Members[index];
                 var hint = OpenTypeUseHint(plan.Site, member.Index);
                 var csType = CsType(document, module, plan.Owner, hint, member.Binding.Type, false);
                 var codec = member.CodecExpression;
-                sb.AppendLine();
+                if (index > 0) sb.AppendLine();
                 sb.AppendLine($"    public static {stem}Binding<{csType}> {member.Name} {{ get; }} =");
                 sb.AppendLine(
                     $"        new({OpenTypeUseKeyValue(document, module, plan.Site, member.Binding.Key)}, {codec}.Decode, {codec}.Encode);");
@@ -271,182 +274,13 @@ public sealed partial class CSharpBackend
         return $"BigInteger.Parse(\"{EscapeCSharpString(key)}\", CultureInfo.InvariantCulture)";
     }
 
+    /// <summary>
+    /// Instance Uses forwarders were removed: callers use carrier TryDecode/Set on the nested
+    /// open-type container (and array.TryGet for OF). Non-shared catalogs still emit via
+    /// <see cref="EmitOpenTypeUseDescriptors"/>.
+    /// </summary>
     private void EmitOpenTypeUseMethods(StringBuilder sb, IrDocument document, IrModule module, string owner)
     {
-        if (!_openTypeUsePlans.TryGetValue(owner, out var plans)) return;
-        foreach (var plan in plans)
-        {
-            if (plan.SharedCatalog)
-            {
-                EmitOpenTypeUseForwarders(sb, document, module, plan);
-                continue;
-            }
-
-            var site = plan.Site;
-            var fieldName = PropertyName(site.Field, owner);
-            var openName = PropertyName(site.OpenField, site.ContainerOwner);
-            var keyName = PropertyName(site.KeyField, site.ContainerOwner);
-            var descriptorKey = site.KeyType is OidType ? "Oid" : "Key";
-            sb.AppendLine();
-            sb.AppendLine($"    public bool TryDecode{plan.Method}<T>({plan.BindingStem}Binding<T> binding, out T value)");
-            sb.AppendLine("    {");
-            sb.AppendLine("        value = default!;");
-            sb.AppendLine("        ArgumentNullException.ThrowIfNull(binding);");
-            EmitOpenTypeUseContainer(sb, plan, fieldName, returnsBoolean: true);
-            if (site.OpenOptional)
-                sb.AppendLine($"        if (container.{openName} is not {{ }} raw) return false;");
-            else
-                sb.AppendLine($"        var raw = container.{openName};");
-            sb.AppendLine($"        if (!({OpenTypeUseKeyComparison(document, site, "container." + keyName, "binding." + descriptorKey)})) return false;");
-            sb.AppendLine("        value = binding.Decoder(raw);");
-            sb.AppendLine("        return true;");
-            sb.AppendLine("    }");
-
-            foreach (var member in plan.Members)
-            {
-                if (UnwrapAliases(document, module, member.Binding.Type) is NullType) continue;
-                var hint = OpenTypeUseHint(site, member.Index);
-                var csType = CsType(document, module, owner, hint, member.Binding.Type, false);
-                sb.AppendLine();
-                sb.AppendLine($"    public bool TryDecode{plan.Method}{member.Name}(out {csType} value) =>");
-                sb.AppendLine($"        TryDecode{plan.Method}({plan.BindingStem}Bindings.{member.Name}, out value);");
-            }
-
-            sb.AppendLine();
-            sb.AppendLine($"    public void Set{plan.Method}<T>({plan.BindingStem}Binding<T> binding, T value)");
-            sb.AppendLine("    {");
-            sb.AppendLine("        ArgumentNullException.ThrowIfNull(binding);");
-            EmitOpenTypeUseContainer(sb, plan, fieldName, returnsBoolean: false);
-            sb.AppendLine($"        if (!({OpenTypeUseKeyComparison(document, site, "container." + keyName, "binding." + descriptorKey)}))");
-            sb.AppendLine("            throw new ArgumentException(\"Descriptor key does not match the selected open-type binding.\", nameof(binding));");
-            sb.AppendLine($"        container.{openName} = binding.Encoder(value);");
-            EmitOpenTypeUseContainerAssignment(sb, plan, fieldName);
-            sb.AppendLine("    }");
-
-            foreach (var member in plan.Members)
-            {
-                var hint = OpenTypeUseHint(site, member.Index);
-                var csType = CsType(document, module, owner, hint, member.Binding.Type, false);
-                sb.AppendLine();
-                if (UnwrapAliases(document, module, member.Binding.Type) is NullType)
-                {
-                    sb.AppendLine($"    public void Set{plan.Method}{member.Name}() =>");
-                    sb.AppendLine($"        Set{plan.Method}({plan.BindingStem}Bindings.{member.Name}, Asn1Null.Value);");
-                }
-                else
-                {
-                    sb.AppendLine($"    public void Set{plan.Method}{member.Name}({csType} value) =>");
-                    sb.AppendLine($"        Set{plan.Method}({plan.BindingStem}Bindings.{member.Name}, value);");
-                }
-            }
-        }
     }
 
-    private void EmitOpenTypeUseForwarders(StringBuilder sb, IrDocument document, IrModule module,
-        OpenTypeUsePlan plan)
-    {
-        var site = plan.Site;
-        var fieldName = PropertyName(site.Field, plan.Owner);
-        var setMethod = "Set" + plan.ContainerDecodeMethod["TryDecode".Length..];
-        sb.AppendLine();
-        sb.AppendLine($"    public bool TryDecode{plan.Method}<T>({plan.BindingStem}Binding<T> binding, out T value)");
-        sb.AppendLine("    {");
-        sb.AppendLine("        value = default!;");
-        sb.AppendLine("        ArgumentNullException.ThrowIfNull(binding);");
-        EmitOpenTypeUseContainer(sb, plan, fieldName, returnsBoolean: true);
-        sb.AppendLine($"        return container.{plan.ContainerDecodeMethod}(binding, out value);");
-        sb.AppendLine("    }");
-
-        foreach (var member in plan.Members)
-        {
-            if (UnwrapAliases(document, module, member.Binding.Type) is NullType) continue;
-            var hint = OpenTypeUseHint(site, member.Index);
-            var csType = CsType(document, module, plan.Owner, hint, member.Binding.Type, false);
-            sb.AppendLine();
-            sb.AppendLine($"    public bool TryDecode{plan.Method}{member.Name}(out {csType} value) =>");
-            sb.AppendLine($"        TryDecode{plan.Method}({plan.BindingStem}Bindings.{member.Name}, out value);");
-        }
-
-        sb.AppendLine();
-        sb.AppendLine($"    public void Set{plan.Method}<T>({plan.BindingStem}Binding<T> binding, T value)");
-        sb.AppendLine("    {");
-        sb.AppendLine("        ArgumentNullException.ThrowIfNull(binding);");
-        EmitOpenTypeUseContainer(sb, plan, fieldName, returnsBoolean: false);
-        if (site.ContainerValueType)
-            sb.AppendLine($"        container.{setMethod}(binding, value);");
-        else
-            sb.AppendLine($"        container.{setMethod}(binding, value);");
-        EmitOpenTypeUseContainerAssignment(sb, plan, fieldName);
-        sb.AppendLine("    }");
-
-        foreach (var member in plan.Members)
-        {
-            var hint = OpenTypeUseHint(site, member.Index);
-            var csType = CsType(document, module, plan.Owner, hint, member.Binding.Type, false);
-            sb.AppendLine();
-            if (UnwrapAliases(document, module, member.Binding.Type) is NullType)
-            {
-                sb.AppendLine($"    public void Set{plan.Method}{member.Name}() =>");
-                sb.AppendLine($"        Set{plan.Method}({plan.BindingStem}Bindings.{member.Name}, Asn1Null.Value);");
-            }
-            else
-            {
-                sb.AppendLine($"    public void Set{plan.Method}{member.Name}({csType} value) =>");
-                sb.AppendLine($"        Set{plan.Method}({plan.BindingStem}Bindings.{member.Name}, value);");
-            }
-        }
-    }
-
-    private void EmitOpenTypeUseContainer(StringBuilder sb, OpenTypeUsePlan plan, string fieldName,
-        bool returnsBoolean)
-    {
-        var missing = returnsBoolean
-            ? "return false;"
-            : $"throw new Asn1Exception(\"Missing {fieldName}.\");";
-        var site = plan.Site;
-        if (site.Lazy)
-        {
-            sb.AppendLine($"        if ({fieldName} is null) {missing}");
-            sb.AppendLine($"        var container = {fieldName}.Value;");
-        }
-        else if (site.Retained)
-        {
-            if (site.FieldOptional)
-            {
-                sb.AppendLine($"        if ({fieldName} is not {{ }} stored) {missing}");
-                sb.AppendLine("        var container = stored.Value;");
-            }
-            else sb.AppendLine($"        var container = {fieldName}.Value;");
-        }
-        else if (site.ContainerValueType && site.FieldOptional)
-        {
-            sb.AppendLine($"        if ({fieldName} is not {{ }} container) {missing}");
-        }
-        else
-        {
-            if (!site.ContainerValueType) sb.AppendLine($"        if ({fieldName} is null) {missing}");
-            sb.AppendLine($"        var container = {fieldName};");
-        }
-    }
-
-    private static void EmitOpenTypeUseContainerAssignment(StringBuilder sb, OpenTypeUsePlan plan,
-        string fieldName)
-    {
-        if (plan.Site.Lazy)
-            sb.AppendLine($"        {fieldName} = Asn1Lazy<{plan.Site.ContainerType}>.FromValue(container);");
-        else if (plan.Site.Retained)
-            sb.AppendLine($"        {fieldName} = new Asn1Value<{plan.Site.ContainerType}>(container);");
-        else
-            sb.AppendLine($"        {fieldName} = container;");
-    }
-
-    private string OpenTypeUseKeyComparison(IrDocument document, OpenTypeUseSite site,
-        string actual, string expected)
-    {
-        if (site.KeyType is OidType) return actual + ".Equals(" + expected + ")";
-        if ((TryResolveIntegerRepresentation(document, site.KeyModule, site.KeyType) ??
-             IrOptions.IntegerRepresentations.Der) == IrOptions.IntegerRepresentations.Der)
-            actual += ".ToBigInteger()";
-        return actual + " == " + expected;
-    }
 }

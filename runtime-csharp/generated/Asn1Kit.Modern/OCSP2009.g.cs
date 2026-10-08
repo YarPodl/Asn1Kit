@@ -476,36 +476,6 @@ public sealed class BasicOCSPResponse
     public Asn1BitString Signature { get; set; }
     public Asn1Kit.Modern.PKIX1Explicit2009.Certificate[]? Certs { get; set; }
 
-    public bool TryDecodeSignatureAlgorithmParameters<T>(AlgorithmIdentifierParametersBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(binding);
-        if (SignatureAlgorithm is null) return false;
-        var container = SignatureAlgorithm;
-        return container.TryDecodeParameters(binding, out value);
-    }
-
-    public void SetSignatureAlgorithmParameters<T>(AlgorithmIdentifierParametersBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(binding);
-        if (SignatureAlgorithm is null) throw new Asn1Exception("Missing SignatureAlgorithm.");
-        var container = SignatureAlgorithm;
-        container.SetParameters(binding, value);
-        SignatureAlgorithm = container;
-    }
-
-    public void SetSignatureAlgorithmParametersSaDsaWithSHA1() =>
-        SetSignatureAlgorithmParameters(AlgorithmIdentifierParametersBindings.SaDsaWithSHA1, Asn1Null.Value);
-
-    public void SetSignatureAlgorithmParametersSaRsaWithSHA1() =>
-        SetSignatureAlgorithmParameters(AlgorithmIdentifierParametersBindings.SaRsaWithSHA1, Asn1Null.Value);
-
-    public void SetSignatureAlgorithmParametersSaRsaWithMD5() =>
-        SetSignatureAlgorithmParameters(AlgorithmIdentifierParametersBindings.SaRsaWithMD5, Asn1Null.Value);
-
-    public void SetSignatureAlgorithmParametersSaRsaWithMD2() =>
-        SetSignatureAlgorithmParameters(AlgorithmIdentifierParametersBindings.SaRsaWithMD2, Asn1Null.Value);
-
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
@@ -1172,1161 +1142,219 @@ internal static class __OCSP2009OpenTypeCodecs
 
 }
 
-public sealed record ExtensionExtnValueBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> Decoder, Func<T, Asn1Contained<Asn1Any>> Encoder);
-public sealed record ExtensionExtnValueDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> Decoder);
-
 public static class ExtensionExtnValueBindings
 {
-    public static ExtensionExtnValueBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> decoder, Func<T, Asn1Contained<Asn1Any>> encoder) =>
-        new(oid, decoder, encoder);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<ReadOnlyMemory<byte>> ReOcspNonce { get; } =
+        new(OCSP2009Oids.IdPkixOcspNonce, Asn1Codecs.OctetString);
 
-    public static ExtensionExtnValueDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> decoder) =>
-        new(oid, decoder);
-
-    public static ExtensionExtnValueBinding<ReadOnlyMemory<byte>> ReOcspNonce { get; } =
-        new(OCSP2009Oids.IdPkixOcspNonce, DecodeReOcspNonce, EncodeReOcspNonce);
-
-    private static ReadOnlyMemory<byte> DecodeReOcspNonce(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, Asn1Codecs.OctetString);
-    }
-
-    private static Asn1Contained<Asn1Any> EncodeReOcspNonce(ReadOnlyMemory<byte> value) =>
-        Asn1Codecs.EncodeContained(value, Asn1Codecs.OctetString);
-
-    public static ExtensionExtnValueBinding<Asn1Oid[]> ReOcspResponse { get; } =
-        new(OCSP2009Oids.IdPkixOcspResponse, DecodeReOcspResponse, EncodeReOcspResponse);
-
-    private static Asn1Oid[] DecodeReOcspResponse(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, __OCSP2009OpenTypeCodecs.ReOcspResponseExtension);
-    }
-
-    private static Asn1Contained<Asn1Any> EncodeReOcspResponse(Asn1Oid[] value) =>
-        Asn1Codecs.EncodeContained(value, __OCSP2009OpenTypeCodecs.ReOcspResponseExtension);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Oid[]> ReOcspResponse { get; } =
+        new(OCSP2009Oids.IdPkixOcspResponse, __OCSP2009OpenTypeCodecs.ReOcspResponseExtension);
 }
-
-public sealed record ExtensionExtnValueExtensionBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> Decoder, Func<T, Asn1Contained<Asn1Any>> Encoder);
-public sealed record ExtensionExtnValueExtensionDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> Decoder);
 
 public static class ExtensionExtnValueExtensionBindings
 {
-    public static ExtensionExtnValueExtensionBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> decoder, Func<T, Asn1Contained<Asn1Any>> encoder) =>
-        new(oid, decoder, encoder);
-
-    public static ExtensionExtnValueExtensionDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> decoder) =>
-        new(oid, decoder);
-
-    public static ExtensionExtnValueExtensionBinding<ServiceLocator> ReOcspServiceLocator { get; } =
-        new(OCSP2009Oids.IdPkixOcspServiceLocator, DecodeReOcspServiceLocator, EncodeReOcspServiceLocator);
-
-    private static ServiceLocator DecodeReOcspServiceLocator(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, __OCSP2009OpenTypeCodecs.ReOcspServiceLocatorExtension);
-    }
-
-    private static Asn1Contained<Asn1Any> EncodeReOcspServiceLocator(ServiceLocator value) =>
-        Asn1Codecs.EncodeContained(value, __OCSP2009OpenTypeCodecs.ReOcspServiceLocatorExtension);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<ServiceLocator> ReOcspServiceLocator { get; } =
+        new(OCSP2009Oids.IdPkixOcspServiceLocator, __OCSP2009OpenTypeCodecs.ReOcspServiceLocatorExtension);
 }
-
-public sealed record AlgorithmIdentifierParametersBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder, Func<T, Asn1Any> Encoder);
-public sealed record AlgorithmIdentifierParametersDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder);
 
 public static class AlgorithmIdentifierParametersBindings
 {
-    public static AlgorithmIdentifierParametersBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder, Func<T, Asn1Any> encoder) =>
-        new(oid, decoder, encoder);
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> SaDsaWithSHA1 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.DsaWithSha1, Asn1Codecs.Null);
 
-    public static AlgorithmIdentifierParametersDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder) =>
-        new(oid, decoder);
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> SaRsaWithSHA1 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.Sha1WithRSAEncryption, Asn1Codecs.Null);
 
-    public static AlgorithmIdentifierParametersBinding<Asn1Null> SaDsaWithSHA1 { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.DsaWithSha1, DecodeSaDsaWithSHA1, Asn1Codecs.Null.Encode);
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> SaRsaWithMD5 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.Md5WithRSAEncryption, Asn1Codecs.Null);
 
-    private static Asn1Null DecodeSaDsaWithSHA1(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.Null.Decode(raw);
-    }
-
-    public static AlgorithmIdentifierParametersBinding<Asn1Null> SaRsaWithSHA1 { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.Sha1WithRSAEncryption, DecodeSaRsaWithSHA1, Asn1Codecs.Null.Encode);
-
-    private static Asn1Null DecodeSaRsaWithSHA1(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.Null.Decode(raw);
-    }
-
-    public static AlgorithmIdentifierParametersBinding<Asn1Null> SaRsaWithMD5 { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.Md5WithRSAEncryption, DecodeSaRsaWithMD5, Asn1Codecs.Null.Encode);
-
-    private static Asn1Null DecodeSaRsaWithMD5(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.Null.Decode(raw);
-    }
-
-    public static AlgorithmIdentifierParametersBinding<Asn1Null> SaRsaWithMD2 { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.Md2WithRSAEncryption, DecodeSaRsaWithMD2, Asn1Codecs.Null.Encode);
-
-    private static Asn1Null DecodeSaRsaWithMD2(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.Null.Decode(raw);
-    }
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> SaRsaWithMD2 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.Md2WithRSAEncryption, Asn1Codecs.Null);
 }
-
-public sealed record ExtensionExtnValueExtension2Binding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> Decoder, Func<T, Asn1Contained<Asn1Any>> Encoder);
-public sealed record ExtensionExtnValueExtension2DecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> Decoder);
 
 public static class ExtensionExtnValueExtension2Bindings
 {
-    public static ExtensionExtnValueExtension2Binding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> decoder, Func<T, Asn1Contained<Asn1Any>> encoder) =>
-        new(oid, decoder, encoder);
-
-    public static ExtensionExtnValueExtension2DecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> decoder) =>
-        new(oid, decoder);
-
-    public static ExtensionExtnValueExtension2Binding<ReadOnlyMemory<byte>> ReOcspNonce { get; } =
-        new(OCSP2009Oids.IdPkixOcspNonce, DecodeReOcspNonce, EncodeReOcspNonce);
-
-    private static ReadOnlyMemory<byte> DecodeReOcspNonce(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, Asn1Codecs.OctetString);
-    }
-
-    private static Asn1Contained<Asn1Any> EncodeReOcspNonce(ReadOnlyMemory<byte> value) =>
-        Asn1Codecs.EncodeContained(value, Asn1Codecs.OctetString);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<ReadOnlyMemory<byte>> ReOcspNonce { get; } =
+        new(OCSP2009Oids.IdPkixOcspNonce, Asn1Codecs.OctetString);
 }
-
-public sealed record ExtensionExtnValueExtension3Binding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> Decoder, Func<T, Asn1Contained<Asn1Any>> Encoder);
-public sealed record ExtensionExtnValueExtension3DecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> Decoder);
 
 public static class ExtensionExtnValueExtension3Bindings
 {
-    public static ExtensionExtnValueExtension3Binding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> decoder, Func<T, Asn1Contained<Asn1Any>> encoder) =>
-        new(oid, decoder, encoder);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<CrlID> ReOcspCrl { get; } =
+        new(OCSP2009Oids.IdPkixOcspCrl, __OCSP2009OpenTypeCodecs.ReOcspCrlExtension);
 
-    public static ExtensionExtnValueExtension3DecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.Extension, T> decoder) =>
-        new(oid, decoder);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<DateTimeOffset> ReOcspArchiveCutoff { get; } =
+        new(OCSP2009Oids.IdPkixOcspArchiveCutoff, Asn1Codecs.GeneralizedTime);
 
-    public static ExtensionExtnValueExtension3Binding<CrlID> ReOcspCrl { get; } =
-        new(OCSP2009Oids.IdPkixOcspCrl, DecodeReOcspCrl, EncodeReOcspCrl);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.CRLReason> CRLReason { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeCRLReasons, __OCSP2009OpenTypeCodecs.CRLReasonExtension);
 
-    private static CrlID DecodeReOcspCrl(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, __OCSP2009OpenTypeCodecs.ReOcspCrlExtension);
-    }
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]> CertificateIssuer { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeCertificateIssuer, __OCSP2009OpenTypeCodecs.CertificateIssuerExtension);
 
-    private static Asn1Contained<Asn1Any> EncodeReOcspCrl(CrlID value) =>
-        Asn1Codecs.EncodeContained(value, __OCSP2009OpenTypeCodecs.ReOcspCrlExtension);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Oid> HoldInstructionCode { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeHoldInstructionCode, Asn1Codecs.ObjectIdentifier);
 
-    public static ExtensionExtnValueExtension3Binding<DateTimeOffset> ReOcspArchiveCutoff { get; } =
-        new(OCSP2009Oids.IdPkixOcspArchiveCutoff, DecodeReOcspArchiveCutoff, EncodeReOcspArchiveCutoff);
-
-    private static DateTimeOffset DecodeReOcspArchiveCutoff(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, Asn1Codecs.GeneralizedTime);
-    }
-
-    private static Asn1Contained<Asn1Any> EncodeReOcspArchiveCutoff(DateTimeOffset value) =>
-        Asn1Codecs.EncodeContained(value, Asn1Codecs.GeneralizedTime);
-
-    public static ExtensionExtnValueExtension3Binding<Asn1Kit.Modern.PKIX1Implicit2009.CRLReason> CRLReason { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeCRLReasons, DecodeCRLReason, EncodeCRLReason);
-
-    private static Asn1Kit.Modern.PKIX1Implicit2009.CRLReason DecodeCRLReason(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, __OCSP2009OpenTypeCodecs.CRLReasonExtension);
-    }
-
-    private static Asn1Contained<Asn1Any> EncodeCRLReason(Asn1Kit.Modern.PKIX1Implicit2009.CRLReason value) =>
-        Asn1Codecs.EncodeContained(value, __OCSP2009OpenTypeCodecs.CRLReasonExtension);
-
-    public static ExtensionExtnValueExtension3Binding<Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]> CertificateIssuer { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeCertificateIssuer, DecodeCertificateIssuer, EncodeCertificateIssuer);
-
-    private static Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[] DecodeCertificateIssuer(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, __OCSP2009OpenTypeCodecs.CertificateIssuerExtension);
-    }
-
-    private static Asn1Contained<Asn1Any> EncodeCertificateIssuer(Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[] value) =>
-        Asn1Codecs.EncodeContained(value, __OCSP2009OpenTypeCodecs.CertificateIssuerExtension);
-
-    public static ExtensionExtnValueExtension3Binding<Asn1Oid> HoldInstructionCode { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeHoldInstructionCode, DecodeHoldInstructionCode, EncodeHoldInstructionCode);
-
-    private static Asn1Oid DecodeHoldInstructionCode(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, Asn1Codecs.ObjectIdentifier);
-    }
-
-    private static Asn1Contained<Asn1Any> EncodeHoldInstructionCode(Asn1Oid value) =>
-        Asn1Codecs.EncodeContained(value, Asn1Codecs.ObjectIdentifier);
-
-    public static ExtensionExtnValueExtension3Binding<DateTimeOffset> InvalidityDate { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeInvalidityDate, DecodeInvalidityDate, EncodeInvalidityDate);
-
-    private static DateTimeOffset DecodeInvalidityDate(Asn1Kit.Modern.PKIXCommonTypes2009.Extension source)
-    {
-        return Asn1Codecs.DecodeContained(source.ExtnValue, Asn1Codecs.GeneralizedTime);
-    }
-
-    private static Asn1Contained<Asn1Any> EncodeInvalidityDate(DateTimeOffset value) =>
-        Asn1Codecs.EncodeContained(value, Asn1Codecs.GeneralizedTime);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<DateTimeOffset> InvalidityDate { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeInvalidityDate, Asn1Codecs.GeneralizedTime);
 }
-
-public sealed record SupportedAttributesValueBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute, T> Decoder, Func<T, Asn1Any> Encoder);
-public sealed record SupportedAttributesValueDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute, T> Decoder);
 
 public static class SupportedAttributesValueBindings
 {
-    public static SupportedAttributesValueBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute, T> decoder, Func<T, Asn1Any> encoder) =>
-        new(oid, decoder, encoder);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> Name { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtName, __OCSP2009OpenTypeCodecs.NameSingleAttribute);
 
-    public static SupportedAttributesValueDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute, T> decoder) =>
-        new(oid, decoder);
-
-    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> Name { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtName, DecodeName, __OCSP2009OpenTypeCodecs.NameSingleAttribute.Encode);
-
-    private static Asn1Kit.Modern.PKIX1Explicit2009.X520name DecodeName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __OCSP2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value);
-    }
-
-    public static SupportedAttributesValueDecoderBinding<string> NameStringValue { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> NameStringValue { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtName, DecodeNameStringValue);
 
-    private static string DecodeNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
-        DecodeName(source).Value;
-
-    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> Surname { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtSurname, DecodeSurname, __OCSP2009OpenTypeCodecs.NameSingleAttribute.Encode);
-
-    private static Asn1Kit.Modern.PKIX1Explicit2009.X520name DecodeSurname(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    private static string DecodeNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
     {
-        return __OCSP2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value);
+        return __OCSP2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
     }
 
-    public static SupportedAttributesValueDecoderBinding<string> SurnameStringValue { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> Surname { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtSurname, __OCSP2009OpenTypeCodecs.NameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> SurnameStringValue { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtSurname, DecodeSurnameStringValue);
 
-    private static string DecodeSurnameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
-        DecodeSurname(source).Value;
-
-    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> GivenName { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGivenName, DecodeGivenName, __OCSP2009OpenTypeCodecs.NameSingleAttribute.Encode);
-
-    private static Asn1Kit.Modern.PKIX1Explicit2009.X520name DecodeGivenName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    private static string DecodeSurnameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
     {
-        return __OCSP2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value);
+        return __OCSP2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
     }
 
-    public static SupportedAttributesValueDecoderBinding<string> GivenNameStringValue { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> GivenName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGivenName, __OCSP2009OpenTypeCodecs.NameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> GivenNameStringValue { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGivenName, DecodeGivenNameStringValue);
 
-    private static string DecodeGivenNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
-        DecodeGivenName(source).Value;
-
-    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> Initials { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtInitials, DecodeInitials, __OCSP2009OpenTypeCodecs.NameSingleAttribute.Encode);
-
-    private static Asn1Kit.Modern.PKIX1Explicit2009.X520name DecodeInitials(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    private static string DecodeGivenNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
     {
-        return __OCSP2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value);
+        return __OCSP2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
     }
 
-    public static SupportedAttributesValueDecoderBinding<string> InitialsStringValue { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> Initials { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtInitials, __OCSP2009OpenTypeCodecs.NameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> InitialsStringValue { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtInitials, DecodeInitialsStringValue);
 
-    private static string DecodeInitialsStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
-        DecodeInitials(source).Value;
-
-    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> GenerationQualifier { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGenerationQualifier, DecodeGenerationQualifier, __OCSP2009OpenTypeCodecs.NameSingleAttribute.Encode);
-
-    private static Asn1Kit.Modern.PKIX1Explicit2009.X520name DecodeGenerationQualifier(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    private static string DecodeInitialsStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
     {
-        return __OCSP2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value);
+        return __OCSP2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
     }
 
-    public static SupportedAttributesValueDecoderBinding<string> GenerationQualifierStringValue { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> GenerationQualifier { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGenerationQualifier, __OCSP2009OpenTypeCodecs.NameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> GenerationQualifierStringValue { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGenerationQualifier, DecodeGenerationQualifierStringValue);
 
-    private static string DecodeGenerationQualifierStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
-        DecodeGenerationQualifier(source).Value;
-
-    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520CommonName { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtCommonName, DecodeX520CommonName, __OCSP2009OpenTypeCodecs.X520CommonNameSingleAttribute.Encode);
-
-    private static Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName DecodeX520CommonName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    private static string DecodeGenerationQualifierStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
     {
-        return __OCSP2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value);
+        return __OCSP2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
     }
 
-    public static SupportedAttributesValueDecoderBinding<string> X520CommonNameStringValue { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520CommonName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtCommonName, __OCSP2009OpenTypeCodecs.X520CommonNameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> X520CommonNameStringValue { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtCommonName, DecodeX520CommonNameStringValue);
 
-    private static string DecodeX520CommonNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
-        DecodeX520CommonName(source).Value;
-
-    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName> X520LocalityName { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtLocalityName, DecodeX520LocalityName, __OCSP2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Encode);
-
-    private static Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName DecodeX520LocalityName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    private static string DecodeX520CommonNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
     {
-        return __OCSP2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value);
+        return __OCSP2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value).Value;
     }
 
-    public static SupportedAttributesValueDecoderBinding<string> X520LocalityNameStringValue { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName> X520LocalityName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtLocalityName, __OCSP2009OpenTypeCodecs.X520LocalityNameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> X520LocalityNameStringValue { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtLocalityName, DecodeX520LocalityNameStringValue);
 
-    private static string DecodeX520LocalityNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
-        DecodeX520LocalityName(source).Value;
-
-    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName> X520StateOrProvinceName { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtStateOrProvinceName, DecodeX520StateOrProvinceName, __OCSP2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Encode);
-
-    private static Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName DecodeX520StateOrProvinceName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    private static string DecodeX520LocalityNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
     {
-        return __OCSP2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value);
+        return __OCSP2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value).Value;
     }
 
-    public static SupportedAttributesValueDecoderBinding<string> X520StateOrProvinceNameStringValue { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName> X520StateOrProvinceName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtStateOrProvinceName, __OCSP2009OpenTypeCodecs.X520LocalityNameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> X520StateOrProvinceNameStringValue { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtStateOrProvinceName, DecodeX520StateOrProvinceNameStringValue);
 
-    private static string DecodeX520StateOrProvinceNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
-        DecodeX520StateOrProvinceName(source).Value;
-
-    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520OrganizationName { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationName, DecodeX520OrganizationName, __OCSP2009OpenTypeCodecs.X520CommonNameSingleAttribute.Encode);
-
-    private static Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName DecodeX520OrganizationName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    private static string DecodeX520StateOrProvinceNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
     {
-        return __OCSP2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value);
+        return __OCSP2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value).Value;
     }
 
-    public static SupportedAttributesValueDecoderBinding<string> X520OrganizationNameStringValue { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520OrganizationName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationName, __OCSP2009OpenTypeCodecs.X520CommonNameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> X520OrganizationNameStringValue { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationName, DecodeX520OrganizationNameStringValue);
 
-    private static string DecodeX520OrganizationNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
-        DecodeX520OrganizationName(source).Value;
-
-    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520OrganizationalUnitName { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationalUnitName, DecodeX520OrganizationalUnitName, __OCSP2009OpenTypeCodecs.X520CommonNameSingleAttribute.Encode);
-
-    private static Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName DecodeX520OrganizationalUnitName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    private static string DecodeX520OrganizationNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
     {
-        return __OCSP2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value);
+        return __OCSP2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value).Value;
     }
 
-    public static SupportedAttributesValueDecoderBinding<string> X520OrganizationalUnitNameStringValue { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520OrganizationalUnitName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationalUnitName, __OCSP2009OpenTypeCodecs.X520CommonNameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> X520OrganizationalUnitNameStringValue { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationalUnitName, DecodeX520OrganizationalUnitNameStringValue);
 
-    private static string DecodeX520OrganizationalUnitNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
-        DecodeX520OrganizationalUnitName(source).Value;
-
-    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520Title { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtTitle, DecodeX520Title, __OCSP2009OpenTypeCodecs.X520CommonNameSingleAttribute.Encode);
-
-    private static Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName DecodeX520Title(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    private static string DecodeX520OrganizationalUnitNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
     {
-        return __OCSP2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value);
+        return __OCSP2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value).Value;
     }
 
-    public static SupportedAttributesValueDecoderBinding<string> X520TitleStringValue { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520Title { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtTitle, __OCSP2009OpenTypeCodecs.X520CommonNameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> X520TitleStringValue { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtTitle, DecodeX520TitleStringValue);
 
-    private static string DecodeX520TitleStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
-        DecodeX520Title(source).Value;
-
-    public static SupportedAttributesValueBinding<string> X520dnQualifier { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtDnQualifier, DecodeX520dnQualifier, Asn1Codecs.PrintableString.Encode);
-
-    private static string DecodeX520dnQualifier(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    private static string DecodeX520TitleStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
     {
-        return Asn1Codecs.PrintableString.Decode(source.Value);
+        return __OCSP2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value).Value;
     }
 
-    public static SupportedAttributesValueBinding<string> X520countryName { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtCountryName, DecodeX520countryName, Asn1Codecs.PrintableString.Encode);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520dnQualifier { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtDnQualifier, Asn1Codecs.PrintableString);
 
-    private static string DecodeX520countryName(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return Asn1Codecs.PrintableString.Decode(source.Value);
-    }
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520countryName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtCountryName, Asn1Codecs.PrintableString);
 
-    public static SupportedAttributesValueBinding<string> X520SerialNumber { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtSerialNumber, DecodeX520SerialNumber, Asn1Codecs.PrintableString.Encode);
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520SerialNumber { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtSerialNumber, Asn1Codecs.PrintableString);
 
-    private static string DecodeX520SerialNumber(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return Asn1Codecs.PrintableString.Decode(source.Value);
-    }
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName> X520Pseudonym { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtPseudonym, __OCSP2009OpenTypeCodecs.X520LocalityNameSingleAttribute);
 
-    public static SupportedAttributesValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName> X520Pseudonym { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtPseudonym, DecodeX520Pseudonym, __OCSP2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Encode);
-
-    private static Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName DecodeX520Pseudonym(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __OCSP2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value);
-    }
-
-    public static SupportedAttributesValueDecoderBinding<string> X520PseudonymStringValue { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> X520PseudonymStringValue { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtPseudonym, DecodeX520PseudonymStringValue);
 
-    private static string DecodeX520PseudonymStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source) =>
-        DecodeX520Pseudonym(source).Value;
-
-    public static SupportedAttributesValueBinding<string> DomainComponent { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdDomainComponent, DecodeDomainComponent, Asn1Codecs.Ia5String.Encode);
-
-    private static string DecodeDomainComponent(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+    private static string DecodeX520PseudonymStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
     {
-        return Asn1Codecs.Ia5String.Decode(source.Value);
+        return __OCSP2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value).Value;
     }
 
-    public static SupportedAttributesValueBinding<string> EmailAddress { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdEmailAddress, DecodeEmailAddress, Asn1Codecs.Ia5String.Encode);
-
-    private static string DecodeEmailAddress(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return Asn1Codecs.Ia5String.Decode(source.Value);
-    }
-}
-
-public static class OCSP2009OpenTypeExtensions
-{
-    public static bool TryDecodeExtnValue<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, ExtensionExtnValueBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (!(source.ExtnID.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeExtnValue<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, ExtensionExtnValueDecoderBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (!(source.ExtnID.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeExtnValueReOcspNonce(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out ReadOnlyMemory<byte> value) =>
-        TryDecodeExtnValue(source, ExtensionExtnValueBindings.ReOcspNonce, out value);
-
-    public static bool TryDecodeExtnValueReOcspResponse(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out Asn1Oid[] value) =>
-        TryDecodeExtnValue(source, ExtensionExtnValueBindings.ReOcspResponse, out value);
-
-    public static void SetExtnValue<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, ExtensionExtnValueBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        var result = source;
-        result.ExtnID = binding.Oid;
-        result.ExtnValue = binding.Encoder(value);
-    }
-
-    public static void SetExtnValueReOcspNonce(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, ReadOnlyMemory<byte> value) =>
-        SetExtnValue(source, ExtensionExtnValueBindings.ReOcspNonce, value);
-
-    public static void SetExtnValueReOcspResponse(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, Asn1Oid[] value) =>
-        SetExtnValue(source, ExtensionExtnValueBindings.ReOcspResponse, value);
-    public static bool TryDecodeExtnValue<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, ExtensionExtnValueExtensionBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (!(source.ExtnID.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeExtnValue<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, ExtensionExtnValueExtensionDecoderBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (!(source.ExtnID.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeExtnValueReOcspServiceLocator(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out ServiceLocator value) =>
-        TryDecodeExtnValue(source, ExtensionExtnValueExtensionBindings.ReOcspServiceLocator, out value);
-
-    public static void SetExtnValue<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, ExtensionExtnValueExtensionBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        var result = source;
-        result.ExtnID = binding.Oid;
-        result.ExtnValue = binding.Encoder(value);
-    }
-
-    public static void SetExtnValueReOcspServiceLocator(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, ServiceLocator value) =>
-        SetExtnValue(source, ExtensionExtnValueExtensionBindings.ReOcspServiceLocator, value);
-    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, AlgorithmIdentifierParametersBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (source.Parameters is null) return false;
-        if (!(source.Algorithm.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, AlgorithmIdentifierParametersDecoderBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (source.Parameters is null) return false;
-        if (!(source.Algorithm.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static void SetParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, AlgorithmIdentifierParametersBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        var result = source;
-        result.Algorithm = binding.Oid;
-        result.Parameters = binding.Encoder(value);
-    }
-
-    public static void SetParametersSaDsaWithSHA1(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
-        SetParameters(source, AlgorithmIdentifierParametersBindings.SaDsaWithSHA1, Asn1Null.Value);
-
-    public static void SetParametersSaRsaWithSHA1(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
-        SetParameters(source, AlgorithmIdentifierParametersBindings.SaRsaWithSHA1, Asn1Null.Value);
-
-    public static void SetParametersSaRsaWithMD5(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
-        SetParameters(source, AlgorithmIdentifierParametersBindings.SaRsaWithMD5, Asn1Null.Value);
-
-    public static void SetParametersSaRsaWithMD2(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
-        SetParameters(source, AlgorithmIdentifierParametersBindings.SaRsaWithMD2, Asn1Null.Value);
-    public static bool TryDecodeExtnValue<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, ExtensionExtnValueExtension2Binding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (!(source.ExtnID.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeExtnValue<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, ExtensionExtnValueExtension2DecoderBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (!(source.ExtnID.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static void SetExtnValue<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, ExtensionExtnValueExtension2Binding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        var result = source;
-        result.ExtnID = binding.Oid;
-        result.ExtnValue = binding.Encoder(value);
-    }
-    public static bool TryDecodeExtnValue<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, ExtensionExtnValueExtension3Binding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (!(source.ExtnID.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeExtnValue<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, ExtensionExtnValueExtension3DecoderBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (!(source.ExtnID.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeExtnValueReOcspCrl(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out CrlID value) =>
-        TryDecodeExtnValue(source, ExtensionExtnValueExtension3Bindings.ReOcspCrl, out value);
-
-    public static bool TryDecodeExtnValueReOcspArchiveCutoff(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out DateTimeOffset value) =>
-        TryDecodeExtnValue(source, ExtensionExtnValueExtension3Bindings.ReOcspArchiveCutoff, out value);
-
-    public static bool TryDecodeExtnValueCRLReason(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out Asn1Kit.Modern.PKIX1Implicit2009.CRLReason value) =>
-        TryDecodeExtnValue(source, ExtensionExtnValueExtension3Bindings.CRLReason, out value);
-
-    public static bool TryDecodeExtnValueCertificateIssuer(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[] value) =>
-        TryDecodeExtnValue(source, ExtensionExtnValueExtension3Bindings.CertificateIssuer, out value);
-
-    public static bool TryDecodeExtnValueHoldInstructionCode(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out Asn1Oid value) =>
-        TryDecodeExtnValue(source, ExtensionExtnValueExtension3Bindings.HoldInstructionCode, out value);
-
-    public static bool TryDecodeExtnValueInvalidityDate(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, out DateTimeOffset value) =>
-        TryDecodeExtnValue(source, ExtensionExtnValueExtension3Bindings.InvalidityDate, out value);
-
-    public static void SetExtnValue<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, ExtensionExtnValueExtension3Binding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        var result = source;
-        result.ExtnID = binding.Oid;
-        result.ExtnValue = binding.Encoder(value);
-    }
-
-    public static void SetExtnValueReOcspCrl(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, CrlID value) =>
-        SetExtnValue(source, ExtensionExtnValueExtension3Bindings.ReOcspCrl, value);
-
-    public static void SetExtnValueReOcspArchiveCutoff(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, DateTimeOffset value) =>
-        SetExtnValue(source, ExtensionExtnValueExtension3Bindings.ReOcspArchiveCutoff, value);
-
-    public static void SetExtnValueCRLReason(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, Asn1Kit.Modern.PKIX1Implicit2009.CRLReason value) =>
-        SetExtnValue(source, ExtensionExtnValueExtension3Bindings.CRLReason, value);
-
-    public static void SetExtnValueCertificateIssuer(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[] value) =>
-        SetExtnValue(source, ExtensionExtnValueExtension3Bindings.CertificateIssuer, value);
-
-    public static void SetExtnValueHoldInstructionCode(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, Asn1Oid value) =>
-        SetExtnValue(source, ExtensionExtnValueExtension3Bindings.HoldInstructionCode, value);
-
-    public static void SetExtnValueInvalidityDate(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension source, DateTimeOffset value) =>
-        SetExtnValue(source, ExtensionExtnValueExtension3Bindings.InvalidityDate, value);
-    public static bool TryDecodeValue<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, SupportedAttributesValueBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (!(source.Type.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeValue<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, SupportedAttributesValueDecoderBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (!(source.Type.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeValueName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.Name, out value);
-
-    public static bool TryDecodeValueSurname(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.Surname, out value);
-
-    public static bool TryDecodeValueGivenName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.GivenName, out value);
-
-    public static bool TryDecodeValueInitials(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.Initials, out value);
-
-    public static bool TryDecodeValueGenerationQualifier(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.GenerationQualifier, out value);
-
-    public static bool TryDecodeValueX520CommonName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.X520CommonName, out value);
-
-    public static bool TryDecodeValueX520LocalityName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.X520LocalityName, out value);
-
-    public static bool TryDecodeValueX520StateOrProvinceName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.X520StateOrProvinceName, out value);
-
-    public static bool TryDecodeValueX520OrganizationName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.X520OrganizationName, out value);
-
-    public static bool TryDecodeValueX520OrganizationalUnitName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.X520OrganizationalUnitName, out value);
-
-    public static bool TryDecodeValueX520Title(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.X520Title, out value);
-
-    public static bool TryDecodeValueX520dnQualifier(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out string value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.X520dnQualifier, out value);
-
-    public static bool TryDecodeValueX520countryName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out string value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.X520countryName, out value);
-
-    public static bool TryDecodeValueX520SerialNumber(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out string value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.X520SerialNumber, out value);
-
-    public static bool TryDecodeValueX520Pseudonym(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.X520Pseudonym, out value);
-
-    public static bool TryDecodeValueDomainComponent(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out string value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.DomainComponent, out value);
-
-    public static bool TryDecodeValueEmailAddress(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, out string value) =>
-        TryDecodeValue(source, SupportedAttributesValueBindings.EmailAddress, out value);
-
-    public static void SetValue<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, SupportedAttributesValueBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        var result = source;
-        result.Type = binding.Oid;
-        result.Value = binding.Encoder(value);
-    }
-
-    public static void SetValueName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        SetValue(source, SupportedAttributesValueBindings.Name, value);
-
-    public static void SetValueSurname(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        SetValue(source, SupportedAttributesValueBindings.Surname, value);
-
-    public static void SetValueGivenName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        SetValue(source, SupportedAttributesValueBindings.GivenName, value);
-
-    public static void SetValueInitials(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        SetValue(source, SupportedAttributesValueBindings.Initials, value);
-
-    public static void SetValueGenerationQualifier(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        SetValue(source, SupportedAttributesValueBindings.GenerationQualifier, value);
-
-    public static void SetValueX520CommonName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        SetValue(source, SupportedAttributesValueBindings.X520CommonName, value);
-
-    public static void SetValueX520LocalityName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        SetValue(source, SupportedAttributesValueBindings.X520LocalityName, value);
-
-    public static void SetValueX520StateOrProvinceName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        SetValue(source, SupportedAttributesValueBindings.X520StateOrProvinceName, value);
-
-    public static void SetValueX520OrganizationName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        SetValue(source, SupportedAttributesValueBindings.X520OrganizationName, value);
-
-    public static void SetValueX520OrganizationalUnitName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        SetValue(source, SupportedAttributesValueBindings.X520OrganizationalUnitName, value);
-
-    public static void SetValueX520Title(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        SetValue(source, SupportedAttributesValueBindings.X520Title, value);
-
-    public static void SetValueX520dnQualifier(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, string value) =>
-        SetValue(source, SupportedAttributesValueBindings.X520dnQualifier, value);
-
-    public static void SetValueX520countryName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, string value) =>
-        SetValue(source, SupportedAttributesValueBindings.X520countryName, value);
-
-    public static void SetValueX520SerialNumber(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, string value) =>
-        SetValue(source, SupportedAttributesValueBindings.X520SerialNumber, value);
-
-    public static void SetValueX520Pseudonym(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        SetValue(source, SupportedAttributesValueBindings.X520Pseudonym, value);
-
-    public static void SetValueDomainComponent(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, string value) =>
-        SetValue(source, SupportedAttributesValueBindings.DomainComponent, value);
-
-    public static void SetValueEmailAddress(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source, string value) =>
-        SetValue(source, SupportedAttributesValueBindings.EmailAddress, value);
-    public static bool TryGet<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, ExtensionExtnValueBinding<T> binding, out T value)
-        => TryGet(source, binding, out value, out _);
-
-    public static bool TryGet<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, ExtensionExtnValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.Extension raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.PKIXCommonTypes2009.Extension? match = null;
-        foreach (var item in source)
-        {
-            if (item.ExtnID.Equals(binding.Oid))
-            {
-                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
-                match = item;
-            }
-        }
-        if (match is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-    public static bool TryGetReOcspNonce(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out ReadOnlyMemory<byte> value) =>
-        TryGet(source, ExtensionExtnValueBindings.ReOcspNonce, out value);
-
-    public static bool TryGetReOcspResponse(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out Asn1Oid[] value) =>
-        TryGet(source, ExtensionExtnValueBindings.ReOcspResponse, out value);
-
-    public static bool TryGet<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, ExtensionExtnValueExtensionBinding<T> binding, out T value)
-        => TryGet(source, binding, out value, out _);
-
-    public static bool TryGet<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, ExtensionExtnValueExtensionBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.Extension raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.PKIXCommonTypes2009.Extension? match = null;
-        foreach (var item in source)
-        {
-            if (item.ExtnID.Equals(binding.Oid))
-            {
-                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
-                match = item;
-            }
-        }
-        if (match is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-    public static bool TryGetReOcspServiceLocator(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out ServiceLocator value) =>
-        TryGet(source, ExtensionExtnValueExtensionBindings.ReOcspServiceLocator, out value);
-
-    public static bool TryGet<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, ExtensionExtnValueExtension2Binding<T> binding, out T value)
-        => TryGet(source, binding, out value, out _);
-
-    public static bool TryGet<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, ExtensionExtnValueExtension2Binding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.Extension raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.PKIXCommonTypes2009.Extension? match = null;
-        foreach (var item in source)
-        {
-            if (item.ExtnID.Equals(binding.Oid))
-            {
-                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
-                match = item;
-            }
-        }
-        if (match is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-    public static bool TryGet<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, ExtensionExtnValueExtension3Binding<T> binding, out T value)
-        => TryGet(source, binding, out value, out _);
-
-    public static bool TryGet<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, ExtensionExtnValueExtension3Binding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.Extension raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.PKIXCommonTypes2009.Extension? match = null;
-        foreach (var item in source)
-        {
-            if (item.ExtnID.Equals(binding.Oid))
-            {
-                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
-                match = item;
-            }
-        }
-        if (match is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-    public static bool TryGetReOcspCrl(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out CrlID value) =>
-        TryGet(source, ExtensionExtnValueExtension3Bindings.ReOcspCrl, out value);
-
-    public static bool TryGetReOcspArchiveCutoff(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out DateTimeOffset value) =>
-        TryGet(source, ExtensionExtnValueExtension3Bindings.ReOcspArchiveCutoff, out value);
-
-    public static bool TryGetCRLReason(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out Asn1Kit.Modern.PKIX1Implicit2009.CRLReason value) =>
-        TryGet(source, ExtensionExtnValueExtension3Bindings.CRLReason, out value);
-
-    public static bool TryGetCertificateIssuer(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[] value) =>
-        TryGet(source, ExtensionExtnValueExtension3Bindings.CertificateIssuer, out value);
-
-    public static bool TryGetHoldInstructionCode(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out Asn1Oid value) =>
-        TryGet(source, ExtensionExtnValueExtension3Bindings.HoldInstructionCode, out value);
-
-    public static bool TryGetInvalidityDate(this Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] source, out DateTimeOffset value) =>
-        TryGet(source, ExtensionExtnValueExtension3Bindings.InvalidityDate, out value);
-
-    public static bool TryGet<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, SupportedAttributesValueBinding<T> binding, out T value)
-        => TryGet(source, binding, out value, out _);
-
-    public static bool TryGet<T>(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, SupportedAttributesValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute? match = null;
-        foreach (var item in source)
-        {
-            if (item.Type.Equals(binding.Oid))
-            {
-                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
-                match = item;
-            }
-        }
-        if (match is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-    public static bool TryGetName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGet(source, SupportedAttributesValueBindings.Name, out value);
-
-    public static bool TryGetSurname(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGet(source, SupportedAttributesValueBindings.Surname, out value);
-
-    public static bool TryGetGivenName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGet(source, SupportedAttributesValueBindings.GivenName, out value);
-
-    public static bool TryGetInitials(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGet(source, SupportedAttributesValueBindings.Initials, out value);
-
-    public static bool TryGetGenerationQualifier(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGet(source, SupportedAttributesValueBindings.GenerationQualifier, out value);
-
-    public static bool TryGetX520CommonName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryGet(source, SupportedAttributesValueBindings.X520CommonName, out value);
-
-    public static bool TryGetX520LocalityName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        TryGet(source, SupportedAttributesValueBindings.X520LocalityName, out value);
-
-    public static bool TryGetX520StateOrProvinceName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        TryGet(source, SupportedAttributesValueBindings.X520StateOrProvinceName, out value);
-
-    public static bool TryGetX520OrganizationName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryGet(source, SupportedAttributesValueBindings.X520OrganizationName, out value);
-
-    public static bool TryGetX520OrganizationalUnitName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryGet(source, SupportedAttributesValueBindings.X520OrganizationalUnitName, out value);
-
-    public static bool TryGetX520Title(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryGet(source, SupportedAttributesValueBindings.X520Title, out value);
-
-    public static bool TryGetX520dnQualifier(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out string value) =>
-        TryGet(source, SupportedAttributesValueBindings.X520dnQualifier, out value);
-
-    public static bool TryGetX520countryName(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out string value) =>
-        TryGet(source, SupportedAttributesValueBindings.X520countryName, out value);
-
-    public static bool TryGetX520SerialNumber(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out string value) =>
-        TryGet(source, SupportedAttributesValueBindings.X520SerialNumber, out value);
-
-    public static bool TryGetX520Pseudonym(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        TryGet(source, SupportedAttributesValueBindings.X520Pseudonym, out value);
-
-    public static bool TryGetDomainComponent(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out string value) =>
-        TryGet(source, SupportedAttributesValueBindings.DomainComponent, out value);
-
-    public static bool TryGetEmailAddress(this Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[] source, out string value) =>
-        TryGet(source, SupportedAttributesValueBindings.EmailAddress, out value);
-
-}
-
-public static class TBSRequestOpenTypeExtensions
-{
-    public static bool TryGetRequestExtensions<T>(this TBSRequest source, ExtensionExtnValueBinding<T> binding, out T value)
-        => TryGetRequestExtensions(source, binding, out value, out _);
-
-    public static bool TryGetRequestExtensions<T>(this TBSRequest source, ExtensionExtnValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.Extension raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.PKIXCommonTypes2009.Extension? match = null;
-        if (source.RequestExtensions is { } node0)
-        {
-            foreach (var node1 in node0)
-            {
-                if (node1.ExtnID.Equals(binding.Oid))
-                {
-                    if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetRequestExtensions.");
-                    match = node1;
-                }
-            }
-        }
-        if (match is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-    public static bool TryGetRequestExtensionsReOcspNonce(this TBSRequest source, out ReadOnlyMemory<byte> value) =>
-        TryGetRequestExtensions(source, ExtensionExtnValueBindings.ReOcspNonce, out value);
-
-    public static bool TryGetRequestExtensionsReOcspResponse(this TBSRequest source, out Asn1Oid[] value) =>
-        TryGetRequestExtensions(source, ExtensionExtnValueBindings.ReOcspResponse, out value);
-
-}
-
-public static class RequestOpenTypeExtensions
-{
-    public static bool TryGetSingleRequestExtensions<T>(this Request source, ExtensionExtnValueExtensionBinding<T> binding, out T value)
-        => TryGetSingleRequestExtensions(source, binding, out value, out _);
-
-    public static bool TryGetSingleRequestExtensions<T>(this Request source, ExtensionExtnValueExtensionBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.Extension raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.PKIXCommonTypes2009.Extension? match = null;
-        if (source.SingleRequestExtensions is { } node0)
-        {
-            foreach (var node1 in node0)
-            {
-                if (node1.ExtnID.Equals(binding.Oid))
-                {
-                    if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetSingleRequestExtensions.");
-                    match = node1;
-                }
-            }
-        }
-        if (match is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-    public static bool TryGetSingleRequestExtensionsReOcspServiceLocator(this Request source, out ServiceLocator value) =>
-        TryGetSingleRequestExtensions(source, ExtensionExtnValueExtensionBindings.ReOcspServiceLocator, out value);
-
-}
-
-public static class BasicOCSPResponseOpenTypeExtensions
-{
-    public static bool TryGetSignatureAlgorithm<T>(this BasicOCSPResponse source, AlgorithmIdentifierParametersBinding<T> binding, out T value)
-        => TryGetSignatureAlgorithm(source, binding, out value, out _);
-
-    public static bool TryGetSignatureAlgorithm<T>(this BasicOCSPResponse source, AlgorithmIdentifierParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
-        if (source.SignatureAlgorithm is { } node0)
-        {
-            if (node0.Algorithm.Equals(binding.Oid))
-            {
-                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetSignatureAlgorithm.");
-                match = node0;
-            }
-        }
-        if (match is null) return false;
-        if (match.Parameters is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-}
-
-public static class ResponseDataOpenTypeExtensions
-{
-    public static bool TryGetResponseExtensions<T>(this ResponseData source, ExtensionExtnValueExtension2Binding<T> binding, out T value)
-        => TryGetResponseExtensions(source, binding, out value, out _);
-
-    public static bool TryGetResponseExtensions<T>(this ResponseData source, ExtensionExtnValueExtension2Binding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.Extension raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.PKIXCommonTypes2009.Extension? match = null;
-        if (source.ResponseExtensions is { } node0)
-        {
-            foreach (var node1 in node0)
-            {
-                if (node1.ExtnID.Equals(binding.Oid))
-                {
-                    if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetResponseExtensions.");
-                    match = node1;
-                }
-            }
-        }
-        if (match is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-    public static bool TryGetResponseExtensionsReOcspNonce(this ResponseData source, out ReadOnlyMemory<byte> value) =>
-        TryGetResponseExtensions(source, ExtensionExtnValueExtension2Bindings.ReOcspNonce, out value);
-
-}
-
-public static class SingleResponseOpenTypeExtensions
-{
-    public static bool TryGetSingleExtensions<T>(this SingleResponse source, ExtensionExtnValueExtension3Binding<T> binding, out T value)
-        => TryGetSingleExtensions(source, binding, out value, out _);
-
-    public static bool TryGetSingleExtensions<T>(this SingleResponse source, ExtensionExtnValueExtension3Binding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.Extension raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.PKIXCommonTypes2009.Extension? match = null;
-        if (source.SingleExtensions is { } node0)
-        {
-            foreach (var node1 in node0)
-            {
-                if (node1.ExtnID.Equals(binding.Oid))
-                {
-                    if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetSingleExtensions.");
-                    match = node1;
-                }
-            }
-        }
-        if (match is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
-    public static bool TryGetSingleExtensionsReOcspCrl(this SingleResponse source, out CrlID value) =>
-        TryGetSingleExtensions(source, ExtensionExtnValueExtension3Bindings.ReOcspCrl, out value);
-
-    public static bool TryGetSingleExtensionsReOcspArchiveCutoff(this SingleResponse source, out DateTimeOffset value) =>
-        TryGetSingleExtensions(source, ExtensionExtnValueExtension3Bindings.ReOcspArchiveCutoff, out value);
-
-    public static bool TryGetSingleExtensionsCRLReason(this SingleResponse source, out Asn1Kit.Modern.PKIX1Implicit2009.CRLReason value) =>
-        TryGetSingleExtensions(source, ExtensionExtnValueExtension3Bindings.CRLReason, out value);
-
-    public static bool TryGetSingleExtensionsCertificateIssuer(this SingleResponse source, out Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[] value) =>
-        TryGetSingleExtensions(source, ExtensionExtnValueExtension3Bindings.CertificateIssuer, out value);
-
-    public static bool TryGetSingleExtensionsHoldInstructionCode(this SingleResponse source, out Asn1Oid value) =>
-        TryGetSingleExtensions(source, ExtensionExtnValueExtension3Bindings.HoldInstructionCode, out value);
-
-    public static bool TryGetSingleExtensionsInvalidityDate(this SingleResponse source, out DateTimeOffset value) =>
-        TryGetSingleExtensions(source, ExtensionExtnValueExtension3Bindings.InvalidityDate, out value);
-
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> DomainComponent { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdDomainComponent, Asn1Codecs.Ia5String);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> EmailAddress { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdEmailAddress, Asn1Codecs.Ia5String);
 }
 
 public static class ServiceLocatorOpenTypeExtensions
 {
-    public static bool TryGetIssuer<T>(this ServiceLocator source, SupportedAttributesValueBinding<T> binding, out T value)
+    public static bool TryGetIssuer<T>(this ServiceLocator source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value)
         => TryGetIssuer(source, binding, out value, out _);
 
-    public static bool TryGetIssuer<T>(this ServiceLocator source, SupportedAttributesValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
+    public static bool TryGetIssuer<T>(this ServiceLocator source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
     {
         value = default!;
         raw = default!;
@@ -2349,60 +1377,14 @@ public static class ServiceLocatorOpenTypeExtensions
         }
         if (match is null) return false;
         raw = match;
-        value = binding.Decoder(match);
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value);
+        }
+        else
+            value = binding.Decoder!(match);
         return true;
     }
-
-    public static bool TryGetIssuerName(this ServiceLocator source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGetIssuer(source, SupportedAttributesValueBindings.Name, out value);
-
-    public static bool TryGetIssuerSurname(this ServiceLocator source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGetIssuer(source, SupportedAttributesValueBindings.Surname, out value);
-
-    public static bool TryGetIssuerGivenName(this ServiceLocator source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGetIssuer(source, SupportedAttributesValueBindings.GivenName, out value);
-
-    public static bool TryGetIssuerInitials(this ServiceLocator source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGetIssuer(source, SupportedAttributesValueBindings.Initials, out value);
-
-    public static bool TryGetIssuerGenerationQualifier(this ServiceLocator source, out Asn1Kit.Modern.PKIX1Explicit2009.X520name value) =>
-        TryGetIssuer(source, SupportedAttributesValueBindings.GenerationQualifier, out value);
-
-    public static bool TryGetIssuerX520CommonName(this ServiceLocator source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryGetIssuer(source, SupportedAttributesValueBindings.X520CommonName, out value);
-
-    public static bool TryGetIssuerX520LocalityName(this ServiceLocator source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        TryGetIssuer(source, SupportedAttributesValueBindings.X520LocalityName, out value);
-
-    public static bool TryGetIssuerX520StateOrProvinceName(this ServiceLocator source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        TryGetIssuer(source, SupportedAttributesValueBindings.X520StateOrProvinceName, out value);
-
-    public static bool TryGetIssuerX520OrganizationName(this ServiceLocator source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryGetIssuer(source, SupportedAttributesValueBindings.X520OrganizationName, out value);
-
-    public static bool TryGetIssuerX520OrganizationalUnitName(this ServiceLocator source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryGetIssuer(source, SupportedAttributesValueBindings.X520OrganizationalUnitName, out value);
-
-    public static bool TryGetIssuerX520Title(this ServiceLocator source, out Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName value) =>
-        TryGetIssuer(source, SupportedAttributesValueBindings.X520Title, out value);
-
-    public static bool TryGetIssuerX520dnQualifier(this ServiceLocator source, out string value) =>
-        TryGetIssuer(source, SupportedAttributesValueBindings.X520dnQualifier, out value);
-
-    public static bool TryGetIssuerX520countryName(this ServiceLocator source, out string value) =>
-        TryGetIssuer(source, SupportedAttributesValueBindings.X520countryName, out value);
-
-    public static bool TryGetIssuerX520SerialNumber(this ServiceLocator source, out string value) =>
-        TryGetIssuer(source, SupportedAttributesValueBindings.X520SerialNumber, out value);
-
-    public static bool TryGetIssuerX520Pseudonym(this ServiceLocator source, out Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName value) =>
-        TryGetIssuer(source, SupportedAttributesValueBindings.X520Pseudonym, out value);
-
-    public static bool TryGetIssuerDomainComponent(this ServiceLocator source, out string value) =>
-        TryGetIssuer(source, SupportedAttributesValueBindings.DomainComponent, out value);
-
-    public static bool TryGetIssuerEmailAddress(this ServiceLocator source, out string value) =>
-        TryGetIssuer(source, SupportedAttributesValueBindings.EmailAddress, out value);
 
 }
 

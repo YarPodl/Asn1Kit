@@ -274,25 +274,45 @@ END";
         var bValue = Decode(bType, "3109300706022A040101FF");
         var aBinding = assembly.GetType("M.IntegersValueBindings")!.GetProperty("IntegerEntry")!.GetValue(null)!;
         var bBinding = assembly.GetType("M.BooleansValueBindings")!.GetProperty("BooleanEntry")!.GetValue(null)!;
-        var aDecode = aType.GetMethod("TryDecodeItemValue")!.MakeGenericMethod(typeof(int));
-        var bDecode = bType.GetMethod("TryDecodeItemValue")!.MakeGenericMethod(typeof(bool));
-        object?[] aArgs = { aBinding, null };
-        object?[] bArgs = { bBinding, null };
-        Assert.True((bool)aDecode.Invoke(aValue, aArgs)!);
-        Assert.Equal(42, aArgs[1]);
-        Assert.True((bool)bDecode.Invoke(bValue, bArgs)!);
-        Assert.Equal(true, bArgs[1]);
-        Assert.Throws<ArgumentException>(() => aDecode.Invoke(aValue, new[] {bBinding, null}));
+        var extensions = assembly.GetType("M.MOpenTypeExtensions")!;
+        var aItem = aType.GetProperty("Item")!.GetValue(aValue)!;
+        var bItem = bType.GetProperty("Item")!.GetValue(bValue)!;
+        MethodInfo DecodeMethod(Type resultType) => extensions.GetMethods()
+            .Where(m => m.Name == "TryDecodeValue" && m.IsGenericMethodDefinition)
+            .Select(m => new { Method = m, Parameters = m.GetParameters() })
+            .Single(m => m.Parameters.Length == 3 &&
+                         m.Parameters[0].ParameterType.Name == "Box" &&
+                         m.Parameters[1].ParameterType.Name.StartsWith("ValueBinding", StringComparison.Ordinal) &&
+                         m.Parameters[2].Name == "value")
+            .Method.MakeGenericMethod(resultType);
+        var aDecode = DecodeMethod(typeof(int));
+        var bDecode = DecodeMethod(typeof(bool));
+        object?[] aArgs = { aItem, aBinding, null };
+        object?[] bArgs = { bItem, bBinding, null };
+        Assert.True((bool)aDecode.Invoke(null, aArgs)!);
+        Assert.Equal(42, aArgs[2]);
+        Assert.True((bool)bDecode.Invoke(null, bArgs)!);
+        Assert.Equal(true, bArgs[2]);
+        // Shared ValueBinding shape: a Booleans key on an Integers carrier simply does not match.
+        Assert.False((bool)bDecode.Invoke(null, new[] {aItem, bBinding, null})!);
 
         var unknown = Decode(aType, "3009300706022A0502012A");
-        Assert.False((bool)aDecode.Invoke(unknown, new[] {aBinding, null})!);
+        var unknownItem = aType.GetProperty("Item")!.GetValue(unknown)!;
+        Assert.False((bool)aDecode.Invoke(null, new[] {unknownItem, aBinding, null})!);
         var malformed = Decode(aType, "3009300706022A030101FF");
+        var malformedItem = aType.GetProperty("Item")!.GetValue(malformed)!;
         var error = Assert.Throws<TargetInvocationException>(() =>
-            aDecode.Invoke(malformed, new[] {aBinding, null}));
+            aDecode.Invoke(null, new[] {malformedItem, aBinding, null}));
         Assert.IsType<Asn1Exception>(error.InnerException);
 
-        aType.GetMethod("SetItemValue")!.MakeGenericMethod(typeof(int))
-            .Invoke(aValue, new[] {aBinding, (object)42});
+        extensions.GetMethods()
+            .Where(m => m.Name == "SetValue" && m.IsGenericMethodDefinition)
+            .Select(m => new { Method = m, Parameters = m.GetParameters() })
+            .Single(m => m.Parameters.Length == 3 &&
+                         m.Parameters[0].ParameterType.Name == "Box" &&
+                         m.Parameters[1].ParameterType.Name.StartsWith("ValueBinding", StringComparison.Ordinal))
+            .Method.MakeGenericMethod(typeof(int))
+            .Invoke(null, new[] {aItem, aBinding, (object)42});
         var writer = new Asn1Writer();
         aType.GetMethod("Encode", new[] {typeof(Asn1Writer)})!.Invoke(aValue, new object[] { writer });
         Assert.Equal("3009300706022A0302012A", Convert.ToHexString(writer.Encode()));

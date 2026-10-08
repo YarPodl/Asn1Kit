@@ -78,43 +78,46 @@ public sealed class OpenTypeBindingTests
         Assert.Contains("public sealed class AlgorithmInfo", generated);
         Assert.DoesNotContain("public sealed class DataEntryAlgorithmInfo", generated);
         Assert.DoesNotContain("public sealed class EmptyEntryAlgorithmInfo", generated);
-        Assert.Contains("public sealed record MixedParametersBinding<T>", generated);
+        Assert.Contains("public sealed record ParametersBinding<T>", generated);
+        Assert.DoesNotContain("public sealed record MixedParametersBinding<T>", generated);
         Assert.DoesNotContain("BindingCodec", generated);
         Assert.DoesNotContain("Decode0(", generated);
         Assert.Contains("Asn1Codecs.Null", generated);
         Assert.Contains("Asn1Codecs.Int32", generated);
-        Assert.Contains("DecodeEmptyEntry, Asn1Codecs.Null.Encode", generated);
-        Assert.Contains("DecodeDataEntry, Asn1Codecs.Int32.Encode", generated);
+        Assert.Contains("new(", generated);
+        Assert.Contains("Asn1Codecs.Null)", generated);
+        Assert.Contains("Asn1Codecs.Int32)", generated);
+        Assert.DoesNotContain("DecodeEmptyEntry", generated);
+        Assert.DoesNotContain("DecodeDataEntry", generated);
         Assert.DoesNotContain("private static Asn1Any EncodeEmptyEntry", generated);
         Assert.DoesNotContain("private static Asn1Any EncodeDataEntry", generated);
-        Assert.Contains("TryDecodeMixedParameters<T>(MixedParametersBinding<T> binding, out T value)", generated);
-        Assert.Contains("public void SetMixedParametersEmptyEntry()", generated);
-        Assert.DoesNotContain("TryDecodeMixedParameters<T>(out T value)", generated);
-        Assert.DoesNotContain("TryDecodeMixedParametersEmptyEntry", generated);
-        Assert.DoesNotContain("SetMixedParametersEmptyEntry(Asn1Null value)", generated);
+        Assert.DoesNotContain("TryDecodeMixedParameters", generated);
+        Assert.DoesNotContain("SetMixedParameters", generated);
+        Assert.DoesNotContain("TryDecodeEmptyParameters", generated);
+        Assert.DoesNotContain("SetEmptyParameters", generated);
+        Assert.Contains("TryDecodeParameters<T>(this AlgorithmInfo source, ParametersBinding<T> binding, out T value)", generated);
+        Assert.Contains("SetParameters<T>(this AlgorithmInfo source, ParametersBinding<T> binding, T value)", generated);
         Assert.DoesNotContain("out Asn1Null value", generated);
-        Assert.DoesNotContain("TryGetMixedEmptyEntry", generated);
-        Assert.DoesNotContain("TryGetEmptyEmptyEntry", generated);
-        Assert.Contains("TryGetMixed<T>(this Holder source, MixedParametersBinding<T> binding, out T value)", generated);
-        Assert.Contains("TryGetEmpty<T>", generated);
+        Assert.DoesNotContain("TryGetMixed", generated);
+        Assert.DoesNotContain("TryGetEmpty", generated);
         Assert.Equal(42, Run(@"
           var raw = AlgorithmInfo.Decode(new Asn1Reader(Convert.FromHexString(""300606022A030500"")));
           var holder = new Holder {Mixed = raw, Empty = raw};
-          if (!holder.TryDecodeMixedParameters(MixedParametersBindings.EmptyEntry, out _) ||
-              !holder.TryDecodeEmptyParameters(EmptyParametersBindings.EmptyEntry, out _)) throw new Exception();
-          holder.SetMixedParametersEmptyEntry();
+          if (!holder.Mixed.TryDecodeParameters(MixedParametersBindings.EmptyEntry, out _) ||
+              !holder.Empty.TryDecodeParameters(EmptyParametersBindings.EmptyEntry, out _)) throw new Exception();
+          holder.Mixed.SetParameters(MixedParametersBindings.EmptyEntry, Asn1Null.Value);
           var writer = new Asn1Writer(); raw.Encode(writer);
           if (Convert.ToHexString(writer.Encode()) != ""300606022A030500"") throw new Exception();
           holder.Mixed = AlgorithmInfo.Decode(new Asn1Reader(Convert.FromHexString(""300406022A03"")));
-          if (holder.TryDecodeMixedParameters(MixedParametersBindings.EmptyEntry, out _) ||
-              holder.TryGetMixed(MixedParametersBindings.DataEntry, out _)) throw new Exception();
+          if (holder.Mixed.TryDecodeParameters(MixedParametersBindings.EmptyEntry, out _) ||
+              holder.Mixed.TryDecodeParameters(MixedParametersBindings.DataEntry, out _)) throw new Exception();
           holder.Mixed = raw;
           raw.Parameters = new Asn1Any(Convert.FromHexString(""02012A""));
-          try { holder.TryDecodeMixedParameters(MixedParametersBindings.EmptyEntry, out _); throw new Exception(); }
+          try { holder.Mixed.TryDecodeParameters(MixedParametersBindings.EmptyEntry, out _); throw new Exception(); }
           catch (Asn1Exception) { }
           holder.Mixed = new AlgorithmInfo();
-          holder.Mixed.SetParametersDataEntry(42);
-          if (!holder.TryGetMixed(MixedParametersBindings.DataEntry, out var typed)) throw new Exception();
+          holder.Mixed.SetParameters(MixedParametersBindings.DataEntry, 42);
+          if (!holder.Mixed.TryDecodeParameters(MixedParametersBindings.DataEntry, out var typed)) throw new Exception();
           return typed;
         ", document => document.Modules[0].Types.Single(t => t.Name == "AlgorithmIdentifier").Options =
             IrOptions.SetCSharp(null, "typeName", "AlgorithmInfo"), source));
@@ -136,7 +139,7 @@ public sealed class OpenTypeBindingTests
           END";
         Assert.Equal(42, Run(@"
           var key = new System.Numerics.BigInteger(9);
-          var binding = MixedParametersBindings.Create<int>(key,
+          var binding = new ParametersBinding<int>(key,
             static source => {
               var reader = new Asn1Reader(source.Parameters!.Value.EncodedMemory);
               var decoded = reader.ReadInt32(Asn1Tag.Integer);
@@ -151,10 +154,10 @@ public sealed class OpenTypeBindingTests
           var holder = new Holder {Mixed = new AlgorithmIdentifier {
             Algorithm = Asn1Integer.FromInt32(9),
             Parameters = new Asn1Any(Convert.FromHexString(""020107"")) }};
-          if (!holder.TryDecodeMixedParameters(binding, out var initial) || initial != 7)
+          if (!holder.Mixed.TryDecodeParameters(binding, out var initial) || initial != 7)
             throw new Exception();
-          holder.SetMixedParameters(binding, 42);
-          if (!holder.TryDecodeMixedParameters(binding, out var updated)) throw new Exception();
+          holder.Mixed.SetParameters(binding, 42);
+          if (!holder.Mixed.TryDecodeParameters(binding, out var updated)) throw new Exception();
           return updated;
         ", source: source));
     }
@@ -177,13 +180,18 @@ public sealed class OpenTypeBindingTests
           END";
         var assignment = option == "lazy"
             ? "Asn1Lazy<AlgorithmInfo>.FromValue(info)"
-            : "info";
+            : "new Asn1Value<AlgorithmInfo>(info)";
+        var rewrap = option == "lazy"
+            ? "Asn1Lazy<AlgorithmInfo>.FromValue(container)"
+            : "new Asn1Value<AlgorithmInfo>(container)";
         Assert.Equal(42, Run(@"
           var descriptor = MixedParametersBindings.DataEntry;
           var info = new AlgorithmInfo {Algorithm = descriptor.Oid};
           var holder = new Holder {Mixed = " + assignment + @"};
-          holder.SetMixedParametersDataEntry(42);
-          if (!holder.TryDecodeMixedParameters(descriptor, out var value)) throw new Exception();
+          var container = holder.Mixed.Value;
+          container.SetParameters(MixedParametersBindings.DataEntry, 42);
+          holder.Mixed = " + rewrap + @";
+          if (!holder.Mixed.Value.TryDecodeParameters(descriptor, out var value)) throw new Exception();
           return value;
         ", document =>
         {
@@ -204,10 +212,12 @@ public sealed class OpenTypeBindingTests
         IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
         var files = new CSharpBackend().Generate(document);
         var generated = Assert.Single(files).Contents;
-        Assert.Contains("FlagsPayloadBinding<Asn1Null> BooleanEntry", generated);
-        Assert.Contains("FlagsBinding<Asn1Null[]> BooleanEntry", generated);
-        Assert.Contains("TryGetOther<T>", generated);
-        Assert.Contains("TryGetUnsignedAttrs<T>", generated);
+        Assert.Contains("PayloadBinding<Asn1Null> BooleanEntry", generated);
+        Assert.Contains("ValuesBinding<Asn1Null> BooleanEntry", generated);
+        Assert.Contains("TryGet<T>(this Extension[]? source, PayloadBinding<T> binding, out T value)", generated);
+        Assert.Contains("TryGet<T>(this Attribute[]? source, ValuesBinding<T> binding, out T[] value)", generated);
+        Assert.DoesNotContain("TryGetOther<T>", generated);
+        Assert.DoesNotContain("TryGetUnsignedAttrs<T>", generated);
         Assert.DoesNotContain("out Asn1Null value", generated);
         Assert.DoesNotContain("TryGetOtherBooleanEntry", generated);
         Assert.DoesNotContain("public sealed class BooleanEntryExtension", generated);
@@ -276,7 +286,7 @@ public sealed class OpenTypeBindingTests
         }}});
         var backend = new CSharpBackend();
         var source = backend.Generate(document).Single(f => f.RelativePath == "M.g.cs").Contents;
-        Assert.Contains("new(MOids.IdLocal, DecodeIntegerEntry, EncodeIntegerEntry)", source);
+        Assert.Contains("new(MOids.IdLocal, Asn1Codecs.Int32)", source);
         local.Options = new System.Text.Json.Nodes.JsonObject {["generate"] = false};
         document.Modules[0].Values[0].Options = new System.Text.Json.Nodes.JsonObject {["generate"] = false};
         var files = backend.Generate(document);
@@ -291,20 +301,20 @@ public sealed class OpenTypeBindingTests
     public void SourcesRemainIndependentAndDifferentOidsHaveDifferentBindings()
     {
         Assert.Equal(true, Run(@"
-          var first = new Extension(); first.SetPayloadIntegerEntry(42);
-          var second = new Extension(); second.SetPayloadAnotherEntry(7);
-          var signed = new Attribute(); signed.SetValuesIntegerEntry(new[] {7, 42});
-          var unsigned = new Attribute(); unsigned.SetValuesBooleanEntry(new[] {true});
+          var first = new Extension(); first.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
+          var second = new Extension(); second.SetPayload(NumbersPayloadBindings.AnotherEntry, 7);
+          var signed = new Attribute(); signed.SetValues(NumbersBindings.IntegerEntry, new[] {7, 42});
+          var unsigned = new Attribute(); unsigned.SetValues(FlagsBindings.BooleanEntry, new[] {true});
           var holder = new Holder { Extensions = new[] { first, second },
             SignedAttrs = new[] {signed}, UnsignedAttrs = new[] {unsigned} };
-          if (!holder.TryGetExtensions(NumbersPayloadBindings.IntegerEntry, out var a) || a != 42 ||
-              !holder.TryGetExtensionsAnotherEntry(out var b) || b != 7 ||
-              !holder.TryGetSignedAttrs(NumbersBindings.IntegerEntry, out var c) || c.Length != 2 ||
-              !holder.TryGetUnsignedAttrsBooleanEntry(out var d) || !d[0]) return false;
-          if (holder.TryGetOther(FlagsPayloadBindings.BooleanEntry, out _) ||
+          if (!holder.Extensions.TryGet(NumbersPayloadBindings.IntegerEntry, out var a) || a != 42 ||
+              !holder.Extensions.TryGet(NumbersPayloadBindings.AnotherEntry, out var b) || b != 7 ||
+              !holder.SignedAttrs.TryGet(NumbersBindings.IntegerEntry, out var c) || c.Length != 2 ||
+              !holder.UnsignedAttrs.TryGet(FlagsBindings.BooleanEntry, out var d) || !d[0]) return false;
+          if (holder.Other.TryGet(FlagsPayloadBindings.BooleanEntry, out _) ||
               first.TryDecodePayload(NumbersPayloadBindings.AnotherEntry, out _)) return false;
-          signed.SetValuesIntegerEntry(Array.Empty<int>());
-          return holder.TryGetSignedAttrsIntegerEntry(out var empty) && empty.Length == 0;
+          signed.SetValues(NumbersBindings.IntegerEntry, Array.Empty<int>());
+          return holder.SignedAttrs.TryGet(NumbersBindings.IntegerEntry, out var empty) && empty.Length == 0;
         "));
     }
 
@@ -313,28 +323,29 @@ public sealed class OpenTypeBindingTests
     {
         var document = new Asn1Compiler().CompileText(Source);
         var generated = Assert.Single(new CSharpBackend().Generate(document)).Contents;
-        Assert.Contains("public sealed record NumbersPayloadBinding<T>", generated);
-        Assert.Contains("public static NumbersPayloadBinding<int> IntegerEntry", generated);
-        Assert.Contains("TryGetExtensions<T>(this Holder source, NumbersPayloadBinding<T> binding, out T value)", generated);
-        Assert.Contains("TryGetExtensionsIntegerEntry(this Holder source, out int value)", generated);
-        Assert.Contains("out T value, out M.Extension raw", generated);
-        Assert.DoesNotContain("TryGetExtensions<T>(this Holder source, out T value)", generated);
-        Assert.Contains("TryDecodePayload<T>(this M.Extension source, NumbersPayloadBinding<T> binding, out T value)", generated);
-        Assert.Contains("SetPayload<T>(this M.Extension source, NumbersPayloadBinding<T> binding, T value)", generated);
-        Assert.Contains("TryDecodePayloadIntegerEntry(this M.Extension source, out int value)", generated);
-        Assert.DoesNotContain("TryDecodePayload<T>(this M.Extension source, out T value)", generated);
+        Assert.Contains("public sealed record PayloadBinding<T>", generated);
+        Assert.DoesNotContain("public sealed record NumbersPayloadBinding<T>", generated);
+        Assert.Contains("public static PayloadBinding<int> IntegerEntry", generated);
+        Assert.Contains("TryGet<T>(this Extension[]? source, PayloadBinding<T> binding, out T value)", generated);
+        Assert.DoesNotContain("TryGetExtensions", generated);
+        Assert.Contains("out T value, out Extension raw", generated);
+        Assert.Contains("TryDecodePayload<T>(this Extension source, PayloadBinding<T> binding, out T value)", generated);
+        Assert.Contains("SetPayload<T>(this Extension source, PayloadBinding<T> binding, T value)", generated);
+        Assert.DoesNotContain("TryDecodePayloadIntegerEntry", generated);
+        Assert.DoesNotContain("TryDecodePayload<T>(this Extension source, out T value)", generated);
         Assert.DoesNotContain("typeof(T)", generated);
 
         var start = generated.IndexOf(
-            "TryGetExtensions<T>(this Holder source, NumbersPayloadBinding<T> binding, out T value, out M.Extension raw)",
+            "TryGet<T>(this Extension[]? source, PayloadBinding<T> binding, out T value, out Extension raw)",
             StringComparison.Ordinal);
         Assert.True(start >= 0);
-        var end = generated.IndexOf("TryGetExtensionsIntegerEntry", start, StringComparison.Ordinal);
+        var end = generated.IndexOf("\n    public static", start + 1, StringComparison.Ordinal);
         Assert.True(end > start);
         var getter = generated[start..end];
         Assert.DoesNotContain("typeof(T)", getter);
         Assert.DoesNotContain("TryFromExtension(match", getter);
-        Assert.Contains("value = binding.Decoder(match);", getter);
+        Assert.Contains("binding.Codec is { } codec", getter);
+        Assert.Contains("if (source is null) return false;", getter);
     }
 
     [Fact]
@@ -342,13 +353,13 @@ public sealed class OpenTypeBindingTests
     {
         Assert.Equal(99, Run(@"
           var raw = new Extension();
-          raw.SetPayloadIntegerEntry(42);
-          if (!raw.TryDecodePayloadIntegerEntry(out var known) || known != 42)
+          raw.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
+          if (!raw.TryDecodePayload(NumbersPayloadBindings.IntegerEntry, out var known) || known != 42)
               throw new Exception();
           var oid = Asn1Oid.Parse(""1.2.99"");
           raw.Oid = oid;
           raw.Critical = true;
-          var custom = NumbersPayloadBindings.Create<int>(oid,
+          var custom = new PayloadDecoderBinding<int>(oid,
               static source => source.Critical ? 99 : 0);
           if (!raw.TryDecodePayload(custom, out var value)) throw new Exception();
           return value;
@@ -360,7 +371,7 @@ public sealed class OpenTypeBindingTests
     {
         Assert.Equal(99, Run(@"
           var raw = new Extension {Oid = Asn1Integer.FromInt32(99), Critical = true};
-          var custom = NumbersPayloadBindings.Create<int>(
+          var custom = new PayloadDecoderBinding<int>(
               new System.Numerics.BigInteger(99), static source => source.Critical ? 99 : 0);
           if (!raw.TryDecodePayload(custom, out var value)) throw new Exception();
           return value;
@@ -369,19 +380,16 @@ public sealed class OpenTypeBindingTests
     }
 
     [Fact]
-    public void ContextualDescriptorTypesPreventBorrowingFromAnotherTable()
+    public void ContextualDescriptorsAllowBorrowingAcrossTablesOnSameCarrierShape()
     {
-        // Container TryDecodePayload overloads accept each table's Binding<T>; owner TryGet
-        // stays table-scoped and rejects a foreign descriptor type.
-        var files = new CSharpBackend().Generate(new Asn1Compiler().CompileText(Source));
-        const string probe = @"namespace M;
-          public static class Probe { public static void Run(Holder holder) {
-            holder.TryGetExtensions(FlagsPayloadBindings.BooleanEntry, out _);
-          } }";
-        var error = Assert.Throws<InvalidOperationException>(() =>
-            ModernAsn1Tests.CompileGenerated(files.Select(f => f.Contents).Append(probe).ToArray()));
-        Assert.Contains("CS0411", error.Message);
-        Assert.Contains("NumbersPayloadBinding", error.Message);
+        // Shared PayloadBinding lets a Flags descriptor type-check on Extensions TryGet;
+        // the OID simply does not match any Numbers extension at runtime.
+        Assert.Equal(false, Run(@"
+          var raw = new Extension();
+          raw.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
+          var holder = new Holder { Extensions = new[] { raw } };
+          return holder.Extensions.TryGet(FlagsPayloadBindings.BooleanEntry, out _);
+        "));
     }
 
     [Fact]
@@ -391,7 +399,7 @@ public sealed class OpenTypeBindingTests
           var oid = Asn1Oid.Parse(""1.2.99"");
           var raw = new Extension {Critical = true};
           var calls = 0;
-          var binding = NumbersPayloadBindings.Create<int>(oid, source =>
+          var binding = new PayloadBinding<int>(oid, source =>
           {
             calls++;
             var reader = new Asn1Reader(source.Payload.Value.EncodedMemory);
@@ -406,27 +414,24 @@ public sealed class OpenTypeBindingTests
           });
           raw.SetPayload(binding, 7);
           var holder = new Holder {Extensions = new[] {raw}};
-          if (!holder.TryGetExtensions(binding, out var value, out var matched) || value != 7 ||
+          if (!holder.Extensions.TryGet(binding, out var value, out var matched) || value != 7 ||
               !matched.Critical || matched.Oid != oid) throw new Exception();
           holder.Extensions = new[] {raw, raw};
-          try { holder.TryGetExtensions(binding, out _); throw new Exception(); }
+          try { holder.Extensions.TryGet(binding, out _); throw new Exception(); }
           catch (Asn1Exception) { }
           return calls;
         "));
     }
 
     [Fact]
-    public void DescriptorTypesPreventBorrowingFromAnotherTable()
+    public void AttributeDescriptorsAllowBorrowingAcrossTablesOnSameCarrierShape()
     {
-        var files = new CSharpBackend().Generate(new Asn1Compiler().CompileText(Source));
-        const string probe = @"namespace M;
-          public static class Probe { public static void Run() {
-            new Holder().TryGetUnsignedAttrs(NumbersBindings.IntegerEntry, out _);
-          } }";
-        var error = Assert.Throws<InvalidOperationException>(() =>
-            ModernAsn1Tests.CompileGenerated(files.Select(f => f.Contents).Append(probe).ToArray()));
-        Assert.Contains("CS0411", error.Message);
-        Assert.Contains("FlagsBinding", error.Message);
+        Assert.Equal(false, Run(@"
+          var attr = new Attribute();
+          attr.SetValues(NumbersBindings.IntegerEntry, new[] { 1 });
+          var holder = new Holder { UnsignedAttrs = new[] { attr } };
+          return holder.UnsignedAttrs.TryGet(FlagsBindings.BooleanEntry, out _);
+        "));
     }
 
     [Theory]
@@ -438,7 +443,7 @@ public sealed class OpenTypeBindingTests
     {
         var body = @"
           var raw = new Extension();
-          raw.SetPayloadIntegerEntry(42);
+          raw.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
           raw.Payload = Asn1Contained<Asn1Any>.FromEncoded(Convert.FromHexString(""" + contents + @"""));
           return raw.TryDecodePayload(NumbersPayloadBindings.IntegerEntry, out _);";
         if (fails) Assert.Throws<Asn1Exception>(() => Run(body));
@@ -451,13 +456,13 @@ public sealed class OpenTypeBindingTests
     {
         var error = Assert.Throws<Asn1Exception>(() => Run(@"
           var raw = new Extension();
-          raw.SetPayloadIntegerEntry(42);
+          raw.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
           raw.Payload = Asn1Contained<Asn1Any>.FromEncoded(new byte[] {0xFF});
           var holder = new Holder { Extensions = new[] {raw, raw} };
-          return holder.TryGetExtensions(NumbersPayloadBindings.IntegerEntry, out _);
+          return holder.Extensions.TryGet(NumbersPayloadBindings.IntegerEntry, out _);
         "));
         Assert.Contains("Multiple values", error.Message);
-        Assert.Equal(false, Run("return new Holder().TryGetExtensionsIntegerEntry(out _);"));
+        Assert.Equal(false, Run("return new Holder().Extensions.TryGet(NumbersPayloadBindings.IntegerEntry, out _);"));
     }
 
     [Fact]
@@ -467,7 +472,8 @@ public sealed class OpenTypeBindingTests
           var raw = Extension.Decode(new Asn1Reader(Convert.FromHexString(
               ""301006022A030101FF2480040302012A0000""), Asn1Encoding.Ber));
           var holder = new Holder { Items = new[] {raw} };
-          if (!holder.TryGetItems(NumbersPayloadBindings.IntegerEntry, out var value)) throw new Exception();
+          if (holder.Items?.Value.TryGet(NumbersPayloadBindings.IntegerEntry, out var value) != true)
+              throw new Exception();
           return value;
         ", document => IrOptionsPatch.Apply(document, System.Text.Json.Nodes.JsonNode.Parse(@"{
           ""fields"": {""M.Holder.extensions"": {""retainEncoded"": true,
@@ -479,10 +485,10 @@ public sealed class OpenTypeBindingTests
     public void ValueTypeContainersAndLazySourcesWork()
     {
         Assert.Equal(42, Run(@"
-          var raw = new Extension(); raw.SetPayloadIntegerEntry(42);
+          var raw = new Extension(); raw.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
           var writer = new Asn1Writer(); raw.Encode(writer);
           var holder = new Holder { Extensions = new[] {Extension.Decode(new Asn1Reader(writer.Encode()))} };
-          if (!holder.TryGetExtensionsIntegerEntry(out var value)) throw new Exception();
+          if (!holder.Extensions.TryGet(NumbersPayloadBindings.IntegerEntry, out var value)) throw new Exception();
           return value;
         ", document =>
         {
@@ -492,10 +498,11 @@ public sealed class OpenTypeBindingTests
         Assert.Equal(7, Run(@"
           var original = new Holder {Extensions = Asn1Lazy<Extension[]>.FromValue(
               new[] {new Extension()})};
-          original.Extensions.Value[0].SetPayloadIntegerEntry(7);
+          original.Extensions.Value[0].SetPayload(NumbersPayloadBindings.IntegerEntry, 7);
           var writer = new Asn1Writer(); original.Encode(writer);
           var holder = Holder.Decode(new Asn1Reader(writer.Encode()));
-          if (!holder.TryGetExtensions(NumbersPayloadBindings.IntegerEntry, out var value)) throw new Exception();
+          if (holder.Extensions?.Value.TryGet(NumbersPayloadBindings.IntegerEntry, out var value) != true)
+              throw new Exception();
           return value;
         ", document => IrOptionsPatch.ApplyJson(document,
             "{\"fields\":{\"M.Holder.extensions\":{\"lazy\":true}}}")));
@@ -507,10 +514,10 @@ public sealed class OpenTypeBindingTests
         foreach (var option in new[] { "retainEncoded", "lazy" })
             Assert.Equal(42, Run(@"
               var raw = new Attribute();
-              raw.SetValuesIntegerEntry(new[] {7, 42});
+              raw.SetValues(NumbersBindings.IntegerEntry, new[] {7, 42});
               var writer = new Asn1Writer(); raw.Encode(writer);
               raw = Attribute.Decode(new Asn1Reader(writer.Encode()));
-              if (!raw.TryDecodeValuesIntegerEntry(out var typed)) throw new Exception();
+              if (!raw.TryDecodeValues(NumbersBindings.IntegerEntry, out var typed)) throw new Exception();
               return typed[1];
             ", document => IrOptionsPatch.ApplyJson(document,
                 "{\"fields\":{\"M.Attribute.values\":{\"" + option + "\":true}}}")));
@@ -524,8 +531,8 @@ public sealed class OpenTypeBindingTests
           var raw = new Extension {Oid = Asn1Oid.Parse(""1.2.99"")};
           raw.SetPayload(holder, NumbersPayloadBindings.IntegerEntry, 42);
           holder.Extensions = new[] {raw};
-          if (!holder.TryGetExtensionsIntegerEntry(out var value) ||
-              !raw.TryDecodePayloadIntegerEntry(holder, out var payload) || payload != 42 ||
+          if (!holder.TryGetExtensions(NumbersPayloadBindings.IntegerEntry, out var value) ||
+              !raw.TryDecodePayload(holder, NumbersPayloadBindings.IntegerEntry, out var payload) || payload != 42 ||
               raw.Oid.ToString() != ""1.2.99"") throw new Exception();
           return value;
         ", document =>
@@ -544,10 +551,10 @@ public sealed class OpenTypeBindingTests
     {
         Assert.Equal(7, Run(@"
           var raw = new Extension {Label = new Label {Number = 7}};
-          Use.UseOpenTypeExtensions.SetPayload(raw,
+          MOpenTypeExtensions.SetPayload(raw,
               Use.NumbersPayloadBindings.IntegerEntry, 42);
           var holder = new Use.Holder {Extensions = new[] {raw}};
-          if (!Use.HolderOpenTypeExtensions.TryGetExtensions(holder,
+          if (!holder.Extensions.TryGet(
                   Use.NumbersPayloadBindings.IntegerEntry, out var value, out var matched))
               throw new Exception();
           if (value != 42) throw new Exception();
@@ -573,8 +580,8 @@ public sealed class OpenTypeBindingTests
     {
         Assert.Equal(42, Run(@"
           var raw = new Extension();
-          raw.SetPayloadIntegerEntry(new IntegerEntryExtension_Value {Number = 42});
-          if (!raw.TryDecodePayloadIntegerEntry(out var value)) throw new Exception();
+          raw.SetPayload(NumbersPayloadBindings.IntegerEntry, new IntegerEntryExtension_Value {Number = 42});
+          if (!raw.TryDecodePayload(NumbersPayloadBindings.IntegerEntry, out var value)) throw new Exception();
           return value.Number;
         ", source: Source.Replace("integerEntry C ::= { INTEGER (0..100)",
             "integerEntry C ::= { SEQUENCE {number INTEGER (0..100)}")));
@@ -585,8 +592,8 @@ public sealed class OpenTypeBindingTests
     {
         Assert.Equal(42, Run(@"
           var raw = new Attribute();
-          raw.SetValuesIntegerEntry(new[] {new[] {7, 42}, Array.Empty<int>()});
-          if (!raw.TryDecodeValuesIntegerEntry(out var value) || value[1].Length != 0)
+          raw.SetValues(NumbersBindings.IntegerEntry, new[] {new[] {7, 42}, Array.Empty<int>()});
+          if (!raw.TryDecodeValues(NumbersBindings.IntegerEntry, out var value) || value[1].Length != 0)
               throw new Exception();
           return value[0][1];
         ", source: Source.Replace("values SET OF C.&T", "values SET OF SET OF C.&T")));
@@ -596,9 +603,9 @@ public sealed class OpenTypeBindingTests
     public void IntegerSelectorsHaveFixedKeysAndTypedConversions()
     {
         Assert.Equal(42, Run(@"
-          var raw = new Extension(); raw.SetPayloadIntegerEntry(42);
+          var raw = new Extension(); raw.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
           var holder = new Holder {Extensions = new[] {raw}};
-          if (!holder.TryGetExtensions(NumbersPayloadBindings.IntegerEntry, out var value) ||
+          if (!holder.Extensions.TryGet(NumbersPayloadBindings.IntegerEntry, out var value) ||
               NumbersPayloadBindings.IntegerEntry.Key != 3) throw new Exception();
           return value;
         ", source: Source.Replace("&id OBJECT IDENTIFIER UNIQUE", "&id INTEGER UNIQUE")
@@ -611,9 +618,9 @@ public sealed class OpenTypeBindingTests
         Assert.Equal(99, Run(@"
           var raw = new Extension {Oid = Asn1Integer.FromInt32(99), Critical = true};
           var holder = new Holder {Extensions = new[] {raw}};
-          var binding = NumbersPayloadBindings.Create<int>(new System.Numerics.BigInteger(99),
+          var binding = new PayloadBinding<int>(new System.Numerics.BigInteger(99),
             static source => source.Critical ? 99 : 0, static _ => default);
-          if (!holder.TryGetExtensions(binding, out var value)) throw new Exception();
+          if (!holder.Extensions.TryGet(binding, out var value)) throw new Exception();
           return value;
         ", source: Source.Replace("&id OBJECT IDENTIFIER UNIQUE", "&id INTEGER UNIQUE")
             .Replace("{1 2 3}", "3").Replace("{1 2 4}", "4").Replace("{1 2 5}", "5")));
@@ -623,7 +630,7 @@ public sealed class OpenTypeBindingTests
     public void TypedBitStringContainingRequiresOctetAlignment()
     {
         Assert.Throws<Asn1Exception>(() => Run(@"
-          var raw = new Extension(); raw.SetPayloadIntegerEntry(42);
+          var raw = new Extension(); raw.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
           raw.Payload = Asn1Contained<Asn1Any>.FromEncoded(Convert.FromHexString(""02012A""), 1);
           return raw.TryDecodePayload(NumbersPayloadBindings.IntegerEntry, out _);
         ", source: Source.Replace("OCTET STRING (CONTAINING", "BIT STRING (CONTAINING")));
@@ -635,10 +642,10 @@ public sealed class OpenTypeBindingTests
         Assert.Equal("preserved", Run(@"
           var original = new Header {Oid = NumbersPayloadBindings.AnotherEntry.Oid, Label = ""preserved""};
           var raw = new Extension {Header = original};
-          raw.SetPayloadIntegerEntry(42);
+          raw.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
           if (raw.Header.Oid != NumbersPayloadBindings.IntegerEntry.Oid ||
               original.Oid != NumbersPayloadBindings.AnotherEntry.Oid ||
-              !raw.TryDecodePayloadIntegerEntry(out var value) || value != 42)
+              !raw.TryDecodePayload(NumbersPayloadBindings.IntegerEntry, out var value) || value != 42)
               throw new Exception(""Key owner was changed."");
           return raw.Header.Label;
         ", document =>
@@ -666,9 +673,9 @@ public sealed class OpenTypeBindingTests
             : "new Asn1Value<Header>(new Header {Label = \"preserved\"})";
         Assert.Equal("preserved", Run(@"
           var raw = new Extension {Header = " + header + @"};
-          raw.SetPayloadIntegerEntry(42);
+          raw.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
           if (!raw.Header.Value.Oid.Equals(NumbersPayloadBindings.IntegerEntry.Oid) ||
-              !raw.TryDecodePayloadIntegerEntry(out _)) throw new Exception();
+              !raw.TryDecodePayload(NumbersPayloadBindings.IntegerEntry, out _)) throw new Exception();
           return raw.Header.Value.Label;
         ", document =>
         {
@@ -711,7 +718,8 @@ public sealed class OpenTypeBindingTests
             IrOptions.SetCSharp(null, "typeName", "AlgorithmInfo");
         var generated = Assert.Single(new CSharpBackend().Generate(document)).Contents;
         Assert.Contains("DecodeMixedEntryStringValueForms", generated);
-        Assert.Contains("Asn1Codecs.DecodeStringChoice(raw, DecodeMixedEntryStringValueForms)", generated);
+        Assert.Contains("Asn1Codecs.DecodeStringChoice(openRaw, DecodeMixedEntryStringValueForms)", generated);
+        Assert.DoesNotContain("DecodeStringChoice(openRaw, new[]", generated);
         Assert.DoesNotContain("DecodeStringChoice(raw, new[]", generated);
         Assert.Equal("A", Run(@"
           var raw = new AlgorithmInfo();
@@ -735,10 +743,10 @@ public sealed class OpenTypeBindingTests
 
         var generated = Assert.Single(new CSharpBackend().Generate(document)).Contents;
         Assert.Contains("public static class NumbersPayloadBindings", generated);
-        Assert.Contains("TryGet<T>(this M.Extension[] source, NumbersPayloadBinding<T> binding, out T value)", generated);
+        Assert.Contains("TryGet<T>(this Extension[]? source, PayloadBinding<T> binding, out T value)", generated);
         Assert.Equal(42, Run(@"
           var item = new Extension();
-          item.SetPayloadIntegerEntry(42);
+          item.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
           var items = new[] { item };
           if (!items.TryGet(NumbersPayloadBindings.IntegerEntry, out var value)) throw new Exception();
           return value;
@@ -757,21 +765,43 @@ public sealed class OpenTypeBindingTests
         var generated = Assert.Single(new CSharpBackend().Generate(document)).Contents;
         Assert.Contains("public static class NumbersPayloadBindings", generated);
         Assert.DoesNotContain("public static class OtherNumbersPayloadBindings", generated);
+        Assert.DoesNotContain("TryGetExtensions", generated);
         Assert.Contains(
-            "TryGetExtensions<T>(this Holder source, NumbersPayloadBinding<T> binding, out T value)",
-            generated);
-        Assert.Contains(
-            "TryGetExtensions<T>(this OtherHolder source, NumbersPayloadBinding<T> binding, out T value)",
+            "TryGet<T>(this Extension[]? source, PayloadBinding<T> binding, out T value)",
             generated);
         Assert.Equal(42, Run(@"
           var item = new Extension();
           item.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
           var holder = new Holder { Extensions = new[] { item } };
           var other = new OtherHolder { Extensions = new[] { item } };
-          if (!holder.TryGetExtensions(NumbersPayloadBindings.IntegerEntry, out var a) || a != 42)
+          if (!holder.Extensions.TryGet(NumbersPayloadBindings.IntegerEntry, out var a) || a != 42)
               throw new Exception();
-          if (!other.TryGetExtensionsIntegerEntry(out var b) || b != 42) throw new Exception();
+          if (!other.Extensions.TryGet(NumbersPayloadBindings.IntegerEntry, out var b) || b != 42) throw new Exception();
           return a;
         ", source: source));
+    }
+
+    [Fact]
+    public void NestedOwnerRoutesKeepOwnerTryGet()
+    {
+        void NestExtensions(IrDocument document)
+        {
+            var holder = (SequenceType)document.Modules[0].Types.Single(t => t.Name == "Holder").Type;
+            var extensions = holder.Components.Single(c => c.Name == "extensions");
+            var of = Assert.IsType<SequenceOfType>(extensions.Type);
+            extensions.Type = new SequenceOfType { Element = new SetOfType { Element = of.Element } };
+        }
+
+        var document = new Asn1Compiler().CompileText(Source);
+        NestExtensions(document);
+        var generated = Assert.Single(new CSharpBackend().Generate(document)).Contents;
+        Assert.Contains("TryGetExtensions<T>(this Holder source, PayloadBinding<T> binding, out T value)", generated);
+        Assert.Equal(42, Run(@"
+          var item = new Extension();
+          item.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
+          var holder = new Holder { Extensions = new[] { new[] { item } } };
+          if (!holder.TryGetExtensions(NumbersPayloadBindings.IntegerEntry, out var value)) throw new Exception();
+          return value;
+        ", NestExtensions));
     }
 }

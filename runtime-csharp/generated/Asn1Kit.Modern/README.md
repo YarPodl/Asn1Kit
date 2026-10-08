@@ -8,32 +8,34 @@ CONTAINING представлен `Asn1Contained<T>` с исходными `Cont
 
 Для известных bindings сырых open types конечный тип специализации публикуется непосредственно в table-scoped descriptor: например, `CertExtensionsBinding<AuthorityKeyIdentifier>` и `SignedAttributesSetBinding<ReadOnlyMemory<byte>[]>`. Descriptor содержит key, decoder и encoder. Методы `Set…(binding, value)` записывают новое значение в существующий raw-контейнер и сохраняют его метаданные; новое содержимое кодируется в DER. Отдельные классы `AuthorityKeyIdentifierExtension` / `MessageDigestAttribute` и преобразования `To…` / `TryFrom…` не генерируются. Примитивы используют общие `Asn1Codecs` runtime; codec непримитивной wire-специализации эмитится один раз на модуль, без отдельного `BindingCodec` для каждого ключа.
 
-Bindings с типом `NULL`, включая алиасы, доступны как `Binding<Asn1Null>`; отсутствие параметров и закодированный `NULL` различаются через основной descriptor-overload. Именованный instance setter вызывается без фиктивного значения: `SetSignatureParametersSaRsaWithSHA1()`.
+Bindings с типом `NULL`, включая алиасы, доступны как `Binding<Asn1Null>`; отсутствие параметров и закодированный `NULL` различаются через основной descriptor-overload. Для `NULL` вызывайте generic setter с `Asn1Null.Value`: `algorithm.SetParameters(SignatureAlgorithmsParametersBindings.SaRsaWithSHA1, Asn1Null.Value)`. Именованные convenience-методы не генерируются.
 
 ```csharp
 using Asn1Kit.Modern.PKIX1Explicit2009;
 using Asn1Kit.Modern.CryptographicMessageSyntax2009;
 
-if (certificate.ToBeSigned.TryGetExtensions(
+if (certificate.ToBeSigned.Extensions.TryGet(
         CertExtensionsBindings.AuthorityKeyIdentifier, out var aki))
     Console.WriteLine(aki.KeyIdentifier);
 
-if (signer.TryGetSignedAttrsMessageDigest(out var digest))
+if (signer.SignedAttrs?.Value.TryGet(
+        SignedAttributesSetBindings.MessageDigest, out var digest) == true)
     Console.WriteLine(digest.Length);
 
-if (certificate.ToBeSigned.TryDecodeSignatureParameters(
+if (certificate.ToBeSigned.Signature.TryDecodeParameters(
         SignatureAlgorithmsParametersBindings.SaRsaSSAPSS, out var pss))
     Console.WriteLine(pss.SaltLength);
 
 var extension = new Asn1Kit.Modern.PKIXCommonTypes2009.Extension { Critical = false };
-extension.SetExtnValueAuthorityKeyIdentifier(
+extension.SetExtnValue(
+    CertExtensionsBindings.AuthorityKeyIdentifier,
     new Asn1Kit.Modern.PKIX1Implicit2009.AuthorityKeyIdentifier
     {
         KeyIdentifier = keyIdentifier
     });
 ```
 
-Descriptor-каталоги `SignedAttributesSetBindings` и `UnsignedAttributesBindings` используют несовместимые типы таблиц. Пользовательский полный binding создаётся через `…Bindings.Create<T>(key, decoder, encoder)`; decoder-only overload предназначен для contextual чтения неоднозначно сплющенных ветвей `CHOICE`. Тип результата выводится из descriptor. Например, параметры алгоритма читаются через `TryDecodeSignatureParameters(SignatureAlgorithmsParametersBindings.SaRsaWithSHA1, out var value)`, а строковая ветка DN — через `TryDecodeValue(SupportedAttributesValueBindings.X520CommonNameStringValue, out var value)`. Отсутствующий key даёт `false`, несколько совпадений и повреждённое известное значение вызывают `Asn1Exception`. OF остаётся массивом; требования к количеству значений проверяет приложение. Selector предка требует явного контекста. Dispatch по `typeof(T)` в open-type API не используется.
+Descriptor-каталоги `SignedAttributesSetBindings` и `UnsignedAttributesBindings` используют несовместимые типы таблиц. Пользовательский полный binding создаётся через ctor `ParametersBinding<T>` / `ExtnValueBinding<T>` / … `(key, decoder, encoder)` или `(key, codec)`; `DecoderBinding<T>` — для contextual чтения неоднозначно сплющенных ветвей `CHOICE`. Тип результата выводится из descriptor. Например, параметры алгоритма читаются через `algorithm.TryDecodeParameters(SignatureAlgorithmsParametersBindings.SaRsaWithSHA1, out var value)`, а строковая ветка DN — через `TryDecodeValue(SupportedAttributesValueBindings.X520CommonNameStringValue, out var value)` или owner `TryGetSubject`/`TryGetIssuer` для вложенного DN. Отсутствующий key даёт `false`, несколько совпадений и повреждённое известное значение вызывают `Asn1Exception`. Плоский OF — `Carrier[]?.TryGet`; требования к количеству значений проверяет приложение. Selector предка требует явного контекста. Dispatch по `typeof(T)` в open-type API не используется.
 
 Происхождение и исправления: [корпус ASN.1](../../../compiler/fixtures/asn1/modern/README.md). Профиль и ограничения: [docs/status.md](../../../docs/status.md). Криптографическая проверка и полная валидация ASN.1 constraints в сборку не входят.
 

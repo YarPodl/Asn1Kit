@@ -36,27 +36,6 @@ public sealed class CompressedData
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier CompressionAlgorithm { get; set; }
     public EncapsulatedContentInfo EncapContentInfo { get; set; }
 
-    public bool TryDecodeCompressionAlgorithmParameters<T>(CompressAlgorithmSetParametersBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(binding);
-        if (CompressionAlgorithm is null) return false;
-        var container = CompressionAlgorithm;
-        return container.TryDecodeParameters(binding, out value);
-    }
-
-    public void SetCompressionAlgorithmParameters<T>(CompressAlgorithmSetParametersBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(binding);
-        if (CompressionAlgorithm is null) throw new Asn1Exception("Missing CompressionAlgorithm.");
-        var container = CompressionAlgorithm;
-        container.SetParameters(binding, value);
-        CompressionAlgorithm = container;
-    }
-
-    public void SetCompressionAlgorithmParametersCpaZlibCompress() =>
-        SetCompressionAlgorithmParameters(CompressAlgorithmSetParametersBindings.CpaZlibCompress, Asn1Null.Value);
-
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
     public void Encode(Asn1Writer writer, Asn1Tag tag)
@@ -133,90 +112,9 @@ public sealed class EncapsulatedContentInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed record CompressAlgorithmSetParametersBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder, Func<T, Asn1Any> Encoder);
-public sealed record CompressAlgorithmSetParametersDecoderBinding<T>(Asn1Oid Oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> Decoder);
-
 public static class CompressAlgorithmSetParametersBindings
 {
-    public static CompressAlgorithmSetParametersBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder, Func<T, Asn1Any> encoder) =>
-        new(oid, decoder, encoder);
-
-    public static CompressAlgorithmSetParametersDecoderBinding<T> Create<T>(Asn1Oid oid, Func<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier, T> decoder) =>
-        new(oid, decoder);
-
-    public static CompressAlgorithmSetParametersBinding<Asn1Null> CpaZlibCompress { get; } =
-        new(CompressedDataContent2010Oids.IdAlgZlibCompress, DecodeCpaZlibCompress, Asn1Codecs.Null.Encode);
-
-    private static Asn1Null DecodeCpaZlibCompress(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source)
-    {
-        if (source.Parameters is not { } raw) throw new Asn1Exception("Missing open-type value.");
-        return Asn1Codecs.Null.Decode(raw);
-    }
-}
-
-public static class CompressedDataContent2010OpenTypeExtensions
-{
-    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, CompressAlgorithmSetParametersBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (source.Parameters is null) return false;
-        if (!(source.Algorithm.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static bool TryDecodeParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, CompressAlgorithmSetParametersDecoderBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (source.Parameters is null) return false;
-        if (!(source.Algorithm.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
-    public static void SetParameters<T>(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source, CompressAlgorithmSetParametersBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        var result = source;
-        result.Algorithm = binding.Oid;
-        result.Parameters = binding.Encoder(value);
-    }
-
-    public static void SetParametersCpaZlibCompress(this Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier source) =>
-        SetParameters(source, CompressAlgorithmSetParametersBindings.CpaZlibCompress, Asn1Null.Value);
-}
-
-public static class CompressedDataOpenTypeExtensions
-{
-    public static bool TryGetCompressionAlgorithm<T>(this CompressedData source, CompressAlgorithmSetParametersBinding<T> binding, out T value)
-        => TryGetCompressionAlgorithm(source, binding, out value, out _);
-
-    public static bool TryGetCompressionAlgorithm<T>(this CompressedData source, CompressAlgorithmSetParametersBinding<T> binding, out T value, out Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? match = null;
-        if (source.CompressionAlgorithm is { } node0)
-        {
-            if (node0.Algorithm.Equals(binding.Oid))
-            {
-                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetCompressionAlgorithm.");
-                match = node0;
-            }
-        }
-        if (match is null) return false;
-        if (match.Parameters is null) return false;
-        raw = match;
-        value = binding.Decoder(match);
-        return true;
-    }
-
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> CpaZlibCompress { get; } =
+        new(CompressedDataContent2010Oids.IdAlgZlibCompress, Asn1Codecs.Null);
 }
 

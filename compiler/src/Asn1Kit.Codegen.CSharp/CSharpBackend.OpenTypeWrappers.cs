@@ -26,11 +26,33 @@ public sealed partial class CSharpBackend
         string? Table, IReadOnlyList<string> Path)
     {
         public string DecodeMethod { get; set; } = "";
-        public string? DecodeBindingStem { get; set; }
+        /// <summary>Carrier-shape Binding type stem (ExtnValue, Payload) — shared across tables.</summary>
+        public string? BindingStem { get; set; }
+        /// <summary>Object-set catalog stem (CertExtensions, NumbersPayload).</summary>
+        public string? CatalogStem { get; set; }
         public string? GetMethod { get; set; }
-        /// <summary>True when this site emits the shared container TryDecode/Set for its stem.</summary>
-        public bool EmitContainerApi { get; set; }
+        /// <summary>True when this site emits the table catalog.</summary>
+        public bool EmitCatalog { get; set; }
     }
+
+    private sealed class OpenCarrierShape
+    {
+        public OpenCarrierShape(string identity, OpenWrapperSite representative)
+        {
+            Identity = identity;
+            Representative = representative;
+        }
+
+        public string Identity { get; }
+        public OpenWrapperSite Representative { get; set; }
+        public string BindingStem { get; set; } = "";
+        public bool HasArrayGet { get; set; }
+        public bool Emitted { get; set; }
+    }
+
+    private readonly Dictionary<string, OpenCarrierShape> _carrierShapes = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, HashSet<string>> _carrierBindingNamesByModule =
+        new(StringComparer.Ordinal);
 
     private sealed record OpenWrapper(string Name, string BindingName, IrOpenTypeBinding Binding, OpenWrapperSite Site)
     {
@@ -38,7 +60,7 @@ public sealed partial class CSharpBackend
     }
     private sealed record OpenDecodeAlternative(string? Name, TypeExpr Type, JsonObject? Options, string CsType);
     private sealed record OpenDecodeBindingMember(OpenWrapper Wrapper, string Name, string CsType,
-        IReadOnlyList<OpenDecodeAlternative>? Alternatives);
+        string BindingTypeArgument, IReadOnlyList<OpenDecodeAlternative>? Alternatives);
     private sealed record OpenWrapperPlan(List<OpenWrapper> Wrappers, List<OpenWrapperSite> Sites);
 
     private sealed class ModuleOpenTypeCodecEntry
@@ -71,7 +93,6 @@ public sealed partial class CSharpBackend
     }
 
     private ModuleOpenTypeCodecCache? _openTypeCodecCache;
-    private readonly HashSet<string> _openContainerConvenienceNames = new(StringComparer.Ordinal);
 
     private OpenWrapperPlan PlanOpenTypeWrappers(IrDocument document, IrModule module,
         IReadOnlyList<(string Name, TypeExpr Type)> types, HashSet<string> emitted)
@@ -288,9 +309,88 @@ public sealed partial class CSharpBackend
         return SanitizeIdentifier(semantic);
     }
 
-    private static void AssignOpenWrapperApiNames(OpenWrapperPlan plan, HashSet<string> names)
+    private void RegisterOpenCarrierShapes(OpenWrapperPlan plan)
+    {
+        foreach (var site in plan.Sites)
+        {
+            var identity = OpenCarrierShapeIdentity(site);
+            var hasArray = site.Route.Count > 0 && site.Route.Any(static step => step.Many) &&
+                           site.Selector.Levels == 0;
+            if (_carrierShapes.TryGetValue(identity, out var existing))
+            {
+                existing.HasArrayGet |= hasArray;
+                if (hasArray && !existing.Representative.Route.Any(static step => step.Many))
+                {
+                    site.BindingStem = existing.BindingStem.Length > 0
+                        ? existing.BindingStem
+                        : existing.Representative.BindingStem;
+                    site.DecodeMethod = existing.Representative.DecodeMethod.Length > 0
+                        ? existing.Representative.DecodeMethod
+                        : "TryDecode" + PropertyName(site.Field, site.Container.Owner).TrimStart('@');
+                    existing.Representative = site;
+                }
+                continue;
+            }
+            _carrierShapes.Add(identity, new OpenCarrierShape(identity, site) { HasArrayGet = hasArray });
+        }
+    }
+
+    private void AssignOpenCarrierBindingStems()
+    {
+        foreach (var shape in _carrierShapes.Values
+                     .OrderBy(static s => PreferredOpenCarrierBindingStem(s.Representative), StringComparer.Ordinal)
+                     .ThenBy(static s => s.Identity, StringComparer.Ordinal))
+        {
+            var site = shape.Representative;
+            var moduleKey = site.Container.Module.Name;
+            if (!_carrierBindingNamesByModule.TryGetValue(moduleKey, out var names))
+                _carrierBindingNamesByModule.Add(moduleKey, names = new HashSet<string>(StringComparer.Ordinal));
+            var stemBase = PreferredOpenCarrierBindingStem(site);
+            var stem = stemBase;
+            if (!ReserveOpenCarrierBindingNames(stem, names))
+            {
+                var disambiguated = site.Container.CsType.Split('.').Last() + stemBase;
+                stem = disambiguated;
+                for (var suffix = 2; !ReserveOpenCarrierBindingNames(stem, names); suffix++)
+                    stem = disambiguated + suffix;
+            }
+            shape.BindingStem = stem;
+            shape.Representative.BindingStem = stem;
+            shape.Representative.DecodeMethod =
+                "TryDecode" + PropertyName(shape.Representative.Field, shape.Representative.Container.Owner)
+                    .TrimStart('@');
+        }
+    }
+
+    private void AssignOpenWrapperApiNames(OpenWrapperPlan plan, HashSet<string> names)
     {
         foreach (var wrapper in plan.Wrappers) names.Add(wrapper.Name);
+
+        foreach (var site in plan.Sites)
+        {
+            var identity = OpenCarrierShapeIdentity(site);
+            if (!_carrierShapes.TryGetValue(identity, out var shape))
+            {
+                shape = new OpenCarrierShape(identity, site);
+                _carrierShapes.Add(identity, shape);
+                var moduleKey = site.Container.Module.Name;
+                if (!_carrierBindingNamesByModule.TryGetValue(moduleKey, out var moduleNames))
+                    _carrierBindingNamesByModule.Add(moduleKey,
+                        moduleNames = new HashSet<string>(StringComparer.Ordinal));
+                var stemBase = PreferredOpenCarrierBindingStem(site);
+                var stem = stemBase;
+                if (!ReserveOpenCarrierBindingNames(stem, moduleNames))
+                {
+                    var disambiguated = site.Container.CsType.Split('.').Last() + stemBase;
+                    stem = disambiguated;
+                    for (var suffix = 2; !ReserveOpenCarrierBindingNames(stem, moduleNames); suffix++)
+                        stem = disambiguated + suffix;
+                }
+                shape.BindingStem = stem;
+            }
+            site.BindingStem = shape.BindingStem;
+            site.DecodeMethod = "TryDecode" + PropertyName(site.Field, site.Container.Owner).TrimStart('@');
+        }
 
         // One catalog stem per table identity (container + open field + selector + bindings).
         var byIdentity = new Dictionary<string, List<OpenWrapperSite>>(StringComparer.Ordinal);
@@ -311,38 +411,34 @@ public sealed partial class CSharpBackend
                 .First();
             var stemBase = PreferredOpenTableStem(preferred);
             var stem = stemBase;
-            if (!ReserveOpenWrapperBindingNames(stem, names))
+            if (!ReserveOpenCatalogNames(stem, names))
             {
                 var disambiguated = stemBase + preferred.Container.CsType.Split('.').Last();
                 stem = disambiguated;
-                for (var suffix = 2; !ReserveOpenWrapperBindingNames(stem, names); suffix++)
+                for (var suffix = 2; !ReserveOpenCatalogNames(stem, names); suffix++)
                     stem = disambiguated + suffix;
             }
             foreach (var site in sites)
-                site.DecodeBindingStem = stem;
+                site.CatalogStem = stem;
         }
 
-        // Container TryDecode/Set: open-field name (TryDecodeParameters). Different Binding<T>
-        // stems overload the same method name; emit the body once per stem.
-        var emittedStems = new HashSet<string>(StringComparer.Ordinal);
+        var emittedCatalogs = new HashSet<string>(StringComparer.Ordinal);
         foreach (var site in plan.Sites
-                     .OrderBy(static s => s.DecodeBindingStem, StringComparer.Ordinal)
+                     .OrderBy(static s => s.CatalogStem, StringComparer.Ordinal)
                      .ThenBy(static s => s.Context, StringComparer.Ordinal))
         {
-            var field = PropertyName(site.Field, site.Container.Owner).TrimStart('@');
-            site.DecodeMethod = "TryDecode" + field;
-            var stem = site.DecodeBindingStem!;
-            if (emittedStems.Add(stem))
-                site.EmitContainerApi = true;
+            if (emittedCatalogs.Add(site.CatalogStem!))
+                site.EmitCatalog = true;
         }
 
-        // Owner-scoped TryGet names stay per owner; they share the table stem's Binding type.
+        // Owner-scoped TryGet only for nested routes (e.g. DN); flat OF/scalar use array/carrier API.
         foreach (var group in plan.Sites.GroupBy(s => s.Owner ?? s.Context))
         {
             var methods = new HashSet<string>(StringComparer.Ordinal);
             foreach (var site in group)
             {
                 if (site.Owner is null || site.Source is null) continue;
+                if (!IsNestedOpenOwnerRoute(site)) continue;
                 var method = "TryGet" + PropertyName(site.Source, site.Owner).TrimStart('@');
                 if (!methods.Add(method))
                 {
@@ -354,6 +450,18 @@ public sealed partial class CSharpBackend
             }
         }
     }
+
+    /// <summary>
+    /// Owner lookup when <c>array.TryGet</c> is not enough: multiple OF steps (RDN → AVA), or
+    /// ancestor selector (needs owner context). Flat OF with local selector and scalar carriers
+    /// use <c>array.TryGet</c> / carrier <c>TryDecode</c> instead.
+    /// </summary>
+    private static bool IsNestedOpenOwnerRoute(OpenWrapperSite site) =>
+        site.Selector.Levels > 0 ||
+        site.Route.Count(static step => step.Many) >= 2;
+
+    private static string PreferredOpenCarrierBindingStem(OpenWrapperSite site) =>
+        PropertyName(site.Field, site.Container.Owner).TrimStart('@');
 
     private static string PreferredOpenTableStem(OpenWrapperSite site)
     {
@@ -368,6 +476,17 @@ public sealed partial class CSharpBackend
         }
         return container + openField;
     }
+
+    /// <summary>
+    /// Carrier shape: container + open field + selector + payload form (no binding set).
+    /// </summary>
+    private static string OpenCarrierShapeIdentity(OpenWrapperSite site) =>
+        site.Container.Module.Name + "\n" +
+        site.Container.CsType.Split('.').Last() + "\n" + site.Field.Name + "\n" +
+        JsonSerializer.Serialize(site.Selector, IrSerializer.JsonOptions) + "\n" +
+        string.Join(";", site.Parents.Select(static parent => parent.CsType.Split('.').Last())) + "\n" +
+        JsonSerializer.Serialize(site.Payload.Type, IrSerializer.JsonOptions) + "\n" +
+        OpenFieldOptional(site.Field);
 
     /// <summary>
     /// Table identity ignores the SEQUENCE owner: only the open-type container, field,
@@ -385,15 +504,34 @@ public sealed partial class CSharpBackend
                bindings;
     }
 
-    private static bool ReserveOpenWrapperBindingNames(string stem, HashSet<string> names)
+    private static bool ReserveOpenCarrierBindingNames(string stem, HashSet<string> names)
     {
-        var generated = new[]
-        {
-            stem + "Decoder", stem + "Encoder", stem + "Binding", stem + "DecoderBinding", stem + "Bindings"
-        };
+        var generated = new[] { stem + "Binding", stem + "DecoderBinding" };
         if (generated.Any(names.Contains)) return false;
         foreach (var name in generated) names.Add(name);
         return true;
+    }
+
+    private static bool ReserveOpenCatalogNames(string stem, HashSet<string> names)
+    {
+        var generated = new[] { stem + "Decoder", stem + "Encoder", stem + "Bindings" };
+        if (generated.Any(names.Contains)) return false;
+        foreach (var name in generated) names.Add(name);
+        return true;
+    }
+
+    private string QualifyOpenBindingStem(OpenWrapperSite site, IrModule emittingModule)
+    {
+        var stem = site.BindingStem!;
+        if (site.Container.Module == emittingModule) return stem;
+        return ModuleNamespace(site.Container.Module) + "." + stem;
+    }
+
+    private string OpenContainerCsType(OpenWrapperSite site, IrModule emittingModule)
+    {
+        var local = site.Container.CsType.Split('.').Last();
+        if (site.Container.Module == emittingModule) return local;
+        return ModuleNamespace(site.Container.Module) + "." + local;
     }
 
     private static bool ReserveOpenBindingMemberName(string name, HashSet<string> names)
@@ -403,6 +541,38 @@ public sealed partial class CSharpBackend
         foreach (var symbol in generated) names.Add(symbol);
         return true;
     }
+
+    private static string OpenBindingTypeArgument(OpenWrapperSite site, string valueCsType)
+    {
+        if (OpenPayloadUsesArrayValue(site) &&
+            valueCsType.EndsWith("[]", StringComparison.Ordinal))
+            return valueCsType[..^2];
+        return valueCsType;
+    }
+
+    private static bool OpenPayloadUsesArrayValue(OpenWrapperSite site) =>
+        site.Payload.Many && site.Payload.RawType == "Asn1Any[]";
+
+    private static string OpenShapeCodecDecode(OpenWrapperSite site, string codec, string raw) =>
+        SimpleOpenPayloadKind(site.Payload) switch
+        {
+            "direct" => $"{codec}.Decode({raw})",
+            "many" => $"Asn1Codecs.DecodeEach({raw}, {codec})",
+            "contained" => $"Asn1Codecs.DecodeContained({raw}, {codec})",
+            _ => throw new InvalidOperationException("Open-type codec path requires a simple payload shape.")
+        };
+
+    private static string OpenShapeCodecEncode(OpenWrapperSite site, string codec, string value) =>
+        SimpleOpenPayloadKind(site.Payload) switch
+        {
+            "direct" => $"{codec}.Encode({value})",
+            "many" => $"Asn1Codecs.EncodeEach({value}, {codec})",
+            "contained" => $"Asn1Codecs.EncodeContained({value}, {codec})",
+            _ => throw new InvalidOperationException("Open-type codec path requires a simple payload shape.")
+        };
+
+    private static bool CanEmitCodecOnlyBinding(OpenWrapper wrapper) =>
+        wrapper.CodecExpression is not null && SimpleOpenPayloadKind(wrapper.Site.Payload) is not null;
 
     private static IReadOnlyList<IrComponent>? OpenContainerFields(TypeExpr expression) => expression switch
     {
@@ -442,25 +612,34 @@ public sealed partial class CSharpBackend
     {
         foreach (var wrapper in plan.Wrappers.Where(static wrapper => wrapper.CodecExpression is null))
             EmitOpenBindingCodec(sb, document, module, wrapper);
+
+        var carrierShapes = _carrierShapes.Values
+            .Where(shape => !shape.Emitted && shape.Representative.Container.Module == module &&
+                            !string.IsNullOrEmpty(shape.BindingStem) &&
+                            shape.Representative.DecodeMethod.Length > 0)
+            .OrderBy(static shape => shape.BindingStem, StringComparer.Ordinal)
+            .ToList();
+        foreach (var shape in carrierShapes)
+            EmitOpenCarrierBindingTypes(sb, document, module, shape.Representative);
+
         foreach (var site in plan.Sites
-                     .Where(static site => site.DecodeMethod.Length > 0)
-                     .GroupBy(static site => site.DecodeBindingStem, StringComparer.Ordinal)
+                     .Where(static site => site.EmitCatalog && site.DecodeMethod.Length > 0)
+                     .GroupBy(static site => site.CatalogStem, StringComparer.Ordinal)
                      .Select(static group => group.First()))
             EmitOpenDecodeBindingDescriptor(sb, document, module, site);
-        // Container TryDecode/Set once per table stem (avoids ambiguous extension methods).
-        var containerSites = plan.Sites.Where(static site => site.EmitContainerApi && site.DecodeMethod.Length > 0)
-            .ToList();
-        if (containerSites.Count > 0)
+
+        if (carrierShapes.Count > 0)
         {
-            _openContainerConvenienceNames.Clear();
             sb.AppendLine($"public static class {SanitizeIdentifier(module.Name)}OpenTypeExtensions");
             sb.AppendLine("{");
-            foreach (var site in containerSites)
+            foreach (var shape in carrierShapes)
+            {
+                var site = shape.Representative;
                 EmitOpenWrapperDecodeMethod(sb, document, module, site, site.DecodeMethod);
-            foreach (var site in containerSites.Where(static site =>
-                         site.Route.Count > 0 && site.Route.Any(static step => step.Many) &&
-                         site.Selector.Levels == 0))
-                EmitOpenArrayGetMethod(sb, document, site);
+                if (shape.HasArrayGet)
+                    EmitOpenArrayGetMethod(sb, document, module, site);
+                shape.Emitted = true;
+            }
             sb.AppendLine("}");
             sb.AppendLine();
         }
@@ -471,10 +650,48 @@ public sealed partial class CSharpBackend
             sb.AppendLine($"public static class {group.Key}OpenTypeExtensions");
             sb.AppendLine("{");
             foreach (var site in group)
-                EmitOpenWrapperGetMethod(sb, document, site, site.GetMethod!);
+                EmitOpenWrapperGetMethod(sb, document, module, site, site.GetMethod!);
             sb.AppendLine("}");
             sb.AppendLine();
         }
+    }
+
+    private void EmitOpenCarrierBindingTypes(StringBuilder sb, IrDocument document, IrModule module,
+        OpenWrapperSite site)
+    {
+        var stem = site.BindingStem!;
+        var keyType = OpenKeyType(document, site).Type is OidType ? "Asn1Oid" : "BigInteger";
+        var keyName = keyType == "Asn1Oid" ? "Oid" : "Key";
+        var keyParameter = CamelCaseIdentifier(keyName);
+        var containerType = OpenContainerCsType(site, module);
+        var valueShape = OpenPayloadUsesArrayValue(site) ? "T[]" : "T";
+        var parentTypes = string.Concat(site.Parents.Select(static p => $", {p.CsType}"));
+        var decoderFunc = $"Func<{containerType}{parentTypes}, {valueShape}>";
+        var encoderFunc = $"Func<{valueShape}, {site.Payload.RawType}>";
+        var decoderOnlyFunc = $"Func<{containerType}{parentTypes}, T>";
+        sb.AppendLine($"public sealed record {stem}Binding<T>");
+        sb.AppendLine("{");
+        sb.AppendLine($"    public {keyType} {keyName} {{ get; }}");
+        sb.AppendLine($"    public Asn1Codec<T>? Codec {{ get; }}");
+        sb.AppendLine($"    public {decoderFunc}? Decoder {{ get; }}");
+        sb.AppendLine($"    public {encoderFunc}? Encoder {{ get; }}");
+        sb.AppendLine();
+        sb.AppendLine($"    public {stem}Binding({keyType} {keyParameter}, Asn1Codec<T> codec)");
+        sb.AppendLine("    {");
+        sb.AppendLine($"        {keyName} = {keyParameter};");
+        sb.AppendLine("        Codec = codec ?? throw new ArgumentNullException(nameof(codec));");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        sb.AppendLine($"    public {stem}Binding({keyType} {keyParameter}, {decoderFunc} decoder, {encoderFunc} encoder)");
+        sb.AppendLine("    {");
+        sb.AppendLine($"        {keyName} = {keyParameter};");
+        sb.AppendLine("        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));");
+        sb.AppendLine("        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));");
+        sb.AppendLine("    }");
+        sb.AppendLine("}");
+        sb.AppendLine();
+        sb.AppendLine($"public sealed record {stem}DecoderBinding<T>({keyType} {keyName}, {decoderOnlyFunc} Decoder);");
+        sb.AppendLine();
     }
 
     private void AssignOpenCodecExpressions(IrDocument document, IrModule module, OpenWrapperPlan plan)
@@ -684,10 +901,12 @@ public sealed partial class CSharpBackend
             var fullName = wrapper.BindingName;
             for (var suffix = 2; !ReserveOpenBindingMemberName(fullName, names); suffix++)
                 fullName = wrapper.BindingName + suffix;
+            var valueCsType = OpenWrapperValueType(document, module, wrapper, site.Payload);
             result.Add(new OpenDecodeBindingMember(
                 wrapper,
                 fullName,
-                OpenWrapperValueType(document, module, wrapper, site.Payload),
+                valueCsType,
+                OpenBindingTypeArgument(site, valueCsType),
                 null));
 
             if (site.Payload.Child is not null) continue;
@@ -707,7 +926,7 @@ public sealed partial class CSharpBackend
                 var name = baseName;
                 for (var suffix = 2; !ReserveOpenBindingMemberName(name, names); suffix++)
                     name = baseName + suffix;
-                result.Add(new OpenDecodeBindingMember(wrapper, name, group.Key, group.ToList()));
+                result.Add(new OpenDecodeBindingMember(wrapper, name, group.Key, group.Key, group.ToList()));
             }
         }
         return result;
@@ -716,27 +935,25 @@ public sealed partial class CSharpBackend
     private void EmitOpenDecodeBindingDescriptor(
         StringBuilder sb, IrDocument document, IrModule module, OpenWrapperSite site)
     {
-        var stem = site.DecodeBindingStem!;
-        var keyType = OpenKeyType(document, site).Type is OidType ? "Asn1Oid" : "BigInteger";
-        var keyName = keyType == "Asn1Oid" ? "Oid" : "Key";
-        var keyParameter = CamelCaseIdentifier(keyName);
-        var parameters = $"{site.Container.CsType} source{OpenParentParameters(site)}";
-        var decoderFunc = OpenBindingDecoderFunc(site);
-        var encoderFunc = $"Func<T, {site.Payload.RawType}>";
+        var catalog = site.CatalogStem!;
+        var binding = QualifyOpenBindingStem(site, module);
+        var containerType = OpenContainerCsType(site, module);
+        var parameters = $"{containerType} source{OpenParentParameters(site)}";
         var members = OpenDecodeBindingMembers(document, module, site);
-        sb.AppendLine($"public sealed record {stem}Binding<T>({keyType} {keyName}, {decoderFunc} Decoder, {encoderFunc} Encoder);");
-        sb.AppendLine($"public sealed record {stem}DecoderBinding<T>({keyType} {keyName}, {decoderFunc} Decoder);");
-        sb.AppendLine();
-        sb.AppendLine($"public static class {stem}Bindings");
+        sb.AppendLine($"public static class {catalog}Bindings");
         sb.AppendLine("{");
-        sb.AppendLine($"    public static {stem}Binding<T> Create<T>({keyType} {keyParameter}, {decoderFunc} decoder, {encoderFunc} encoder) =>");
-        sb.AppendLine($"        new({keyParameter}, decoder, encoder);");
-        sb.AppendLine();
-        sb.AppendLine($"    public static {stem}DecoderBinding<T> Create<T>({keyType} {keyParameter}, {decoderFunc} decoder) =>");
-        sb.AppendLine($"        new({keyParameter}, decoder);");
-        foreach (var member in members)
+        for (var index = 0; index < members.Count; index++)
         {
-            sb.AppendLine();
+            var member = members[index];
+            if (index > 0) sb.AppendLine();
+            var keyValue = OpenBindingKeyValue(document, module, site, member.Wrapper.Binding.Key);
+            if (member.Alternatives is null && CanEmitCodecOnlyBinding(member.Wrapper))
+            {
+                sb.AppendLine($"    public static {binding}Binding<{member.BindingTypeArgument}> {member.Name} {{ get; }} =");
+                sb.AppendLine($"        new({keyValue}, {member.Wrapper.CodecExpression});");
+                continue;
+            }
+
             var descriptor = member.Alternatives is null ? "Binding" : "DecoderBinding";
             var encodeMethodGroup = member.Alternatives is null
                 ? OpenCodecEncodeMethodGroup(member.Wrapper)
@@ -744,8 +961,9 @@ public sealed partial class CSharpBackend
             var encoder = member.Alternatives is null
                 ? $", {encodeMethodGroup ?? $"Encode{member.Name}"}"
                 : "";
-            sb.AppendLine($"    public static {stem}{descriptor}<{member.CsType}> {member.Name} {{ get; }} =");
-            sb.AppendLine($"        new({OpenBindingKeyValue(document, module, site, member.Wrapper.Binding.Key)}, Decode{member.Name}{encoder});");
+            var typeArg = member.Alternatives is null ? member.BindingTypeArgument : member.CsType;
+            sb.AppendLine($"    public static {binding}{descriptor}<{typeArg}> {member.Name} {{ get; }} =");
+            sb.AppendLine($"        new({keyValue}, Decode{member.Name}{encoder});");
             sb.AppendLine();
             if (member.Alternatives is null)
             {
@@ -762,10 +980,21 @@ public sealed partial class CSharpBackend
                 }
             }
             else if (TryOpenFlattenedHomogeneousValueDecode(document, module, site, members, member,
-                         out var typedDecode))
+                         out var typedMember))
             {
-                sb.AppendLine($"    private static {member.CsType} Decode{member.Name}({parameters}) =>");
-                sb.AppendLine($"        {typedDecode}.Value;");
+                if (CanEmitCodecOnlyBinding(typedMember.Wrapper))
+                {
+                    sb.AppendLine($"    private static {member.CsType} Decode{member.Name}({parameters})");
+                    sb.AppendLine("    {");
+                    var raw = OpenRawValue(sb, document, site, "source", "        ");
+                    sb.AppendLine($"        return {OpenCodecDecode(typedMember.Wrapper, raw)}.Value;");
+                    sb.AppendLine("    }");
+                }
+                else
+                {
+                    sb.AppendLine($"    private static {member.CsType} Decode{member.Name}({parameters}) =>");
+                    sb.AppendLine($"        Decode{typedMember.Name}(source{OpenParentArguments(site)}).Value;");
+                }
             }
             else if (TryOpenStringChoiceForms(document, module, member, out var forms))
             {
@@ -811,9 +1040,9 @@ public sealed partial class CSharpBackend
         OpenWrapperSite site,
         IReadOnlyList<OpenDecodeBindingMember> members,
         OpenDecodeBindingMember member,
-        out string typedDecode)
+        out OpenDecodeBindingMember typedMember)
     {
-        typedDecode = "";
+        typedMember = null!;
         var typed = members.FirstOrDefault(candidate =>
             candidate.Wrapper == member.Wrapper && candidate.Alternatives is null);
         if (typed is null) return false;
@@ -821,7 +1050,7 @@ public sealed partial class CSharpBackend
             return false;
         if (TryHomogeneousChoiceCsType(document, module, member.Wrapper.Name, choice) != member.CsType)
             return false;
-        typedDecode = $"Decode{typed.Name}(source{OpenParentArguments(site)})";
+        typedMember = typed;
         return true;
     }
 
@@ -885,8 +1114,8 @@ public sealed partial class CSharpBackend
         var raw = source + "." + PropertyName(site.Field, site.Container.Owner);
         if (OpenFieldOptional(site.Field))
         {
-            sb.AppendLine($"{indent}if ({raw} is not {{ }} raw) throw new Asn1Exception(\"Missing open-type value.\");");
-            raw = "raw";
+            sb.AppendLine($"{indent}if ({raw} is not {{ }} openRaw) throw new Asn1Exception(\"Missing open-type value.\");");
+            raw = "openRaw";
         }
         if (ShouldEmitLazy(document, site.Container.Module, site.Field.Type, site.Field.Options) ||
             ShouldEmitRetainEncoded(document, site.Container.Module, site.Field.Type, site.Field.Options)) raw += ".Value";
@@ -1080,30 +1309,22 @@ public sealed partial class CSharpBackend
     private void EmitOpenWrapperDecodeMethod(StringBuilder sb, IrDocument document, IrModule module,
         OpenWrapperSite site, string method)
     {
-        var stem = site.DecodeBindingStem!;
+        var binding = QualifyOpenBindingStem(site, module);
         var keyName = OpenKeyType(document, site).Type is OidType ? "Oid" : "Key";
-        var members = OpenDecodeBindingMembers(document, module, site);
-        sb.AppendLine($"    public static bool {method}<T>(this {site.Container.CsType} source{OpenParentParameters(site)}, {stem}Binding<T> binding, out T value)");
-        EmitOpenDecodeBody(sb, document, site, keyName);
+        var containerType = OpenContainerCsType(site, module);
+        var bindingValueType = OpenPayloadUsesArrayValue(site) ? "T[]" : "T";
+        sb.AppendLine($"    public static bool {method}<T>(this {containerType} source{OpenParentParameters(site)}, {binding}Binding<T> binding, out {bindingValueType} value)");
+        EmitOpenDecodeBody(sb, document, site, keyName, codecCapable: true);
         sb.AppendLine();
-        sb.AppendLine($"    public static bool {method}<T>(this {site.Container.CsType} source{OpenParentParameters(site)}, {stem}DecoderBinding<T> binding, out T value)");
-        EmitOpenDecodeBody(sb, document, site, keyName);
+        sb.AppendLine($"    public static bool {method}<T>(this {containerType} source{OpenParentParameters(site)}, {binding}DecoderBinding<T> binding, out T value)");
+        EmitOpenDecodeBody(sb, document, site, keyName, codecCapable: false);
         sb.AppendLine();
-        foreach (var member in members.Where(static member =>
-                     member.Alternatives is null && member.CsType != "Asn1Null"))
-        {
-            var convenience = method + member.Name;
-            if (!_openContainerConvenienceNames.Add(convenience)) continue;
-            sb.AppendLine($"    public static bool {convenience}(this {site.Container.CsType} source{OpenParentParameters(site)}, out {member.CsType} value) =>");
-            sb.AppendLine($"        {method}(source{OpenParentArguments(site)}, {stem}Bindings.{member.Name}, out value);");
-            sb.AppendLine();
-        }
 
         var setMethod = "Set" + method["TryDecode".Length..];
         var thisParameter = site.Container.ValueType
-            ? $"this ref {site.Container.CsType} source"
-            : $"this {site.Container.CsType} source";
-        sb.AppendLine($"    public static void {setMethod}<T>({thisParameter}{OpenParentParameters(site)}, {stem}Binding<T> binding, T value)");
+            ? $"this ref {containerType} source"
+            : $"this {containerType} source";
+        sb.AppendLine($"    public static void {setMethod}<T>({thisParameter}{OpenParentParameters(site)}, {binding}Binding<T> binding, {bindingValueType} value)");
         sb.AppendLine("    {");
         if (!site.Container.ValueType) sb.AppendLine("        ArgumentNullException.ThrowIfNull(source);");
         foreach (var (parent, index) in site.Parents.Select((parent, index) => (parent, index)))
@@ -1130,34 +1351,27 @@ public sealed partial class CSharpBackend
             sb.AppendLine($"        if (!({OpenKeyComparison(document, site, "result", "binding." + keyName)}))");
             sb.AppendLine("            throw new ArgumentException(\"Enclosing selector does not match the open-type binding.\", nameof(binding));");
         }
-        var encoded = "binding.Encoder(value)";
+        if (SimpleOpenPayloadKind(site.Payload) is not null)
+        {
+            sb.AppendLine("        var encoded = binding.Codec is { } codec");
+            sb.AppendLine($"            ? {OpenShapeCodecEncode(site, "codec", "value")}");
+            sb.AppendLine("            : binding.Encoder!(value);");
+        }
+        else
+            sb.AppendLine("        var encoded = binding.Encoder!(value);");
         if (ShouldEmitLazy(document, site.Container.Module, site.Field.Type, site.Field.Options))
-            encoded = $"Asn1Lazy<{site.Payload.RawType}>.FromValue({encoded})";
+            sb.AppendLine($"        result.{PropertyName(site.Field, site.Container.Owner)} = Asn1Lazy<{site.Payload.RawType}>.FromValue(encoded);");
         else if (ShouldEmitRetainEncoded(document, site.Container.Module, site.Field.Type, site.Field.Options))
-            encoded = $"new Asn1Value<{site.Payload.RawType}>({encoded})";
-        sb.AppendLine($"        result.{PropertyName(site.Field, site.Container.Owner)} = {encoded};");
+            sb.AppendLine($"        result.{PropertyName(site.Field, site.Container.Owner)} = new Asn1Value<{site.Payload.RawType}>(encoded);");
+        else
+            sb.AppendLine($"        result.{PropertyName(site.Field, site.Container.Owner)} = encoded;");
         if (site.Container.ValueType) sb.AppendLine("        source = result;");
         sb.AppendLine("    }");
-        foreach (var member in members.Where(static member => member.Alternatives is null))
-        {
-            var convenience = setMethod + member.Name;
-            if (!_openContainerConvenienceNames.Add(convenience)) continue;
-            var sourceArgument = site.Container.ValueType ? "ref source" : "source";
-            sb.AppendLine();
-            if (member.CsType == "Asn1Null")
-            {
-                sb.AppendLine($"    public static void {convenience}({thisParameter}{OpenParentParameters(site)}) =>");
-                sb.AppendLine($"        {setMethod}({sourceArgument}{OpenParentArguments(site)}, {stem}Bindings.{member.Name}, Asn1Null.Value);");
-            }
-            else
-            {
-                sb.AppendLine($"    public static void {convenience}({thisParameter}{OpenParentParameters(site)}, {member.CsType} value) =>");
-                sb.AppendLine($"        {setMethod}({sourceArgument}{OpenParentArguments(site)}, {stem}Bindings.{member.Name}, value);");
-            }
-        }
+        sb.AppendLine();
     }
 
-    private void EmitOpenDecodeBody(StringBuilder sb, IrDocument document, OpenWrapperSite site, string keyName)
+    private void EmitOpenDecodeBody(StringBuilder sb, IrDocument document, OpenWrapperSite site, string keyName,
+        bool codecCapable)
     {
         sb.AppendLine("    {"); sb.AppendLine("        value = default!;");
         if (!site.Container.ValueType) sb.AppendLine("        ArgumentNullException.ThrowIfNull(source);");
@@ -1167,28 +1381,31 @@ public sealed partial class CSharpBackend
         if (OpenFieldOptional(site.Field))
             sb.AppendLine($"        if (source.{PropertyName(site.Field, site.Container.Owner)} is null) return false;");
         sb.AppendLine($"        if (!({OpenKeyComparison(document, site, "source", "binding." + keyName)})) return false;");
-        sb.AppendLine($"        value = binding.Decoder(source{OpenParentArguments(site)});");
+        EmitOpenBindingValueAssign(sb, document, site, "source", "        ", codecCapable);
         sb.AppendLine("        return true;"); sb.AppendLine("    }");
     }
 
     /// <summary>
     /// OF helper: <c>extensions.TryGet(CertExtensionsBindings.X, out var value)</c> without the SEQUENCE owner.
     /// </summary>
-    private void EmitOpenArrayGetMethod(StringBuilder sb, IrDocument document, OpenWrapperSite site)
+    private void EmitOpenArrayGetMethod(StringBuilder sb, IrDocument document, IrModule module,
+        OpenWrapperSite site)
     {
-        var stem = site.DecodeBindingStem!;
+        var binding = QualifyOpenBindingStem(site, module);
         var keyName = OpenKeyType(document, site).Type is OidType ? "Oid" : "Key";
-        var arrayType = site.Container.CsType + "[]";
-        sb.AppendLine($"    public static bool TryGet<T>(this {arrayType} source, {stem}Binding<T> binding, out T value)");
+        var containerType = OpenContainerCsType(site, module);
+        var arrayType = containerType + "[]?";
+        var bindingValueType = OpenPayloadUsesArrayValue(site) ? "T[]" : "T";
+        sb.AppendLine($"    public static bool TryGet<T>(this {arrayType} source, {binding}Binding<T> binding, out {bindingValueType} value)");
         sb.AppendLine("        => TryGet(source, binding, out value, out _);");
         sb.AppendLine();
-        sb.AppendLine($"    public static bool TryGet<T>(this {arrayType} source, {stem}Binding<T> binding, out T value, out {site.Container.CsType} raw)");
+        sb.AppendLine($"    public static bool TryGet<T>(this {arrayType} source, {binding}Binding<T> binding, out {bindingValueType} value, out {containerType} raw)");
         sb.AppendLine("    {");
         sb.AppendLine("        value = default!;");
         sb.AppendLine("        raw = default!;");
-        sb.AppendLine("        ArgumentNullException.ThrowIfNull(source);");
+        sb.AppendLine("        if (source is null) return false;");
         sb.AppendLine("        ArgumentNullException.ThrowIfNull(binding);");
-        sb.AppendLine($"        {site.Container.CsType}? match = null;");
+        sb.AppendLine($"        {containerType}? match = null;");
         sb.AppendLine("        foreach (var item in source)");
         sb.AppendLine("        {");
         var many = site.Route.Last(static step => step.Many);
@@ -1204,35 +1421,45 @@ public sealed partial class CSharpBackend
         if (OpenFieldOptional(site.Field))
             sb.AppendLine($"        if ({matched}.{PropertyName(site.Field, site.Container.Owner)} is null) return false;");
         sb.AppendLine($"        raw = {matched};");
-        sb.AppendLine($"        value = binding.Decoder({matched}{OpenParentArguments(site)});");
+        EmitOpenBindingValueAssign(sb, document, site, matched, "        ", codecCapable: true);
         sb.AppendLine("        return true;");
         sb.AppendLine("    }");
         sb.AppendLine();
-        foreach (var member in OpenDecodeBindingMembers(document, _openWrapperModule, site)
-                     .Where(static member => member.Alternatives is null && member.CsType != "Asn1Null"))
-        {
-            var convenience = "TryGet" + member.Name;
-            if (!_openContainerConvenienceNames.Add(convenience + "@" + arrayType)) continue;
-            sb.AppendLine($"    public static bool {convenience}(this {arrayType} source, out {member.CsType} value) =>");
-            sb.AppendLine($"        TryGet(source, {stem}Bindings.{member.Name}, out value);");
-            sb.AppendLine();
-        }
     }
 
-    private void EmitOpenWrapperGetMethod(StringBuilder sb, IrDocument document,
+    private void EmitOpenBindingValueAssign(StringBuilder sb, IrDocument document, OpenWrapperSite site,
+        string containerExpression, string indent, bool codecCapable)
+    {
+        if (codecCapable && SimpleOpenPayloadKind(site.Payload) is not null)
+        {
+            sb.AppendLine($"{indent}if (binding.Codec is {{ }} codec)");
+            sb.AppendLine(indent + "{");
+            var raw = OpenRawValue(sb, document, site, containerExpression, indent + "    ");
+            sb.AppendLine($"{indent}    value = {OpenShapeCodecDecode(site, "codec", raw)};");
+            sb.AppendLine(indent + "}");
+            sb.AppendLine($"{indent}else");
+            sb.AppendLine($"{indent}    value = binding.Decoder!({containerExpression}{OpenParentArguments(site)});");
+        }
+        else
+            sb.AppendLine($"{indent}value = binding.Decoder{(codecCapable ? "!" : "")}({containerExpression}{OpenParentArguments(site)});");
+    }
+
+    private void EmitOpenWrapperGetMethod(StringBuilder sb, IrDocument document, IrModule module,
         OpenWrapperSite site, string method)
     {
-        var stem = site.DecodeBindingStem!;
+        var binding = QualifyOpenBindingStem(site, module);
         var keyName = OpenKeyType(document, site).Type is OidType ? "Oid" : "Key";
-        sb.AppendLine($"    public static bool {method}<T>(this {site.Owner} source, {stem}Binding<T> binding, out T value)");
+        var containerType = OpenContainerCsType(site, module);
+        var bindingValueType = OpenPayloadUsesArrayValue(site) ? "T[]" : "T";
+        sb.AppendLine($"    public static bool {method}<T>(this {site.Owner} source, {binding}Binding<T> binding, out {bindingValueType} value)");
         sb.AppendLine($"        => {method}(source, binding, out value, out _);");
         sb.AppendLine();
-        sb.AppendLine($"    public static bool {method}<T>(this {site.Owner} source, {stem}Binding<T> binding, out T value, out {site.Container.CsType} raw)");
+        sb.AppendLine($"    public static bool {method}<T>(this {site.Owner} source, {binding}Binding<T> binding, out {bindingValueType} value, out {containerType} raw)");
         sb.AppendLine("    {"); sb.AppendLine("        value = default!;");
         sb.AppendLine("        raw = default!;");
         if (!site.SourceValueType) sb.AppendLine("        ArgumentNullException.ThrowIfNull(source);");
         sb.AppendLine("        ArgumentNullException.ThrowIfNull(binding);");
-        sb.AppendLine($"        {site.Container.CsType}? match = null;");
+        sb.AppendLine($"        {containerType}? match = null;");
         foreach (var (parent, index) in site.Parents.Select((p, i) => (p, i)))
         {
             sb.AppendLine($"        {parent.CsType} parent{index} = default!;");
@@ -1243,15 +1470,8 @@ public sealed partial class CSharpBackend
         if (OpenFieldOptional(site.Field))
             sb.AppendLine($"        if ({matched}.{PropertyName(site.Field, site.Container.Owner)} is null) return false;");
         sb.AppendLine($"        raw = {matched};");
-        sb.AppendLine($"        value = binding.Decoder({matched}{OpenParentArguments(site)});");
+        EmitOpenBindingValueAssign(sb, document, site, matched, "        ", codecCapable: true);
         sb.AppendLine("        return true;"); sb.AppendLine("    }"); sb.AppendLine();
-        foreach (var member in OpenDecodeBindingMembers(document, _openWrapperModule, site)
-                     .Where(static member => member.Alternatives is null && member.CsType != "Asn1Null"))
-        {
-            sb.AppendLine($"    public static bool {method}{member.Name}(this {site.Owner} source, out {member.CsType} value) =>");
-            sb.AppendLine($"        {method}(source, {stem}Bindings.{member.Name}, out value);");
-            sb.AppendLine();
-        }
 
         void EmitRoute(int index, string expression, string indent, Dictionary<int, string> routes)
         {

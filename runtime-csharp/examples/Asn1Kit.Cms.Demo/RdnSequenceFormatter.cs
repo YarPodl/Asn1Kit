@@ -1,6 +1,7 @@
 using System.Text;
 using Asn1Kit.Runtime;
 using Asn1Kit.Modern.PKIX1Explicit2009;
+using Asn1Kit.Modern.PKIXCommonTypes2009;
 using PkixAttribute = Asn1Kit.Pkix.AttributeTypeAndValue;
 using PkixValueKind = Asn1Kit.Pkix.AttributeTypeAndValue_ValueKind;
 using ModernAttribute = Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute;
