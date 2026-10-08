@@ -1,5 +1,7 @@
 # Публичный API Asn1Kit.Runtime
 
+На данный момент проект в разработке и его API может меняться в любой момент!
+
 Контракт Writer/Reader: ownership буферов, горячий путь codegen и инвентарь символов.
 
 Реализация — [`src/Asn1Kit.Runtime`](../src/Asn1Kit.Runtime). Как править кодек — [playbooks/runtime.md](playbooks/runtime.md).
