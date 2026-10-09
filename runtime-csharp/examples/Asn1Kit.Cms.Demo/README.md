@@ -14,6 +14,8 @@ dotnet run --project runtime-csharp/examples/Asn1Kit.Cms.Demo -- sign --certific
 dotnet run --project runtime-csharp/examples/Asn1Kit.Cms.Demo -- sign --modern --certificate signer.cer --content payload.bin --output out.p7m
 ```
 
+Top-level decode в инспекторах и `print-cms` идёт через warm `Asn1Utils.Decode(bytes, ContentInfo.Decode)` (reader + `ThrowIfNotEmpty` внутри); загрузка сертификатов — `Asn1Utils.DecodeRetained`.
+
 ## verify
 
 Проверяет attached `SignedData`: BER-структуру и отсутствие хвоста, `ContentInfo.contentType`, наличие `eContent` и подписантов, присутствие алгоритма дайджеста подписанта в `SignedData.digestAlgorithms` и связь подписанта с вложенным сертификатом по issuer/serial либо Subject Key Identifier. Если есть `signedAttrs`, проверяются `contentType` и `messageDigest`: каждое значение должно присутствовать ровно один раз, а `contentType` — совпадать с типом вложенного содержимого. Для проверки подписи `Asn1Any.FromTagAndContents` меняет только внешний тег сохранённого TLV `[0]` на `SET`; при отсутствии `signedAttrs` используются байты содержимого. Повторного кодирования атрибутов из decoded-модели нет. Семантика других атрибутов не проверяется.

@@ -17,9 +17,7 @@ public static class CmsModernSignedDataInspector
         IReadOnlyCollection<Asn1Value<ModernPkix.Certificate>>? trustedRoots = null)
     {
         ArgumentNullException.ThrowIfNull(verifier);
-        var reader = new Asn1Reader(encoded, Asn1Encoding.Ber);
-        var contentInfo = ModernCms.ContentInfo.Decode(reader);
-        reader.ThrowIfNotEmpty();
+        var contentInfo = Asn1Utils.Decode(encoded, ModernCms.ContentInfo.Decode);
 
         if (contentInfo.ContentType != ModernCms.CryptographicMessageSyntax2009Oids.IdSignedData ||
             !contentInfo.TryDecodeContent(ModernCms.ContentSetContentBindings.CtSignedData, out var signedData))

@@ -12,9 +12,7 @@ public static class CmsSignedDataInspector
         IReadOnlyCollection<Asn1Value<Certificate>>? trustedRoots = null)
     {
         ArgumentNullException.ThrowIfNull(verifier);
-        var reader = new Asn1Reader(encoded, Asn1Encoding.Ber);
-        var contentInfo = ContentInfo.Decode(reader);
-        reader.ThrowIfNotEmpty();
+        var contentInfo = Asn1Utils.Decode(encoded, ContentInfo.Decode);
 
         if (contentInfo.ContentType != CryptographicMessageSyntax2004Oids.IdSignedData ||
             !contentInfo.TryDecodeContent(ContentInfoContentBindings.SignedData, out var signedData))
@@ -154,9 +152,7 @@ public static class CmsSignedDataInspector
     {
         var extension = FindExtension(certificate, PKIX1Implicit88Oids.IdCeAuthorityKeyIdentifier);
         if (extension is null) return null;
-        var reader = new Asn1Reader(extension.ExtnValue, Asn1Encoding.Ber);
-        var identifier = AuthorityKeyIdentifier.Decode(reader);
-        reader.ThrowIfNotEmpty();
+        var identifier = Asn1Utils.Decode(extension.ExtnValue, AuthorityKeyIdentifier.Decode);
         if ((identifier.AuthorityCertIssuer is null) != (identifier.AuthorityCertSerialNumber is null) ||
             (identifier.KeyIdentifier is null && identifier.AuthorityCertIssuer is null))
             throw new InvalidDataException("Certificate AuthorityKeyIdentifier has incomplete issuer identification.");

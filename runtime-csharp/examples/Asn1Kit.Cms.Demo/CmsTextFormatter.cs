@@ -20,9 +20,7 @@ public static class CmsTextFormatter
     public static void WritePkix(TextWriter output, ReadOnlyMemory<byte> encoded)
     {
         ArgumentNullException.ThrowIfNull(output);
-        var reader = new Asn1Reader(encoded, Asn1Encoding.Ber);
-        var contentInfo = ContentInfo.Decode(reader);
-        reader.ThrowIfNotEmpty();
+        var contentInfo = Asn1Utils.Decode(encoded, ContentInfo.Decode);
         if (contentInfo.ContentType != CryptographicMessageSyntax2004Oids.IdSignedData ||
             !contentInfo.TryDecodeContent(ContentInfoContentBindings.SignedData, out SignedData signedData))
             throw new InvalidDataException("ContentInfo must contain SignedData.");
@@ -72,9 +70,7 @@ public static class CmsTextFormatter
     public static void WriteModern(TextWriter output, ReadOnlyMemory<byte> encoded)
     {
         ArgumentNullException.ThrowIfNull(output);
-        var reader = new Asn1Reader(encoded, Asn1Encoding.Ber);
-        var contentInfo = ModernCms.ContentInfo.Decode(reader);
-        reader.ThrowIfNotEmpty();
+        var contentInfo = Asn1Utils.Decode(encoded, ModernCms.ContentInfo.Decode);
         if (contentInfo.ContentType != ModernCms.CryptographicMessageSyntax2009Oids.IdSignedData ||
             !TryDecodeModernSignedData(contentInfo, out var signedData))
             throw new InvalidDataException("ContentInfo must contain SignedData.");

@@ -239,21 +239,11 @@ public static class CmsDemoCommand
         }
     }
 
-    private static Asn1Value<PkixCertificate> LoadPkixCertificate(string path)
-    {
-        var reader = new Asn1Reader(File.ReadAllBytes(path), Asn1Encoding.Der);
-        var certificate = reader.ReadWithOriginalEncoding(PkixCertificate.Decode);
-        reader.ThrowIfNotEmpty();
-        return certificate;
-    }
+    private static Asn1Value<PkixCertificate> LoadPkixCertificate(string path) =>
+        Asn1Utils.DecodeRetained(File.ReadAllBytes(path), PkixCertificate.Decode);
 
-    private static Asn1Value<ModernCertificate> LoadModernCertificate(string path)
-    {
-        var reader = new Asn1Reader(File.ReadAllBytes(path), Asn1Encoding.Der);
-        var certificate = reader.ReadWithOriginalEncoding(ModernCertificate.Decode);
-        reader.ThrowIfNotEmpty();
-        return certificate;
-    }
+    private static Asn1Value<ModernCertificate> LoadModernCertificate(string path) =>
+        Asn1Utils.DecodeRetained(File.ReadAllBytes(path), ModernCertificate.Decode);
 
     private static int Usage(TextWriter error)
     {
