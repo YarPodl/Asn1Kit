@@ -1368,8 +1368,6 @@ public sealed partial class CSharpBackend
         string.Concat(site.Parents.Select((p, i) => $", {p.CsType} parent{i}"));
     private static string OpenParentArguments(OpenWrapperSite site) =>
         string.Concat(site.Parents.Select((_, i) => $", parent{i}"));
-    private static string OpenBindingDecoderFunc(OpenWrapperSite site) =>
-        $"Func<{site.Container.CsType}{string.Concat(site.Parents.Select(static p => $", {p.CsType}"))}, T>";
 
     private void EmitOpenKeyOwnerCopies(StringBuilder sb, IrDocument document, IrModule module, OpenWrapperSite site)
     {

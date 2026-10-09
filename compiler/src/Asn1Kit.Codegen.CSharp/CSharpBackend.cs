@@ -422,12 +422,6 @@ public sealed partial class CSharpBackend : ILanguageBackend
                 foreach (var component in sequence.Components)
                 {
                     RegisterNestedParent(owner, sequence.Components, component);
-                    var fieldType = UnwrapAliases(document, module, component.Type);
-                    if (IsOpenType(fieldType))
-                    {
-                        queue.Enqueue((owner + "_" + SanitizeIdentifier(component.Name), WithoutTag(fieldType)));
-                    }
-
                     OfferNested(document, module, owner + "_" + SanitizeIdentifier(component.Name), component.Type, queue);
                 }
 
@@ -436,12 +430,6 @@ public sealed partial class CSharpBackend : ILanguageBackend
                 foreach (var component in set.Components)
                 {
                     RegisterNestedParent(owner, set.Components, component);
-                    var fieldType = UnwrapAliases(document, module, component.Type);
-                    if (IsOpenType(fieldType))
-                    {
-                        queue.Enqueue((owner + "_" + SanitizeIdentifier(component.Name), WithoutTag(fieldType)));
-                    }
-
                     OfferNested(document, module, owner + "_" + SanitizeIdentifier(component.Name), component.Type, queue);
                 }
 
@@ -472,12 +460,6 @@ public sealed partial class CSharpBackend : ILanguageBackend
                 break;
             case SetOfType setOf:
                 OfferNested(document, module, owner + "_Item", setOf.Element, queue);
-                break;
-            case AnyType any when IsOpenType(any):
-                foreach (var alt in BuildOpenTypeAlternatives(document, module, owner, any))
-                {
-                    OfferNested(document, module, owner + "_" + alt.PropName, alt.Type, queue);
-                }
                 break;
         }
     }
@@ -520,15 +502,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
 
     private static bool NeedsNamedType(TypeExpr type) =>
         type is SequenceType or SetType
-        || (type is ChoiceType && !IsSingleAlternativeChoice(type))
-        || IsOpenType(type);
-
-    /// <summary>
-    /// Legacy Owner_Field open-type path. Modern tables (<c>tableExtensible</c> present) use
-    /// raw <see cref="Asn1Any"/> + Binding catalogs instead.
-    /// </summary>
-    private static bool IsOpenType(TypeExpr type) =>
-        type is AnyType { Bindings.Count: > 0 } any && !any.TableExtensible.HasValue;
+        || (type is ChoiceType && !IsSingleAlternativeChoice(type));
 
     /// <summary>
     /// CHOICE with one alternative encodes as that alternative; collapse like a typedef alias.
@@ -564,9 +538,6 @@ public sealed partial class CSharpBackend : ILanguageBackend
                 break;
             case ChoiceType choice:
                 EmitChoice(sb, document, module, typeName, choice);
-                break;
-            case AnyType any when IsOpenType(any):
-                EmitOpenType(sb, document, module, typeName, any);
                 break;
             case SequenceOfType:
             case SetOfType:
@@ -718,7 +689,6 @@ public sealed partial class CSharpBackend : ILanguageBackend
     private void EmitSet(StringBuilder sb, IrDocument document, IrModule module, string typeName, SetType type)
     {
         var deferredFields = type.Components.Where(f =>
-            IsOpenType(OpenElement(document, module, f.Type)) ||
             _contextDepth.GetValueOrDefault(typeName + "_" + SanitizeIdentifier(f.Name)) > 0 ||
             _contextDepth.GetValueOrDefault(typeName + "_" + SanitizeIdentifier(f.Name) + "_Item") > 0).ToHashSet();
         var typeKeyword = IsCSharpValueTypeEmit(module, typeName, type) ? "struct" : "sealed class";
@@ -1590,11 +1560,6 @@ public sealed partial class CSharpBackend : ILanguageBackend
     private bool IsValueOptionalWrapper(IrDocument document, IrModule module, TypeExpr type)
     {
         var unwrapped = UnwrapAliases(document, module, type);
-        if (IsOpenType(unwrapped))
-        {
-            return false;
-        }
-
         if (IsEnumeratedRefOrType(document, module, unwrapped))
         {
             return true;
@@ -1743,14 +1708,8 @@ public sealed partial class CSharpBackend : ILanguageBackend
             return;
         }
 
-        if (type is AnyType any)
+        if (type is AnyType)
         {
-            if (IsOpenType(any))
-            {
-                sb.AppendLine($"{indent}{expr}.Encode({writer});");
-                return;
-            }
-
             if (forceTag is not null || type.Tag is not null)
             {
                 var anyTag = forceTag ?? TagExpr(document, module, type);
@@ -1999,7 +1958,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
         string? targetObject = null,
         JsonObject? fieldOptions = null)
     {
-        var openKey = TryBuildOpenTypeKeyExpr(document, module, owner, type, ownerComponents, targetObject);
+        string? openKey = null;
 
         if (ShouldEmitLazy(document, module, type, fieldOptions))
         {
@@ -2304,10 +2263,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
         if (ContainedType(type) is { } content)
         {
             ContainedNaming(document, resolvedModule, original, owner, hint, out var contentModule, out var contentOwner, out var contentHint);
-            var contentCsType = CsType(document, contentModule, contentOwner, contentHint, content, false, emittingModule: emittingModule);
-            var known = IsOpenType(content)
-                ? $"{contentCsType}.IsKnown({openTypeKeyExpr ?? throw new InvalidOperationException("Contained open type requires a selector.")})"
-                : content is AnyType ? "false" : "true";
+            var known = content is AnyType ? "false" : "true";
             sb.Append($"{reader}.ReadContained({forceTag ?? TagExpr(document, module, type)}, {BoolLiteral(type is BitStringType)}, {known}, {openTypeKeyExpr ?? "0"}, static (inner, key) => ");
             EmitDecodeExpr(
                 sb,
@@ -2323,30 +2279,8 @@ public sealed partial class CSharpBackend : ILanguageBackend
             return;
         }
 
-        if (type is AnyType any)
+        if (type is AnyType)
         {
-            if (IsOpenType(any))
-            {
-                if (openTypeKeyExpr is null)
-                {
-                    throw new InvalidOperationException(
-                        $"Open-type ANY '{owner}.{hint}' requires a DEFINED BY sibling key expression.");
-                }
-
-                var openName = OpenTypeTypeName(owner, hint);
-                if (forceTag is not null || any.Tag is not null)
-                {
-                    var anyTag = forceTag ?? TagExpr(document, module, any);
-                    sb.Append($"{openName}.Decode({reader}, {openTypeKeyExpr}, {anyTag})");
-                }
-                else
-                {
-                    sb.Append($"{openName}.Decode({reader}, {openTypeKeyExpr})");
-                }
-
-                return;
-            }
-
             if (forceTag is not null || type.Tag is not null)
             {
                 var anyTag = forceTag ?? TagExpr(document, module, type);
@@ -2391,581 +2325,6 @@ public sealed partial class CSharpBackend : ILanguageBackend
         }
 
         sb.Append($"{typeName}.Decode({reader}, {decodeTag}{contextSuffix})");
-    }
-
-    private void EmitOpenType(
-        StringBuilder sb,
-        IrDocument document,
-        IrModule module,
-        string typeName,
-        AnyType any)
-    {
-        var alts = BuildOpenTypeAlternatives(document, module, typeName, any);
-        var soft = !any.TableExtensible.HasValue && ResolveOpenTypeSoft(document, module, any);
-        var groups = alts
-            .GroupBy(alt => alt.CsType, StringComparer.Ordinal)
-            .Select(group => group.ToList())
-            .ToList();
-        var collapseSameClrType = groups.Any(group => group.Count > 1);
-
-        if (collapseSameClrType)
-        {
-            sb.AppendLine($"public enum {typeName}Kind");
-            sb.AppendLine("{");
-            sb.AppendLine("    None,");
-            foreach (var alt in alts)
-            {
-                sb.AppendLine($"    {alt.PropName},");
-            }
-
-            sb.AppendLine("    Unknown,");
-            sb.AppendLine("}");
-            sb.AppendLine();
-
-            var usedPropertyNames = new HashSet<string>(StringComparer.Ordinal)
-            {
-                "Kind",
-                "Unknown"
-            };
-            foreach (var group in groups)
-            {
-                var basePropertyName = groups.Count == 1
-                    ? "Value"
-                    : group.Count == 1
-                        ? group[0].PropName
-                        : OpenTypeClrGroupPropertyName(group[0].CsType);
-                var propertyName = basePropertyName;
-                var suffix = 2;
-                while (!usedPropertyNames.Add(propertyName))
-                {
-                    propertyName = basePropertyName + suffix;
-                    suffix++;
-                }
-
-                foreach (var alt in group)
-                {
-                    alt.ValuePropName = propertyName;
-                }
-            }
-        }
-
-        sb.AppendLine($"public sealed class {typeName}");
-        sb.AppendLine("{");
-        if (collapseSameClrType)
-        {
-            sb.AppendLine($"    public {typeName}Kind Kind {{ get; private set; }}");
-            foreach (var group in groups)
-            {
-                var alt = group[0];
-                var propType = CsType(document, module, typeName, alt.PropName, alt.Type, optional: true, alt.Options);
-                sb.AppendLine($"    public {propType} {alt.ValuePropName} {{ get; private set; }}");
-            }
-        }
-        else
-        {
-            foreach (var alt in alts)
-            {
-                var propType = CsType(document, module, typeName, alt.PropName, alt.Type, optional: true, alt.Options);
-                sb.AppendLine($"    public {propType} {alt.PropName} {{ get; private set; }}");
-            }
-        }
-
-        sb.AppendLine("    public Asn1Any? Unknown { get; private set; }");
-        sb.AppendLine();
-
-        foreach (var alt in alts)
-        {
-            var csType = CsType(document, module, typeName, alt.PropName, alt.Type, optional: false, alt.Options);
-            var param = CamelCaseIdentifier(alt.PropName);
-            if (UnwrapAliases(document, module, alt.Type) is NullType)
-            {
-                sb.AppendLine(
-                    $"    public static {typeName} From{alt.PropName}(Asn1Null {param} = default) => new {typeName}");
-            }
-            else
-            {
-                sb.AppendLine($"    public static {typeName} From{alt.PropName}({csType} {param}) => new {typeName}");
-            }
-
-            sb.AppendLine("    {");
-            if (collapseSameClrType)
-            {
-                sb.AppendLine($"        Kind = {typeName}Kind.{alt.PropName},");
-            }
-            sb.AppendLine($"        {(collapseSameClrType ? alt.ValuePropName : alt.PropName)} = {param},");
-            sb.AppendLine("    };");
-            sb.AppendLine();
-        }
-
-        sb.AppendLine($"    public static {typeName} FromUnknown(Asn1Any value) => new {typeName}");
-        sb.AppendLine("    {");
-        if (collapseSameClrType)
-        {
-            sb.AppendLine($"        Kind = {typeName}Kind.Unknown,");
-        }
-        sb.AppendLine("        Unknown = value,");
-        sb.AppendLine("    };");
-        sb.AppendLine();
-
-        sb.AppendLine("    public override string ToString()");
-        sb.AppendLine("    {");
-        if (collapseSameClrType)
-        {
-            sb.AppendLine("        return Kind switch");
-            sb.AppendLine("        {");
-            foreach (var alt in alts)
-            {
-                sb.AppendLine($"            {typeName}Kind.{alt.PropName} => Asn1Formatting.Format({alt.ValuePropName}),");
-            }
-            sb.AppendLine($"            {typeName}Kind.Unknown => Asn1Formatting.Format(Unknown),");
-            sb.AppendLine("            _ => \"<unset>\",");
-            sb.AppendLine("        };");
-        }
-        else
-        {
-            foreach (var alt in alts)
-            {
-                sb.AppendLine($"        if ({alt.PropName} is not null) return Asn1Formatting.Format({alt.PropName});");
-            }
-            sb.AppendLine("        if (Unknown is not null) return Asn1Formatting.Format(Unknown);");
-            sb.AppendLine("        return \"<unset>\";");
-        }
-        sb.AppendLine("    }");
-        sb.AppendLine();
-
-        sb.AppendLine("    public void Encode(Asn1Writer writer)");
-        sb.AppendLine("    {");
-        if (collapseSameClrType)
-        {
-            sb.AppendLine("        switch (Kind)");
-            sb.AppendLine("        {");
-            foreach (var alt in alts)
-            {
-                sb.AppendLine($"            case {typeName}Kind.{alt.PropName}:");
-                EmitEncodeValue(
-                    sb,
-                    document,
-                    module,
-                    typeName,
-                    alt.PropName,
-                    alt.Type,
-                    "                ",
-                    "writer",
-                    OpenTypeEncodeExpr(document, module, alt.Type, alt.ValuePropName, alt.Options),
-                    fieldOptions: alt.Options);
-                sb.AppendLine("                break;");
-            }
-
-            sb.AppendLine($"            case {typeName}Kind.Unknown:");
-            sb.AppendLine("                if (Unknown is null) throw new Asn1Exception(\"Open type has no alternative.\");");
-            sb.AppendLine("                writer.WriteAny(Unknown.Value);");
-            sb.AppendLine("                break;");
-            sb.AppendLine("            default: throw new Asn1Exception(\"Open type has no alternative.\");");
-            sb.AppendLine("        }");
-        }
-        else
-        {
-            var first = true;
-            foreach (var alt in alts)
-            {
-                var cond = first ? "if" : "else if";
-                first = false;
-                sb.AppendLine($"        {cond} ({alt.PropName} != null)");
-                sb.AppendLine("        {");
-                EmitEncodeValue(
-                    sb,
-                    document,
-                    module,
-                    typeName,
-                    alt.PropName,
-                    alt.Type,
-                    "            ",
-                    "writer",
-                    OpenTypeEncodeExpr(document, module, alt.Type, alt.PropName, alt.Options),
-                    fieldOptions: alt.Options);
-                sb.AppendLine("        }");
-            }
-
-            sb.AppendLine($"        {(first ? "if" : "else if")} (Unknown != null)");
-            sb.AppendLine("        {");
-            sb.AppendLine("            writer.WriteAny(Unknown.Value);");
-            sb.AppendLine("        }");
-            sb.AppendLine("        else throw new Asn1Exception(\"Open type has no alternative.\");");
-        }
-        sb.AppendLine("    }");
-        sb.AppendLine();
-
-        var useOidKeys = alts.SelectMany(a => a.Keys).All(LooksLikeOidBindingKey);
-        if (useOidKeys)
-        {
-            EmitOpenTypeOidDecode(sb, document, module, typeName, alts, soft, any.TableExtensible.HasValue);
-        }
-        else
-        {
-            EmitOpenTypeStringDecode(sb, document, module, typeName, alts, soft, any.TableExtensible.HasValue);
-        }
-
-        sb.AppendLine("}");
-    }
-
-    private void EmitOpenTypeOidDecode(
-        StringBuilder sb,
-        IrDocument document,
-        IrModule module,
-        string typeName,
-        List<OpenTypeAlternative> alts,
-        bool soft,
-        bool preserveUnknown)
-    {
-        var keyFields = new Dictionary<string, string>(StringComparer.Ordinal);
-        var privateFields = new List<(string Field, string Key)>();
-        foreach (var key in alts.SelectMany(a => a.Keys).Distinct(StringComparer.Ordinal))
-        {
-            var known = KnownOidExpression(document, module, key);
-            if (known is not null)
-            {
-                keyFields[key] = known;
-                continue;
-            }
-
-            var field = OpenTypeOidFieldName(key, keyFields.Values);
-            keyFields[key] = field;
-            privateFields.Add((field, key));
-        }
-
-        foreach (var (field, key) in privateFields)
-        {
-            sb.AppendLine(
-                $"    private static readonly Asn1Oid {field} = Asn1Oid.Parse(\"{EscapeCSharpString(key)}\");");
-        }
-
-        if (privateFields.Count > 0)
-        {
-            sb.AppendLine();
-        }
-
-        sb.AppendLine($"    public static bool IsKnown(Asn1Oid key) => {string.Join(" || ", keyFields.Values.Select(k => $"key.Equals({k})"))};");
-        sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader, Asn1Oid definedByKey) =>");
-        sb.AppendLine("        Decode(reader, definedByKey, expectedTag: null);");
-        sb.AppendLine();
-        sb.AppendLine(
-            $"    public static {typeName} Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>");
-        sb.AppendLine("        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);");
-        sb.AppendLine();
-        sb.AppendLine(
-            $"    private static {typeName} Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)");
-        sb.AppendLine("    {");
-        sb.AppendLine("        if (!reader.TryPeekTag(out var peeked))");
-        sb.AppendLine($"            throw new Asn1Exception(\"Unexpected end of ASN.1 data while decoding open type '{EscapeCSharpString(typeName)}': expected an encoded ASN.1 value for key '\" + definedByKey + \"'.\");");
-        sb.AppendLine();
-
-        var firstAlt = true;
-        foreach (var (keys, alternatives) in OpenTypeDecodeGroups(alts))
-        {
-            var cond = firstAlt ? "if" : "else if";
-            firstAlt = false;
-            var equals = string.Join(
-                " || ",
-                keys.Select(k => $"definedByKey.Equals({keyFields[k]})"));
-            sb.AppendLine($"        {cond} ({equals})");
-            sb.AppendLine("        {");
-            EmitOpenTypeDecodeGroup(sb, document, module, typeName, alternatives, soft);
-            sb.AppendLine("        }");
-        }
-
-        sb.AppendLine($"{(firstAlt ? "        " : "        else ")}{{");
-        if (!preserveUnknown) EmitOpenTypePrimitiveFallback(sb, document, module, typeName, alts);
-        sb.AppendLine("            return FromUnknown(reader.ReadAny());");
-        sb.AppendLine("        }");
-        sb.AppendLine("    }");
-    }
-
-    private void EmitOpenTypePrimitiveFallback(
-        StringBuilder sb,
-        IrDocument document,
-        IrModule module,
-        string typeName,
-        List<OpenTypeAlternative> alts)
-    {
-        var candidates = alts.Where(alt =>
-        {
-            var type = UnwrapAliases(document, module, alt.Type);
-            return type.Tag is null && ResolvePrimitive(type) is { } kind && kind != TypeKinds.Any;
-        });
-        foreach (var group in candidates.GroupBy(alt => UniversalTag(document, module, alt.Type)))
-        {
-            // A tag alone must identify the wire representation and the destination CLR type.
-            if (group.Select(alt => alt.CsType + "\n" +
-                    (UnwrapAliases(document, module, alt.Type) is TimeType time ? time.FractionDigits?.ToString(CultureInfo.InvariantCulture) : ""))
-                .Distinct(StringComparer.Ordinal).Count() != 1)
-            {
-                continue;
-            }
-
-            var alt = group.First();
-            sb.AppendLine($"            if (expectedTag is null && {PeekMatchExpr(document, module, alt.Type, "peeked")})");
-            sb.AppendLine("            {");
-            EmitOpenTypeAltReturn(sb, document, module, typeName, alt, forceTag: null, indent: "                ");
-            sb.AppendLine("            }");
-        }
-    }
-
-    private void EmitOpenTypeStringDecode(
-        StringBuilder sb,
-        IrDocument document,
-        IrModule module,
-        string typeName,
-        List<OpenTypeAlternative> alts,
-        bool soft,
-        bool preserveUnknown)
-    {
-        sb.AppendLine($"    public static bool IsKnown(string key) => {string.Join(" || ", alts.SelectMany(a => a.Keys).Distinct().Select(k => $"key == \"{EscapeCSharpString(k)}\""))};");
-        sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader, string definedByKey) =>");
-        sb.AppendLine("        Decode(reader, definedByKey, expectedTag: null);");
-        sb.AppendLine();
-        sb.AppendLine(
-            $"    public static {typeName} Decode(Asn1Reader reader, string definedByKey, Asn1Tag expectedTag) =>");
-        sb.AppendLine("        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);");
-        sb.AppendLine();
-        sb.AppendLine(
-            $"    private static {typeName} Decode(Asn1Reader reader, string definedByKey, Asn1Tag? expectedTag)");
-        sb.AppendLine("    {");
-        sb.AppendLine("        if (!reader.TryPeekTag(out var peeked))");
-        sb.AppendLine($"            throw new Asn1Exception(\"Unexpected end of ASN.1 data while decoding open type '{EscapeCSharpString(typeName)}': expected an encoded ASN.1 value for key '\" + definedByKey + \"'.\");");
-        sb.AppendLine();
-        sb.AppendLine("        switch (definedByKey)");
-        sb.AppendLine("        {");
-        foreach (var (keys, alternatives) in OpenTypeDecodeGroups(alts))
-        {
-            foreach (var key in keys)
-            {
-                sb.AppendLine($"            case \"{EscapeCSharpString(key)}\":");
-            }
-
-            sb.AppendLine("            {");
-            EmitOpenTypeDecodeGroup(sb, document, module, typeName, alternatives, soft);
-            sb.AppendLine("            }");
-        }
-
-        sb.AppendLine("            default:");
-        sb.AppendLine("                return FromUnknown(reader.ReadAny());");
-        sb.AppendLine("        }");
-        sb.AppendLine("    }");
-    }
-
-    private static IEnumerable<(List<string> Keys, List<OpenTypeAlternative> Alternatives)> OpenTypeDecodeGroups(
-        List<OpenTypeAlternative> alts) =>
-        alts.SelectMany(alt => alt.Keys).Distinct(StringComparer.Ordinal)
-            .GroupBy(key => string.Join(",", alts.Select((alt, index) => (alt, index))
-                .Where(item => item.alt.Keys.Contains(key, StringComparer.Ordinal)).Select(item => item.index)))
-            .Select(group => (group.ToList(), alts.Where(alt => alt.Keys.Contains(group.First(), StringComparer.Ordinal)).ToList()));
-
-    private void EmitOpenTypeDecodeGroup(
-        StringBuilder sb,
-        IrDocument document,
-        IrModule module,
-        string typeName,
-        List<OpenTypeAlternative> alternatives,
-        bool soft)
-    {
-        if (alternatives.Count == 1)
-        {
-            EmitOpenTypeAltBody(sb, document, module, typeName, alternatives[0], soft, "definedByKey");
-            return;
-        }
-
-        foreach (var alt in alternatives)
-        {
-            sb.AppendLine($"            if (expectedTag is null && {PeekMatchExpr(document, module, alt.Type, "peeked")})");
-            sb.AppendLine("            {");
-            EmitOpenTypeAltReturn(sb, document, module, typeName, alt, forceTag: null, indent: "                ");
-            sb.AppendLine("            }");
-        }
-
-        sb.AppendLine(soft
-            ? "            return FromUnknown(reader.ReadAny());"
-            : "            throw new Asn1Exception(\"Open-type content for key '\" + definedByKey + \"' does not match bound CHOICE alternatives.\");");
-    }
-
-    private void EmitOpenTypeAltBody(
-        StringBuilder sb,
-        IrDocument document,
-        IrModule module,
-        string typeName,
-        OpenTypeAlternative alt,
-        bool soft,
-        string definedByKeyExpr)
-    {
-        var type = UnwrapAliases(document, module, alt.Type);
-        if (type.Tag?.Mode != TagModes.Explicit && ResolvePrimitive(type) is { } kind && kind != TypeKinds.Any)
-        {
-            sb.AppendLine($"            var tag = expectedTag ?? {TagExpr(document, module, alt.Type)};");
-            sb.AppendLine("            if (peeked.MatchesIgnoreConstructed(tag))");
-            sb.AppendLine("            {");
-            EmitOpenTypeAltReturn(sb, document, module, typeName, alt, forceTag: "tag", indent: "                ");
-            sb.AppendLine("            }");
-        }
-        else
-        {
-            sb.AppendLine("            if (expectedTag is null)");
-            sb.AppendLine("            {");
-            var acceptsUnknownChoice = TryGetUntaggedMultiAltChoice(document, module, alt.Type, out var boundChoice) && boundChoice.Extensible;
-            sb.AppendLine(
-                $"                if ({(acceptsUnknownChoice ? "true" : PeekMatchExpr(document, module, alt.Type, "peeked"))})");
-            sb.AppendLine("                {");
-            EmitOpenTypeAltReturn(sb, document, module, typeName, alt, forceTag: null);
-            sb.AppendLine("                }");
-            sb.AppendLine("            }");
-            sb.AppendLine("            else");
-            sb.AppendLine("            {");
-            sb.AppendLine(
-                "                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))");
-            sb.AppendLine("                {");
-            EmitOpenTypeAltReturn(sb, document, module, typeName, alt, forceTag: "expectedTag.Value");
-            sb.AppendLine("                }");
-            sb.AppendLine("            }");
-        }
-        if (soft)
-        {
-            sb.AppendLine("            return FromUnknown(reader.ReadAny());");
-        }
-        else
-        {
-            sb.AppendLine(
-                $"            throw new Asn1Exception(\"Open-type content for key '\" + {definedByKeyExpr} + \"' does not match bound type '{EscapeCSharpString(alt.PropName)}'.\");");
-        }
-    }
-
-    private void EmitOpenTypeAltReturn(
-        StringBuilder sb,
-        IrDocument document,
-        IrModule module,
-        string typeName,
-        OpenTypeAlternative alt,
-        string? forceTag,
-        string indent = "                    ")
-    {
-        var unwrapped = UnwrapAliases(document, module, alt.Type);
-        if (unwrapped.Tag?.Mode == TagModes.Explicit && forceTag is null)
-        {
-            var explicitTag = TagFromIr(unwrapped.Tag, constructed: true);
-            sb.AppendLine($"{indent}using (reader.EnterExplicit({explicitTag}))");
-            sb.AppendLine($"{indent}{{");
-            sb.Append($"{indent}    return From{alt.PropName}(");
-            EmitDecodeExpr(
-                sb,
-                document,
-                module,
-                typeName,
-                alt.PropName,
-                CloneUntagged(unwrapped),
-                "reader",
-                fieldOptions: alt.Options);
-            sb.AppendLine(");");
-            sb.AppendLine($"{indent}}}");
-            return;
-        }
-
-        sb.Append($"{indent}return From{alt.PropName}(");
-        EmitDecodeExpr(
-            sb,
-            document,
-            module,
-            typeName,
-            alt.PropName,
-            alt.Type,
-            "reader",
-            forceTag: forceTag,
-            fieldOptions: alt.Options);
-        sb.AppendLine(");");
-    }
-
-    private static bool LooksLikeOidBindingKey(string key) =>
-        key.Contains('.', StringComparison.Ordinal);
-
-    private static string OpenTypeOidFieldName(string oidKey, IEnumerable<string> used)
-    {
-        var sb = new StringBuilder("Oid_");
-        foreach (var c in oidKey)
-        {
-            sb.Append(c == '.' ? '_' : c);
-        }
-
-        var name = sb.ToString();
-        if (!used.Contains(name, StringComparer.Ordinal))
-        {
-            return name;
-        }
-
-        var suffix = 2;
-        while (used.Contains(name + suffix, StringComparer.Ordinal))
-        {
-            suffix++;
-        }
-
-        return name + suffix;
-    }
-
-    private sealed class OpenTypeAlternative
-    {
-        public string PropName { get; init; } = "";
-        public TypeExpr Type { get; init; } = null!;
-        public List<string> Keys { get; init; } = new();
-        public string TypeKey { get; init; } = "";
-        public string CsType { get; init; } = "";
-        public string ValuePropName { get; set; } = "";
-        public JsonObject? Options { get; init; }
-    }
-
-    private List<OpenTypeAlternative> BuildOpenTypeAlternatives(
-        IrDocument document,
-        IrModule module,
-        string typeName,
-        AnyType any)
-    {
-        var alts = new List<OpenTypeAlternative>();
-        var usedNames = new HashSet<string>(StringComparer.Ordinal) { "None", "Unknown" };
-        foreach (var binding in any.Bindings!)
-        {
-            foreach (var (name, type, options) in ExpandOpenTypeChoice(document, module, module, binding.Name, binding.Type, null, new HashSet<ChoiceType>()))
-            {
-                var typeKey = (name ?? "") + "\n" +
-                    JsonSerializer.Serialize(type, IrSerializer.JsonOptions) + "\n" + options?.ToJsonString();
-                var existing = alts.FirstOrDefault(a => a.TypeKey == typeKey);
-                if (existing is not null)
-                {
-                    if (!existing.Keys.Contains(binding.Key, StringComparer.Ordinal)) existing.Keys.Add(binding.Key);
-                    continue;
-                }
-
-                var propName = name is null
-                    ? OpenTypePropName(document, module, type)
-                    : SanitizeIdentifier(name);
-                if (!usedNames.Add(propName))
-                {
-                    var suffix = 2;
-                    while (!usedNames.Add(propName + suffix))
-                    {
-                        suffix++;
-                    }
-
-                    propName += suffix;
-                }
-
-                alts.Add(new OpenTypeAlternative
-                {
-                    PropName = propName,
-                    Type = type,
-                    Keys = new List<string> { binding.Key },
-                    TypeKey = typeKey,
-                    CsType = CsType(document, module, typeName, propName, type, optional: false, options),
-                    Options = options,
-                    ValuePropName = propName
-                });
-            }
-        }
-
-        return alts;
     }
 
     private IEnumerable<(string? Name, TypeExpr Type, JsonObject? Options)> ExpandOpenTypeChoice(
@@ -3040,116 +2399,6 @@ public sealed partial class CSharpBackend : ILanguageBackend
         }
         Qualify(node);
         return node.Deserialize<TypeExpr>(IrSerializer.JsonOptions)!;
-    }
-
-    private static string OpenTypeClrGroupPropertyName(string csType) => csType switch
-    {
-        "string" => "StringValue",
-        "bool" => "BooleanValue",
-        "int" => "Int32Value",
-        "uint" => "UInt32Value",
-        "long" => "Int64Value",
-        "ulong" => "UInt64Value",
-        _ => SanitizeIdentifier(csType.Split('.').Last().Replace("[]", "Array").Replace("<", "Of").Replace(">", "").Replace(",", "And")) + "Value"
-    };
-
-    private string OpenTypeEncodeExpr(
-        IrDocument document,
-        IrModule module,
-        TypeExpr type,
-        string propertyName,
-        JsonObject? fieldOptions = null) => UnwrapAliases(document, module, type) is NullType
-        ? "Asn1Null.Value"
-        : IsValueOptionalWrapper(document, module, type) || ShouldEmitRetainEncoded(document, module, type, fieldOptions)
-            ? propertyName + ".Value"
-            : propertyName + "!";
-
-    private string OpenTypePropName(IrDocument document, IrModule module, TypeExpr type)
-    {
-        if (type is RefType reference)
-        {
-            return SanitizeIdentifier(reference.Name);
-        }
-
-        var unwrapped = UnwrapAliases(document, module, type);
-        return unwrapped switch
-        {
-            NullType => "Null",
-            RefType innerRef => SanitizeIdentifier(innerRef.Name),
-            StringType stringType => SanitizeIdentifier(stringType.Form),
-            _ => SanitizeIdentifier(unwrapped.Kind)
-        };
-    }
-
-    private static string OpenTypeTypeName(string owner, string hint) =>
-        owner + "_" + SanitizeIdentifier(hint);
-
-    private static bool ResolveOpenTypeSoft(IrDocument document, IrModule module, AnyType any)
-    {
-        foreach (var options in new[] { any.Options, module.Options, document.Options })
-        {
-            if (options is null)
-            {
-                continue;
-            }
-
-            // OpenTypeMismatch throws on unknown; only return when openType present or default.
-            if (options["openType"] is not null)
-            {
-                return IrOptions.OpenTypeMismatch(options) == IrOptions.OpenTypeMismatchModes.Soft;
-            }
-        }
-
-        return true;
-    }
-
-    private string? TryBuildOpenTypeKeyExpr(
-        IrDocument document,
-        IrModule module,
-        string owner,
-        TypeExpr type,
-        IReadOnlyList<IrComponent>? ownerComponents,
-        string? targetObject)
-    {
-        var unwrapped = OpenElement(document, module, type);
-        if (unwrapped is not AnyType any || !IsOpenType(any))
-        {
-            return null;
-        }
-        if (any.Selector is not null)
-            return SelectorKeyExpression(document, module, owner, any.Selector, ownerComponents, targetObject);
-        var definedBy = any.DefinedBy ?? throw new InvalidOperationException("Open type requires a selector or DEFINED BY.");
-
-        if (ownerComponents is null || targetObject is null)
-        {
-            throw new InvalidOperationException(
-                $"Open-type ANY on '{owner}' requires owner components to resolve DEFINED BY '{definedBy}'.");
-        }
-
-        var sibling = ownerComponents.FirstOrDefault(c => c.Name == definedBy)
-            ?? throw new InvalidOperationException(
-                $"Open-type ANY on '{owner}' DEFINED BY '{definedBy}' has no sibling component.");
-        var siblingProp = PropertyName(sibling, owner);
-        var access = $"{targetObject}.{siblingProp}";
-        var siblingType = UnwrapAliases(document, module, sibling.Type);
-        if (siblingType is OidType ||
-            (siblingType is RefType oidRef && Find(document, module, oidRef)?.Type is OidType))
-        {
-            return access;
-        }
-
-        if (siblingType is IntegerType ||
-            (siblingType is RefType intRef && Find(document, module, intRef)?.Type is IntegerType))
-        {
-            var representation = TryResolveIntegerRepresentation(document, module, sibling.Type)
-                ?? IrOptions.IntegerRepresentations.Der;
-            return representation == IrOptions.IntegerRepresentations.Der
-                ? $"{access}.GetInt32().ToString(CultureInfo.InvariantCulture)"
-                : $"{access}.ToString(CultureInfo.InvariantCulture)";
-        }
-
-        throw new NotSupportedException(
-            $"Open-type DEFINED BY sibling '{definedBy}' on '{owner}' must be OBJECT IDENTIFIER or INTEGER.");
     }
 
     private static string EscapeCSharpString(string value)
@@ -3325,12 +2574,6 @@ public sealed partial class CSharpBackend : ILanguageBackend
             ContainedNaming(document, resolvedModule, original, owner, hint, out var contentModule, out var contentOwner, out var contentHint);
             var contained = $"Asn1Contained<{CsType(document, contentModule, contentOwner, contentHint, content, false, emittingModule: emittingModule)}>";
             return optional ? contained + "?" : contained;
-        }
-
-        if (IsOpenType(type))
-        {
-            var openName = OpenTypeTypeName(owner, hint);
-            return optional ? openName + "?" : openName;
         }
 
         if (type is SequenceOfType or SetOfType)
@@ -3941,9 +3184,6 @@ public sealed partial class CSharpBackend : ILanguageBackend
             _ => "Asn1Tag.Sequence"
         };
     }
-
-    private string UniversalFallback(IrDocument document, IrModule module, TypeExpr type) =>
-        UniversalTag(document, module, type);
 
     private static string StringFormTag(string form) => form switch
     {

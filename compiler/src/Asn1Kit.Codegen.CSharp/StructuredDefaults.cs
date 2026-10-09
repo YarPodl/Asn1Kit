@@ -74,13 +74,8 @@ public sealed partial class CSharpBackend
             var inner = ValueExpression(document, typeModule, csType, field.Name, field.Type, choice.Value);
             return IsSingleAlternativeChoice(type) ? inner : $"{csType}.From{PropertyName(field, csType).TrimStart('@')}({inner})";
         }
-        if (value is IrTypedValue typed && type is AnyType any)
-        {
-            if (!IsOpenType(any)) return EncodedDefault(document, module, typed);
-            var alt = DefaultAlternative(document, module, csType, any, typed);
-            return alt is null ? $"{csType}.FromUnknown({EncodedDefault(document, module, typed)})"
-                : $"{csType}.From{alt.PropName}({ValueExpression(document, module, csType, alt.PropName, alt.Type, typed.Value)})";
-        }
+        if (value is IrTypedValue typed && type is AnyType)
+            return EncodedDefault(document, module, typed);
         if (value is IrOctetStringValue octets)
             return ConstantDefault(module, octets.Hex, "ReadOnlyMemory<byte>", $"new ReadOnlyMemory<byte>(Convert.FromHexString(\"{octets.Hex}\"))");
         if (value is IrOidValue oid)
@@ -96,17 +91,6 @@ public sealed partial class CSharpBackend
             return type is BitStringType { NamedBits.Count: > 0 } ? $"new {csType} {{ Value = {contents} }}" : contents;
         }
         return DefaultStorageExpression(document, module, owner, new IrComponent { Name = hint, Type = declared, Default = value });
-    }
-
-    private OpenTypeAlternative? DefaultAlternative(IrDocument document, IrModule module, string owner, AnyType any, IrTypedValue typed)
-    {
-        var (expectedModule, expected) = ResolveDefaultTarget(document, module, typed.Type);
-        return BuildOpenTypeAlternatives(document, module, owner, any).FirstOrDefault(alt =>
-        {
-            var (actualModule, actual) = ResolveDefaultTarget(document, module, alt.Type);
-            return ReferenceEquals(actual, expected) ||
-                (actual.Kind == expected.Kind && actual is NullType or BooleanType or IntegerType or OidType or OctetStringType);
-        });
     }
 
     private string ValueEqualsExpression(IrDocument document, IrModule module, string owner, string hint, TypeExpr declared, IrValue expected, string actual)
@@ -161,24 +145,8 @@ public sealed partial class CSharpBackend
             }
             return "(" + guard + " && " + ValueEqualsExpression(document, typeModule, csType, field.Name, field.Type, choice.Value, access) + ")";
         }
-        if (expected is IrTypedValue typed && type is AnyType any)
-        {
-            if (!IsOpenType(any)) return actual + ".Equals(" + EncodedDefault(document, module, typed) + ")";
-            var alt = DefaultAlternative(document, module, csType, any, typed);
-            if (alt is null) return $"({actual} != null && {actual}.Unknown.HasValue && {actual}.Unknown.Value.Equals({EncodedDefault(document, module, typed)}))";
-            var openAlternatives = BuildOpenTypeAlternatives(document, module, csType, any);
-            var grouped = openAlternatives.GroupBy(a => a.CsType).ToList();
-            var collapsed = grouped.Any(g => g.Count() > 1);
-            var group = grouped.Single(g => g.Key == alt.CsType);
-            var property = collapsed && group.Count() > 1
-                ? grouped.Count == 1 ? "Value" : OpenTypeClrGroupPropertyName(alt.CsType)
-                : alt.PropName;
-            var access = actual + "." + property;
-            var guard = $"{actual} != null && {access} != null";
-            if (collapsed) guard += $" && {actual}.Kind == {csType}Kind.{alt.PropName}";
-            if (IsValueOptionalWrapper(document, module, alt.Type)) access += ".Value";
-            return "(" + guard + " && " + ValueEqualsExpression(document, module, csType, alt.PropName, alt.Type, typed.Value, access) + ")";
-        }
+        if (expected is IrTypedValue typed && type is AnyType)
+            return actual + ".Equals(" + EncodedDefault(document, module, typed) + ")";
         if (expected is IrOctetStringValue octets)
             return actual + ".Span.SequenceEqual(" + ValueExpression(document, module, owner, hint, declared, octets) + ".Span)";
         if (expected is IrBitStringValue bits && type is BitStringType { NamedBits.Count: > 0 })
