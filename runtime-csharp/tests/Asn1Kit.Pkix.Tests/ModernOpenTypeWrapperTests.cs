@@ -85,16 +85,26 @@ public sealed class ModernOpenTypeBindingTests
     [InlineData("0C0141")]
     [InlineData("130141")]
     [InlineData("1E020041")]
-    public void NameAttributesUseContextualStringDecoder(string encoded)
+    public void NameAttributesUseDirectoryStringBinding(string encoded)
     {
         var attribute = new Common.SingleAttribute {Type = Asn1Oid.Parse("2.5.4.3"),
             Value = new Asn1Any(Convert.FromHexString(encoded))};
         Assert.True(attribute.TryDecodeValue(
-            Asn1Kit.Modern.PKIX1Explicit2009.SupportedAttributesValueBindings.X520CommonNameStringValue, out var text));
-        Assert.Equal("A", text);
+            Asn1Kit.Modern.PKIX1Explicit2009.SupportedAttributesValueBindings.X520CommonName, out var name));
+        Assert.IsType<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString>(name);
+        Assert.Equal("A", name.Value);
+        var locality = new Common.SingleAttribute
+        {
+            Type = Asn1Oid.Parse("2.5.4.7"),
+            Value = new Asn1Any(Convert.FromHexString(encoded))
+        };
+        Assert.True(locality.TryDecodeValue(
+            Asn1Kit.Modern.PKIX1Explicit2009.SupportedAttributesValueBindings.X520LocalityName,
+            out Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString localityName));
+        Assert.Equal("A", localityName.Value);
         attribute.Type = Asn1Oid.Parse("1.2.99");
         Assert.False(attribute.TryDecodeValue(
-            Asn1Kit.Modern.PKIX1Explicit2009.SupportedAttributesValueBindings.X520CommonNameStringValue, out _));
+            Asn1Kit.Modern.PKIX1Explicit2009.SupportedAttributesValueBindings.X520CommonName, out _));
     }
 
     [Fact]

@@ -27,5 +27,22 @@
     "CryptographicMessageSyntax-2010.SignerInfo.signedAttrs": {
       "retainEncoded": true
     }
+  },
+  "types": {
+    "PKIX1Explicit-2009.X520name": {
+      "csharp": {
+        "typeName": "DirectoryString"
+      }
+    },
+    "PKIX1Explicit-2009.X520CommonName": {
+      "csharp": {
+        "aliasOf": "X520name"
+      }
+    },
+    "PKIX1Explicit-2009.X520LocalityName": {
+      "csharp": {
+        "aliasOf": "X520name"
+      }
+    }
   }
 }

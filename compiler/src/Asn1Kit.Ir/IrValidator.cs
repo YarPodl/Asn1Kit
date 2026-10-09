@@ -75,6 +75,7 @@ public static class IrValidator
                 throw new IrException($"Invalid specialization origin on '{module.Name}.{type.Name}'.");
 
             ValidateExpr(document, module, type.Type, type.Name, ownerComponents: null);
+            ValidateCSharpAliasOf(document, module, type);
         }
 
         var valueNames = new HashSet<string>(StringComparer.Ordinal);
@@ -507,6 +508,86 @@ public static class IrValidator
             currentModule = targetModule;
         }
         return current;
+    }
+
+    private static void ValidateCSharpAliasOf(IrDocument document, IrModule module, IrTypeDef type)
+    {
+        var aliasOf = IrOptions.CSharpAliasOf(type.Options);
+        if (aliasOf is null)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(aliasOf))
+        {
+            throw new IrException(
+                $"Type '{module.Name}.{type.Name}' has empty options.csharp.aliasOf.");
+        }
+
+        if (IrOptions.CSharpTypeName(type.Options) is not null)
+        {
+            throw new IrException(
+                $"Type '{module.Name}.{type.Name}' cannot combine options.csharp.aliasOf with options.csharp.typeName.");
+        }
+
+        var visited = new HashSet<string>(StringComparer.Ordinal) { module.Name + "::" + type.Name };
+        var currentModule = module;
+        var targetName = aliasOf;
+        while (true)
+        {
+            var found = FindTypeDef(document, currentModule, targetName);
+            if (found is null)
+            {
+                throw new IrException(
+                    $"Type '{module.Name}.{type.Name}' options.csharp.aliasOf '{aliasOf}' does not resolve.");
+            }
+
+            var (definingModule, def) = found.Value;
+            var key = definingModule.Name + "::" + def.Name;
+            if (!visited.Add(key))
+            {
+                throw new IrException(
+                    $"Type '{module.Name}.{type.Name}' options.csharp.aliasOf forms a cycle at '{def.Name}'.");
+            }
+
+            if (!IrOptions.ShouldGenerate(def.Options))
+            {
+                throw new IrException(
+                    $"Type '{module.Name}.{type.Name}' options.csharp.aliasOf '{def.Name}' has generate: false.");
+            }
+
+            var next = IrOptions.CSharpAliasOf(def.Options);
+            if (next is null)
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(next))
+            {
+                throw new IrException(
+                    $"Type '{definingModule.Name}.{def.Name}' has empty options.csharp.aliasOf.");
+            }
+
+            currentModule = definingModule;
+            targetName = next;
+        }
+    }
+
+    private static (IrModule Module, IrTypeDef Def)? FindTypeDef(
+        IrDocument document,
+        IrModule module,
+        string name)
+    {
+        foreach (var candidate in new[] { module }.Concat(document.Modules))
+        {
+            var match = candidate.Types.FirstOrDefault(t => t.Name == name);
+            if (match is not null)
+            {
+                return (candidate, match);
+            }
+        }
+
+        return null;
     }
 
     private static string FormatRef(RefType reference) =>

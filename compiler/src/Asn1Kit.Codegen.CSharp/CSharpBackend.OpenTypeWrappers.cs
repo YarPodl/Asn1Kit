@@ -58,9 +58,13 @@ public sealed partial class CSharpBackend
     {
         public string? CodecExpression { get; set; }
     }
-    private sealed record OpenDecodeAlternative(string? Name, TypeExpr Type, JsonObject? Options, string CsType);
     private sealed record OpenDecodeBindingMember(OpenWrapper Wrapper, string Name, string CsType,
-        string BindingTypeArgument, IReadOnlyList<OpenDecodeAlternative>? Alternatives);
+        string BindingTypeArgument);
+    private sealed record OpenBindingProjection(
+        OpenDecodeBindingMember Member,
+        bool ViaHomogeneousValue,
+        string ChoiceCsType,
+        string PreferredFactory);
     private sealed record OpenWrapperPlan(List<OpenWrapper> Wrappers, List<OpenWrapperSite> Sites);
 
     private sealed class ModuleOpenTypeCodecEntry
@@ -506,9 +510,8 @@ public sealed partial class CSharpBackend
 
     private static bool ReserveOpenCarrierBindingNames(string stem, HashSet<string> names)
     {
-        var generated = new[] { stem + "Binding", stem + "DecoderBinding" };
-        if (generated.Any(names.Contains)) return false;
-        foreach (var name in generated) names.Add(name);
+        var name = stem + "Binding";
+        if (!names.Add(name)) return false;
         return true;
     }
 
@@ -668,7 +671,6 @@ public sealed partial class CSharpBackend
         var parentTypes = string.Concat(site.Parents.Select(static p => $", {p.CsType}"));
         var decoderFunc = $"Func<{containerType}{parentTypes}, {valueShape}>";
         var encoderFunc = $"Func<{valueShape}, {site.Payload.RawType}>";
-        var decoderOnlyFunc = $"Func<{containerType}{parentTypes}, T>";
         sb.AppendLine($"public sealed record {stem}Binding<T>");
         sb.AppendLine("{");
         sb.AppendLine($"    public {keyType} {keyName} {{ get; }}");
@@ -689,8 +691,6 @@ public sealed partial class CSharpBackend
         sb.AppendLine("        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));");
         sb.AppendLine("    }");
         sb.AppendLine("}");
-        sb.AppendLine();
-        sb.AppendLine($"public sealed record {stem}DecoderBinding<T>({keyType} {keyName}, {decoderOnlyFunc} Decoder);");
         sb.AppendLine();
     }
 
@@ -906,28 +906,7 @@ public sealed partial class CSharpBackend
                 wrapper,
                 fullName,
                 valueCsType,
-                OpenBindingTypeArgument(site, valueCsType),
-                null));
-
-            if (site.Payload.Child is not null) continue;
-            var alternatives = ExpandOpenTypeChoice(document, module, module, null,
-                    wrapper.Binding.Type, null, new HashSet<ChoiceType>())
-                .Select(alternative => new OpenDecodeAlternative(
-                    alternative.Name,
-                    alternative.Type,
-                    alternative.Options,
-                    CsType(document, module, wrapper.Name, OpenDecodedHint(alternative.Name),
-                        alternative.Type, false, alternative.Options)))
-                .ToList();
-            if (alternatives.Count <= 1) continue;
-            foreach (var group in alternatives.GroupBy(static alternative => alternative.CsType))
-            {
-                var baseName = fullName + OpenTypeClrGroupPropertyName(group.Key);
-                var name = baseName;
-                for (var suffix = 2; !ReserveOpenBindingMemberName(name, names); suffix++)
-                    name = baseName + suffix;
-                result.Add(new OpenDecodeBindingMember(wrapper, name, group.Key, group.Key, group.ToList()));
-            }
+                OpenBindingTypeArgument(site, valueCsType)));
         }
         return result;
     }
@@ -947,157 +926,213 @@ public sealed partial class CSharpBackend
             var member = members[index];
             if (index > 0) sb.AppendLine();
             var keyValue = OpenBindingKeyValue(document, module, site, member.Wrapper.Binding.Key);
-            if (member.Alternatives is null && CanEmitCodecOnlyBinding(member.Wrapper))
+            if (CanEmitCodecOnlyBinding(member.Wrapper))
             {
                 sb.AppendLine($"    public static {binding}Binding<{member.BindingTypeArgument}> {member.Name} {{ get; }} =");
                 sb.AppendLine($"        new({keyValue}, {member.Wrapper.CodecExpression});");
                 continue;
             }
 
-            var descriptor = member.Alternatives is null ? "Binding" : "DecoderBinding";
-            var encodeMethodGroup = member.Alternatives is null
-                ? OpenCodecEncodeMethodGroup(member.Wrapper)
-                : null;
-            var encoder = member.Alternatives is null
-                ? $", {encodeMethodGroup ?? $"Encode{member.Name}"}"
-                : "";
-            var typeArg = member.Alternatives is null ? member.BindingTypeArgument : member.CsType;
-            sb.AppendLine($"    public static {binding}{descriptor}<{typeArg}> {member.Name} {{ get; }} =");
-            sb.AppendLine($"        new({keyValue}, Decode{member.Name}{encoder});");
+            var encodeMethodGroup = OpenCodecEncodeMethodGroup(member.Wrapper);
+            sb.AppendLine($"    public static {binding}Binding<{member.BindingTypeArgument}> {member.Name} {{ get; }} =");
+            sb.AppendLine($"        new({keyValue}, Decode{member.Name}, {encodeMethodGroup ?? $"Encode{member.Name}"});");
             sb.AppendLine();
-            if (member.Alternatives is null)
+            sb.AppendLine($"    private static {member.CsType} Decode{member.Name}({parameters})");
+            sb.AppendLine("    {");
+            var raw = OpenRawValue(sb, document, site, "source", "        ");
+            sb.AppendLine($"        return {OpenCodecDecode(member.Wrapper, raw)};");
+            sb.AppendLine("    }");
+            if (encodeMethodGroup is null)
             {
-                sb.AppendLine($"    private static {member.CsType} Decode{member.Name}({parameters})");
-                sb.AppendLine("    {");
-                var raw = OpenRawValue(sb, document, site, "source", "        ");
-                sb.AppendLine($"        return {OpenCodecDecode(member.Wrapper, raw)};");
-                sb.AppendLine("    }");
-                if (encodeMethodGroup is null)
-                {
-                    sb.AppendLine();
-                    sb.AppendLine($"    private static {site.Payload.RawType} Encode{member.Name}({member.CsType} value) =>");
-                    sb.AppendLine($"        {OpenCodecEncode(member.Wrapper, "value")};");
-                }
-            }
-            else if (TryOpenFlattenedHomogeneousValueDecode(document, module, site, members, member,
-                         out var typedMember))
-            {
-                if (CanEmitCodecOnlyBinding(typedMember.Wrapper))
-                {
-                    sb.AppendLine($"    private static {member.CsType} Decode{member.Name}({parameters})");
-                    sb.AppendLine("    {");
-                    var raw = OpenRawValue(sb, document, site, "source", "        ");
-                    sb.AppendLine($"        return {OpenCodecDecode(typedMember.Wrapper, raw)}.Value;");
-                    sb.AppendLine("    }");
-                }
-                else
-                {
-                    sb.AppendLine($"    private static {member.CsType} Decode{member.Name}({parameters}) =>");
-                    sb.AppendLine($"        Decode{typedMember.Name}(source{OpenParentArguments(site)}).Value;");
-                }
-            }
-            else if (TryOpenStringChoiceForms(document, module, member, out var forms))
-            {
-                sb.AppendLine($"    private static readonly Asn1StringForm[] Decode{member.Name}Forms = {{ {forms} }};");
                 sb.AppendLine();
-                sb.AppendLine($"    private static {member.CsType} Decode{member.Name}({parameters})");
-                sb.AppendLine("    {");
-                var raw = OpenRawValue(sb, document, site, "source", "        ");
-                sb.AppendLine($"        return Asn1Codecs.DecodeStringChoice({raw}, Decode{member.Name}Forms);");
-                sb.AppendLine("    }");
-            }
-            else
-            {
-                sb.AppendLine($"    private static {member.CsType} Decode{member.Name}({parameters})");
-                sb.AppendLine("    {");
-                var raw = OpenRawValue(sb, document, site, "source", "        ");
-                sb.AppendLine($"        var reader = new Asn1Reader({raw}.EncodedMemory, Asn1Encoding.Ber);");
-                sb.AppendLine("        if (!reader.TryPeekTag(out var tag)) throw new Asn1Exception(\"Missing open-type value.\");");
-                foreach (var alternative in member.Alternatives)
-                {
-                    var decodeHint = OpenDecodedHint(alternative.Name);
-                    sb.AppendLine($"        if ({PeekMatchExpr(document, module, alternative.Type, "tag")})");
-                    sb.AppendLine("        {");
-                    sb.AppendLine($"            {alternative.CsType} decoded;");
-                    EmitDecodeAssign(sb, document, module, member.Wrapper.Name, decodeHint,
-                        alternative.Type, null, "            ", "reader", "decoded",
-                        fieldOptions: alternative.Options);
-                    sb.AppendLine("            reader.ThrowIfNotEmpty();");
-                    sb.AppendLine("            return decoded;");
-                    sb.AppendLine("        }");
-                }
-                sb.AppendLine("        throw new Asn1Exception(\"Tag does not match the selected open-type binding.\");");
-                sb.AppendLine("    }");
+                sb.AppendLine($"    private static {site.Payload.RawType} Encode{member.Name}({member.CsType} value) =>");
+                sb.AppendLine($"        {OpenCodecEncode(member.Wrapper, "value")};");
             }
         }
+
+        if (TryOpenUniformBindingProjection(document, module, site, members, out var projectedType, out var projections))
+            EmitOpenBindingProjectionClass(sb, document, module, site, catalog, binding, projectedType, projections);
+
         sb.AppendLine("}");
         sb.AppendLine();
     }
 
-    private bool TryOpenFlattenedHomogeneousValueDecode(
+    /// <summary>
+    /// When every catalog member is already <paramref name="projected"/> or a homogeneous CHOICE
+    /// whose <c>Value</c> is that type, emit nested <c>As…</c> with <c>Binding&lt;projected&gt;</c>.
+    /// </summary>
+    private bool TryOpenUniformBindingProjection(
         IrDocument document,
         IrModule module,
         OpenWrapperSite site,
         IReadOnlyList<OpenDecodeBindingMember> members,
-        OpenDecodeBindingMember member,
-        out OpenDecodeBindingMember typedMember)
+        out string projectedType,
+        out IReadOnlyList<OpenBindingProjection> projections)
     {
-        typedMember = null!;
-        var typed = members.FirstOrDefault(candidate =>
-            candidate.Wrapper == member.Wrapper && candidate.Alternatives is null);
-        if (typed is null) return false;
-        if (!TryResolveMultiAlternativeChoice(document, module, member.Wrapper.Binding.Type, out var choice))
-            return false;
-        if (TryHomogeneousChoiceCsType(document, module, member.Wrapper.Name, choice) != member.CsType)
-            return false;
-        typedMember = typed;
+        projectedType = "";
+        projections = Array.Empty<OpenBindingProjection>();
+        if (members.Count == 0 || OpenPayloadUsesArrayValue(site)) return false;
+
+        var list = new List<OpenBindingProjection>();
+        string? shared = null;
+        foreach (var member in members)
+        {
+            if (!TryDescribeOpenBindingProjection(document, module, member, out var projected, out var projection))
+                return false;
+            if (shared is null) shared = projected;
+            else if (!string.Equals(shared, projected, StringComparison.Ordinal)) return false;
+            list.Add(projection);
+        }
+
+        if (shared is null || list.TrueForAll(static p => !p.ViaHomogeneousValue)) return false;
+        projectedType = shared;
+        projections = list;
         return true;
     }
 
-    private bool TryResolveMultiAlternativeChoice(
+    private bool TryDescribeOpenBindingProjection(
         IrDocument document,
         IrModule module,
-        TypeExpr type,
-        out ChoiceType choice)
+        OpenDecodeBindingMember member,
+        out string projectedCsType,
+        out OpenBindingProjection projection)
     {
-        choice = null!;
-        var unwrapped = UnwrapAliases(document, module, type);
-        if (unwrapped is ChoiceType direct && !IsSingleAlternativeChoice(direct))
+        projectedCsType = member.CsType;
+        projection = new OpenBindingProjection(member, false, member.CsType, "");
+        if (TryResolveHomogeneousChoiceBinding(document, module, member.Wrapper.Binding.Type,
+                out var choice, out var choiceCsType, out var leaf))
         {
-            choice = direct;
+            projectedCsType = leaf;
+            var factory = PreferredHomogeneousChoiceFactory(document, module, choiceCsType, choice);
+            projection = new OpenBindingProjection(member, true, choiceCsType, factory);
             return true;
         }
 
+        return member.CsType is "string" or "DateTimeOffset" or "bool" or "int" or "uint" or "long" or "ulong";
+    }
+
+    private bool TryResolveHomogeneousChoiceBinding(
+        IrDocument document,
+        IrModule module,
+        TypeExpr type,
+        out ChoiceType choice,
+        out string choiceCsType,
+        out string leafCsType)
+    {
+        choice = null!;
+        choiceCsType = "";
+        leafCsType = "";
+        var unwrapped = UnwrapAliases(document, module, type);
         if (unwrapped is RefType reference)
         {
             var found = FindWithModule(document, module, reference);
-            if (found?.Def.Type is ChoiceType named && !IsSingleAlternativeChoice(named))
-            {
-                choice = named;
-                return true;
-            }
+            if (found?.Def.Type is not ChoiceType named || IsSingleAlternativeChoice(named)) return false;
+            choice = named;
+            choiceCsType = NamedTypeName(document, module, found.Value.Def.Name, found.Value.Def.Name,
+                new RefType { Name = found.Value.Def.Name, Module = found.Value.Module.Name });
+            leafCsType = TryHomogeneousChoiceCsType(document, found.Value.Module, choiceCsType, choice) ?? "";
+            return leafCsType.Length > 0;
+        }
+
+        if (unwrapped is ChoiceType direct && !IsSingleAlternativeChoice(direct))
+        {
+            choice = direct;
+            leafCsType = TryHomogeneousChoiceCsType(document, module, "Value", direct) ?? "";
+            if (leafCsType.Length == 0) return false;
+            choiceCsType = "Value"; // inline — uncommon for open-type tables
+            return false; // require named CHOICE for From… factories
         }
 
         return false;
     }
 
-    private bool TryOpenStringChoiceForms(
+    private string PreferredHomogeneousChoiceFactory(
+        IrDocument document, IrModule module, string choiceCsType, ChoiceType choice)
+    {
+        IrComponent? preferred = null;
+        foreach (var component in choice.Components)
+        {
+            if (UnwrapAliases(document, module, component.Type) is StringType { Form: StringTypes.Utf8 })
+            {
+                preferred = component;
+                break;
+            }
+        }
+
+        preferred ??= choice.Components[0];
+        var prop = PropertyName(preferred, choiceCsType);
+        return "From" + (prop.StartsWith('@') ? prop[1..] : prop);
+    }
+
+    private static string OpenBindingProjectionClassName(string projectedCsType) => projectedCsType switch
+    {
+        "string" => "AsString",
+        "DateTimeOffset" => "AsDateTimeOffset",
+        "bool" => "AsBoolean",
+        "int" => "AsInt32",
+        "uint" => "AsUInt32",
+        "long" => "AsInt64",
+        "ulong" => "AsUInt64",
+        _ => "As" + SanitizeIdentifier(projectedCsType.Split('.').Last())
+    };
+
+    private void EmitOpenBindingProjectionClass(
+        StringBuilder sb,
         IrDocument document,
         IrModule module,
-        OpenDecodeBindingMember member,
-        out string formsExpression)
+        OpenWrapperSite site,
+        string catalog,
+        string binding,
+        string projectedType,
+        IReadOnlyList<OpenBindingProjection> projections)
     {
-        formsExpression = "";
-        if (member.CsType != "string" || member.Alternatives is null) return false;
-        var forms = new List<string>();
-        foreach (var alternative in member.Alternatives)
+        var nested = OpenBindingProjectionClassName(projectedType);
+        var containerType = OpenContainerCsType(site, module);
+        var parameters = $"{containerType} source{OpenParentParameters(site)}";
+        sb.AppendLine();
+        sb.AppendLine($"    public static class {nested}");
+        sb.AppendLine("    {");
+        for (var index = 0; index < projections.Count; index++)
         {
-            if (UnwrapAliases(document, module, alternative.Type) is not StringType text) return false;
-            forms.Add(StringFormEnum(text.Form));
+            var projection = projections[index];
+            var member = projection.Member;
+            if (index > 0) sb.AppendLine();
+            var keyValue = OpenBindingKeyValue(document, module, site, member.Wrapper.Binding.Key);
+            if (!projection.ViaHomogeneousValue)
+            {
+                sb.AppendLine($"        public static {binding}Binding<{projectedType}> {member.Name} {{ get; }} =");
+                sb.AppendLine($"            {catalog}Bindings.{member.Name};");
+                continue;
+            }
+
+            var chosen = $"{projection.ChoiceCsType}.{projection.PreferredFactory}(value)";
+            var decodeName = "Decode" + member.Name + nested;
+            var encodeName = "Encode" + member.Name + nested;
+            sb.AppendLine($"        public static {binding}Binding<{projectedType}> {member.Name} {{ get; }} =");
+            sb.AppendLine($"            new({keyValue}, {decodeName}, {encodeName});");
+            sb.AppendLine();
+            if (member.Wrapper.CodecExpression is not null)
+            {
+                sb.AppendLine($"        private static {projectedType} {decodeName}({parameters})");
+                sb.AppendLine("        {");
+                var raw = OpenRawValue(sb, document, site, "source", "            ");
+                sb.AppendLine($"            return {OpenCodecDecode(member.Wrapper, raw)}.Value;");
+                sb.AppendLine("        }");
+                sb.AppendLine();
+                sb.AppendLine($"        private static {site.Payload.RawType} {encodeName}({projectedType} value) =>");
+                sb.AppendLine($"            {OpenCodecEncode(member.Wrapper, chosen)};");
+            }
+            else
+            {
+                sb.AppendLine($"        private static {projectedType} {decodeName}({parameters}) =>");
+                sb.AppendLine($"            Decode{member.Name}(source{OpenParentArguments(site)}).Value;");
+                sb.AppendLine();
+                sb.AppendLine($"        private static {site.Payload.RawType} {encodeName}({projectedType} value) =>");
+                sb.AppendLine($"            Encode{member.Name}({chosen});");
+            }
         }
-        if (forms.Count == 0) return false;
-        formsExpression = string.Join(", ", forms);
-        return true;
+
+        sb.AppendLine("    }");
     }
 
     private string OpenBindingKeyValue(IrDocument document, IrModule module, OpenWrapperSite site, string key)
@@ -1314,10 +1349,7 @@ public sealed partial class CSharpBackend
         var containerType = OpenContainerCsType(site, module);
         var bindingValueType = OpenPayloadUsesArrayValue(site) ? "T[]" : "T";
         sb.AppendLine($"    public static bool {method}<T>(this {containerType} source{OpenParentParameters(site)}, {binding}Binding<T> binding, out {bindingValueType} value)");
-        EmitOpenDecodeBody(sb, document, site, keyName, codecCapable: true);
-        sb.AppendLine();
-        sb.AppendLine($"    public static bool {method}<T>(this {containerType} source{OpenParentParameters(site)}, {binding}DecoderBinding<T> binding, out T value)");
-        EmitOpenDecodeBody(sb, document, site, keyName, codecCapable: false);
+        EmitOpenDecodeBody(sb, document, site, keyName);
         sb.AppendLine();
 
         var setMethod = "Set" + method["TryDecode".Length..];
@@ -1370,8 +1402,7 @@ public sealed partial class CSharpBackend
         sb.AppendLine();
     }
 
-    private void EmitOpenDecodeBody(StringBuilder sb, IrDocument document, OpenWrapperSite site, string keyName,
-        bool codecCapable)
+    private void EmitOpenDecodeBody(StringBuilder sb, IrDocument document, OpenWrapperSite site, string keyName)
     {
         sb.AppendLine("    {"); sb.AppendLine("        value = default!;");
         if (!site.Container.ValueType) sb.AppendLine("        ArgumentNullException.ThrowIfNull(source);");
@@ -1381,7 +1412,7 @@ public sealed partial class CSharpBackend
         if (OpenFieldOptional(site.Field))
             sb.AppendLine($"        if (source.{PropertyName(site.Field, site.Container.Owner)} is null) return false;");
         sb.AppendLine($"        if (!({OpenKeyComparison(document, site, "source", "binding." + keyName)})) return false;");
-        EmitOpenBindingValueAssign(sb, document, site, "source", "        ", codecCapable);
+        EmitOpenBindingValueAssign(sb, document, site, "source", "        ");
         sb.AppendLine("        return true;"); sb.AppendLine("    }");
     }
 
@@ -1421,16 +1452,16 @@ public sealed partial class CSharpBackend
         if (OpenFieldOptional(site.Field))
             sb.AppendLine($"        if ({matched}.{PropertyName(site.Field, site.Container.Owner)} is null) return false;");
         sb.AppendLine($"        raw = {matched};");
-        EmitOpenBindingValueAssign(sb, document, site, matched, "        ", codecCapable: true);
+        EmitOpenBindingValueAssign(sb, document, site, matched, "        ");
         sb.AppendLine("        return true;");
         sb.AppendLine("    }");
         sb.AppendLine();
     }
 
     private void EmitOpenBindingValueAssign(StringBuilder sb, IrDocument document, OpenWrapperSite site,
-        string containerExpression, string indent, bool codecCapable)
+        string containerExpression, string indent)
     {
-        if (codecCapable && SimpleOpenPayloadKind(site.Payload) is not null)
+        if (SimpleOpenPayloadKind(site.Payload) is not null)
         {
             sb.AppendLine($"{indent}if (binding.Codec is {{ }} codec)");
             sb.AppendLine(indent + "{");
@@ -1441,7 +1472,7 @@ public sealed partial class CSharpBackend
             sb.AppendLine($"{indent}    value = binding.Decoder!({containerExpression}{OpenParentArguments(site)});");
         }
         else
-            sb.AppendLine($"{indent}value = binding.Decoder{(codecCapable ? "!" : "")}({containerExpression}{OpenParentArguments(site)});");
+            sb.AppendLine($"{indent}value = binding.Decoder!({containerExpression}{OpenParentArguments(site)});");
     }
 
     private void EmitOpenWrapperGetMethod(StringBuilder sb, IrDocument document, IrModule module,
@@ -1470,7 +1501,7 @@ public sealed partial class CSharpBackend
         if (OpenFieldOptional(site.Field))
             sb.AppendLine($"        if ({matched}.{PropertyName(site.Field, site.Container.Owner)} is null) return false;");
         sb.AppendLine($"        raw = {matched};");
-        EmitOpenBindingValueAssign(sb, document, site, matched, "        ", codecCapable: true);
+        EmitOpenBindingValueAssign(sb, document, site, matched, "        ");
         sb.AppendLine("        return true;"); sb.AppendLine("    }"); sb.AppendLine();
 
         void EmitRoute(int index, string expression, string indent, Dictionary<int, string> routes)

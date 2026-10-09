@@ -36,6 +36,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
         {
             if (!IrOptions.ShouldGenerate(type.Options)) continue;
             if (IsSignedSpecialization(type)) continue;
+            if (IrOptions.CSharpAliasOf(type.Options) is not null) continue;
             var typeName = IrOptions.CSharpTypeName(type.Options) ?? SanitizeIdentifier(type.Name);
             if (IsCollapsibleAlias(type.Type))
             {
@@ -86,11 +87,15 @@ public sealed partial class CSharpBackend : ILanguageBackend
                 continue;
             }
 
-            var typeName = IrOptions.CSharpTypeName(type.Options) ?? SanitizeIdentifier(type.Name);
             if (IsSignedSpecialization(type))
             {
                 continue;
             }
+            if (IrOptions.CSharpAliasOf(type.Options) is not null)
+            {
+                continue;
+            }
+            var typeName = IrOptions.CSharpTypeName(type.Options) ?? SanitizeIdentifier(type.Name);
             if (IsCollapsibleAlias(type.Type))
             {
                 // SEQUENCE OF / SET OF aliases collapse to T[], but nested element types
@@ -3674,7 +3679,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
             var found = FindWithModule(document, module, reference);
             if (found is not null)
             {
-                var (definingModule, def) = found.Value;
+                var (definingModule, def) = ResolveAliasOfTarget(document, found.Value.Module, found.Value.Def);
                 var typeName = IrOptions.CSharpTypeName(def.Options) ?? SanitizeIdentifier(def.Name);
                 var currentNs = ModuleNamespace(module);
                 var definingNs = ModuleNamespace(definingModule);
@@ -3852,6 +3857,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
     /// <summary>
     /// Collapse typedef aliases and single-alternative CHOICE to the underlying type used in generated C#.
     /// Stops at multi-alternative CHOICE / SEQUENCE / SET, named BIT STRING, and ENUMERATED (those keep a type).
+    /// Follows <c>options.csharp.aliasOf</c> as an explicit C# alias without rewriting IR RHS.
     /// </summary>
     private TypeExpr UnwrapAliases(IrDocument document, IrModule module, TypeExpr type)
     {
@@ -3870,6 +3876,21 @@ public sealed partial class CSharpBackend : ILanguageBackend
                 if (found is null)
                 {
                     return type;
+                }
+
+                if (IrOptions.CSharpAliasOf(found.Value.Def.Options) is { } aliasOf)
+                {
+                    var (targetModule, targetDef) = ResolveAliasOfTarget(
+                        document, found.Value.Module, found.Value.Def);
+                    type = new RefType
+                    {
+                        Name = targetDef.Name,
+                        Module = targetModule.Name,
+                        Tag = type.Tag,
+                        Options = type.Options
+                    };
+                    module = targetModule;
+                    continue;
                 }
 
                 var inner = found.Value.Def.Type;
@@ -4026,6 +4047,50 @@ public sealed partial class CSharpBackend : ILanguageBackend
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Follow <c>options.csharp.aliasOf</c> to the emit target typedef (cycle already rejected by IrValidator).
+    /// </summary>
+    private static (IrModule Module, IrTypeDef Def) ResolveAliasOfTarget(
+        IrDocument document,
+        IrModule module,
+        IrTypeDef definition)
+    {
+        var visited = new HashSet<string>(StringComparer.Ordinal);
+        var currentModule = module;
+        var current = definition;
+        while (true)
+        {
+            var key = currentModule.Name + "::" + current.Name;
+            if (!visited.Add(key))
+            {
+                throw new NotSupportedException(
+                    $"Circular options.csharp.aliasOf at '{current.Name}'.");
+            }
+
+            var aliasOf = IrOptions.CSharpAliasOf(current.Options);
+            if (aliasOf is null)
+            {
+                return (currentModule, current);
+            }
+
+            if (string.IsNullOrWhiteSpace(aliasOf))
+            {
+                throw new NotSupportedException(
+                    $"Type '{currentModule.Name}.{current.Name}' has empty options.csharp.aliasOf.");
+            }
+
+            var found = FindWithModule(document, currentModule, new RefType { Name = aliasOf });
+            if (found is null)
+            {
+                throw new NotSupportedException(
+                    $"Type '{currentModule.Name}.{current.Name}' options.csharp.aliasOf '{aliasOf}' does not resolve.");
+            }
+
+            currentModule = found.Value.Module;
+            current = found.Value.Def;
+        }
     }
 
     private static TypeExpr CloneUntagged(TypeExpr type)

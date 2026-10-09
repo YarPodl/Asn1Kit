@@ -116,6 +116,13 @@ public sealed class IrOptionsTests
     }
 
     [Fact]
+    public void CSharpAliasOf_ReadsString()
+    {
+        Assert.Null(IrOptions.CSharpAliasOf(null));
+        Assert.Equal("X520name", IrOptions.CSharpAliasOf(IrOptions.SetCSharp(null, "aliasOf", "X520name")));
+    }
+
+    [Fact]
     public void ApplyToModules_SetsLazy()
     {
         var document = new IrDocument

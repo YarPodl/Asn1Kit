@@ -139,8 +139,6 @@ public sealed record ParametersBinding<T>
     }
 }
 
-public sealed record ParametersDecoderBinding<T>(Asn1Oid Oid, Func<AlgorithmIdentifier, T> Decoder);
-
 public sealed record SMIMECapabilityParametersBinding<T>
 {
     public Asn1Oid Oid { get; }
@@ -161,8 +159,6 @@ public sealed record SMIMECapabilityParametersBinding<T>
         Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
     }
 }
-
-public sealed record SMIMECapabilityParametersDecoderBinding<T>(Asn1Oid Oid, Func<SMIMECapability, T> Decoder);
 
 public static class SMimeCapsSetParametersBindings
 {
@@ -189,17 +185,6 @@ public static class AlgorithmInformation2009OpenTypeExtensions
         }
         else
             value = binding.Decoder!(source);
-        return true;
-    }
-
-    public static bool TryDecodeParameters<T>(this AlgorithmIdentifier source, ParametersDecoderBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (source.Parameters is null) return false;
-        if (!(source.Algorithm.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
         return true;
     }
 
@@ -260,17 +245,6 @@ public static class AlgorithmInformation2009OpenTypeExtensions
         }
         else
             value = binding.Decoder!(source);
-        return true;
-    }
-
-    public static bool TryDecodeParameters<T>(this SMIMECapability source, SMIMECapabilityParametersDecoderBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (source.Parameters is null) return false;
-        if (!(source.CapabilityID.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
         return true;
     }
 

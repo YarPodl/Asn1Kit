@@ -27,6 +27,13 @@ public static class IrOptions
     public static string? CSharpTypeName(JsonObject? options) =>
         GetCSharp(options, "typeName");
 
+    /// <summary>
+    /// When set on a typedef, C# codegen does not emit a class for it and resolves references
+    /// to the named ASN.1 typedef (same module / import resolution as <c>ref</c>).
+    /// </summary>
+    public static string? CSharpAliasOf(JsonObject? options) =>
+        GetCSharp(options, "aliasOf");
+
     public static string? CSharpPropertyName(JsonObject? options) =>
         GetCSharp(options, "propertyName");
 

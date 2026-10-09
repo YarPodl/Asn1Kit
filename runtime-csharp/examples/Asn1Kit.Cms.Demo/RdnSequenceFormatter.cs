@@ -49,34 +49,26 @@ public static class RdnSequenceFormatter
 
     private static bool TryDecodeStringAttribute(ModernAttribute attribute, string type, out string value)
     {
-        switch (type)
+        if (StringBinding(type) is not { } binding)
         {
-            case "CN":
-                return attribute.TryDecodeValue(
-                    SupportedAttributesValueBindings.X520CommonNameStringValue, out value);
-            case "C":
-                return attribute.TryDecodeValue(
-                    SupportedAttributesValueBindings.X520countryName, out value);
-            case "L":
-                return attribute.TryDecodeValue(
-                    SupportedAttributesValueBindings.X520LocalityNameStringValue, out value);
-            case "ST":
-                return attribute.TryDecodeValue(
-                    SupportedAttributesValueBindings.X520StateOrProvinceNameStringValue, out value);
-            case "O":
-                return attribute.TryDecodeValue(
-                    SupportedAttributesValueBindings.X520OrganizationNameStringValue, out value);
-            case "OU":
-                return attribute.TryDecodeValue(
-                    SupportedAttributesValueBindings.X520OrganizationalUnitNameStringValue, out value);
-            case "DC":
-                return attribute.TryDecodeValue(
-                    SupportedAttributesValueBindings.DomainComponent, out value);
-            default:
-                value = default!;
-                return false;
+            value = default!;
+            return false;
         }
+
+        return attribute.TryDecodeValue(binding, out value);
     }
+
+    private static ValueBinding<string>? StringBinding(string type) => type switch
+    {
+        "CN" => SupportedAttributesValueBindings.AsString.X520CommonName,
+        "C" => SupportedAttributesValueBindings.AsString.X520countryName,
+        "L" => SupportedAttributesValueBindings.AsString.X520LocalityName,
+        "ST" => SupportedAttributesValueBindings.AsString.X520StateOrProvinceName,
+        "O" => SupportedAttributesValueBindings.AsString.X520OrganizationName,
+        "OU" => SupportedAttributesValueBindings.AsString.X520OrganizationalUnitName,
+        "DC" => SupportedAttributesValueBindings.AsString.DomainComponent,
+        _ => null
+    };
 
     private static string HexAttribute(Asn1Oid type, Asn1Any value) => type + "=" + Hex(value);
 

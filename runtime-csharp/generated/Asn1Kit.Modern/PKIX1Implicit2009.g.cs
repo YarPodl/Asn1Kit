@@ -1027,8 +1027,8 @@ public sealed class GeneralName
 
 public sealed class EDIPartyName
 {
-    public Asn1Kit.Modern.PKIX1Explicit2009.X520name? NameAssigner { get; set; }
-    public Asn1Kit.Modern.PKIX1Explicit2009.X520name PartyName { get; set; }
+    public Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString? NameAssigner { get; set; }
+    public Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString PartyName { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1061,13 +1061,13 @@ public sealed class EDIPartyName
             {
                 using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                 {
-                    value.NameAssigner = Asn1Kit.Modern.PKIX1Explicit2009.X520name.Decode(reader);
+                    value.NameAssigner = Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.Decode(reader);
                     reader.ThrowIfNotEmpty();
                 }
             }
             using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
             {
-                value.PartyName = Asn1Kit.Modern.PKIX1Explicit2009.X520name.Decode(reader);
+                value.PartyName = Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.Decode(reader);
                 reader.ThrowIfNotEmpty();
             }
             reader.ThrowIfNotEmpty();
@@ -1777,50 +1777,50 @@ public sealed class GeneralName_OtherName
 
 internal static class __PKIX1Implicit2009OpenTypeCodecs
 {
-    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.X520name> NameAttributeSet { get; } =
-        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.X520name.Decode(reader), static (writer, value) => value.Encode(writer));
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> NameAttributeSet { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
 
-    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520CommonNameAttributeSet { get; } =
-        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName.Decode(reader), static (writer, value) => value.Encode(writer));
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520CommonNameAttributeSet { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
 
-    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName> X520LocalityNameAttributeSet { get; } =
-        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName.Decode(reader), static (writer, value) => value.Encode(writer));
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520LocalityNameAttributeSet { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
 
 }
 
 public static class SupportedAttributesBindings
 {
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> Name { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> Name { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtName, __PKIX1Implicit2009OpenTypeCodecs.NameAttributeSet);
 
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> Surname { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> Surname { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtSurname, __PKIX1Implicit2009OpenTypeCodecs.NameAttributeSet);
 
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> GivenName { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> GivenName { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGivenName, __PKIX1Implicit2009OpenTypeCodecs.NameAttributeSet);
 
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> Initials { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> Initials { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtInitials, __PKIX1Implicit2009OpenTypeCodecs.NameAttributeSet);
 
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520name> GenerationQualifier { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> GenerationQualifier { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGenerationQualifier, __PKIX1Implicit2009OpenTypeCodecs.NameAttributeSet);
 
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520CommonName { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520CommonName { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtCommonName, __PKIX1Implicit2009OpenTypeCodecs.X520CommonNameAttributeSet);
 
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName> X520LocalityName { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520LocalityName { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtLocalityName, __PKIX1Implicit2009OpenTypeCodecs.X520LocalityNameAttributeSet);
 
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName> X520StateOrProvinceName { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520StateOrProvinceName { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtStateOrProvinceName, __PKIX1Implicit2009OpenTypeCodecs.X520LocalityNameAttributeSet);
 
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520OrganizationName { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520OrganizationName { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationName, __PKIX1Implicit2009OpenTypeCodecs.X520CommonNameAttributeSet);
 
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520OrganizationalUnitName { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520OrganizationalUnitName { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationalUnitName, __PKIX1Implicit2009OpenTypeCodecs.X520CommonNameAttributeSet);
 
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520CommonName> X520Title { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520Title { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtTitle, __PKIX1Implicit2009OpenTypeCodecs.X520CommonNameAttributeSet);
 
     public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<string> X520dnQualifier { get; } =
@@ -1832,7 +1832,7 @@ public static class SupportedAttributesBindings
     public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<string> X520SerialNumber { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtSerialNumber, Asn1Codecs.PrintableString);
 
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.X520LocalityName> X520Pseudonym { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520Pseudonym { get; } =
         new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtPseudonym, __PKIX1Implicit2009OpenTypeCodecs.X520LocalityNameAttributeSet);
 
     public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<string> DomainComponent { get; } =

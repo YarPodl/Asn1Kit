@@ -328,7 +328,7 @@ public abstract class Signed<T>
     }
 }
 
-public enum X520nameKind
+public enum DirectoryStringKind
 {
     TeletexString,
     PrintableString,
@@ -337,38 +337,38 @@ public enum X520nameKind
     UTF8String,
 }
 
-public sealed class X520name
+public sealed class DirectoryString
 {
-    public X520nameKind Kind { get; private set; }
+    public DirectoryStringKind Kind { get; private set; }
     public string Value { get; private set; } = "";
 
-    public static X520name FromTeletexString(string teletexString) => new X520name
+    public static DirectoryString FromTeletexString(string teletexString) => new DirectoryString
     {
-        Kind = X520nameKind.TeletexString,
+        Kind = DirectoryStringKind.TeletexString,
         Value = teletexString,
     };
 
-    public static X520name FromPrintableString(string printableString) => new X520name
+    public static DirectoryString FromPrintableString(string printableString) => new DirectoryString
     {
-        Kind = X520nameKind.PrintableString,
+        Kind = DirectoryStringKind.PrintableString,
         Value = printableString,
     };
 
-    public static X520name FromBmpString(string bmpString) => new X520name
+    public static DirectoryString FromBmpString(string bmpString) => new DirectoryString
     {
-        Kind = X520nameKind.BmpString,
+        Kind = DirectoryStringKind.BmpString,
         Value = bmpString,
     };
 
-    public static X520name FromUniversalString(string universalString) => new X520name
+    public static DirectoryString FromUniversalString(string universalString) => new DirectoryString
     {
-        Kind = X520nameKind.UniversalString,
+        Kind = DirectoryStringKind.UniversalString,
         Value = universalString,
     };
 
-    public static X520name FromUTF8String(string uTF8String) => new X520name
+    public static DirectoryString FromUTF8String(string uTF8String) => new DirectoryString
     {
-        Kind = X520nameKind.UTF8String,
+        Kind = DirectoryStringKind.UTF8String,
         Value = uTF8String,
     };
 
@@ -376,11 +376,11 @@ public sealed class X520name
     {
         return Kind switch
         {
-            X520nameKind.TeletexString => Asn1Formatting.Format(Value),
-            X520nameKind.PrintableString => Asn1Formatting.Format(Value),
-            X520nameKind.BmpString => Asn1Formatting.Format(Value),
-            X520nameKind.UniversalString => Asn1Formatting.Format(Value),
-            X520nameKind.UTF8String => Asn1Formatting.Format(Value),
+            DirectoryStringKind.TeletexString => Asn1Formatting.Format(Value),
+            DirectoryStringKind.PrintableString => Asn1Formatting.Format(Value),
+            DirectoryStringKind.BmpString => Asn1Formatting.Format(Value),
+            DirectoryStringKind.UniversalString => Asn1Formatting.Format(Value),
+            DirectoryStringKind.UTF8String => Asn1Formatting.Format(Value),
             _ => "<unset>",
         };
     }
@@ -389,280 +389,52 @@ public sealed class X520name
     {
         switch (Kind)
         {
-            case X520nameKind.TeletexString:
+            case DirectoryStringKind.TeletexString:
                 writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
                 break;
-            case X520nameKind.PrintableString:
+            case DirectoryStringKind.PrintableString:
                 writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
                 break;
-            case X520nameKind.BmpString:
+            case DirectoryStringKind.BmpString:
                 writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
                 break;
-            case X520nameKind.UniversalString:
+            case DirectoryStringKind.UniversalString:
                 writer.WriteString(Asn1Tag.UniversalString, Value, Asn1StringForm.Universal);
                 break;
-            case X520nameKind.UTF8String:
+            case DirectoryStringKind.UTF8String:
                 writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
     }
 
-    public static X520name Decode(Asn1Reader reader)
+    public static DirectoryString Decode(Asn1Reader reader)
     {
         if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
-        var value = new X520name();
+        var value = new DirectoryString();
         if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
         {
-            value.Kind = X520nameKind.TeletexString;
+            value.Kind = DirectoryStringKind.TeletexString;
             value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
         {
-            value.Kind = X520nameKind.PrintableString;
+            value.Kind = DirectoryStringKind.PrintableString;
             value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
         {
-            value.Kind = X520nameKind.BmpString;
+            value.Kind = DirectoryStringKind.BmpString;
             value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
         {
-            value.Kind = X520nameKind.UniversalString;
+            value.Kind = DirectoryStringKind.UniversalString;
             value.Value = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
         {
-            value.Kind = X520nameKind.UTF8String;
-            value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
-        }
-        else throw new Asn1Exception("Unknown CHOICE alternative.");
-        return value;
-    }
-}
-
-public enum X520CommonNameKind
-{
-    TeletexString,
-    PrintableString,
-    BmpString,
-    UniversalString,
-    UTF8String,
-}
-
-public sealed class X520CommonName
-{
-    public X520CommonNameKind Kind { get; private set; }
-    public string Value { get; private set; } = "";
-
-    public static X520CommonName FromTeletexString(string teletexString) => new X520CommonName
-    {
-        Kind = X520CommonNameKind.TeletexString,
-        Value = teletexString,
-    };
-
-    public static X520CommonName FromPrintableString(string printableString) => new X520CommonName
-    {
-        Kind = X520CommonNameKind.PrintableString,
-        Value = printableString,
-    };
-
-    public static X520CommonName FromBmpString(string bmpString) => new X520CommonName
-    {
-        Kind = X520CommonNameKind.BmpString,
-        Value = bmpString,
-    };
-
-    public static X520CommonName FromUniversalString(string universalString) => new X520CommonName
-    {
-        Kind = X520CommonNameKind.UniversalString,
-        Value = universalString,
-    };
-
-    public static X520CommonName FromUTF8String(string uTF8String) => new X520CommonName
-    {
-        Kind = X520CommonNameKind.UTF8String,
-        Value = uTF8String,
-    };
-
-    public override string ToString()
-    {
-        return Kind switch
-        {
-            X520CommonNameKind.TeletexString => Asn1Formatting.Format(Value),
-            X520CommonNameKind.PrintableString => Asn1Formatting.Format(Value),
-            X520CommonNameKind.BmpString => Asn1Formatting.Format(Value),
-            X520CommonNameKind.UniversalString => Asn1Formatting.Format(Value),
-            X520CommonNameKind.UTF8String => Asn1Formatting.Format(Value),
-            _ => "<unset>",
-        };
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        switch (Kind)
-        {
-            case X520CommonNameKind.TeletexString:
-                writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
-                break;
-            case X520CommonNameKind.PrintableString:
-                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
-                break;
-            case X520CommonNameKind.BmpString:
-                writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
-                break;
-            case X520CommonNameKind.UniversalString:
-                writer.WriteString(Asn1Tag.UniversalString, Value, Asn1StringForm.Universal);
-                break;
-            case X520CommonNameKind.UTF8String:
-                writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
-                break;
-            default: throw new Asn1Exception("CHOICE has no alternative.");
-        }
-    }
-
-    public static X520CommonName Decode(Asn1Reader reader)
-    {
-        if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
-        var value = new X520CommonName();
-        if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
-        {
-            value.Kind = X520CommonNameKind.TeletexString;
-            value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
-        {
-            value.Kind = X520CommonNameKind.PrintableString;
-            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
-        {
-            value.Kind = X520CommonNameKind.BmpString;
-            value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
-        {
-            value.Kind = X520CommonNameKind.UniversalString;
-            value.Value = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
-        {
-            value.Kind = X520CommonNameKind.UTF8String;
-            value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
-        }
-        else throw new Asn1Exception("Unknown CHOICE alternative.");
-        return value;
-    }
-}
-
-public enum X520LocalityNameKind
-{
-    TeletexString,
-    PrintableString,
-    BmpString,
-    UniversalString,
-    UTF8String,
-}
-
-public sealed class X520LocalityName
-{
-    public X520LocalityNameKind Kind { get; private set; }
-    public string Value { get; private set; } = "";
-
-    public static X520LocalityName FromTeletexString(string teletexString) => new X520LocalityName
-    {
-        Kind = X520LocalityNameKind.TeletexString,
-        Value = teletexString,
-    };
-
-    public static X520LocalityName FromPrintableString(string printableString) => new X520LocalityName
-    {
-        Kind = X520LocalityNameKind.PrintableString,
-        Value = printableString,
-    };
-
-    public static X520LocalityName FromBmpString(string bmpString) => new X520LocalityName
-    {
-        Kind = X520LocalityNameKind.BmpString,
-        Value = bmpString,
-    };
-
-    public static X520LocalityName FromUniversalString(string universalString) => new X520LocalityName
-    {
-        Kind = X520LocalityNameKind.UniversalString,
-        Value = universalString,
-    };
-
-    public static X520LocalityName FromUTF8String(string uTF8String) => new X520LocalityName
-    {
-        Kind = X520LocalityNameKind.UTF8String,
-        Value = uTF8String,
-    };
-
-    public override string ToString()
-    {
-        return Kind switch
-        {
-            X520LocalityNameKind.TeletexString => Asn1Formatting.Format(Value),
-            X520LocalityNameKind.PrintableString => Asn1Formatting.Format(Value),
-            X520LocalityNameKind.BmpString => Asn1Formatting.Format(Value),
-            X520LocalityNameKind.UniversalString => Asn1Formatting.Format(Value),
-            X520LocalityNameKind.UTF8String => Asn1Formatting.Format(Value),
-            _ => "<unset>",
-        };
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        switch (Kind)
-        {
-            case X520LocalityNameKind.TeletexString:
-                writer.WriteString(Asn1Tag.TeletexString, Value, Asn1StringForm.Teletex);
-                break;
-            case X520LocalityNameKind.PrintableString:
-                writer.WriteString(Asn1Tag.PrintableString, Value, Asn1StringForm.Printable);
-                break;
-            case X520LocalityNameKind.BmpString:
-                writer.WriteString(Asn1Tag.BmpString, Value, Asn1StringForm.Bmp);
-                break;
-            case X520LocalityNameKind.UniversalString:
-                writer.WriteString(Asn1Tag.UniversalString, Value, Asn1StringForm.Universal);
-                break;
-            case X520LocalityNameKind.UTF8String:
-                writer.WriteString(Asn1Tag.Utf8String, Value, Asn1StringForm.Utf8);
-                break;
-            default: throw new Asn1Exception("CHOICE has no alternative.");
-        }
-    }
-
-    public static X520LocalityName Decode(Asn1Reader reader)
-    {
-        if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
-        var value = new X520LocalityName();
-        if (peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
-        {
-            value.Kind = X520LocalityNameKind.TeletexString;
-            value.Value = reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
-        {
-            value.Kind = X520LocalityNameKind.PrintableString;
-            value.Value = reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
-        {
-            value.Kind = X520LocalityNameKind.BmpString;
-            value.Value = reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
-        {
-            value.Kind = X520LocalityNameKind.UniversalString;
-            value.Value = reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal);
-        }
-        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
-        {
-            value.Kind = X520LocalityNameKind.UTF8String;
+            value.Kind = DirectoryStringKind.UTF8String;
             value.Value = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
@@ -1167,14 +939,14 @@ internal static class __PKIX1Explicit2009OpenTypeCodecs
     internal static Asn1Codec<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams> PkRsaESOAEP { get; } =
         new(static reader => Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams.Decode(reader), static (writer, value) => value.Encode(writer));
 
-    internal static Asn1Codec<X520name> NameSingleAttribute { get; } =
-        new(static reader => X520name.Decode(reader), static (writer, value) => value.Encode(writer));
+    internal static Asn1Codec<DirectoryString> NameSingleAttribute { get; } =
+        new(static reader => DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
 
-    internal static Asn1Codec<X520CommonName> X520CommonNameSingleAttribute { get; } =
-        new(static reader => X520CommonName.Decode(reader), static (writer, value) => value.Encode(writer));
+    internal static Asn1Codec<DirectoryString> X520CommonNameSingleAttribute { get; } =
+        new(static reader => DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
 
-    internal static Asn1Codec<X520LocalityName> X520LocalityNameSingleAttribute { get; } =
-        new(static reader => X520LocalityName.Decode(reader), static (writer, value) => value.Encode(writer));
+    internal static Asn1Codec<DirectoryString> X520LocalityNameSingleAttribute { get; } =
+        new(static reader => DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
 
     internal static Asn1Codec<Asn1Kit.Modern.PKIX1Implicit2009.AuthorityKeyIdentifier> AuthorityKeyIdentifierExtension { get; } =
         new(static reader => Asn1Kit.Modern.PKIX1Implicit2009.AuthorityKeyIdentifier.Decode(reader), static (writer, value) => value.Encode(writer));
@@ -1527,126 +1299,38 @@ public static class CrlEntryExtensionsBindings
 
 public static class SupportedAttributesValueBindings
 {
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<X520name> Name { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<DirectoryString> Name { get; } =
         new(PKIX1Explicit2009Oids.IdAtName, __PKIX1Explicit2009OpenTypeCodecs.NameSingleAttribute);
 
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> NameStringValue { get; } =
-        new(PKIX1Explicit2009Oids.IdAtName, DecodeNameStringValue);
-
-    private static string DecodeNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __PKIX1Explicit2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
-    }
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<X520name> Surname { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<DirectoryString> Surname { get; } =
         new(PKIX1Explicit2009Oids.IdAtSurname, __PKIX1Explicit2009OpenTypeCodecs.NameSingleAttribute);
 
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> SurnameStringValue { get; } =
-        new(PKIX1Explicit2009Oids.IdAtSurname, DecodeSurnameStringValue);
-
-    private static string DecodeSurnameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __PKIX1Explicit2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
-    }
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<X520name> GivenName { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<DirectoryString> GivenName { get; } =
         new(PKIX1Explicit2009Oids.IdAtGivenName, __PKIX1Explicit2009OpenTypeCodecs.NameSingleAttribute);
 
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> GivenNameStringValue { get; } =
-        new(PKIX1Explicit2009Oids.IdAtGivenName, DecodeGivenNameStringValue);
-
-    private static string DecodeGivenNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __PKIX1Explicit2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
-    }
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<X520name> Initials { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<DirectoryString> Initials { get; } =
         new(PKIX1Explicit2009Oids.IdAtInitials, __PKIX1Explicit2009OpenTypeCodecs.NameSingleAttribute);
 
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> InitialsStringValue { get; } =
-        new(PKIX1Explicit2009Oids.IdAtInitials, DecodeInitialsStringValue);
-
-    private static string DecodeInitialsStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __PKIX1Explicit2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
-    }
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<X520name> GenerationQualifier { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<DirectoryString> GenerationQualifier { get; } =
         new(PKIX1Explicit2009Oids.IdAtGenerationQualifier, __PKIX1Explicit2009OpenTypeCodecs.NameSingleAttribute);
 
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> GenerationQualifierStringValue { get; } =
-        new(PKIX1Explicit2009Oids.IdAtGenerationQualifier, DecodeGenerationQualifierStringValue);
-
-    private static string DecodeGenerationQualifierStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __PKIX1Explicit2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
-    }
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<X520CommonName> X520CommonName { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<DirectoryString> X520CommonName { get; } =
         new(PKIX1Explicit2009Oids.IdAtCommonName, __PKIX1Explicit2009OpenTypeCodecs.X520CommonNameSingleAttribute);
 
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> X520CommonNameStringValue { get; } =
-        new(PKIX1Explicit2009Oids.IdAtCommonName, DecodeX520CommonNameStringValue);
-
-    private static string DecodeX520CommonNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __PKIX1Explicit2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value).Value;
-    }
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<X520LocalityName> X520LocalityName { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<DirectoryString> X520LocalityName { get; } =
         new(PKIX1Explicit2009Oids.IdAtLocalityName, __PKIX1Explicit2009OpenTypeCodecs.X520LocalityNameSingleAttribute);
 
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> X520LocalityNameStringValue { get; } =
-        new(PKIX1Explicit2009Oids.IdAtLocalityName, DecodeX520LocalityNameStringValue);
-
-    private static string DecodeX520LocalityNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __PKIX1Explicit2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value).Value;
-    }
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<X520LocalityName> X520StateOrProvinceName { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<DirectoryString> X520StateOrProvinceName { get; } =
         new(PKIX1Explicit2009Oids.IdAtStateOrProvinceName, __PKIX1Explicit2009OpenTypeCodecs.X520LocalityNameSingleAttribute);
 
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> X520StateOrProvinceNameStringValue { get; } =
-        new(PKIX1Explicit2009Oids.IdAtStateOrProvinceName, DecodeX520StateOrProvinceNameStringValue);
-
-    private static string DecodeX520StateOrProvinceNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __PKIX1Explicit2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value).Value;
-    }
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<X520CommonName> X520OrganizationName { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<DirectoryString> X520OrganizationName { get; } =
         new(PKIX1Explicit2009Oids.IdAtOrganizationName, __PKIX1Explicit2009OpenTypeCodecs.X520CommonNameSingleAttribute);
 
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> X520OrganizationNameStringValue { get; } =
-        new(PKIX1Explicit2009Oids.IdAtOrganizationName, DecodeX520OrganizationNameStringValue);
-
-    private static string DecodeX520OrganizationNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __PKIX1Explicit2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value).Value;
-    }
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<X520CommonName> X520OrganizationalUnitName { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<DirectoryString> X520OrganizationalUnitName { get; } =
         new(PKIX1Explicit2009Oids.IdAtOrganizationalUnitName, __PKIX1Explicit2009OpenTypeCodecs.X520CommonNameSingleAttribute);
 
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> X520OrganizationalUnitNameStringValue { get; } =
-        new(PKIX1Explicit2009Oids.IdAtOrganizationalUnitName, DecodeX520OrganizationalUnitNameStringValue);
-
-    private static string DecodeX520OrganizationalUnitNameStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __PKIX1Explicit2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value).Value;
-    }
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<X520CommonName> X520Title { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<DirectoryString> X520Title { get; } =
         new(PKIX1Explicit2009Oids.IdAtTitle, __PKIX1Explicit2009OpenTypeCodecs.X520CommonNameSingleAttribute);
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> X520TitleStringValue { get; } =
-        new(PKIX1Explicit2009Oids.IdAtTitle, DecodeX520TitleStringValue);
-
-    private static string DecodeX520TitleStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __PKIX1Explicit2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value).Value;
-    }
 
     public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520dnQualifier { get; } =
         new(PKIX1Explicit2009Oids.IdAtDnQualifier, Asn1Codecs.PrintableString);
@@ -1657,22 +1341,164 @@ public static class SupportedAttributesValueBindings
     public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520SerialNumber { get; } =
         new(PKIX1Explicit2009Oids.IdAtSerialNumber, Asn1Codecs.PrintableString);
 
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<X520LocalityName> X520Pseudonym { get; } =
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<DirectoryString> X520Pseudonym { get; } =
         new(PKIX1Explicit2009Oids.IdAtPseudonym, __PKIX1Explicit2009OpenTypeCodecs.X520LocalityNameSingleAttribute);
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueDecoderBinding<string> X520PseudonymStringValue { get; } =
-        new(PKIX1Explicit2009Oids.IdAtPseudonym, DecodeX520PseudonymStringValue);
-
-    private static string DecodeX520PseudonymStringValue(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
-    {
-        return __PKIX1Explicit2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value).Value;
-    }
 
     public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> DomainComponent { get; } =
         new(PKIX1Explicit2009Oids.IdDomainComponent, Asn1Codecs.Ia5String);
 
     public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> EmailAddress { get; } =
         new(PKIX1Explicit2009Oids.IdEmailAddress, Asn1Codecs.Ia5String);
+
+    public static class AsString
+    {
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> Name { get; } =
+            new(PKIX1Explicit2009Oids.IdAtName, DecodeNameAsString, EncodeNameAsString);
+
+        private static string DecodeNameAsString(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+        {
+            return __PKIX1Explicit2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeNameAsString(string value) =>
+            __PKIX1Explicit2009OpenTypeCodecs.NameSingleAttribute.Encode(DirectoryString.FromUTF8String(value));
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> Surname { get; } =
+            new(PKIX1Explicit2009Oids.IdAtSurname, DecodeSurnameAsString, EncodeSurnameAsString);
+
+        private static string DecodeSurnameAsString(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+        {
+            return __PKIX1Explicit2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeSurnameAsString(string value) =>
+            __PKIX1Explicit2009OpenTypeCodecs.NameSingleAttribute.Encode(DirectoryString.FromUTF8String(value));
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> GivenName { get; } =
+            new(PKIX1Explicit2009Oids.IdAtGivenName, DecodeGivenNameAsString, EncodeGivenNameAsString);
+
+        private static string DecodeGivenNameAsString(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+        {
+            return __PKIX1Explicit2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeGivenNameAsString(string value) =>
+            __PKIX1Explicit2009OpenTypeCodecs.NameSingleAttribute.Encode(DirectoryString.FromUTF8String(value));
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> Initials { get; } =
+            new(PKIX1Explicit2009Oids.IdAtInitials, DecodeInitialsAsString, EncodeInitialsAsString);
+
+        private static string DecodeInitialsAsString(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+        {
+            return __PKIX1Explicit2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeInitialsAsString(string value) =>
+            __PKIX1Explicit2009OpenTypeCodecs.NameSingleAttribute.Encode(DirectoryString.FromUTF8String(value));
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> GenerationQualifier { get; } =
+            new(PKIX1Explicit2009Oids.IdAtGenerationQualifier, DecodeGenerationQualifierAsString, EncodeGenerationQualifierAsString);
+
+        private static string DecodeGenerationQualifierAsString(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+        {
+            return __PKIX1Explicit2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeGenerationQualifierAsString(string value) =>
+            __PKIX1Explicit2009OpenTypeCodecs.NameSingleAttribute.Encode(DirectoryString.FromUTF8String(value));
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520CommonName { get; } =
+            new(PKIX1Explicit2009Oids.IdAtCommonName, DecodeX520CommonNameAsString, EncodeX520CommonNameAsString);
+
+        private static string DecodeX520CommonNameAsString(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+        {
+            return __PKIX1Explicit2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeX520CommonNameAsString(string value) =>
+            __PKIX1Explicit2009OpenTypeCodecs.X520CommonNameSingleAttribute.Encode(DirectoryString.FromUTF8String(value));
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520LocalityName { get; } =
+            new(PKIX1Explicit2009Oids.IdAtLocalityName, DecodeX520LocalityNameAsString, EncodeX520LocalityNameAsString);
+
+        private static string DecodeX520LocalityNameAsString(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+        {
+            return __PKIX1Explicit2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeX520LocalityNameAsString(string value) =>
+            __PKIX1Explicit2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Encode(DirectoryString.FromUTF8String(value));
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520StateOrProvinceName { get; } =
+            new(PKIX1Explicit2009Oids.IdAtStateOrProvinceName, DecodeX520StateOrProvinceNameAsString, EncodeX520StateOrProvinceNameAsString);
+
+        private static string DecodeX520StateOrProvinceNameAsString(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+        {
+            return __PKIX1Explicit2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeX520StateOrProvinceNameAsString(string value) =>
+            __PKIX1Explicit2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Encode(DirectoryString.FromUTF8String(value));
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520OrganizationName { get; } =
+            new(PKIX1Explicit2009Oids.IdAtOrganizationName, DecodeX520OrganizationNameAsString, EncodeX520OrganizationNameAsString);
+
+        private static string DecodeX520OrganizationNameAsString(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+        {
+            return __PKIX1Explicit2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeX520OrganizationNameAsString(string value) =>
+            __PKIX1Explicit2009OpenTypeCodecs.X520CommonNameSingleAttribute.Encode(DirectoryString.FromUTF8String(value));
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520OrganizationalUnitName { get; } =
+            new(PKIX1Explicit2009Oids.IdAtOrganizationalUnitName, DecodeX520OrganizationalUnitNameAsString, EncodeX520OrganizationalUnitNameAsString);
+
+        private static string DecodeX520OrganizationalUnitNameAsString(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+        {
+            return __PKIX1Explicit2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeX520OrganizationalUnitNameAsString(string value) =>
+            __PKIX1Explicit2009OpenTypeCodecs.X520CommonNameSingleAttribute.Encode(DirectoryString.FromUTF8String(value));
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520Title { get; } =
+            new(PKIX1Explicit2009Oids.IdAtTitle, DecodeX520TitleAsString, EncodeX520TitleAsString);
+
+        private static string DecodeX520TitleAsString(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+        {
+            return __PKIX1Explicit2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeX520TitleAsString(string value) =>
+            __PKIX1Explicit2009OpenTypeCodecs.X520CommonNameSingleAttribute.Encode(DirectoryString.FromUTF8String(value));
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520dnQualifier { get; } =
+            SupportedAttributesValueBindings.X520dnQualifier;
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520countryName { get; } =
+            SupportedAttributesValueBindings.X520countryName;
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520SerialNumber { get; } =
+            SupportedAttributesValueBindings.X520SerialNumber;
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520Pseudonym { get; } =
+            new(PKIX1Explicit2009Oids.IdAtPseudonym, DecodeX520PseudonymAsString, EncodeX520PseudonymAsString);
+
+        private static string DecodeX520PseudonymAsString(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+        {
+            return __PKIX1Explicit2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeX520PseudonymAsString(string value) =>
+            __PKIX1Explicit2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Encode(DirectoryString.FromUTF8String(value));
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> DomainComponent { get; } =
+            SupportedAttributesValueBindings.DomainComponent;
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> EmailAddress { get; } =
+            SupportedAttributesValueBindings.EmailAddress;
+    }
 }
 
 public static class TBSCertificateOpenTypeExtensions

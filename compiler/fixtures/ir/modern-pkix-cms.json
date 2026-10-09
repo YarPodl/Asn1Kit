@@ -15620,6 +15620,11 @@
             ],
             "extensible": false
           },
+          "options": {
+            "csharp": {
+              "typeName": "DirectoryString"
+            }
+          },
           "specialization": {
             "module": "PKIX1Explicit-2009",
             "name": "DirectoryString"
@@ -15703,6 +15708,11 @@
             ],
             "extensible": false
           },
+          "options": {
+            "csharp": {
+              "aliasOf": "X520name"
+            }
+          },
           "specialization": {
             "module": "PKIX1Explicit-2009",
             "name": "DirectoryString"
@@ -15785,6 +15795,11 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "csharp": {
+              "aliasOf": "X520name"
+            }
           },
           "specialization": {
             "module": "PKIX1Explicit-2009",

@@ -183,8 +183,6 @@ public sealed record ExtnValueBinding<T>
     }
 }
 
-public sealed record ExtnValueDecoderBinding<T>(Asn1Oid Oid, Func<Extension, T> Decoder);
-
 public sealed record ValueBinding<T>
 {
     public Asn1Oid Oid { get; }
@@ -205,8 +203,6 @@ public sealed record ValueBinding<T>
         Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
     }
 }
-
-public sealed record ValueDecoderBinding<T>(Asn1Oid Oid, Func<SingleAttribute, T> Decoder);
 
 public sealed record ValuesBinding<T>
 {
@@ -229,8 +225,6 @@ public sealed record ValuesBinding<T>
     }
 }
 
-public sealed record ValuesDecoderBinding<T>(Asn1Oid Oid, Func<AttributeSet, T> Decoder);
-
 public static class PKIXCommonTypes2009OpenTypeExtensions
 {
     public static bool TryDecodeExtnValue<T>(this Extension source, ExtnValueBinding<T> binding, out T value)
@@ -245,16 +239,6 @@ public static class PKIXCommonTypes2009OpenTypeExtensions
         }
         else
             value = binding.Decoder!(source);
-        return true;
-    }
-
-    public static bool TryDecodeExtnValue<T>(this Extension source, ExtnValueDecoderBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (!(source.ExtnID.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
         return true;
     }
 
@@ -314,16 +298,6 @@ public static class PKIXCommonTypes2009OpenTypeExtensions
         return true;
     }
 
-    public static bool TryDecodeValue<T>(this SingleAttribute source, ValueDecoderBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (!(source.Type.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
-        return true;
-    }
-
     public static void SetValue<T>(this SingleAttribute source, ValueBinding<T> binding, T value)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -377,16 +351,6 @@ public static class PKIXCommonTypes2009OpenTypeExtensions
         }
         else
             value = binding.Decoder!(source);
-        return true;
-    }
-
-    public static bool TryDecodeValues<T>(this AttributeSet source, ValuesDecoderBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (!(source.Type.Equals(binding.Oid))) return false;
-        value = binding.Decoder(source);
         return true;
     }
 

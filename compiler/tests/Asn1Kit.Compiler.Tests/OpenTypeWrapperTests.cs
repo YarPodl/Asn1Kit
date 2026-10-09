@@ -359,8 +359,14 @@ public sealed class OpenTypeBindingTests
           var oid = Asn1Oid.Parse(""1.2.99"");
           raw.Oid = oid;
           raw.Critical = true;
-          var custom = new PayloadDecoderBinding<int>(oid,
-              static source => source.Critical ? 99 : 0);
+          var custom = new PayloadBinding<int>(oid,
+              static source => source.Critical ? 99 : 0,
+              static value =>
+              {
+                  var writer = new Asn1Writer();
+                  writer.WriteInteger(Asn1Tag.Integer, value);
+                  return Asn1Contained<Asn1Any>.FromValue(new Asn1Any(writer.Encode()));
+              });
           if (!raw.TryDecodePayload(custom, out var value)) throw new Exception();
           return value;
         "));
@@ -371,8 +377,15 @@ public sealed class OpenTypeBindingTests
     {
         Assert.Equal(99, Run(@"
           var raw = new Extension {Oid = Asn1Integer.FromInt32(99), Critical = true};
-          var custom = new PayloadDecoderBinding<int>(
-              new System.Numerics.BigInteger(99), static source => source.Critical ? 99 : 0);
+          var custom = new PayloadBinding<int>(
+              new System.Numerics.BigInteger(99),
+              static source => source.Critical ? 99 : 0,
+              static value =>
+              {
+                  var writer = new Asn1Writer();
+                  writer.WriteInteger(Asn1Tag.Integer, value);
+                  return Asn1Contained<Asn1Any>.FromValue(new Asn1Any(writer.Encode()));
+              });
           if (!raw.TryDecodePayload(custom, out var value)) throw new Exception();
           return value;
         ", source: Source.Replace("&id OBJECT IDENTIFIER UNIQUE", "&id INTEGER UNIQUE")
@@ -698,7 +711,7 @@ public sealed class OpenTypeBindingTests
     }
 
     [Fact]
-    public void MixedChoiceStringGroupUsesStaticDecodeStringChoiceForms()
+    public void MixedChoiceOpenTypeKeepsTypedBindingWithoutDecoderFlatten()
     {
         const string source = @"M DEFINITIONS ::= BEGIN
           C ::= CLASS { &id OBJECT IDENTIFIER UNIQUE, &T } WITH SYNTAX { &T IDENTIFIED BY &id }
@@ -717,18 +730,108 @@ public sealed class OpenTypeBindingTests
         document.Modules[0].Types.Single(t => t.Name == "AlgorithmIdentifier").Options =
             IrOptions.SetCSharp(null, "typeName", "AlgorithmInfo");
         var generated = Assert.Single(new CSharpBackend().Generate(document)).Contents;
-        Assert.Contains("DecodeMixedEntryStringValueForms", generated);
-        Assert.Contains("Asn1Codecs.DecodeStringChoice(openRaw, DecodeMixedEntryStringValueForms)", generated);
-        Assert.DoesNotContain("DecodeStringChoice(openRaw, new[]", generated);
-        Assert.DoesNotContain("DecodeStringChoice(raw, new[]", generated);
+        Assert.DoesNotContain("DecoderBinding", generated);
+        Assert.DoesNotContain("MixedEntryStringValue", generated);
+        Assert.DoesNotContain("DecodeStringChoice", generated);
         Assert.Equal("A", Run(@"
           var raw = new AlgorithmInfo();
           raw.SetParameters(NumbersParametersBindings.MixedEntry, Mixed.FromUtf8(""A""));
-          if (!raw.TryDecodeParameters(NumbersParametersBindings.MixedEntryStringValue, out var text) ||
-              text != ""A"") throw new Exception();
-          return text;
+          if (!raw.TryDecodeParameters(NumbersParametersBindings.MixedEntry, out var mixed) ||
+              mixed.Utf8 != ""A"") throw new Exception();
+          return mixed.Utf8;
         ", document => document.Modules[0].Types.Single(t => t.Name == "AlgorithmIdentifier").Options =
             IrOptions.SetCSharp(null, "typeName", "AlgorithmInfo"), source));
+    }
+
+    [Fact]
+    public void UniformHomogeneousChoiceCatalogEmitsAsStringProjection()
+    {
+        // Two Attribute{…} specializations keep the template collapsed (ref.openTypes / raw Asn1Any).
+        const string source = @"M DEFINITIONS ::= BEGIN
+          C ::= CLASS { &id OBJECT IDENTIFIER UNIQUE, &T } WITH SYNTAX { &T IDENTIFIED BY &id }
+          DirectoryString ::= CHOICE { utf8 UTF8String, printable PrintableString }
+          nameAttr C ::= { DirectoryString IDENTIFIED BY {2 5 4 41} }
+          countryAttr C ::= { PrintableString IDENTIFIED BY {2 5 4 6} }
+          intAttr C ::= { INTEGER IDENTIFIED BY {1 2 3} }
+          Attrs C ::= { nameAttr | countryAttr }
+          Other C ::= { intAttr }
+          Attribute{C:S} ::= SEQUENCE { type C.&id({S}), value C.&T({S}{@type}) }
+          Holder ::= SEQUENCE {
+            attrs SEQUENCE OF Attribute{Attrs},
+            other SEQUENCE OF Attribute{Other} }
+          END";
+        var document = new Asn1Compiler().CompileText(source);
+        var generated = Assert.Single(new CSharpBackend().Generate(document)).Contents;
+        Assert.Contains("public static class AsString", generated);
+        Assert.Contains("AttrsValueBindings.CountryAttr;", generated);
+        Assert.Equal("A", Run(@"
+          var raw = new Attribute();
+          raw.SetValue(AttrsValueBindings.NameAttr, DirectoryString.FromUtf8(""A""));
+          if (!raw.TryDecodeValue(AttrsValueBindings.AsString.NameAttr, out var text) || text != ""A"")
+              throw new Exception();
+          raw.SetValue(AttrsValueBindings.AsString.CountryAttr, ""US"");
+          if (!raw.TryDecodeValue(AttrsValueBindings.AsString.CountryAttr, out var country) || country != ""US"")
+              throw new Exception();
+          return text;
+        ", source: source));
+    }
+
+    [Fact]
+    public void AliasOfUnifiesChoiceTypedefsOntoTypeNameTarget()
+    {
+        const string source = @"M DEFINITIONS ::= BEGIN
+          Big ::= CHOICE { utf8 UTF8String, printable PrintableString }
+          Small ::= CHOICE { utf8 UTF8String, printable PrintableString }
+          Holder ::= SEQUENCE { big Big, small Small }
+          END";
+        var document = new Asn1Compiler().CompileText(source);
+        document.Modules[0].Types.Single(t => t.Name == "Big").Options =
+            IrOptions.SetCSharp(null, "typeName", "DirectoryString");
+        document.Modules[0].Types.Single(t => t.Name == "Small").Options =
+            IrOptions.SetCSharp(null, "aliasOf", "Big");
+        var generated = Assert.Single(new CSharpBackend().Generate(document)).Contents;
+        Assert.Contains("public sealed class DirectoryString", generated);
+        Assert.Contains("DirectoryStringKind", generated);
+        Assert.DoesNotContain("public sealed class Big", generated);
+        Assert.DoesNotContain("public sealed class Small", generated);
+        Assert.Contains("public DirectoryString Big { get; set; }", generated);
+        Assert.Contains("public DirectoryString Small { get; set; }", generated);
+        Assert.Equal("A", Run(@"
+          var holder = new Holder
+          {
+              Big = DirectoryString.FromUtf8(""A""),
+              Small = DirectoryString.FromPrintable(""B"")
+          };
+          if (holder.Big.Value != ""A"" || holder.Small.Value != ""B"") throw new Exception();
+          return holder.Big.Value;
+        ", document =>
+        {
+            document.Modules[0].Types.Single(t => t.Name == "Big").Options =
+                IrOptions.SetCSharp(null, "typeName", "DirectoryString");
+            document.Modules[0].Types.Single(t => t.Name == "Small").Options =
+                IrOptions.SetCSharp(null, "aliasOf", "Big");
+        }, source));
+    }
+
+    [Fact]
+    public void AliasOfRejectsMissingTargetAndTypeNameCombo()
+    {
+        var document = new Asn1Compiler().CompileText(@"M DEFINITIONS ::= BEGIN
+          A ::= INTEGER
+          B ::= INTEGER
+          END");
+        document.Modules[0].Types.Single(t => t.Name == "B").Options =
+            IrOptions.SetCSharp(null, "aliasOf", "Missing");
+        Assert.Throws<IrException>(() => IrValidator.Validate(document));
+
+        document = new Asn1Compiler().CompileText(@"M DEFINITIONS ::= BEGIN
+          A ::= INTEGER
+          B ::= INTEGER
+          END");
+        document.Modules[0].Types.Single(t => t.Name == "B").Options =
+            IrOptions.Set(IrOptions.SetCSharp(null, "aliasOf", "A"), "csharp.typeName",
+                System.Text.Json.Nodes.JsonValue.Create("Nope")!);
+        Assert.Throws<IrException>(() => IrValidator.Validate(document));
     }
 
     [Fact]

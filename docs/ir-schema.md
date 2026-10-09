@@ -125,6 +125,7 @@ CLASS, WITH SYNTAX, information objects/sets и формальные парам�
 | --- | --- | --- |
 | `options.csharp.namespace` | модуль | Namespace |
 | `options.csharp.typeName` | тип | Имя класса |
+| `options.csharp.aliasOf` | тип | ASN.1-имя typedef: ссылки резолвятся в цель (как `ref`); не сочетается с `typeName` |
 | `options.csharp.propertyName` | поле | Имя свойства |
 | `options.generate` | тип | `false` — не генерировать |
 | `options.integer.representation` | тип / модуль | Представление INTEGER: `int32` \| `uint32` \| `int64` \| `uint64` \| `bigint` \| `der`. На типе перекрывает модуль. Если не задано, C# backend выводит: при `namedValues` → `int32` (или `int64` при метке вне `int`); иначе из полного `constraint.value`; иначе `der`. |
