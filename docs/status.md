@@ -63,7 +63,7 @@
 
 ## Продуктовые артефакты
 
-- Demo CMS verify: [Asn1Kit.Cms.Demo](../runtime-csharp/examples/Asn1Kit.Cms.Demo/) (`Asn1Kit.Pkix` / `--modern`).
+- Demo CMS: [Asn1Kit.Cms.Demo](../runtime-csharp/examples/Asn1Kit.Cms.Demo/) — `verify` / `print-cert` / `print-cms` / educational `sign` (`Asn1Kit.Pkix` / `--modern`).
 - Бенчмарки (не gate): [Asn1Kit.Pkix.Benchmarks](../runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks/).
 - Legacy generated: [Asn1Kit.Pkix](../runtime-csharp/generated/Asn1Kit.Pkix/) (PKIX/CMS/DVCS + зависимости; options — [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json)).
 

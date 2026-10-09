@@ -159,7 +159,7 @@ public sealed class CmsModernDemoTests
         {
             File.WriteAllBytes(rootPath, certificate.OriginalEncoding.ToArray());
             var output = new StringWriter();
-            Assert.Equal(0, CmsDemoCommand.Run(new[] { "--modern", "--trusted-root", rootPath,
+            Assert.Equal(0, CmsDemoCommand.Run(new[] { "verify", "--modern", "--trusted-root", rootPath,
                 TestData.RepoPath("runtime-csharp/fixtures/cms/attached-signeddata.p7m") }, output, new StringWriter()));
             Assert.Contains("RSA/SHA-256 verifier", output.ToString());
         }

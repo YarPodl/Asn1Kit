@@ -49,7 +49,7 @@ public sealed class CmsDemoTests
         Assert.Equal(expected, RdnSequenceFormatter.Format(modern));
 
         var path = TestData.RepoPath("runtime-csharp/fixtures/cms/attached-signeddata.p7m");
-        foreach (var args in new[] { new[] { path }, new[] { "--modern", path } })
+        foreach (var args in new[] { new[] { "verify", path }, new[] { "verify", "--modern", path } })
         {
             var output = new StringWriter();
             Assert.Equal(0, CmsDemoCommand.Run(args, output, new StringWriter()));
@@ -131,17 +131,18 @@ public sealed class CmsDemoTests
     {
         var output = new StringWriter();
         var error = new StringWriter();
-        Assert.Equal(0, CmsDemoCommand.Run(new[] { TestData.RepoPath("runtime-csharp/fixtures/cms/attached-signeddata.p7m") }, output, error));
+        Assert.Equal(0, CmsDemoCommand.Run(new[] { "verify", TestData.RepoPath("runtime-csharp/fixtures/cms/attached-signeddata.p7m") }, output, error));
         Assert.Contains("educational stub", output.ToString());
         Assert.Contains("no cryptographic verification", output.ToString());
         Assert.Equal(2, CmsDemoCommand.Run(Array.Empty<string>(), new StringWriter(), new StringWriter()));
-        Assert.Equal(2, CmsDemoCommand.Run(new[] { "missing-file.p7m" }, new StringWriter(), new StringWriter()));
+        Assert.Equal(2, CmsDemoCommand.Run(new[] { "verify", "missing-file.p7m" }, new StringWriter(), new StringWriter()));
+        Assert.Equal(2, CmsDemoCommand.Run(new[] { "unknown-command" }, new StringWriter(), new StringWriter()));
 
         var malformedPath = Path.GetTempFileName();
         try
         {
             File.WriteAllBytes(malformedPath, new byte[] { 0x00 });
-            Assert.Equal(1, CmsDemoCommand.Run(new[] { malformedPath }, new StringWriter(), new StringWriter()));
+            Assert.Equal(1, CmsDemoCommand.Run(new[] { "verify", malformedPath }, new StringWriter(), new StringWriter()));
         }
         finally
         {
@@ -166,11 +167,11 @@ public sealed class CmsDemoTests
             File.WriteAllBytes(rootPath, rootEncoding.ToArray());
             File.WriteAllBytes(invalidCmsPath, Mutate((_, sd) => GetSigner(sd).Signature = new byte[] { 1 }));
             var output = new StringWriter();
-            Assert.Equal(0, CmsDemoCommand.Run(new[] { "--trusted-root", rootPath,
+            Assert.Equal(0, CmsDemoCommand.Run(new[] { "verify", "--trusted-root", rootPath,
                 TestData.RepoPath("runtime-csharp/fixtures/cms/attached-signeddata.p7m") }, output, new StringWriter()));
             Assert.Contains("RSA/SHA-256 verifier", output.ToString());
             Assert.Contains("Certificate chain", output.ToString());
-            Assert.Equal(1, CmsDemoCommand.Run(new[] { "--trusted-root", rootPath, invalidCmsPath },
+            Assert.Equal(1, CmsDemoCommand.Run(new[] { "verify", "--trusted-root", rootPath, invalidCmsPath },
                 new StringWriter(), new StringWriter()));
 
             certificate.Signature = Asn1BitString.CopyFrom(new byte[] { 1 }, 0);
@@ -184,7 +185,7 @@ public sealed class CmsDemoTests
             info.Encode(invalidChainWriter);
             File.WriteAllBytes(invalidCmsPath, invalidChainWriter.Encode());
             var invalidChainOutput = new StringWriter();
-            Assert.Equal(1, CmsDemoCommand.Run(new[] { "--trusted-root", rootPath, invalidCmsPath },
+            Assert.Equal(1, CmsDemoCommand.Run(new[] { "verify", "--trusted-root", rootPath, invalidCmsPath },
                 invalidChainOutput, new StringWriter()));
             Assert.Contains("chain signature", invalidChainOutput.ToString());
         }
@@ -306,6 +307,113 @@ public sealed class CmsDemoTests
             encoded, new RecordingVerifier(), benchAvailable, benchRoot)).Reason);
         Assert.Contains("issuer is unavailable", Assert.Single(CmsModernSignedDataInspector.Inspect(
             encoded, new ModernRecordingVerifier(), modernAvailable, modernRoot)).Reason);
+    }
+
+    [Fact]
+    public void PrintCert_WritesOpensslStyleTextForBothModels()
+    {
+        var certPath = TestData.RepoPath("runtime-csharp/fixtures/pkix/GoodCACert.crt");
+        foreach (var args in new[] { new[] { "print-cert", certPath }, new[] { "print-cert", "--modern", certPath } })
+        {
+            var output = new StringWriter();
+            Assert.Equal(0, CmsDemoCommand.Run(args, output, new StringWriter()));
+            var text = output.ToString();
+            Assert.Contains("Certificate:", text);
+            Assert.Contains("Serial Number:", text);
+            Assert.Contains("Issuer:", text);
+            Assert.Contains("Subject:", text);
+            Assert.Contains("Validity", text);
+            Assert.Contains("Not Before:", text);
+            Assert.Contains("Not After :", text);
+        }
+    }
+
+    [Fact]
+    public void PrintCms_WritesSignedDataDumpForBothModels()
+    {
+        var cmsPath = TestData.RepoPath("runtime-csharp/fixtures/cms/attached-signeddata.p7m");
+        foreach (var args in new[] { new[] { "print-cms", cmsPath }, new[] { "print-cms", "--modern", cmsPath } })
+        {
+            var output = new StringWriter();
+            Assert.Equal(0, CmsDemoCommand.Run(args, output, new StringWriter()));
+            var text = output.ToString();
+            Assert.Contains("CMS_ContentInfo:", text);
+            Assert.Contains("d.signedData:", text);
+            Assert.Contains("encapContentInfo:", text);
+            Assert.Contains("signerInfos:", text);
+        }
+
+        var malformedPath = Path.GetTempFileName();
+        try
+        {
+            File.WriteAllBytes(malformedPath, new byte[] { 0x00 });
+            Assert.Equal(1, CmsDemoCommand.Run(new[] { "print-cms", malformedPath }, new StringWriter(), new StringWriter()));
+        }
+        finally
+        {
+            File.Delete(malformedPath);
+        }
+    }
+
+    [Fact]
+    public void Sign_BuildsEducationalAttachedSignedDataAcceptedByVerify()
+    {
+        var info = ContentInfo.Decode(new Asn1Reader(Fixture, Asn1Encoding.Ber));
+        var signedData = RequireSignedData(info);
+        var certificateEncoding = signedData.Certificates!.Single(choice => choice.Certificate is not null)
+            .Certificate!.EncodedMemory.ToArray();
+        var contentPath = Path.GetTempFileName();
+        var certPath = Path.GetTempFileName();
+        var outputPath = Path.GetTempFileName();
+        var modernOutputPath = Path.GetTempFileName();
+        try
+        {
+            File.WriteAllBytes(contentPath, new byte[] { 0x68, 0x65, 0x6C, 0x6C, 0x6F });
+            File.WriteAllBytes(certPath, certificateEncoding);
+
+            var signOutput = new StringWriter();
+            Assert.Equal(0, CmsDemoCommand.Run(new[]
+            {
+                "sign", "--certificate", certPath, "--content", contentPath, "--output", outputPath
+            }, signOutput, new StringWriter()));
+            Assert.Contains("placeholder signature", signOutput.ToString());
+            Assert.Contains("Issuer: CN=Asn1Kit CMS Bench", signOutput.ToString());
+
+            var verifyOutput = new StringWriter();
+            Assert.Equal(0, CmsDemoCommand.Run(new[] { "verify", outputPath }, verifyOutput, new StringWriter()));
+            Assert.Contains("educational stub", verifyOutput.ToString());
+
+            var printOutput = new StringWriter();
+            Assert.Equal(0, CmsDemoCommand.Run(new[] { "print-cms", outputPath }, printOutput, new StringWriter()));
+            Assert.Contains("signedAttrs:", printOutput.ToString());
+            Assert.Contains("Certificate:", printOutput.ToString());
+
+            Assert.Equal(0, CmsDemoCommand.Run(new[]
+            {
+                "sign", "--modern", "--certificate", certPath, "--content", contentPath, "--output", modernOutputPath
+            }, new StringWriter(), new StringWriter()));
+            Assert.Equal(0, CmsDemoCommand.Run(new[] { "verify", "--modern", modernOutputPath },
+                new StringWriter(), new StringWriter()));
+            var modernPrint = new StringWriter();
+            Assert.Equal(0, CmsDemoCommand.Run(new[] { "print-cms", "--modern", modernOutputPath },
+                modernPrint, new StringWriter()));
+            Assert.Contains("signedAttrs:", modernPrint.ToString());
+        }
+        finally
+        {
+            File.Delete(contentPath);
+            File.Delete(certPath);
+            File.Delete(outputPath);
+            File.Delete(modernOutputPath);
+        }
+    }
+
+    [Fact]
+    public void Sign_RequiresCertificateContentAndOutput()
+    {
+        Assert.Equal(2, CmsDemoCommand.Run(new[] { "sign" }, new StringWriter(), new StringWriter()));
+        Assert.Equal(2, CmsDemoCommand.Run(new[] { "sign", "--certificate", "a.cer", "--content", "b.bin" },
+            new StringWriter(), new StringWriter()));
     }
 
     private static void SetSubjectKeyIdentifier(Asn1Kit.Pkix.Certificate certificate, byte[] keyIdentifier)
