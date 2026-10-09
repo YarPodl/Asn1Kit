@@ -1,0 +1,26 @@
+﻿Certificate Decode inventory (TrustAnchorRootCertificate.crt)
+  Allocated/op:           3.21 KB (3288 B)
+  Issuer AVAs:            3 (values: PrintableString=2, Printable=1)
+  Subject AVAs:           3 (values: PrintableString=2, Printable=1)
+  Open-type value objs:   6 x AttributeTypeAndValue_Value
+  Decoded strings:        6 (304 B)
+  Alg parameter objs:     3 x AlgorithmIdentifier_Parameters
+  Extensions:             3
+  Est. vs Asn1Any era:    +952 B (wrappers+strings+alg-params; baseline kept opaque ANY)
+
+CRL Decode inventory (GoodCACRL.crl)
+  Allocated/op:           2.38 KB (2432 B)
+  Issuer AVAs:            3 (values: PrintableString=2, Printable=1)
+  Open-type value objs:   3 x AttributeTypeAndValue_Value
+  Decoded strings:        3 (144 B)
+  Alg parameter objs:     2 x AlgorithmIdentifier_Parameters
+  Revoked entries:        2
+  Est. vs Asn1Any era:    +496 B (wrappers+strings+alg-params; baseline kept opaque ANY)
+
+CMS Lazy Decode inventory (attached-signeddata.p7m)
+  Allocated/op:           1.21 KB (1240 B)
+  SignerInfos:            1
+  CertificateChoices:     1 (lazy cert TLV, not materialized)
+  Issuer AVAs (SIDs):      1 (values: PrintableString=1)
+  Open-type value objs:   1 x AttributeTypeAndValue_Value
+  Decoded strings:        1 (56 B)

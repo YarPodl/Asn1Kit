@@ -10,8 +10,11 @@ Dated folders under this path are **checked-in baselines** for comparing optimiz
 Полный suite (`--filter *`) — при смене машины, SDK/runtime, фикстур или peer-библиотек.
 
 ```powershell
-# краткий прогон после правок Asn1Kit (Cert/CRL Decode + CMS Lazy Decode)
-dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *Asn1Kit_Decode|*Asn1Kit_Lazy_Decode
+# краткий прогон после правок Asn1Kit (Cert/CRL Decode + CMS Lazy Decode; PowerShell)
+dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter "*CertificateBenchmarks.Asn1Kit_Decode" "*CertificateListBenchmarks.Asn1Kit_Decode" "*CmsBenchmarks.Asn1Kit_Lazy_Decode"
+
+# инвентарь аллокаций (без BDN)
+dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --alloc-profile
 
 # все Asn1Kit-методы без peers
 dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *Asn1Kit_*
@@ -44,3 +47,4 @@ Update the “current baseline” section in [../Asn1Kit.Pkix.Benchmarks/README.
 | [2026-09-24-sequence-lambda](2026-09-24-sequence-lambda/) | working tree | `EnterSequence`; OF без capturing-лямбды; микробенч Nest/Of; Decode Alloc↓ ~30% |
 | [2026-09-24-explicit-enter](2026-09-24-explicit-enter/) | working tree | `EnterExplicit`; удалены `ReadSequence(Func)`/`ReadSet`; Alloc ≈ sequence-lambda |
 | [2026-09-30-writer-optimizations](2026-09-30-writer-optimizations/) | `eb0984b` + working tree | reserve-one constructed length; lookup однобайтовых INTEGER; micro + encode before/after |
+| [2026-10-09-decode-kpi](2026-10-09-decode-kpi/) | `5180296` | Decode KPI после typed open-type; Alloc↑ vs explicit-enter; причина — `AttributeTypeAndValue_Value` + `AlgorithmIdentifier_Parameters` |

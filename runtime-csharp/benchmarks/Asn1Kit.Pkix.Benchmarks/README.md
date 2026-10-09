@@ -22,10 +22,16 @@
 dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks
 ```
 
-**Краткий прогон** (по умолчанию после правок runtime/codegen на той же машине) — Cert/CRL `Asn1Kit_Decode` + CMS `Asn1Kit_Lazy_Decode`:
+**Краткий прогон** (по умолчанию после правок runtime/codegen на той же машине) — Cert/CRL `Asn1Kit_Decode` + CMS `Asn1Kit_Lazy_Decode` (в PowerShell задавай фильтры отдельными аргументами):
 
 ```powershell
-dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *Asn1Kit_Decode|*Asn1Kit_Lazy_Decode
+dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter "*CertificateBenchmarks.Asn1Kit_Decode" "*CertificateListBenchmarks.Asn1Kit_Decode" "*CmsBenchmarks.Asn1Kit_Lazy_Decode"
+```
+
+**Инвентарь аллокаций** (без BDN; считает AVA/open-type/строки на тех же фикстурах):
+
+```powershell
+dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --alloc-profile
 ```
 
 **Asn1Kit полный** (все 9 методов, без peers; peers — из [results/](../results/)):
@@ -66,15 +72,15 @@ Same-session `ShortRun` до/после production-правок; полные о
 | CMS Asn1Kit_Lazy_Encode | 2.523 µs | 2.198 µs | −12.9% | 2.96 KB |
 | CMS Asn1Kit_Eager_Encode | 5.856 µs | 4.548 µs | −22.3% | 4.45 KB |
 
-## Current baseline (2026-09-24, explicit-enter)
+## Current baseline (2026-10-09, Decode KPI after open-type)
 
-Снимок после `EnterExplicit` / удаления публичных `ReadSequence`/`ReadSet` с делегатами. Сырые заметки: [results/2026-09-24-explicit-enter](../results/2026-09-24-explicit-enter/). Peers BCL/BC — из [results/2026-09-23](../results/2026-09-23/) (`7d281d1`).
+Краткий Decode KPI на product `Asn1Kit.Pkix` после typed open-type bindings. Сырые отчёты и разбор аллокаций: [results/2026-10-09-decode-kpi](../results/2026-10-09-decode-kpi/). Peers BCL/BC — из [results/2026-09-23](../results/2026-09-23/) (`7d281d1`). Предыдущий Alloc-минимум Decode: [2026-09-24-explicit-enter](../results/2026-09-24-explicit-enter/).
 
-Краткий набор для сравнения после правок отмечен ★.
+Краткий набор для сравнения после правок отмечен ★. Инвентарь аллокаций: `--alloc-profile`.
 
 ### Certificate Decode history (Asn1Kit vs self)
 
-Фикстура `TrustAnchorRootCertificate.crt` (Bench + retainEncoded).
+Фикстура `TrustAnchorRootCertificate.crt` (retainEncoded на product options).
 
 | Stage | Mean | Allocated |
 | --- | ---: | ---: |
@@ -83,16 +89,15 @@ Same-session `ShortRun` до/после production-правок; полные о
 | 2026-09-23 (`7d281d1`, full suite) | 3.352 µs | 2912 B |
 | 2026-09-23 OF→arrays | 3.774 µs | 2600 B |
 | 2026-09-24 sequence-lambda | 3.258 µs | 1.77 KB |
-| **2026-09-24 explicit-enter** | **3.252 µs** | **1.77 KB** |
+| 2026-09-24 explicit-enter | 3.252 µs | 1.77 KB |
+| **2026-10-09 open-type KPI** | **6.773 µs** | **2.91 KB** |
 
-### Certificate / CRL / CMS Asn1Kit (2026-09-24 explicit-enter)
+### Certificate / CRL / CMS Asn1Kit (2026-10-09)
 
-Два прогона подряд (Alloc стабилен; Mean — шум):
+| Method | Mean | Allocated | vs explicit-enter Alloc |
+| --- | ---: | ---: | ---: |
+| ★ Cert Asn1Kit_Decode | 6.773 µs | 2.91 KB | **+64%** |
+| ★ CRL Asn1Kit_Decode | 4.836 µs | 1.93 KB | **+46%** |
+| ★ CMS Asn1Kit_Lazy_Decode | 2.639 µs | 1.21 KB | **+28%** |
 
-| Method | run 1 | run 2 | Allocated | vs sequence-lambda Alloc |
-| --- | ---: | ---: | ---: | ---: |
-| ★ Cert Asn1Kit_Decode | 3.252 µs | 3.344 µs | 1.77 KB | 0% |
-| ★ CRL Asn1Kit_Decode | 2.622 µs | 2.654 µs | 1.32 KB | 0% |
-| ★ CMS Asn1Kit_Lazy_Decode | 1.481 µs | 1.440 µs | 968 B | −6% |
-
-Encode не перезамерялся. EXPLICIT→`EnterExplicit` — API-чистка; Alloc на Cert/CRL без изменений. Mean CRL выше старого sequence-lambda снимка (~2.46), но стабилен между двумя прогонами этой сессии (~2.63) — межсессионный шум, не регрессия правки.
+Причина Alloc↑: eager `AttributeTypeAndValue_Value` + `AlgorithmIdentifier_Parameters` вместо opaque `Asn1Any` на AVA/algorithm parameters (см. SUMMARY снимка). Encode не перезамерялся в этом прогоне.
