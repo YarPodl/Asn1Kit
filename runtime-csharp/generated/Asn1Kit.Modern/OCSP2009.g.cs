@@ -436,7 +436,7 @@ public enum OCSPResponseStatus
 public sealed class ResponseBytes
 {
     public Asn1Oid ResponseType { get; set; }
-    public Asn1Contained<ResponseBytes_Response_Content> Response { get; set; }
+    public Asn1Contained<Asn1Any> Response { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -447,7 +447,7 @@ public sealed class ResponseBytes
             writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, ResponseType);
             writer.WriteContained(Asn1Tag.OctetString, false, Response, static (inner, value) =>
             {
-                value.Encode(inner);
+                inner.WriteAny(value);
             });
         }
     }
@@ -460,7 +460,7 @@ public sealed class ResponseBytes
         {
             var value = new ResponseBytes();
             value.ResponseType = reader.ReadOid(Asn1Tag.ObjectIdentifier);
-            value.Response = reader.ReadContained(Asn1Tag.OctetString, false, ResponseBytes_Response_Content.IsKnown(value.ResponseType), value.ResponseType, static (inner, key) => ResponseBytes_Response_Content.Decode(inner, key));
+            value.Response = reader.ReadContained(Asn1Tag.OctetString, false, false, 0, static (inner, key) => inner.ReadAny());
             reader.ThrowIfNotEmpty();
             return value;
         }
@@ -1010,79 +1010,17 @@ public sealed class CrlID
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class ResponseBytes_Response_Content
-{
-    public BasicOCSPResponse? BasicResponse { get; private set; }
-    public Asn1Any? Unknown { get; private set; }
-
-    public static ResponseBytes_Response_Content FromBasicResponse(BasicOCSPResponse basicResponse) => new ResponseBytes_Response_Content
-    {
-        BasicResponse = basicResponse,
-    };
-
-    public static ResponseBytes_Response_Content FromUnknown(Asn1Any value) => new ResponseBytes_Response_Content
-    {
-        Unknown = value,
-    };
-
-    public override string ToString()
-    {
-        if (BasicResponse is not null) return Asn1Formatting.Format(BasicResponse);
-        if (Unknown is not null) return Asn1Formatting.Format(Unknown);
-        return "<unset>";
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        if (BasicResponse != null)
-        {
-            BasicResponse!.Encode(writer, Asn1Tag.Sequence);
-        }
-        else if (Unknown != null)
-        {
-            writer.WriteAny(Unknown.Value);
-        }
-        else throw new Asn1Exception("Open type has no alternative.");
-    }
-
-    public static bool IsKnown(Asn1Oid key) => key.Equals(OCSP2009Oids.IdPkixOcspBasic);
-    public static ResponseBytes_Response_Content Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
-        Decode(reader, definedByKey, expectedTag: null);
-
-    public static ResponseBytes_Response_Content Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>
-        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
-
-    private static ResponseBytes_Response_Content Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
-    {
-        if (!reader.TryPeekTag(out var peeked))
-            throw new Asn1Exception("Unexpected end of ASN.1 data while decoding open type 'ResponseBytes_Response_Content': expected an encoded ASN.1 value for key '" + definedByKey + "'.");
-
-        if (definedByKey.Equals(OCSP2009Oids.IdPkixOcspBasic))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromBasicResponse(Asn1Kit.Modern.OCSP2009.BasicOCSPResponse.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromBasicResponse(Asn1Kit.Modern.OCSP2009.BasicOCSPResponse.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'BasicResponse'.");
-        }
-        else {
-            return FromUnknown(reader.ReadAny());
-        }
-    }
-}
-
 internal static class __OCSP2009OpenTypeCodecs
 {
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> NameSingleAttribute { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520CommonNameSingleAttribute { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520LocalityNameSingleAttribute { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
+
     internal static Asn1Codec<Asn1Oid[]> ReOcspResponseExtension { get; } = new(
         static reader =>
         {
@@ -1100,6 +1038,9 @@ internal static class __OCSP2009OpenTypeCodecs
 
     internal static Asn1Codec<ServiceLocator> ReOcspServiceLocatorExtension { get; } =
         new(static reader => ServiceLocator.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<BasicOCSPResponse> BasicResponseResponseBytes { get; } =
+        new(static reader => BasicOCSPResponse.Decode(reader), static (writer, value) => value.Encode(writer));
 
     internal static Asn1Codec<CrlID> ReOcspCrlExtension { get; } =
         new(static reader => CrlID.Decode(reader), static (writer, value) => value.Encode(writer));
@@ -1131,72 +1072,27 @@ internal static class __OCSP2009OpenTypeCodecs
             });
         });
 
-    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> NameSingleAttribute { get; } =
-        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
-
-    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520CommonNameSingleAttribute { get; } =
-        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
-
-    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520LocalityNameSingleAttribute { get; } =
-        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
-
 }
 
-public static class ExtensionExtnValueBindings
+public sealed record ResponseBinding<T>
 {
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<ReadOnlyMemory<byte>> ReOcspNonce { get; } =
-        new(OCSP2009Oids.IdPkixOcspNonce, Asn1Codecs.OctetString);
+    public Asn1Oid Oid { get; }
+    public Asn1Codec<T>? Codec { get; }
+    public Func<ResponseBytes, T>? Decoder { get; }
+    public Func<T, Asn1Contained<Asn1Any>>? Encoder { get; }
 
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Oid[]> ReOcspResponse { get; } =
-        new(OCSP2009Oids.IdPkixOcspResponse, __OCSP2009OpenTypeCodecs.ReOcspResponseExtension);
-}
+    public ResponseBinding(Asn1Oid oid, Asn1Codec<T> codec)
+    {
+        Oid = oid;
+        Codec = codec ?? throw new ArgumentNullException(nameof(codec));
+    }
 
-public static class ExtensionExtnValueExtensionBindings
-{
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<ServiceLocator> ReOcspServiceLocator { get; } =
-        new(OCSP2009Oids.IdPkixOcspServiceLocator, __OCSP2009OpenTypeCodecs.ReOcspServiceLocatorExtension);
-}
-
-public static class AlgorithmIdentifierParametersBindings
-{
-    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> SaDsaWithSHA1 { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.DsaWithSha1, Asn1Codecs.Null);
-
-    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> SaRsaWithSHA1 { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.Sha1WithRSAEncryption, Asn1Codecs.Null);
-
-    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> SaRsaWithMD5 { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.Md5WithRSAEncryption, Asn1Codecs.Null);
-
-    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> SaRsaWithMD2 { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.Md2WithRSAEncryption, Asn1Codecs.Null);
-}
-
-public static class ExtensionExtnValueExtension2Bindings
-{
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<ReadOnlyMemory<byte>> ReOcspNonce { get; } =
-        new(OCSP2009Oids.IdPkixOcspNonce, Asn1Codecs.OctetString);
-}
-
-public static class ExtensionExtnValueExtension3Bindings
-{
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<CrlID> ReOcspCrl { get; } =
-        new(OCSP2009Oids.IdPkixOcspCrl, __OCSP2009OpenTypeCodecs.ReOcspCrlExtension);
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<DateTimeOffset> ReOcspArchiveCutoff { get; } =
-        new(OCSP2009Oids.IdPkixOcspArchiveCutoff, Asn1Codecs.GeneralizedTime);
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.CRLReason> CRLReason { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeCRLReasons, __OCSP2009OpenTypeCodecs.CRLReasonExtension);
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]> CertificateIssuer { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeCertificateIssuer, __OCSP2009OpenTypeCodecs.CertificateIssuerExtension);
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Oid> HoldInstructionCode { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeHoldInstructionCode, Asn1Codecs.ObjectIdentifier);
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<DateTimeOffset> InvalidityDate { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeInvalidityDate, Asn1Codecs.GeneralizedTime);
+    public ResponseBinding(Asn1Oid oid, Func<ResponseBytes, T> decoder, Func<T, Asn1Contained<Asn1Any>> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
 }
 
 public static class SupportedAttributesValueBindings
@@ -1401,6 +1297,184 @@ public static class SupportedAttributesValueBindings
         public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> EmailAddress { get; } =
             SupportedAttributesValueBindings.EmailAddress;
     }
+}
+
+public static class ExtensionExtnValueBindings
+{
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<ReadOnlyMemory<byte>> ReOcspNonce { get; } =
+        new(OCSP2009Oids.IdPkixOcspNonce, Asn1Codecs.OctetString);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Oid[]> ReOcspResponse { get; } =
+        new(OCSP2009Oids.IdPkixOcspResponse, __OCSP2009OpenTypeCodecs.ReOcspResponseExtension);
+}
+
+public static class ExtensionExtnValueExtensionBindings
+{
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<ServiceLocator> ReOcspServiceLocator { get; } =
+        new(OCSP2009Oids.IdPkixOcspServiceLocator, __OCSP2009OpenTypeCodecs.ReOcspServiceLocatorExtension);
+}
+
+public static class ResponseSetResponseBindings
+{
+    public static ResponseBinding<BasicOCSPResponse> BasicResponse { get; } =
+        new(OCSP2009Oids.IdPkixOcspBasic, __OCSP2009OpenTypeCodecs.BasicResponseResponseBytes);
+}
+
+public static class AlgorithmIdentifierParametersBindings
+{
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> SaDsaWithSHA1 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.DsaWithSha1, Asn1Codecs.Null);
+
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> SaRsaWithSHA1 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.Sha1WithRSAEncryption, Asn1Codecs.Null);
+
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> SaRsaWithMD5 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.Md5WithRSAEncryption, Asn1Codecs.Null);
+
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> SaRsaWithMD2 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.Md2WithRSAEncryption, Asn1Codecs.Null);
+}
+
+public static class ExtensionExtnValueExtension2Bindings
+{
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<ReadOnlyMemory<byte>> ReOcspNonce { get; } =
+        new(OCSP2009Oids.IdPkixOcspNonce, Asn1Codecs.OctetString);
+}
+
+public static class ExtensionExtnValueExtension3Bindings
+{
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<CrlID> ReOcspCrl { get; } =
+        new(OCSP2009Oids.IdPkixOcspCrl, __OCSP2009OpenTypeCodecs.ReOcspCrlExtension);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<DateTimeOffset> ReOcspArchiveCutoff { get; } =
+        new(OCSP2009Oids.IdPkixOcspArchiveCutoff, Asn1Codecs.GeneralizedTime);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.CRLReason> CRLReason { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeCRLReasons, __OCSP2009OpenTypeCodecs.CRLReasonExtension);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]> CertificateIssuer { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeCertificateIssuer, __OCSP2009OpenTypeCodecs.CertificateIssuerExtension);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Oid> HoldInstructionCode { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeHoldInstructionCode, Asn1Codecs.ObjectIdentifier);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<DateTimeOffset> InvalidityDate { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeInvalidityDate, Asn1Codecs.GeneralizedTime);
+}
+
+public static class OCSP2009OpenTypeExtensions
+{
+    public static bool TryDecodeResponse<T>(this ResponseBytes source, ResponseBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.ResponseType.Equals(binding.Oid))) return false;
+        if (binding.Codec is { } codec)
+        {
+            value = Asn1Codecs.DecodeContained(source.Response, codec);
+        }
+        else
+            value = binding.Decoder!(source);
+        return true;
+    }
+
+    public static void SetResponse<T>(this ResponseBytes source, ResponseBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.ResponseType = binding.Oid;
+        var encoded = binding.Codec is { } codec
+            ? Asn1Codecs.EncodeContained(value, codec)
+            : binding.Encoder!(value);
+        result.Response = encoded;
+    }
+
+}
+
+public static class TBSRequestOpenTypeExtensions
+{
+    public static bool TryGetRequestorName<T>(this TBSRequest source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value)
+        => TryGetRequestorName(source, binding, out value, out _);
+
+    public static bool TryGetRequestorName<T>(this TBSRequest source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute? match = null;
+        if (source.RequestorName is { } node0)
+        {
+            if (node0.DirectoryName is { } node1)
+            {
+                foreach (var node2 in node1)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        if (node3.Type.Equals(binding.Oid))
+                        {
+                            if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetRequestorName.");
+                            match = node3;
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
+}
+
+public static class ResponseDataOpenTypeExtensions
+{
+    public static bool TryGetResponderID<T>(this ResponseData source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value)
+        => TryGetResponderID(source, binding, out value, out _);
+
+    public static bool TryGetResponderID<T>(this ResponseData source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute? match = null;
+        if (source.ResponderID is { } node0)
+        {
+            if (node0.ByName is { } node1)
+            {
+                foreach (var node2 in node1)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        if (node3.Type.Equals(binding.Oid))
+                        {
+                            if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetResponderID.");
+                            match = node3;
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
 }
 
 public static class ServiceLocatorOpenTypeExtensions

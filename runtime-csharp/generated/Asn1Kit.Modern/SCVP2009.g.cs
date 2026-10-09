@@ -2073,7 +2073,7 @@ public sealed class ReplyCheck
 public sealed class ReplyWantBack
 {
     public Asn1Oid Wb { get; set; }
-    public Asn1Contained<ReplyWantBack_Value_Content> Value { get; set; }
+    public Asn1Contained<Asn1Any> Value { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -2084,7 +2084,7 @@ public sealed class ReplyWantBack
             writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, Wb);
             writer.WriteContained(Asn1Tag.OctetString, false, Value, static (inner, value) =>
             {
-                value.Encode(inner);
+                inner.WriteAny(value);
             });
         }
     }
@@ -2097,7 +2097,7 @@ public sealed class ReplyWantBack
         {
             var value = new ReplyWantBack();
             value.Wb = reader.ReadOid(Asn1Tag.ObjectIdentifier);
-            value.Value = reader.ReadContained(Asn1Tag.OctetString, false, ReplyWantBack_Value_Content.IsKnown(value.Wb), value.Wb, static (inner, key) => ReplyWantBack_Value_Content.Decode(inner, key));
+            value.Value = reader.ReadContained(Asn1Tag.OctetString, false, false, 0, static (inner, key) => inner.ReadAny());
             reader.ThrowIfNotEmpty();
             return value;
         }
@@ -2409,437 +2409,305 @@ public sealed class RevocationInfoTypes
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.BitString;
 }
 
-public enum ReplyWantBack_Value_ContentKind
-{
-    None,
-    SwbPkcCert,
-    SwbPkcBestCertPath,
-    SwbPkcRevocationInfo,
-    SwbPkcPublicKeyInfo,
-    SwbPkcAllCertPaths,
-    SwbPkcEeRevocationInfo,
-    SwbPkcCAsRevocationInfo,
-    SwbAcCert,
-    SwbAaCertPath,
-    SwbAaRevocationInfo,
-    SwbAcRevocationInfo,
-    SwbRelayedResponses,
-    Unknown,
-}
-
-public sealed class ReplyWantBack_Value_Content
-{
-    public ReplyWantBack_Value_ContentKind Kind { get; private set; }
-    public Asn1Kit.Modern.PKIX1Explicit2009.Certificate? SwbPkcCert { get; private set; }
-    public Asn1Kit.Modern.PKIX1Explicit2009.Certificate[]? CertificateArrayValue { get; private set; }
-    public RevInfoWantBack? RevInfoWantBackValue { get; private set; }
-    public Asn1Kit.Modern.PKIX1Explicit2009.SubjectPublicKeyInfo? SwbPkcPublicKeyInfo { get; private set; }
-    public Asn1Kit.Modern.PKIX1Explicit2009.Certificate[][]? SwbPkcAllCertPaths { get; private set; }
-    public Asn1Kit.Modern.PKIXAttributeCertificate2009.AttributeCertificate? SwbAcCert { get; private set; }
-    public Asn1Kit.Modern.CryptographicMessageSyntax2009.ContentInfo[]? SwbRelayedResponses { get; private set; }
-    public Asn1Any? Unknown { get; private set; }
-
-    public static ReplyWantBack_Value_Content FromSwbPkcCert(Asn1Kit.Modern.PKIX1Explicit2009.Certificate swbPkcCert) => new ReplyWantBack_Value_Content
-    {
-        Kind = ReplyWantBack_Value_ContentKind.SwbPkcCert,
-        SwbPkcCert = swbPkcCert,
-    };
-
-    public static ReplyWantBack_Value_Content FromSwbPkcBestCertPath(Asn1Kit.Modern.PKIX1Explicit2009.Certificate[] swbPkcBestCertPath) => new ReplyWantBack_Value_Content
-    {
-        Kind = ReplyWantBack_Value_ContentKind.SwbPkcBestCertPath,
-        CertificateArrayValue = swbPkcBestCertPath,
-    };
-
-    public static ReplyWantBack_Value_Content FromSwbPkcRevocationInfo(RevInfoWantBack swbPkcRevocationInfo) => new ReplyWantBack_Value_Content
-    {
-        Kind = ReplyWantBack_Value_ContentKind.SwbPkcRevocationInfo,
-        RevInfoWantBackValue = swbPkcRevocationInfo,
-    };
-
-    public static ReplyWantBack_Value_Content FromSwbPkcPublicKeyInfo(Asn1Kit.Modern.PKIX1Explicit2009.SubjectPublicKeyInfo swbPkcPublicKeyInfo) => new ReplyWantBack_Value_Content
-    {
-        Kind = ReplyWantBack_Value_ContentKind.SwbPkcPublicKeyInfo,
-        SwbPkcPublicKeyInfo = swbPkcPublicKeyInfo,
-    };
-
-    public static ReplyWantBack_Value_Content FromSwbPkcAllCertPaths(Asn1Kit.Modern.PKIX1Explicit2009.Certificate[][] swbPkcAllCertPaths) => new ReplyWantBack_Value_Content
-    {
-        Kind = ReplyWantBack_Value_ContentKind.SwbPkcAllCertPaths,
-        SwbPkcAllCertPaths = swbPkcAllCertPaths,
-    };
-
-    public static ReplyWantBack_Value_Content FromSwbPkcEeRevocationInfo(RevInfoWantBack swbPkcEeRevocationInfo) => new ReplyWantBack_Value_Content
-    {
-        Kind = ReplyWantBack_Value_ContentKind.SwbPkcEeRevocationInfo,
-        RevInfoWantBackValue = swbPkcEeRevocationInfo,
-    };
-
-    public static ReplyWantBack_Value_Content FromSwbPkcCAsRevocationInfo(RevInfoWantBack swbPkcCAsRevocationInfo) => new ReplyWantBack_Value_Content
-    {
-        Kind = ReplyWantBack_Value_ContentKind.SwbPkcCAsRevocationInfo,
-        RevInfoWantBackValue = swbPkcCAsRevocationInfo,
-    };
-
-    public static ReplyWantBack_Value_Content FromSwbAcCert(Asn1Kit.Modern.PKIXAttributeCertificate2009.AttributeCertificate swbAcCert) => new ReplyWantBack_Value_Content
-    {
-        Kind = ReplyWantBack_Value_ContentKind.SwbAcCert,
-        SwbAcCert = swbAcCert,
-    };
-
-    public static ReplyWantBack_Value_Content FromSwbAaCertPath(Asn1Kit.Modern.PKIX1Explicit2009.Certificate[] swbAaCertPath) => new ReplyWantBack_Value_Content
-    {
-        Kind = ReplyWantBack_Value_ContentKind.SwbAaCertPath,
-        CertificateArrayValue = swbAaCertPath,
-    };
-
-    public static ReplyWantBack_Value_Content FromSwbAaRevocationInfo(RevInfoWantBack swbAaRevocationInfo) => new ReplyWantBack_Value_Content
-    {
-        Kind = ReplyWantBack_Value_ContentKind.SwbAaRevocationInfo,
-        RevInfoWantBackValue = swbAaRevocationInfo,
-    };
-
-    public static ReplyWantBack_Value_Content FromSwbAcRevocationInfo(RevInfoWantBack swbAcRevocationInfo) => new ReplyWantBack_Value_Content
-    {
-        Kind = ReplyWantBack_Value_ContentKind.SwbAcRevocationInfo,
-        RevInfoWantBackValue = swbAcRevocationInfo,
-    };
-
-    public static ReplyWantBack_Value_Content FromSwbRelayedResponses(Asn1Kit.Modern.CryptographicMessageSyntax2009.ContentInfo[] swbRelayedResponses) => new ReplyWantBack_Value_Content
-    {
-        Kind = ReplyWantBack_Value_ContentKind.SwbRelayedResponses,
-        SwbRelayedResponses = swbRelayedResponses,
-    };
-
-    public static ReplyWantBack_Value_Content FromUnknown(Asn1Any value) => new ReplyWantBack_Value_Content
-    {
-        Kind = ReplyWantBack_Value_ContentKind.Unknown,
-        Unknown = value,
-    };
-
-    public override string ToString()
-    {
-        return Kind switch
-        {
-            ReplyWantBack_Value_ContentKind.SwbPkcCert => Asn1Formatting.Format(SwbPkcCert),
-            ReplyWantBack_Value_ContentKind.SwbPkcBestCertPath => Asn1Formatting.Format(CertificateArrayValue),
-            ReplyWantBack_Value_ContentKind.SwbPkcRevocationInfo => Asn1Formatting.Format(RevInfoWantBackValue),
-            ReplyWantBack_Value_ContentKind.SwbPkcPublicKeyInfo => Asn1Formatting.Format(SwbPkcPublicKeyInfo),
-            ReplyWantBack_Value_ContentKind.SwbPkcAllCertPaths => Asn1Formatting.Format(SwbPkcAllCertPaths),
-            ReplyWantBack_Value_ContentKind.SwbPkcEeRevocationInfo => Asn1Formatting.Format(RevInfoWantBackValue),
-            ReplyWantBack_Value_ContentKind.SwbPkcCAsRevocationInfo => Asn1Formatting.Format(RevInfoWantBackValue),
-            ReplyWantBack_Value_ContentKind.SwbAcCert => Asn1Formatting.Format(SwbAcCert),
-            ReplyWantBack_Value_ContentKind.SwbAaCertPath => Asn1Formatting.Format(CertificateArrayValue),
-            ReplyWantBack_Value_ContentKind.SwbAaRevocationInfo => Asn1Formatting.Format(RevInfoWantBackValue),
-            ReplyWantBack_Value_ContentKind.SwbAcRevocationInfo => Asn1Formatting.Format(RevInfoWantBackValue),
-            ReplyWantBack_Value_ContentKind.SwbRelayedResponses => Asn1Formatting.Format(SwbRelayedResponses),
-            ReplyWantBack_Value_ContentKind.Unknown => Asn1Formatting.Format(Unknown),
-            _ => "<unset>",
-        };
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        switch (Kind)
-        {
-            case ReplyWantBack_Value_ContentKind.SwbPkcCert:
-                SwbPkcCert!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case ReplyWantBack_Value_ContentKind.SwbPkcBestCertPath:
-                writer.WriteSequenceOf(Asn1Tag.Sequence, CertificateArrayValue!, static (inner, item) =>
-                {
-                    item.Encode(inner, Asn1Tag.Sequence);
-                });
-                break;
-            case ReplyWantBack_Value_ContentKind.SwbPkcRevocationInfo:
-                RevInfoWantBackValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case ReplyWantBack_Value_ContentKind.SwbPkcPublicKeyInfo:
-                SwbPkcPublicKeyInfo!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case ReplyWantBack_Value_ContentKind.SwbPkcAllCertPaths:
-                writer.WriteSequenceOf(Asn1Tag.Sequence, SwbPkcAllCertPaths!, static (inner, item) =>
-                {
-                    inner.WriteSequenceOf(Asn1Tag.Sequence, item, static (inner, item) =>
-                    {
-                        item.Encode(inner, Asn1Tag.Sequence);
-                    });
-                });
-                break;
-            case ReplyWantBack_Value_ContentKind.SwbPkcEeRevocationInfo:
-                RevInfoWantBackValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case ReplyWantBack_Value_ContentKind.SwbPkcCAsRevocationInfo:
-                RevInfoWantBackValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case ReplyWantBack_Value_ContentKind.SwbAcCert:
-                SwbAcCert!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case ReplyWantBack_Value_ContentKind.SwbAaCertPath:
-                writer.WriteSequenceOf(Asn1Tag.Sequence, CertificateArrayValue!, static (inner, item) =>
-                {
-                    item.Encode(inner, Asn1Tag.Sequence);
-                });
-                break;
-            case ReplyWantBack_Value_ContentKind.SwbAaRevocationInfo:
-                RevInfoWantBackValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case ReplyWantBack_Value_ContentKind.SwbAcRevocationInfo:
-                RevInfoWantBackValue!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case ReplyWantBack_Value_ContentKind.SwbRelayedResponses:
-                writer.WriteSequenceOf(Asn1Tag.Sequence, SwbRelayedResponses!, static (inner, item) =>
-                {
-                    item.Encode(inner, Asn1Tag.Sequence);
-                });
-                break;
-            case ReplyWantBack_Value_ContentKind.Unknown:
-                if (Unknown is null) throw new Asn1Exception("Open type has no alternative.");
-                writer.WriteAny(Unknown.Value);
-                break;
-            default: throw new Asn1Exception("Open type has no alternative.");
-        }
-    }
-
-    public static bool IsKnown(Asn1Oid key) => key.Equals(SCVP2009Oids.IdSwbPkcCert) || key.Equals(SCVP2009Oids.IdSwbPkcBestCertPath) || key.Equals(SCVP2009Oids.IdSwbPkcRevocationInfo) || key.Equals(SCVP2009Oids.IdSwbPkcPublicKeyInfo) || key.Equals(SCVP2009Oids.IdSwbPkcAllCertPaths) || key.Equals(SCVP2009Oids.IdSwbPkcEeRevocationInfo) || key.Equals(SCVP2009Oids.IdSwbPkcCAsRevocationInfo) || key.Equals(SCVP2009Oids.IdSwbAcCert) || key.Equals(SCVP2009Oids.IdSwbAaCertPath) || key.Equals(SCVP2009Oids.IdSwbAaRevocationInfo) || key.Equals(SCVP2009Oids.IdSwbAcRevocationInfo) || key.Equals(SCVP2009Oids.IdSwbRelayedResponses);
-    public static ReplyWantBack_Value_Content Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
-        Decode(reader, definedByKey, expectedTag: null);
-
-    public static ReplyWantBack_Value_Content Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>
-        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
-
-    private static ReplyWantBack_Value_Content Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
-    {
-        if (!reader.TryPeekTag(out var peeked))
-            throw new Asn1Exception("Unexpected end of ASN.1 data while decoding open type 'ReplyWantBack_Value_Content': expected an encoded ASN.1 value for key '" + definedByKey + "'.");
-
-        if (definedByKey.Equals(SCVP2009Oids.IdSwbPkcCert))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSwbPkcCert(Asn1Kit.Modern.PKIX1Explicit2009.Certificate.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSwbPkcCert(Asn1Kit.Modern.PKIX1Explicit2009.Certificate.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SwbPkcCert'.");
-        }
-        else if (definedByKey.Equals(SCVP2009Oids.IdSwbPkcBestCertPath))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSwbPkcBestCertPath(reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIX1Explicit2009.Certificate.Decode(inner, Asn1Tag.Sequence)));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSwbPkcBestCertPath(reader.ReadSequenceOf(expectedTag.Value, static inner => Asn1Kit.Modern.PKIX1Explicit2009.Certificate.Decode(inner, Asn1Tag.Sequence)));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SwbPkcBestCertPath'.");
-        }
-        else if (definedByKey.Equals(SCVP2009Oids.IdSwbPkcRevocationInfo))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSwbPkcRevocationInfo(Asn1Kit.Modern.SCVP2009.RevInfoWantBack.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSwbPkcRevocationInfo(Asn1Kit.Modern.SCVP2009.RevInfoWantBack.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SwbPkcRevocationInfo'.");
-        }
-        else if (definedByKey.Equals(SCVP2009Oids.IdSwbPkcPublicKeyInfo))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSwbPkcPublicKeyInfo(Asn1Kit.Modern.PKIX1Explicit2009.SubjectPublicKeyInfo.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSwbPkcPublicKeyInfo(Asn1Kit.Modern.PKIX1Explicit2009.SubjectPublicKeyInfo.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SwbPkcPublicKeyInfo'.");
-        }
-        else if (definedByKey.Equals(SCVP2009Oids.IdSwbPkcAllCertPaths))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSwbPkcAllCertPaths(reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIX1Explicit2009.Certificate.Decode(inner, Asn1Tag.Sequence))));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSwbPkcAllCertPaths(reader.ReadSequenceOf(expectedTag.Value, static inner => inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIX1Explicit2009.Certificate.Decode(inner, Asn1Tag.Sequence))));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SwbPkcAllCertPaths'.");
-        }
-        else if (definedByKey.Equals(SCVP2009Oids.IdSwbPkcEeRevocationInfo))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSwbPkcEeRevocationInfo(Asn1Kit.Modern.SCVP2009.RevInfoWantBack.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSwbPkcEeRevocationInfo(Asn1Kit.Modern.SCVP2009.RevInfoWantBack.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SwbPkcEeRevocationInfo'.");
-        }
-        else if (definedByKey.Equals(SCVP2009Oids.IdSwbPkcCAsRevocationInfo))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSwbPkcCAsRevocationInfo(Asn1Kit.Modern.SCVP2009.RevInfoWantBack.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSwbPkcCAsRevocationInfo(Asn1Kit.Modern.SCVP2009.RevInfoWantBack.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SwbPkcCAsRevocationInfo'.");
-        }
-        else if (definedByKey.Equals(SCVP2009Oids.IdSwbAcCert))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSwbAcCert(Asn1Kit.Modern.PKIXAttributeCertificate2009.AttributeCertificate.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSwbAcCert(Asn1Kit.Modern.PKIXAttributeCertificate2009.AttributeCertificate.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SwbAcCert'.");
-        }
-        else if (definedByKey.Equals(SCVP2009Oids.IdSwbAaCertPath))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSwbAaCertPath(reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIX1Explicit2009.Certificate.Decode(inner, Asn1Tag.Sequence)));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSwbAaCertPath(reader.ReadSequenceOf(expectedTag.Value, static inner => Asn1Kit.Modern.PKIX1Explicit2009.Certificate.Decode(inner, Asn1Tag.Sequence)));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SwbAaCertPath'.");
-        }
-        else if (definedByKey.Equals(SCVP2009Oids.IdSwbAaRevocationInfo))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSwbAaRevocationInfo(Asn1Kit.Modern.SCVP2009.RevInfoWantBack.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSwbAaRevocationInfo(Asn1Kit.Modern.SCVP2009.RevInfoWantBack.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SwbAaRevocationInfo'.");
-        }
-        else if (definedByKey.Equals(SCVP2009Oids.IdSwbAcRevocationInfo))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSwbAcRevocationInfo(Asn1Kit.Modern.SCVP2009.RevInfoWantBack.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSwbAcRevocationInfo(Asn1Kit.Modern.SCVP2009.RevInfoWantBack.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SwbAcRevocationInfo'.");
-        }
-        else if (definedByKey.Equals(SCVP2009Oids.IdSwbRelayedResponses))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSwbRelayedResponses(reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.CryptographicMessageSyntax2009.ContentInfo.Decode(inner, Asn1Tag.Sequence)));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSwbRelayedResponses(reader.ReadSequenceOf(expectedTag.Value, static inner => Asn1Kit.Modern.CryptographicMessageSyntax2009.ContentInfo.Decode(inner, Asn1Tag.Sequence)));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'SwbRelayedResponses'.");
-        }
-        else {
-            return FromUnknown(reader.ReadAny());
-        }
-    }
-}
-
 internal static class __SCVP2009OpenTypeCodecs
 {
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> NameSingleAttribute { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520CommonNameSingleAttribute { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520LocalityNameSingleAttribute { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
+
     internal static Asn1Codec<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams> SaRsaSSAPSSAlgorithmIdentifier { get; } =
         new(static reader => Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams.Decode(reader), static (writer, value) => value.Encode(writer));
 
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.Certificate> SwbPkcCertReplyWantBack { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.Certificate.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.Certificate[]> SwbPkcBestCertPathReplyWantBack { get; } = new(
+        static reader =>
+        {
+            Asn1Kit.Modern.PKIX1Explicit2009.Certificate[] decoded;
+            decoded = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIX1Explicit2009.Certificate.Decode(inner, Asn1Tag.Sequence));
+            return decoded;
+        },
+        static (writer, value) =>
+        {
+            writer.WriteSequenceOf(Asn1Tag.Sequence, value, static (inner, item) =>
+            {
+                item.Encode(inner, Asn1Tag.Sequence);
+            });
+        });
+
+    internal static Asn1Codec<RevInfoWantBack> SwbPkcRevocationInfoReplyWantBack { get; } =
+        new(static reader => RevInfoWantBack.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.SubjectPublicKeyInfo> SwbPkcPublicKeyInfoReplyWantBack { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.SubjectPublicKeyInfo.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.Certificate[][]> SwbPkcAllCertPathsReplyWantBack { get; } = new(
+        static reader =>
+        {
+            Asn1Kit.Modern.PKIX1Explicit2009.Certificate[][] decoded;
+            decoded = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIX1Explicit2009.Certificate.Decode(inner, Asn1Tag.Sequence)));
+            return decoded;
+        },
+        static (writer, value) =>
+        {
+            writer.WriteSequenceOf(Asn1Tag.Sequence, value, static (inner, item) =>
+            {
+                inner.WriteSequenceOf(Asn1Tag.Sequence, item, static (inner, item) =>
+                {
+                    item.Encode(inner, Asn1Tag.Sequence);
+                });
+            });
+        });
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIXAttributeCertificate2009.AttributeCertificate> SwbAcCertReplyWantBack { get; } =
+        new(static reader => Asn1Kit.Modern.PKIXAttributeCertificate2009.AttributeCertificate.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.CryptographicMessageSyntax2009.ContentInfo[]> SwbRelayedResponsesReplyWantBack { get; } = new(
+        static reader =>
+        {
+            Asn1Kit.Modern.CryptographicMessageSyntax2009.ContentInfo[] decoded;
+            decoded = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.CryptographicMessageSyntax2009.ContentInfo.Decode(inner, Asn1Tag.Sequence));
+            return decoded;
+        },
+        static (writer, value) =>
+        {
+            writer.WriteSequenceOf(Asn1Tag.Sequence, value, static (inner, item) =>
+            {
+                item.Encode(inner, Asn1Tag.Sequence);
+            });
+        });
+
+}
+
+public sealed record ValueBinding<T>
+{
+    public Asn1Oid Oid { get; }
+    public Asn1Codec<T>? Codec { get; }
+    public Func<ReplyWantBack, T>? Decoder { get; }
+    public Func<T, Asn1Contained<Asn1Any>>? Encoder { get; }
+
+    public ValueBinding(Asn1Oid oid, Asn1Codec<T> codec)
+    {
+        Oid = oid;
+        Codec = codec ?? throw new ArgumentNullException(nameof(codec));
+    }
+
+    public ValueBinding(Asn1Oid oid, Func<ReplyWantBack, T> decoder, Func<T, Asn1Contained<Asn1Any>> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+}
+
+public static class SupportedAttributesValueBindings
+{
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> Name { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtName, __SCVP2009OpenTypeCodecs.NameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> Surname { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtSurname, __SCVP2009OpenTypeCodecs.NameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> GivenName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGivenName, __SCVP2009OpenTypeCodecs.NameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> Initials { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtInitials, __SCVP2009OpenTypeCodecs.NameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> GenerationQualifier { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGenerationQualifier, __SCVP2009OpenTypeCodecs.NameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520CommonName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtCommonName, __SCVP2009OpenTypeCodecs.X520CommonNameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520LocalityName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtLocalityName, __SCVP2009OpenTypeCodecs.X520LocalityNameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520StateOrProvinceName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtStateOrProvinceName, __SCVP2009OpenTypeCodecs.X520LocalityNameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520OrganizationName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationName, __SCVP2009OpenTypeCodecs.X520CommonNameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520OrganizationalUnitName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationalUnitName, __SCVP2009OpenTypeCodecs.X520CommonNameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520Title { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtTitle, __SCVP2009OpenTypeCodecs.X520CommonNameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520dnQualifier { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtDnQualifier, Asn1Codecs.PrintableString);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520countryName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtCountryName, Asn1Codecs.PrintableString);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520SerialNumber { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtSerialNumber, Asn1Codecs.PrintableString);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520Pseudonym { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtPseudonym, __SCVP2009OpenTypeCodecs.X520LocalityNameSingleAttribute);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> DomainComponent { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdDomainComponent, Asn1Codecs.Ia5String);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> EmailAddress { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdEmailAddress, Asn1Codecs.Ia5String);
+
+    public static class AsString
+    {
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> Name { get; } =
+            new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtName, DecodeNameAsString, EncodeNameAsString);
+
+        private static string DecodeNameAsString(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+        {
+            return __SCVP2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeNameAsString(string value) =>
+            __SCVP2009OpenTypeCodecs.NameSingleAttribute.Encode(Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.FromUTF8String(value));
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> Surname { get; } =
+            new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtSurname, DecodeSurnameAsString, EncodeSurnameAsString);
+
+        private static string DecodeSurnameAsString(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+        {
+            return __SCVP2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeSurnameAsString(string value) =>
+            __SCVP2009OpenTypeCodecs.NameSingleAttribute.Encode(Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.FromUTF8String(value));
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> GivenName { get; } =
+            new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGivenName, DecodeGivenNameAsString, EncodeGivenNameAsString);
+
+        private static string DecodeGivenNameAsString(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+        {
+            return __SCVP2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeGivenNameAsString(string value) =>
+            __SCVP2009OpenTypeCodecs.NameSingleAttribute.Encode(Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.FromUTF8String(value));
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> Initials { get; } =
+            new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtInitials, DecodeInitialsAsString, EncodeInitialsAsString);
+
+        private static string DecodeInitialsAsString(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+        {
+            return __SCVP2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeInitialsAsString(string value) =>
+            __SCVP2009OpenTypeCodecs.NameSingleAttribute.Encode(Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.FromUTF8String(value));
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> GenerationQualifier { get; } =
+            new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGenerationQualifier, DecodeGenerationQualifierAsString, EncodeGenerationQualifierAsString);
+
+        private static string DecodeGenerationQualifierAsString(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+        {
+            return __SCVP2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeGenerationQualifierAsString(string value) =>
+            __SCVP2009OpenTypeCodecs.NameSingleAttribute.Encode(Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.FromUTF8String(value));
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520CommonName { get; } =
+            new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtCommonName, DecodeX520CommonNameAsString, EncodeX520CommonNameAsString);
+
+        private static string DecodeX520CommonNameAsString(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+        {
+            return __SCVP2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeX520CommonNameAsString(string value) =>
+            __SCVP2009OpenTypeCodecs.X520CommonNameSingleAttribute.Encode(Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.FromUTF8String(value));
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520LocalityName { get; } =
+            new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtLocalityName, DecodeX520LocalityNameAsString, EncodeX520LocalityNameAsString);
+
+        private static string DecodeX520LocalityNameAsString(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+        {
+            return __SCVP2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeX520LocalityNameAsString(string value) =>
+            __SCVP2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Encode(Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.FromUTF8String(value));
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520StateOrProvinceName { get; } =
+            new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtStateOrProvinceName, DecodeX520StateOrProvinceNameAsString, EncodeX520StateOrProvinceNameAsString);
+
+        private static string DecodeX520StateOrProvinceNameAsString(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+        {
+            return __SCVP2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeX520StateOrProvinceNameAsString(string value) =>
+            __SCVP2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Encode(Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.FromUTF8String(value));
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520OrganizationName { get; } =
+            new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationName, DecodeX520OrganizationNameAsString, EncodeX520OrganizationNameAsString);
+
+        private static string DecodeX520OrganizationNameAsString(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+        {
+            return __SCVP2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeX520OrganizationNameAsString(string value) =>
+            __SCVP2009OpenTypeCodecs.X520CommonNameSingleAttribute.Encode(Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.FromUTF8String(value));
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520OrganizationalUnitName { get; } =
+            new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationalUnitName, DecodeX520OrganizationalUnitNameAsString, EncodeX520OrganizationalUnitNameAsString);
+
+        private static string DecodeX520OrganizationalUnitNameAsString(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+        {
+            return __SCVP2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeX520OrganizationalUnitNameAsString(string value) =>
+            __SCVP2009OpenTypeCodecs.X520CommonNameSingleAttribute.Encode(Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.FromUTF8String(value));
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520Title { get; } =
+            new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtTitle, DecodeX520TitleAsString, EncodeX520TitleAsString);
+
+        private static string DecodeX520TitleAsString(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+        {
+            return __SCVP2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeX520TitleAsString(string value) =>
+            __SCVP2009OpenTypeCodecs.X520CommonNameSingleAttribute.Encode(Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.FromUTF8String(value));
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520dnQualifier { get; } =
+            SupportedAttributesValueBindings.X520dnQualifier;
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520countryName { get; } =
+            SupportedAttributesValueBindings.X520countryName;
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520SerialNumber { get; } =
+            SupportedAttributesValueBindings.X520SerialNumber;
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> X520Pseudonym { get; } =
+            new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtPseudonym, DecodeX520PseudonymAsString, EncodeX520PseudonymAsString);
+
+        private static string DecodeX520PseudonymAsString(Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute source)
+        {
+            return __SCVP2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeX520PseudonymAsString(string value) =>
+            __SCVP2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Encode(Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.FromUTF8String(value));
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> DomainComponent { get; } =
+            SupportedAttributesValueBindings.DomainComponent;
+
+        public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string> EmailAddress { get; } =
+            SupportedAttributesValueBindings.EmailAddress;
+    }
 }
 
 public static class SignatureAlgorithmsParametersBindings
@@ -2881,9 +2749,376 @@ public static class SignatureAlgorithmsParametersBindings
         new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSASSAPSS, __SCVP2009OpenTypeCodecs.SaRsaSSAPSSAlgorithmIdentifier);
 }
 
+public static class AllWantBacksValueBindings
+{
+    public static ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.Certificate> SwbPkcCert { get; } =
+        new(SCVP2009Oids.IdSwbPkcCert, __SCVP2009OpenTypeCodecs.SwbPkcCertReplyWantBack);
+
+    public static ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.Certificate[]> SwbPkcBestCertPath { get; } =
+        new(SCVP2009Oids.IdSwbPkcBestCertPath, __SCVP2009OpenTypeCodecs.SwbPkcBestCertPathReplyWantBack);
+
+    public static ValueBinding<RevInfoWantBack> SwbPkcRevocationInfo { get; } =
+        new(SCVP2009Oids.IdSwbPkcRevocationInfo, __SCVP2009OpenTypeCodecs.SwbPkcRevocationInfoReplyWantBack);
+
+    public static ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.SubjectPublicKeyInfo> SwbPkcPublicKeyInfo { get; } =
+        new(SCVP2009Oids.IdSwbPkcPublicKeyInfo, __SCVP2009OpenTypeCodecs.SwbPkcPublicKeyInfoReplyWantBack);
+
+    public static ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.Certificate[][]> SwbPkcAllCertPaths { get; } =
+        new(SCVP2009Oids.IdSwbPkcAllCertPaths, __SCVP2009OpenTypeCodecs.SwbPkcAllCertPathsReplyWantBack);
+
+    public static ValueBinding<RevInfoWantBack> SwbPkcEeRevocationInfo { get; } =
+        new(SCVP2009Oids.IdSwbPkcEeRevocationInfo, __SCVP2009OpenTypeCodecs.SwbPkcRevocationInfoReplyWantBack);
+
+    public static ValueBinding<RevInfoWantBack> SwbPkcCAsRevocationInfo { get; } =
+        new(SCVP2009Oids.IdSwbPkcCAsRevocationInfo, __SCVP2009OpenTypeCodecs.SwbPkcRevocationInfoReplyWantBack);
+
+    public static ValueBinding<Asn1Kit.Modern.PKIXAttributeCertificate2009.AttributeCertificate> SwbAcCert { get; } =
+        new(SCVP2009Oids.IdSwbAcCert, __SCVP2009OpenTypeCodecs.SwbAcCertReplyWantBack);
+
+    public static ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.Certificate[]> SwbAaCertPath { get; } =
+        new(SCVP2009Oids.IdSwbAaCertPath, __SCVP2009OpenTypeCodecs.SwbPkcBestCertPathReplyWantBack);
+
+    public static ValueBinding<RevInfoWantBack> SwbAaRevocationInfo { get; } =
+        new(SCVP2009Oids.IdSwbAaRevocationInfo, __SCVP2009OpenTypeCodecs.SwbPkcRevocationInfoReplyWantBack);
+
+    public static ValueBinding<RevInfoWantBack> SwbAcRevocationInfo { get; } =
+        new(SCVP2009Oids.IdSwbAcRevocationInfo, __SCVP2009OpenTypeCodecs.SwbPkcRevocationInfoReplyWantBack);
+
+    public static ValueBinding<Asn1Kit.Modern.CryptographicMessageSyntax2009.ContentInfo[]> SwbRelayedResponses { get; } =
+        new(SCVP2009Oids.IdSwbRelayedResponses, __SCVP2009OpenTypeCodecs.SwbRelayedResponsesReplyWantBack);
+}
+
 public static class AlgorithmIdentifierParametersBindings
 {
     public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> MdaSha1 { get; } =
         new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdSha1, Asn1Codecs.Null);
+}
+
+public static class SCVP2009OpenTypeExtensions
+{
+    public static bool TryDecodeValue<T>(this ReplyWantBack source, ValueBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.Wb.Equals(binding.Oid))) return false;
+        if (binding.Codec is { } codec)
+        {
+            value = Asn1Codecs.DecodeContained(source.Value, codec);
+        }
+        else
+            value = binding.Decoder!(source);
+        return true;
+    }
+
+    public static void SetValue<T>(this ReplyWantBack source, ValueBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.Wb = binding.Oid;
+        var encoded = binding.Codec is { } codec
+            ? Asn1Codecs.EncodeContained(value, codec)
+            : binding.Encoder!(value);
+        result.Value = encoded;
+    }
+
+}
+
+public static class CVRequestOpenTypeExtensions
+{
+    public static bool TryGetRequestorRef<T>(this CVRequest source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value)
+        => TryGetRequestorRef(source, binding, out value, out _);
+
+    public static bool TryGetRequestorRef<T>(this CVRequest source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute? match = null;
+        if (source.RequestorRef is { } node0)
+        {
+            foreach (var node1 in node0)
+            {
+                if (node1.DirectoryName is { } node2)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        foreach (var node4 in node3)
+                        {
+                            if (node4.Type.Equals(binding.Oid))
+                            {
+                                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetRequestorRef.");
+                                match = node4;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
+    public static bool TryGetRequestorName<T>(this CVRequest source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value)
+        => TryGetRequestorName(source, binding, out value, out _);
+
+    public static bool TryGetRequestorName<T>(this CVRequest source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute? match = null;
+        if (source.RequestorName is { } node0)
+        {
+            if (node0.DirectoryName is { } node1)
+            {
+                foreach (var node2 in node1)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        if (node3.Type.Equals(binding.Oid))
+                        {
+                            if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetRequestorName.");
+                            match = node3;
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
+    public static bool TryGetResponderName<T>(this CVRequest source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value)
+        => TryGetResponderName(source, binding, out value, out _);
+
+    public static bool TryGetResponderName<T>(this CVRequest source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute? match = null;
+        if (source.ResponderName is { } node0)
+        {
+            if (node0.DirectoryName is { } node1)
+            {
+                foreach (var node2 in node1)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        if (node3.Type.Equals(binding.Oid))
+                        {
+                            if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetResponderName.");
+                            match = node3;
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
+}
+
+public static class SCVPIssuerSerialOpenTypeExtensions
+{
+    public static bool TryGetIssuer<T>(this SCVPIssuerSerial source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value)
+        => TryGetIssuer(source, binding, out value, out _);
+
+    public static bool TryGetIssuer<T>(this SCVPIssuerSerial source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute? match = null;
+        if (source.Issuer is { } node0)
+        {
+            foreach (var node1 in node0)
+            {
+                if (node1.DirectoryName is { } node2)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        foreach (var node4 in node3)
+                        {
+                            if (node4.Type.Equals(binding.Oid))
+                            {
+                                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetIssuer.");
+                                match = node4;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
+}
+
+public static class NameValidationAlgParamsOpenTypeExtensions
+{
+    public static bool TryGetValidationNames<T>(this NameValidationAlgParams source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value)
+        => TryGetValidationNames(source, binding, out value, out _);
+
+    public static bool TryGetValidationNames<T>(this NameValidationAlgParams source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute? match = null;
+        if (source.ValidationNames is { } node0)
+        {
+            foreach (var node1 in node0)
+            {
+                if (node1.DirectoryName is { } node2)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        foreach (var node4 in node3)
+                        {
+                            if (node4.Type.Equals(binding.Oid))
+                            {
+                                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetValidationNames.");
+                                match = node4;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
+}
+
+public static class CVResponseOpenTypeExtensions
+{
+    public static bool TryGetRequestorRef<T>(this CVResponse source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value)
+        => TryGetRequestorRef(source, binding, out value, out _);
+
+    public static bool TryGetRequestorRef<T>(this CVResponse source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute? match = null;
+        if (source.RequestorRef is { } node0)
+        {
+            foreach (var node1 in node0)
+            {
+                if (node1.DirectoryName is { } node2)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        foreach (var node4 in node3)
+                        {
+                            if (node4.Type.Equals(binding.Oid))
+                            {
+                                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetRequestorRef.");
+                                match = node4;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
+    public static bool TryGetRequestorName<T>(this CVResponse source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value)
+        => TryGetRequestorName(source, binding, out value, out _);
+
+    public static bool TryGetRequestorName<T>(this CVResponse source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute? match = null;
+        if (source.RequestorName is { } node0)
+        {
+            foreach (var node1 in node0)
+            {
+                if (node1.DirectoryName is { } node2)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        foreach (var node4 in node3)
+                        {
+                            if (node4.Type.Equals(binding.Oid))
+                            {
+                                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetRequestorName.");
+                                match = node4;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
 }
 

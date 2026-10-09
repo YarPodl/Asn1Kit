@@ -322,7 +322,7 @@ public struct AttributeTypeAndValue
 {
     /// <summary>ASN.1 alias AttributeType ::= OBJECT IDENTIFIER.</summary>
     public Asn1Oid Type { get; set; }
-    public AttributeTypeAndValue_Value Value { get; set; }
+    public Asn1Any Value { get; set; }
 
     public AttributeTypeAndValue()
     {
@@ -339,7 +339,7 @@ public struct AttributeTypeAndValue
         using (writer.EnterSequence(tag))
         {
             writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, enc_Type);
-            enc_Value.Encode(writer);
+            writer.WriteAny(enc_Value);
         }
     }
 
@@ -351,7 +351,7 @@ public struct AttributeTypeAndValue
         {
             var value = new AttributeTypeAndValue();
             value.Type = reader.ReadOid(Asn1Tag.ObjectIdentifier);
-            value.Value = AttributeTypeAndValue_Value.Decode(reader, value.Type);
+            value.Value = reader.ReadAny();
             reader.ThrowIfNotEmpty();
             return value;
         }
@@ -1870,7 +1870,7 @@ public sealed class TBSCertList
 public sealed class AlgorithmIdentifier
 {
     public Asn1Oid Algorithm { get; set; }
-    public AlgorithmIdentifier_Parameters? Parameters { get; set; }
+    public Asn1Any? Parameters { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1881,7 +1881,7 @@ public sealed class AlgorithmIdentifier
             writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, Algorithm);
             if (Parameters != null)
             {
-                Parameters.Encode(writer);
+                writer.WriteAny(Parameters.Value);
             }
         }
     }
@@ -1896,7 +1896,7 @@ public sealed class AlgorithmIdentifier
             value.Algorithm = reader.ReadOid(Asn1Tag.ObjectIdentifier);
             if (!reader.Eof)
             {
-                value.Parameters = AlgorithmIdentifier_Parameters.Decode(reader, value.Algorithm);
+                value.Parameters = reader.ReadAny();
             }
             reader.ThrowIfNotEmpty();
             return value;
@@ -2951,206 +2951,6 @@ public sealed class TeletexDomainDefinedAttribute
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public enum AttributeTypeAndValue_ValueKind
-{
-    None,
-    TeletexString,
-    PrintableString,
-    UniversalString,
-    Utf8String,
-    BmpString,
-    Printable,
-    Ia5,
-    Unknown,
-}
-
-public sealed class AttributeTypeAndValue_Value
-{
-    public AttributeTypeAndValue_ValueKind Kind { get; private set; }
-    public string? Value { get; private set; }
-    public Asn1Any? Unknown { get; private set; }
-
-    public static AttributeTypeAndValue_Value FromTeletexString(string teletexString) => new AttributeTypeAndValue_Value
-    {
-        Kind = AttributeTypeAndValue_ValueKind.TeletexString,
-        Value = teletexString,
-    };
-
-    public static AttributeTypeAndValue_Value FromPrintableString(string printableString) => new AttributeTypeAndValue_Value
-    {
-        Kind = AttributeTypeAndValue_ValueKind.PrintableString,
-        Value = printableString,
-    };
-
-    public static AttributeTypeAndValue_Value FromUniversalString(string universalString) => new AttributeTypeAndValue_Value
-    {
-        Kind = AttributeTypeAndValue_ValueKind.UniversalString,
-        Value = universalString,
-    };
-
-    public static AttributeTypeAndValue_Value FromUtf8String(string utf8String) => new AttributeTypeAndValue_Value
-    {
-        Kind = AttributeTypeAndValue_ValueKind.Utf8String,
-        Value = utf8String,
-    };
-
-    public static AttributeTypeAndValue_Value FromBmpString(string bmpString) => new AttributeTypeAndValue_Value
-    {
-        Kind = AttributeTypeAndValue_ValueKind.BmpString,
-        Value = bmpString,
-    };
-
-    public static AttributeTypeAndValue_Value FromPrintable(string printable) => new AttributeTypeAndValue_Value
-    {
-        Kind = AttributeTypeAndValue_ValueKind.Printable,
-        Value = printable,
-    };
-
-    public static AttributeTypeAndValue_Value FromIa5(string ia5) => new AttributeTypeAndValue_Value
-    {
-        Kind = AttributeTypeAndValue_ValueKind.Ia5,
-        Value = ia5,
-    };
-
-    public static AttributeTypeAndValue_Value FromUnknown(Asn1Any value) => new AttributeTypeAndValue_Value
-    {
-        Kind = AttributeTypeAndValue_ValueKind.Unknown,
-        Unknown = value,
-    };
-
-    public override string ToString()
-    {
-        return Kind switch
-        {
-            AttributeTypeAndValue_ValueKind.TeletexString => Asn1Formatting.Format(Value),
-            AttributeTypeAndValue_ValueKind.PrintableString => Asn1Formatting.Format(Value),
-            AttributeTypeAndValue_ValueKind.UniversalString => Asn1Formatting.Format(Value),
-            AttributeTypeAndValue_ValueKind.Utf8String => Asn1Formatting.Format(Value),
-            AttributeTypeAndValue_ValueKind.BmpString => Asn1Formatting.Format(Value),
-            AttributeTypeAndValue_ValueKind.Printable => Asn1Formatting.Format(Value),
-            AttributeTypeAndValue_ValueKind.Ia5 => Asn1Formatting.Format(Value),
-            AttributeTypeAndValue_ValueKind.Unknown => Asn1Formatting.Format(Unknown),
-            _ => "<unset>",
-        };
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        switch (Kind)
-        {
-            case AttributeTypeAndValue_ValueKind.TeletexString:
-                writer.WriteString(Asn1Tag.TeletexString, Value!, Asn1StringForm.Teletex);
-                break;
-            case AttributeTypeAndValue_ValueKind.PrintableString:
-                writer.WriteString(Asn1Tag.PrintableString, Value!, Asn1StringForm.Printable);
-                break;
-            case AttributeTypeAndValue_ValueKind.UniversalString:
-                writer.WriteString(Asn1Tag.UniversalString, Value!, Asn1StringForm.Universal);
-                break;
-            case AttributeTypeAndValue_ValueKind.Utf8String:
-                writer.WriteString(Asn1Tag.Utf8String, Value!, Asn1StringForm.Utf8);
-                break;
-            case AttributeTypeAndValue_ValueKind.BmpString:
-                writer.WriteString(Asn1Tag.BmpString, Value!, Asn1StringForm.Bmp);
-                break;
-            case AttributeTypeAndValue_ValueKind.Printable:
-                writer.WriteString(Asn1Tag.PrintableString, Value!, Asn1StringForm.Printable);
-                break;
-            case AttributeTypeAndValue_ValueKind.Ia5:
-                writer.WriteString(Asn1Tag.Ia5String, Value!, Asn1StringForm.Ia5);
-                break;
-            case AttributeTypeAndValue_ValueKind.Unknown:
-                if (Unknown is null) throw new Asn1Exception("Open type has no alternative.");
-                writer.WriteAny(Unknown.Value);
-                break;
-            default: throw new Asn1Exception("Open type has no alternative.");
-        }
-    }
-
-    public static bool IsKnown(Asn1Oid key) => key.Equals(PKIX1Explicit88Oids.IdAtName) || key.Equals(PKIX1Explicit88Oids.IdAtSurname) || key.Equals(PKIX1Explicit88Oids.IdAtGivenName) || key.Equals(PKIX1Explicit88Oids.IdAtInitials) || key.Equals(PKIX1Explicit88Oids.IdAtGenerationQualifier) || key.Equals(PKIX1Explicit88Oids.IdAtCommonName) || key.Equals(PKIX1Explicit88Oids.IdAtLocalityName) || key.Equals(PKIX1Explicit88Oids.IdAtStateOrProvinceName) || key.Equals(PKIX1Explicit88Oids.IdAtOrganizationName) || key.Equals(PKIX1Explicit88Oids.IdAtOrganizationalUnitName) || key.Equals(PKIX1Explicit88Oids.IdAtTitle) || key.Equals(PKIX1Explicit88Oids.IdAtPseudonym) || key.Equals(PKIX1Explicit88Oids.IdAtDnQualifier) || key.Equals(PKIX1Explicit88Oids.IdAtCountryName) || key.Equals(PKIX1Explicit88Oids.IdAtSerialNumber) || key.Equals(PKIX1Explicit88Oids.IdDomainComponent) || key.Equals(PKIX1Explicit88Oids.IdEmailAddress);
-    public static AttributeTypeAndValue_Value Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
-        Decode(reader, definedByKey, expectedTag: null);
-
-    public static AttributeTypeAndValue_Value Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>
-        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
-
-    private static AttributeTypeAndValue_Value Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
-    {
-        if (!reader.TryPeekTag(out var peeked))
-            throw new Asn1Exception("Unexpected end of ASN.1 data while decoding open type 'AttributeTypeAndValue_Value': expected an encoded ASN.1 value for key '" + definedByKey + "'.");
-
-        if (definedByKey.Equals(PKIX1Explicit88Oids.IdAtName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtSurname) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtGivenName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtInitials) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtGenerationQualifier) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtCommonName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtLocalityName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtStateOrProvinceName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtOrganizationName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtOrganizationalUnitName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtTitle) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtPseudonym))
-        {
-            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
-            {
-                return FromTeletexString(reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex));
-            }
-            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
-            {
-                return FromPrintableString(reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable));
-            }
-            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
-            {
-                return FromUniversalString(reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal));
-            }
-            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
-            {
-                return FromUtf8String(reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8));
-            }
-            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
-            {
-                return FromBmpString(reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp));
-            }
-            return FromUnknown(reader.ReadAny());
-        }
-        else if (definedByKey.Equals(PKIX1Explicit88Oids.IdAtDnQualifier) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtCountryName) || definedByKey.Equals(PKIX1Explicit88Oids.IdAtSerialNumber))
-        {
-            var tag = expectedTag ?? Asn1Tag.PrintableString;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromPrintable(reader.ReadString(tag, Asn1StringForm.Printable));
-            }
-            return FromUnknown(reader.ReadAny());
-        }
-        else if (definedByKey.Equals(PKIX1Explicit88Oids.IdDomainComponent) || definedByKey.Equals(PKIX1Explicit88Oids.IdEmailAddress))
-        {
-            var tag = expectedTag ?? Asn1Tag.Ia5String;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromIa5(reader.ReadString(tag, Asn1StringForm.Ia5));
-            }
-            return FromUnknown(reader.ReadAny());
-        }
-        else {
-            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.TeletexString))
-            {
-                return FromTeletexString(reader.ReadString(Asn1Tag.TeletexString, Asn1StringForm.Teletex));
-            }
-            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.PrintableString))
-            {
-                return FromPrintableString(reader.ReadString(Asn1Tag.PrintableString, Asn1StringForm.Printable));
-            }
-            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.UniversalString))
-            {
-                return FromUniversalString(reader.ReadString(Asn1Tag.UniversalString, Asn1StringForm.Universal));
-            }
-            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
-            {
-                return FromUtf8String(reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8));
-            }
-            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.BmpString))
-            {
-                return FromBmpString(reader.ReadString(Asn1Tag.BmpString, Asn1StringForm.Bmp));
-            }
-            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.Ia5String))
-            {
-                return FromIa5(reader.ReadString(Asn1Tag.Ia5String, Asn1StringForm.Ia5));
-            }
-            return FromUnknown(reader.ReadAny());
-        }
-    }
-}
-
 public sealed class TBSCertList_RevokedCertificates_Item
 {
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
@@ -3198,78 +2998,6 @@ public sealed class TBSCertList_RevokedCertificates_Item
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class AlgorithmIdentifier_Parameters
-{
-    public Asn1Null? Null { get; private set; }
-    public Asn1Any? Unknown { get; private set; }
-
-    public static AlgorithmIdentifier_Parameters FromNull(Asn1Null @null = default) => new AlgorithmIdentifier_Parameters
-    {
-        Null = @null,
-    };
-
-    public static AlgorithmIdentifier_Parameters FromUnknown(Asn1Any value) => new AlgorithmIdentifier_Parameters
-    {
-        Unknown = value,
-    };
-
-    public override string ToString()
-    {
-        if (Null is not null) return Asn1Formatting.Format(Null);
-        if (Unknown is not null) return Asn1Formatting.Format(Unknown);
-        return "<unset>";
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        if (Null != null)
-        {
-            writer.WriteNull(Asn1Tag.Null);
-        }
-        else if (Unknown != null)
-        {
-            writer.WriteAny(Unknown.Value);
-        }
-        else throw new Asn1Exception("Open type has no alternative.");
-    }
-
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_1 = Asn1Oid.Parse("1.2.840.113549.1.1.1");
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_5 = Asn1Oid.Parse("1.2.840.113549.1.1.5");
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_11 = Asn1Oid.Parse("1.2.840.113549.1.1.11");
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_12 = Asn1Oid.Parse("1.2.840.113549.1.1.12");
-    private static readonly Asn1Oid Oid_1_2_840_113549_1_1_13 = Asn1Oid.Parse("1.2.840.113549.1.1.13");
-
-    public static bool IsKnown(Asn1Oid key) => key.Equals(Oid_1_2_840_113549_1_1_1) || key.Equals(Oid_1_2_840_113549_1_1_5) || key.Equals(Oid_1_2_840_113549_1_1_11) || key.Equals(Oid_1_2_840_113549_1_1_12) || key.Equals(Oid_1_2_840_113549_1_1_13);
-    public static AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
-        Decode(reader, definedByKey, expectedTag: null);
-
-    public static AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>
-        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
-
-    private static AlgorithmIdentifier_Parameters Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
-    {
-        if (!reader.TryPeekTag(out var peeked))
-            throw new Asn1Exception("Unexpected end of ASN.1 data while decoding open type 'AlgorithmIdentifier_Parameters': expected an encoded ASN.1 value for key '" + definedByKey + "'.");
-
-        if (definedByKey.Equals(Oid_1_2_840_113549_1_1_1) || definedByKey.Equals(Oid_1_2_840_113549_1_1_5) || definedByKey.Equals(Oid_1_2_840_113549_1_1_11) || definedByKey.Equals(Oid_1_2_840_113549_1_1_12) || definedByKey.Equals(Oid_1_2_840_113549_1_1_13))
-        {
-            var tag = expectedTag ?? Asn1Tag.Null;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromNull(Asn1Null.Decode(reader, tag));
-            }
-            return FromUnknown(reader.ReadAny());
-        }
-        else {
-            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.Null))
-            {
-                return FromNull(Asn1Null.Decode(reader, Asn1Tag.Null));
-            }
-            return FromUnknown(reader.ReadAny());
-        }
-    }
-}
-
 public sealed class ExtendedNetworkAddress_E1634Address
 {
     public string Number { get; set; } = "";
@@ -3307,5 +3035,508 @@ public sealed class ExtendedNetworkAddress_E1634Address
     }
 
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
+}
+
+internal static class __PKIX1Explicit88OpenTypeCodecs
+{
+    internal static Asn1Codec<DirectoryString> DirectoryStringAttributeTypeAndValue { get; } =
+        new(static reader => DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
+
+}
+
+public sealed record ParametersBinding<T>
+{
+    public Asn1Oid Oid { get; }
+    public Asn1Codec<T>? Codec { get; }
+    public Func<AlgorithmIdentifier, T>? Decoder { get; }
+    public Func<T, Asn1Any>? Encoder { get; }
+
+    public ParametersBinding(Asn1Oid oid, Asn1Codec<T> codec)
+    {
+        Oid = oid;
+        Codec = codec ?? throw new ArgumentNullException(nameof(codec));
+    }
+
+    public ParametersBinding(Asn1Oid oid, Func<AlgorithmIdentifier, T> decoder, Func<T, Asn1Any> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+}
+
+public sealed record ValueBinding<T>
+{
+    public Asn1Oid Oid { get; }
+    public Asn1Codec<T>? Codec { get; }
+    public Func<AttributeTypeAndValue, T>? Decoder { get; }
+    public Func<T, Asn1Any>? Encoder { get; }
+
+    public ValueBinding(Asn1Oid oid, Asn1Codec<T> codec)
+    {
+        Oid = oid;
+        Codec = codec ?? throw new ArgumentNullException(nameof(codec));
+    }
+
+    public ValueBinding(Asn1Oid oid, Func<AttributeTypeAndValue, T> decoder, Func<T, Asn1Any> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+}
+
+public static class AttributeTypeAndValueValueBindings
+{
+    public static ValueBinding<DirectoryString> DirectoryString { get; } =
+        new(PKIX1Explicit88Oids.IdAtName, __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static ValueBinding<DirectoryString> DirectoryString2 { get; } =
+        new(PKIX1Explicit88Oids.IdAtSurname, __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static ValueBinding<DirectoryString> DirectoryString3 { get; } =
+        new(PKIX1Explicit88Oids.IdAtGivenName, __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static ValueBinding<DirectoryString> DirectoryString4 { get; } =
+        new(PKIX1Explicit88Oids.IdAtInitials, __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static ValueBinding<DirectoryString> DirectoryString5 { get; } =
+        new(PKIX1Explicit88Oids.IdAtGenerationQualifier, __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static ValueBinding<DirectoryString> DirectoryString6 { get; } =
+        new(PKIX1Explicit88Oids.IdAtCommonName, __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static ValueBinding<DirectoryString> DirectoryString7 { get; } =
+        new(PKIX1Explicit88Oids.IdAtLocalityName, __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static ValueBinding<DirectoryString> DirectoryString8 { get; } =
+        new(PKIX1Explicit88Oids.IdAtStateOrProvinceName, __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static ValueBinding<DirectoryString> DirectoryString9 { get; } =
+        new(PKIX1Explicit88Oids.IdAtOrganizationName, __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static ValueBinding<DirectoryString> DirectoryString10 { get; } =
+        new(PKIX1Explicit88Oids.IdAtOrganizationalUnitName, __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static ValueBinding<DirectoryString> DirectoryString11 { get; } =
+        new(PKIX1Explicit88Oids.IdAtTitle, __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static ValueBinding<string> Oid25446 { get; } =
+        new(PKIX1Explicit88Oids.IdAtDnQualifier, Asn1Codecs.PrintableString);
+
+    public static ValueBinding<string> Oid2546 { get; } =
+        new(PKIX1Explicit88Oids.IdAtCountryName, Asn1Codecs.PrintableString);
+
+    public static ValueBinding<string> Oid2545 { get; } =
+        new(PKIX1Explicit88Oids.IdAtSerialNumber, Asn1Codecs.PrintableString);
+
+    public static ValueBinding<DirectoryString> DirectoryString12 { get; } =
+        new(PKIX1Explicit88Oids.IdAtPseudonym, __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static ValueBinding<string> Oid09234219200300100125 { get; } =
+        new(PKIX1Explicit88Oids.IdDomainComponent, Asn1Codecs.Ia5String);
+
+    public static ValueBinding<string> Oid12840113549191 { get; } =
+        new(PKIX1Explicit88Oids.IdEmailAddress, Asn1Codecs.Ia5String);
+
+    public static class AsString
+    {
+        public static ValueBinding<string> DirectoryString { get; } =
+            new(PKIX1Explicit88Oids.IdAtName, DecodeDirectoryStringAsString, EncodeDirectoryStringAsString);
+
+        private static string DecodeDirectoryStringAsString(AttributeTypeAndValue source)
+        {
+            return __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryStringAsString(string value) =>
+            __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static ValueBinding<string> DirectoryString2 { get; } =
+            new(PKIX1Explicit88Oids.IdAtSurname, DecodeDirectoryString2AsString, EncodeDirectoryString2AsString);
+
+        private static string DecodeDirectoryString2AsString(AttributeTypeAndValue source)
+        {
+            return __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString2AsString(string value) =>
+            __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static ValueBinding<string> DirectoryString3 { get; } =
+            new(PKIX1Explicit88Oids.IdAtGivenName, DecodeDirectoryString3AsString, EncodeDirectoryString3AsString);
+
+        private static string DecodeDirectoryString3AsString(AttributeTypeAndValue source)
+        {
+            return __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString3AsString(string value) =>
+            __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static ValueBinding<string> DirectoryString4 { get; } =
+            new(PKIX1Explicit88Oids.IdAtInitials, DecodeDirectoryString4AsString, EncodeDirectoryString4AsString);
+
+        private static string DecodeDirectoryString4AsString(AttributeTypeAndValue source)
+        {
+            return __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString4AsString(string value) =>
+            __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static ValueBinding<string> DirectoryString5 { get; } =
+            new(PKIX1Explicit88Oids.IdAtGenerationQualifier, DecodeDirectoryString5AsString, EncodeDirectoryString5AsString);
+
+        private static string DecodeDirectoryString5AsString(AttributeTypeAndValue source)
+        {
+            return __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString5AsString(string value) =>
+            __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static ValueBinding<string> DirectoryString6 { get; } =
+            new(PKIX1Explicit88Oids.IdAtCommonName, DecodeDirectoryString6AsString, EncodeDirectoryString6AsString);
+
+        private static string DecodeDirectoryString6AsString(AttributeTypeAndValue source)
+        {
+            return __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString6AsString(string value) =>
+            __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static ValueBinding<string> DirectoryString7 { get; } =
+            new(PKIX1Explicit88Oids.IdAtLocalityName, DecodeDirectoryString7AsString, EncodeDirectoryString7AsString);
+
+        private static string DecodeDirectoryString7AsString(AttributeTypeAndValue source)
+        {
+            return __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString7AsString(string value) =>
+            __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static ValueBinding<string> DirectoryString8 { get; } =
+            new(PKIX1Explicit88Oids.IdAtStateOrProvinceName, DecodeDirectoryString8AsString, EncodeDirectoryString8AsString);
+
+        private static string DecodeDirectoryString8AsString(AttributeTypeAndValue source)
+        {
+            return __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString8AsString(string value) =>
+            __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static ValueBinding<string> DirectoryString9 { get; } =
+            new(PKIX1Explicit88Oids.IdAtOrganizationName, DecodeDirectoryString9AsString, EncodeDirectoryString9AsString);
+
+        private static string DecodeDirectoryString9AsString(AttributeTypeAndValue source)
+        {
+            return __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString9AsString(string value) =>
+            __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static ValueBinding<string> DirectoryString10 { get; } =
+            new(PKIX1Explicit88Oids.IdAtOrganizationalUnitName, DecodeDirectoryString10AsString, EncodeDirectoryString10AsString);
+
+        private static string DecodeDirectoryString10AsString(AttributeTypeAndValue source)
+        {
+            return __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString10AsString(string value) =>
+            __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static ValueBinding<string> DirectoryString11 { get; } =
+            new(PKIX1Explicit88Oids.IdAtTitle, DecodeDirectoryString11AsString, EncodeDirectoryString11AsString);
+
+        private static string DecodeDirectoryString11AsString(AttributeTypeAndValue source)
+        {
+            return __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString11AsString(string value) =>
+            __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static ValueBinding<string> Oid25446 { get; } =
+            AttributeTypeAndValueValueBindings.Oid25446;
+
+        public static ValueBinding<string> Oid2546 { get; } =
+            AttributeTypeAndValueValueBindings.Oid2546;
+
+        public static ValueBinding<string> Oid2545 { get; } =
+            AttributeTypeAndValueValueBindings.Oid2545;
+
+        public static ValueBinding<string> DirectoryString12 { get; } =
+            new(PKIX1Explicit88Oids.IdAtPseudonym, DecodeDirectoryString12AsString, EncodeDirectoryString12AsString);
+
+        private static string DecodeDirectoryString12AsString(AttributeTypeAndValue source)
+        {
+            return __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString12AsString(string value) =>
+            __PKIX1Explicit88OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static ValueBinding<string> Oid09234219200300100125 { get; } =
+            AttributeTypeAndValueValueBindings.Oid09234219200300100125;
+
+        public static ValueBinding<string> Oid12840113549191 { get; } =
+            AttributeTypeAndValueValueBindings.Oid12840113549191;
+    }
+}
+
+public static class AlgorithmIdentifierParametersBindings
+{
+    public static ParametersBinding<Asn1Null> Oid12840113549111 { get; } =
+        new(Asn1Oid.Parse("1.2.840.113549.1.1.1"), Asn1Codecs.Null);
+
+    public static ParametersBinding<Asn1Null> Oid12840113549115 { get; } =
+        new(Asn1Oid.Parse("1.2.840.113549.1.1.5"), Asn1Codecs.Null);
+
+    public static ParametersBinding<Asn1Null> Oid128401135491111 { get; } =
+        new(Asn1Oid.Parse("1.2.840.113549.1.1.11"), Asn1Codecs.Null);
+
+    public static ParametersBinding<Asn1Null> Oid128401135491112 { get; } =
+        new(Asn1Oid.Parse("1.2.840.113549.1.1.12"), Asn1Codecs.Null);
+
+    public static ParametersBinding<Asn1Null> Oid128401135491113 { get; } =
+        new(Asn1Oid.Parse("1.2.840.113549.1.1.13"), Asn1Codecs.Null);
+}
+
+public static class PKIX1Explicit88OpenTypeExtensions
+{
+    public static bool TryDecodeParameters<T>(this AlgorithmIdentifier source, ParametersBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.Parameters is null) return false;
+        if (!(source.Algorithm.Equals(binding.Oid))) return false;
+        if (binding.Codec is { } codec)
+        {
+            if (source.Parameters is not { } openRaw) throw new Asn1Exception("Missing open-type value.");
+            value = codec.Decode(openRaw);
+        }
+        else
+            value = binding.Decoder!(source);
+        return true;
+    }
+
+    public static void SetParameters<T>(this AlgorithmIdentifier source, ParametersBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.Algorithm = binding.Oid;
+        var encoded = binding.Codec is { } codec
+            ? codec.Encode(value)
+            : binding.Encoder!(value);
+        result.Parameters = encoded;
+    }
+
+    public static bool TryGet<T>(this AlgorithmIdentifier[]? source, ParametersBinding<T> binding, out T value)
+        => TryGet(source, binding, out value, out _);
+
+    public static bool TryGet<T>(this AlgorithmIdentifier[]? source, ParametersBinding<T> binding, out T value, out AlgorithmIdentifier raw)
+    {
+        value = default!;
+        raw = default!;
+        if (source is null) return false;
+        ArgumentNullException.ThrowIfNull(binding);
+        AlgorithmIdentifier? match = null;
+        foreach (var item in source)
+        {
+            if (item.Algorithm.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
+                match = item;
+            }
+        }
+        if (match is null) return false;
+        if (match.Parameters is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            if (match.Parameters is not { } openRaw) throw new Asn1Exception("Missing open-type value.");
+            value = codec.Decode(openRaw);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
+    public static bool TryDecodeValue<T>(this AttributeTypeAndValue source, ValueBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.Type.Equals(binding.Oid))) return false;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(source.Value);
+        }
+        else
+            value = binding.Decoder!(source);
+        return true;
+    }
+
+    public static void SetValue<T>(this ref AttributeTypeAndValue source, ValueBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.Type = binding.Oid;
+        var encoded = binding.Codec is { } codec
+            ? codec.Encode(value)
+            : binding.Encoder!(value);
+        result.Value = encoded;
+        source = result;
+    }
+
+    public static bool TryGet<T>(this AttributeTypeAndValue[]? source, ValueBinding<T> binding, out T value)
+        => TryGet(source, binding, out value, out _);
+
+    public static bool TryGet<T>(this AttributeTypeAndValue[]? source, ValueBinding<T> binding, out T value, out AttributeTypeAndValue raw)
+    {
+        value = default!;
+        raw = default!;
+        if (source is null) return false;
+        ArgumentNullException.ThrowIfNull(binding);
+        AttributeTypeAndValue? match = null;
+        foreach (var item in source)
+        {
+            if (item.Type.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
+                match = item;
+            }
+        }
+        if (match is null) return false;
+        raw = match.Value;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value.Value);
+        }
+        else
+            value = binding.Decoder!(match.Value);
+        return true;
+    }
+
+}
+
+public static class TBSCertificateOpenTypeExtensions
+{
+    public static bool TryGetIssuer<T>(this TBSCertificate source, ValueBinding<T> binding, out T value)
+        => TryGetIssuer(source, binding, out value, out _);
+
+    public static bool TryGetIssuer<T>(this TBSCertificate source, ValueBinding<T> binding, out T value, out AttributeTypeAndValue raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        AttributeTypeAndValue? match = null;
+        if (source.Issuer is { } node0)
+        {
+            foreach (var node1 in node0.Value)
+            {
+                foreach (var node2 in node1)
+                {
+                    if (node2.Type.Equals(binding.Oid))
+                    {
+                        if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetIssuer.");
+                        match = node2;
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match.Value;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value.Value);
+        }
+        else
+            value = binding.Decoder!(match.Value);
+        return true;
+    }
+
+    public static bool TryGetSubject<T>(this TBSCertificate source, ValueBinding<T> binding, out T value)
+        => TryGetSubject(source, binding, out value, out _);
+
+    public static bool TryGetSubject<T>(this TBSCertificate source, ValueBinding<T> binding, out T value, out AttributeTypeAndValue raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        AttributeTypeAndValue? match = null;
+        if (source.Subject is { } node0)
+        {
+            foreach (var node1 in node0.Value)
+            {
+                foreach (var node2 in node1)
+                {
+                    if (node2.Type.Equals(binding.Oid))
+                    {
+                        if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetSubject.");
+                        match = node2;
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match.Value;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value.Value);
+        }
+        else
+            value = binding.Decoder!(match.Value);
+        return true;
+    }
+
+}
+
+public static class TBSCertListOpenTypeExtensions
+{
+    public static bool TryGetIssuer<T>(this TBSCertList source, ValueBinding<T> binding, out T value)
+        => TryGetIssuer(source, binding, out value, out _);
+
+    public static bool TryGetIssuer<T>(this TBSCertList source, ValueBinding<T> binding, out T value, out AttributeTypeAndValue raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        AttributeTypeAndValue? match = null;
+        if (source.Issuer is { } node0)
+        {
+            foreach (var node1 in node0)
+            {
+                foreach (var node2 in node1)
+                {
+                    if (node2.Type.Equals(binding.Oid))
+                    {
+                        if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetIssuer.");
+                        match = node2;
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match.Value;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value.Value);
+        }
+        else
+            value = binding.Decoder!(match.Value);
+        return true;
+    }
+
 }
 

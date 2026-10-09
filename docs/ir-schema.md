@@ -37,7 +37,7 @@
 - `bitString` — опционально `namedBits: [{ name, value }]`
 - `string` — обязательно `stringType`: `utf8` \| `printable` \| `teletex` \| `t61` \| `ia5` \| `numeric` \| `visible` \| `bmp` \| `universal` \| `general` \| `graphic` \| `videotex`
 - `time` — обязательно `timeType`: `utc` \| `generalized`; опционально `fractionDigits` `0…7` (только `generalized`; отсутствие = 3 при записи)
-- `any` — опционально `definedBy` (имя sibling-компонента); опционально `bindings: [{ key, name?, type }]` — таблица open-type (ключ — dotted OID или десятичный INTEGER, `name` — семантическое имя альтернативы); заполняется overlay после compile или IOC-резолвером, не парсером ASN.1 1988. `options.openType.mismatch`: `soft` \| `strict` (default `soft`; только legacy).
+- `any` — опционально `definedBy` (имя sibling-компонента); опционально `selector` / `bindings` / `tableExtensible` / `table`. Overlay sidecar и IOC после normalize дают modern-форму: `selector` на теле; таблицы на `ref.openTypes` (или definition-scoped `bindings`+`tableExtensible`, если тип нигде не ссылается). Inline `any.bindings` без `selector` — вход overlay/`NormalizeLegacy`, не стабильный codegen-контракт.
 - `sequence` / `set` / `choice` — `components[]`, опционально `extensible`
 - `sequenceOf` / `setOf` — `element`
 - `ref` — `name`, опционально `module`
@@ -55,7 +55,7 @@ CLASS, WITH SYNTAX, information objects/sets и формальные парам�
 | Поле | Где | Контракт |
 | --- | --- | --- |
 | `selector: { levels, path[] }` | `any` | `levels = 0` — владелец, `1` — его родитель и т.д.; считаются SEQUENCE/SET/CHOICE, OF прозрачен. `path` — непустой путь имён компонентов к OID/INTEGER. |
-| `tableExtensible: boolean` | `any` | Наличие поля обозначает современную IOC-таблицу, значение сохраняет её `...`. Неизвестный ключ всегда raw; закрытость пока не исполняется. Отсутствие поля сохраняет legacy fallback/mismatch. |
+| `tableExtensible: boolean` | `any`, `ref.openTypes[]` | Наличие поля включает modern open-type policy (Binding API; unknown→raw; known mismatch→reject). Значение сохраняет ASN.1 `...` набора; закрытость пока не исполняется. |
 | `table: string` | `any`, `ref.openTypes[]` | Имя именованного object set, породившего bindings. Для codegen — человекочитаемый stem каталога; на идентичность таблицы не влияет. |
 | `containing: type` | `octetString`, `bitString` | Содержимое закодировано внутри contents внешнего string-типа; может быть `any` с selector/bindings. BIT STRING с типизированным содержимым выровнен по октетам. |
 | `extensionAddition: true` | компонент | Компонент между первой и второй границами расширения; компоненты trailing root не получают эту метку. |
@@ -129,7 +129,7 @@ CLASS, WITH SYNTAX, information objects/sets и формальные парам�
 | `options.csharp.propertyName` | поле | Имя свойства |
 | `options.generate` | тип | `false` — не генерировать |
 | `options.integer.representation` | тип / модуль | Представление INTEGER: `int32` \| `uint32` \| `int64` \| `uint64` \| `bigint` \| `der`. На типе перекрывает модуль. Если не задано, C# backend выводит: при `namedValues` → `int32` (или `int64` при метке вне `int`); иначе из полного `constraint.value`; иначе `der`. |
-| `options.openType.mismatch` | модуль / документ / legacy `any` | При известном ключе bindings, если **тег** TLV не совпал с типом: `soft` (default) → `Unknown`/`Asn1Any`; `strict` → `Asn1Exception`. Современные таблицы всегда отвергают несовместимый известный тип. |
+| `options.openType.mismatch` | модуль / документ / `any` | **Deprecated / no-op** для open types: после unify все табличные сайты идут modern-strict. Поле сохраняется в schema для round-trip неизвестных options. |
 | `options.lazy` | поле / тип / модуль | `true` — отложенный разбор SEQUENCE/SET и SEQUENCE OF/SET OF (C#: `Asn1Lazy<T>` / `Asn1Lazy<T[]>`). Разрешение: component → TypeExpr → typedef → module; default `false`. |
 | `options.retainEncoded` | поле / тип / модуль | `true` — eager-разбор SEQUENCE/SET/OF с сохранением исходного полного TLV для хеширования или проверки подписи (C#: `Asn1Value<T>` / `Asn1Value<T[]>`). Encode всегда строится из текущего `Value`. Игнорируется, если `lazy` уже включён. Та же цепочка разрешения, что у `lazy`; default `false`. Для `SIGNED<T>` на поле `toBeSigned` сохраняется свойство `ToBeSigned: T` и добавляется `ToBeSignedOriginalEncoding`; остальные поля — `Asn1Value<T>`. |
 | `options.csharp.valueType` | typedef SEQUENCE/SET | `true` — эмит `struct` вместо `sealed class`. |

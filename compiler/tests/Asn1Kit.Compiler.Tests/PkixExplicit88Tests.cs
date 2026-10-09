@@ -25,13 +25,59 @@ public sealed class PkixExplicit88Tests
             module.Types.Single(type => type.Name == "AttributeTypeAndValue").Type);
         var value = Assert.IsType<AnyType>(atv.Components.Single(component => component.Name == "value").Type);
         Assert.Equal("type", value.DefinedBy);
-        Assert.Equal(17, value.Bindings!.Count);
-        Assert.Equal(12, value.Bindings.Count(binding =>
+        Assert.NotNull(value.Selector);
+        Assert.Equal(new[] { "type" }, value.Selector!.Path);
+        // Shared AttributeTypeAndValue: tables live on refs; body keeps selector only.
+        Assert.Null(value.Bindings);
+        var table = FindAttributeTypeAndValueOpenTypes(document)
+            ?? throw new Xunit.Sdk.XunitException("Expected ref.openTypes on AttributeTypeAndValue uses.");
+        Assert.Equal(17, table.Bindings.Count);
+        Assert.Equal(12, table.Bindings.Count(binding =>
             binding.Type is RefType { Name: "DirectoryString" }));
-        Assert.Equal(3, value.Bindings.Count(binding =>
+        Assert.Equal(3, table.Bindings.Count(binding =>
             binding.Type is StringType { Form: StringTypes.Printable }));
-        Assert.Equal(2, value.Bindings.Count(binding =>
+        Assert.Equal(2, table.Bindings.Count(binding =>
             binding.Type is StringType { Form: StringTypes.Ia5 }));
+    }
+
+    private static IrOpenTypeUse? FindAttributeTypeAndValueOpenTypes(IrDocument document)
+    {
+        IrOpenTypeUse? found = null;
+        foreach (var module in document.Modules)
+        foreach (var type in module.Types)
+            Walk(type.Type);
+        return found;
+
+        void Walk(TypeExpr expression)
+        {
+            if (found is not null) return;
+            switch (expression)
+            {
+                case RefType { Name: "AttributeTypeAndValue", OpenTypes: { Count: > 0 } openTypes }:
+                    found = openTypes[0];
+                    break;
+                case RefType { OpenTypes: { } nested }:
+                    foreach (var use in nested)
+                    foreach (var binding in use.Bindings)
+                        Walk(binding.Type);
+                    break;
+                case SequenceType sequence:
+                    foreach (var component in sequence.Components) Walk(component.Type);
+                    break;
+                case SetType set:
+                    foreach (var component in set.Components) Walk(component.Type);
+                    break;
+                case ChoiceType choice:
+                    foreach (var component in choice.Components) Walk(component.Type);
+                    break;
+                case SequenceOfType of:
+                    Walk(of.Element);
+                    break;
+                case SetOfType of:
+                    Walk(of.Element);
+                    break;
+            }
+        }
     }
 
     [Fact]

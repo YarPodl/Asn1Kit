@@ -54,20 +54,36 @@ internal static class PkixFixtures
         return DirectoryString.Decode(new Asn1Reader(writer.Encode(), Asn1Encoding.Der)).Value;
     }
 
-    public static string ReadDirectoryString(AttributeTypeAndValue_Value value)
+    public static string ReadDirectoryString(AttributeTypeAndValue attribute)
     {
-        var typed = value.Value;
-        if (typed is not null)
+        foreach (var binding in AttributeTypeAndValueStringBindings())
         {
-            return typed;
+            if (attribute.TryDecodeValue(binding, out var value))
+                return value;
         }
 
-        if (value.Unknown is not null)
-        {
-            return ReadDirectoryString(value.Unknown.Value);
-        }
+        return ReadDirectoryString(attribute.Value);
+    }
 
-        throw new Xunit.Sdk.XunitException("DN attribute value has no alternative.");
+    private static IEnumerable<ValueBinding<string>> AttributeTypeAndValueStringBindings()
+    {
+        yield return AttributeTypeAndValueValueBindings.AsString.DirectoryString;
+        yield return AttributeTypeAndValueValueBindings.AsString.DirectoryString2;
+        yield return AttributeTypeAndValueValueBindings.AsString.DirectoryString3;
+        yield return AttributeTypeAndValueValueBindings.AsString.DirectoryString4;
+        yield return AttributeTypeAndValueValueBindings.AsString.DirectoryString5;
+        yield return AttributeTypeAndValueValueBindings.AsString.DirectoryString6;
+        yield return AttributeTypeAndValueValueBindings.AsString.DirectoryString7;
+        yield return AttributeTypeAndValueValueBindings.AsString.DirectoryString8;
+        yield return AttributeTypeAndValueValueBindings.AsString.DirectoryString9;
+        yield return AttributeTypeAndValueValueBindings.AsString.DirectoryString10;
+        yield return AttributeTypeAndValueValueBindings.AsString.DirectoryString11;
+        yield return AttributeTypeAndValueValueBindings.AsString.DirectoryString12;
+        yield return AttributeTypeAndValueValueBindings.AsString.Oid25446;
+        yield return AttributeTypeAndValueValueBindings.AsString.Oid2546;
+        yield return AttributeTypeAndValueValueBindings.AsString.Oid2545;
+        yield return AttributeTypeAndValueValueBindings.AsString.Oid09234219200300100125;
+        yield return AttributeTypeAndValueValueBindings.AsString.Oid12840113549191;
     }
 
     public static List<(string Oid, string Value)> FlattenName(AttributeTypeAndValue[][] name)
@@ -77,7 +93,7 @@ internal static class PkixFixtures
         {
             foreach (var atv in rdn)
             {
-                result.Add((atv.Type.ToString(), ReadDirectoryString(atv.Value)));
+                result.Add((atv.Type.ToString(), ReadDirectoryString(atv)));
             }
         }
 

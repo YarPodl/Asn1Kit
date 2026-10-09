@@ -16,10 +16,9 @@ public static class CmsSignedDataInspector
         var contentInfo = ContentInfo.Decode(reader);
         reader.ThrowIfNotEmpty();
 
-        if (contentInfo.ContentType != CryptographicMessageSyntax2004Oids.IdSignedData || contentInfo.Content.SignedData is null)
+        if (contentInfo.ContentType != CryptographicMessageSyntax2004Oids.IdSignedData ||
+            !contentInfo.TryDecodeContent(ContentInfoContentBindings.SignedData, out var signedData))
             throw new InvalidDataException("ContentInfo must contain SignedData.");
-
-        var signedData = contentInfo.Content.SignedData;
         var content = signedData.EncapContentInfo.EContent;
         if (content is null)
             throw new InvalidDataException("Attached SignedData requires eContent.");
@@ -186,11 +185,8 @@ public static class CmsSignedDataInspector
             {
                 var a = left[rdn][attribute];
                 var b = right[rdn][attribute];
-                if (a.Type != b.Type || a.Value.Kind != b.Value.Kind || a.Value.Value != b.Value.Value ||
-                    (a.Value.Unknown is null) != (b.Value.Unknown is null))
-                    return false;
-                if (a.Value.Unknown is { } unknown &&
-                    !unknown.EncodedMemory.Span.SequenceEqual(b.Value.Unknown!.Value.EncodedMemory.Span))
+                if (a.Type != b.Type ||
+                    !a.Value.EncodedMemory.Span.SequenceEqual(b.Value.EncodedMemory.Span))
                     return false;
             }
         }

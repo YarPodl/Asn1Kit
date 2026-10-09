@@ -37,15 +37,11 @@ internal static class AllocProfile
         var avaCount = issuer.AvaCount + subject.AvaCount;
         Console.WriteLine("Certificate Decode inventory (TrustAnchorRootCertificate.crt)");
         Console.WriteLine("  Allocated/op:           " + FormatBytes(allocated));
-        Console.WriteLine("  Issuer AVAs:            " + issuer.AvaCount + " (values: " + FormatKindCounts(issuer.Kinds) + ")");
-        Console.WriteLine("  Subject AVAs:           " + subject.AvaCount + " (values: " + FormatKindCounts(subject.Kinds) + ")");
-        Console.WriteLine("  Open-type value objs:   " + avaCount + " x AttributeTypeAndValue_Value");
-        Console.WriteLine("  Decoded strings:        " + (issuer.StringCount + subject.StringCount)
-            + " (" + FormatBytes(issuer.StringBytes + subject.StringBytes) + ")");
-        Console.WriteLine("  Alg parameter objs:     " + algParams + " x AlgorithmIdentifier_Parameters");
+        Console.WriteLine("  Issuer AVAs:            " + issuer.AvaCount);
+        Console.WriteLine("  Subject AVAs:           " + subject.AvaCount);
+        Console.WriteLine("  Open-type payloads:     " + avaCount + " x Asn1Any (AVA value kept opaque)");
+        Console.WriteLine("  Alg parameter payloads: " + algParams + " x Asn1Any? (optional parameters)");
         Console.WriteLine("  Extensions:             " + (tbs.Extensions?.Value.Length ?? 0));
-        Console.WriteLine("  Est. vs Asn1Any era:    +" + FormatBytes(EstimateOpenTypeDelta(avaCount, issuer.StringBytes + subject.StringBytes, algParams))
-            + " (wrappers+strings+alg-params; baseline kept opaque ANY)");
     }
 
     private static void ProfileCrl()
@@ -62,14 +58,10 @@ internal static class AllocProfile
 
         Console.WriteLine("CRL Decode inventory (GoodCACRL.crl)");
         Console.WriteLine("  Allocated/op:           " + FormatBytes(allocated));
-        Console.WriteLine("  Issuer AVAs:            " + issuer.AvaCount + " (values: " + FormatKindCounts(issuer.Kinds) + ")");
-        Console.WriteLine("  Open-type value objs:   " + issuer.AvaCount + " x AttributeTypeAndValue_Value");
-        Console.WriteLine("  Decoded strings:        " + issuer.StringCount
-            + " (" + FormatBytes(issuer.StringBytes) + ")");
-        Console.WriteLine("  Alg parameter objs:     " + algParams + " x AlgorithmIdentifier_Parameters");
+        Console.WriteLine("  Issuer AVAs:            " + issuer.AvaCount);
+        Console.WriteLine("  Open-type payloads:     " + issuer.AvaCount + " x Asn1Any (AVA value kept opaque)");
+        Console.WriteLine("  Alg parameter payloads: " + algParams + " x Asn1Any?");
         Console.WriteLine("  Revoked entries:        " + (tbs.RevokedCertificates?.Length ?? 0));
-        Console.WriteLine("  Est. vs Asn1Any era:    +" + FormatBytes(EstimateOpenTypeDelta(issuer.AvaCount, issuer.StringBytes, algParams))
-            + " (wrappers+strings+alg-params; baseline kept opaque ANY)");
     }
 
     private static void ProfileCms()
@@ -79,86 +71,39 @@ internal static class AllocProfile
 
         var allocated = MeasureAllocated(() => ContentInfo.Decode(new Asn1Reader(der, Asn1Encoding.Der)));
         var cms = ContentInfo.Decode(new Asn1Reader(der, Asn1Encoding.Der));
-        var sd = cms.Content.SignedData!;
+        AssertSignedData(cms, out var sd);
         var signerCount = sd.SignerInfos.Length;
         var certChoices = sd.Certificates?.Length ?? 0;
         var avaTotal = 0;
-        var stringTotal = 0;
-        var stringBytes = 0L;
-        var kinds = new Dictionary<AttributeTypeAndValue_ValueKind, int>();
         foreach (var signer in sd.SignerInfos)
         {
             if (signer.Sid.IssuerAndSerialNumber is { } ias)
-            {
-                var name = CountName(ias.Issuer.Value);
-                avaTotal += name.AvaCount;
-                stringTotal += name.StringCount;
-                stringBytes += name.StringBytes;
-                MergeKinds(kinds, name.Kinds);
-            }
+                avaTotal += CountName(ias.Issuer.Value).AvaCount;
         }
 
         Console.WriteLine("CMS Lazy Decode inventory (attached-signeddata.p7m)");
         Console.WriteLine("  Allocated/op:           " + FormatBytes(allocated));
         Console.WriteLine("  SignerInfos:            " + signerCount);
         Console.WriteLine("  CertificateChoices:     " + certChoices + " (lazy cert TLV, not materialized)");
-        Console.WriteLine("  Issuer AVAs (SIDs):      " + avaTotal + " (values: " + FormatKindCounts(kinds) + ")");
-        Console.WriteLine("  Open-type value objs:   " + avaTotal + " x AttributeTypeAndValue_Value");
-        Console.WriteLine("  Decoded strings:        " + stringTotal + " (" + FormatBytes(stringBytes) + ")");
+        Console.WriteLine("  Issuer AVAs (SIDs):      " + avaTotal + " (opaque Asn1Any until TryDecode)");
+    }
+
+    private static void AssertSignedData(ContentInfo cms, out SignedData signedData)
+    {
+        if (!cms.TryDecodeContent(ContentInfoContentBindings.SignedData, out signedData!))
+            throw new InvalidOperationException("Expected SignedData content.");
     }
 
     private static NameStats CountName(AttributeTypeAndValue[][] rdns)
     {
-        var stats = new NameStats
-        {
-            Kinds = new Dictionary<AttributeTypeAndValue_ValueKind, int>(),
-        };
+        var stats = new NameStats();
         foreach (var rdn in rdns)
-        {
-            foreach (var ava in rdn)
-            {
-                stats.AvaCount++;
-                var kind = ava.Value.Kind;
-                stats.Kinds[kind] = stats.Kinds.TryGetValue(kind, out var n) ? n + 1 : 1;
-                if (ava.Value.Value is not null)
-                {
-                    stats.StringCount++;
-                    stats.StringBytes += EstimateStringBytes(ava.Value.Value);
-                }
-            }
-        }
-
+            stats.AvaCount += rdn.Length;
         return stats;
-    }
-
-    private static void MergeKinds(
-        Dictionary<AttributeTypeAndValue_ValueKind, int> target,
-        Dictionary<AttributeTypeAndValue_ValueKind, int> source)
-    {
-        foreach (var pair in source)
-        {
-            target[pair.Key] = target.TryGetValue(pair.Key, out var n) ? n + pair.Value : pair.Value;
-        }
     }
 
     private static int CountAlgorithmParameters(AlgorithmIdentifier algorithm) =>
         algorithm.Parameters is null ? 0 : 1;
-
-    private static long EstimateOpenTypeDelta(int avaCount, long stringBytes, int algParamCount)
-    {
-        // x64: AttributeTypeAndValue_Value holds enum + string? + Asn1Any? (nullable struct with two ReadOnlyMemory).
-        // Align to 8; measured layout is typically 72-80 B. AlgorithmIdentifier_Parameters ~48-56 B.
-        const int avaWrapperBytes = 80;
-        const int algParamBytes = 56;
-        return ((long)avaCount * avaWrapperBytes) + stringBytes + ((long)algParamCount * algParamBytes);
-    }
-
-    private static long EstimateStringBytes(string value)
-    {
-        // .NET Core string: object header + length + (chars+1)*2, aligned.
-        var raw = 16 + 4 + ((value.Length + 1) * 2);
-        return (raw + 7) & ~7;
-    }
 
     private static void Warmup(Action action)
     {
@@ -201,22 +146,8 @@ internal static class AllocProfile
             + bytes.ToString(CultureInfo.InvariantCulture) + " B)";
     }
 
-    private static string FormatKindCounts(Dictionary<AttributeTypeAndValue_ValueKind, int> kinds)
-    {
-        if (kinds.Count == 0)
-        {
-            return "none";
-        }
-
-        return string.Join(", ", kinds.OrderByDescending(p => p.Value)
-            .Select(p => p.Key + "=" + p.Value.ToString(CultureInfo.InvariantCulture)));
-    }
-
     private struct NameStats
     {
         public int AvaCount;
-        public int StringCount;
-        public long StringBytes;
-        public Dictionary<AttributeTypeAndValue_ValueKind, int> Kinds;
     }
 }

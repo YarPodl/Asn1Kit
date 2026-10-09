@@ -144,17 +144,8 @@ public sealed class EncryptedContentInfo
 
 internal static class __CMSAuthEnvelopedData2010OpenTypeCodecs
 {
-    internal static Asn1Codec<Asn1Kit.Modern.CryptographicMessageSyntax2009.Time> SigningTimeAttribute { get; } = new(
-        static reader =>
-        {
-            Asn1Kit.Modern.CryptographicMessageSyntax2009.Time decoded;
-            decoded = Asn1Kit.Modern.CryptographicMessageSyntax2009.Time.Decode(reader);
-            return decoded;
-        },
-        static (writer, value) =>
-        {
-            value.Encode(writer);
-        });
+    internal static Asn1Codec<Asn1Kit.Modern.CryptographicMessageSyntax2010.Time> SigningTimeAttribute { get; } =
+        new(static reader => Asn1Kit.Modern.CryptographicMessageSyntax2010.Time.Decode(reader), static (writer, value) => value.Encode(writer));
 
     internal static Asn1Codec<Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters> CeaAes128CCMAlgorithmIdentifier { get; } =
         new(static reader => Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters.Decode(reader), static (writer, value) => value.Encode(writer));
@@ -193,7 +184,7 @@ public static class AuthEnvDataAttributeSetBindings
     public static Asn1Kit.Modern.CryptographicMessageSyntax2010.AttrValuesBinding<ReadOnlyMemory<byte>> MessageDigest { get; } =
         new(global::Asn1Kit.Modern.CryptographicMessageSyntax2010.CryptographicMessageSyntax2010Oids.IdMessageDigest, Asn1Codecs.OctetString);
 
-    public static Asn1Kit.Modern.CryptographicMessageSyntax2010.AttrValuesBinding<Asn1Kit.Modern.CryptographicMessageSyntax2009.Time> SigningTime { get; } =
+    public static Asn1Kit.Modern.CryptographicMessageSyntax2010.AttrValuesBinding<Asn1Kit.Modern.CryptographicMessageSyntax2010.Time> SigningTime { get; } =
         new(global::Asn1Kit.Modern.CryptographicMessageSyntax2010.CryptographicMessageSyntax2010Oids.IdSigningTime, __CMSAuthEnvelopedData2010OpenTypeCodecs.SigningTimeAttribute);
 }
 

@@ -478,11 +478,12 @@ public static class IrValidator
         {
             while (current is RefType link)
             {
-                var targetModule = document.Modules.FirstOrDefault(m => m.Name == (link.Module ?? currentModule.Name));
-                var key = (link.Module ?? currentModule.Name) + "." + link.Name;
-                if (targetModule is null || !seen.Add(key)) return null;
-                current = targetModule.Types.FirstOrDefault(t => t.Name == link.Name)?.Type!;
-                if (current is null) return null;
+                var resolved = ResolveRefTarget(document, currentModule, link);
+                if (resolved is null) return null;
+                var (targetModule, typeDef) = resolved.Value;
+                var key = targetModule.Name + "." + link.Name;
+                if (!seen.Add(key)) return null;
+                current = typeDef.Type;
                 currentModule = targetModule;
             }
             current = part switch
@@ -500,14 +501,57 @@ public static class IrValidator
         }
         while (current is RefType link)
         {
-            var targetModule = document.Modules.FirstOrDefault(m => m.Name == (link.Module ?? currentModule.Name));
-            var key = (link.Module ?? currentModule.Name) + "." + link.Name;
-            if (targetModule is null || !seen.Add(key)) return null;
-            current = targetModule.Types.FirstOrDefault(t => t.Name == link.Name)?.Type!;
-            if (current is null) return null;
+            var resolved = ResolveRefTarget(document, currentModule, link);
+            if (resolved is null) return null;
+            var (targetModule, typeDef) = resolved.Value;
+            var key = targetModule.Name + "." + link.Name;
+            if (!seen.Add(key)) return null;
+            current = typeDef.Type;
             currentModule = targetModule;
         }
         return current;
+    }
+
+    /// <summary>
+    /// Resolves a type reference to its defining module and definition, following
+    /// explicit module qualifiers, local definitions, and IMPORTS.
+    /// </summary>
+    private static (IrModule Module, IrTypeDef Def)? ResolveRefTarget(
+        IrDocument document,
+        IrModule module,
+        RefType reference)
+    {
+        if (!string.IsNullOrEmpty(reference.Module))
+        {
+            var targetModule = document.Modules.FirstOrDefault(m => m.Name == reference.Module);
+            var type = targetModule?.Types.FirstOrDefault(t => t.Name == reference.Name);
+            return targetModule is null || type is null ? null : (targetModule, type);
+        }
+
+        var local = module.Types.FirstOrDefault(t => t.Name == reference.Name);
+        if (local is not null)
+        {
+            return (module, local);
+        }
+
+        var import = module.Imports.FirstOrDefault(i => i.Types.Contains(reference.Name));
+        if (import is not null)
+        {
+            var targetModule = document.Modules.FirstOrDefault(m => m.Name == import.Module);
+            var type = targetModule?.Types.FirstOrDefault(t => t.Name == reference.Name);
+            return targetModule is null || type is null ? null : (targetModule, type);
+        }
+
+        foreach (var candidate in document.Modules.Where(m => m != module))
+        {
+            var type = candidate.Types.FirstOrDefault(t => t.Name == reference.Name);
+            if (type is not null)
+            {
+                return (candidate, type);
+            }
+        }
+
+        return null;
     }
 
     private static void ValidateCSharpAliasOf(IrDocument document, IrModule module, IrTypeDef type)

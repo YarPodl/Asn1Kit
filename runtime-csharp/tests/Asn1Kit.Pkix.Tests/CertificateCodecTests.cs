@@ -34,7 +34,8 @@ public sealed class CertificateCodecTests
         if (expected.SubjectPublicKeyParametersNull)
         {
             Assert.NotNull(spki.Algorithm.Parameters);
-            Assert.NotNull(spki.Algorithm.Parameters!.Null);
+            Assert.True(spki.Algorithm.TryDecodeParameters(
+                AlgorithmIdentifierParametersBindings.Oid12840113549111, out Asn1Null _));
         }
 
         Assert.Equal(expected.SubjectPublicKeyUnusedBits, spki.SubjectPublicKey.UnusedBits);
@@ -81,20 +82,23 @@ public sealed class CertificateCodecTests
         {
             Assert.Equal(expected[i].Oid, flat[i].Oid);
             Assert.Equal(expected[i].Value, flat[i].Value);
-            Assert.Null(actualAttributes[i].Value.Unknown);
+            var attribute = actualAttributes[i];
             switch (expected[i].Oid)
             {
                 case "2.5.4.3":
-                    Assert.Equal(AttributeTypeAndValue_ValueKind.PrintableString, actualAttributes[i].Value.Kind);
-                    Assert.NotNull(actualAttributes[i].Value.Value);
+                    Assert.True(attribute.TryDecodeValue(
+                        AttributeTypeAndValueValueBindings.AsString.DirectoryString6, out var cn));
+                    Assert.Equal(expected[i].Value, cn);
                     break;
                 case "2.5.4.6":
-                    Assert.Equal(AttributeTypeAndValue_ValueKind.Printable, actualAttributes[i].Value.Kind);
-                    Assert.NotNull(actualAttributes[i].Value.Value);
+                    Assert.True(attribute.TryDecodeValue(
+                        AttributeTypeAndValueValueBindings.AsString.Oid2546, out var country));
+                    Assert.Equal(expected[i].Value, country);
                     break;
                 case "2.5.4.10":
-                    Assert.Equal(AttributeTypeAndValue_ValueKind.PrintableString, actualAttributes[i].Value.Kind);
-                    Assert.NotNull(actualAttributes[i].Value.Value);
+                    Assert.True(attribute.TryDecodeValue(
+                        AttributeTypeAndValueValueBindings.AsString.DirectoryString9, out var org));
+                    Assert.Equal(expected[i].Value, org);
                     break;
                 default:
                     throw new Xunit.Sdk.XunitException($"Unexpected test-fixture DN OID '{expected[i].Oid}'.");

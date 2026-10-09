@@ -5,6 +5,8 @@ using Asn1Kit.Modern.CryptographicMessageSyntax2009;
 using Asn1Kit.Runtime;
 using Common = Asn1Kit.Modern.PKIXCommonTypes2009;
 using Implicit = Asn1Kit.Modern.PKIX1Implicit2009;
+using CertExtensionsBindings = Asn1Kit.Modern.PKIXCommonTypes2009.CertExtensionsBindings;
+using SignatureAlgorithmsParametersBindings = Asn1Kit.Modern.AlgorithmInformation2009.SignatureAlgorithmsParametersBindings;
 
 namespace Asn1Kit.Tests;
 

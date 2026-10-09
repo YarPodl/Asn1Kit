@@ -1440,17 +1440,8 @@ public static class SinglePubInfo_PubMethod
 
 internal static class __PKIXCRMF2009OpenTypeCodecs
 {
-    internal static Asn1Codec<CertRequest> RegInfoCertReqSingleAttribute { get; } = new(
-        static reader =>
-        {
-            CertRequest decoded;
-            decoded = Asn1Kit.Modern.PKIXCRMF2009.CertRequest.Decode(reader, Asn1Tag.Sequence);
-            return decoded;
-        },
-        static (writer, value) =>
-        {
-            value.Encode(writer, Asn1Tag.Sequence);
-        });
+    internal static Asn1Codec<CertRequest> RegInfoCertReqSingleAttribute { get; } =
+        new(static reader => CertRequest.Decode(reader), static (writer, value) => value.Encode(writer));
 
     internal static Asn1Codec<PKIPublicationInfo> RegCtrlPkiPublicationInfoSingleAttribute { get; } =
         new(static reader => PKIPublicationInfo.Decode(reader), static (writer, value) => value.Encode(writer));
@@ -1458,29 +1449,11 @@ internal static class __PKIXCRMF2009OpenTypeCodecs
     internal static Asn1Codec<PKIArchiveOptions> RegCtrlPkiArchiveOptionsSingleAttribute { get; } =
         new(static reader => PKIArchiveOptions.Decode(reader), static (writer, value) => value.Encode(writer));
 
-    internal static Asn1Codec<CertId> RegCtrlOldCertIDSingleAttribute { get; } = new(
-        static reader =>
-        {
-            CertId decoded;
-            decoded = Asn1Kit.Modern.PKIXCRMF2009.CertId.Decode(reader, Asn1Tag.Sequence);
-            return decoded;
-        },
-        static (writer, value) =>
-        {
-            value.Encode(writer, Asn1Tag.Sequence);
-        });
+    internal static Asn1Codec<CertId> RegCtrlOldCertIDSingleAttribute { get; } =
+        new(static reader => CertId.Decode(reader), static (writer, value) => value.Encode(writer));
 
-    internal static Asn1Codec<Asn1Kit.Modern.PKCS10.SubjectPublicKeyInfo> RegCtrlProtocolEncrKeySingleAttribute { get; } = new(
-        static reader =>
-        {
-            Asn1Kit.Modern.PKCS10.SubjectPublicKeyInfo decoded;
-            decoded = Asn1Kit.Modern.PKCS10.SubjectPublicKeyInfo.Decode(reader, Asn1Tag.Sequence);
-            return decoded;
-        },
-        static (writer, value) =>
-        {
-            value.Encode(writer, Asn1Tag.Sequence);
-        });
+    internal static Asn1Codec<Asn1Kit.Modern.PKCS10.SubjectPublicKeyInfo> RegCtrlProtocolEncrKeySingleAttribute { get; } =
+        new(static reader => Asn1Kit.Modern.PKCS10.SubjectPublicKeyInfo.Decode(reader), static (writer, value) => value.Encode(writer));
 
     internal static Asn1Codec<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams> SaRsaSSAPSSAlgorithmIdentifier { get; } =
         new(static reader => Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams.Decode(reader), static (writer, value) => value.Encode(writer));
@@ -1706,6 +1679,63 @@ public static class SignatureAlgorithmsParametersBindings
         new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSASSAPSS, __PKIXCRMF2009OpenTypeCodecs.SaRsaSSAPSSAlgorithmIdentifier);
 }
 
+public static class CertExtensionsBindings
+{
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.AuthorityKeyIdentifier> AuthorityKeyIdentifier { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeAuthorityKeyIdentifier, __PKIXCRMF2009OpenTypeCodecs.AuthorityKeyIdentifierExtension);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<ReadOnlyMemory<byte>> SubjectKeyIdentifier { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeSubjectKeyIdentifier, Asn1Codecs.OctetString);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.KeyUsage> KeyUsage { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeKeyUsage, __PKIXCRMF2009OpenTypeCodecs.KeyUsageExtension);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.PrivateKeyUsagePeriod> PrivateKeyUsagePeriod { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCePrivateKeyUsagePeriod, __PKIXCRMF2009OpenTypeCodecs.PrivateKeyUsagePeriodExtension);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.PolicyInformation[]> CertificatePolicies { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeCertificatePolicies, __PKIXCRMF2009OpenTypeCodecs.CertificatePoliciesExtension);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.PolicyMappings_Item[]> PolicyMappings { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCePolicyMappings, __PKIXCRMF2009OpenTypeCodecs.PolicyMappingsExtension);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]> SubjectAltName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeSubjectAltName, __PKIXCRMF2009OpenTypeCodecs.SubjectAltNameExtension);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]> IssuerAltName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeIssuerAltName, __PKIXCRMF2009OpenTypeCodecs.SubjectAltNameExtension);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet[]> SubjectDirectoryAttributes { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeSubjectDirectoryAttributes, __PKIXCRMF2009OpenTypeCodecs.SubjectDirectoryAttributesExtension);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.BasicConstraints> BasicConstraints { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeBasicConstraints, __PKIXCRMF2009OpenTypeCodecs.BasicConstraintsExtension);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.NameConstraints> NameConstraints { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeNameConstraints, __PKIXCRMF2009OpenTypeCodecs.NameConstraintsExtension);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.PolicyConstraints> PolicyConstraints { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCePolicyConstraints, __PKIXCRMF2009OpenTypeCodecs.PolicyConstraintsExtension);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Oid[]> ExtKeyUsage { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeExtKeyUsage, __PKIXCRMF2009OpenTypeCodecs.ExtKeyUsageExtension);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[]> CRLDistributionPoints { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeCRLDistributionPoints, __PKIXCRMF2009OpenTypeCodecs.CRLDistributionPointsExtension);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Integer> InhibitAnyPolicy { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeInhibitAnyPolicy, Asn1Codecs.Integer);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[]> FreshestCRL { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeFreshestCRL, __PKIXCRMF2009OpenTypeCodecs.CRLDistributionPointsExtension);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[]> AuthorityInfoAccess { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdPeAuthorityInfoAccess, __PKIXCRMF2009OpenTypeCodecs.AuthorityInfoAccessExtension);
+
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[]> SubjectInfoAccessSyntax { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdPeSubjectInfoAccess, __PKIXCRMF2009OpenTypeCodecs.SubjectInfoAccessSyntaxExtension);
+}
+
 public static class SupportedAttributesValueBindings
 {
     public static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> Name { get; } =
@@ -1910,63 +1940,6 @@ public static class SupportedAttributesValueBindings
     }
 }
 
-public static class CertExtensionsBindings
-{
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.AuthorityKeyIdentifier> AuthorityKeyIdentifier { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeAuthorityKeyIdentifier, __PKIXCRMF2009OpenTypeCodecs.AuthorityKeyIdentifierExtension);
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<ReadOnlyMemory<byte>> SubjectKeyIdentifier { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeSubjectKeyIdentifier, Asn1Codecs.OctetString);
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.KeyUsage> KeyUsage { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeKeyUsage, __PKIXCRMF2009OpenTypeCodecs.KeyUsageExtension);
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.PrivateKeyUsagePeriod> PrivateKeyUsagePeriod { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCePrivateKeyUsagePeriod, __PKIXCRMF2009OpenTypeCodecs.PrivateKeyUsagePeriodExtension);
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.PolicyInformation[]> CertificatePolicies { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeCertificatePolicies, __PKIXCRMF2009OpenTypeCodecs.CertificatePoliciesExtension);
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.PolicyMappings_Item[]> PolicyMappings { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCePolicyMappings, __PKIXCRMF2009OpenTypeCodecs.PolicyMappingsExtension);
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]> SubjectAltName { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeSubjectAltName, __PKIXCRMF2009OpenTypeCodecs.SubjectAltNameExtension);
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]> IssuerAltName { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeIssuerAltName, __PKIXCRMF2009OpenTypeCodecs.SubjectAltNameExtension);
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet[]> SubjectDirectoryAttributes { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeSubjectDirectoryAttributes, __PKIXCRMF2009OpenTypeCodecs.SubjectDirectoryAttributesExtension);
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.BasicConstraints> BasicConstraints { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeBasicConstraints, __PKIXCRMF2009OpenTypeCodecs.BasicConstraintsExtension);
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.NameConstraints> NameConstraints { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeNameConstraints, __PKIXCRMF2009OpenTypeCodecs.NameConstraintsExtension);
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.PolicyConstraints> PolicyConstraints { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCePolicyConstraints, __PKIXCRMF2009OpenTypeCodecs.PolicyConstraintsExtension);
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Oid[]> ExtKeyUsage { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeExtKeyUsage, __PKIXCRMF2009OpenTypeCodecs.ExtKeyUsageExtension);
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[]> CRLDistributionPoints { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeCRLDistributionPoints, __PKIXCRMF2009OpenTypeCodecs.CRLDistributionPointsExtension);
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Integer> InhibitAnyPolicy { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeInhibitAnyPolicy, Asn1Codecs.Integer);
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[]> FreshestCRL { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeFreshestCRL, __PKIXCRMF2009OpenTypeCodecs.CRLDistributionPointsExtension);
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[]> AuthorityInfoAccess { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdPeAuthorityInfoAccess, __PKIXCRMF2009OpenTypeCodecs.AuthorityInfoAccessExtension);
-
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[]> SubjectInfoAccessSyntax { get; } =
-        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdPeSubjectInfoAccess, __PKIXCRMF2009OpenTypeCodecs.SubjectInfoAccessSyntaxExtension);
-}
-
 public static class PasswordMACAlgorithmsParametersBindings
 {
     public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<PBMParameter> PBMParameter { get; } =
@@ -2042,6 +2015,180 @@ public static class CertTemplateOpenTypeExtensions
                     {
                         if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetSubject.");
                         match = node2;
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
+}
+
+public static class POPOSigningKeyInputOpenTypeExtensions
+{
+    public static bool TryGetAuthInfo<T>(this POPOSigningKeyInput source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value)
+        => TryGetAuthInfo(source, binding, out value, out _);
+
+    public static bool TryGetAuthInfo<T>(this POPOSigningKeyInput source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute? match = null;
+        if (source.AuthInfo is { } node0)
+        {
+            if (node0.Sender is { } node1)
+            {
+                if (node1.DirectoryName is { } node2)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        foreach (var node4 in node3)
+                        {
+                            if (node4.Type.Equals(binding.Oid))
+                            {
+                                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetAuthInfo.");
+                                match = node4;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
+}
+
+public static class EncKeyWithIDOpenTypeExtensions
+{
+    public static bool TryGetIdentifier<T>(this EncKeyWithID source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value)
+        => TryGetIdentifier(source, binding, out value, out _);
+
+    public static bool TryGetIdentifier<T>(this EncKeyWithID source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute? match = null;
+        if (source.Identifier is { } node0)
+        {
+            if (node0.GeneralName is { } node1)
+            {
+                if (node1.DirectoryName is { } node2)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        foreach (var node4 in node3)
+                        {
+                            if (node4.Type.Equals(binding.Oid))
+                            {
+                                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetIdentifier.");
+                                match = node4;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
+}
+
+public static class SinglePubInfoOpenTypeExtensions
+{
+    public static bool TryGetPubLocation<T>(this SinglePubInfo source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value)
+        => TryGetPubLocation(source, binding, out value, out _);
+
+    public static bool TryGetPubLocation<T>(this SinglePubInfo source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute? match = null;
+        if (source.PubLocation is { } node0)
+        {
+            if (node0.DirectoryName is { } node1)
+            {
+                foreach (var node2 in node1)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        if (node3.Type.Equals(binding.Oid))
+                        {
+                            if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetPubLocation.");
+                            match = node3;
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
+}
+
+public static class CertIdOpenTypeExtensions
+{
+    public static bool TryGetIssuer<T>(this CertId source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value)
+        => TryGetIssuer(source, binding, out value, out _);
+
+    public static bool TryGetIssuer<T>(this CertId source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute? match = null;
+        if (source.Issuer is { } node0)
+        {
+            if (node0.DirectoryName is { } node1)
+            {
+                foreach (var node2 in node1)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        if (node3.Type.Equals(binding.Oid))
+                        {
+                            if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetIssuer.");
+                            match = node3;
+                        }
                     }
                 }
             }

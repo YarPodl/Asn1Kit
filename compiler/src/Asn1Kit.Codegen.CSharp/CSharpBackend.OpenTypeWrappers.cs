@@ -51,6 +51,7 @@ public sealed partial class CSharpBackend
     }
 
     private readonly Dictionary<string, OpenCarrierShape> _carrierShapes = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _emittedOpenCatalogs = new(StringComparer.Ordinal);
     private readonly Dictionary<string, HashSet<string>> _carrierBindingNamesByModule =
         new(StringComparer.Ordinal);
 
@@ -114,9 +115,15 @@ public sealed partial class CSharpBackend
             var parent = new OpenContainer(module, owner, owner, fields, Array.Empty<OpenAccess>(),
                 ValueType: IsCSharpValueTypeEmit(module, owner, type));
             foreach (var field in fields)
+            {
+                // Definition-scoped tables (overlay orphans / non-compacted IOC): bindings on any
+                // with tableExtensible + local selector. Ancestor selectors need an outer walk.
+                TryRegisterDefinitionScoped(owner, field, parent, Array.Empty<OpenContainer>(),
+                    Array.Empty<OpenAccess>(), owner, field);
                 Discover(field.Type, module, owner, field.Name, owner + PropertyName(field, owner).TrimStart('@'),
                     owner, field, new List<OpenAccess> { FieldAccess(module, owner, field) },
                     new List<OpenContainer> { parent }, new HashSet<string>(StringComparer.Ordinal));
+            }
         }
         foreach (var definition in module.Types.Where(t => IrOptions.ShouldGenerate(t.Options) && IsCollapsibleAlias(t.Type)))
         {
@@ -124,6 +131,9 @@ public sealed partial class CSharpBackend
             Discover(definition.Type, module, context, "", context, null, null,
                 new List<OpenAccess>(), new List<OpenContainer>(), new HashSet<string>(StringComparer.Ordinal));
         }
+        // Uses of this module's types may live only in other modules (or CHOICE leaves).
+        // Register their ref.openTypes so catalogs/extensions emit with the defining module.
+        ScanIncomingOpenTypes();
         return new OpenWrapperPlan(wrappers, sites);
 
         OpenAccess FieldAccess(IrModule contextModule, string owner, IrComponent field) =>
@@ -159,6 +169,18 @@ public sealed partial class CSharpBackend
                     context, sourceOwner, source, route, parents, visited);
                 return;
             }
+            if (expression is ChoiceType choice)
+            {
+                foreach (var alternative in choice.Components)
+                {
+                    Discover(alternative.Type, contextModule, namingOwner, alternative.Name,
+                        namingOwner + PropertyName(alternative, namingOwner).TrimStart('@'),
+                        sourceOwner, source,
+                        route.Append(FieldAccess(contextModule, namingOwner, alternative)).ToList(),
+                        parents, visited);
+                }
+                return;
+            }
             if (expression is SequenceOfType or SetOfType)
             {
                 ResolveOfItemNaming(document, contextModule, expression, namingOwner, hint, out var itemOwner, out var itemHint);
@@ -174,6 +196,115 @@ public sealed partial class CSharpBackend
                     out var contentModule, out var contentOwner, out var contentHint);
                 Discover(content, contentModule, contentOwner, contentHint, context, sourceOwner, source,
                     route.Append(new OpenAccess(null, false, false, Contained: payload)).ToList(), parents, visited);
+            }
+            else if (OpenContainerFields(expression) is { } nestedFields && parents.Count > 0)
+            {
+                // Inline nested SEQUENCE/SET: keep walking so ancestor selectors see outer parents.
+                var nestedOwner = hint.Length == 0 ? namingOwner : namingOwner + "_" + SanitizeIdentifier(hint);
+                var nested = new OpenContainer(contextModule, nestedOwner, nestedOwner, nestedFields, route.ToList(),
+                    expression is SequenceType { Extensible: true } or SetType { Extensible: true },
+                    IsCSharpValueTypeEmit(contextModule, nestedOwner.Split('.').Last(), expression));
+                var nestedParents = parents.Append(nested).ToList();
+                foreach (var nestedField in nestedFields)
+                {
+                    TryRegisterDefinitionScoped(nestedOwner, nestedField, nested, parents, route,
+                        sourceOwner, source);
+                    Discover(nestedField.Type, contextModule, nestedOwner, nestedField.Name,
+                        nestedOwner + PropertyName(nestedField, nestedOwner).TrimStart('@'),
+                        sourceOwner, source,
+                        route.Append(FieldAccess(contextModule, nestedOwner, nestedField)).ToList(),
+                        nestedParents, visited);
+                }
+            }
+        }
+
+        void TryRegisterDefinitionScoped(string namingOwner, IrComponent field, OpenContainer container,
+            IReadOnlyList<OpenContainer> outerParents, IReadOnlyList<OpenAccess> route,
+            string? sourceOwner, IrComponent? source)
+        {
+            if (OpenElement(document, module, field.Type) is not AnyType
+                {
+                    Selector: { } selector,
+                    Bindings.Count: > 0,
+                    TableExtensible: not null
+                } definitionAny)
+                return;
+            // Ancestor selectors require outerParents; skip incomplete definition-scoped registration.
+            if (selector.Levels > outerParents.Count) return;
+            var ancestors = outerParents.Reverse().Take(selector.Levels).ToList();
+            var payload = BuildOpenPayload(document, module, namingOwner, field.Name, field.Type);
+            // Owner/Source/Route describe the use site (outer SEQUENCE), matching ResolveUse.
+            AddSite(sourceOwner ?? namingOwner, sourceOwner, source, container, field, payload,
+                definitionAny, selector, ancestors, route, false,
+                definitionAny.Bindings!, definitionAny.Table, new[] { field.Name }, module);
+        }
+
+        void ScanIncomingOpenTypes()
+        {
+            foreach (var other in document.Modules)
+            {
+                foreach (var definition in other.Types)
+                    Scan(definition.Type, other);
+                foreach (var definition in other.Values)
+                    Scan(definition.Type, other);
+            }
+
+            void Scan(TypeExpr expression, IrModule contextModule)
+            {
+                switch (expression)
+                {
+                    case RefType reference:
+                        if (reference.OpenTypes is { Count: > 0 })
+                        {
+                            var found = FindWithModule(document, contextModule, reference);
+                            if (found is not null &&
+                                found.Value.Module == module &&
+                                IrOptions.ShouldGenerate(found.Value.Def.Options))
+                            {
+                                var targetOwner = IrOptions.CSharpTypeName(found.Value.Def.Options)
+                                    ?? SanitizeIdentifier(found.Value.Def.Name);
+                                foreach (var use in reference.OpenTypes)
+                                    ResolveUse(reference, contextModule, targetOwner, "", targetOwner,
+                                        null, null, use,
+                                        new List<OpenAccess>(), new List<OpenContainer>());
+                            }
+                        }
+                        if (reference.OpenTypes is not null)
+                        {
+                            foreach (var use in reference.OpenTypes)
+                                foreach (var binding in use.Bindings)
+                                    Scan(binding.Type, contextModule);
+                        }
+                        break;
+                    case AnyType { Bindings: { } bodyBindings }:
+                        foreach (var binding in bodyBindings)
+                            Scan(binding.Type, contextModule);
+                        break;
+                    case SequenceType sequence:
+                        foreach (var field in sequence.Components)
+                            Scan(field.Type, contextModule);
+                        break;
+                    case SetType set:
+                        foreach (var field in set.Components)
+                            Scan(field.Type, contextModule);
+                        break;
+                    case ChoiceType choice:
+                        foreach (var alternative in choice.Components)
+                            Scan(alternative.Type, contextModule);
+                        break;
+                    case SequenceOfType of:
+                        Scan(of.Element, contextModule);
+                        break;
+                    case SetOfType of:
+                        Scan(of.Element, contextModule);
+                        break;
+                    case OctetStringType { Containing: { } containing }:
+                        Scan(containing, contextModule);
+                        break;
+                    case BitStringType { Containing: { } containing }:
+                        Scan(containing, contextModule);
+                        break;
+                }
             }
         }
 
@@ -253,39 +384,58 @@ public sealed partial class CSharpBackend
                     expression = content;
                     continue;
                 }
-                if (expression is not AnyType { Bindings: null } any || container is null || openField is null ||
+                // Body tables are stripped after compaction / overlay normalize; bindings live on the use.
+                if (expression is not AnyType any || any.Bindings is { Count: > 0 } ||
+                    container is null || openField is null ||
                     payload is null || pathIndex != use.Path.Count || any.Selector is not { } selector) return;
                 if (selector.Levels >= parents.Count) return;
                 var ancestors = parents.Take(parents.Count - 1).Reverse().Take(selector.Levels).ToList();
-                var site = new OpenWrapperSite(context, sourceOwner, source, container, openField, payload,
-                    any, selector, ancestors, container.Route, sourceParents.FirstOrDefault()?.ValueType ?? false,
-                    new List<OpenWrapper>(), use.Table, use.Path);
-                foreach (var binding in use.Bindings)
-                {
-                    var qualified = new IrOpenTypeBinding { Key = binding.Key, Name = binding.Name,
-                        Type = QualifyOpenTypeReferences(document, bindingModule, module, binding.Type) };
-                    var identity = container.CsType + "\n" + openField.Name + "\n" +
-                        JsonSerializer.Serialize(payload.Type, IrSerializer.JsonOptions) + "\n" +
-                        JsonSerializer.Serialize(qualified.Type, IrSerializer.JsonOptions) + "\n" + binding.Key + "\n" +
-                        JsonSerializer.Serialize(selector, IrSerializer.JsonOptions) + "\n" + string.Join(";", ancestors.Select(p => p.CsType));
-                    if (!shared.TryGetValue(identity, out var wrapper))
-                    {
-                        var semantic = OpenBindingIdentifier(binding);
-                        var baseName = SanitizeIdentifier(semantic) + container.CsType.Split('.').Last();
-                        var name = baseName;
-                        if (!ReserveCodecNames(name))
-                        {
-                            name = context + baseName;
-                            for (var suffix = 2; !ReserveCodecNames(name); suffix++) name = context + baseName + suffix;
-                        }
-                        wrapper = new OpenWrapper(name, semantic, qualified, site);
-                        shared.Add(identity, wrapper); wrappers.Add(wrapper);
-                    }
-                    site.Wrappers.Add(wrapper);
-                }
-                if (site.Wrappers.Count > 0) sites.Add(site);
+                AddSite(context, sourceOwner, source, container, openField, payload, any, selector,
+                    ancestors, container.Route, sourceParents.FirstOrDefault()?.ValueType ?? false,
+                    use.Bindings, use.Table, use.Path, bindingModule);
                 return;
             }
+        }
+
+        void AddSite(string context, string? sourceOwner, IrComponent? source, OpenContainer container,
+            IrComponent openField, OpenPayload payload, AnyType any, IrOpenTypeSelector selector,
+            IReadOnlyList<OpenContainer> ancestors, IReadOnlyList<OpenAccess> route, bool sourceValueType,
+            IReadOnlyList<IrOpenTypeBinding> bindings, string? table, IReadOnlyList<string> tablePath,
+            IrModule bindingModule)
+        {
+            var site = new OpenWrapperSite(context, sourceOwner, source, container, openField, payload,
+                any, selector, ancestors.ToList(), route.ToList(), sourceValueType,
+                new List<OpenWrapper>(), table, tablePath.ToList());
+            foreach (var binding in bindings)
+            {
+                var qualified = new IrOpenTypeBinding
+                {
+                    Key = binding.Key,
+                    Name = binding.Name,
+                    Type = QualifyOpenTypeReferences(document, bindingModule, module, binding.Type)
+                };
+                var identity = container.CsType + "\n" + openField.Name + "\n" +
+                    JsonSerializer.Serialize(payload.Type, IrSerializer.JsonOptions) + "\n" +
+                    JsonSerializer.Serialize(qualified.Type, IrSerializer.JsonOptions) + "\n" + binding.Key + "\n" +
+                    JsonSerializer.Serialize(selector, IrSerializer.JsonOptions) + "\n" +
+                    string.Join(";", ancestors.Select(p => p.CsType));
+                if (!shared.TryGetValue(identity, out var wrapper))
+                {
+                    var semantic = OpenBindingIdentifier(binding);
+                    var baseName = SanitizeIdentifier(semantic) + container.CsType.Split('.').Last();
+                    var name = baseName;
+                    if (!ReserveCodecNames(name))
+                    {
+                        name = context + baseName;
+                        for (var suffix = 2; !ReserveCodecNames(name); suffix++) name = context + baseName + suffix;
+                    }
+                    wrapper = new OpenWrapper(name, semantic, qualified, site);
+                    shared.Add(identity, wrapper);
+                    wrappers.Add(wrapper);
+                }
+                site.Wrappers.Add(wrapper);
+            }
+            if (site.Wrappers.Count > 0) sites.Add(site);
         }
 
         bool ReserveCodecNames(string name)
@@ -346,7 +496,8 @@ public sealed partial class CSharpBackend
                      .ThenBy(static s => s.Identity, StringComparer.Ordinal))
         {
             var site = shape.Representative;
-            var moduleKey = site.Container.Module.Name;
+            // Key by C# namespace so Explicit88/Implicit88 (shared Asn1Kit.Pkix) disambiguate stems.
+            var moduleKey = ModuleNamespace(site.Container.Module);
             if (!_carrierBindingNamesByModule.TryGetValue(moduleKey, out var names))
                 _carrierBindingNamesByModule.Add(moduleKey, names = new HashSet<string>(StringComparer.Ordinal));
             var stemBase = PreferredOpenCarrierBindingStem(site);
@@ -377,7 +528,7 @@ public sealed partial class CSharpBackend
             {
                 shape = new OpenCarrierShape(identity, site);
                 _carrierShapes.Add(identity, shape);
-                var moduleKey = site.Container.Module.Name;
+                var moduleKey = ModuleNamespace(site.Container.Module);
                 if (!_carrierBindingNamesByModule.TryGetValue(moduleKey, out var moduleNames))
                     _carrierBindingNamesByModule.Add(moduleKey,
                         moduleNames = new HashSet<string>(StringComparer.Ordinal));
@@ -629,7 +780,12 @@ public sealed partial class CSharpBackend
                      .Where(static site => site.EmitCatalog && site.DecodeMethod.Length > 0)
                      .GroupBy(static site => site.CatalogStem, StringComparer.Ordinal)
                      .Select(static group => group.First()))
+        {
+            // Shared C# namespaces (legacy Pkix Explicit+Implicit) must emit each catalog once.
+            var catalogKey = ModuleNamespace(module) + "\n" + site.CatalogStem;
+            if (!_emittedOpenCatalogs.Add(catalogKey)) continue;
             EmitOpenDecodeBindingDescriptor(sb, document, module, site);
+        }
 
         if (carrierShapes.Count > 0)
         {
@@ -768,8 +924,10 @@ public sealed partial class CSharpBackend
 
     private bool UsesGeneratedNamedCodec(IrDocument document, IrModule module, TypeExpr type)
     {
+        var resolvedModule = module;
+        type = UnwrapAliases(document, ref resolvedModule, type);
         if (type.Tag is not null || type is not RefType reference) return false;
-        var found = FindWithModule(document, module, reference);
+        var found = FindWithModule(document, resolvedModule, reference);
         if (found is null || !IrOptions.ShouldGenerate(found.Value.Def.Options)) return false;
         return found.Value.Def.Type switch
         {
@@ -1105,7 +1263,11 @@ public sealed partial class CSharpBackend
                 continue;
             }
 
-            var chosen = $"{projection.ChoiceCsType}.{projection.PreferredFactory}(value)";
+            // Qualify CHOICE type: AsString member names (e.g. DirectoryString) shadow the CLR type.
+            var choiceType = projection.ChoiceCsType.Contains('.', StringComparison.Ordinal)
+                ? projection.ChoiceCsType
+                : ModuleNamespace(module) + "." + projection.ChoiceCsType;
+            var chosen = $"{choiceType}.{projection.PreferredFactory}(value)";
             var decodeName = "Decode" + member.Name + nested;
             var encodeName = "Encode" + member.Name + nested;
             sb.AppendLine($"        public static {binding}Binding<{projectedType}> {member.Name} {{ get; }} =");

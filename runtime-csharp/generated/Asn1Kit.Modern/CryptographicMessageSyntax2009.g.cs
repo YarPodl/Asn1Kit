@@ -113,7 +113,7 @@ public static class CryptographicMessageSyntax2009Oids
 public sealed class ContentInfo
 {
     public Asn1Oid ContentType { get; set; }
-    public ContentInfo_Content Content { get; set; }
+    public Asn1Any Content { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -124,7 +124,7 @@ public sealed class ContentInfo
             writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, ContentType);
             using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
-                Content.Encode(writer);
+                writer.WriteAny(Content);
             }
         }
     }
@@ -139,7 +139,7 @@ public sealed class ContentInfo
             value.ContentType = reader.ReadOid(Asn1Tag.ObjectIdentifier);
             using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
-                value.Content = ContentInfo_Content.Decode(reader, value.ContentType);
+                value.Content = reader.ReadAny();
                 reader.ThrowIfNotEmpty();
             }
             reader.ThrowIfNotEmpty();
@@ -225,7 +225,7 @@ public sealed class SignedData
 public sealed class EncapsulatedContentInfo
 {
     public Asn1Oid EContentType { get; set; }
-    public Asn1Contained<EncapsulatedContentInfo_EContent_Content>? EContent { get; set; }
+    public Asn1Contained<Asn1Any>? EContent { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -240,7 +240,7 @@ public sealed class EncapsulatedContentInfo
                 {
                     writer.WriteContained(Asn1Tag.OctetString, false, EContent.Value, static (inner, value) =>
                     {
-                        value.Encode(inner);
+                        inner.WriteAny(value);
                     });
                 }
             }
@@ -259,7 +259,7 @@ public sealed class EncapsulatedContentInfo
             {
                 using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
                 {
-                    value.EContent = reader.ReadContained(Asn1Tag.OctetString, false, EncapsulatedContentInfo_EContent_Content.IsKnown(value.EContentType), value.EContentType, static (inner, key) => EncapsulatedContentInfo_EContent_Content.Decode(inner, key));
+                    value.EContent = reader.ReadContained(Asn1Tag.OctetString, false, false, 0, static (inner, key) => inner.ReadAny());
                     reader.ThrowIfNotEmpty();
                 }
             }
@@ -2132,420 +2132,34 @@ public sealed class ExtendedCertificateInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class ContentInfo_Content
-{
-    public SignedData? CtSignedData { get; private set; }
-    public EncryptedData? CtEncryptedData { get; private set; }
-    public EnvelopedData? CtEnvelopedData { get; private set; }
-    public AuthenticatedData? CtAuthenticatedData { get; private set; }
-    public DigestedData? CtDigestedData { get; private set; }
-    public Asn1Any? Unknown { get; private set; }
-
-    public static ContentInfo_Content FromCtSignedData(SignedData ctSignedData) => new ContentInfo_Content
-    {
-        CtSignedData = ctSignedData,
-    };
-
-    public static ContentInfo_Content FromCtEncryptedData(EncryptedData ctEncryptedData) => new ContentInfo_Content
-    {
-        CtEncryptedData = ctEncryptedData,
-    };
-
-    public static ContentInfo_Content FromCtEnvelopedData(EnvelopedData ctEnvelopedData) => new ContentInfo_Content
-    {
-        CtEnvelopedData = ctEnvelopedData,
-    };
-
-    public static ContentInfo_Content FromCtAuthenticatedData(AuthenticatedData ctAuthenticatedData) => new ContentInfo_Content
-    {
-        CtAuthenticatedData = ctAuthenticatedData,
-    };
-
-    public static ContentInfo_Content FromCtDigestedData(DigestedData ctDigestedData) => new ContentInfo_Content
-    {
-        CtDigestedData = ctDigestedData,
-    };
-
-    public static ContentInfo_Content FromUnknown(Asn1Any value) => new ContentInfo_Content
-    {
-        Unknown = value,
-    };
-
-    public override string ToString()
-    {
-        if (CtSignedData is not null) return Asn1Formatting.Format(CtSignedData);
-        if (CtEncryptedData is not null) return Asn1Formatting.Format(CtEncryptedData);
-        if (CtEnvelopedData is not null) return Asn1Formatting.Format(CtEnvelopedData);
-        if (CtAuthenticatedData is not null) return Asn1Formatting.Format(CtAuthenticatedData);
-        if (CtDigestedData is not null) return Asn1Formatting.Format(CtDigestedData);
-        if (Unknown is not null) return Asn1Formatting.Format(Unknown);
-        return "<unset>";
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        if (CtSignedData != null)
-        {
-            CtSignedData!.Encode(writer, Asn1Tag.Sequence);
-        }
-        else if (CtEncryptedData != null)
-        {
-            CtEncryptedData!.Encode(writer, Asn1Tag.Sequence);
-        }
-        else if (CtEnvelopedData != null)
-        {
-            CtEnvelopedData!.Encode(writer, Asn1Tag.Sequence);
-        }
-        else if (CtAuthenticatedData != null)
-        {
-            CtAuthenticatedData!.Encode(writer, Asn1Tag.Sequence);
-        }
-        else if (CtDigestedData != null)
-        {
-            CtDigestedData!.Encode(writer, Asn1Tag.Sequence);
-        }
-        else if (Unknown != null)
-        {
-            writer.WriteAny(Unknown.Value);
-        }
-        else throw new Asn1Exception("Open type has no alternative.");
-    }
-
-    public static bool IsKnown(Asn1Oid key) => key.Equals(CryptographicMessageSyntax2009Oids.IdSignedData) || key.Equals(CryptographicMessageSyntax2009Oids.IdEncryptedData) || key.Equals(CryptographicMessageSyntax2009Oids.IdEnvelopedData) || key.Equals(CryptographicMessageSyntax2009Oids.IdCtAuthData) || key.Equals(CryptographicMessageSyntax2009Oids.IdDigestedData);
-    public static ContentInfo_Content Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
-        Decode(reader, definedByKey, expectedTag: null);
-
-    public static ContentInfo_Content Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>
-        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
-
-    private static ContentInfo_Content Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
-    {
-        if (!reader.TryPeekTag(out var peeked))
-            throw new Asn1Exception("Unexpected end of ASN.1 data while decoding open type 'ContentInfo_Content': expected an encoded ASN.1 value for key '" + definedByKey + "'.");
-
-        if (definedByKey.Equals(CryptographicMessageSyntax2009Oids.IdSignedData))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCtSignedData(Asn1Kit.Modern.CryptographicMessageSyntax2009.SignedData.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCtSignedData(Asn1Kit.Modern.CryptographicMessageSyntax2009.SignedData.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CtSignedData'.");
-        }
-        else if (definedByKey.Equals(CryptographicMessageSyntax2009Oids.IdEncryptedData))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCtEncryptedData(Asn1Kit.Modern.CryptographicMessageSyntax2009.EncryptedData.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCtEncryptedData(Asn1Kit.Modern.CryptographicMessageSyntax2009.EncryptedData.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CtEncryptedData'.");
-        }
-        else if (definedByKey.Equals(CryptographicMessageSyntax2009Oids.IdEnvelopedData))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCtEnvelopedData(Asn1Kit.Modern.CryptographicMessageSyntax2009.EnvelopedData.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCtEnvelopedData(Asn1Kit.Modern.CryptographicMessageSyntax2009.EnvelopedData.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CtEnvelopedData'.");
-        }
-        else if (definedByKey.Equals(CryptographicMessageSyntax2009Oids.IdCtAuthData))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCtAuthenticatedData(Asn1Kit.Modern.CryptographicMessageSyntax2009.AuthenticatedData.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCtAuthenticatedData(Asn1Kit.Modern.CryptographicMessageSyntax2009.AuthenticatedData.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CtAuthenticatedData'.");
-        }
-        else if (definedByKey.Equals(CryptographicMessageSyntax2009Oids.IdDigestedData))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCtDigestedData(Asn1Kit.Modern.CryptographicMessageSyntax2009.DigestedData.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCtDigestedData(Asn1Kit.Modern.CryptographicMessageSyntax2009.DigestedData.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CtDigestedData'.");
-        }
-        else {
-            return FromUnknown(reader.ReadAny());
-        }
-    }
-}
-
-public sealed class EncapsulatedContentInfo_EContent_Content
-{
-    public SignedData? CtSignedData { get; private set; }
-    public EncryptedData? CtEncryptedData { get; private set; }
-    public EnvelopedData? CtEnvelopedData { get; private set; }
-    public AuthenticatedData? CtAuthenticatedData { get; private set; }
-    public DigestedData? CtDigestedData { get; private set; }
-    public Asn1Any? Unknown { get; private set; }
-
-    public static EncapsulatedContentInfo_EContent_Content FromCtSignedData(SignedData ctSignedData) => new EncapsulatedContentInfo_EContent_Content
-    {
-        CtSignedData = ctSignedData,
-    };
-
-    public static EncapsulatedContentInfo_EContent_Content FromCtEncryptedData(EncryptedData ctEncryptedData) => new EncapsulatedContentInfo_EContent_Content
-    {
-        CtEncryptedData = ctEncryptedData,
-    };
-
-    public static EncapsulatedContentInfo_EContent_Content FromCtEnvelopedData(EnvelopedData ctEnvelopedData) => new EncapsulatedContentInfo_EContent_Content
-    {
-        CtEnvelopedData = ctEnvelopedData,
-    };
-
-    public static EncapsulatedContentInfo_EContent_Content FromCtAuthenticatedData(AuthenticatedData ctAuthenticatedData) => new EncapsulatedContentInfo_EContent_Content
-    {
-        CtAuthenticatedData = ctAuthenticatedData,
-    };
-
-    public static EncapsulatedContentInfo_EContent_Content FromCtDigestedData(DigestedData ctDigestedData) => new EncapsulatedContentInfo_EContent_Content
-    {
-        CtDigestedData = ctDigestedData,
-    };
-
-    public static EncapsulatedContentInfo_EContent_Content FromUnknown(Asn1Any value) => new EncapsulatedContentInfo_EContent_Content
-    {
-        Unknown = value,
-    };
-
-    public override string ToString()
-    {
-        if (CtSignedData is not null) return Asn1Formatting.Format(CtSignedData);
-        if (CtEncryptedData is not null) return Asn1Formatting.Format(CtEncryptedData);
-        if (CtEnvelopedData is not null) return Asn1Formatting.Format(CtEnvelopedData);
-        if (CtAuthenticatedData is not null) return Asn1Formatting.Format(CtAuthenticatedData);
-        if (CtDigestedData is not null) return Asn1Formatting.Format(CtDigestedData);
-        if (Unknown is not null) return Asn1Formatting.Format(Unknown);
-        return "<unset>";
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        if (CtSignedData != null)
-        {
-            CtSignedData!.Encode(writer, Asn1Tag.Sequence);
-        }
-        else if (CtEncryptedData != null)
-        {
-            CtEncryptedData!.Encode(writer, Asn1Tag.Sequence);
-        }
-        else if (CtEnvelopedData != null)
-        {
-            CtEnvelopedData!.Encode(writer, Asn1Tag.Sequence);
-        }
-        else if (CtAuthenticatedData != null)
-        {
-            CtAuthenticatedData!.Encode(writer, Asn1Tag.Sequence);
-        }
-        else if (CtDigestedData != null)
-        {
-            CtDigestedData!.Encode(writer, Asn1Tag.Sequence);
-        }
-        else if (Unknown != null)
-        {
-            writer.WriteAny(Unknown.Value);
-        }
-        else throw new Asn1Exception("Open type has no alternative.");
-    }
-
-    public static bool IsKnown(Asn1Oid key) => key.Equals(CryptographicMessageSyntax2009Oids.IdSignedData) || key.Equals(CryptographicMessageSyntax2009Oids.IdEncryptedData) || key.Equals(CryptographicMessageSyntax2009Oids.IdEnvelopedData) || key.Equals(CryptographicMessageSyntax2009Oids.IdCtAuthData) || key.Equals(CryptographicMessageSyntax2009Oids.IdDigestedData);
-    public static EncapsulatedContentInfo_EContent_Content Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
-        Decode(reader, definedByKey, expectedTag: null);
-
-    public static EncapsulatedContentInfo_EContent_Content Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>
-        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
-
-    private static EncapsulatedContentInfo_EContent_Content Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
-    {
-        if (!reader.TryPeekTag(out var peeked))
-            throw new Asn1Exception("Unexpected end of ASN.1 data while decoding open type 'EncapsulatedContentInfo_EContent_Content': expected an encoded ASN.1 value for key '" + definedByKey + "'.");
-
-        if (definedByKey.Equals(CryptographicMessageSyntax2009Oids.IdSignedData))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCtSignedData(Asn1Kit.Modern.CryptographicMessageSyntax2009.SignedData.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCtSignedData(Asn1Kit.Modern.CryptographicMessageSyntax2009.SignedData.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CtSignedData'.");
-        }
-        else if (definedByKey.Equals(CryptographicMessageSyntax2009Oids.IdEncryptedData))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCtEncryptedData(Asn1Kit.Modern.CryptographicMessageSyntax2009.EncryptedData.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCtEncryptedData(Asn1Kit.Modern.CryptographicMessageSyntax2009.EncryptedData.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CtEncryptedData'.");
-        }
-        else if (definedByKey.Equals(CryptographicMessageSyntax2009Oids.IdEnvelopedData))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCtEnvelopedData(Asn1Kit.Modern.CryptographicMessageSyntax2009.EnvelopedData.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCtEnvelopedData(Asn1Kit.Modern.CryptographicMessageSyntax2009.EnvelopedData.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CtEnvelopedData'.");
-        }
-        else if (definedByKey.Equals(CryptographicMessageSyntax2009Oids.IdCtAuthData))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCtAuthenticatedData(Asn1Kit.Modern.CryptographicMessageSyntax2009.AuthenticatedData.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCtAuthenticatedData(Asn1Kit.Modern.CryptographicMessageSyntax2009.AuthenticatedData.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CtAuthenticatedData'.");
-        }
-        else if (definedByKey.Equals(CryptographicMessageSyntax2009Oids.IdDigestedData))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCtDigestedData(Asn1Kit.Modern.CryptographicMessageSyntax2009.DigestedData.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCtDigestedData(Asn1Kit.Modern.CryptographicMessageSyntax2009.DigestedData.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CtDigestedData'.");
-        }
-        else {
-            return FromUnknown(reader.ReadAny());
-        }
-    }
-}
-
 internal static class __CryptographicMessageSyntax2009OpenTypeCodecs
 {
-    internal static Asn1Codec<Time> SigningTimeAttribute { get; } = new(
-        static reader =>
-        {
-            Time decoded;
-            decoded = Asn1Kit.Modern.CryptographicMessageSyntax2009.Time.Decode(reader);
-            return decoded;
-        },
-        static (writer, value) =>
-        {
-            value.Encode(writer);
-        });
+    internal static Asn1Codec<SignedData> CtSignedDataContentInfo { get; } =
+        new(static reader => SignedData.Decode(reader), static (writer, value) => value.Encode(writer));
 
-    internal static Asn1Codec<SignerInfo> CountersignatureAttribute { get; } = new(
-        static reader =>
-        {
-            SignerInfo decoded;
-            decoded = Asn1Kit.Modern.CryptographicMessageSyntax2009.SignerInfo.Decode(reader, Asn1Tag.Sequence);
-            return decoded;
-        },
-        static (writer, value) =>
-        {
-            value.Encode(writer, Asn1Tag.Sequence);
-        });
+    internal static Asn1Codec<EncryptedData> CtEncryptedDataContentInfo { get; } =
+        new(static reader => EncryptedData.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<EnvelopedData> CtEnvelopedDataContentInfo { get; } =
+        new(static reader => EnvelopedData.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<AuthenticatedData> CtAuthenticatedDataContentInfo { get; } =
+        new(static reader => AuthenticatedData.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<DigestedData> CtDigestedDataContentInfo { get; } =
+        new(static reader => DigestedData.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Time> SigningTimeAttribute { get; } =
+        new(static reader => Time.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<SignerInfo> CountersignatureAttribute { get; } =
+        new(static reader => SignerInfo.Decode(reader), static (writer, value) => value.Encode(writer));
 
     internal static Asn1Codec<Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.RC2CBCParameter> CeaRC2CbcAlgorithmIdentifier { get; } =
         new(static reader => Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.RC2CBCParameter.Decode(reader), static (writer, value) => value.Encode(writer));
 
-    internal static Asn1Codec<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier> KaaEsdhAlgorithmIdentifier { get; } = new(
-        static reader =>
-        {
-            Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier decoded;
-            decoded = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
-            return decoded;
-        },
-        static (writer, value) =>
-        {
-            value.Encode(writer, Asn1Tag.Sequence);
-        });
+    internal static Asn1Codec<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier> KaaEsdhAlgorithmIdentifier { get; } =
+        new(static reader => Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader), static (writer, value) => value.Encode(writer));
 
     internal static Asn1Codec<Asn1Kit.Modern.PKIXAlgs2009.DomainParameters> PkDhAlgorithmIdentifier { get; } =
         new(static reader => Asn1Kit.Modern.PKIXAlgs2009.DomainParameters.Decode(reader), static (writer, value) => value.Encode(writer));
@@ -2585,10 +2199,82 @@ public sealed record AttrValuesBinding<T>
     }
 }
 
-public static class UnsignedAttributesBindings
+public sealed record ContentBinding<T>
 {
-    public static AttrValuesBinding<SignerInfo> Countersignature { get; } =
-        new(CryptographicMessageSyntax2009Oids.IdCountersignature, __CryptographicMessageSyntax2009OpenTypeCodecs.CountersignatureAttribute);
+    public Asn1Oid Oid { get; }
+    public Asn1Codec<T>? Codec { get; }
+    public Func<ContentInfo, T>? Decoder { get; }
+    public Func<T, Asn1Any>? Encoder { get; }
+
+    public ContentBinding(Asn1Oid oid, Asn1Codec<T> codec)
+    {
+        Oid = oid;
+        Codec = codec ?? throw new ArgumentNullException(nameof(codec));
+    }
+
+    public ContentBinding(Asn1Oid oid, Func<ContentInfo, T> decoder, Func<T, Asn1Any> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+}
+
+public sealed record EContentBinding<T>
+{
+    public Asn1Oid Oid { get; }
+    public Asn1Codec<T>? Codec { get; }
+    public Func<EncapsulatedContentInfo, T>? Decoder { get; }
+    public Func<T, Asn1Contained<Asn1Any>>? Encoder { get; }
+
+    public EContentBinding(Asn1Oid oid, Asn1Codec<T> codec)
+    {
+        Oid = oid;
+        Codec = codec ?? throw new ArgumentNullException(nameof(codec));
+    }
+
+    public EContentBinding(Asn1Oid oid, Func<EncapsulatedContentInfo, T> decoder, Func<T, Asn1Contained<Asn1Any>> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+}
+
+public static class ContentSetContentBindings
+{
+    public static ContentBinding<SignedData> CtSignedData { get; } =
+        new(CryptographicMessageSyntax2009Oids.IdSignedData, __CryptographicMessageSyntax2009OpenTypeCodecs.CtSignedDataContentInfo);
+
+    public static ContentBinding<EncryptedData> CtEncryptedData { get; } =
+        new(CryptographicMessageSyntax2009Oids.IdEncryptedData, __CryptographicMessageSyntax2009OpenTypeCodecs.CtEncryptedDataContentInfo);
+
+    public static ContentBinding<EnvelopedData> CtEnvelopedData { get; } =
+        new(CryptographicMessageSyntax2009Oids.IdEnvelopedData, __CryptographicMessageSyntax2009OpenTypeCodecs.CtEnvelopedDataContentInfo);
+
+    public static ContentBinding<AuthenticatedData> CtAuthenticatedData { get; } =
+        new(CryptographicMessageSyntax2009Oids.IdCtAuthData, __CryptographicMessageSyntax2009OpenTypeCodecs.CtAuthenticatedDataContentInfo);
+
+    public static ContentBinding<DigestedData> CtDigestedData { get; } =
+        new(CryptographicMessageSyntax2009Oids.IdDigestedData, __CryptographicMessageSyntax2009OpenTypeCodecs.CtDigestedDataContentInfo);
+}
+
+public static class ContentSetEContentBindings
+{
+    public static EContentBinding<SignedData> CtSignedData { get; } =
+        new(CryptographicMessageSyntax2009Oids.IdSignedData, __CryptographicMessageSyntax2009OpenTypeCodecs.CtSignedDataContentInfo);
+
+    public static EContentBinding<EncryptedData> CtEncryptedData { get; } =
+        new(CryptographicMessageSyntax2009Oids.IdEncryptedData, __CryptographicMessageSyntax2009OpenTypeCodecs.CtEncryptedDataContentInfo);
+
+    public static EContentBinding<EnvelopedData> CtEnvelopedData { get; } =
+        new(CryptographicMessageSyntax2009Oids.IdEnvelopedData, __CryptographicMessageSyntax2009OpenTypeCodecs.CtEnvelopedDataContentInfo);
+
+    public static EContentBinding<AuthenticatedData> CtAuthenticatedData { get; } =
+        new(CryptographicMessageSyntax2009Oids.IdCtAuthData, __CryptographicMessageSyntax2009OpenTypeCodecs.CtAuthenticatedDataContentInfo);
+
+    public static EContentBinding<DigestedData> CtDigestedData { get; } =
+        new(CryptographicMessageSyntax2009Oids.IdDigestedData, __CryptographicMessageSyntax2009OpenTypeCodecs.CtDigestedDataContentInfo);
 }
 
 public static class KeyTransportAlgorithmSetParametersBindings
@@ -2831,6 +2517,27 @@ public static class SupportedAttributesValueBindings
     }
 }
 
+public static class ContentEncryptionAlgorithmSetParametersBindings
+{
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<ReadOnlyMemory<byte>> Cea3DESCbc { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.DesEde3Cbc, Asn1Codecs.OctetString);
+
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.RC2CBCParameter> CeaRC2Cbc { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.Rc2Cbc, __CryptographicMessageSyntax2009OpenTypeCodecs.CeaRC2CbcAlgorithmIdentifier);
+}
+
+public static class AlgorithmIdentifierParametersBindings
+{
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params> KdaPBKDF2 { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.IdPBKDF2, __CryptographicMessageSyntax2009OpenTypeCodecs.KdaPBKDF2AlgorithmIdentifier);
+}
+
+public static class UnsignedAttributesBindings
+{
+    public static AttrValuesBinding<SignerInfo> Countersignature { get; } =
+        new(CryptographicMessageSyntax2009Oids.IdCountersignature, __CryptographicMessageSyntax2009OpenTypeCodecs.CountersignatureAttribute);
+}
+
 public static class SignedAttributesSetBindings
 {
     public static AttrValuesBinding<Time> SigningTime { get; } =
@@ -2853,21 +2560,6 @@ public static class AuthAttributeSetBindings
 
     public static AttrValuesBinding<Time> SigningTime { get; } =
         new(CryptographicMessageSyntax2009Oids.IdSigningTime, __CryptographicMessageSyntax2009OpenTypeCodecs.SigningTimeAttribute);
-}
-
-public static class ContentEncryptionAlgorithmSetParametersBindings
-{
-    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<ReadOnlyMemory<byte>> Cea3DESCbc { get; } =
-        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.DesEde3Cbc, Asn1Codecs.OctetString);
-
-    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.RC2CBCParameter> CeaRC2Cbc { get; } =
-        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.Rc2Cbc, __CryptographicMessageSyntax2009OpenTypeCodecs.CeaRC2CbcAlgorithmIdentifier);
-}
-
-public static class AlgorithmIdentifierParametersBindings
-{
-    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params> KdaPBKDF2 { get; } =
-        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.IdPBKDF2, __CryptographicMessageSyntax2009OpenTypeCodecs.KdaPBKDF2AlgorithmIdentifier);
 }
 
 public static class CryptographicMessageSyntax2009OpenTypeExtensions
@@ -2926,6 +2618,62 @@ public static class CryptographicMessageSyntax2009OpenTypeExtensions
         else
             value = binding.Decoder!(match);
         return true;
+    }
+
+    public static bool TryDecodeContent<T>(this ContentInfo source, ContentBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.ContentType.Equals(binding.Oid))) return false;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(source.Content);
+        }
+        else
+            value = binding.Decoder!(source);
+        return true;
+    }
+
+    public static void SetContent<T>(this ContentInfo source, ContentBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.ContentType = binding.Oid;
+        var encoded = binding.Codec is { } codec
+            ? codec.Encode(value)
+            : binding.Encoder!(value);
+        result.Content = encoded;
+    }
+
+    public static bool TryDecodeEContent<T>(this EncapsulatedContentInfo source, EContentBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (source.EContent is null) return false;
+        if (!(source.EContentType.Equals(binding.Oid))) return false;
+        if (binding.Codec is { } codec)
+        {
+            if (source.EContent is not { } openRaw) throw new Asn1Exception("Missing open-type value.");
+            value = Asn1Codecs.DecodeContained(openRaw, codec);
+        }
+        else
+            value = binding.Decoder!(source);
+        return true;
+    }
+
+    public static void SetEContent<T>(this EncapsulatedContentInfo source, EContentBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.EContentType = binding.Oid;
+        var encoded = binding.Codec is { } codec
+            ? Asn1Codecs.EncodeContained(value, codec)
+            : binding.Encoder!(value);
+        result.EContent = encoded;
     }
 
 }

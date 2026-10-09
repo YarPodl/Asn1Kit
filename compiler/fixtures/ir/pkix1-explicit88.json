@@ -106,127 +106,12 @@
                 "type": {
                   "kind": "any",
                   "definedBy": "type",
-                  "bindings": [
-                    {
-                      "key": "2.5.4.41",
-                      "type": {
-                        "kind": "ref",
-                        "name": "DirectoryString"
-                      }
-                    },
-                    {
-                      "key": "2.5.4.4",
-                      "type": {
-                        "kind": "ref",
-                        "name": "DirectoryString"
-                      }
-                    },
-                    {
-                      "key": "2.5.4.42",
-                      "type": {
-                        "kind": "ref",
-                        "name": "DirectoryString"
-                      }
-                    },
-                    {
-                      "key": "2.5.4.43",
-                      "type": {
-                        "kind": "ref",
-                        "name": "DirectoryString"
-                      }
-                    },
-                    {
-                      "key": "2.5.4.44",
-                      "type": {
-                        "kind": "ref",
-                        "name": "DirectoryString"
-                      }
-                    },
-                    {
-                      "key": "2.5.4.3",
-                      "type": {
-                        "kind": "ref",
-                        "name": "DirectoryString"
-                      }
-                    },
-                    {
-                      "key": "2.5.4.7",
-                      "type": {
-                        "kind": "ref",
-                        "name": "DirectoryString"
-                      }
-                    },
-                    {
-                      "key": "2.5.4.8",
-                      "type": {
-                        "kind": "ref",
-                        "name": "DirectoryString"
-                      }
-                    },
-                    {
-                      "key": "2.5.4.10",
-                      "type": {
-                        "kind": "ref",
-                        "name": "DirectoryString"
-                      }
-                    },
-                    {
-                      "key": "2.5.4.11",
-                      "type": {
-                        "kind": "ref",
-                        "name": "DirectoryString"
-                      }
-                    },
-                    {
-                      "key": "2.5.4.12",
-                      "type": {
-                        "kind": "ref",
-                        "name": "DirectoryString"
-                      }
-                    },
-                    {
-                      "key": "2.5.4.46",
-                      "type": {
-                        "kind": "string",
-                        "stringType": "printable"
-                      }
-                    },
-                    {
-                      "key": "2.5.4.6",
-                      "type": {
-                        "kind": "string",
-                        "stringType": "printable"
-                      }
-                    },
-                    {
-                      "key": "2.5.4.5",
-                      "type": {
-                        "kind": "string",
-                        "stringType": "printable"
-                      }
-                    },
-                    {
-                      "key": "2.5.4.65",
-                      "type": {
-                        "kind": "ref",
-                        "name": "DirectoryString"
-                      }
-                    },
-                    {
-                      "key": "0.9.2342.19200300.100.1.25",
-                      "type": {
-                        "kind": "string",
-                        "stringType": "ia5"
-                      }
-                    },
-                    {
-                      "key": "1.2.840.113549.1.9.1",
-                      "type": {
-                        "kind": "string",
-                        "stringType": "ia5"
-                      }
-                    }
-                  ]
+                  "selector": {
+                    "levels": 0,
+                    "path": [
+                      "type"
+                    ]
+                  }
                 },
                 "optional": false
               }
@@ -959,7 +844,136 @@
             "kind": "setOf",
             "element": {
               "kind": "ref",
-              "name": "AttributeTypeAndValue"
+              "name": "AttributeTypeAndValue",
+              "openTypes": [
+                {
+                  "path": [
+                    "value"
+                  ],
+                  "bindings": [
+                    {
+                      "key": "2.5.4.41",
+                      "type": {
+                        "kind": "ref",
+                        "name": "DirectoryString"
+                      }
+                    },
+                    {
+                      "key": "2.5.4.4",
+                      "type": {
+                        "kind": "ref",
+                        "name": "DirectoryString"
+                      }
+                    },
+                    {
+                      "key": "2.5.4.42",
+                      "type": {
+                        "kind": "ref",
+                        "name": "DirectoryString"
+                      }
+                    },
+                    {
+                      "key": "2.5.4.43",
+                      "type": {
+                        "kind": "ref",
+                        "name": "DirectoryString"
+                      }
+                    },
+                    {
+                      "key": "2.5.4.44",
+                      "type": {
+                        "kind": "ref",
+                        "name": "DirectoryString"
+                      }
+                    },
+                    {
+                      "key": "2.5.4.3",
+                      "type": {
+                        "kind": "ref",
+                        "name": "DirectoryString"
+                      }
+                    },
+                    {
+                      "key": "2.5.4.7",
+                      "type": {
+                        "kind": "ref",
+                        "name": "DirectoryString"
+                      }
+                    },
+                    {
+                      "key": "2.5.4.8",
+                      "type": {
+                        "kind": "ref",
+                        "name": "DirectoryString"
+                      }
+                    },
+                    {
+                      "key": "2.5.4.10",
+                      "type": {
+                        "kind": "ref",
+                        "name": "DirectoryString"
+                      }
+                    },
+                    {
+                      "key": "2.5.4.11",
+                      "type": {
+                        "kind": "ref",
+                        "name": "DirectoryString"
+                      }
+                    },
+                    {
+                      "key": "2.5.4.12",
+                      "type": {
+                        "kind": "ref",
+                        "name": "DirectoryString"
+                      }
+                    },
+                    {
+                      "key": "2.5.4.46",
+                      "type": {
+                        "kind": "string",
+                        "stringType": "printable"
+                      }
+                    },
+                    {
+                      "key": "2.5.4.6",
+                      "type": {
+                        "kind": "string",
+                        "stringType": "printable"
+                      }
+                    },
+                    {
+                      "key": "2.5.4.5",
+                      "type": {
+                        "kind": "string",
+                        "stringType": "printable"
+                      }
+                    },
+                    {
+                      "key": "2.5.4.65",
+                      "type": {
+                        "kind": "ref",
+                        "name": "DirectoryString"
+                      }
+                    },
+                    {
+                      "key": "0.9.2342.19200300.100.1.25",
+                      "type": {
+                        "kind": "string",
+                        "stringType": "ia5"
+                      }
+                    },
+                    {
+                      "key": "1.2.840.113549.1.9.1",
+                      "type": {
+                        "kind": "string",
+                        "stringType": "ia5"
+                      }
+                    }
+                  ],
+                  "tableExtensible": false
+                }
+              ]
             },
             "constraint": {
               "size": {
@@ -1059,7 +1073,47 @@
                 "name": "signatureAlgorithm",
                 "type": {
                   "kind": "ref",
-                  "name": "AlgorithmIdentifier"
+                  "name": "AlgorithmIdentifier",
+                  "openTypes": [
+                    {
+                      "path": [
+                        "parameters"
+                      ],
+                      "bindings": [
+                        {
+                          "key": "1.2.840.113549.1.1.1",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.5",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.11",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.12",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.13",
+                          "type": {
+                            "kind": "null"
+                          }
+                        }
+                      ],
+                      "tableExtensible": false
+                    }
+                  ]
                 },
                 "optional": false
               },
@@ -1108,7 +1162,47 @@
                 "name": "signature",
                 "type": {
                   "kind": "ref",
-                  "name": "AlgorithmIdentifier"
+                  "name": "AlgorithmIdentifier",
+                  "openTypes": [
+                    {
+                      "path": [
+                        "parameters"
+                      ],
+                      "bindings": [
+                        {
+                          "key": "1.2.840.113549.1.1.1",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.5",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.11",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.12",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.13",
+                          "type": {
+                            "kind": "null"
+                          }
+                        }
+                      ],
+                      "tableExtensible": false
+                    }
+                  ]
                 },
                 "optional": false
               },
@@ -1278,7 +1372,47 @@
                 "name": "algorithm",
                 "type": {
                   "kind": "ref",
-                  "name": "AlgorithmIdentifier"
+                  "name": "AlgorithmIdentifier",
+                  "openTypes": [
+                    {
+                      "path": [
+                        "parameters"
+                      ],
+                      "bindings": [
+                        {
+                          "key": "1.2.840.113549.1.1.1",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.5",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.11",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.12",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.13",
+                          "type": {
+                            "kind": "null"
+                          }
+                        }
+                      ],
+                      "tableExtensible": false
+                    }
+                  ]
                 },
                 "optional": false
               },
@@ -1359,7 +1493,47 @@
                 "name": "signatureAlgorithm",
                 "type": {
                   "kind": "ref",
-                  "name": "AlgorithmIdentifier"
+                  "name": "AlgorithmIdentifier",
+                  "openTypes": [
+                    {
+                      "path": [
+                        "parameters"
+                      ],
+                      "bindings": [
+                        {
+                          "key": "1.2.840.113549.1.1.1",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.5",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.11",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.12",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.13",
+                          "type": {
+                            "kind": "null"
+                          }
+                        }
+                      ],
+                      "tableExtensible": false
+                    }
+                  ]
                 },
                 "optional": false
               },
@@ -1391,7 +1565,47 @@
                 "name": "signature",
                 "type": {
                   "kind": "ref",
-                  "name": "AlgorithmIdentifier"
+                  "name": "AlgorithmIdentifier",
+                  "openTypes": [
+                    {
+                      "path": [
+                        "parameters"
+                      ],
+                      "bindings": [
+                        {
+                          "key": "1.2.840.113549.1.1.1",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.5",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.11",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.12",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.13",
+                          "type": {
+                            "kind": "null"
+                          }
+                        }
+                      ],
+                      "tableExtensible": false
+                    }
+                  ]
                 },
                 "optional": false
               },
@@ -1490,38 +1704,12 @@
                 "type": {
                   "kind": "any",
                   "definedBy": "algorithm",
-                  "bindings": [
-                    {
-                      "key": "1.2.840.113549.1.1.1",
-                      "type": {
-                        "kind": "null"
-                      }
-                    },
-                    {
-                      "key": "1.2.840.113549.1.1.5",
-                      "type": {
-                        "kind": "null"
-                      }
-                    },
-                    {
-                      "key": "1.2.840.113549.1.1.11",
-                      "type": {
-                        "kind": "null"
-                      }
-                    },
-                    {
-                      "key": "1.2.840.113549.1.1.12",
-                      "type": {
-                        "kind": "null"
-                      }
-                    },
-                    {
-                      "key": "1.2.840.113549.1.1.13",
-                      "type": {
-                        "kind": "null"
-                      }
-                    }
-                  ]
+                  "selector": {
+                    "levels": 0,
+                    "path": [
+                      "algorithm"
+                    ]
+                  }
                 },
                 "optional": true
               }

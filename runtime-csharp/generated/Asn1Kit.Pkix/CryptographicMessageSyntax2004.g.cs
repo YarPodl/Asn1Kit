@@ -114,7 +114,7 @@ public sealed class ContentInfo
 {
     /// <summary>ASN.1 alias ContentType ::= OBJECT IDENTIFIER.</summary>
     public Asn1Oid ContentType { get; set; }
-    public ContentInfo_Content Content { get; set; }
+    public Asn1Any Content { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -125,7 +125,7 @@ public sealed class ContentInfo
             writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, ContentType);
             using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
-                Content.Encode(writer);
+                writer.WriteAny(Content);
             }
         }
     }
@@ -140,7 +140,7 @@ public sealed class ContentInfo
             value.ContentType = reader.ReadOid(Asn1Tag.ObjectIdentifier);
             using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
-                value.Content = ContentInfo_Content.Decode(reader, value.ContentType);
+                value.Content = reader.ReadAny();
                 reader.ThrowIfNotEmpty();
             }
             reader.ThrowIfNotEmpty();
@@ -2059,214 +2059,388 @@ public sealed class ExtendedCertificateInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class ContentInfo_Content
+internal static class __CryptographicMessageSyntax2004OpenTypeCodecs
 {
-    public ReadOnlyMemory<byte>? OctetString { get; private set; }
-    public SignedData? SignedData { get; private set; }
-    public EnvelopedData? EnvelopedData { get; private set; }
-    public DigestedData? DigestedData { get; private set; }
-    public EncryptedData? EncryptedData { get; private set; }
-    public AuthenticatedData? AuthenticatedData { get; private set; }
-    public Asn1Any? Unknown { get; private set; }
+    internal static Asn1Codec<Asn1Kit.Pkix.DirectoryString> DirectoryStringAttributeTypeAndValue { get; } =
+        new(static reader => Asn1Kit.Pkix.DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
 
-    public static ContentInfo_Content FromOctetString(ReadOnlyMemory<byte> octetString) => new ContentInfo_Content
-    {
-        OctetString = octetString,
-    };
+    internal static Asn1Codec<SignedData> SignedDataContentInfo { get; } =
+        new(static reader => SignedData.Decode(reader), static (writer, value) => value.Encode(writer));
 
-    public static ContentInfo_Content FromSignedData(SignedData signedData) => new ContentInfo_Content
-    {
-        SignedData = signedData,
-    };
+    internal static Asn1Codec<EnvelopedData> EnvelopedDataContentInfo { get; } =
+        new(static reader => EnvelopedData.Decode(reader), static (writer, value) => value.Encode(writer));
 
-    public static ContentInfo_Content FromEnvelopedData(EnvelopedData envelopedData) => new ContentInfo_Content
-    {
-        EnvelopedData = envelopedData,
-    };
+    internal static Asn1Codec<DigestedData> DigestedDataContentInfo { get; } =
+        new(static reader => DigestedData.Decode(reader), static (writer, value) => value.Encode(writer));
 
-    public static ContentInfo_Content FromDigestedData(DigestedData digestedData) => new ContentInfo_Content
-    {
-        DigestedData = digestedData,
-    };
+    internal static Asn1Codec<EncryptedData> EncryptedDataContentInfo { get; } =
+        new(static reader => EncryptedData.Decode(reader), static (writer, value) => value.Encode(writer));
 
-    public static ContentInfo_Content FromEncryptedData(EncryptedData encryptedData) => new ContentInfo_Content
-    {
-        EncryptedData = encryptedData,
-    };
+    internal static Asn1Codec<AuthenticatedData> AuthenticatedDataContentInfo { get; } =
+        new(static reader => AuthenticatedData.Decode(reader), static (writer, value) => value.Encode(writer));
 
-    public static ContentInfo_Content FromAuthenticatedData(AuthenticatedData authenticatedData) => new ContentInfo_Content
-    {
-        AuthenticatedData = authenticatedData,
-    };
+}
 
-    public static ContentInfo_Content FromUnknown(Asn1Any value) => new ContentInfo_Content
-    {
-        Unknown = value,
-    };
+public sealed record ContentBinding<T>
+{
+    public Asn1Oid Oid { get; }
+    public Asn1Codec<T>? Codec { get; }
+    public Func<ContentInfo, T>? Decoder { get; }
+    public Func<T, Asn1Any>? Encoder { get; }
 
-    public override string ToString()
+    public ContentBinding(Asn1Oid oid, Asn1Codec<T> codec)
     {
-        if (OctetString is not null) return Asn1Formatting.Format(OctetString);
-        if (SignedData is not null) return Asn1Formatting.Format(SignedData);
-        if (EnvelopedData is not null) return Asn1Formatting.Format(EnvelopedData);
-        if (DigestedData is not null) return Asn1Formatting.Format(DigestedData);
-        if (EncryptedData is not null) return Asn1Formatting.Format(EncryptedData);
-        if (AuthenticatedData is not null) return Asn1Formatting.Format(AuthenticatedData);
-        if (Unknown is not null) return Asn1Formatting.Format(Unknown);
-        return "<unset>";
+        Oid = oid;
+        Codec = codec ?? throw new ArgumentNullException(nameof(codec));
     }
 
-    public void Encode(Asn1Writer writer)
+    public ContentBinding(Asn1Oid oid, Func<ContentInfo, T> decoder, Func<T, Asn1Any> encoder)
     {
-        if (OctetString != null)
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+}
+
+public static class AlgorithmIdentifierParametersBindings
+{
+    public static Asn1Kit.Pkix.ParametersBinding<Asn1Null> Oid12840113549111 { get; } =
+        new(Asn1Oid.Parse("1.2.840.113549.1.1.1"), Asn1Codecs.Null);
+
+    public static Asn1Kit.Pkix.ParametersBinding<Asn1Null> Oid12840113549115 { get; } =
+        new(Asn1Oid.Parse("1.2.840.113549.1.1.5"), Asn1Codecs.Null);
+
+    public static Asn1Kit.Pkix.ParametersBinding<Asn1Null> Oid128401135491111 { get; } =
+        new(Asn1Oid.Parse("1.2.840.113549.1.1.11"), Asn1Codecs.Null);
+
+    public static Asn1Kit.Pkix.ParametersBinding<Asn1Null> Oid128401135491112 { get; } =
+        new(Asn1Oid.Parse("1.2.840.113549.1.1.12"), Asn1Codecs.Null);
+
+    public static Asn1Kit.Pkix.ParametersBinding<Asn1Null> Oid128401135491113 { get; } =
+        new(Asn1Oid.Parse("1.2.840.113549.1.1.13"), Asn1Codecs.Null);
+}
+
+public static class AttributeTypeAndValueValueBindings
+{
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtName, __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString2 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtSurname, __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString3 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtGivenName, __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString4 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtInitials, __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString5 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtGenerationQualifier, __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString6 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtCommonName, __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString7 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtLocalityName, __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString8 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtStateOrProvinceName, __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString9 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtOrganizationName, __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString10 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtOrganizationalUnitName, __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString11 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtTitle, __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<string> Oid25446 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtDnQualifier, Asn1Codecs.PrintableString);
+
+    public static Asn1Kit.Pkix.ValueBinding<string> Oid2546 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtCountryName, Asn1Codecs.PrintableString);
+
+    public static Asn1Kit.Pkix.ValueBinding<string> Oid2545 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtSerialNumber, Asn1Codecs.PrintableString);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString12 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtPseudonym, __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<string> Oid09234219200300100125 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdDomainComponent, Asn1Codecs.Ia5String);
+
+    public static Asn1Kit.Pkix.ValueBinding<string> Oid12840113549191 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdEmailAddress, Asn1Codecs.Ia5String);
+
+    public static class AsString
+    {
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtName, DecodeDirectoryStringAsString, EncodeDirectoryStringAsString);
+
+        private static string DecodeDirectoryStringAsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
         {
-            writer.WriteOctetString(Asn1Tag.OctetString, OctetString.Value.Span);
+            return __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
         }
-        else if (SignedData != null)
+
+        private static Asn1Any EncodeDirectoryStringAsString(string value) =>
+            __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString2 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtSurname, DecodeDirectoryString2AsString, EncodeDirectoryString2AsString);
+
+        private static string DecodeDirectoryString2AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
         {
-            SignedData!.Encode(writer, Asn1Tag.Sequence);
+            return __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
         }
-        else if (EnvelopedData != null)
+
+        private static Asn1Any EncodeDirectoryString2AsString(string value) =>
+            __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString3 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtGivenName, DecodeDirectoryString3AsString, EncodeDirectoryString3AsString);
+
+        private static string DecodeDirectoryString3AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
         {
-            EnvelopedData!.Encode(writer, Asn1Tag.Sequence);
+            return __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
         }
-        else if (DigestedData != null)
+
+        private static Asn1Any EncodeDirectoryString3AsString(string value) =>
+            __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString4 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtInitials, DecodeDirectoryString4AsString, EncodeDirectoryString4AsString);
+
+        private static string DecodeDirectoryString4AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
         {
-            DigestedData!.Encode(writer, Asn1Tag.Sequence);
+            return __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
         }
-        else if (EncryptedData != null)
+
+        private static Asn1Any EncodeDirectoryString4AsString(string value) =>
+            __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString5 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtGenerationQualifier, DecodeDirectoryString5AsString, EncodeDirectoryString5AsString);
+
+        private static string DecodeDirectoryString5AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
         {
-            EncryptedData!.Encode(writer, Asn1Tag.Sequence);
+            return __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
         }
-        else if (AuthenticatedData != null)
+
+        private static Asn1Any EncodeDirectoryString5AsString(string value) =>
+            __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString6 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtCommonName, DecodeDirectoryString6AsString, EncodeDirectoryString6AsString);
+
+        private static string DecodeDirectoryString6AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
         {
-            AuthenticatedData!.Encode(writer, Asn1Tag.Sequence);
+            return __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
         }
-        else if (Unknown != null)
+
+        private static Asn1Any EncodeDirectoryString6AsString(string value) =>
+            __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString7 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtLocalityName, DecodeDirectoryString7AsString, EncodeDirectoryString7AsString);
+
+        private static string DecodeDirectoryString7AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
         {
-            writer.WriteAny(Unknown.Value);
+            return __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
         }
-        else throw new Asn1Exception("Open type has no alternative.");
+
+        private static Asn1Any EncodeDirectoryString7AsString(string value) =>
+            __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString8 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtStateOrProvinceName, DecodeDirectoryString8AsString, EncodeDirectoryString8AsString);
+
+        private static string DecodeDirectoryString8AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString8AsString(string value) =>
+            __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString9 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtOrganizationName, DecodeDirectoryString9AsString, EncodeDirectoryString9AsString);
+
+        private static string DecodeDirectoryString9AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString9AsString(string value) =>
+            __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString10 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtOrganizationalUnitName, DecodeDirectoryString10AsString, EncodeDirectoryString10AsString);
+
+        private static string DecodeDirectoryString10AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString10AsString(string value) =>
+            __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString11 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtTitle, DecodeDirectoryString11AsString, EncodeDirectoryString11AsString);
+
+        private static string DecodeDirectoryString11AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString11AsString(string value) =>
+            __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> Oid25446 { get; } =
+            AttributeTypeAndValueValueBindings.Oid25446;
+
+        public static Asn1Kit.Pkix.ValueBinding<string> Oid2546 { get; } =
+            AttributeTypeAndValueValueBindings.Oid2546;
+
+        public static Asn1Kit.Pkix.ValueBinding<string> Oid2545 { get; } =
+            AttributeTypeAndValueValueBindings.Oid2545;
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString12 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtPseudonym, DecodeDirectoryString12AsString, EncodeDirectoryString12AsString);
+
+        private static string DecodeDirectoryString12AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString12AsString(string value) =>
+            __CryptographicMessageSyntax2004OpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> Oid09234219200300100125 { get; } =
+            AttributeTypeAndValueValueBindings.Oid09234219200300100125;
+
+        public static Asn1Kit.Pkix.ValueBinding<string> Oid12840113549191 { get; } =
+            AttributeTypeAndValueValueBindings.Oid12840113549191;
+    }
+}
+
+public static class ContentInfoContentBindings
+{
+    public static ContentBinding<ReadOnlyMemory<byte>> Oid12840113549171 { get; } =
+        new(CryptographicMessageSyntax2004Oids.IdData, Asn1Codecs.OctetString);
+
+    public static ContentBinding<SignedData> SignedData { get; } =
+        new(CryptographicMessageSyntax2004Oids.IdSignedData, __CryptographicMessageSyntax2004OpenTypeCodecs.SignedDataContentInfo);
+
+    public static ContentBinding<EnvelopedData> EnvelopedData { get; } =
+        new(CryptographicMessageSyntax2004Oids.IdEnvelopedData, __CryptographicMessageSyntax2004OpenTypeCodecs.EnvelopedDataContentInfo);
+
+    public static ContentBinding<DigestedData> DigestedData { get; } =
+        new(CryptographicMessageSyntax2004Oids.IdDigestedData, __CryptographicMessageSyntax2004OpenTypeCodecs.DigestedDataContentInfo);
+
+    public static ContentBinding<EncryptedData> EncryptedData { get; } =
+        new(CryptographicMessageSyntax2004Oids.IdEncryptedData, __CryptographicMessageSyntax2004OpenTypeCodecs.EncryptedDataContentInfo);
+
+    public static ContentBinding<AuthenticatedData> AuthenticatedData { get; } =
+        new(CryptographicMessageSyntax2004Oids.IdCtAuthData, __CryptographicMessageSyntax2004OpenTypeCodecs.AuthenticatedDataContentInfo);
+}
+
+public static class CryptographicMessageSyntax2004OpenTypeExtensions
+{
+    public static bool TryDecodeContent<T>(this ContentInfo source, ContentBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.ContentType.Equals(binding.Oid))) return false;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(source.Content);
+        }
+        else
+            value = binding.Decoder!(source);
+        return true;
     }
 
-    public static bool IsKnown(Asn1Oid key) => key.Equals(CryptographicMessageSyntax2004Oids.IdData) || key.Equals(CryptographicMessageSyntax2004Oids.IdSignedData) || key.Equals(CryptographicMessageSyntax2004Oids.IdEnvelopedData) || key.Equals(CryptographicMessageSyntax2004Oids.IdDigestedData) || key.Equals(CryptographicMessageSyntax2004Oids.IdEncryptedData) || key.Equals(CryptographicMessageSyntax2004Oids.IdCtAuthData);
-    public static ContentInfo_Content Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
-        Decode(reader, definedByKey, expectedTag: null);
-
-    public static ContentInfo_Content Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>
-        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
-
-    private static ContentInfo_Content Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
+    public static void SetContent<T>(this ContentInfo source, ContentBinding<T> binding, T value)
     {
-        if (!reader.TryPeekTag(out var peeked))
-            throw new Asn1Exception("Unexpected end of ASN.1 data while decoding open type 'ContentInfo_Content': expected an encoded ASN.1 value for key '" + definedByKey + "'.");
-
-        if (definedByKey.Equals(CryptographicMessageSyntax2004Oids.IdData))
-        {
-            var tag = expectedTag ?? Asn1Tag.OctetString;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromOctetString(reader.ReadOctetString(tag));
-            }
-            return FromUnknown(reader.ReadAny());
-        }
-        else if (definedByKey.Equals(CryptographicMessageSyntax2004Oids.IdSignedData))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromSignedData(Asn1Kit.Cms.SignedData.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromSignedData(Asn1Kit.Cms.SignedData.Decode(reader, expectedTag.Value));
-                }
-            }
-            return FromUnknown(reader.ReadAny());
-        }
-        else if (definedByKey.Equals(CryptographicMessageSyntax2004Oids.IdEnvelopedData))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromEnvelopedData(Asn1Kit.Cms.EnvelopedData.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromEnvelopedData(Asn1Kit.Cms.EnvelopedData.Decode(reader, expectedTag.Value));
-                }
-            }
-            return FromUnknown(reader.ReadAny());
-        }
-        else if (definedByKey.Equals(CryptographicMessageSyntax2004Oids.IdDigestedData))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromDigestedData(Asn1Kit.Cms.DigestedData.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromDigestedData(Asn1Kit.Cms.DigestedData.Decode(reader, expectedTag.Value));
-                }
-            }
-            return FromUnknown(reader.ReadAny());
-        }
-        else if (definedByKey.Equals(CryptographicMessageSyntax2004Oids.IdEncryptedData))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromEncryptedData(Asn1Kit.Cms.EncryptedData.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromEncryptedData(Asn1Kit.Cms.EncryptedData.Decode(reader, expectedTag.Value));
-                }
-            }
-            return FromUnknown(reader.ReadAny());
-        }
-        else if (definedByKey.Equals(CryptographicMessageSyntax2004Oids.IdCtAuthData))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromAuthenticatedData(Asn1Kit.Cms.AuthenticatedData.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromAuthenticatedData(Asn1Kit.Cms.AuthenticatedData.Decode(reader, expectedTag.Value));
-                }
-            }
-            return FromUnknown(reader.ReadAny());
-        }
-        else {
-            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.OctetString))
-            {
-                return FromOctetString(reader.ReadOctetString(Asn1Tag.OctetString));
-            }
-            return FromUnknown(reader.ReadAny());
-        }
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.ContentType = binding.Oid;
+        var encoded = binding.Codec is { } codec
+            ? codec.Encode(value)
+            : binding.Encoder!(value);
+        result.Content = encoded;
     }
+
+    public static bool TryGet<T>(this ContentInfo[]? source, ContentBinding<T> binding, out T value)
+        => TryGet(source, binding, out value, out _);
+
+    public static bool TryGet<T>(this ContentInfo[]? source, ContentBinding<T> binding, out T value, out ContentInfo raw)
+    {
+        value = default!;
+        raw = default!;
+        if (source is null) return false;
+        ArgumentNullException.ThrowIfNull(binding);
+        ContentInfo? match = null;
+        foreach (var item in source)
+        {
+            if (item.ContentType.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
+                match = item;
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Content);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
+}
+
+public static class IssuerAndSerialNumberOpenTypeExtensions
+{
+    public static bool TryGetIssuer<T>(this IssuerAndSerialNumber source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value)
+        => TryGetIssuer(source, binding, out value, out _);
+
+    public static bool TryGetIssuer<T>(this IssuerAndSerialNumber source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value, out Asn1Kit.Pkix.AttributeTypeAndValue raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Pkix.AttributeTypeAndValue? match = null;
+        if (source.Issuer is { } node0)
+        {
+            foreach (var node1 in node0.Value)
+            {
+                foreach (var node2 in node1)
+                {
+                    if (node2.Type.Equals(binding.Oid))
+                    {
+                        if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetIssuer.");
+                        match = node2;
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match.Value;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value.Value);
+        }
+        else
+            value = binding.Decoder!(match.Value);
+        return true;
+    }
+
 }
 

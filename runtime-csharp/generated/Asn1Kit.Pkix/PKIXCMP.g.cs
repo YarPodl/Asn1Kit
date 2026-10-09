@@ -1938,3 +1938,324 @@ public static class PKIHeader_Pvno
     public const int IetfVersion2 = 1;
 }
 
+internal static class __PKIXCMPOpenTypeCodecs
+{
+    internal static Asn1Codec<Asn1Kit.Pkix.DirectoryString> DirectoryStringAttributeTypeAndValue { get; } =
+        new(static reader => Asn1Kit.Pkix.DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
+
+}
+
+public static class AnotherNameValueBindings
+{
+    public static Asn1Kit.Pkix.AnotherNameValueBinding<string> XmppAddr { get; } =
+        new(Asn1Oid.Parse("1.3.6.1.5.5.7.8.5"), Asn1Codecs.Utf8String);
+
+    public static Asn1Kit.Pkix.AnotherNameValueBinding<string> SrvName { get; } =
+        new(Asn1Oid.Parse("1.3.6.1.5.5.7.8.7"), Asn1Codecs.Ia5String);
+
+    public static Asn1Kit.Pkix.AnotherNameValueBinding<string> SmtpUtf8Mailbox { get; } =
+        new(Asn1Oid.Parse("1.3.6.1.5.5.7.8.9"), Asn1Codecs.Utf8String);
+}
+
+public static class AttributeTypeAndValueValueBindings
+{
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtName, __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString2 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtSurname, __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString3 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtGivenName, __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString4 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtInitials, __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString5 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtGenerationQualifier, __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString6 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtCommonName, __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString7 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtLocalityName, __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString8 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtStateOrProvinceName, __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString9 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtOrganizationName, __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString10 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtOrganizationalUnitName, __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString11 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtTitle, __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<string> Oid25446 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtDnQualifier, Asn1Codecs.PrintableString);
+
+    public static Asn1Kit.Pkix.ValueBinding<string> Oid2546 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtCountryName, Asn1Codecs.PrintableString);
+
+    public static Asn1Kit.Pkix.ValueBinding<string> Oid2545 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtSerialNumber, Asn1Codecs.PrintableString);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString12 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtPseudonym, __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<string> Oid09234219200300100125 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdDomainComponent, Asn1Codecs.Ia5String);
+
+    public static Asn1Kit.Pkix.ValueBinding<string> Oid12840113549191 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdEmailAddress, Asn1Codecs.Ia5String);
+
+    public static class AsString
+    {
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtName, DecodeDirectoryStringAsString, EncodeDirectoryStringAsString);
+
+        private static string DecodeDirectoryStringAsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryStringAsString(string value) =>
+            __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString2 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtSurname, DecodeDirectoryString2AsString, EncodeDirectoryString2AsString);
+
+        private static string DecodeDirectoryString2AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString2AsString(string value) =>
+            __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString3 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtGivenName, DecodeDirectoryString3AsString, EncodeDirectoryString3AsString);
+
+        private static string DecodeDirectoryString3AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString3AsString(string value) =>
+            __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString4 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtInitials, DecodeDirectoryString4AsString, EncodeDirectoryString4AsString);
+
+        private static string DecodeDirectoryString4AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString4AsString(string value) =>
+            __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString5 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtGenerationQualifier, DecodeDirectoryString5AsString, EncodeDirectoryString5AsString);
+
+        private static string DecodeDirectoryString5AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString5AsString(string value) =>
+            __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString6 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtCommonName, DecodeDirectoryString6AsString, EncodeDirectoryString6AsString);
+
+        private static string DecodeDirectoryString6AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString6AsString(string value) =>
+            __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString7 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtLocalityName, DecodeDirectoryString7AsString, EncodeDirectoryString7AsString);
+
+        private static string DecodeDirectoryString7AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString7AsString(string value) =>
+            __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString8 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtStateOrProvinceName, DecodeDirectoryString8AsString, EncodeDirectoryString8AsString);
+
+        private static string DecodeDirectoryString8AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString8AsString(string value) =>
+            __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString9 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtOrganizationName, DecodeDirectoryString9AsString, EncodeDirectoryString9AsString);
+
+        private static string DecodeDirectoryString9AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString9AsString(string value) =>
+            __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString10 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtOrganizationalUnitName, DecodeDirectoryString10AsString, EncodeDirectoryString10AsString);
+
+        private static string DecodeDirectoryString10AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString10AsString(string value) =>
+            __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString11 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtTitle, DecodeDirectoryString11AsString, EncodeDirectoryString11AsString);
+
+        private static string DecodeDirectoryString11AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString11AsString(string value) =>
+            __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> Oid25446 { get; } =
+            AttributeTypeAndValueValueBindings.Oid25446;
+
+        public static Asn1Kit.Pkix.ValueBinding<string> Oid2546 { get; } =
+            AttributeTypeAndValueValueBindings.Oid2546;
+
+        public static Asn1Kit.Pkix.ValueBinding<string> Oid2545 { get; } =
+            AttributeTypeAndValueValueBindings.Oid2545;
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString12 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtPseudonym, DecodeDirectoryString12AsString, EncodeDirectoryString12AsString);
+
+        private static string DecodeDirectoryString12AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString12AsString(string value) =>
+            __PKIXCMPOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> Oid09234219200300100125 { get; } =
+            AttributeTypeAndValueValueBindings.Oid09234219200300100125;
+
+        public static Asn1Kit.Pkix.ValueBinding<string> Oid12840113549191 { get; } =
+            AttributeTypeAndValueValueBindings.Oid12840113549191;
+    }
+}
+
+public static class AlgorithmIdentifierParametersBindings
+{
+    public static Asn1Kit.Pkix.ParametersBinding<Asn1Null> Oid12840113549111 { get; } =
+        new(Asn1Oid.Parse("1.2.840.113549.1.1.1"), Asn1Codecs.Null);
+
+    public static Asn1Kit.Pkix.ParametersBinding<Asn1Null> Oid12840113549115 { get; } =
+        new(Asn1Oid.Parse("1.2.840.113549.1.1.5"), Asn1Codecs.Null);
+
+    public static Asn1Kit.Pkix.ParametersBinding<Asn1Null> Oid128401135491111 { get; } =
+        new(Asn1Oid.Parse("1.2.840.113549.1.1.11"), Asn1Codecs.Null);
+
+    public static Asn1Kit.Pkix.ParametersBinding<Asn1Null> Oid128401135491112 { get; } =
+        new(Asn1Oid.Parse("1.2.840.113549.1.1.12"), Asn1Codecs.Null);
+
+    public static Asn1Kit.Pkix.ParametersBinding<Asn1Null> Oid128401135491113 { get; } =
+        new(Asn1Oid.Parse("1.2.840.113549.1.1.13"), Asn1Codecs.Null);
+}
+
+public static class PKIHeaderOpenTypeExtensions
+{
+    public static bool TryGetSender<T>(this PKIHeader source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value)
+        => TryGetSender(source, binding, out value, out _);
+
+    public static bool TryGetSender<T>(this PKIHeader source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value, out Asn1Kit.Pkix.AttributeTypeAndValue raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Pkix.AttributeTypeAndValue? match = null;
+        if (source.Sender is { } node0)
+        {
+            if (node0.DirectoryName is { } node1)
+            {
+                foreach (var node2 in node1)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        if (node3.Type.Equals(binding.Oid))
+                        {
+                            if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetSender.");
+                            match = node3;
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match.Value;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value.Value);
+        }
+        else
+            value = binding.Decoder!(match.Value);
+        return true;
+    }
+
+    public static bool TryGetRecipient<T>(this PKIHeader source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value)
+        => TryGetRecipient(source, binding, out value, out _);
+
+    public static bool TryGetRecipient<T>(this PKIHeader source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value, out Asn1Kit.Pkix.AttributeTypeAndValue raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Pkix.AttributeTypeAndValue? match = null;
+        if (source.Recipient is { } node0)
+        {
+            if (node0.DirectoryName is { } node1)
+            {
+                foreach (var node2 in node1)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        if (node3.Type.Equals(binding.Oid))
+                        {
+                            if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetRecipient.");
+                            match = node3;
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match.Value;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value.Value);
+        }
+        else
+            value = binding.Decoder!(match.Value);
+        return true;
+    }
+
+}
+

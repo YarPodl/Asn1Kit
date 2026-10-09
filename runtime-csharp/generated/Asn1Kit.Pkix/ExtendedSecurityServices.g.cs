@@ -873,3 +873,625 @@ public sealed class IssuerSerial
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
+internal static class __ExtendedSecurityServicesOpenTypeCodecs
+{
+    internal static Asn1Codec<Asn1Kit.Pkix.DirectoryString> DirectoryStringAttributeTypeAndValue { get; } =
+        new(static reader => Asn1Kit.Pkix.DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
+
+}
+
+public static class AnotherNameValueBindings
+{
+    public static Asn1Kit.Pkix.AnotherNameValueBinding<string> XmppAddr { get; } =
+        new(Asn1Oid.Parse("1.3.6.1.5.5.7.8.5"), Asn1Codecs.Utf8String);
+
+    public static Asn1Kit.Pkix.AnotherNameValueBinding<string> SrvName { get; } =
+        new(Asn1Oid.Parse("1.3.6.1.5.5.7.8.7"), Asn1Codecs.Ia5String);
+
+    public static Asn1Kit.Pkix.AnotherNameValueBinding<string> SmtpUtf8Mailbox { get; } =
+        new(Asn1Oid.Parse("1.3.6.1.5.5.7.8.9"), Asn1Codecs.Utf8String);
+}
+
+public static class AttributeTypeAndValueValueBindings
+{
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtName, __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString2 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtSurname, __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString3 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtGivenName, __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString4 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtInitials, __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString5 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtGenerationQualifier, __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString6 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtCommonName, __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString7 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtLocalityName, __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString8 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtStateOrProvinceName, __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString9 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtOrganizationName, __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString10 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtOrganizationalUnitName, __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString11 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtTitle, __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<string> Oid25446 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtDnQualifier, Asn1Codecs.PrintableString);
+
+    public static Asn1Kit.Pkix.ValueBinding<string> Oid2546 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtCountryName, Asn1Codecs.PrintableString);
+
+    public static Asn1Kit.Pkix.ValueBinding<string> Oid2545 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtSerialNumber, Asn1Codecs.PrintableString);
+
+    public static Asn1Kit.Pkix.ValueBinding<Asn1Kit.Pkix.DirectoryString> DirectoryString12 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtPseudonym, __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue);
+
+    public static Asn1Kit.Pkix.ValueBinding<string> Oid09234219200300100125 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdDomainComponent, Asn1Codecs.Ia5String);
+
+    public static Asn1Kit.Pkix.ValueBinding<string> Oid12840113549191 { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdEmailAddress, Asn1Codecs.Ia5String);
+
+    public static class AsString
+    {
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtName, DecodeDirectoryStringAsString, EncodeDirectoryStringAsString);
+
+        private static string DecodeDirectoryStringAsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryStringAsString(string value) =>
+            __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString2 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtSurname, DecodeDirectoryString2AsString, EncodeDirectoryString2AsString);
+
+        private static string DecodeDirectoryString2AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString2AsString(string value) =>
+            __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString3 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtGivenName, DecodeDirectoryString3AsString, EncodeDirectoryString3AsString);
+
+        private static string DecodeDirectoryString3AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString3AsString(string value) =>
+            __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString4 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtInitials, DecodeDirectoryString4AsString, EncodeDirectoryString4AsString);
+
+        private static string DecodeDirectoryString4AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString4AsString(string value) =>
+            __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString5 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtGenerationQualifier, DecodeDirectoryString5AsString, EncodeDirectoryString5AsString);
+
+        private static string DecodeDirectoryString5AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString5AsString(string value) =>
+            __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString6 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtCommonName, DecodeDirectoryString6AsString, EncodeDirectoryString6AsString);
+
+        private static string DecodeDirectoryString6AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString6AsString(string value) =>
+            __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString7 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtLocalityName, DecodeDirectoryString7AsString, EncodeDirectoryString7AsString);
+
+        private static string DecodeDirectoryString7AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString7AsString(string value) =>
+            __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString8 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtStateOrProvinceName, DecodeDirectoryString8AsString, EncodeDirectoryString8AsString);
+
+        private static string DecodeDirectoryString8AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString8AsString(string value) =>
+            __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString9 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtOrganizationName, DecodeDirectoryString9AsString, EncodeDirectoryString9AsString);
+
+        private static string DecodeDirectoryString9AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString9AsString(string value) =>
+            __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString10 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtOrganizationalUnitName, DecodeDirectoryString10AsString, EncodeDirectoryString10AsString);
+
+        private static string DecodeDirectoryString10AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString10AsString(string value) =>
+            __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString11 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtTitle, DecodeDirectoryString11AsString, EncodeDirectoryString11AsString);
+
+        private static string DecodeDirectoryString11AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString11AsString(string value) =>
+            __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> Oid25446 { get; } =
+            AttributeTypeAndValueValueBindings.Oid25446;
+
+        public static Asn1Kit.Pkix.ValueBinding<string> Oid2546 { get; } =
+            AttributeTypeAndValueValueBindings.Oid2546;
+
+        public static Asn1Kit.Pkix.ValueBinding<string> Oid2545 { get; } =
+            AttributeTypeAndValueValueBindings.Oid2545;
+
+        public static Asn1Kit.Pkix.ValueBinding<string> DirectoryString12 { get; } =
+            new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdAtPseudonym, DecodeDirectoryString12AsString, EncodeDirectoryString12AsString);
+
+        private static string DecodeDirectoryString12AsString(Asn1Kit.Pkix.AttributeTypeAndValue source)
+        {
+            return __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeDirectoryString12AsString(string value) =>
+            __ExtendedSecurityServicesOpenTypeCodecs.DirectoryStringAttributeTypeAndValue.Encode(Asn1Kit.Pkix.DirectoryString.FromUtf8String(value));
+
+        public static Asn1Kit.Pkix.ValueBinding<string> Oid09234219200300100125 { get; } =
+            AttributeTypeAndValueValueBindings.Oid09234219200300100125;
+
+        public static Asn1Kit.Pkix.ValueBinding<string> Oid12840113549191 { get; } =
+            AttributeTypeAndValueValueBindings.Oid12840113549191;
+    }
+}
+
+public static class ReceiptRequestOpenTypeExtensions
+{
+    public static bool TryGetReceiptsFrom<T>(this ReceiptRequest source, Asn1Kit.Pkix.AnotherNameValueBinding<T> binding, out T value)
+        => TryGetReceiptsFrom(source, binding, out value, out _);
+
+    public static bool TryGetReceiptsFrom<T>(this ReceiptRequest source, Asn1Kit.Pkix.AnotherNameValueBinding<T> binding, out T value, out Asn1Kit.Pkix.AnotherName raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Pkix.AnotherName? match = null;
+        if (source.ReceiptsFrom is { } node0)
+        {
+            if (node0.ReceiptList is { } node1)
+            {
+                foreach (var node2 in node1)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        if (node3.OtherName is { } node4)
+                        {
+                            if (node4.TypeId.Equals(binding.Oid))
+                            {
+                                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetReceiptsFrom.");
+                                match = node4;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
+    public static bool TryGetReceiptsFromValue<T>(this ReceiptRequest source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value)
+        => TryGetReceiptsFromValue(source, binding, out value, out _);
+
+    public static bool TryGetReceiptsFromValue<T>(this ReceiptRequest source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value, out Asn1Kit.Pkix.AttributeTypeAndValue raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Pkix.AttributeTypeAndValue? match = null;
+        if (source.ReceiptsFrom is { } node0)
+        {
+            if (node0.ReceiptList is { } node1)
+            {
+                foreach (var node2 in node1)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        if (node3.DirectoryName is { } node4)
+                        {
+                            foreach (var node5 in node4)
+                            {
+                                foreach (var node6 in node5)
+                                {
+                                    if (node6.Type.Equals(binding.Oid))
+                                    {
+                                        if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetReceiptsFromValue.");
+                                        match = node6;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match.Value;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value.Value);
+        }
+        else
+            value = binding.Decoder!(match.Value);
+        return true;
+    }
+
+    public static bool TryGetReceiptsTo<T>(this ReceiptRequest source, Asn1Kit.Pkix.AnotherNameValueBinding<T> binding, out T value)
+        => TryGetReceiptsTo(source, binding, out value, out _);
+
+    public static bool TryGetReceiptsTo<T>(this ReceiptRequest source, Asn1Kit.Pkix.AnotherNameValueBinding<T> binding, out T value, out Asn1Kit.Pkix.AnotherName raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Pkix.AnotherName? match = null;
+        if (source.ReceiptsTo is { } node0)
+        {
+            foreach (var node1 in node0)
+            {
+                foreach (var node2 in node1)
+                {
+                    if (node2.OtherName is { } node3)
+                    {
+                        if (node3.TypeId.Equals(binding.Oid))
+                        {
+                            if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetReceiptsTo.");
+                            match = node3;
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
+    public static bool TryGetReceiptsToValue<T>(this ReceiptRequest source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value)
+        => TryGetReceiptsToValue(source, binding, out value, out _);
+
+    public static bool TryGetReceiptsToValue<T>(this ReceiptRequest source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value, out Asn1Kit.Pkix.AttributeTypeAndValue raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Pkix.AttributeTypeAndValue? match = null;
+        if (source.ReceiptsTo is { } node0)
+        {
+            foreach (var node1 in node0)
+            {
+                foreach (var node2 in node1)
+                {
+                    if (node2.DirectoryName is { } node3)
+                    {
+                        foreach (var node4 in node3)
+                        {
+                            foreach (var node5 in node4)
+                            {
+                                if (node5.Type.Equals(binding.Oid))
+                                {
+                                    if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetReceiptsToValue.");
+                                    match = node5;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match.Value;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value.Value);
+        }
+        else
+            value = binding.Decoder!(match.Value);
+        return true;
+    }
+
+}
+
+public static class MLDataOpenTypeExtensions
+{
+    public static bool TryGetMlReceiptPolicy<T>(this MLData source, Asn1Kit.Pkix.AnotherNameValueBinding<T> binding, out T value)
+        => TryGetMlReceiptPolicy(source, binding, out value, out _);
+
+    public static bool TryGetMlReceiptPolicy<T>(this MLData source, Asn1Kit.Pkix.AnotherNameValueBinding<T> binding, out T value, out Asn1Kit.Pkix.AnotherName raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Pkix.AnotherName? match = null;
+        if (source.MlReceiptPolicy is { } node0)
+        {
+            if (node0.InsteadOf is { } node1)
+            {
+                foreach (var node2 in node1)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        if (node3.OtherName is { } node4)
+                        {
+                            if (node4.TypeId.Equals(binding.Oid))
+                            {
+                                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetMlReceiptPolicy.");
+                                match = node4;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
+    public static bool TryGetMlReceiptPolicyValue<T>(this MLData source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value)
+        => TryGetMlReceiptPolicyValue(source, binding, out value, out _);
+
+    public static bool TryGetMlReceiptPolicyValue<T>(this MLData source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value, out Asn1Kit.Pkix.AttributeTypeAndValue raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Pkix.AttributeTypeAndValue? match = null;
+        if (source.MlReceiptPolicy is { } node0)
+        {
+            if (node0.InsteadOf is { } node1)
+            {
+                foreach (var node2 in node1)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        if (node3.DirectoryName is { } node4)
+                        {
+                            foreach (var node5 in node4)
+                            {
+                                foreach (var node6 in node5)
+                                {
+                                    if (node6.Type.Equals(binding.Oid))
+                                    {
+                                        if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetMlReceiptPolicyValue.");
+                                        match = node6;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match.Value;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value.Value);
+        }
+        else
+            value = binding.Decoder!(match.Value);
+        return true;
+    }
+
+    public static bool TryGetMlReceiptPolicyValue2<T>(this MLData source, Asn1Kit.Pkix.AnotherNameValueBinding<T> binding, out T value)
+        => TryGetMlReceiptPolicyValue2(source, binding, out value, out _);
+
+    public static bool TryGetMlReceiptPolicyValue2<T>(this MLData source, Asn1Kit.Pkix.AnotherNameValueBinding<T> binding, out T value, out Asn1Kit.Pkix.AnotherName raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Pkix.AnotherName? match = null;
+        if (source.MlReceiptPolicy is { } node0)
+        {
+            if (node0.InAdditionTo is { } node1)
+            {
+                foreach (var node2 in node1)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        if (node3.OtherName is { } node4)
+                        {
+                            if (node4.TypeId.Equals(binding.Oid))
+                            {
+                                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetMlReceiptPolicyValue2.");
+                                match = node4;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
+    public static bool TryGetMlReceiptPolicyValue3<T>(this MLData source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value)
+        => TryGetMlReceiptPolicyValue3(source, binding, out value, out _);
+
+    public static bool TryGetMlReceiptPolicyValue3<T>(this MLData source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value, out Asn1Kit.Pkix.AttributeTypeAndValue raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Pkix.AttributeTypeAndValue? match = null;
+        if (source.MlReceiptPolicy is { } node0)
+        {
+            if (node0.InAdditionTo is { } node1)
+            {
+                foreach (var node2 in node1)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        if (node3.DirectoryName is { } node4)
+                        {
+                            foreach (var node5 in node4)
+                            {
+                                foreach (var node6 in node5)
+                                {
+                                    if (node6.Type.Equals(binding.Oid))
+                                    {
+                                        if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetMlReceiptPolicyValue3.");
+                                        match = node6;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match.Value;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value.Value);
+        }
+        else
+            value = binding.Decoder!(match.Value);
+        return true;
+    }
+
+}
+
+public static class IssuerSerialOpenTypeExtensions
+{
+    public static bool TryGetIssuer<T>(this IssuerSerial source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value)
+        => TryGetIssuer(source, binding, out value, out _);
+
+    public static bool TryGetIssuer<T>(this IssuerSerial source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value, out Asn1Kit.Pkix.AttributeTypeAndValue raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Pkix.AttributeTypeAndValue? match = null;
+        if (source.Issuer is { } node0)
+        {
+            foreach (var node1 in node0)
+            {
+                if (node1.DirectoryName is { } node2)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        foreach (var node4 in node3)
+                        {
+                            if (node4.Type.Equals(binding.Oid))
+                            {
+                                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetIssuer.");
+                                match = node4;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match.Value;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value.Value);
+        }
+        else
+            value = binding.Decoder!(match.Value);
+        return true;
+    }
+
+}
+

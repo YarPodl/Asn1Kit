@@ -5,8 +5,11 @@ using System.Text.Json.Serialization;
 namespace Asn1Kit.Ir;
 
 /// <summary>
-/// Sidecar overlay that attaches open-type <see cref="AnyType.Bindings"/> after ASN.1 compile.
+/// Sidecar overlay that attaches open-type tables after ASN.1 compile.
 /// Keys are <c>Module.Type.field</c> (ASN.1 component name).
+/// After apply, tables are normalized to the modern IR shape:
+/// <c>any.selector</c> on the field body and <c>ref.openTypes</c> on uses
+/// (or definition-scoped <c>any.bindings</c> + <c>tableExtensible</c> when the type has no refs).
 /// </summary>
 public static class OpenTypeBindings
 {
@@ -85,6 +88,40 @@ public static class OpenTypeBindings
                 Path = entry.Key,
                 Bindings = entry.Value
             }));
+    }
+
+    /// <summary>
+    /// Normalizes legacy inline <c>any.bindings</c> into modern <c>selector</c> + <c>ref.openTypes</c>
+    /// (or definition-scoped bindings with <c>tableExtensible</c> when the owner has no refs).
+    /// </summary>
+    public static void NormalizeLegacy(IrDocument document)
+    {
+        var changed = false;
+        foreach (var module in document.Modules)
+        {
+            foreach (var typeDef in module.Types)
+            {
+                if (typeDef.Type is not SequenceType and not SetType) continue;
+                var components = typeDef.Type is SequenceType sequence
+                    ? sequence.Components
+                    : ((SetType)typeDef.Type).Components;
+                foreach (var component in components)
+                {
+                    if (component.Type is not AnyType { Bindings.Count: > 0 } any) continue;
+                    // Already has a modern selector (IOC / hand-authored ancestor paths) — leave it alone.
+                    if (any.Selector is not null) continue;
+                    NormalizeField(document, module, typeDef.Name, component, any);
+                    changed = true;
+                }
+            }
+        }
+
+        // Re-validate only when this pass rewrote IR. Hand-authored ancestor selectors
+        // (Levels > 0) are checked in their use context by the backend, not at definition.
+        if (changed)
+        {
+            IrValidator.Validate(document);
+        }
     }
 
     private static void ApplyTargets(IrDocument document, IEnumerable<BindingTarget> targets)
@@ -173,8 +210,174 @@ public static class OpenTypeBindings
             };
         }
 
-        IrValidator.Validate(document);
+        NormalizeLegacy(document);
     }
+
+    private static void NormalizeField(
+        IrDocument document,
+        IrModule module,
+        string typeName,
+        IrComponent component,
+        AnyType any)
+    {
+        var definedBy = any.DefinedBy
+            ?? throw new IrException(
+                $"Open-type field '{module.Name}.{typeName}.{component.Name}' has bindings but no definedBy.");
+        var bindings = any.Bindings!
+            .Select(b => new IrOpenTypeBinding
+            {
+                Key = b.Key,
+                Name = b.Name,
+                Type = CloneType(b.Type)
+            })
+            .ToList();
+
+        any.Selector = new IrOpenTypeSelector
+        {
+            Levels = 0,
+            Path = new List<string> { definedBy }
+        };
+
+        var use = new IrOpenTypeUse
+        {
+            Path = new List<string> { component.Name },
+            Bindings = bindings.Select(b => new IrOpenTypeBinding
+            {
+                Key = b.Key,
+                Name = b.Name,
+                Type = CloneType(b.Type)
+            }).ToList(),
+            TableExtensible = false
+        };
+
+        var refCount = AttachOpenTypesToReferences(document, module.Name, typeName, use);
+        if (refCount > 0)
+        {
+            // Shared type body matches IOC compaction: selector only; tables live on uses.
+            any.Bindings = null;
+            any.Table = null;
+            any.TableExtensible = null;
+        }
+        else
+        {
+            // Orphan type (no refs): keep definition-scoped bindings; tableExtensible marks modern policy.
+            any.Bindings = bindings;
+            any.TableExtensible = false;
+        }
+    }
+
+    private static int AttachOpenTypesToReferences(
+        IrDocument document,
+        string ownerModule,
+        string ownerType,
+        IrOpenTypeUse use)
+    {
+        var count = 0;
+        foreach (var module in document.Modules)
+        {
+            foreach (var definition in module.Types)
+                Walk(definition.Type, module);
+            foreach (var definition in module.Values)
+                Walk(definition.Type, module);
+        }
+
+        return count;
+
+        void Walk(TypeExpr type, IrModule context)
+        {
+            switch (type)
+            {
+                case RefType reference:
+                    if (ResolvesTo(document, context, reference, ownerModule, ownerType))
+                    {
+                        reference.OpenTypes ??= new List<IrOpenTypeUse>();
+                        if (!reference.OpenTypes.Any(existing =>
+                                existing.Path.Count == use.Path.Count &&
+                                existing.Path.SequenceEqual(use.Path, StringComparer.Ordinal)))
+                        {
+                            reference.OpenTypes.Add(CloneUse(use));
+                            count++;
+                        }
+                    }
+                    if (reference.OpenTypes is not null)
+                    {
+                        foreach (var nested in reference.OpenTypes)
+                            foreach (var binding in nested.Bindings)
+                                Walk(binding.Type, context);
+                    }
+                    break;
+                case AnyType open when open.Bindings is not null:
+                    foreach (var binding in open.Bindings)
+                        Walk(binding.Type, context);
+                    break;
+                case SequenceType sequence:
+                    foreach (var field in sequence.Components)
+                        Walk(field.Type, context);
+                    break;
+                case SetType set:
+                    foreach (var field in set.Components)
+                        Walk(field.Type, context);
+                    break;
+                case ChoiceType choice:
+                    foreach (var field in choice.Components)
+                        Walk(field.Type, context);
+                    break;
+                case SequenceOfType of:
+                    Walk(of.Element, context);
+                    break;
+                case SetOfType of:
+                    Walk(of.Element, context);
+                    break;
+                case OctetStringType { Containing: { } containing }:
+                    Walk(containing, context);
+                    break;
+                case BitStringType { Containing: { } containing }:
+                    Walk(containing, context);
+                    break;
+            }
+        }
+    }
+
+    private static bool ResolvesTo(
+        IrDocument document,
+        IrModule context,
+        RefType reference,
+        string ownerModule,
+        string ownerType)
+    {
+        if (!string.Equals(reference.Name, ownerType, StringComparison.Ordinal))
+            return false;
+
+        if (reference.Module is not null)
+            return string.Equals(reference.Module, ownerModule, StringComparison.Ordinal);
+
+        var local = context.Types.FirstOrDefault(t => t.Name == reference.Name);
+        if (local is not null)
+            return string.Equals(context.Name, ownerModule, StringComparison.Ordinal);
+
+        var import = context.Imports.FirstOrDefault(i => i.Types.Contains(reference.Name));
+        if (import is not null)
+            return string.Equals(import.Module, ownerModule, StringComparison.Ordinal);
+
+        return string.Equals(context.Name, ownerModule, StringComparison.Ordinal);
+    }
+
+    private static IrOpenTypeUse CloneUse(IrOpenTypeUse use) => new()
+    {
+        Path = use.Path.ToList(),
+        Bindings = use.Bindings.Select(b => new IrOpenTypeBinding
+        {
+            Key = b.Key,
+            Name = b.Name,
+            Type = CloneType(b.Type)
+        }).ToList(),
+        Table = use.Table,
+        TableExtensible = use.TableExtensible
+    };
+
+    private static TypeExpr CloneType(TypeExpr type) =>
+        JsonSerializer.Deserialize<TypeExpr>(
+            JsonSerializer.Serialize(type, IrSerializer.JsonOptions), IrSerializer.JsonOptions)!;
 
     private static AnyType ResolveAny(
         IrDocument document,

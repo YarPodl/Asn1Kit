@@ -18,8 +18,11 @@ public sealed partial class CSharpBackend : ILanguageBackend
 
     public IReadOnlyList<GeneratedFile> Generate(IrDocument document)
     {
+        // Overlay / hand-authored legacy any.bindings → selector + ref.openTypes (or definition-scoped modern).
+        OpenTypeBindings.NormalizeLegacy(document);
         _carrierShapes.Clear();
         _carrierBindingNamesByModule.Clear();
+        _emittedOpenCatalogs.Clear();
         foreach (var module in document.Modules)
         {
             if (!module.Types.Any(static type => IrOptions.ShouldGenerate(type.Options))) continue;
@@ -520,8 +523,12 @@ public sealed partial class CSharpBackend : ILanguageBackend
         || (type is ChoiceType && !IsSingleAlternativeChoice(type))
         || IsOpenType(type);
 
+    /// <summary>
+    /// Legacy Owner_Field open-type path. Modern tables (<c>tableExtensible</c> present) use
+    /// raw <see cref="Asn1Any"/> + Binding catalogs instead.
+    /// </summary>
     private static bool IsOpenType(TypeExpr type) =>
-        type is AnyType { Bindings.Count: > 0 };
+        type is AnyType { Bindings.Count: > 0 } any && !any.TableExtensible.HasValue;
 
     /// <summary>
     /// CHOICE with one alternative encodes as that alternative; collapse like a typedef alias.
@@ -711,7 +718,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
     private void EmitSet(StringBuilder sb, IrDocument document, IrModule module, string typeName, SetType type)
     {
         var deferredFields = type.Components.Where(f =>
-            OpenElement(document, module, f.Type) is AnyType { Bindings.Count: > 0 } ||
+            IsOpenType(OpenElement(document, module, f.Type)) ||
             _contextDepth.GetValueOrDefault(typeName + "_" + SanitizeIdentifier(f.Name)) > 0 ||
             _contextDepth.GetValueOrDefault(typeName + "_" + SanitizeIdentifier(f.Name) + "_Item") > 0).ToHashSet();
         var typeKeyword = IsCSharpValueTypeEmit(module, typeName, type) ? "struct" : "sealed class";
@@ -1614,8 +1621,10 @@ public sealed partial class CSharpBackend : ILanguageBackend
         string expr,
         string? forceTag = null,
         bool encodeLazyWrapper = true,
-        JsonObject? fieldOptions = null)
+        JsonObject? fieldOptions = null,
+        IrModule? emittingModule = null)
     {
+        emittingModule ??= module;
         if (encodeLazyWrapper && ShouldEmitLazy(document, module, type, fieldOptions))
         {
             sb.AppendLine($"{indent}if ({expr}.HasEncoded)");
@@ -1636,7 +1645,8 @@ public sealed partial class CSharpBackend : ILanguageBackend
                 $"{expr}.Value",
                 forceTag,
                 encodeLazyWrapper: false,
-                fieldOptions: null);
+                fieldOptions: null,
+                emittingModule: emittingModule);
             sb.AppendLine($"{indent}}}");
             return;
         }
@@ -1655,12 +1665,14 @@ public sealed partial class CSharpBackend : ILanguageBackend
                 $"{expr}.Value",
                 forceTag,
                 encodeLazyWrapper: false,
-                fieldOptions: null);
+                fieldOptions: null,
+                emittingModule: emittingModule);
             return;
         }
 
         var original = type;
-        type = UnwrapAliases(document, module, type);
+        var resolvedModule = module;
+        type = UnwrapAliases(document, ref resolvedModule, type);
 
         if (type.Tag?.Mode == TagModes.Explicit && forceTag is null)
         {
@@ -1670,12 +1682,33 @@ public sealed partial class CSharpBackend : ILanguageBackend
             if (inner is SequenceOfType or SetOfType)
             {
                 EmitOfEncode(
-                    sb, document, module, original, owner, hint, inner, indent + "    ", writer, expr, forceTag: null);
+                    sb,
+                    document,
+                    resolvedModule,
+                    original,
+                    owner,
+                    hint,
+                    inner,
+                    indent + "    ",
+                    writer,
+                    expr,
+                    forceTag: null,
+                    emittingModule);
             }
             else
             {
                 EmitEncodeValue(
-                    sb, document, module, owner, hint, inner, indent + "    ", writer, expr, encodeLazyWrapper: false);
+                    sb,
+                    document,
+                    resolvedModule,
+                    owner,
+                    hint,
+                    inner,
+                    indent + "    ",
+                    writer,
+                    expr,
+                    encodeLazyWrapper: false,
+                    emittingModule: emittingModule);
             }
 
             sb.AppendLine($"{indent}}}");
@@ -1684,7 +1717,19 @@ public sealed partial class CSharpBackend : ILanguageBackend
 
         if (type is SequenceOfType or SetOfType)
         {
-            EmitOfEncode(sb, document, module, original, owner, hint, type, indent, writer, expr, forceTag);
+            EmitOfEncode(
+                sb,
+                document,
+                resolvedModule,
+                original,
+                owner,
+                hint,
+                type,
+                indent,
+                writer,
+                expr,
+                forceTag,
+                emittingModule);
             return;
         }
 
@@ -1763,9 +1808,19 @@ public sealed partial class CSharpBackend : ILanguageBackend
         string indent,
         string writer,
         string expr,
-        string? forceTag)
+        string? forceTag,
+        IrModule? emittingModule = null)
     {
-        ResolveOfItemNaming(document, module, original, owner, hint, out var itemOwner, out var itemHint);
+        emittingModule ??= module;
+        ResolveOfItemNaming(
+            document,
+            module,
+            original,
+            owner,
+            hint,
+            out var itemOwner,
+            out var itemHint,
+            emittingModule);
         var writeMethod = ofType is SetOfType ? "WriteSetOf" : "WriteSequenceOf";
         var tag = forceTag ?? TagExpr(document, module, ofType);
         var element = ofType is SetOfType setOf ? setOf.Element : ((SequenceOfType)ofType).Element;
@@ -1781,7 +1836,8 @@ public sealed partial class CSharpBackend : ILanguageBackend
             indent + "    ",
             "inner",
             "item",
-            fieldOptions: element.Options);
+            fieldOptions: element.Options,
+            emittingModule: emittingModule);
         sb.AppendLine($"{indent}}});");
     }
 
@@ -2173,8 +2229,10 @@ public sealed partial class CSharpBackend : ILanguageBackend
         string? openTypeKeyExpr = null,
         bool allowLazy = true,
         JsonObject? fieldOptions = null,
-        TypeExpr? originalForOf = null)
+        TypeExpr? originalForOf = null,
+        IrModule? emittingModule = null)
     {
+        emittingModule ??= module;
         if (allowLazy && ShouldEmitLazy(document, module, type, fieldOptions))
         {
             sb.Append($"{reader}.ReadLazy(r => ");
@@ -2189,7 +2247,8 @@ public sealed partial class CSharpBackend : ILanguageBackend
                 forceTag,
                 openTypeKeyExpr,
                 allowLazy: false,
-                fieldOptions: null);
+                fieldOptions: null,
+                emittingModule: emittingModule);
             sb.Append(')');
             return;
         }
@@ -2208,14 +2267,16 @@ public sealed partial class CSharpBackend : ILanguageBackend
                 forceTag,
                 openTypeKeyExpr,
                 allowLazy: false,
-                fieldOptions: null);
+                fieldOptions: null,
+                emittingModule: emittingModule);
             sb.Append(')');
             return;
         }
 
         var integerRepresentation = TryResolveIntegerRepresentation(document, module, type);
         var original = originalForOf ?? type;
-        type = UnwrapAliases(document, module, type);
+        var resolvedModule = module;
+        type = UnwrapAliases(document, ref resolvedModule, type);
 
         if (type.Tag?.Mode == TagModes.Explicit && forceTag is null)
         {
@@ -2225,19 +2286,39 @@ public sealed partial class CSharpBackend : ILanguageBackend
 
         if (type is SequenceOfType or SetOfType)
         {
-            EmitOfDecodeExpr(sb, document, module, original, owner, hint, type, reader, forceTag, openTypeKeyExpr);
+            EmitOfDecodeExpr(
+                sb,
+                document,
+                resolvedModule,
+                original,
+                owner,
+                hint,
+                type,
+                reader,
+                forceTag,
+                openTypeKeyExpr,
+                emittingModule);
             return;
         }
 
         if (ContainedType(type) is { } content)
         {
-            ContainedNaming(document, module, original, owner, hint, out var contentModule, out var contentOwner, out var contentHint);
-            var contentCsType = CsType(document, contentModule, contentOwner, contentHint, content, false);
-            var known = content is AnyType { Bindings.Count: > 0 }
+            ContainedNaming(document, resolvedModule, original, owner, hint, out var contentModule, out var contentOwner, out var contentHint);
+            var contentCsType = CsType(document, contentModule, contentOwner, contentHint, content, false, emittingModule: emittingModule);
+            var known = IsOpenType(content)
                 ? $"{contentCsType}.IsKnown({openTypeKeyExpr ?? throw new InvalidOperationException("Contained open type requires a selector.")})"
                 : content is AnyType ? "false" : "true";
             sb.Append($"{reader}.ReadContained({forceTag ?? TagExpr(document, module, type)}, {BoolLiteral(type is BitStringType)}, {known}, {openTypeKeyExpr ?? "0"}, static (inner, key) => ");
-            EmitDecodeExpr(sb, document, contentModule, contentOwner, contentHint, content, "inner", openTypeKeyExpr: "key");
+            EmitDecodeExpr(
+                sb,
+                document,
+                contentModule,
+                contentOwner,
+                contentHint,
+                content,
+                "inner",
+                openTypeKeyExpr: "key",
+                emittingModule: emittingModule);
             sb.Append(')');
             return;
         }
@@ -2279,10 +2360,10 @@ public sealed partial class CSharpBackend : ILanguageBackend
             return;
         }
 
-        var decodeTag = forceTag ?? TagExpr(document, module, type);
-        if (IsEnumeratedRefOrType(document, module, type))
+        var decodeTag = forceTag ?? TagExpr(document, resolvedModule, type);
+        if (IsEnumeratedRefOrType(document, resolvedModule, type))
         {
-            var enumName = NamedTypeName(document, module, owner, hint, type);
+            var enumName = NamedTypeName(document, resolvedModule, owner, hint, type, emittingModule);
             sb.Append($"({enumName})(long){reader}.ReadEnumerated({decodeTag})");
             return;
         }
@@ -2294,16 +2375,16 @@ public sealed partial class CSharpBackend : ILanguageBackend
             return;
         }
 
-        var typeName = NamedTypeName(document, module, owner, hint, type);
+        var typeName = NamedTypeName(document, resolvedModule, owner, hint, type, emittingModule);
         var contextSuffix = ContextSuffix(typeName);
         // Qualify same-module names so Decode calls do not bind to a same-named property on the owner.
         if (!typeName.Contains('.', StringComparison.Ordinal))
         {
-            typeName = ModuleNamespace(module) + "." + typeName;
+            typeName = ModuleNamespace(emittingModule) + "." + typeName;
         }
 
         if (type is ChoiceType ||
-            (type is RefType r && Find(document, module, r)?.Type is ChoiceType or AnyType))
+            (type is RefType r && Find(document, resolvedModule, r)?.Type is ChoiceType or AnyType))
         {
             sb.Append($"{typeName}.Decode({reader}{contextSuffix})");
             return;
@@ -3031,7 +3112,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
         string? targetObject)
     {
         var unwrapped = OpenElement(document, module, type);
-        if (unwrapped is not AnyType { Bindings.Count: > 0 } any)
+        if (unwrapped is not AnyType any || !IsOpenType(any))
         {
             return null;
         }
@@ -3115,11 +3196,29 @@ public sealed partial class CSharpBackend : ILanguageBackend
         TypeExpr ofType,
         string reader,
         string? forceTag,
-        string? openTypeKeyExpr)
+        string? openTypeKeyExpr,
+        IrModule? emittingModule = null)
     {
-        ResolveOfItemNaming(document, module, original, owner, hint, out var itemOwner, out var itemHint);
+        emittingModule ??= module;
+        ResolveOfItemNaming(
+            document,
+            module,
+            original,
+            owner,
+            hint,
+            out var itemOwner,
+            out var itemHint,
+            emittingModule);
         var ofElement = ofType is SetOfType collection ? collection.Element : ((SequenceOfType)ofType).Element;
-        var elementName = NamedTypeName(document, module, itemOwner, itemHint, UnwrapAliases(document, module, ofElement));
+        var elementLookup = module;
+        var elementUnwrappedForName = UnwrapAliases(document, ref elementLookup, ofElement);
+        var elementName = NamedTypeName(
+            document,
+            elementLookup,
+            itemOwner,
+            itemHint,
+            elementUnwrappedForName,
+            emittingModule);
         var context = ChildContext(elementName);
         var previousContext = _callbackContext;
         var key = openTypeKeyExpr;
@@ -3128,12 +3227,34 @@ public sealed partial class CSharpBackend : ILanguageBackend
             key = context.Count == 1 ? context[0] : "(" + string.Join(", ", context) + ")";
             _callbackContext = Enumerable.Range(0, context.Count).Select(i => context.Count == 1 ? "key" : "key.Item" + (i + 1)).ToArray();
         }
-        try { EmitOfDecodeCore(sb, document, module, itemOwner, itemHint, ofType, reader, forceTag, key); }
+        try
+        {
+            EmitOfDecodeCore(
+                sb,
+                document,
+                module,
+                itemOwner,
+                itemHint,
+                ofType,
+                reader,
+                forceTag,
+                key,
+                emittingModule);
+        }
         finally { _callbackContext = previousContext; }
     }
 
-    private void EmitOfDecodeCore(StringBuilder sb, IrDocument document, IrModule module,
-        string itemOwner, string itemHint, TypeExpr ofType, string reader, string? forceTag, string? openTypeKeyExpr)
+    private void EmitOfDecodeCore(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string itemOwner,
+        string itemHint,
+        TypeExpr ofType,
+        string reader,
+        string? forceTag,
+        string? openTypeKeyExpr,
+        IrModule emittingModule)
     {
         var readMethod = ofType is SetOfType ? "ReadSetOf" : "ReadSequenceOf";
         var tag = forceTag ?? TagExpr(document, module, ofType);
@@ -3156,7 +3277,8 @@ public sealed partial class CSharpBackend : ILanguageBackend
                 CloneUntagged(elementUnwrapped),
                 "inner",
                 openTypeKeyExpr: openTypeKeyExpr is null ? null : "key",
-                fieldOptions: element.Options);
+                fieldOptions: element.Options,
+                emittingModule: emittingModule);
             sb.AppendLine(";");
             sb.Append("    }");
             sb.AppendLine();
@@ -3175,7 +3297,8 @@ public sealed partial class CSharpBackend : ILanguageBackend
             element,
             "inner",
             openTypeKeyExpr: openTypeKeyExpr is null ? null : "key",
-            fieldOptions: element.Options);
+            fieldOptions: element.Options,
+            emittingModule: emittingModule);
         sb.Append(')');
     }
 
@@ -3186,22 +3309,25 @@ public sealed partial class CSharpBackend : ILanguageBackend
         string hint,
         TypeExpr type,
         bool optional,
-        JsonObject? fieldOptions = null)
+        JsonObject? fieldOptions = null,
+        IrModule? emittingModule = null)
     {
+        emittingModule ??= module;
         var useLazy = ShouldEmitLazy(document, module, type, fieldOptions);
         var useRetain = !useLazy && ShouldEmitRetainEncoded(document, module, type, fieldOptions);
         var integerRepresentation = TryResolveIntegerRepresentation(document, module, type);
         var original = type;
-        type = UnwrapAliases(document, module, type);
+        var resolvedModule = module;
+        type = UnwrapAliases(document, ref resolvedModule, type);
 
         if (ContainedType(type) is { } content)
         {
-            ContainedNaming(document, module, original, owner, hint, out var contentModule, out var contentOwner, out var contentHint);
-            var contained = $"Asn1Contained<{CsType(document, contentModule, contentOwner, contentHint, content, false)}>";
+            ContainedNaming(document, resolvedModule, original, owner, hint, out var contentModule, out var contentOwner, out var contentHint);
+            var contained = $"Asn1Contained<{CsType(document, contentModule, contentOwner, contentHint, content, false, emittingModule: emittingModule)}>";
             return optional ? contained + "?" : contained;
         }
 
-        if (type is AnyType { Bindings.Count: > 0 } || IsOpenType(type))
+        if (IsOpenType(type))
         {
             var openName = OpenTypeTypeName(owner, hint);
             return optional ? openName + "?" : openName;
@@ -3209,9 +3335,26 @@ public sealed partial class CSharpBackend : ILanguageBackend
 
         if (type is SequenceOfType or SetOfType)
         {
-            ResolveOfItemNaming(document, module, original, owner, hint, out var itemOwner, out var itemHint);
+            ResolveOfItemNaming(
+                document,
+                resolvedModule,
+                original,
+                owner,
+                hint,
+                out var itemOwner,
+                out var itemHint,
+                emittingModule);
             var element = type is SetOfType setOf ? setOf.Element : ((SequenceOfType)type).Element;
-            var itemType = CsType(document, module, itemOwner, itemHint, element, optional: false, element.Options);
+            // Resolve nested refs in the alias defining module, but qualify names for the emitting namespace.
+            var itemType = CsType(
+                document,
+                resolvedModule,
+                itemOwner,
+                itemHint,
+                element,
+                optional: false,
+                element.Options,
+                emittingModule);
             var listType = $"{itemType}[]";
             var wrapped = useLazy
                 ? $"Asn1Lazy<{listType}>"
@@ -3242,7 +3385,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
             return mapped;
         }
 
-        var name = NamedTypeName(document, module, owner, hint, type);
+        var name = NamedTypeName(document, resolvedModule, owner, hint, type, emittingModule);
         var result = useLazy
             ? $"Asn1Lazy<{name}>"
             : useRetain
@@ -3262,8 +3405,10 @@ public sealed partial class CSharpBackend : ILanguageBackend
         string owner,
         string hint,
         out string itemOwner,
-        out string itemHint)
+        out string itemHint,
+        IrModule? emittingModule = null)
     {
+        emittingModule ??= module;
         itemHint = "Item";
         var cursor = original;
         var currentModule = module;
@@ -3298,7 +3443,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
             if (inner is SequenceOfType or SetOfType)
             {
                 itemOwner = IrOptions.CSharpTypeName(def.Options) ?? SanitizeIdentifier(def.Name);
-                if (ModuleNamespace(definingModule) != ModuleNamespace(module))
+                if (ModuleNamespace(definingModule) != ModuleNamespace(emittingModule))
                     itemOwner = ModuleNamespace(definingModule) + "." + itemOwner;
                 return;
             }
@@ -3672,8 +3817,15 @@ public sealed partial class CSharpBackend : ILanguageBackend
         return IrOptions.IntegerRepresentations.Der;
     }
 
-    private string NamedTypeName(IrDocument document, IrModule module, string owner, string hint, TypeExpr type)
+    private string NamedTypeName(
+        IrDocument document,
+        IrModule module,
+        string owner,
+        string hint,
+        TypeExpr type,
+        IrModule? emittingModule = null)
     {
+        emittingModule ??= module;
         if (type is RefType reference)
         {
             var found = FindWithModule(document, module, reference);
@@ -3681,7 +3833,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
             {
                 var (definingModule, def) = ResolveAliasOfTarget(document, found.Value.Module, found.Value.Def);
                 var typeName = IrOptions.CSharpTypeName(def.Options) ?? SanitizeIdentifier(def.Name);
-                var currentNs = ModuleNamespace(module);
+                var currentNs = ModuleNamespace(emittingModule);
                 var definingNs = ModuleNamespace(definingModule);
                 if (!string.Equals(currentNs, definingNs, StringComparison.Ordinal))
                 {
@@ -3859,7 +4011,10 @@ public sealed partial class CSharpBackend : ILanguageBackend
     /// Stops at multi-alternative CHOICE / SEQUENCE / SET, named BIT STRING, and ENUMERATED (those keep a type).
     /// Follows <c>options.csharp.aliasOf</c> as an explicit C# alias without rewriting IR RHS.
     /// </summary>
-    private TypeExpr UnwrapAliases(IrDocument document, IrModule module, TypeExpr type)
+    private TypeExpr UnwrapAliases(IrDocument document, IrModule module, TypeExpr type) =>
+        UnwrapAliases(document, ref module, type);
+
+    private TypeExpr UnwrapAliases(IrDocument document, ref IrModule module, TypeExpr type)
     {
         var visited = new HashSet<string>(StringComparer.Ordinal);
         while (true)
@@ -3910,6 +4065,9 @@ public sealed partial class CSharpBackend : ILanguageBackend
                     type.Options,
                     found.Value.Def.Options);
 
+                // Keep defining-module context so nested refs (e.g. Name → AttributeTypeAndValue)
+                // do not resolve to a same-named local type in the importing module.
+                module = found.Value.Module;
                 type = next;
                 continue;
             }

@@ -591,7 +591,7 @@ public sealed class PolicyQualifierInfo
 {
     /// <summary>ASN.1 alias PolicyQualifierId ::= OBJECT IDENTIFIER.</summary>
     public Asn1Oid PolicyQualifierId { get; set; }
-    public PolicyQualifierInfo_Qualifier Qualifier { get; set; }
+    public Asn1Any Qualifier { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -600,7 +600,7 @@ public sealed class PolicyQualifierInfo
         using (writer.EnterSequence(tag))
         {
             writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, PolicyQualifierId);
-            Qualifier.Encode(writer);
+            writer.WriteAny(Qualifier);
         }
     }
 
@@ -612,7 +612,7 @@ public sealed class PolicyQualifierInfo
         {
             var value = new PolicyQualifierInfo();
             value.PolicyQualifierId = reader.ReadOid(Asn1Tag.ObjectIdentifier);
-            value.Qualifier = PolicyQualifierInfo_Qualifier.Decode(reader, value.PolicyQualifierId);
+            value.Qualifier = reader.ReadAny();
             reader.ThrowIfNotEmpty();
             return value;
         }
@@ -1038,7 +1038,7 @@ public sealed class GeneralName
 public sealed class AnotherName
 {
     public Asn1Oid TypeId { get; set; }
-    public AnotherName_Value Value { get; set; }
+    public Asn1Any Value { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -1049,7 +1049,7 @@ public sealed class AnotherName
             writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, TypeId);
             using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
-                Value.Encode(writer);
+                writer.WriteAny(Value);
             }
         }
     }
@@ -1064,7 +1064,7 @@ public sealed class AnotherName
             value.TypeId = reader.ReadOid(Asn1Tag.ObjectIdentifier);
             using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
             {
-                value.Value = AnotherName_Value.Decode(reader, value.TypeId);
+                value.Value = reader.ReadAny();
                 reader.ThrowIfNotEmpty();
             }
             reader.ThrowIfNotEmpty();
@@ -1694,227 +1694,458 @@ public enum CRLReason
     AACompromise = 10
 }
 
-public sealed class PolicyQualifierInfo_Qualifier
+internal static class __PKIX1Implicit88OpenTypeCodecs
 {
-    public string? CPSuri { get; private set; }
-    public UserNotice? UserNotice { get; private set; }
-    public Asn1Any? Unknown { get; private set; }
+    internal static Asn1Codec<DirectoryString> DirectoryStringAttributeTypeAndValue { get; } =
+        new(static reader => DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
 
-    public static PolicyQualifierInfo_Qualifier FromCPSuri(string cPSuri) => new PolicyQualifierInfo_Qualifier
-    {
-        CPSuri = cPSuri,
-    };
+    internal static Asn1Codec<UserNotice> UserNoticePolicyQualifierInfo { get; } =
+        new(static reader => UserNotice.Decode(reader), static (writer, value) => value.Encode(writer));
 
-    public static PolicyQualifierInfo_Qualifier FromUserNotice(UserNotice userNotice) => new PolicyQualifierInfo_Qualifier
-    {
-        UserNotice = userNotice,
-    };
+}
 
-    public static PolicyQualifierInfo_Qualifier FromUnknown(Asn1Any value) => new PolicyQualifierInfo_Qualifier
-    {
-        Unknown = value,
-    };
+public sealed record AnotherNameValueBinding<T>
+{
+    public Asn1Oid Oid { get; }
+    public Asn1Codec<T>? Codec { get; }
+    public Func<AnotherName, T>? Decoder { get; }
+    public Func<T, Asn1Any>? Encoder { get; }
 
-    public override string ToString()
+    public AnotherNameValueBinding(Asn1Oid oid, Asn1Codec<T> codec)
     {
-        if (CPSuri is not null) return Asn1Formatting.Format(CPSuri);
-        if (UserNotice is not null) return Asn1Formatting.Format(UserNotice);
-        if (Unknown is not null) return Asn1Formatting.Format(Unknown);
-        return "<unset>";
+        Oid = oid;
+        Codec = codec ?? throw new ArgumentNullException(nameof(codec));
     }
 
-    public void Encode(Asn1Writer writer)
+    public AnotherNameValueBinding(Asn1Oid oid, Func<AnotherName, T> decoder, Func<T, Asn1Any> encoder)
     {
-        if (CPSuri != null)
-        {
-            writer.WriteString(Asn1Tag.Ia5String, CPSuri!, Asn1StringForm.Ia5);
-        }
-        else if (UserNotice != null)
-        {
-            UserNotice!.Encode(writer, Asn1Tag.Sequence);
-        }
-        else if (Unknown != null)
-        {
-            writer.WriteAny(Unknown.Value);
-        }
-        else throw new Asn1Exception("Open type has no alternative.");
-    }
-
-    public static bool IsKnown(Asn1Oid key) => key.Equals(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdQtCps) || key.Equals(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdQtUnotice);
-    public static PolicyQualifierInfo_Qualifier Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
-        Decode(reader, definedByKey, expectedTag: null);
-
-    public static PolicyQualifierInfo_Qualifier Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>
-        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
-
-    private static PolicyQualifierInfo_Qualifier Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
-    {
-        if (!reader.TryPeekTag(out var peeked))
-            throw new Asn1Exception("Unexpected end of ASN.1 data while decoding open type 'PolicyQualifierInfo_Qualifier': expected an encoded ASN.1 value for key '" + definedByKey + "'.");
-
-        if (definedByKey.Equals(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdQtCps))
-        {
-            var tag = expectedTag ?? Asn1Tag.Ia5String;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromCPSuri(reader.ReadString(tag, Asn1StringForm.Ia5));
-            }
-            return FromUnknown(reader.ReadAny());
-        }
-        else if (definedByKey.Equals(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdQtUnotice))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromUserNotice(Asn1Kit.Pkix.UserNotice.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromUserNotice(Asn1Kit.Pkix.UserNotice.Decode(reader, expectedTag.Value));
-                }
-            }
-            return FromUnknown(reader.ReadAny());
-        }
-        else {
-            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.Ia5String))
-            {
-                return FromCPSuri(reader.ReadString(Asn1Tag.Ia5String, Asn1StringForm.Ia5));
-            }
-            return FromUnknown(reader.ReadAny());
-        }
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
     }
 }
 
-public enum AnotherName_ValueKind
+public sealed record QualifierBinding<T>
 {
-    None,
-    XmppAddr,
-    SrvName,
-    SmtpUtf8Mailbox,
-    Unknown,
+    public Asn1Oid Oid { get; }
+    public Asn1Codec<T>? Codec { get; }
+    public Func<PolicyQualifierInfo, T>? Decoder { get; }
+    public Func<T, Asn1Any>? Encoder { get; }
+
+    public QualifierBinding(Asn1Oid oid, Asn1Codec<T> codec)
+    {
+        Oid = oid;
+        Codec = codec ?? throw new ArgumentNullException(nameof(codec));
+    }
+
+    public QualifierBinding(Asn1Oid oid, Func<PolicyQualifierInfo, T> decoder, Func<T, Asn1Any> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
 }
 
-public sealed class AnotherName_Value
+public static class PolicyQualifierInfoQualifierBindings
 {
-    public AnotherName_ValueKind Kind { get; private set; }
-    public string? Value { get; private set; }
-    public Asn1Any? Unknown { get; private set; }
+    public static QualifierBinding<string> CPSuri { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdQtCps, Asn1Codecs.Ia5String);
 
-    public static AnotherName_Value FromXmppAddr(string xmppAddr) => new AnotherName_Value
-    {
-        Kind = AnotherName_ValueKind.XmppAddr,
-        Value = xmppAddr,
-    };
+    public static QualifierBinding<UserNotice> UserNotice { get; } =
+        new(global::Asn1Kit.Pkix.PKIX1Explicit88Oids.IdQtUnotice, __PKIX1Implicit88OpenTypeCodecs.UserNoticePolicyQualifierInfo);
+}
 
-    public static AnotherName_Value FromSrvName(string srvName) => new AnotherName_Value
-    {
-        Kind = AnotherName_ValueKind.SrvName,
-        Value = srvName,
-    };
+public static class AnotherNameValueBindings
+{
+    public static AnotherNameValueBinding<string> XmppAddr { get; } =
+        new(Asn1Oid.Parse("1.3.6.1.5.5.7.8.5"), Asn1Codecs.Utf8String);
 
-    public static AnotherName_Value FromSmtpUtf8Mailbox(string smtpUtf8Mailbox) => new AnotherName_Value
-    {
-        Kind = AnotherName_ValueKind.SmtpUtf8Mailbox,
-        Value = smtpUtf8Mailbox,
-    };
+    public static AnotherNameValueBinding<string> SrvName { get; } =
+        new(Asn1Oid.Parse("1.3.6.1.5.5.7.8.7"), Asn1Codecs.Ia5String);
 
-    public static AnotherName_Value FromUnknown(Asn1Any value) => new AnotherName_Value
-    {
-        Kind = AnotherName_ValueKind.Unknown,
-        Unknown = value,
-    };
+    public static AnotherNameValueBinding<string> SmtpUtf8Mailbox { get; } =
+        new(Asn1Oid.Parse("1.3.6.1.5.5.7.8.9"), Asn1Codecs.Utf8String);
+}
 
-    public override string ToString()
+public static class PKIX1Implicit88OpenTypeExtensions
+{
+    public static bool TryDecodeValue<T>(this AnotherName source, AnotherNameValueBinding<T> binding, out T value)
     {
-        return Kind switch
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.TypeId.Equals(binding.Oid))) return false;
+        if (binding.Codec is { } codec)
         {
-            AnotherName_ValueKind.XmppAddr => Asn1Formatting.Format(Value),
-            AnotherName_ValueKind.SrvName => Asn1Formatting.Format(Value),
-            AnotherName_ValueKind.SmtpUtf8Mailbox => Asn1Formatting.Format(Value),
-            AnotherName_ValueKind.Unknown => Asn1Formatting.Format(Unknown),
-            _ => "<unset>",
-        };
+            value = codec.Decode(source.Value);
+        }
+        else
+            value = binding.Decoder!(source);
+        return true;
     }
 
-    public void Encode(Asn1Writer writer)
+    public static void SetValue<T>(this AnotherName source, AnotherNameValueBinding<T> binding, T value)
     {
-        switch (Kind)
-        {
-            case AnotherName_ValueKind.XmppAddr:
-                writer.WriteString(Asn1Tag.Utf8String, Value!, Asn1StringForm.Utf8);
-                break;
-            case AnotherName_ValueKind.SrvName:
-                writer.WriteString(Asn1Tag.Ia5String, Value!, Asn1StringForm.Ia5);
-                break;
-            case AnotherName_ValueKind.SmtpUtf8Mailbox:
-                writer.WriteString(Asn1Tag.Utf8String, Value!, Asn1StringForm.Utf8);
-                break;
-            case AnotherName_ValueKind.Unknown:
-                if (Unknown is null) throw new Asn1Exception("Open type has no alternative.");
-                writer.WriteAny(Unknown.Value);
-                break;
-            default: throw new Asn1Exception("Open type has no alternative.");
-        }
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.TypeId = binding.Oid;
+        var encoded = binding.Codec is { } codec
+            ? codec.Encode(value)
+            : binding.Encoder!(value);
+        result.Value = encoded;
     }
 
-    private static readonly Asn1Oid Oid_1_3_6_1_5_5_7_8_5 = Asn1Oid.Parse("1.3.6.1.5.5.7.8.5");
-    private static readonly Asn1Oid Oid_1_3_6_1_5_5_7_8_7 = Asn1Oid.Parse("1.3.6.1.5.5.7.8.7");
-    private static readonly Asn1Oid Oid_1_3_6_1_5_5_7_8_9 = Asn1Oid.Parse("1.3.6.1.5.5.7.8.9");
+    public static bool TryGet<T>(this AnotherName[]? source, AnotherNameValueBinding<T> binding, out T value)
+        => TryGet(source, binding, out value, out _);
 
-    public static bool IsKnown(Asn1Oid key) => key.Equals(Oid_1_3_6_1_5_5_7_8_5) || key.Equals(Oid_1_3_6_1_5_5_7_8_7) || key.Equals(Oid_1_3_6_1_5_5_7_8_9);
-    public static AnotherName_Value Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
-        Decode(reader, definedByKey, expectedTag: null);
-
-    public static AnotherName_Value Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>
-        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
-
-    private static AnotherName_Value Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
+    public static bool TryGet<T>(this AnotherName[]? source, AnotherNameValueBinding<T> binding, out T value, out AnotherName raw)
     {
-        if (!reader.TryPeekTag(out var peeked))
-            throw new Asn1Exception("Unexpected end of ASN.1 data while decoding open type 'AnotherName_Value': expected an encoded ASN.1 value for key '" + definedByKey + "'.");
-
-        if (definedByKey.Equals(Oid_1_3_6_1_5_5_7_8_5))
+        value = default!;
+        raw = default!;
+        if (source is null) return false;
+        ArgumentNullException.ThrowIfNull(binding);
+        AnotherName? match = null;
+        foreach (var item in source)
         {
-            var tag = expectedTag ?? Asn1Tag.Utf8String;
-            if (peeked.MatchesIgnoreConstructed(tag))
+            if (item.TypeId.Equals(binding.Oid))
             {
-                return FromXmppAddr(reader.ReadString(tag, Asn1StringForm.Utf8));
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
+                match = item;
             }
-            return FromUnknown(reader.ReadAny());
         }
-        else if (definedByKey.Equals(Oid_1_3_6_1_5_5_7_8_7))
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
         {
-            var tag = expectedTag ?? Asn1Tag.Ia5String;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSrvName(reader.ReadString(tag, Asn1StringForm.Ia5));
-            }
-            return FromUnknown(reader.ReadAny());
+            value = codec.Decode(match.Value);
         }
-        else if (definedByKey.Equals(Oid_1_3_6_1_5_5_7_8_9))
-        {
-            var tag = expectedTag ?? Asn1Tag.Utf8String;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromSmtpUtf8Mailbox(reader.ReadString(tag, Asn1StringForm.Utf8));
-            }
-            return FromUnknown(reader.ReadAny());
-        }
-        else {
-            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.Utf8String))
-            {
-                return FromXmppAddr(reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8));
-            }
-            if (expectedTag is null && peeked.MatchesIgnoreConstructed(Asn1Tag.Ia5String))
-            {
-                return FromSrvName(reader.ReadString(Asn1Tag.Ia5String, Asn1StringForm.Ia5));
-            }
-            return FromUnknown(reader.ReadAny());
-        }
+        else
+            value = binding.Decoder!(match);
+        return true;
     }
+
+    public static bool TryDecodeQualifier<T>(this PolicyQualifierInfo source, QualifierBinding<T> binding, out T value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.PolicyQualifierId.Equals(binding.Oid))) return false;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(source.Qualifier);
+        }
+        else
+            value = binding.Decoder!(source);
+        return true;
+    }
+
+    public static void SetQualifier<T>(this PolicyQualifierInfo source, QualifierBinding<T> binding, T value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.PolicyQualifierId = binding.Oid;
+        var encoded = binding.Codec is { } codec
+            ? codec.Encode(value)
+            : binding.Encoder!(value);
+        result.Qualifier = encoded;
+    }
+
+    public static bool TryGet<T>(this PolicyQualifierInfo[]? source, QualifierBinding<T> binding, out T value)
+        => TryGet(source, binding, out value, out _);
+
+    public static bool TryGet<T>(this PolicyQualifierInfo[]? source, QualifierBinding<T> binding, out T value, out PolicyQualifierInfo raw)
+    {
+        value = default!;
+        raw = default!;
+        if (source is null) return false;
+        ArgumentNullException.ThrowIfNull(binding);
+        PolicyQualifierInfo? match = null;
+        foreach (var item in source)
+        {
+            if (item.PolicyQualifierId.Equals(binding.Oid))
+            {
+                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
+                match = item;
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Qualifier);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
+}
+
+public static class AuthorityKeyIdentifierOpenTypeExtensions
+{
+    public static bool TryGetAuthorityCertIssuer<T>(this AuthorityKeyIdentifier source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value)
+        => TryGetAuthorityCertIssuer(source, binding, out value, out _);
+
+    public static bool TryGetAuthorityCertIssuer<T>(this AuthorityKeyIdentifier source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value, out Asn1Kit.Pkix.AttributeTypeAndValue raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Pkix.AttributeTypeAndValue? match = null;
+        if (source.AuthorityCertIssuer is { } node0)
+        {
+            foreach (var node1 in node0)
+            {
+                if (node1.DirectoryName is { } node2)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        foreach (var node4 in node3)
+                        {
+                            if (node4.Type.Equals(binding.Oid))
+                            {
+                                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetAuthorityCertIssuer.");
+                                match = node4;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match.Value;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value.Value);
+        }
+        else
+            value = binding.Decoder!(match.Value);
+        return true;
+    }
+
+}
+
+public static class GeneralSubtreeOpenTypeExtensions
+{
+    public static bool TryGetBase<T>(this GeneralSubtree source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value)
+        => TryGetBase(source, binding, out value, out _);
+
+    public static bool TryGetBase<T>(this GeneralSubtree source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value, out Asn1Kit.Pkix.AttributeTypeAndValue raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Pkix.AttributeTypeAndValue? match = null;
+        if (source.Base is { } node0)
+        {
+            if (node0.DirectoryName is { } node1)
+            {
+                foreach (var node2 in node1)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        if (node3.Type.Equals(binding.Oid))
+                        {
+                            if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetBase.");
+                            match = node3;
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match.Value;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value.Value);
+        }
+        else
+            value = binding.Decoder!(match.Value);
+        return true;
+    }
+
+}
+
+public static class DistributionPointOpenTypeExtensions
+{
+    public static bool TryGetDistributionPointValue<T>(this DistributionPoint source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value)
+        => TryGetDistributionPointValue(source, binding, out value, out _);
+
+    public static bool TryGetDistributionPointValue<T>(this DistributionPoint source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value, out Asn1Kit.Pkix.AttributeTypeAndValue raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Pkix.AttributeTypeAndValue? match = null;
+        if (source.DistributionPointValue is { } node0)
+        {
+            if (node0.FullName is { } node1)
+            {
+                foreach (var node2 in node1)
+                {
+                    if (node2.DirectoryName is { } node3)
+                    {
+                        foreach (var node4 in node3)
+                        {
+                            foreach (var node5 in node4)
+                            {
+                                if (node5.Type.Equals(binding.Oid))
+                                {
+                                    if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetDistributionPointValue.");
+                                    match = node5;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match.Value;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value.Value);
+        }
+        else
+            value = binding.Decoder!(match.Value);
+        return true;
+    }
+
+    public static bool TryGetCRLIssuer<T>(this DistributionPoint source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value)
+        => TryGetCRLIssuer(source, binding, out value, out _);
+
+    public static bool TryGetCRLIssuer<T>(this DistributionPoint source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value, out Asn1Kit.Pkix.AttributeTypeAndValue raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Pkix.AttributeTypeAndValue? match = null;
+        if (source.CRLIssuer is { } node0)
+        {
+            foreach (var node1 in node0)
+            {
+                if (node1.DirectoryName is { } node2)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        foreach (var node4 in node3)
+                        {
+                            if (node4.Type.Equals(binding.Oid))
+                            {
+                                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetCRLIssuer.");
+                                match = node4;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match.Value;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value.Value);
+        }
+        else
+            value = binding.Decoder!(match.Value);
+        return true;
+    }
+
+}
+
+public static class AccessDescriptionOpenTypeExtensions
+{
+    public static bool TryGetAccessLocation<T>(this AccessDescription source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value)
+        => TryGetAccessLocation(source, binding, out value, out _);
+
+    public static bool TryGetAccessLocation<T>(this AccessDescription source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value, out Asn1Kit.Pkix.AttributeTypeAndValue raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Pkix.AttributeTypeAndValue? match = null;
+        if (source.AccessLocation is { } node0)
+        {
+            if (node0.DirectoryName is { } node1)
+            {
+                foreach (var node2 in node1)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        if (node3.Type.Equals(binding.Oid))
+                        {
+                            if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetAccessLocation.");
+                            match = node3;
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match.Value;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value.Value);
+        }
+        else
+            value = binding.Decoder!(match.Value);
+        return true;
+    }
+
+}
+
+public static class IssuingDistributionPointOpenTypeExtensions
+{
+    public static bool TryGetDistributionPoint<T>(this IssuingDistributionPoint source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value)
+        => TryGetDistributionPoint(source, binding, out value, out _);
+
+    public static bool TryGetDistributionPoint<T>(this IssuingDistributionPoint source, Asn1Kit.Pkix.ValueBinding<T> binding, out T value, out Asn1Kit.Pkix.AttributeTypeAndValue raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Pkix.AttributeTypeAndValue? match = null;
+        if (source.DistributionPoint is { } node0)
+        {
+            if (node0.FullName is { } node1)
+            {
+                foreach (var node2 in node1)
+                {
+                    if (node2.DirectoryName is { } node3)
+                    {
+                        foreach (var node4 in node3)
+                        {
+                            foreach (var node5 in node4)
+                            {
+                                if (node5.Type.Equals(binding.Oid))
+                                {
+                                    if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetDistributionPoint.");
+                                    match = node5;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match.Value;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value.Value);
+        }
+        else
+            value = binding.Decoder!(match.Value);
+        return true;
+    }
+
 }
 

@@ -100,4 +100,4 @@ Same-session `ShortRun` до/после production-правок; полные о
 | ★ CRL Asn1Kit_Decode | 4.836 µs | 1.93 KB | **+46%** |
 | ★ CMS Asn1Kit_Lazy_Decode | 2.639 µs | 1.21 KB | **+28%** |
 
-Причина Alloc↑: eager `AttributeTypeAndValue_Value` + `AlgorithmIdentifier_Parameters` вместо opaque `Asn1Any` на AVA/algorithm parameters (см. SUMMARY снимка). Encode не перезамерялся в этом прогоне.
+Причина Alloc↑ (снимок до unify): eager `AttributeTypeAndValue_Value` + `AlgorithmIdentifier_Parameters` вместо opaque `Asn1Any` на AVA/algorithm parameters (см. SUMMARY снимка). После unify open types — raw `Asn1Any` + Binding; ожидается снижение Alloc на legacy decode относительно этого снимка. Encode не перезамерялся в том прогоне.

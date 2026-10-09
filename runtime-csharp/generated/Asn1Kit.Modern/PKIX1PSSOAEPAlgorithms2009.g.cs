@@ -301,17 +301,8 @@ public sealed class RSAESOAEPParams
 
 internal static class __PKIX1PSSOAEPAlgorithms2009OpenTypeCodecs
 {
-    internal static Asn1Codec<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier> HashAlgorithmAlgorithmIdentifier { get; } = new(
-        static reader =>
-        {
-            Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier decoded;
-            decoded = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
-            return decoded;
-        },
-        static (writer, value) =>
-        {
-            value.Encode(writer, Asn1Tag.Sequence);
-        });
+    internal static Asn1Codec<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier> HashAlgorithmAlgorithmIdentifier { get; } =
+        new(static reader => Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader), static (writer, value) => value.Encode(writer));
 
 }
 

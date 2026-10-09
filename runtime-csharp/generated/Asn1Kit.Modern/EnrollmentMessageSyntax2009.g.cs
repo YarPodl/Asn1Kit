@@ -409,7 +409,7 @@ public sealed class TaggedAttribute
     /// <summary>ASN.1 alias BodyPartID ::= INTEGER.</summary>
     public uint BodyPartID { get; set; }
     public Asn1Oid AttrType { get; set; }
-    public TaggedAttribute_AttrValues_Item[] AttrValues { get; set; } = Array.Empty<TaggedAttribute_AttrValues_Item>();
+    public Asn1Any[] AttrValues { get; set; } = Array.Empty<Asn1Any>();
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -421,7 +421,7 @@ public sealed class TaggedAttribute
             writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, AttrType);
             writer.WriteSetOf(Asn1Tag.Set, AttrValues, static (inner, item) =>
             {
-                item.Encode(inner);
+                inner.WriteAny(item);
             });
         }
     }
@@ -435,7 +435,7 @@ public sealed class TaggedAttribute
             var value = new TaggedAttribute();
             value.BodyPartID = reader.ReadUInt32(Asn1Tag.Integer);
             value.AttrType = reader.ReadOid(Asn1Tag.ObjectIdentifier);
-            value.AttrValues = reader.ReadSetOf(Asn1Tag.Set, value.AttrType, static (inner, key) => TaggedAttribute_AttrValues_Item.Decode(inner, key));
+            value.AttrValues = reader.ReadSetOf(Asn1Tag.Set, static inner => inner.ReadAny());
             reader.ThrowIfNotEmpty();
             return value;
         }
@@ -1579,851 +1579,6 @@ public sealed class PopLinkWitnessV2
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public enum TaggedAttribute_AttrValues_ItemKind
-{
-    None,
-    CmcIdentityProof,
-    CmcDataReturn,
-    CmcRegInfo,
-    CmcResponseInfo,
-    CmcQueryPending,
-    CmcPopLinkRandom,
-    CmcPopLinkWitness,
-    CmcIdentification,
-    CmcTransactionId,
-    CmcSenderNonce,
-    CmcRecipientNonce,
-    CmcStatusInfo,
-    CmcAddExtensions,
-    CmcEncryptedPOP,
-    CmcDecryptedPOP,
-    CmcLraPOPWitness,
-    CmcGetCert,
-    CmcGetCRL,
-    CmcRevokeRequest,
-    CmcConfirmCertAcceptance,
-    CmcStatusInfoV2,
-    CmcTrustedAnchors,
-    CmcAuthData,
-    CmcBatchRequests,
-    CmcBatchResponses,
-    CmcPublishCert,
-    CmcModCertTemplate,
-    CmcControlProcessed,
-    CmcIdentityProofV2,
-    CmcPopLinkWitnessV2,
-    Unknown,
-}
-
-public sealed class TaggedAttribute_AttrValues_Item
-{
-    public TaggedAttribute_AttrValues_ItemKind Kind { get; private set; }
-    public ReadOnlyMemory<byte>? ReadOnlyMemoryOfbyteValue { get; private set; }
-    public string? CmcIdentification { get; private set; }
-    public Asn1Integer? CmcTransactionId { get; private set; }
-    public CMCStatusInfo? CmcStatusInfo { get; private set; }
-    public AddExtensions? CmcAddExtensions { get; private set; }
-    public EncryptedPOP? CmcEncryptedPOP { get; private set; }
-    public DecryptedPOP? CmcDecryptedPOP { get; private set; }
-    public LraPopWitness? CmcLraPOPWitness { get; private set; }
-    public GetCert? CmcGetCert { get; private set; }
-    public GetCRL? CmcGetCRL { get; private set; }
-    public RevokeRequest? CmcRevokeRequest { get; private set; }
-    public Asn1Kit.Modern.CryptographicMessageSyntax2009.IssuerAndSerialNumber? CmcConfirmCertAcceptance { get; private set; }
-    public CMCStatusInfoV2? CmcStatusInfoV2 { get; private set; }
-    public PublishTrustAnchors? CmcTrustedAnchors { get; private set; }
-    public uint? CmcAuthData { get; private set; }
-    public uint[]? UintArrayValue { get; private set; }
-    public CMCPublicationInfo? CmcPublishCert { get; private set; }
-    public ModCertTemplate? CmcModCertTemplate { get; private set; }
-    public ControlsProcessed? CmcControlProcessed { get; private set; }
-    public IdentityProofV2? CmcIdentityProofV2 { get; private set; }
-    public PopLinkWitnessV2? CmcPopLinkWitnessV2 { get; private set; }
-    public Asn1Any? Unknown { get; private set; }
-
-    public static TaggedAttribute_AttrValues_Item FromCmcIdentityProof(ReadOnlyMemory<byte> cmcIdentityProof) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcIdentityProof,
-        ReadOnlyMemoryOfbyteValue = cmcIdentityProof,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcDataReturn(ReadOnlyMemory<byte> cmcDataReturn) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcDataReturn,
-        ReadOnlyMemoryOfbyteValue = cmcDataReturn,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcRegInfo(ReadOnlyMemory<byte> cmcRegInfo) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcRegInfo,
-        ReadOnlyMemoryOfbyteValue = cmcRegInfo,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcResponseInfo(ReadOnlyMemory<byte> cmcResponseInfo) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcResponseInfo,
-        ReadOnlyMemoryOfbyteValue = cmcResponseInfo,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcQueryPending(ReadOnlyMemory<byte> cmcQueryPending) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcQueryPending,
-        ReadOnlyMemoryOfbyteValue = cmcQueryPending,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcPopLinkRandom(ReadOnlyMemory<byte> cmcPopLinkRandom) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcPopLinkRandom,
-        ReadOnlyMemoryOfbyteValue = cmcPopLinkRandom,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcPopLinkWitness(ReadOnlyMemory<byte> cmcPopLinkWitness) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcPopLinkWitness,
-        ReadOnlyMemoryOfbyteValue = cmcPopLinkWitness,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcIdentification(string cmcIdentification) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcIdentification,
-        CmcIdentification = cmcIdentification,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcTransactionId(Asn1Integer cmcTransactionId) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcTransactionId,
-        CmcTransactionId = cmcTransactionId,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcSenderNonce(ReadOnlyMemory<byte> cmcSenderNonce) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcSenderNonce,
-        ReadOnlyMemoryOfbyteValue = cmcSenderNonce,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcRecipientNonce(ReadOnlyMemory<byte> cmcRecipientNonce) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcRecipientNonce,
-        ReadOnlyMemoryOfbyteValue = cmcRecipientNonce,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcStatusInfo(CMCStatusInfo cmcStatusInfo) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcStatusInfo,
-        CmcStatusInfo = cmcStatusInfo,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcAddExtensions(AddExtensions cmcAddExtensions) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcAddExtensions,
-        CmcAddExtensions = cmcAddExtensions,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcEncryptedPOP(EncryptedPOP cmcEncryptedPOP) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcEncryptedPOP,
-        CmcEncryptedPOP = cmcEncryptedPOP,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcDecryptedPOP(DecryptedPOP cmcDecryptedPOP) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcDecryptedPOP,
-        CmcDecryptedPOP = cmcDecryptedPOP,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcLraPOPWitness(LraPopWitness cmcLraPOPWitness) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcLraPOPWitness,
-        CmcLraPOPWitness = cmcLraPOPWitness,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcGetCert(GetCert cmcGetCert) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcGetCert,
-        CmcGetCert = cmcGetCert,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcGetCRL(GetCRL cmcGetCRL) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcGetCRL,
-        CmcGetCRL = cmcGetCRL,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcRevokeRequest(RevokeRequest cmcRevokeRequest) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcRevokeRequest,
-        CmcRevokeRequest = cmcRevokeRequest,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcConfirmCertAcceptance(Asn1Kit.Modern.CryptographicMessageSyntax2009.IssuerAndSerialNumber cmcConfirmCertAcceptance) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcConfirmCertAcceptance,
-        CmcConfirmCertAcceptance = cmcConfirmCertAcceptance,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcStatusInfoV2(CMCStatusInfoV2 cmcStatusInfoV2) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcStatusInfoV2,
-        CmcStatusInfoV2 = cmcStatusInfoV2,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcTrustedAnchors(PublishTrustAnchors cmcTrustedAnchors) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcTrustedAnchors,
-        CmcTrustedAnchors = cmcTrustedAnchors,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcAuthData(uint cmcAuthData) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcAuthData,
-        CmcAuthData = cmcAuthData,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcBatchRequests(uint[] cmcBatchRequests) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcBatchRequests,
-        UintArrayValue = cmcBatchRequests,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcBatchResponses(uint[] cmcBatchResponses) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcBatchResponses,
-        UintArrayValue = cmcBatchResponses,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcPublishCert(CMCPublicationInfo cmcPublishCert) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcPublishCert,
-        CmcPublishCert = cmcPublishCert,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcModCertTemplate(ModCertTemplate cmcModCertTemplate) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcModCertTemplate,
-        CmcModCertTemplate = cmcModCertTemplate,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcControlProcessed(ControlsProcessed cmcControlProcessed) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcControlProcessed,
-        CmcControlProcessed = cmcControlProcessed,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcIdentityProofV2(IdentityProofV2 cmcIdentityProofV2) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcIdentityProofV2,
-        CmcIdentityProofV2 = cmcIdentityProofV2,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromCmcPopLinkWitnessV2(PopLinkWitnessV2 cmcPopLinkWitnessV2) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.CmcPopLinkWitnessV2,
-        CmcPopLinkWitnessV2 = cmcPopLinkWitnessV2,
-    };
-
-    public static TaggedAttribute_AttrValues_Item FromUnknown(Asn1Any value) => new TaggedAttribute_AttrValues_Item
-    {
-        Kind = TaggedAttribute_AttrValues_ItemKind.Unknown,
-        Unknown = value,
-    };
-
-    public override string ToString()
-    {
-        return Kind switch
-        {
-            TaggedAttribute_AttrValues_ItemKind.CmcIdentityProof => Asn1Formatting.Format(ReadOnlyMemoryOfbyteValue),
-            TaggedAttribute_AttrValues_ItemKind.CmcDataReturn => Asn1Formatting.Format(ReadOnlyMemoryOfbyteValue),
-            TaggedAttribute_AttrValues_ItemKind.CmcRegInfo => Asn1Formatting.Format(ReadOnlyMemoryOfbyteValue),
-            TaggedAttribute_AttrValues_ItemKind.CmcResponseInfo => Asn1Formatting.Format(ReadOnlyMemoryOfbyteValue),
-            TaggedAttribute_AttrValues_ItemKind.CmcQueryPending => Asn1Formatting.Format(ReadOnlyMemoryOfbyteValue),
-            TaggedAttribute_AttrValues_ItemKind.CmcPopLinkRandom => Asn1Formatting.Format(ReadOnlyMemoryOfbyteValue),
-            TaggedAttribute_AttrValues_ItemKind.CmcPopLinkWitness => Asn1Formatting.Format(ReadOnlyMemoryOfbyteValue),
-            TaggedAttribute_AttrValues_ItemKind.CmcIdentification => Asn1Formatting.Format(CmcIdentification),
-            TaggedAttribute_AttrValues_ItemKind.CmcTransactionId => Asn1Formatting.Format(CmcTransactionId),
-            TaggedAttribute_AttrValues_ItemKind.CmcSenderNonce => Asn1Formatting.Format(ReadOnlyMemoryOfbyteValue),
-            TaggedAttribute_AttrValues_ItemKind.CmcRecipientNonce => Asn1Formatting.Format(ReadOnlyMemoryOfbyteValue),
-            TaggedAttribute_AttrValues_ItemKind.CmcStatusInfo => Asn1Formatting.Format(CmcStatusInfo),
-            TaggedAttribute_AttrValues_ItemKind.CmcAddExtensions => Asn1Formatting.Format(CmcAddExtensions),
-            TaggedAttribute_AttrValues_ItemKind.CmcEncryptedPOP => Asn1Formatting.Format(CmcEncryptedPOP),
-            TaggedAttribute_AttrValues_ItemKind.CmcDecryptedPOP => Asn1Formatting.Format(CmcDecryptedPOP),
-            TaggedAttribute_AttrValues_ItemKind.CmcLraPOPWitness => Asn1Formatting.Format(CmcLraPOPWitness),
-            TaggedAttribute_AttrValues_ItemKind.CmcGetCert => Asn1Formatting.Format(CmcGetCert),
-            TaggedAttribute_AttrValues_ItemKind.CmcGetCRL => Asn1Formatting.Format(CmcGetCRL),
-            TaggedAttribute_AttrValues_ItemKind.CmcRevokeRequest => Asn1Formatting.Format(CmcRevokeRequest),
-            TaggedAttribute_AttrValues_ItemKind.CmcConfirmCertAcceptance => Asn1Formatting.Format(CmcConfirmCertAcceptance),
-            TaggedAttribute_AttrValues_ItemKind.CmcStatusInfoV2 => Asn1Formatting.Format(CmcStatusInfoV2),
-            TaggedAttribute_AttrValues_ItemKind.CmcTrustedAnchors => Asn1Formatting.Format(CmcTrustedAnchors),
-            TaggedAttribute_AttrValues_ItemKind.CmcAuthData => Asn1Formatting.Format(CmcAuthData),
-            TaggedAttribute_AttrValues_ItemKind.CmcBatchRequests => Asn1Formatting.Format(UintArrayValue),
-            TaggedAttribute_AttrValues_ItemKind.CmcBatchResponses => Asn1Formatting.Format(UintArrayValue),
-            TaggedAttribute_AttrValues_ItemKind.CmcPublishCert => Asn1Formatting.Format(CmcPublishCert),
-            TaggedAttribute_AttrValues_ItemKind.CmcModCertTemplate => Asn1Formatting.Format(CmcModCertTemplate),
-            TaggedAttribute_AttrValues_ItemKind.CmcControlProcessed => Asn1Formatting.Format(CmcControlProcessed),
-            TaggedAttribute_AttrValues_ItemKind.CmcIdentityProofV2 => Asn1Formatting.Format(CmcIdentityProofV2),
-            TaggedAttribute_AttrValues_ItemKind.CmcPopLinkWitnessV2 => Asn1Formatting.Format(CmcPopLinkWitnessV2),
-            TaggedAttribute_AttrValues_ItemKind.Unknown => Asn1Formatting.Format(Unknown),
-            _ => "<unset>",
-        };
-    }
-
-    public void Encode(Asn1Writer writer)
-    {
-        switch (Kind)
-        {
-            case TaggedAttribute_AttrValues_ItemKind.CmcIdentityProof:
-                writer.WriteOctetString(Asn1Tag.OctetString, ReadOnlyMemoryOfbyteValue.Value.Span);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcDataReturn:
-                writer.WriteOctetString(Asn1Tag.OctetString, ReadOnlyMemoryOfbyteValue.Value.Span);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcRegInfo:
-                writer.WriteOctetString(Asn1Tag.OctetString, ReadOnlyMemoryOfbyteValue.Value.Span);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcResponseInfo:
-                writer.WriteOctetString(Asn1Tag.OctetString, ReadOnlyMemoryOfbyteValue.Value.Span);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcQueryPending:
-                writer.WriteOctetString(Asn1Tag.OctetString, ReadOnlyMemoryOfbyteValue.Value.Span);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcPopLinkRandom:
-                writer.WriteOctetString(Asn1Tag.OctetString, ReadOnlyMemoryOfbyteValue.Value.Span);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcPopLinkWitness:
-                writer.WriteOctetString(Asn1Tag.OctetString, ReadOnlyMemoryOfbyteValue.Value.Span);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcIdentification:
-                writer.WriteString(Asn1Tag.Utf8String, CmcIdentification!, Asn1StringForm.Utf8);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcTransactionId:
-                writer.WriteInteger(Asn1Tag.Integer, CmcTransactionId.Value);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcSenderNonce:
-                writer.WriteOctetString(Asn1Tag.OctetString, ReadOnlyMemoryOfbyteValue.Value.Span);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcRecipientNonce:
-                writer.WriteOctetString(Asn1Tag.OctetString, ReadOnlyMemoryOfbyteValue.Value.Span);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcStatusInfo:
-                CmcStatusInfo!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcAddExtensions:
-                CmcAddExtensions!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcEncryptedPOP:
-                CmcEncryptedPOP!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcDecryptedPOP:
-                CmcDecryptedPOP!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcLraPOPWitness:
-                CmcLraPOPWitness!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcGetCert:
-                CmcGetCert!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcGetCRL:
-                CmcGetCRL!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcRevokeRequest:
-                CmcRevokeRequest!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcConfirmCertAcceptance:
-                CmcConfirmCertAcceptance!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcStatusInfoV2:
-                CmcStatusInfoV2!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcTrustedAnchors:
-                CmcTrustedAnchors!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcAuthData:
-                writer.WriteInteger(Asn1Tag.Integer, CmcAuthData.Value);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcBatchRequests:
-                writer.WriteSequenceOf(Asn1Tag.Sequence, UintArrayValue!, static (inner, item) =>
-                {
-                    inner.WriteInteger(Asn1Tag.Integer, item);
-                });
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcBatchResponses:
-                writer.WriteSequenceOf(Asn1Tag.Sequence, UintArrayValue!, static (inner, item) =>
-                {
-                    inner.WriteInteger(Asn1Tag.Integer, item);
-                });
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcPublishCert:
-                CmcPublishCert!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcModCertTemplate:
-                CmcModCertTemplate!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcControlProcessed:
-                CmcControlProcessed!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcIdentityProofV2:
-                CmcIdentityProofV2!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.CmcPopLinkWitnessV2:
-                CmcPopLinkWitnessV2!.Encode(writer, Asn1Tag.Sequence);
-                break;
-            case TaggedAttribute_AttrValues_ItemKind.Unknown:
-                if (Unknown is null) throw new Asn1Exception("Open type has no alternative.");
-                writer.WriteAny(Unknown.Value);
-                break;
-            default: throw new Asn1Exception("Open type has no alternative.");
-        }
-    }
-
-    public static bool IsKnown(Asn1Oid key) => key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcIdentityProof) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcDataReturn) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcRegInfo) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcResponseInfo) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcQueryPending) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcPopLinkRandom) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcPopLinkWitness) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcIdentification) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcTransactionId) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcSenderNonce) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcRecipientNonce) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcStatusInfo) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcAddExtensions) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcEncryptedPOP) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcDecryptedPOP) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcLraPOPWitness) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcGetCert) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcGetCRL) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcRevokeRequest) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcConfirmCertAcceptance) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcStatusInfoV2) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcTrustedAnchors) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcAuthData) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcBatchRequests) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcBatchResponses) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcPublishCert) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcModCertTemplate) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcControlProcessed) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcIdentityProofV2) || key.Equals(EnrollmentMessageSyntax2009Oids.IdCmcPopLinkWitnessV2);
-    public static TaggedAttribute_AttrValues_Item Decode(Asn1Reader reader, Asn1Oid definedByKey) =>
-        Decode(reader, definedByKey, expectedTag: null);
-
-    public static TaggedAttribute_AttrValues_Item Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag expectedTag) =>
-        Decode(reader, definedByKey, (Asn1Tag?)expectedTag);
-
-    private static TaggedAttribute_AttrValues_Item Decode(Asn1Reader reader, Asn1Oid definedByKey, Asn1Tag? expectedTag)
-    {
-        if (!reader.TryPeekTag(out var peeked))
-            throw new Asn1Exception("Unexpected end of ASN.1 data while decoding open type 'TaggedAttribute_AttrValues_Item': expected an encoded ASN.1 value for key '" + definedByKey + "'.");
-
-        if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcIdentityProof))
-        {
-            var tag = expectedTag ?? Asn1Tag.OctetString;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromCmcIdentityProof(reader.ReadOctetString(tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcIdentityProof'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcDataReturn))
-        {
-            var tag = expectedTag ?? Asn1Tag.OctetString;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromCmcDataReturn(reader.ReadOctetString(tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcDataReturn'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcRegInfo))
-        {
-            var tag = expectedTag ?? Asn1Tag.OctetString;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromCmcRegInfo(reader.ReadOctetString(tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcRegInfo'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcResponseInfo))
-        {
-            var tag = expectedTag ?? Asn1Tag.OctetString;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromCmcResponseInfo(reader.ReadOctetString(tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcResponseInfo'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcQueryPending))
-        {
-            var tag = expectedTag ?? Asn1Tag.OctetString;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromCmcQueryPending(reader.ReadOctetString(tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcQueryPending'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcPopLinkRandom))
-        {
-            var tag = expectedTag ?? Asn1Tag.OctetString;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromCmcPopLinkRandom(reader.ReadOctetString(tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcPopLinkRandom'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcPopLinkWitness))
-        {
-            var tag = expectedTag ?? Asn1Tag.OctetString;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromCmcPopLinkWitness(reader.ReadOctetString(tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcPopLinkWitness'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcIdentification))
-        {
-            var tag = expectedTag ?? Asn1Tag.Utf8String;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromCmcIdentification(reader.ReadString(tag, Asn1StringForm.Utf8));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcIdentification'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcTransactionId))
-        {
-            var tag = expectedTag ?? Asn1Tag.Integer;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromCmcTransactionId(reader.ReadIntegerValue(tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcTransactionId'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcSenderNonce))
-        {
-            var tag = expectedTag ?? Asn1Tag.OctetString;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromCmcSenderNonce(reader.ReadOctetString(tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcSenderNonce'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcRecipientNonce))
-        {
-            var tag = expectedTag ?? Asn1Tag.OctetString;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromCmcRecipientNonce(reader.ReadOctetString(tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcRecipientNonce'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcStatusInfo))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCmcStatusInfo(Asn1Kit.Modern.EnrollmentMessageSyntax2009.CMCStatusInfo.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCmcStatusInfo(Asn1Kit.Modern.EnrollmentMessageSyntax2009.CMCStatusInfo.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcStatusInfo'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcAddExtensions))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCmcAddExtensions(Asn1Kit.Modern.EnrollmentMessageSyntax2009.AddExtensions.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCmcAddExtensions(Asn1Kit.Modern.EnrollmentMessageSyntax2009.AddExtensions.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcAddExtensions'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcEncryptedPOP))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCmcEncryptedPOP(Asn1Kit.Modern.EnrollmentMessageSyntax2009.EncryptedPOP.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCmcEncryptedPOP(Asn1Kit.Modern.EnrollmentMessageSyntax2009.EncryptedPOP.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcEncryptedPOP'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcDecryptedPOP))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCmcDecryptedPOP(Asn1Kit.Modern.EnrollmentMessageSyntax2009.DecryptedPOP.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCmcDecryptedPOP(Asn1Kit.Modern.EnrollmentMessageSyntax2009.DecryptedPOP.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcDecryptedPOP'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcLraPOPWitness))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCmcLraPOPWitness(Asn1Kit.Modern.EnrollmentMessageSyntax2009.LraPopWitness.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCmcLraPOPWitness(Asn1Kit.Modern.EnrollmentMessageSyntax2009.LraPopWitness.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcLraPOPWitness'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcGetCert))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCmcGetCert(Asn1Kit.Modern.EnrollmentMessageSyntax2009.GetCert.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCmcGetCert(Asn1Kit.Modern.EnrollmentMessageSyntax2009.GetCert.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcGetCert'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcGetCRL))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCmcGetCRL(Asn1Kit.Modern.EnrollmentMessageSyntax2009.GetCRL.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCmcGetCRL(Asn1Kit.Modern.EnrollmentMessageSyntax2009.GetCRL.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcGetCRL'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcRevokeRequest))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCmcRevokeRequest(Asn1Kit.Modern.EnrollmentMessageSyntax2009.RevokeRequest.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCmcRevokeRequest(Asn1Kit.Modern.EnrollmentMessageSyntax2009.RevokeRequest.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcRevokeRequest'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcConfirmCertAcceptance))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCmcConfirmCertAcceptance(Asn1Kit.Modern.CryptographicMessageSyntax2009.IssuerAndSerialNumber.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCmcConfirmCertAcceptance(Asn1Kit.Modern.CryptographicMessageSyntax2009.IssuerAndSerialNumber.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcConfirmCertAcceptance'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcStatusInfoV2))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCmcStatusInfoV2(Asn1Kit.Modern.EnrollmentMessageSyntax2009.CMCStatusInfoV2.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCmcStatusInfoV2(Asn1Kit.Modern.EnrollmentMessageSyntax2009.CMCStatusInfoV2.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcStatusInfoV2'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcTrustedAnchors))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCmcTrustedAnchors(Asn1Kit.Modern.EnrollmentMessageSyntax2009.PublishTrustAnchors.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCmcTrustedAnchors(Asn1Kit.Modern.EnrollmentMessageSyntax2009.PublishTrustAnchors.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcTrustedAnchors'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcAuthData))
-        {
-            var tag = expectedTag ?? Asn1Tag.Integer;
-            if (peeked.MatchesIgnoreConstructed(tag))
-            {
-                return FromCmcAuthData(reader.ReadUInt32(tag));
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcAuthData'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcBatchRequests))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCmcBatchRequests(reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadUInt32(Asn1Tag.Integer)));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCmcBatchRequests(reader.ReadSequenceOf(expectedTag.Value, static inner => inner.ReadUInt32(Asn1Tag.Integer)));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcBatchRequests'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcBatchResponses))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCmcBatchResponses(reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadUInt32(Asn1Tag.Integer)));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCmcBatchResponses(reader.ReadSequenceOf(expectedTag.Value, static inner => inner.ReadUInt32(Asn1Tag.Integer)));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcBatchResponses'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcPublishCert))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCmcPublishCert(Asn1Kit.Modern.EnrollmentMessageSyntax2009.CMCPublicationInfo.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCmcPublishCert(Asn1Kit.Modern.EnrollmentMessageSyntax2009.CMCPublicationInfo.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcPublishCert'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcModCertTemplate))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCmcModCertTemplate(Asn1Kit.Modern.EnrollmentMessageSyntax2009.ModCertTemplate.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCmcModCertTemplate(Asn1Kit.Modern.EnrollmentMessageSyntax2009.ModCertTemplate.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcModCertTemplate'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcControlProcessed))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCmcControlProcessed(Asn1Kit.Modern.EnrollmentMessageSyntax2009.ControlsProcessed.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCmcControlProcessed(Asn1Kit.Modern.EnrollmentMessageSyntax2009.ControlsProcessed.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcControlProcessed'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcIdentityProofV2))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCmcIdentityProofV2(Asn1Kit.Modern.EnrollmentMessageSyntax2009.IdentityProofV2.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCmcIdentityProofV2(Asn1Kit.Modern.EnrollmentMessageSyntax2009.IdentityProofV2.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcIdentityProofV2'.");
-        }
-        else if (definedByKey.Equals(EnrollmentMessageSyntax2009Oids.IdCmcPopLinkWitnessV2))
-        {
-            if (expectedTag is null)
-            {
-                if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
-                {
-                    return FromCmcPopLinkWitnessV2(Asn1Kit.Modern.EnrollmentMessageSyntax2009.PopLinkWitnessV2.Decode(reader, Asn1Tag.Sequence));
-                }
-            }
-            else
-            {
-                if (peeked.MatchesIgnoreConstructed(expectedTag.Value))
-                {
-                    return FromCmcPopLinkWitnessV2(Asn1Kit.Modern.EnrollmentMessageSyntax2009.PopLinkWitnessV2.Decode(reader, expectedTag.Value));
-                }
-            }
-            throw new Asn1Exception("Open-type content for key '" + definedByKey + "' does not match bound type 'CmcPopLinkWitnessV2'.");
-        }
-        else {
-            return FromUnknown(reader.ReadAny());
-        }
-    }
-}
-
 public sealed class TaggedRequest_Orm
 {
     /// <summary>ASN.1 alias BodyPartID ::= INTEGER.</summary>
@@ -2729,17 +1884,104 @@ public sealed class CMCStatusInfoV2_OtherInfo_ExtendedFailInfo
 
 internal static class __EnrollmentMessageSyntax2009OpenTypeCodecs
 {
-    internal static Asn1Codec<Asn1Kit.Modern.PKIXAlgs2009.DSAParams> PkDsa { get; } =
-        new(static reader => Asn1Kit.Modern.PKIXAlgs2009.DSAParams.Decode(reader), static (writer, value) => value.Encode(writer));
-
-    internal static Asn1Codec<Asn1Kit.Modern.PKIXAlgs2009.DomainParameters> PkDh { get; } =
-        new(static reader => Asn1Kit.Modern.PKIXAlgs2009.DomainParameters.Decode(reader), static (writer, value) => value.Encode(writer));
-
-    internal static Asn1Codec<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams> PkRsaSSAPSS { get; } =
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams> SaRsaSSAPSS { get; } =
         new(static reader => Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams.Decode(reader), static (writer, value) => value.Encode(writer));
 
-    internal static Asn1Codec<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams> PkRsaESOAEP { get; } =
+    internal static Asn1Codec<CMCStatusInfo> CmcStatusInfoTaggedAttribute { get; } =
+        new(static reader => CMCStatusInfo.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<AddExtensions> CmcAddExtensionsTaggedAttribute { get; } =
+        new(static reader => AddExtensions.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<EncryptedPOP> CmcEncryptedPOPTaggedAttribute { get; } =
+        new(static reader => EncryptedPOP.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<DecryptedPOP> CmcDecryptedPOPTaggedAttribute { get; } =
+        new(static reader => DecryptedPOP.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<LraPopWitness> CmcLraPOPWitnessTaggedAttribute { get; } =
+        new(static reader => LraPopWitness.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<GetCert> CmcGetCertTaggedAttribute { get; } =
+        new(static reader => GetCert.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<GetCRL> CmcGetCRLTaggedAttribute { get; } =
+        new(static reader => GetCRL.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<RevokeRequest> CmcRevokeRequestTaggedAttribute { get; } =
+        new(static reader => RevokeRequest.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.CryptographicMessageSyntax2009.IssuerAndSerialNumber> CmcConfirmCertAcceptanceTaggedAttribute { get; } =
+        new(static reader => Asn1Kit.Modern.CryptographicMessageSyntax2009.IssuerAndSerialNumber.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<CMCStatusInfoV2> CmcStatusInfoV2TaggedAttribute { get; } =
+        new(static reader => CMCStatusInfoV2.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<PublishTrustAnchors> CmcTrustedAnchorsTaggedAttribute { get; } =
+        new(static reader => PublishTrustAnchors.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<uint[]> CmcBatchRequestsTaggedAttribute { get; } = new(
+        static reader =>
+        {
+            uint[] decoded;
+            decoded = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadUInt32(Asn1Tag.Integer));
+            return decoded;
+        },
+        static (writer, value) =>
+        {
+            writer.WriteSequenceOf(Asn1Tag.Sequence, value, static (inner, item) =>
+            {
+                inner.WriteInteger(Asn1Tag.Integer, item);
+            });
+        });
+
+    internal static Asn1Codec<CMCPublicationInfo> CmcPublishCertTaggedAttribute { get; } =
+        new(static reader => CMCPublicationInfo.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<ModCertTemplate> CmcModCertTemplateTaggedAttribute { get; } =
+        new(static reader => ModCertTemplate.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<ControlsProcessed> CmcControlProcessedTaggedAttribute { get; } =
+        new(static reader => ControlsProcessed.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<IdentityProofV2> CmcIdentityProofV2TaggedAttribute { get; } =
+        new(static reader => IdentityProofV2.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<PopLinkWitnessV2> CmcPopLinkWitnessV2TaggedAttribute { get; } =
+        new(static reader => PopLinkWitnessV2.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> NameSingleAttribute { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520CommonNameSingleAttribute { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520LocalityNameSingleAttribute { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIXAlgs2009.DSAParams> PkDsaAlgorithmIdentifier { get; } =
+        new(static reader => Asn1Kit.Modern.PKIXAlgs2009.DSAParams.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIXAlgs2009.DomainParameters> PkDhAlgorithmIdentifier { get; } =
+        new(static reader => Asn1Kit.Modern.PKIXAlgs2009.DomainParameters.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams> PkRsaESOAEPAlgorithmIdentifier { get; } =
         new(static reader => Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIXCommonTypes2009.Extension[]> ExtensionReqAttributeSet { get; } = new(
+        static reader =>
+        {
+            Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] decoded;
+            decoded = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.Extension.Decode(inner, Asn1Tag.Sequence));
+            return decoded;
+        },
+        static (writer, value) =>
+        {
+            writer.WriteSequenceOf(Asn1Tag.Sequence, value, static (inner, item) =>
+            {
+                item.Encode(inner, Asn1Tag.Sequence);
+            });
+        });
 
     internal static Asn1Codec<Asn1Kit.Modern.PKIX1Implicit2009.AuthorityKeyIdentifier> AuthorityKeyIdentifierExtension { get; } =
         new(static reader => Asn1Kit.Modern.PKIX1Implicit2009.AuthorityKeyIdentifier.Decode(reader), static (writer, value) => value.Encode(writer));
@@ -2879,65 +2121,200 @@ internal static class __EnrollmentMessageSyntax2009OpenTypeCodecs
             });
         });
 
-    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> NameSingleAttribute { get; } =
-        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
-
-    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520CommonNameSingleAttribute { get; } =
-        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
-
-    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520LocalityNameSingleAttribute { get; } =
-        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
-
     internal static Asn1Codec<Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params> KdaPBKDF2AlgorithmIdentifier { get; } =
         new(static reader => Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params.Decode(reader), static (writer, value) => value.Encode(writer));
 
-    internal static Asn1Codec<Asn1Kit.Modern.PKIXCommonTypes2009.Extension[]> ExtensionReqAttributeSet { get; } = new(
-        static reader =>
-        {
-            Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] decoded;
-            decoded = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.Extension.Decode(inner, Asn1Tag.Sequence));
-            return decoded;
-        },
-        static (writer, value) =>
-        {
-            writer.WriteSequenceOf(Asn1Tag.Sequence, value, static (inner, item) =>
-            {
-                item.Encode(inner, Asn1Tag.Sequence);
-            });
-        });
-
 }
 
-public sealed record PublicKeyAlgorithmsParameters2Binding<T>(Asn1Oid Oid, Func<Asn1Any, T> Decoder, Func<T, Asn1Any> Encoder);
+public sealed record SignatureAlgorithmsParameters2Binding<T>(Asn1Oid Oid, Func<Asn1Any, T> Decoder, Func<T, Asn1Any> Encoder);
 
-public static class PublicKeyAlgorithmsParameters2Bindings
+public static class SignatureAlgorithmsParameters2Bindings
 {
-    public static PublicKeyAlgorithmsParameters2Binding<Asn1Null> PkRsa { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.RsaEncryption, Asn1Codecs.Null.Decode, Asn1Codecs.Null.Encode);
+    public static SignatureAlgorithmsParameters2Binding<Asn1Null> SaRsaWithMD2 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.Md2WithRSAEncryption, Asn1Codecs.Null.Decode, Asn1Codecs.Null.Encode);
 
-    public static PublicKeyAlgorithmsParameters2Binding<Asn1Kit.Modern.PKIXAlgs2009.DSAParams> PkDsa { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdDsa, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkDsa.Decode, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkDsa.Encode);
+    public static SignatureAlgorithmsParameters2Binding<Asn1Null> SaRsaWithMD5 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.Md5WithRSAEncryption, Asn1Codecs.Null.Decode, Asn1Codecs.Null.Encode);
 
-    public static PublicKeyAlgorithmsParameters2Binding<Asn1Kit.Modern.PKIXAlgs2009.DomainParameters> PkDh { get; } =
-        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.DhPublicNumber, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkDh.Decode, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkDh.Encode);
+    public static SignatureAlgorithmsParameters2Binding<Asn1Null> SaRsaWithSHA1 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.Sha1WithRSAEncryption, Asn1Codecs.Null.Decode, Asn1Codecs.Null.Encode);
 
-    public static PublicKeyAlgorithmsParameters2Binding<ReadOnlyMemory<byte>> PkKea { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdKeyExchangeAlgorithm, Asn1Codecs.OctetString.Decode, Asn1Codecs.OctetString.Encode);
+    public static SignatureAlgorithmsParameters2Binding<Asn1Null> SaDsaWithSHA1 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.DsaWithSha1, Asn1Codecs.Null.Decode, Asn1Codecs.Null.Encode);
 
-    public static PublicKeyAlgorithmsParameters2Binding<Asn1Oid> PkEc { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdEcPublicKey, Asn1Codecs.ObjectIdentifier.Decode, Asn1Codecs.ObjectIdentifier.Encode);
+    public static SignatureAlgorithmsParameters2Binding<Asn1Null> SaEcdsaWithSHA1 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.EcdsaWithSHA1, Asn1Codecs.Null.Decode, Asn1Codecs.Null.Encode);
 
-    public static PublicKeyAlgorithmsParameters2Binding<Asn1Oid> PkEcDH { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdEcDH, Asn1Codecs.ObjectIdentifier.Decode, Asn1Codecs.ObjectIdentifier.Encode);
+    public static SignatureAlgorithmsParameters2Binding<Asn1Null> SaDsaWithSHA224 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.DsaWithSha224, Asn1Codecs.Null.Decode, Asn1Codecs.Null.Encode);
 
-    public static PublicKeyAlgorithmsParameters2Binding<Asn1Oid> PkEcMQV { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdEcMQV, Asn1Codecs.ObjectIdentifier.Decode, Asn1Codecs.ObjectIdentifier.Encode);
+    public static SignatureAlgorithmsParameters2Binding<Asn1Null> SaDsaWithSHA256 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.DsaWithSha256, Asn1Codecs.Null.Decode, Asn1Codecs.Null.Encode);
 
-    public static PublicKeyAlgorithmsParameters2Binding<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams> PkRsaSSAPSS { get; } =
-        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSASSAPSS, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkRsaSSAPSS.Decode, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkRsaSSAPSS.Encode);
+    public static SignatureAlgorithmsParameters2Binding<Asn1Null> SaEcdsaWithSHA224 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.EcdsaWithSHA224, Asn1Codecs.Null.Decode, Asn1Codecs.Null.Encode);
 
-    public static PublicKeyAlgorithmsParameters2Binding<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams> PkRsaESOAEP { get; } =
-        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSAESOAEP, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkRsaESOAEP.Decode, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkRsaESOAEP.Encode);
+    public static SignatureAlgorithmsParameters2Binding<Asn1Null> SaEcdsaWithSHA256 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.EcdsaWithSHA256, Asn1Codecs.Null.Decode, Asn1Codecs.Null.Encode);
+
+    public static SignatureAlgorithmsParameters2Binding<Asn1Null> SaEcdsaWithSHA384 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.EcdsaWithSHA384, Asn1Codecs.Null.Decode, Asn1Codecs.Null.Encode);
+
+    public static SignatureAlgorithmsParameters2Binding<Asn1Null> SaEcdsaWithSHA512 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.EcdsaWithSHA512, Asn1Codecs.Null.Decode, Asn1Codecs.Null.Encode);
+
+    public static SignatureAlgorithmsParameters2Binding<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams> SaRsaSSAPSS { get; } =
+        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSASSAPSS, __EnrollmentMessageSyntax2009OpenTypeCodecs.SaRsaSSAPSS.Decode, __EnrollmentMessageSyntax2009OpenTypeCodecs.SaRsaSSAPSS.Encode);
+}
+
+public sealed record AttrValuesBinding<T>
+{
+    public Asn1Oid Oid { get; }
+    public Asn1Codec<T>? Codec { get; }
+    public Func<TaggedAttribute, T[]>? Decoder { get; }
+    public Func<T[], Asn1Any[]>? Encoder { get; }
+
+    public AttrValuesBinding(Asn1Oid oid, Asn1Codec<T> codec)
+    {
+        Oid = oid;
+        Codec = codec ?? throw new ArgumentNullException(nameof(codec));
+    }
+
+    public AttrValuesBinding(Asn1Oid oid, Func<TaggedAttribute, T[]> decoder, Func<T[], Asn1Any[]> encoder)
+    {
+        Oid = oid;
+        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+}
+
+public static class CmcControlSetAttrValuesBindings
+{
+    public static AttrValuesBinding<ReadOnlyMemory<byte>> CmcIdentityProof { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcIdentityProof, Asn1Codecs.OctetString);
+
+    public static AttrValuesBinding<ReadOnlyMemory<byte>> CmcDataReturn { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcDataReturn, Asn1Codecs.OctetString);
+
+    public static AttrValuesBinding<ReadOnlyMemory<byte>> CmcRegInfo { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcRegInfo, Asn1Codecs.OctetString);
+
+    public static AttrValuesBinding<ReadOnlyMemory<byte>> CmcResponseInfo { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcResponseInfo, Asn1Codecs.OctetString);
+
+    public static AttrValuesBinding<ReadOnlyMemory<byte>> CmcQueryPending { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcQueryPending, Asn1Codecs.OctetString);
+
+    public static AttrValuesBinding<ReadOnlyMemory<byte>> CmcPopLinkRandom { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcPopLinkRandom, Asn1Codecs.OctetString);
+
+    public static AttrValuesBinding<ReadOnlyMemory<byte>> CmcPopLinkWitness { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcPopLinkWitness, Asn1Codecs.OctetString);
+
+    public static AttrValuesBinding<string> CmcIdentification { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcIdentification, Asn1Codecs.Utf8String);
+
+    public static AttrValuesBinding<Asn1Integer> CmcTransactionId { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcTransactionId, Asn1Codecs.Integer);
+
+    public static AttrValuesBinding<ReadOnlyMemory<byte>> CmcSenderNonce { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcSenderNonce, Asn1Codecs.OctetString);
+
+    public static AttrValuesBinding<ReadOnlyMemory<byte>> CmcRecipientNonce { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcRecipientNonce, Asn1Codecs.OctetString);
+
+    public static AttrValuesBinding<CMCStatusInfo> CmcStatusInfo { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcStatusInfo, __EnrollmentMessageSyntax2009OpenTypeCodecs.CmcStatusInfoTaggedAttribute);
+
+    public static AttrValuesBinding<AddExtensions> CmcAddExtensions { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcAddExtensions, __EnrollmentMessageSyntax2009OpenTypeCodecs.CmcAddExtensionsTaggedAttribute);
+
+    public static AttrValuesBinding<EncryptedPOP> CmcEncryptedPOP { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcEncryptedPOP, __EnrollmentMessageSyntax2009OpenTypeCodecs.CmcEncryptedPOPTaggedAttribute);
+
+    public static AttrValuesBinding<DecryptedPOP> CmcDecryptedPOP { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcDecryptedPOP, __EnrollmentMessageSyntax2009OpenTypeCodecs.CmcDecryptedPOPTaggedAttribute);
+
+    public static AttrValuesBinding<LraPopWitness> CmcLraPOPWitness { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcLraPOPWitness, __EnrollmentMessageSyntax2009OpenTypeCodecs.CmcLraPOPWitnessTaggedAttribute);
+
+    public static AttrValuesBinding<GetCert> CmcGetCert { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcGetCert, __EnrollmentMessageSyntax2009OpenTypeCodecs.CmcGetCertTaggedAttribute);
+
+    public static AttrValuesBinding<GetCRL> CmcGetCRL { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcGetCRL, __EnrollmentMessageSyntax2009OpenTypeCodecs.CmcGetCRLTaggedAttribute);
+
+    public static AttrValuesBinding<RevokeRequest> CmcRevokeRequest { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcRevokeRequest, __EnrollmentMessageSyntax2009OpenTypeCodecs.CmcRevokeRequestTaggedAttribute);
+
+    public static AttrValuesBinding<Asn1Kit.Modern.CryptographicMessageSyntax2009.IssuerAndSerialNumber> CmcConfirmCertAcceptance { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcConfirmCertAcceptance, __EnrollmentMessageSyntax2009OpenTypeCodecs.CmcConfirmCertAcceptanceTaggedAttribute);
+
+    public static AttrValuesBinding<CMCStatusInfoV2> CmcStatusInfoV2 { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcStatusInfoV2, __EnrollmentMessageSyntax2009OpenTypeCodecs.CmcStatusInfoV2TaggedAttribute);
+
+    public static AttrValuesBinding<PublishTrustAnchors> CmcTrustedAnchors { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcTrustedAnchors, __EnrollmentMessageSyntax2009OpenTypeCodecs.CmcTrustedAnchorsTaggedAttribute);
+
+    public static AttrValuesBinding<uint> CmcAuthData { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcAuthData, Asn1Codecs.UInt32);
+
+    public static AttrValuesBinding<uint[]> CmcBatchRequests { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcBatchRequests, __EnrollmentMessageSyntax2009OpenTypeCodecs.CmcBatchRequestsTaggedAttribute);
+
+    public static AttrValuesBinding<uint[]> CmcBatchResponses { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcBatchResponses, __EnrollmentMessageSyntax2009OpenTypeCodecs.CmcBatchRequestsTaggedAttribute);
+
+    public static AttrValuesBinding<CMCPublicationInfo> CmcPublishCert { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcPublishCert, __EnrollmentMessageSyntax2009OpenTypeCodecs.CmcPublishCertTaggedAttribute);
+
+    public static AttrValuesBinding<ModCertTemplate> CmcModCertTemplate { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcModCertTemplate, __EnrollmentMessageSyntax2009OpenTypeCodecs.CmcModCertTemplateTaggedAttribute);
+
+    public static AttrValuesBinding<ControlsProcessed> CmcControlProcessed { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcControlProcessed, __EnrollmentMessageSyntax2009OpenTypeCodecs.CmcControlProcessedTaggedAttribute);
+
+    public static AttrValuesBinding<IdentityProofV2> CmcIdentityProofV2 { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcIdentityProofV2, __EnrollmentMessageSyntax2009OpenTypeCodecs.CmcIdentityProofV2TaggedAttribute);
+
+    public static AttrValuesBinding<PopLinkWitnessV2> CmcPopLinkWitnessV2 { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdCmcPopLinkWitnessV2, __EnrollmentMessageSyntax2009OpenTypeCodecs.CmcPopLinkWitnessV2TaggedAttribute);
+}
+
+public static class PublicKeyAlgorithmsParametersBindings
+{
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> PkRsa { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.RsaEncryption, Asn1Codecs.Null);
+
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.PKIXAlgs2009.DSAParams> PkDsa { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdDsa, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkDsaAlgorithmIdentifier);
+
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.PKIXAlgs2009.DomainParameters> PkDh { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.DhPublicNumber, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkDhAlgorithmIdentifier);
+
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<ReadOnlyMemory<byte>> PkKea { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdKeyExchangeAlgorithm, Asn1Codecs.OctetString);
+
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Oid> PkEc { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdEcPublicKey, Asn1Codecs.ObjectIdentifier);
+
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Oid> PkEcDH { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdEcDH, Asn1Codecs.ObjectIdentifier);
+
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Oid> PkEcMQV { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdEcMQV, Asn1Codecs.ObjectIdentifier);
+
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams> PkRsaSSAPSS { get; } =
+        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSASSAPSS, __EnrollmentMessageSyntax2009OpenTypeCodecs.SaRsaSSAPSS);
+
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams> PkRsaESOAEP { get; } =
+        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSAESOAEP, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkRsaESOAEPAlgorithmIdentifier);
+}
+
+public static class AttributeListBindings
+{
+    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIXCommonTypes2009.Extension[]> ExtensionReq { get; } =
+        new(EnrollmentMessageSyntax2009Oids.IdExtensionReq, __EnrollmentMessageSyntax2009OpenTypeCodecs.ExtensionReqAttributeSet);
 }
 
 public static class SignatureAlgorithmsParametersBindings
@@ -2975,8 +2352,8 @@ public static class SignatureAlgorithmsParametersBindings
     public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> SaEcdsaWithSHA512 { get; } =
         new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.EcdsaWithSHA512, Asn1Codecs.Null);
 
-    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams> SaRsaSSAPSS { get; } =
-        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSASSAPSS, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkRsaSSAPSS);
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams> PkRsaSSAPSS { get; } =
+        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSASSAPSS, __EnrollmentMessageSyntax2009OpenTypeCodecs.SaRsaSSAPSS);
 }
 
 public static class CertExtensionsExtnValueBindings
@@ -3046,21 +2423,6 @@ public static class POPAlgsParametersBindings
 {
     public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> MacaHMACSHA1 { get; } =
         new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.HMACSHA1, Asn1Codecs.Null);
-}
-
-public static class HashAlgorithmsParametersBindings
-{
-    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> MdaSha1 { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdSha1, Asn1Codecs.Null);
-
-    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> MdaSha256 { get; } =
-        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdSha256, Asn1Codecs.Null);
-}
-
-public static class KeyDevAlgsParametersBindings
-{
-    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params> KdaPBKDF2 { get; } =
-        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.IdPBKDF2, __EnrollmentMessageSyntax2009OpenTypeCodecs.KdaPBKDF2AlgorithmIdentifier);
 }
 
 public static class SupportedAttributesValueBindings
@@ -3267,40 +2629,134 @@ public static class SupportedAttributesValueBindings
     }
 }
 
-public static class AttributeListBindings
+public static class HashAlgorithmsParametersBindings
 {
-    public static Asn1Kit.Modern.PKIXCommonTypes2009.ValuesBinding<Asn1Kit.Modern.PKIXCommonTypes2009.Extension[]> ExtensionReq { get; } =
-        new(EnrollmentMessageSyntax2009Oids.IdExtensionReq, __EnrollmentMessageSyntax2009OpenTypeCodecs.ExtensionReqAttributeSet);
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> MdaSha1 { get; } =
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdSha1, Asn1Codecs.Null);
+
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> MdaSha256 { get; } =
+        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdSha256, Asn1Codecs.Null);
 }
 
-public static class PublicKeyAlgorithmsParametersBindings
+public static class KeyDevAlgsParametersBindings
 {
-    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Null> PkRsa { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.RsaEncryption, Asn1Codecs.Null);
+    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.PBKDF2Params> KdaPBKDF2 { get; } =
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.IdPBKDF2, __EnrollmentMessageSyntax2009OpenTypeCodecs.KdaPBKDF2AlgorithmIdentifier);
+}
 
-    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.PKIXAlgs2009.DSAParams> PkDsa { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdDsa, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkDsa);
+public static class EnrollmentMessageSyntax2009OpenTypeExtensions
+{
+    public static bool TryDecodeAttrValues<T>(this TaggedAttribute source, AttrValuesBinding<T> binding, out T[] value)
+    {
+        value = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!(source.AttrType.Equals(binding.Oid))) return false;
+        if (binding.Codec is { } codec)
+        {
+            value = Asn1Codecs.DecodeEach(source.AttrValues, codec);
+        }
+        else
+            value = binding.Decoder!(source);
+        return true;
+    }
 
-    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.PKIXAlgs2009.DomainParameters> PkDh { get; } =
-        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.DhPublicNumber, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkDh);
+    public static void SetAttrValues<T>(this TaggedAttribute source, AttrValuesBinding<T> binding, T[] value)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        var result = source;
+        result.AttrType = binding.Oid;
+        var encoded = binding.Codec is { } codec
+            ? Asn1Codecs.EncodeEach(value, codec)
+            : binding.Encoder!(value);
+        result.AttrValues = encoded;
+    }
 
-    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<ReadOnlyMemory<byte>> PkKea { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdKeyExchangeAlgorithm, Asn1Codecs.OctetString);
+}
 
-    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Oid> PkEc { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdEcPublicKey, Asn1Codecs.ObjectIdentifier);
+public static class CertificationRequestOpenTypeExtensions
+{
+    public static bool TryGetCertificationRequestInfo<T>(this CertificationRequest source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value)
+        => TryGetCertificationRequestInfo(source, binding, out value, out _);
 
-    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Oid> PkEcDH { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdEcDH, Asn1Codecs.ObjectIdentifier);
+    public static bool TryGetCertificationRequestInfo<T>(this CertificationRequest source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute? match = null;
+        if (source.CertificationRequestInfo is { } node0)
+        {
+            if (node0.Subject is { } node1)
+            {
+                foreach (var node2 in node1)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        if (node3.Type.Equals(binding.Oid))
+                        {
+                            if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetCertificationRequestInfo.");
+                            match = node3;
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
 
-    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Oid> PkEcMQV { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdEcMQV, Asn1Codecs.ObjectIdentifier);
+}
 
-    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams> SaRsaSSAPSS { get; } =
-        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSASSAPSS, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkRsaSSAPSS);
+public static class GetCertOpenTypeExtensions
+{
+    public static bool TryGetIssuerName<T>(this GetCert source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value)
+        => TryGetIssuerName(source, binding, out value, out _);
 
-    public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams> PkRsaESOAEP { get; } =
-        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSAESOAEP, __EnrollmentMessageSyntax2009OpenTypeCodecs.PkRsaESOAEP);
+    public static bool TryGetIssuerName<T>(this GetCert source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute? match = null;
+        if (source.IssuerName is { } node0)
+        {
+            if (node0.DirectoryName is { } node1)
+            {
+                foreach (var node2 in node1)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        if (node3.Type.Equals(binding.Oid))
+                        {
+                            if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetIssuerName.");
+                            match = node3;
+                        }
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
 }
 
 public static class GetCRLOpenTypeExtensions
@@ -3325,6 +2781,44 @@ public static class GetCRLOpenTypeExtensions
                     {
                         if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetIssuerName.");
                         match = node2;
+                    }
+                }
+            }
+        }
+        if (match is null) return false;
+        raw = match;
+        if (binding.Codec is { } codec)
+        {
+            value = codec.Decode(match.Value);
+        }
+        else
+            value = binding.Decoder!(match);
+        return true;
+    }
+
+    public static bool TryGetCRLName<T>(this GetCRL source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value)
+        => TryGetCRLName(source, binding, out value, out _);
+
+    public static bool TryGetCRLName<T>(this GetCRL source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
+    {
+        value = default!;
+        raw = default!;
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(binding);
+        Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute? match = null;
+        if (source.CRLName is { } node0)
+        {
+            if (node0.DirectoryName is { } node1)
+            {
+                foreach (var node2 in node1)
+                {
+                    foreach (var node3 in node2)
+                    {
+                        if (node3.Type.Equals(binding.Oid))
+                        {
+                            if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetCRLName.");
+                            match = node3;
+                        }
                     }
                 }
             }

@@ -347,8 +347,14 @@ END";
         var type = assembly.GetType("Modern.R")!;
         var bytes = Convert.FromHexString("3109A00302012A81022A03");
         var value = type.GetMethod("Decode", new[] {typeof(Asn1Reader)})!.Invoke(null, new object[] {new Asn1Reader(bytes, Asn1Encoding.Der)});
-        var items = (Array)type.GetProperty("Values")!.GetValue(value)!;
-        Assert.Equal(42, items.GetValue(0)!.GetType().GetProperty("One")!.GetValue(items.GetValue(0)));
+        Assert.IsType<Asn1Any[]>(type.GetProperty("Values")!.GetValue(value));
+        var tryDecode = assembly.GetType("Modern.ModernOpenTypeExtensions")!.GetMethods()
+            .Single(m => m.Name == "TryDecodeValues" && m.IsGenericMethodDefinition)
+            .MakeGenericMethod(typeof(int));
+        var binding = assembly.GetType("Modern.EntriesValuesBindings")!.GetProperty("One")!.GetValue(null)!;
+        var args = new object?[] { value, binding, null };
+        Assert.True((bool)tryDecode.Invoke(null, args)!);
+        Assert.Equal(new[] { 42 }, Assert.IsType<int[]>(args[2]));
         var writer = new Asn1Writer();
         type.GetMethod("Encode", new[] {typeof(Asn1Writer)})!.Invoke(value, new object[] {writer});
         Assert.Equal(bytes, writer.Encode());
@@ -368,10 +374,18 @@ END";
         var writer = new Asn1Writer();
         type.GetMethod("Encode", new[] {typeof(Asn1Writer)})!.Invoke(value, new object[] {writer});
         Assert.Equal("300980022A03A10302012A", Convert.ToHexString(writer.Encode()));
-        var unknown = type.GetProperty("Value")!.GetValue(Decode("300980022A04A10302012A"))!;
-        Assert.NotNull(unknown.GetType().GetProperty("Unknown")!.GetValue(unknown));
-        Assert.Null(unknown.GetType().GetProperty("One")!.GetValue(unknown));
-        var error = Assert.Throws<TargetInvocationException>(() => Decode("300980022A03A1030101FF"));
+        // Unknown OID: Decode keeps raw Asn1Any (no universal-tag guessing).
+        Assert.IsType<Asn1Any>(type.GetProperty("Value")!.GetValue(Decode("300980022A04A10302012A")));
+        // Known OID, wrong content: Decode keeps raw; TryDecode rejects.
+        var mismatched = Decode("300980022A03A1030101FF");
+        Assert.IsType<Asn1Any>(type.GetProperty("Value")!.GetValue(mismatched));
+        var extensions = assembly.GetType("M.MOpenTypeExtensions")!;
+        var binding = assembly.GetType("M.ItemsValueBindings")!.GetProperty("One")!.GetValue(null)!;
+        var tryDecode = extensions.GetMethods()
+            .Single(m => m.Name == "TryDecodeValue" && m.IsGenericMethodDefinition)
+            .MakeGenericMethod(typeof(int));
+        var error = Assert.Throws<TargetInvocationException>(() =>
+            tryDecode.Invoke(null, new object?[] { mismatched, binding, null }));
         Assert.IsType<Asn1Exception>(error.InnerException);
     }
 
@@ -448,8 +462,8 @@ END";
         var type = assembly.GetType("M.R")!;
         var bytes = Convert.FromHexString("3006020101850100");
         var value = type.GetMethod("Decode", new[] {typeof(Asn1Reader)})!.Invoke(null, new object[] {new Asn1Reader(bytes)})!;
-        var open = type.GetProperty("Value")!.GetValue(value)!;
-        Assert.NotNull(open.GetType().GetProperty("Entry")!.GetValue(open));
+        // Unknown alternative of known extensible CHOICE stays raw on Decode.
+        Assert.IsType<Asn1Any>(type.GetProperty("Value")!.GetValue(value));
         var writer = new Asn1Writer(); type.GetMethod("Encode", new[] {typeof(Asn1Writer)})!.Invoke(value, new object[] {writer});
         Assert.Equal(bytes, writer.Encode());
     }
@@ -464,25 +478,34 @@ END";
           END";
         var assembly = CompileGenerated(new CSharpBackend().Generate(new Asn1Compiler().CompileText(source)).Single().Contents);
         var type = assembly.GetType("M.R")!;
+        var nestedType = assembly.GetType("M.R_Nested")!;
         var bytes = Convert.FromHexString("3109A00302012A81022A03");
         var value = type.GetMethod("Decode", new[] {typeof(Asn1Reader)})!.Invoke(null, new object[] {new Asn1Reader(bytes)})!;
         var nested = type.GetProperty("Nested")!.GetValue(value)!;
-        var open = nested.GetType().GetProperty("Value")!.GetValue(nested)!;
-        Assert.Equal(42, open.GetType().GetProperty("Entry")!.GetValue(open));
+        Assert.IsType<Asn1Any>(nestedType.GetProperty("Value")!.GetValue(nested));
+        var extensions = assembly.GetType("M.MOpenTypeExtensions")!;
+        var binding = assembly.GetType("M.ItemsValueBindings")!.GetProperty("Entry")!.GetValue(null)!;
+        var tryDecode = extensions.GetMethods()
+            .Single(m => m.Name == "TryDecodeValue" && m.IsGenericMethodDefinition)
+            .MakeGenericMethod(typeof(int));
+        var args = new object?[] { nested, value, binding, null };
+        Assert.True((bool)tryDecode.Invoke(null, args)!);
+        Assert.Equal(42, args[3]);
         var writer = new Asn1Writer(); type.GetMethod("Encode", new[] {typeof(Asn1Writer)})!.Invoke(value, new object[] {writer});
         Assert.Equal(bytes, writer.Encode());
     }
 
     [Theory]
-    [InlineData("300F06022A0331002480040302012A0000", true, "02012A")]
-    [InlineData("300A06022A0431000402FFFF", false, "FFFF")]
-    public void GeneratedContainingReadsBerAndKeepsUnknownContents(string hex, bool known, string contents)
+    [InlineData("300F06022A0331002480040302012A0000", "02012A")]
+    [InlineData("300A06022A0431000402FFFF", "FFFF")]
+    public void GeneratedContainingReadsBerAndKeepsUnknownContents(string hex, string contents)
     {
         var assembly = CompileGenerated(new CSharpBackend().Generate(new Asn1Compiler().CompileText(Example)).Single().Contents);
         var type = assembly.GetType("Modern.R")!;
         var value = type.GetMethod("Decode", new[] {typeof(Asn1Reader)})!.Invoke(null, new object[] {new Asn1Reader(Convert.FromHexString(hex), Asn1Encoding.Ber)})!;
         var payload = type.GetProperty("Payload")!.GetValue(value)!;
-        Assert.Equal(known, payload.GetType().GetProperty("HasValue")!.GetValue(payload));
+        // Open-type CONTAINING stays opaque on Decode; typed access is via Binding TryDecode.
+        Assert.False((bool)payload.GetType().GetProperty("HasValue")!.GetValue(payload)!);
         Assert.Equal(contents, Convert.ToHexString(((ReadOnlyMemory<byte>)payload.GetType().GetProperty("Contents")!.GetValue(payload)!).Span));
     }
 
@@ -491,8 +514,18 @@ END";
     {
         var assembly = CompileGenerated(new CSharpBackend().Generate(new Asn1Compiler().CompileText(Example)).Single().Contents);
         var type = assembly.GetType("Modern.R")!;
-        var error = Assert.Throws<TargetInvocationException>(() => type.GetMethod("Decode", new[] {typeof(Asn1Reader)})!.Invoke(null,
-            new object[] {new Asn1Reader(Convert.FromHexString("300A06022A03310004020201"))}));
+        // Decode keeps CONTAINING raw; typed access rejects damaged known contents.
+        var decoded = type.GetMethod("Decode", new[] {typeof(Asn1Reader)})!.Invoke(null,
+            new object[] {new Asn1Reader(Convert.FromHexString("300A06022A03310004020201"))})!;
+        var payload = type.GetProperty("Payload")!.GetValue(decoded)!;
+        Assert.False((bool)payload.GetType().GetProperty("HasValue")!.GetValue(payload)!);
+        var extensions = assembly.GetType("Modern.ModernOpenTypeExtensions")!;
+        var binding = assembly.GetType("Modern.EntriesPayloadBindings")!.GetProperty("One")!.GetValue(null)!;
+        var tryDecode = extensions.GetMethods()
+            .Single(m => m.Name == "TryDecodePayload" && m.IsGenericMethodDefinition)
+            .MakeGenericMethod(typeof(int));
+        var error = Assert.Throws<TargetInvocationException>(() =>
+            tryDecode.Invoke(null, new object?[] { decoded, binding, null }));
         Assert.IsType<Asn1Exception>(error.InnerException);
     }
 

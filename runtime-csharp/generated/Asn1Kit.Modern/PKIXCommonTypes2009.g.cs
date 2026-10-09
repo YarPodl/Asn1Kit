@@ -162,6 +162,274 @@ public sealed class Extension
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
+internal static class __PKIXCommonTypes2009OpenTypeCodecs
+{
+    internal static Asn1Codec<Extension[]> ExtensionReqAttributeSet { get; } = new(
+        static reader =>
+        {
+            Extension[] decoded;
+            decoded = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.Extension.Decode(inner, Asn1Tag.Sequence));
+            return decoded;
+        },
+        static (writer, value) =>
+        {
+            writer.WriteSequenceOf(Asn1Tag.Sequence, value, static (inner, item) =>
+            {
+                item.Encode(inner, Asn1Tag.Sequence);
+            });
+        });
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Implicit2009.AuthorityKeyIdentifier> AuthorityKeyIdentifierExtension { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Implicit2009.AuthorityKeyIdentifier.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Implicit2009.KeyUsage> KeyUsageExtension { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Implicit2009.KeyUsage.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Implicit2009.PrivateKeyUsagePeriod> PrivateKeyUsagePeriodExtension { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Implicit2009.PrivateKeyUsagePeriod.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Implicit2009.PolicyInformation[]> CertificatePoliciesExtension { get; } = new(
+        static reader =>
+        {
+            Asn1Kit.Modern.PKIX1Implicit2009.PolicyInformation[] decoded;
+            decoded = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIX1Implicit2009.PolicyInformation.Decode(inner, Asn1Tag.Sequence));
+            return decoded;
+        },
+        static (writer, value) =>
+        {
+            writer.WriteSequenceOf(Asn1Tag.Sequence, value, static (inner, item) =>
+            {
+                item.Encode(inner, Asn1Tag.Sequence);
+            });
+        });
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Implicit2009.PolicyMappings_Item[]> PolicyMappingsExtension { get; } = new(
+        static reader =>
+        {
+            Asn1Kit.Modern.PKIX1Implicit2009.PolicyMappings_Item[] decoded;
+            decoded = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIX1Implicit2009.PolicyMappings_Item.Decode(inner, Asn1Tag.Sequence));
+            return decoded;
+        },
+        static (writer, value) =>
+        {
+            writer.WriteSequenceOf(Asn1Tag.Sequence, value, static (inner, item) =>
+            {
+                item.Encode(inner, Asn1Tag.Sequence);
+            });
+        });
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]> SubjectAltNameExtension { get; } = new(
+        static reader =>
+        {
+            Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[] decoded;
+            decoded = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIX1Implicit2009.GeneralName.Decode(inner));
+            return decoded;
+        },
+        static (writer, value) =>
+        {
+            writer.WriteSequenceOf(Asn1Tag.Sequence, value, static (inner, item) =>
+            {
+                item.Encode(inner);
+            });
+        });
+
+    internal static Asn1Codec<AttributeSet[]> SubjectDirectoryAttributesExtension { get; } = new(
+        static reader =>
+        {
+            AttributeSet[] decoded;
+            decoded = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet.Decode(inner, Asn1Tag.Sequence));
+            return decoded;
+        },
+        static (writer, value) =>
+        {
+            writer.WriteSequenceOf(Asn1Tag.Sequence, value, static (inner, item) =>
+            {
+                item.Encode(inner, Asn1Tag.Sequence);
+            });
+        });
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Implicit2009.BasicConstraints> BasicConstraintsExtension { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Implicit2009.BasicConstraints.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Implicit2009.NameConstraints> NameConstraintsExtension { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Implicit2009.NameConstraints.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Implicit2009.PolicyConstraints> PolicyConstraintsExtension { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Implicit2009.PolicyConstraints.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Oid[]> ExtKeyUsageExtension { get; } = new(
+        static reader =>
+        {
+            Asn1Oid[] decoded;
+            decoded = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadOid(Asn1Tag.ObjectIdentifier));
+            return decoded;
+        },
+        static (writer, value) =>
+        {
+            writer.WriteSequenceOf(Asn1Tag.Sequence, value, static (inner, item) =>
+            {
+                inner.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, item);
+            });
+        });
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[]> CRLDistributionPointsExtension { get; } = new(
+        static reader =>
+        {
+            Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[] decoded;
+            decoded = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint.Decode(inner, Asn1Tag.Sequence));
+            return decoded;
+        },
+        static (writer, value) =>
+        {
+            writer.WriteSequenceOf(Asn1Tag.Sequence, value, static (inner, item) =>
+            {
+                item.Encode(inner, Asn1Tag.Sequence);
+            });
+        });
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[]> AuthorityInfoAccessExtension { get; } = new(
+        static reader =>
+        {
+            Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[] decoded;
+            decoded = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription.Decode(inner, Asn1Tag.Sequence));
+            return decoded;
+        },
+        static (writer, value) =>
+        {
+            writer.WriteSequenceOf(Asn1Tag.Sequence, value, static (inner, item) =>
+            {
+                item.Encode(inner, Asn1Tag.Sequence);
+            });
+        });
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[]> SubjectInfoAccessSyntaxExtension { get; } = new(
+        static reader =>
+        {
+            Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[] decoded;
+            decoded = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription.Decode(inner, Asn1Tag.Sequence));
+            return decoded;
+        },
+        static (writer, value) =>
+        {
+            writer.WriteSequenceOf(Asn1Tag.Sequence, value, static (inner, item) =>
+            {
+                item.Encode(inner, Asn1Tag.Sequence);
+            });
+        });
+
+    internal static Asn1Codec<Asn1Oid[]> ReOcspResponseExtension { get; } = new(
+        static reader =>
+        {
+            Asn1Oid[] decoded;
+            decoded = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadOid(Asn1Tag.ObjectIdentifier));
+            return decoded;
+        },
+        static (writer, value) =>
+        {
+            writer.WriteSequenceOf(Asn1Tag.Sequence, value, static (inner, item) =>
+            {
+                inner.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, item);
+            });
+        });
+
+    internal static Asn1Codec<Asn1Kit.Modern.OCSP2009.ServiceLocator> ReOcspServiceLocatorExtension { get; } =
+        new(static reader => Asn1Kit.Modern.OCSP2009.ServiceLocator.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.OCSP2009.CrlID> ReOcspCrlExtension { get; } =
+        new(static reader => Asn1Kit.Modern.OCSP2009.CrlID.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Implicit2009.CRLReason> CRLReasonExtension { get; } = new(
+        static reader =>
+        {
+            Asn1Kit.Modern.PKIX1Implicit2009.CRLReason decoded;
+            decoded = (Asn1Kit.Modern.PKIX1Implicit2009.CRLReason)(long)reader.ReadEnumerated(Asn1Tag.Enumerated);
+            return decoded;
+        },
+        static (writer, value) =>
+        {
+            writer.WriteEnumerated(Asn1Tag.Enumerated, (BigInteger)(long)value);
+        });
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> NameSingleAttribute { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520CommonNameSingleAttribute { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520LocalityNameSingleAttribute { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1Implicit2009.IssuingDistributionPoint> IssuingDistributionPointExtension { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1Implicit2009.IssuingDistributionPoint.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIXAttributeCertificate2009.SvceAuthInfo> AuthenticationInfoAttributeSet { get; } =
+        new(static reader => Asn1Kit.Modern.PKIXAttributeCertificate2009.SvceAuthInfo.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIXAttributeCertificate2009.IetfAttrSyntax> ChargingIdentityAttributeSet { get; } =
+        new(static reader => Asn1Kit.Modern.PKIXAttributeCertificate2009.IetfAttrSyntax.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIXAttributeCertificate2009.RoleSyntax> RoleAttributeSet { get; } =
+        new(static reader => Asn1Kit.Modern.PKIXAttributeCertificate2009.RoleSyntax.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIXAttributeCertificate2009.Clearance> ClearanceAttributeSet { get; } =
+        new(static reader => Asn1Kit.Modern.PKIXAttributeCertificate2009.Clearance.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.CryptographicMessageSyntax2009.ContentInfo> EncAttrsAttributeSet { get; } =
+        new(static reader => Asn1Kit.Modern.CryptographicMessageSyntax2009.ContentInfo.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIXAttributeCertificate2009.Target[]> TargetInformationExtension { get; } = new(
+        static reader =>
+        {
+            Asn1Kit.Modern.PKIXAttributeCertificate2009.Target[] decoded;
+            decoded = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXAttributeCertificate2009.Target.Decode(inner));
+            return decoded;
+        },
+        static (writer, value) =>
+        {
+            writer.WriteSequenceOf(Asn1Tag.Sequence, value, static (inner, item) =>
+            {
+                item.Encode(inner);
+            });
+        });
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIXAttributeCertificate2009.Target[][]> AcProxyingExtension { get; } = new(
+        static reader =>
+        {
+            Asn1Kit.Modern.PKIXAttributeCertificate2009.Target[][] decoded;
+            decoded = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXAttributeCertificate2009.Target.Decode(inner)));
+            return decoded;
+        },
+        static (writer, value) =>
+        {
+            writer.WriteSequenceOf(Asn1Tag.Sequence, value, static (inner, item) =>
+            {
+                inner.WriteSequenceOf(Asn1Tag.Sequence, item, static (inner, item) =>
+                {
+                    item.Encode(inner);
+                });
+            });
+        });
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIXAttributeCertificate2009.AAControls> AaControlsExtension { get; } =
+        new(static reader => Asn1Kit.Modern.PKIXAttributeCertificate2009.AAControls.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIXCRMF2009.CertRequest> RegInfoCertReqSingleAttribute { get; } =
+        new(static reader => Asn1Kit.Modern.PKIXCRMF2009.CertRequest.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIXCRMF2009.PKIPublicationInfo> RegCtrlPkiPublicationInfoSingleAttribute { get; } =
+        new(static reader => Asn1Kit.Modern.PKIXCRMF2009.PKIPublicationInfo.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIXCRMF2009.PKIArchiveOptions> RegCtrlPkiArchiveOptionsSingleAttribute { get; } =
+        new(static reader => Asn1Kit.Modern.PKIXCRMF2009.PKIArchiveOptions.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIXCRMF2009.CertId> RegCtrlOldCertIDSingleAttribute { get; } =
+        new(static reader => Asn1Kit.Modern.PKIXCRMF2009.CertId.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKCS10.SubjectPublicKeyInfo> RegCtrlProtocolEncrKeySingleAttribute { get; } =
+        new(static reader => Asn1Kit.Modern.PKCS10.SubjectPublicKeyInfo.Decode(reader), static (writer, value) => value.Encode(writer));
+
+}
+
 public sealed record ExtnValueBinding<T>
 {
     public Asn1Oid Oid { get; }
@@ -223,6 +491,486 @@ public sealed record ValuesBinding<T>
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
         Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
     }
+}
+
+public static class AttributeListBindings
+{
+    public static ValuesBinding<Extension[]> ExtensionReq { get; } =
+        new(global::Asn1Kit.Modern.EnrollmentMessageSyntax2009.EnrollmentMessageSyntax2009Oids.IdExtensionReq, __PKIXCommonTypes2009OpenTypeCodecs.ExtensionReqAttributeSet);
+}
+
+public static class CertExtensionsBindings
+{
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.AuthorityKeyIdentifier> AuthorityKeyIdentifier { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeAuthorityKeyIdentifier, __PKIXCommonTypes2009OpenTypeCodecs.AuthorityKeyIdentifierExtension);
+
+    public static ExtnValueBinding<ReadOnlyMemory<byte>> SubjectKeyIdentifier { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeSubjectKeyIdentifier, Asn1Codecs.OctetString);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.KeyUsage> KeyUsage { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeKeyUsage, __PKIXCommonTypes2009OpenTypeCodecs.KeyUsageExtension);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.PrivateKeyUsagePeriod> PrivateKeyUsagePeriod { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCePrivateKeyUsagePeriod, __PKIXCommonTypes2009OpenTypeCodecs.PrivateKeyUsagePeriodExtension);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.PolicyInformation[]> CertificatePolicies { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeCertificatePolicies, __PKIXCommonTypes2009OpenTypeCodecs.CertificatePoliciesExtension);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.PolicyMappings_Item[]> PolicyMappings { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCePolicyMappings, __PKIXCommonTypes2009OpenTypeCodecs.PolicyMappingsExtension);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]> SubjectAltName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeSubjectAltName, __PKIXCommonTypes2009OpenTypeCodecs.SubjectAltNameExtension);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]> IssuerAltName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeIssuerAltName, __PKIXCommonTypes2009OpenTypeCodecs.SubjectAltNameExtension);
+
+    public static ExtnValueBinding<AttributeSet[]> SubjectDirectoryAttributes { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeSubjectDirectoryAttributes, __PKIXCommonTypes2009OpenTypeCodecs.SubjectDirectoryAttributesExtension);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.BasicConstraints> BasicConstraints { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeBasicConstraints, __PKIXCommonTypes2009OpenTypeCodecs.BasicConstraintsExtension);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.NameConstraints> NameConstraints { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeNameConstraints, __PKIXCommonTypes2009OpenTypeCodecs.NameConstraintsExtension);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.PolicyConstraints> PolicyConstraints { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCePolicyConstraints, __PKIXCommonTypes2009OpenTypeCodecs.PolicyConstraintsExtension);
+
+    public static ExtnValueBinding<Asn1Oid[]> ExtKeyUsage { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeExtKeyUsage, __PKIXCommonTypes2009OpenTypeCodecs.ExtKeyUsageExtension);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[]> CRLDistributionPoints { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeCRLDistributionPoints, __PKIXCommonTypes2009OpenTypeCodecs.CRLDistributionPointsExtension);
+
+    public static ExtnValueBinding<Asn1Integer> InhibitAnyPolicy { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeInhibitAnyPolicy, Asn1Codecs.Integer);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[]> FreshestCRL { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeFreshestCRL, __PKIXCommonTypes2009OpenTypeCodecs.CRLDistributionPointsExtension);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[]> AuthorityInfoAccess { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdPeAuthorityInfoAccess, __PKIXCommonTypes2009OpenTypeCodecs.AuthorityInfoAccessExtension);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[]> SubjectInfoAccessSyntax { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdPeSubjectInfoAccess, __PKIXCommonTypes2009OpenTypeCodecs.SubjectInfoAccessSyntaxExtension);
+}
+
+public static class ExtensionExtnValueBindings
+{
+    public static ExtnValueBinding<ReadOnlyMemory<byte>> ReOcspNonce { get; } =
+        new(global::Asn1Kit.Modern.OCSP2009.OCSP2009Oids.IdPkixOcspNonce, Asn1Codecs.OctetString);
+
+    public static ExtnValueBinding<Asn1Oid[]> ReOcspResponse { get; } =
+        new(global::Asn1Kit.Modern.OCSP2009.OCSP2009Oids.IdPkixOcspResponse, __PKIXCommonTypes2009OpenTypeCodecs.ReOcspResponseExtension);
+}
+
+public static class ExtensionExtnValueExtensionBindings
+{
+    public static ExtnValueBinding<Asn1Kit.Modern.OCSP2009.ServiceLocator> ReOcspServiceLocator { get; } =
+        new(global::Asn1Kit.Modern.OCSP2009.OCSP2009Oids.IdPkixOcspServiceLocator, __PKIXCommonTypes2009OpenTypeCodecs.ReOcspServiceLocatorExtension);
+}
+
+public static class ExtensionExtnValueExtension2Bindings
+{
+    public static ExtnValueBinding<ReadOnlyMemory<byte>> ReOcspNonce { get; } =
+        new(global::Asn1Kit.Modern.OCSP2009.OCSP2009Oids.IdPkixOcspNonce, Asn1Codecs.OctetString);
+}
+
+public static class ExtensionExtnValueExtension3Bindings
+{
+    public static ExtnValueBinding<Asn1Kit.Modern.OCSP2009.CrlID> ReOcspCrl { get; } =
+        new(global::Asn1Kit.Modern.OCSP2009.OCSP2009Oids.IdPkixOcspCrl, __PKIXCommonTypes2009OpenTypeCodecs.ReOcspCrlExtension);
+
+    public static ExtnValueBinding<DateTimeOffset> ReOcspArchiveCutoff { get; } =
+        new(global::Asn1Kit.Modern.OCSP2009.OCSP2009Oids.IdPkixOcspArchiveCutoff, Asn1Codecs.GeneralizedTime);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.CRLReason> CRLReason { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeCRLReasons, __PKIXCommonTypes2009OpenTypeCodecs.CRLReasonExtension);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]> CertificateIssuer { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeCertificateIssuer, __PKIXCommonTypes2009OpenTypeCodecs.SubjectAltNameExtension);
+
+    public static ExtnValueBinding<Asn1Oid> HoldInstructionCode { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeHoldInstructionCode, Asn1Codecs.ObjectIdentifier);
+
+    public static ExtnValueBinding<DateTimeOffset> InvalidityDate { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeInvalidityDate, Asn1Codecs.GeneralizedTime);
+}
+
+public static class SupportedAttributesValueBindings
+{
+    public static ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> Name { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtName, __PKIXCommonTypes2009OpenTypeCodecs.NameSingleAttribute);
+
+    public static ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> Surname { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtSurname, __PKIXCommonTypes2009OpenTypeCodecs.NameSingleAttribute);
+
+    public static ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> GivenName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGivenName, __PKIXCommonTypes2009OpenTypeCodecs.NameSingleAttribute);
+
+    public static ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> Initials { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtInitials, __PKIXCommonTypes2009OpenTypeCodecs.NameSingleAttribute);
+
+    public static ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> GenerationQualifier { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGenerationQualifier, __PKIXCommonTypes2009OpenTypeCodecs.NameSingleAttribute);
+
+    public static ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520CommonName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtCommonName, __PKIXCommonTypes2009OpenTypeCodecs.X520CommonNameSingleAttribute);
+
+    public static ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520LocalityName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtLocalityName, __PKIXCommonTypes2009OpenTypeCodecs.X520LocalityNameSingleAttribute);
+
+    public static ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520StateOrProvinceName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtStateOrProvinceName, __PKIXCommonTypes2009OpenTypeCodecs.X520LocalityNameSingleAttribute);
+
+    public static ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520OrganizationName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationName, __PKIXCommonTypes2009OpenTypeCodecs.X520CommonNameSingleAttribute);
+
+    public static ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520OrganizationalUnitName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationalUnitName, __PKIXCommonTypes2009OpenTypeCodecs.X520CommonNameSingleAttribute);
+
+    public static ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520Title { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtTitle, __PKIXCommonTypes2009OpenTypeCodecs.X520CommonNameSingleAttribute);
+
+    public static ValueBinding<string> X520dnQualifier { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtDnQualifier, Asn1Codecs.PrintableString);
+
+    public static ValueBinding<string> X520countryName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtCountryName, Asn1Codecs.PrintableString);
+
+    public static ValueBinding<string> X520SerialNumber { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtSerialNumber, Asn1Codecs.PrintableString);
+
+    public static ValueBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520Pseudonym { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtPseudonym, __PKIXCommonTypes2009OpenTypeCodecs.X520LocalityNameSingleAttribute);
+
+    public static ValueBinding<string> DomainComponent { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdDomainComponent, Asn1Codecs.Ia5String);
+
+    public static ValueBinding<string> EmailAddress { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdEmailAddress, Asn1Codecs.Ia5String);
+
+    public static class AsString
+    {
+        public static ValueBinding<string> Name { get; } =
+            new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtName, DecodeNameAsString, EncodeNameAsString);
+
+        private static string DecodeNameAsString(SingleAttribute source)
+        {
+            return __PKIXCommonTypes2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeNameAsString(string value) =>
+            __PKIXCommonTypes2009OpenTypeCodecs.NameSingleAttribute.Encode(Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.FromUTF8String(value));
+
+        public static ValueBinding<string> Surname { get; } =
+            new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtSurname, DecodeSurnameAsString, EncodeSurnameAsString);
+
+        private static string DecodeSurnameAsString(SingleAttribute source)
+        {
+            return __PKIXCommonTypes2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeSurnameAsString(string value) =>
+            __PKIXCommonTypes2009OpenTypeCodecs.NameSingleAttribute.Encode(Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.FromUTF8String(value));
+
+        public static ValueBinding<string> GivenName { get; } =
+            new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGivenName, DecodeGivenNameAsString, EncodeGivenNameAsString);
+
+        private static string DecodeGivenNameAsString(SingleAttribute source)
+        {
+            return __PKIXCommonTypes2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeGivenNameAsString(string value) =>
+            __PKIXCommonTypes2009OpenTypeCodecs.NameSingleAttribute.Encode(Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.FromUTF8String(value));
+
+        public static ValueBinding<string> Initials { get; } =
+            new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtInitials, DecodeInitialsAsString, EncodeInitialsAsString);
+
+        private static string DecodeInitialsAsString(SingleAttribute source)
+        {
+            return __PKIXCommonTypes2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeInitialsAsString(string value) =>
+            __PKIXCommonTypes2009OpenTypeCodecs.NameSingleAttribute.Encode(Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.FromUTF8String(value));
+
+        public static ValueBinding<string> GenerationQualifier { get; } =
+            new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGenerationQualifier, DecodeGenerationQualifierAsString, EncodeGenerationQualifierAsString);
+
+        private static string DecodeGenerationQualifierAsString(SingleAttribute source)
+        {
+            return __PKIXCommonTypes2009OpenTypeCodecs.NameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeGenerationQualifierAsString(string value) =>
+            __PKIXCommonTypes2009OpenTypeCodecs.NameSingleAttribute.Encode(Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.FromUTF8String(value));
+
+        public static ValueBinding<string> X520CommonName { get; } =
+            new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtCommonName, DecodeX520CommonNameAsString, EncodeX520CommonNameAsString);
+
+        private static string DecodeX520CommonNameAsString(SingleAttribute source)
+        {
+            return __PKIXCommonTypes2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeX520CommonNameAsString(string value) =>
+            __PKIXCommonTypes2009OpenTypeCodecs.X520CommonNameSingleAttribute.Encode(Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.FromUTF8String(value));
+
+        public static ValueBinding<string> X520LocalityName { get; } =
+            new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtLocalityName, DecodeX520LocalityNameAsString, EncodeX520LocalityNameAsString);
+
+        private static string DecodeX520LocalityNameAsString(SingleAttribute source)
+        {
+            return __PKIXCommonTypes2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeX520LocalityNameAsString(string value) =>
+            __PKIXCommonTypes2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Encode(Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.FromUTF8String(value));
+
+        public static ValueBinding<string> X520StateOrProvinceName { get; } =
+            new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtStateOrProvinceName, DecodeX520StateOrProvinceNameAsString, EncodeX520StateOrProvinceNameAsString);
+
+        private static string DecodeX520StateOrProvinceNameAsString(SingleAttribute source)
+        {
+            return __PKIXCommonTypes2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeX520StateOrProvinceNameAsString(string value) =>
+            __PKIXCommonTypes2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Encode(Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.FromUTF8String(value));
+
+        public static ValueBinding<string> X520OrganizationName { get; } =
+            new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationName, DecodeX520OrganizationNameAsString, EncodeX520OrganizationNameAsString);
+
+        private static string DecodeX520OrganizationNameAsString(SingleAttribute source)
+        {
+            return __PKIXCommonTypes2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeX520OrganizationNameAsString(string value) =>
+            __PKIXCommonTypes2009OpenTypeCodecs.X520CommonNameSingleAttribute.Encode(Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.FromUTF8String(value));
+
+        public static ValueBinding<string> X520OrganizationalUnitName { get; } =
+            new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationalUnitName, DecodeX520OrganizationalUnitNameAsString, EncodeX520OrganizationalUnitNameAsString);
+
+        private static string DecodeX520OrganizationalUnitNameAsString(SingleAttribute source)
+        {
+            return __PKIXCommonTypes2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeX520OrganizationalUnitNameAsString(string value) =>
+            __PKIXCommonTypes2009OpenTypeCodecs.X520CommonNameSingleAttribute.Encode(Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.FromUTF8String(value));
+
+        public static ValueBinding<string> X520Title { get; } =
+            new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtTitle, DecodeX520TitleAsString, EncodeX520TitleAsString);
+
+        private static string DecodeX520TitleAsString(SingleAttribute source)
+        {
+            return __PKIXCommonTypes2009OpenTypeCodecs.X520CommonNameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeX520TitleAsString(string value) =>
+            __PKIXCommonTypes2009OpenTypeCodecs.X520CommonNameSingleAttribute.Encode(Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.FromUTF8String(value));
+
+        public static ValueBinding<string> X520dnQualifier { get; } =
+            SupportedAttributesValueBindings.X520dnQualifier;
+
+        public static ValueBinding<string> X520countryName { get; } =
+            SupportedAttributesValueBindings.X520countryName;
+
+        public static ValueBinding<string> X520SerialNumber { get; } =
+            SupportedAttributesValueBindings.X520SerialNumber;
+
+        public static ValueBinding<string> X520Pseudonym { get; } =
+            new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtPseudonym, DecodeX520PseudonymAsString, EncodeX520PseudonymAsString);
+
+        private static string DecodeX520PseudonymAsString(SingleAttribute source)
+        {
+            return __PKIXCommonTypes2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Decode(source.Value).Value;
+        }
+
+        private static Asn1Any EncodeX520PseudonymAsString(string value) =>
+            __PKIXCommonTypes2009OpenTypeCodecs.X520LocalityNameSingleAttribute.Encode(Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString.FromUTF8String(value));
+
+        public static ValueBinding<string> DomainComponent { get; } =
+            SupportedAttributesValueBindings.DomainComponent;
+
+        public static ValueBinding<string> EmailAddress { get; } =
+            SupportedAttributesValueBindings.EmailAddress;
+    }
+}
+
+public static class CrlEntryExtensionsBindings
+{
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.CRLReason> CRLReason { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeCRLReasons, __PKIXCommonTypes2009OpenTypeCodecs.CRLReasonExtension);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]> CertificateIssuer { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeCertificateIssuer, __PKIXCommonTypes2009OpenTypeCodecs.SubjectAltNameExtension);
+
+    public static ExtnValueBinding<Asn1Oid> HoldInstructionCode { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeHoldInstructionCode, Asn1Codecs.ObjectIdentifier);
+
+    public static ExtnValueBinding<DateTimeOffset> InvalidityDate { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeInvalidityDate, Asn1Codecs.GeneralizedTime);
+}
+
+public static class CrlExtensionsBindings
+{
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.AuthorityKeyIdentifier> AuthorityKeyIdentifier { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeAuthorityKeyIdentifier, __PKIXCommonTypes2009OpenTypeCodecs.AuthorityKeyIdentifierExtension);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]> IssuerAltName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeIssuerAltName, __PKIXCommonTypes2009OpenTypeCodecs.SubjectAltNameExtension);
+
+    public static ExtnValueBinding<Asn1Integer> CRLNumber { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeCRLNumber, Asn1Codecs.Integer);
+
+    public static ExtnValueBinding<Asn1Integer> DeltaCRLIndicator { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeDeltaCRLIndicator, Asn1Codecs.Integer);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.IssuingDistributionPoint> IssuingDistributionPoint { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeIssuingDistributionPoint, __PKIXCommonTypes2009OpenTypeCodecs.IssuingDistributionPointExtension);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[]> FreshestCRL { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeFreshestCRL, __PKIXCommonTypes2009OpenTypeCodecs.CRLDistributionPointsExtension);
+}
+
+public static class SupportedAttributesBindings
+{
+    public static ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> Name { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtName, __PKIXCommonTypes2009OpenTypeCodecs.NameSingleAttribute);
+
+    public static ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> Surname { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtSurname, __PKIXCommonTypes2009OpenTypeCodecs.NameSingleAttribute);
+
+    public static ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> GivenName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGivenName, __PKIXCommonTypes2009OpenTypeCodecs.NameSingleAttribute);
+
+    public static ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> Initials { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtInitials, __PKIXCommonTypes2009OpenTypeCodecs.NameSingleAttribute);
+
+    public static ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> GenerationQualifier { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtGenerationQualifier, __PKIXCommonTypes2009OpenTypeCodecs.NameSingleAttribute);
+
+    public static ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520CommonName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtCommonName, __PKIXCommonTypes2009OpenTypeCodecs.X520CommonNameSingleAttribute);
+
+    public static ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520LocalityName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtLocalityName, __PKIXCommonTypes2009OpenTypeCodecs.X520LocalityNameSingleAttribute);
+
+    public static ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520StateOrProvinceName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtStateOrProvinceName, __PKIXCommonTypes2009OpenTypeCodecs.X520LocalityNameSingleAttribute);
+
+    public static ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520OrganizationName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationName, __PKIXCommonTypes2009OpenTypeCodecs.X520CommonNameSingleAttribute);
+
+    public static ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520OrganizationalUnitName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtOrganizationalUnitName, __PKIXCommonTypes2009OpenTypeCodecs.X520CommonNameSingleAttribute);
+
+    public static ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520Title { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtTitle, __PKIXCommonTypes2009OpenTypeCodecs.X520CommonNameSingleAttribute);
+
+    public static ValuesBinding<string> X520dnQualifier { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtDnQualifier, Asn1Codecs.PrintableString);
+
+    public static ValuesBinding<string> X520countryName { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtCountryName, Asn1Codecs.PrintableString);
+
+    public static ValuesBinding<string> X520SerialNumber { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtSerialNumber, Asn1Codecs.PrintableString);
+
+    public static ValuesBinding<Asn1Kit.Modern.PKIX1Explicit2009.DirectoryString> X520Pseudonym { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdAtPseudonym, __PKIXCommonTypes2009OpenTypeCodecs.X520LocalityNameSingleAttribute);
+
+    public static ValuesBinding<string> DomainComponent { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdDomainComponent, Asn1Codecs.Ia5String);
+
+    public static ValuesBinding<string> EmailAddress { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Explicit2009.PKIX1Explicit2009Oids.IdEmailAddress, Asn1Codecs.Ia5String);
+}
+
+public static class AttributesDefinedBindings
+{
+    public static ValuesBinding<Asn1Kit.Modern.PKIXAttributeCertificate2009.SvceAuthInfo> AuthenticationInfo { get; } =
+        new(global::Asn1Kit.Modern.PKIXAttributeCertificate2009.PKIXAttributeCertificate2009Oids.IdAcaAuthenticationInfo, __PKIXCommonTypes2009OpenTypeCodecs.AuthenticationInfoAttributeSet);
+
+    public static ValuesBinding<Asn1Kit.Modern.PKIXAttributeCertificate2009.SvceAuthInfo> AccesIdentity { get; } =
+        new(global::Asn1Kit.Modern.PKIXAttributeCertificate2009.PKIXAttributeCertificate2009Oids.IdAcaAccessIdentity, __PKIXCommonTypes2009OpenTypeCodecs.AuthenticationInfoAttributeSet);
+
+    public static ValuesBinding<Asn1Kit.Modern.PKIXAttributeCertificate2009.IetfAttrSyntax> ChargingIdentity { get; } =
+        new(global::Asn1Kit.Modern.PKIXAttributeCertificate2009.PKIXAttributeCertificate2009Oids.IdAcaChargingIdentity, __PKIXCommonTypes2009OpenTypeCodecs.ChargingIdentityAttributeSet);
+
+    public static ValuesBinding<Asn1Kit.Modern.PKIXAttributeCertificate2009.IetfAttrSyntax> Group { get; } =
+        new(global::Asn1Kit.Modern.PKIXAttributeCertificate2009.PKIXAttributeCertificate2009Oids.IdAcaGroup, __PKIXCommonTypes2009OpenTypeCodecs.ChargingIdentityAttributeSet);
+
+    public static ValuesBinding<Asn1Kit.Modern.PKIXAttributeCertificate2009.RoleSyntax> Role { get; } =
+        new(global::Asn1Kit.Modern.PKIXAttributeCertificate2009.PKIXAttributeCertificate2009Oids.IdAtRole, __PKIXCommonTypes2009OpenTypeCodecs.RoleAttributeSet);
+
+    public static ValuesBinding<Asn1Kit.Modern.PKIXAttributeCertificate2009.Clearance> Clearance { get; } =
+        new(global::Asn1Kit.Modern.PKIXAttributeCertificate2009.PKIXAttributeCertificate2009Oids.IdAtClearance, __PKIXCommonTypes2009OpenTypeCodecs.ClearanceAttributeSet);
+
+    public static ValuesBinding<Asn1Kit.Modern.CryptographicMessageSyntax2009.ContentInfo> EncAttrs { get; } =
+        new(global::Asn1Kit.Modern.PKIXAttributeCertificate2009.PKIXAttributeCertificate2009Oids.IdAcaEncAttrs, __PKIXCommonTypes2009OpenTypeCodecs.EncAttrsAttributeSet);
+}
+
+public static class AttributeCertExtensionsBindings
+{
+    public static ExtnValueBinding<ReadOnlyMemory<byte>> AuditIdentity { get; } =
+        new(global::Asn1Kit.Modern.PKIXAttributeCertificate2009.PKIXAttributeCertificate2009Oids.IdPeAcAuditIdentity, Asn1Codecs.OctetString);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIXAttributeCertificate2009.Target[]> TargetInformation { get; } =
+        new(global::Asn1Kit.Modern.PKIXAttributeCertificate2009.PKIXAttributeCertificate2009Oids.IdCeTargetInformation, __PKIXCommonTypes2009OpenTypeCodecs.TargetInformationExtension);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.AuthorityKeyIdentifier> AuthorityKeyIdentifier { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeAuthorityKeyIdentifier, __PKIXCommonTypes2009OpenTypeCodecs.AuthorityKeyIdentifierExtension);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[]> AuthorityInfoAccess { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdPeAuthorityInfoAccess, __PKIXCommonTypes2009OpenTypeCodecs.AuthorityInfoAccessExtension);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIX1Implicit2009.DistributionPoint[]> CRLDistributionPoints { get; } =
+        new(global::Asn1Kit.Modern.PKIX1Implicit2009.PKIX1Implicit2009Oids.IdCeCRLDistributionPoints, __PKIXCommonTypes2009OpenTypeCodecs.CRLDistributionPointsExtension);
+
+    public static ExtnValueBinding<Asn1Null> NoRevAvail { get; } =
+        new(global::Asn1Kit.Modern.PKIXAttributeCertificate2009.PKIXAttributeCertificate2009Oids.IdCeNoRevAvail, Asn1Codecs.Null);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIXAttributeCertificate2009.Target[][]> AcProxying { get; } =
+        new(global::Asn1Kit.Modern.PKIXAttributeCertificate2009.PKIXAttributeCertificate2009Oids.IdPeAcProxying, __PKIXCommonTypes2009OpenTypeCodecs.AcProxyingExtension);
+
+    public static ExtnValueBinding<Asn1Kit.Modern.PKIXAttributeCertificate2009.AAControls> AaControls { get; } =
+        new(global::Asn1Kit.Modern.PKIXAttributeCertificate2009.PKIXAttributeCertificate2009Oids.IdPeAaControls, __PKIXCommonTypes2009OpenTypeCodecs.AaControlsExtension);
+}
+
+public static class RegInfoSetValueBindings
+{
+    public static ValueBinding<string> RegInfoUtf8Pairs { get; } =
+        new(global::Asn1Kit.Modern.PKIXCRMF2009.PKIXCRMF2009Oids.IdRegInfoUtf8Pairs, Asn1Codecs.Utf8String);
+
+    public static ValueBinding<Asn1Kit.Modern.PKIXCRMF2009.CertRequest> RegInfoCertReq { get; } =
+        new(global::Asn1Kit.Modern.PKIXCRMF2009.PKIXCRMF2009Oids.IdRegInfoCertReq, __PKIXCommonTypes2009OpenTypeCodecs.RegInfoCertReqSingleAttribute);
+}
+
+public static class RegControlSetValueBindings
+{
+    public static ValueBinding<string> RegCtrlRegToken { get; } =
+        new(global::Asn1Kit.Modern.PKIXCRMF2009.PKIXCRMF2009Oids.IdRegCtrlRegToken, Asn1Codecs.Utf8String);
+
+    public static ValueBinding<string> RegCtrlAuthenticator { get; } =
+        new(global::Asn1Kit.Modern.PKIXCRMF2009.PKIXCRMF2009Oids.IdRegCtrlAuthenticator, Asn1Codecs.Utf8String);
+
+    public static ValueBinding<Asn1Kit.Modern.PKIXCRMF2009.PKIPublicationInfo> RegCtrlPkiPublicationInfo { get; } =
+        new(global::Asn1Kit.Modern.PKIXCRMF2009.PKIXCRMF2009Oids.IdRegCtrlPkiPublicationInfo, __PKIXCommonTypes2009OpenTypeCodecs.RegCtrlPkiPublicationInfoSingleAttribute);
+
+    public static ValueBinding<Asn1Kit.Modern.PKIXCRMF2009.PKIArchiveOptions> RegCtrlPkiArchiveOptions { get; } =
+        new(global::Asn1Kit.Modern.PKIXCRMF2009.PKIXCRMF2009Oids.IdRegCtrlPkiArchiveOptions, __PKIXCommonTypes2009OpenTypeCodecs.RegCtrlPkiArchiveOptionsSingleAttribute);
+
+    public static ValueBinding<Asn1Kit.Modern.PKIXCRMF2009.CertId> RegCtrlOldCertID { get; } =
+        new(global::Asn1Kit.Modern.PKIXCRMF2009.PKIXCRMF2009Oids.IdRegCtrlOldCertID, __PKIXCommonTypes2009OpenTypeCodecs.RegCtrlOldCertIDSingleAttribute);
+
+    public static ValueBinding<Asn1Kit.Modern.PKCS10.SubjectPublicKeyInfo> RegCtrlProtocolEncrKey { get; } =
+        new(global::Asn1Kit.Modern.PKIXCRMF2009.PKIXCRMF2009Oids.IdRegCtrlProtocolEncrKey, __PKIXCommonTypes2009OpenTypeCodecs.RegCtrlProtocolEncrKeySingleAttribute);
 }
 
 public static class PKIXCommonTypes2009OpenTypeExtensions

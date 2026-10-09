@@ -20,16 +20,16 @@ public sealed class GeneralNameCodecTests
 
         Assert.Equal(GeneralNameKind.OtherName, name.Kind);
         Assert.Equal(oid, name.OtherName!.TypeId.ToString());
-        Assert.Null(name.OtherName.Value.Unknown);
-        var expectedKind = form switch
+        Assert.True(form switch
         {
-            "xmpp" => AnotherName_ValueKind.XmppAddr,
-            "srv" => AnotherName_ValueKind.SrvName,
-            "smtp" => AnotherName_ValueKind.SmtpUtf8Mailbox,
+            "xmpp" => name.OtherName.TryDecodeValue(AnotherNameValueBindings.XmppAddr, out var xmpp)
+                && xmpp == expected,
+            "srv" => name.OtherName.TryDecodeValue(AnotherNameValueBindings.SrvName, out var srv)
+                && srv == expected,
+            "smtp" => name.OtherName.TryDecodeValue(AnotherNameValueBindings.SmtpUtf8Mailbox, out var smtp)
+                && smtp == expected,
             _ => throw new Xunit.Sdk.XunitException($"Unexpected otherName form '{form}'.")
-        };
-        Assert.Equal(expectedKind, name.OtherName.Value.Kind);
-        Assert.Equal(expected, name.OtherName.Value.Value);
+        });
 
         var writer = new Asn1Writer(Asn1Encoding.Der);
         name.Encode(writer);

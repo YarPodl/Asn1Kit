@@ -1,10 +1,10 @@
 using System.Text;
 using Asn1Kit.Runtime;
-using Asn1Kit.Modern.PKIX1Explicit2009;
+using Asn1Kit.Pkix;
 using Asn1Kit.Modern.PKIXCommonTypes2009;
 using PkixAttribute = Asn1Kit.Pkix.AttributeTypeAndValue;
-using PkixValueKind = Asn1Kit.Pkix.AttributeTypeAndValue_ValueKind;
 using ModernAttribute = Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute;
+using ModernValueBindings = Asn1Kit.Modern.PKIXCommonTypes2009.SupportedAttributesValueBindings;
 
 namespace Asn1Kit.Cms.Demo;
 
@@ -22,12 +22,17 @@ public static class RdnSequenceFormatter
     {
         var type = ShortName(attribute.Type);
         if (type is null)
-            return HexAttribute(attribute.Type, Asn1Any.FromValue(attribute.Value, static (writer, value) => value.Encode(writer)));
+            return HexAttribute(attribute.Type, attribute.Value);
 
-        var value = attribute.Value;
-        return type + "=" + (value.Kind == PkixValueKind.Unknown || value.Value is null
-            ? Hex(value.Unknown ?? throw new Asn1Exception("Attribute value has no alternative."))
-            : Escape(value.Value));
+        try
+        {
+            return type + "=" + (TryDecodeStringAttribute(attribute, type, out var value)
+                ? Escape(value) : Hex(attribute.Value));
+        }
+        catch (Asn1Exception)
+        {
+            return type + "=" + Hex(attribute.Value);
+        }
     }
 
     private static string FormatAttribute(ModernAttribute attribute)
@@ -47,9 +52,9 @@ public static class RdnSequenceFormatter
         }
     }
 
-    private static bool TryDecodeStringAttribute(ModernAttribute attribute, string type, out string value)
+    private static bool TryDecodeStringAttribute(PkixAttribute attribute, string type, out string value)
     {
-        if (StringBinding(type) is not { } binding)
+        if (PkixStringBinding(type) is not { } binding)
         {
             value = default!;
             return false;
@@ -58,15 +63,38 @@ public static class RdnSequenceFormatter
         return attribute.TryDecodeValue(binding, out value);
     }
 
-    private static ValueBinding<string>? StringBinding(string type) => type switch
+    private static bool TryDecodeStringAttribute(ModernAttribute attribute, string type, out string value)
     {
-        "CN" => SupportedAttributesValueBindings.AsString.X520CommonName,
-        "C" => SupportedAttributesValueBindings.AsString.X520countryName,
-        "L" => SupportedAttributesValueBindings.AsString.X520LocalityName,
-        "ST" => SupportedAttributesValueBindings.AsString.X520StateOrProvinceName,
-        "O" => SupportedAttributesValueBindings.AsString.X520OrganizationName,
-        "OU" => SupportedAttributesValueBindings.AsString.X520OrganizationalUnitName,
-        "DC" => SupportedAttributesValueBindings.AsString.DomainComponent,
+        if (ModernStringBinding(type) is not { } binding)
+        {
+            value = default!;
+            return false;
+        }
+
+        return attribute.TryDecodeValue(binding, out value);
+    }
+
+    private static Asn1Kit.Pkix.ValueBinding<string>? PkixStringBinding(string type) => type switch
+    {
+        "CN" => AttributeTypeAndValueValueBindings.AsString.DirectoryString6,
+        "C" => AttributeTypeAndValueValueBindings.AsString.Oid2546,
+        "L" => AttributeTypeAndValueValueBindings.AsString.DirectoryString7,
+        "ST" => AttributeTypeAndValueValueBindings.AsString.DirectoryString8,
+        "O" => AttributeTypeAndValueValueBindings.AsString.DirectoryString9,
+        "OU" => AttributeTypeAndValueValueBindings.AsString.DirectoryString10,
+        "DC" => AttributeTypeAndValueValueBindings.AsString.Oid09234219200300100125,
+        _ => null
+    };
+
+    private static Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<string>? ModernStringBinding(string type) => type switch
+    {
+        "CN" => ModernValueBindings.AsString.X520CommonName,
+        "C" => ModernValueBindings.AsString.X520countryName,
+        "L" => ModernValueBindings.AsString.X520LocalityName,
+        "ST" => ModernValueBindings.AsString.X520StateOrProvinceName,
+        "O" => ModernValueBindings.AsString.X520OrganizationName,
+        "OU" => ModernValueBindings.AsString.X520OrganizationalUnitName,
+        "DC" => ModernValueBindings.AsString.DomainComponent,
         _ => null
     };
 

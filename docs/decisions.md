@@ -88,15 +88,15 @@
 
 **Последствие.** `Asn1Reader` остаётся классом для совместимости с delegate/lazy/reflection, но содержит `Asn1DecodeCursor` как mutable struct. Копия cursor — bookmark для `TryPeekTag` и non-consuming `TryReadOctetString`. Вложенность открывается только `EnterSequence` / `EnterSet` / `EnterExplicit` и возвращает `Asn1ReaderScope`; scope проверяет single-dispose и LIFO. Raw escape hatch один — `ReadAny`; публичных `ReadTlv`, `ReadValue`, `TryReadValue` и `Push` нет. Constructed decoder работает через `ref Asn1DecodeCursor` и не вызывает фасад обратно.
 
-## ANY — `Asn1Any` или open-type + `bindings`
+## ANY — один Binding-путь (overlay и IOC)
 
-**Причина.** В legacy PKIX `ANY DEFINED BY` встречается постоянно; таблица задаётся overlay. Современные IOC компилятор разрешает в конкретные bindings. Без таблицы OID → тип нельзя честно выбрать; молчаливый пропуск TLV недопустим. `object` / `bool` для NULL — плохой API.
+**Причина.** В legacy PKIX `ANY DEFINED BY` встречается постоянно; таблица задаётся overlay. Современные IOC компилятор разрешает в конкретные bindings. Dual-path (`Owner_Field` vs `Binding<T>`) дублировал API и раздувал Alloc на legacy decode. Без таблицы OID → тип нельзя честно выбрать; молчаливый пропуск TLV недопустим.
 
 **Последствие.**
-- Без `bindings`: полный TLV в `Asn1Any`; `definedBy` информационное.
-- С overlay / legacy inline bindings: C# эмитит `Owner_Field` (группировка по CLR-типу, при необходимости `Kind`).
-- Свёрнутые IOC-таблицы (`ref.openTypes`): raw на поле + typed `Binding<T>` / table-каталог на контейнере — детали эмиссии только в [csharp-backend.md](../compiler/docs/playbooks/csharp-backend.md).
-- Legacy mismatch тега: `options.openType.mismatch` = `soft` (default) / `strict`. Неизвестный ключ → `Unknown`. Modern таблицы всегда отвергают несовместимое содержимое известного ключа.
+- Без таблицы: полный TLV в `Asn1Any`; `definedBy` информационное.
+- Overlay sidecar и IOC сходятся в одну IR-форму: `any.selector` (+ при orphan — `bindings`/`tableExtensible` на теле; при refs — таблицы на `ref.openTypes`). Inline `any.bindings` после normalize не является codegen-контрактом.
+- C# всегда: поле `Asn1Any` + typed `Binding<T>` / table-каталог / `TryDecode`·`Set`·`TryGet` / при однородном leaf — `AsString` — детали в [csharp-backend.md](../compiler/docs/playbooks/csharp-backend.md).
+- Decode: неизвестный ключ → raw; известный mismatch → `Asn1Exception`. `options.openType.mismatch` и universal-tag fallback для open types сняты (опция deprecated/no-op).
 
 ## Runtime: мягкое чтение неканоничных форм + опции строгости
 

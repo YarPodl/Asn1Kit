@@ -1,6 +1,7 @@
 using Asn1Kit.EncodeBench;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
+using Asn1Kit.Cms;
 using Asn1Kit.Pkix;
 using Asn1Kit.Runtime;
 using Org.BouncyCastle.Asn1;
@@ -49,7 +50,9 @@ internal static class Smoke
         _ = EncodeSamples.CreateBouncyCastleCertificateList().GetEncoded();
 
         var cms = CmsContentInfo.Decode(new Asn1Reader(cmsDer, Asn1Encoding.Der));
-        var lazyCert = cms.Content.SignedData!.Certificates!
+        if (!cms.TryDecodeContent(ContentInfoContentBindings.SignedData, out var signedData))
+            throw new InvalidOperationException("CMS fixture is not SignedData.");
+        var lazyCert = signedData.Certificates!
             .Single(c => c.Certificate is not null)
             .Certificate!;
         if (!lazyCert.HasEncoded)
