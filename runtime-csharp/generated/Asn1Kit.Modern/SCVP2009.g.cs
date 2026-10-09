@@ -2504,6 +2504,13 @@ public sealed record ValueBinding<T>
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
         Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
     }
+
+    public ReplyWantBack Create(T value)
+    {
+        var result = new ReplyWantBack();
+        SCVP2009OpenTypeExtensions.SetValue(result, this, value);
+        return result;
+    }
 }
 
 public static class SupportedAttributesValueBindings

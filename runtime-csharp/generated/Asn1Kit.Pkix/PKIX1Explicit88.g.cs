@@ -3063,6 +3063,13 @@ public sealed record ParametersBinding<T>
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
         Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
     }
+
+    public AlgorithmIdentifier Create(T value)
+    {
+        var result = new AlgorithmIdentifier();
+        PKIX1Explicit88OpenTypeExtensions.SetParameters(result, this, value);
+        return result;
+    }
 }
 
 public sealed record ValueBinding<T>
@@ -3083,6 +3090,13 @@ public sealed record ValueBinding<T>
         Oid = oid;
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
         Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public AttributeTypeAndValue Create(T value)
+    {
+        var result = new AttributeTypeAndValue();
+        PKIX1Explicit88OpenTypeExtensions.SetValue(ref result, this, value);
+        return result;
     }
 }
 

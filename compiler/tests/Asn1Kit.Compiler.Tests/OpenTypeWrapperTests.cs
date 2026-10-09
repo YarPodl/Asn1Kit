@@ -319,6 +319,29 @@ public sealed class OpenTypeBindingTests
     }
 
     [Fact]
+    public void BindingCreateBuildsCarriersForScalarAndSetOfPayloads()
+    {
+        Assert.Equal(42, Run(@"
+          var extension = NumbersPayloadBindings.IntegerEntry.Create(42);
+          if (!extension.TryDecodePayload(NumbersPayloadBindings.IntegerEntry, out var payload) || payload != 42)
+              throw new Exception();
+          var multi = NumbersBindings.IntegerEntry.Create(new[] {7, 42});
+          if (!multi.TryDecodeValues(NumbersBindings.IntegerEntry, out var values) ||
+              values.Length != 2 || values[0] != 7 || values[1] != 42)
+              throw new Exception();
+          var single = NumbersBindings.IntegerEntry.Create(42);
+          if (!single.TryDecodeValues(NumbersBindings.IntegerEntry, out var one) ||
+              one.Length != 1 || one[0] != 42)
+              throw new Exception();
+          single.SetValues(NumbersBindings.IntegerEntry, 7);
+          if (!single.TryDecodeValues(NumbersBindings.IntegerEntry, out var replaced) ||
+              replaced.Length != 1 || replaced[0] != 7)
+              throw new Exception();
+          return payload;
+        "));
+    }
+
+    [Fact]
     public void SourceGettersUseTableScopedDescriptorsWithoutTypeSwitches()
     {
         var document = new Asn1Compiler().CompileText(Source);
@@ -331,6 +354,10 @@ public sealed class OpenTypeBindingTests
         Assert.Contains("out T value, out Extension raw", generated);
         Assert.Contains("TryDecodePayload<T>(this Extension source, PayloadBinding<T> binding, out T value)", generated);
         Assert.Contains("SetPayload<T>(this Extension source, PayloadBinding<T> binding, T value)", generated);
+        Assert.Contains("public Extension Create(T value)", generated);
+        Assert.Contains("public Attribute Create(T[] value)", generated);
+        Assert.Contains("public Attribute Create(T value) => Create(new[] { value });", generated);
+        Assert.Contains("SetValues<T>(this Attribute source, ValuesBinding<T> binding, T value)", generated);
         Assert.DoesNotContain("TryDecodePayloadIntegerEntry", generated);
         Assert.DoesNotContain("TryDecodePayload<T>(this Extension source, out T value)", generated);
         Assert.DoesNotContain("typeof(T)", generated);

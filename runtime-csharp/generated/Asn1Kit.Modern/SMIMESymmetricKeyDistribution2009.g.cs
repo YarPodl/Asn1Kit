@@ -1025,6 +1025,13 @@ public sealed record GlaRequestValueBinding<T>
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
         Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
     }
+
+    public GLAQueryRequest Create(T value)
+    {
+        var result = new GLAQueryRequest();
+        SMIMESymmetricKeyDistribution2009OpenTypeExtensions.SetGlaRequestValue(result, this, value);
+        return result;
+    }
 }
 
 public sealed record GlaResponseValueBinding<T>
@@ -1045,6 +1052,13 @@ public sealed record GlaResponseValueBinding<T>
         Oid = oid;
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
         Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public GLAQueryResponse Create(T value)
+    {
+        var result = new GLAQueryResponse();
+        SMIMESymmetricKeyDistribution2009OpenTypeExtensions.SetGlaResponseValue(result, this, value);
+        return result;
     }
 }
 

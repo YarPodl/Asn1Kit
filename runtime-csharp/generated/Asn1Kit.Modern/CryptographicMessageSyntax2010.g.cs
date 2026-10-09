@@ -2194,6 +2194,15 @@ public sealed record AttrValuesBinding<T>
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
         Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
     }
+
+    public Attribute Create(T[] value)
+    {
+        var result = new Attribute();
+        CryptographicMessageSyntax2010OpenTypeExtensions.SetAttrValues(result, this, value);
+        return result;
+    }
+
+    public Attribute Create(T value) => Create(new[] { value });
 }
 
 public sealed record ContentBinding<T>
@@ -2215,6 +2224,13 @@ public sealed record ContentBinding<T>
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
         Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
     }
+
+    public ContentInfo Create(T value)
+    {
+        var result = new ContentInfo();
+        CryptographicMessageSyntax2010OpenTypeExtensions.SetContent(result, this, value);
+        return result;
+    }
 }
 
 public sealed record EContentBinding<T>
@@ -2235,6 +2251,13 @@ public sealed record EContentBinding<T>
         Oid = oid;
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
         Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public EncapsulatedContentInfo Create(T value)
+    {
+        var result = new EncapsulatedContentInfo();
+        CryptographicMessageSyntax2010OpenTypeExtensions.SetEContent(result, this, value);
+        return result;
     }
 }
 
@@ -2587,6 +2610,9 @@ public static class CryptographicMessageSyntax2010OpenTypeExtensions
             : binding.Encoder!(value);
         result.AttrValues = encoded;
     }
+
+    public static void SetAttrValues<T>(this Attribute source, AttrValuesBinding<T> binding, T value)
+        => source.SetAttrValues(binding, new[] { value });
 
     public static bool TryGet<T>(this Attribute[]? source, AttrValuesBinding<T> binding, out T[] value)
         => TryGet(source, binding, out value, out _);

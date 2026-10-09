@@ -1093,6 +1093,13 @@ public sealed record ResponseBinding<T>
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
         Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
     }
+
+    public ResponseBytes Create(T value)
+    {
+        var result = new ResponseBytes();
+        OCSP2009OpenTypeExtensions.SetResponse(result, this, value);
+        return result;
+    }
 }
 
 public static class SupportedAttributesValueBindings

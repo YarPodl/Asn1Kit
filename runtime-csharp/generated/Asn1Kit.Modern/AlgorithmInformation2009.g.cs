@@ -158,6 +158,13 @@ public sealed record ParametersBinding<T>
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
         Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
     }
+
+    public AlgorithmIdentifier Create(T value)
+    {
+        var result = new AlgorithmIdentifier();
+        AlgorithmInformation2009OpenTypeExtensions.SetParameters(result, this, value);
+        return result;
+    }
 }
 
 public sealed record SMIMECapabilityParametersBinding<T>
@@ -178,6 +185,13 @@ public sealed record SMIMECapabilityParametersBinding<T>
         Oid = oid;
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
         Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public SMIMECapability Create(T value)
+    {
+        var result = new SMIMECapability();
+        AlgorithmInformation2009OpenTypeExtensions.SetParameters(result, this, value);
+        return result;
     }
 }
 

@@ -1247,6 +1247,13 @@ public sealed record ExtensionAttributeValueBinding<T>
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
         Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
     }
+
+    public ExtensionAttribute Create(T value)
+    {
+        var result = new ExtensionAttribute();
+        PKIXX400Address2009OpenTypeExtensions.SetExtensionAttributeValue(result, this, value);
+        return result;
+    }
 }
 
 public static class SupportedExtensionAttributesExtensionAttributeValueBindings

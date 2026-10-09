@@ -827,6 +827,8 @@ public sealed partial class CSharpBackend
         var parentTypes = string.Concat(site.Parents.Select(static p => $", {p.CsType}"));
         var decoderFunc = $"Func<{containerType}{parentTypes}, {valueShape}>";
         var encoderFunc = $"Func<{valueShape}, {site.Payload.RawType}>";
+        var setMethod = "Set" + site.DecodeMethod["TryDecode".Length..];
+        var extensionsClass = SanitizeIdentifier(module.Name) + "OpenTypeExtensions";
         sb.AppendLine($"public sealed record {stem}Binding<T>");
         sb.AppendLine("{");
         sb.AppendLine($"    public {keyType} {keyName} {{ get; }}");
@@ -846,8 +848,44 @@ public sealed partial class CSharpBackend
         sb.AppendLine("        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));");
         sb.AppendLine("        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));");
         sb.AppendLine("    }");
+        if (site.Selector.Levels == 0)
+            EmitOpenBindingCreateMethods(sb, site, containerType, setMethod, extensionsClass);
         sb.AppendLine("}");
         sb.AppendLine();
+    }
+
+    private static void EmitOpenBindingCreateMethods(StringBuilder sb, OpenWrapperSite site,
+        string containerType, string setMethod, string extensionsClass)
+    {
+        // Instance Create avoids requiring a using of the extensions namespace (aliases alone do not).
+        if (OpenPayloadUsesArrayValue(site))
+        {
+            sb.AppendLine();
+            sb.AppendLine($"    public {containerType} Create(T[] value)");
+            sb.AppendLine("    {");
+            EmitOpenCreateBody(sb, site, containerType, setMethod, extensionsClass, "value");
+            sb.AppendLine("    }");
+            sb.AppendLine();
+            sb.AppendLine($"    public {containerType} Create(T value) => Create(new[] {{ value }});");
+            return;
+        }
+
+        sb.AppendLine();
+        sb.AppendLine($"    public {containerType} Create(T value)");
+        sb.AppendLine("    {");
+        EmitOpenCreateBody(sb, site, containerType, setMethod, extensionsClass, "value");
+        sb.AppendLine("    }");
+    }
+
+    private static void EmitOpenCreateBody(StringBuilder sb, OpenWrapperSite site, string containerType,
+        string setMethod, string extensionsClass, string valueArg)
+    {
+        sb.AppendLine($"        var result = new {containerType}();");
+        if (site.Container.ValueType)
+            sb.AppendLine($"        {extensionsClass}.{setMethod}(ref result, this, {valueArg});");
+        else
+            sb.AppendLine($"        {extensionsClass}.{setMethod}(result, this, {valueArg});");
+        sb.AppendLine("        return result;");
     }
 
     private void AssignOpenCodecExpressions(IrDocument document, IrModule module, OpenWrapperPlan plan)
@@ -1560,6 +1598,17 @@ public sealed partial class CSharpBackend
         if (site.Container.ValueType) sb.AppendLine("        source = result;");
         sb.AppendLine("    }");
         sb.AppendLine();
+
+        if (OpenPayloadUsesArrayValue(site))
+        {
+            var parentArgs = string.Concat(site.Parents.Select((_, i) => $"parent{i}, "));
+            var singleSetTarget = site.Container.ValueType
+                ? $"{setMethod}(ref source{OpenParentArguments(site)}, binding, new[] {{ value }})"
+                : $"source.{setMethod}({parentArgs}binding, new[] {{ value }})";
+            sb.AppendLine($"    public static void {setMethod}<T>({thisParameter}{OpenParentParameters(site)}, {binding}Binding<T> binding, T value)");
+            sb.AppendLine($"        => {singleSetTarget};");
+            sb.AppendLine();
+        }
     }
 
     private void EmitOpenDecodeBody(StringBuilder sb, IrDocument document, OpenWrapperSite site, string keyName)

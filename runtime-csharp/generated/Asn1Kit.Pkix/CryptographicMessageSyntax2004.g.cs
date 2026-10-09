@@ -2100,6 +2100,13 @@ public sealed record ContentBinding<T>
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
         Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
     }
+
+    public ContentInfo Create(T value)
+    {
+        var result = new ContentInfo();
+        CryptographicMessageSyntax2004OpenTypeExtensions.SetContent(result, this, value);
+        return result;
+    }
 }
 
 public static class AlgorithmIdentifierParametersBindings

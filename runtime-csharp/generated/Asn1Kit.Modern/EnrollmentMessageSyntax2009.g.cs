@@ -2186,6 +2186,15 @@ public sealed record AttrValuesBinding<T>
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
         Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
     }
+
+    public TaggedAttribute Create(T[] value)
+    {
+        var result = new TaggedAttribute();
+        EnrollmentMessageSyntax2009OpenTypeExtensions.SetAttrValues(result, this, value);
+        return result;
+    }
+
+    public TaggedAttribute Create(T value) => Create(new[] { value });
 }
 
 public static class CmcControlSetAttrValuesBindings
@@ -2672,6 +2681,9 @@ public static class EnrollmentMessageSyntax2009OpenTypeExtensions
             : binding.Encoder!(value);
         result.AttrValues = encoded;
     }
+
+    public static void SetAttrValues<T>(this TaggedAttribute source, AttrValuesBinding<T> binding, T value)
+        => source.SetAttrValues(binding, new[] { value });
 
 }
 

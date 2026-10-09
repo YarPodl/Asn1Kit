@@ -1723,6 +1723,13 @@ public sealed record AnotherNameValueBinding<T>
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
         Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
     }
+
+    public AnotherName Create(T value)
+    {
+        var result = new AnotherName();
+        PKIX1Implicit88OpenTypeExtensions.SetValue(result, this, value);
+        return result;
+    }
 }
 
 public sealed record QualifierBinding<T>
@@ -1743,6 +1750,13 @@ public sealed record QualifierBinding<T>
         Oid = oid;
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
         Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public PolicyQualifierInfo Create(T value)
+    {
+        var result = new PolicyQualifierInfo();
+        PKIX1Implicit88OpenTypeExtensions.SetQualifier(result, this, value);
+        return result;
     }
 }
 

@@ -18,17 +18,6 @@ public static class CmsModernSignedDataBuilder
         var signatureAlgorithm = new ModernAlg.AlgorithmIdentifier { Algorithm = EducationalCmsSigning.RsaEncryption };
         var tbs = certificate.Value.ToBeSigned;
 
-        var contentTypeAttr = new ModernCms.Attribute();
-        ModernCms.CryptographicMessageSyntax2009OpenTypeExtensions.SetAttrValues(
-            contentTypeAttr,
-            ModernCms.SignedAttributesSetBindings.ContentType,
-            new[] { ModernCms.CryptographicMessageSyntax2009Oids.IdData });
-        var messageDigestAttr = new ModernCms.Attribute();
-        ModernCms.CryptographicMessageSyntax2009OpenTypeExtensions.SetAttrValues(
-            messageDigestAttr,
-            ModernCms.SignedAttributesSetBindings.MessageDigest,
-            new[] { (ReadOnlyMemory<byte>)digest });
-
         var signer = new ModernCms.SignerInfo
         {
             Version = ModernCms.CMSVersion.V1,
@@ -38,7 +27,12 @@ public static class CmsModernSignedDataBuilder
                 SerialNumber = tbs.SerialNumber
             }),
             DigestAlgorithm = digestAlgorithm,
-            SignedAttrs = new[] { contentTypeAttr, messageDigestAttr },
+            SignedAttrs = new[]
+            {
+                ModernCms.SignedAttributesSetBindings.ContentType.Create(
+                    ModernCms.CryptographicMessageSyntax2009Oids.IdData),
+                ModernCms.SignedAttributesSetBindings.MessageDigest.Create(digest),
+            },
             SignatureAlgorithm = signatureAlgorithm,
             Signature = EducationalCmsSigning.PlaceholderSignature
         };
@@ -56,9 +50,7 @@ public static class CmsModernSignedDataBuilder
             SignerInfos = new[] { signer }
         };
 
-        var contentInfo = new ModernCms.ContentInfo();
-        ModernCms.CryptographicMessageSyntax2009OpenTypeExtensions.SetContent(
-            contentInfo, ModernCms.ContentSetContentBindings.CtSignedData, signedData);
+        var contentInfo = ModernCms.ContentSetContentBindings.CtSignedData.Create(signedData);
         var writer = new Asn1Writer(Asn1Encoding.Der);
         contentInfo.Encode(writer);
         return writer.Encode();

@@ -1719,6 +1719,13 @@ public sealed record QualifierBinding<T>
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
         Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
     }
+
+    public PolicyQualifierInfo Create(T value)
+    {
+        var result = new PolicyQualifierInfo();
+        PKIX1Implicit2009OpenTypeExtensions.SetQualifier(result, this, value);
+        return result;
+    }
 }
 
 public static class PolicyQualifierIdQualifierBindings

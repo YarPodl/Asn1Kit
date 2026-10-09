@@ -449,6 +449,13 @@ public sealed record ExtnValueBinding<T>
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
         Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
     }
+
+    public Extension Create(T value)
+    {
+        var result = new Extension();
+        PKIXCommonTypes2009OpenTypeExtensions.SetExtnValue(result, this, value);
+        return result;
+    }
 }
 
 public sealed record ValueBinding<T>
@@ -469,6 +476,13 @@ public sealed record ValueBinding<T>
         Oid = oid;
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
         Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
+    }
+
+    public SingleAttribute Create(T value)
+    {
+        var result = new SingleAttribute();
+        PKIXCommonTypes2009OpenTypeExtensions.SetValue(result, this, value);
+        return result;
     }
 }
 
@@ -491,6 +505,15 @@ public sealed record ValuesBinding<T>
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
         Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
     }
+
+    public AttributeSet Create(T[] value)
+    {
+        var result = new AttributeSet();
+        PKIXCommonTypes2009OpenTypeExtensions.SetValues(result, this, value);
+        return result;
+    }
+
+    public AttributeSet Create(T value) => Create(new[] { value });
 }
 
 public static class AttributeListBindings
@@ -1113,6 +1136,9 @@ public static class PKIXCommonTypes2009OpenTypeExtensions
             : binding.Encoder!(value);
         result.Values = encoded;
     }
+
+    public static void SetValues<T>(this AttributeSet source, ValuesBinding<T> binding, T value)
+        => source.SetValues(binding, new[] { value });
 
     public static bool TryGet<T>(this AttributeSet[]? source, ValuesBinding<T> binding, out T[] value)
         => TryGet(source, binding, out value, out _);
