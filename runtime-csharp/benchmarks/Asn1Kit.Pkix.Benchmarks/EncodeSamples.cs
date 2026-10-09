@@ -1,5 +1,4 @@
 using System.Numerics;
-using System.Text;
 using Asn1Kit.Runtime;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.Pkcs;
@@ -18,10 +17,11 @@ using TBSCertificate = global::Asn1Kit.Pkix.TBSCertificate;
 using TBSCertList = global::Asn1Kit.Pkix.TBSCertList;
 using TBSCertList_RevokedCertificates_Item = global::Asn1Kit.Pkix.TBSCertList_RevokedCertificates_Item;
 using AlgorithmIdentifier = global::Asn1Kit.Pkix.AlgorithmIdentifier;
-using AlgorithmIdentifier_Parameters = global::Asn1Kit.Pkix.AlgorithmIdentifier_Parameters;
+using AlgorithmIdentifierParametersBindings = global::Asn1Kit.Pkix.AlgorithmIdentifierParametersBindings;
 using SubjectPublicKeyInfo = global::Asn1Kit.Pkix.SubjectPublicKeyInfo;
 using AttributeTypeAndValue = global::Asn1Kit.Pkix.AttributeTypeAndValue;
-using AttributeTypeAndValue_Value = global::Asn1Kit.Pkix.AttributeTypeAndValue_Value;
+using AttributeTypeAndValueValueBindings = global::Asn1Kit.Pkix.AttributeTypeAndValueValueBindings;
+using DirectoryString = global::Asn1Kit.Pkix.DirectoryString;
 using Extension = global::Asn1Kit.Pkix.Extension;
 using Validity = global::Asn1Kit.Pkix.Validity;
 using Time = global::Asn1Kit.Pkix.Time;
@@ -40,11 +40,6 @@ namespace Asn1Kit.EncodeBench;
 /// </summary>
 internal static class EncodeSamples
 {
-    private static readonly Asn1Oid OidCountryName = Asn1Oid.Parse("2.5.4.6");
-    private static readonly Asn1Oid OidOrganizationName = Asn1Oid.Parse("2.5.4.10");
-    private static readonly Asn1Oid OidCommonName = Asn1Oid.Parse("2.5.4.3");
-    private static readonly Asn1Oid OidSha256WithRsa = Asn1Oid.Parse("1.2.840.113549.1.1.11");
-    private static readonly Asn1Oid OidRsaEncryption = Asn1Oid.Parse("1.2.840.113549.1.1.1");
     private static readonly Asn1Oid OidSubjectKeyIdentifier = Asn1Oid.Parse("2.5.29.14");
     private static readonly Asn1Oid OidKeyUsage = Asn1Oid.Parse("2.5.29.15");
     private static readonly Asn1Oid OidBasicConstraints = Asn1Oid.Parse("2.5.29.19");
@@ -171,29 +166,25 @@ internal static class EncodeSamples
     }
 
     private static AttributeTypeAndValue[][] TrustAnchorName() => Name(
-        ("US", OidCountryName),
-        ("Test Certificates 2011", OidOrganizationName),
-        ("Trust Anchor", OidCommonName));
+        AttributeTypeAndValueValueBindings.Oid2546.Create("US"),
+        AttributeTypeAndValueValueBindings.DirectoryString9.Create(
+            DirectoryString.FromPrintableString("Test Certificates 2011")),
+        AttributeTypeAndValueValueBindings.DirectoryString6.Create(
+            DirectoryString.FromPrintableString("Trust Anchor")));
 
     private static AttributeTypeAndValue[][] GoodCaName() => Name(
-        ("US", OidCountryName),
-        ("Test Certificates 2011", OidOrganizationName),
-        ("Good CA", OidCommonName));
+        AttributeTypeAndValueValueBindings.Oid2546.Create("US"),
+        AttributeTypeAndValueValueBindings.DirectoryString9.Create(
+            DirectoryString.FromPrintableString("Test Certificates 2011")),
+        AttributeTypeAndValueValueBindings.DirectoryString6.Create(
+            DirectoryString.FromPrintableString("Good CA")));
 
-    private static AttributeTypeAndValue[][] Name(params (string Value, Asn1Oid Type)[] rdns)
+    private static AttributeTypeAndValue[][] Name(params AttributeTypeAndValue[] avas)
     {
-        var result = new AttributeTypeAndValue[rdns.Length][];
-        for (var i = 0; i < rdns.Length; i++)
+        var result = new AttributeTypeAndValue[avas.Length][];
+        for (var i = 0; i < avas.Length; i++)
         {
-            var (value, type) = rdns[i];
-            result[i] = new[]
-            {
-                new AttributeTypeAndValue
-                {
-                    Type = type.Clone(),
-                    Value = NameValue(type, value),
-                },
-            };
+            result[i] = new[] { avas[i] };
         }
 
         return result;
@@ -212,7 +203,7 @@ internal static class EncodeSamples
                 copy[j] = new AttributeTypeAndValue
                 {
                     Type = atv.Type.Clone(),
-                    Value = CloneNameValue(atv.Type, atv.Value),
+                    Value = atv.Value.Clone(),
                 };
             }
 
@@ -222,53 +213,12 @@ internal static class EncodeSamples
         return result;
     }
 
-    private static Asn1Any PrintableStringAny(string value) =>
-        Asn1Any.FromTagAndContents(Asn1Tag.PrintableString, Encoding.ASCII.GetBytes(value));
-
-    private static AttributeTypeAndValue_Value NameValue(Asn1Oid type, string value)
-    {
-        if (type.Equals(OidCommonName))
-        {
-            return AttributeTypeAndValue_Value.FromPrintableString(value);
-        }
-
-        if (type.Equals(OidOrganizationName))
-        {
-            return AttributeTypeAndValue_Value.FromPrintableString(value);
-        }
-
-        if (type.Equals(OidCountryName))
-        {
-            return AttributeTypeAndValue_Value.FromPrintable(value);
-        }
-
-        return AttributeTypeAndValue_Value.FromUnknown(PrintableStringAny(value));
-    }
-
-    private static AttributeTypeAndValue_Value CloneNameValue(
-        Asn1Oid type,
-        AttributeTypeAndValue_Value value)
-    {
-        var writer = new Asn1Writer(Asn1Encoding.Der);
-        value.Encode(writer);
-        return AttributeTypeAndValue_Value.Decode(
-            new Asn1Reader(writer.Encode(), Asn1Encoding.Der),
-            type);
-    }
-
-    private static AlgorithmIdentifier Sha256WithRsa() => new()
-    {
-        Algorithm = OidSha256WithRsa.Clone(),
-        Parameters = AlgorithmIdentifier_Parameters.FromNull(),
-    };
+    private static AlgorithmIdentifier Sha256WithRsa() =>
+        AlgorithmIdentifierParametersBindings.Oid128401135491111.Create(default);
 
     private static SubjectPublicKeyInfo CreateSpki() => new()
     {
-        Algorithm = new AlgorithmIdentifier
-        {
-            Algorithm = OidRsaEncryption.Clone(),
-            Parameters = AlgorithmIdentifier_Parameters.FromNull(),
-        },
+        Algorithm = AlgorithmIdentifierParametersBindings.Oid12840113549111.Create(default),
         SubjectPublicKey = Asn1BitString.CopyFrom(SubjectPublicKeyBytes, unusedBits: 0),
     };
 

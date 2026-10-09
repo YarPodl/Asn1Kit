@@ -1,5 +1,6 @@
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
+using Asn1Kit.Cms;
 using Asn1Kit.Runtime;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
@@ -15,7 +16,8 @@ namespace Asn1Kit.Benchmarks;
 public class CmsBenchmarks
 {
     private byte[] _der = null!;
-    private CmsContentInfo _asn1KitLazy = null!;
+    private CmsContentInfo _asn1KitContentInfo = null!;
+    private SignedData _asn1KitSignedData = null!;
     private SignedCms _bcl = null!;
     private BcContentInfo _bouncyCastle = null!;
     private Asn1Writer _encodeWriter = null!;
@@ -24,7 +26,12 @@ public class CmsBenchmarks
     public void Setup()
     {
         _der = FixtureLoader.ReadCms("attached-signeddata.p7m");
-        _asn1KitLazy = CmsContentInfo.Decode(new Asn1Reader(_der, Asn1Encoding.Der));
+        _asn1KitContentInfo = CmsContentInfo.Decode(new Asn1Reader(_der, Asn1Encoding.Der));
+        if (!_asn1KitContentInfo.TryDecodeContent(ContentInfoContentBindings.SignedData, out _asn1KitSignedData!))
+        {
+            throw new InvalidOperationException("CMS setup expected SignedData content.");
+        }
+
         _bcl = new SignedCms();
         _bcl.Decode(_der);
         _bouncyCastle = BcContentInfo.GetInstance(Asn1Object.FromByteArray(_der));
@@ -32,7 +39,7 @@ public class CmsBenchmarks
         _encodeWriter.EnsureCapacity(_der.Length);
 
         // Sanity: lazy path keeps cert TLV without materializing.
-        var lazyCert = _asn1KitLazy.Content.SignedData!.Certificates!
+        var lazyCert = _asn1KitSignedData.Certificates!
             .Single(c => c.Certificate is not null)
             .Certificate!;
         if (!lazyCert.HasEncoded || lazyCert.IsMaterialized)
@@ -43,8 +50,18 @@ public class CmsBenchmarks
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory("Decode", "CMS")]
-    public CmsContentInfo Asn1Kit_Lazy_Decode() =>
-        CmsContentInfo.Decode(new Asn1Reader(_der, Asn1Encoding.Der));
+    public SignedData Asn1Kit_Lazy_Decode()
+    {
+        // Fair peer to BCL SignedCms / BC ContentInfo: envelope + SignedData shell.
+        // CertificateChoices.certificate stays lazy (no .Value).
+        var info = CmsContentInfo.Decode(new Asn1Reader(_der, Asn1Encoding.Der));
+        if (!info.TryDecodeContent(ContentInfoContentBindings.SignedData, out var signedData))
+        {
+            throw new InvalidOperationException("Expected SignedData content.");
+        }
+
+        return signedData;
+    }
 
     [Benchmark]
     [BenchmarkCategory("Decode", "CMS")]
@@ -83,8 +100,10 @@ public class CmsBenchmarks
     [BenchmarkCategory("Encode", "CMS")]
     public byte[] Asn1Kit_Lazy_Encode()
     {
+        // Re-bind SignedData each op so Encode pays structural cost (not opaque WriteAny of retained content).
         _encodeWriter.Reset();
-        _asn1KitLazy.Encode(_encodeWriter);
+        _asn1KitContentInfo.SetContent(ContentInfoContentBindings.SignedData, _asn1KitSignedData);
+        _asn1KitContentInfo.Encode(_encodeWriter);
         return _encodeWriter.Encode(static encoded => encoded.ToArray());
     }
 
@@ -98,8 +117,11 @@ public class CmsBenchmarks
 
     private static void MaterializeAsn1Kit(CmsContentInfo info)
     {
-        var signed = info.Content.SignedData
-            ?? throw new InvalidOperationException("Expected SignedData content.");
+        if (!info.TryDecodeContent(ContentInfoContentBindings.SignedData, out var signed))
+        {
+            throw new InvalidOperationException("Expected SignedData content.");
+        }
+
         if (signed.Certificates is null)
         {
             return;

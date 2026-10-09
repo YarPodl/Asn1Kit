@@ -8,7 +8,7 @@
 
 | Путь | Глубина | Peer |
 | --- | --- | --- |
-| CMS `Asn1Kit_Lazy_*` | `options.lazy` на `CertificateChoices.certificate`; **без** `.Value` | BCL `SignedCms` shell (cert как opaque DER) |
+| CMS `Asn1Kit_Lazy_*` | `ContentInfo` + `TryDecodeContent(SignedData)`; `options.lazy` на cert; **без** `.Value` | BCL `SignedCms` shell (cert как opaque DER) |
 | CMS `Asn1Kit_Lazy_Materialize_*` | то же + обход `Certificate.Value` | BCL + `Certificates` / `SignerInfos` |
 | CMS BouncyCastle | `Asn1Object` tree + `ContentInfo` | общий ASN.1 codec |
 | Certificate / CRL Decode | полный typed decode | BCL Cert = PAL+lazy (другая модель); peer typed — BouncyCastle |
@@ -22,10 +22,10 @@
 dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks
 ```
 
-**Краткий прогон** (по умолчанию после правок runtime/codegen на той же машине) — Cert/CRL `Asn1Kit_Decode` + CMS `Asn1Kit_Lazy_Decode` (в PowerShell задавай фильтры отдельными аргументами):
+**Краткий прогон** (по умолчанию после правок runtime/codegen на той же машине) — Cert/CRL Decode+Encode + CMS Lazy Decode+Encode (в PowerShell задавай фильтры отдельными аргументами):
 
 ```powershell
-dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter "*CertificateBenchmarks.Asn1Kit_Decode" "*CertificateListBenchmarks.Asn1Kit_Decode" "*CmsBenchmarks.Asn1Kit_Lazy_Decode"
+dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter "*CertificateBenchmarks.Asn1Kit_Decode" "*CertificateBenchmarks.Asn1Kit_Encode" "*CertificateListBenchmarks.Asn1Kit_Decode" "*CertificateListBenchmarks.Asn1Kit_Encode" "*CmsBenchmarks.Asn1Kit_Lazy_Decode" "*CmsBenchmarks.Asn1Kit_Lazy_Encode"
 ```
 
 **Инвентарь аллокаций** (без BDN; считает AVA/open-type/строки на тех же фикстурах):
@@ -52,7 +52,7 @@ dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmark
 | BCL (`X509Certificate2` / `SignedCms`) | Decode only | — | Decode ± materialize; Encode |
 | BouncyCastle | Decode + `GetEncoded` (hand-built) | Decode + `GetEncoded` (hand-built) | Decode + `GetEncoded` |
 
-**Encode:** Cert/CRL объект собирается в `GlobalSetup` как hand-built граф (масштаб PKITS Trust Anchor / GoodCACRL; без Decode). В `[Benchmark]` только structural encode — без `WriteRaw` retained TLV. CMS Lazy Encode по-прежнему идёт от decoded tree — это shell-сценарий с `WriteRaw` cert.
+**Encode:** Cert/CRL объект собирается в `GlobalSetup` как hand-built граф через `Binding.Create` (масштаб PKITS Trust Anchor / GoodCACRL; без Decode). В `[Benchmark]` только structural encode — без `WriteRaw` retained TLV. CMS Lazy Encode каждый op делает `SetContent(SignedData)` + `ContentInfo.Encode` (structural SignedData, lazy cert — `WriteRaw`).
 
 Полный typed `Certificate.Decode` **не обязан** быть быстрее `X509Certificate2` (BCL не строит ASN-граф). Цель typed path — сравняться с BouncyCastle; Lazy — peer BCL shell, а `retainEncoded` сохраняет исходные TLV для хеширования и проверки подписи.
 
@@ -72,9 +72,9 @@ Same-session `ShortRun` до/после production-правок; полные о
 | CMS Asn1Kit_Lazy_Encode | 2.523 µs | 2.198 µs | −12.9% | 2.96 KB |
 | CMS Asn1Kit_Eager_Encode | 5.856 µs | 4.548 µs | −22.3% | 4.45 KB |
 
-## Current baseline (2026-10-09, Decode KPI after open-type)
+## Current baseline (2026-10-10, Decode+Encode after Binding unify)
 
-Краткий Decode KPI на product `Asn1Kit.Pkix` после typed open-type bindings. Сырые отчёты и разбор аллокаций: [results/2026-10-09-decode-kpi](../results/2026-10-09-decode-kpi/). Peers BCL/BC — из [results/2026-09-23](../results/2026-09-23/) (`7d281d1`). Предыдущий Alloc-минимум Decode: [2026-09-24-explicit-enter](../results/2026-09-24-explicit-enter/).
+Краткий Decode+Encode KPI после unify legacy open types на Binding/`Asn1Any`. Сырые отчёты: [results/2026-10-10-decode-encode-kpi](../results/2026-10-10-decode-encode-kpi/). Регрессия 2026-10-09 (eager wrappers): [results/2026-10-09-decode-kpi](../results/2026-10-09-decode-kpi/). Peers BCL/BC — из [results/2026-09-23](../results/2026-09-23/) (`7d281d1`).
 
 Краткий набор для сравнения после правок отмечен ★. Инвентарь аллокаций: `--alloc-profile`.
 
@@ -90,14 +90,18 @@ Same-session `ShortRun` до/после production-правок; полные о
 | 2026-09-23 OF→arrays | 3.774 µs | 2600 B |
 | 2026-09-24 sequence-lambda | 3.258 µs | 1.77 KB |
 | 2026-09-24 explicit-enter | 3.252 µs | 1.77 KB |
-| **2026-10-09 open-type KPI** | **6.773 µs** | **2.91 KB** |
+| 2026-10-09 open-type KPI (eager wrappers) | 6.773 µs | 2.91 KB |
+| **2026-10-10 Binding unify** | **4.841 µs** | **1.57 KB** |
 
-### Certificate / CRL / CMS Asn1Kit (2026-10-09)
+### Certificate / CRL / CMS Asn1Kit (2026-10-10)
 
-| Method | Mean | Allocated | vs explicit-enter Alloc |
+| Method | Mean | Allocated | vs 2026-10-09 Alloc |
 | --- | ---: | ---: | ---: |
-| ★ Cert Asn1Kit_Decode | 6.773 µs | 2.91 KB | **+64%** |
-| ★ CRL Asn1Kit_Decode | 4.836 µs | 1.93 KB | **+46%** |
-| ★ CMS Asn1Kit_Lazy_Decode | 2.639 µs | 1.21 KB | **+28%** |
+| ★ Cert Asn1Kit_Decode | 4.841 µs | 1.57 KB | **−46%** |
+| ★ CRL Asn1Kit_Decode | 3.799 µs | 1288 B | **−35%** |
+| ★ CMS Asn1Kit_Lazy_Decode | 2.047 µs | 1.08 KB | **−11%** (ContentInfo + SignedData shell) |
+| ★ Cert Asn1Kit_Encode | 2.628 µs | 1.7 KB | vs writer-opts 4.13 KB |
+| ★ CRL Asn1Kit_Encode | 2.244 µs | 976 B | vs writer-opts 2.82 KB |
+| ★ CMS Asn1Kit_Lazy_Encode | 1.555 µs | 5.79 KB | Mean↓; Alloc↑ из‑за `SetContent` |
 
-Причина Alloc↑ (снимок до unify): eager `AttributeTypeAndValue_Value` + `AlgorithmIdentifier_Parameters` вместо opaque `Asn1Any` на AVA/algorithm parameters (см. SUMMARY снимка). После unify open types — raw `Asn1Any` + Binding; ожидается снижение Alloc на legacy decode относительно этого снимка. Encode не перезамерялся в том прогоне.
+Decode Alloc на Cert/CRL вернулся к уровню opaque-AVA (лучше explicit-enter). CMS Lazy KPI честно поднимает `SignedData` через Binding (peer BCL/BC); cert остаётся lazy.

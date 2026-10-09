@@ -67,11 +67,10 @@ internal static class AllocProfile
     private static void ProfileCms()
     {
         var der = FixtureLoader.ReadCms("attached-signeddata.p7m");
-        Warmup(() => ContentInfo.Decode(new Asn1Reader(der, Asn1Encoding.Der)));
+        Warmup(() => DecodeSignedDataShell(der));
 
-        var allocated = MeasureAllocated(() => ContentInfo.Decode(new Asn1Reader(der, Asn1Encoding.Der)));
-        var cms = ContentInfo.Decode(new Asn1Reader(der, Asn1Encoding.Der));
-        AssertSignedData(cms, out var sd);
+        var allocated = MeasureAllocated(() => DecodeSignedDataShell(der));
+        var sd = DecodeSignedDataShell(der);
         var signerCount = sd.SignerInfos.Length;
         var certChoices = sd.Certificates?.Length ?? 0;
         var avaTotal = 0;
@@ -83,9 +82,17 @@ internal static class AllocProfile
 
         Console.WriteLine("CMS Lazy Decode inventory (attached-signeddata.p7m)");
         Console.WriteLine("  Allocated/op:           " + FormatBytes(allocated));
+        Console.WriteLine("  Path:                   ContentInfo.Decode + TryDecodeContent(SignedData)");
         Console.WriteLine("  SignerInfos:            " + signerCount);
         Console.WriteLine("  CertificateChoices:     " + certChoices + " (lazy cert TLV, not materialized)");
         Console.WriteLine("  Issuer AVAs (SIDs):      " + avaTotal + " (opaque Asn1Any until TryDecode)");
+    }
+
+    private static SignedData DecodeSignedDataShell(byte[] der)
+    {
+        var cms = ContentInfo.Decode(new Asn1Reader(der, Asn1Encoding.Der));
+        AssertSignedData(cms, out var signedData);
+        return signedData;
     }
 
     private static void AssertSignedData(ContentInfo cms, out SignedData signedData)
