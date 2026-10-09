@@ -37,7 +37,7 @@
 - `bitString` — опционально `namedBits: [{ name, value }]`
 - `string` — обязательно `stringType`: `utf8` \| `printable` \| `teletex` \| `t61` \| `ia5` \| `numeric` \| `visible` \| `bmp` \| `universal` \| `general` \| `graphic` \| `videotex`
 - `time` — обязательно `timeType`: `utc` \| `generalized`; опционально `fractionDigits` `0…7` (только `generalized`; отсутствие = 3 при записи)
-- `any` — опционально `definedBy` (имя sibling-компонента); опционально `bindings: [{ key, name?, type }]` — таблица open-type (ключ — dotted OID или десятичный INTEGER, `name` задаёт семантическое имя альтернативы); заполняется overlay после compile, не парсером ASN.1 1988. C# при `bindings` эмитит `Owner_Field` с `From…`/`Unknown`. На каждый различный CLR-тип создаётся не более одного свойства; если несколько семантических альтернатив имеют один CLR-тип, соседний `Owner_FieldKind` сохраняет выбранную ASN.1-альтернативу. `options.openType.mismatch`: `soft` \| `strict` (default `soft`).
+- `any` — опционально `definedBy` (имя sibling-компонента); опционально `bindings: [{ key, name?, type }]` — таблица open-type (ключ — dotted OID или десятичный INTEGER, `name` — семантическое имя альтернативы); заполняется overlay после compile или IOC-резолвером, не парсером ASN.1 1988. `options.openType.mismatch`: `soft` \| `strict` (default `soft`; только legacy).
 - `sequence` / `set` / `choice` — `components[]`, опционально `extensible`
 - `sequenceOf` / `setOf` — `element`
 - `ref` — `name`, опционально `module`
@@ -131,9 +131,7 @@ CLASS, WITH SYNTAX, information objects/sets и формальные парам�
 | `options.integer.representation` | тип / модуль | Представление INTEGER: `int32` \| `uint32` \| `int64` \| `uint64` \| `bigint` \| `der`. На типе перекрывает модуль. Если не задано, C# backend выводит: при `namedValues` → `int32` (или `int64` при метке вне `int`); иначе из полного `constraint.value`; иначе `der`. |
 | `options.openType.mismatch` | модуль / документ / legacy `any` | При известном ключе bindings, если **тег** TLV не совпал с типом: `soft` (default) → `Unknown`/`Asn1Any`; `strict` → `Asn1Exception`. Современные таблицы всегда отвергают несовместимый известный тип. |
 | `options.lazy` | поле / тип / модуль | `true` — отложенный разбор SEQUENCE/SET и SEQUENCE OF/SET OF (C#: `Asn1Lazy<T>` / `Asn1Lazy<T[]>`). Разрешение: component → TypeExpr → typedef → module; default `false`. |
-| `options.retainEncoded` | поле / тип / модуль | `true` — eager-разбор SEQUENCE/SET/OF с сохранением исходного полного TLV для хеширования или проверки подписи (C#: `Asn1Value<T>` / `Asn1Value<T[]>`). Encode всегда строится из текущего `Value`. Игнорируется, если `lazy` уже включён. Та же цепочка разрешения, что у `lazy`; default `false`. |
-
-Для специализации `SIGNED<T>` опция на поле `toBeSigned` сохраняет привычное свойство `ToBeSigned: T` и добавляет `ToBeSignedOriginalEncoding: ReadOnlyMemory<byte>` с исходным TLV. Остальные поля используют `Asn1Value<T>`.
+| `options.retainEncoded` | поле / тип / модуль | `true` — eager-разбор SEQUENCE/SET/OF с сохранением исходного полного TLV для хеширования или проверки подписи (C#: `Asn1Value<T>` / `Asn1Value<T[]>`). Encode всегда строится из текущего `Value`. Игнорируется, если `lazy` уже включён. Та же цепочка разрешения, что у `lazy`; default `false`. Для `SIGNED<T>` на поле `toBeSigned` сохраняется свойство `ToBeSigned: T` и добавляется `ToBeSignedOriginalEncoding`; остальные поля — `Asn1Value<T>`. |
 | `options.csharp.valueType` | typedef SEQUENCE/SET | `true` — эмит `struct` вместо `sealed class`. |
 
 Sidecar open-type bindings (CLI `--bindings`, API `OpenTypeBindings`) адресует поле как

@@ -127,7 +127,12 @@ The reference RFC 5280 fixtures are [compiler/fixtures/asn1/pkix1-explicit88.asn
 
 The complete DVCS graph is based on the ASN.1:1988 module from RFC 3029 and the original CMP, CRMF, OCSP, ESS, and S/MIME RFCs. Legacy X.509 and CMS imports are normalized to the local RFC 5280 modules and `CryptographicMessageSyntax2004`. Public namespaces include `Asn1Kit.Dvcs`, `.Cmp`, `.Crmf`, `.Ocsp`, `.Ess`, `.Smime`, and `.Pkcs10`.
 
-Out-of-profile constructs produce explicit errors: information object classes (`CLASS`), `COMPONENTS OF`, parameterized types, `REAL`, and `EXTERNAL`.
+Two profiles share the same IR and C# backend:
+
+- **Legacy** (PKCS/PKIX Explicit88/Implicit88, curated CMS 2004, DVCS graph) — ASN.1:1988 with `ANY` / overlay bindings; no `CLASS` or parameterization in those modules.
+- **Modern** — RFC 5911/5912/6268/8410 corpus with `CLASS`, objects/sets, `WITH SYNTAX`, and parameterized types, emitted as [Asn1Kit.Modern](runtime-csharp/generated/Asn1Kit.Modern/).
+
+Always rejected with an explicit error: `COMPONENTS OF`, `REAL`, `EXTERNAL`, and IOC/parameterization forms outside the documented modern profile. Details and gaps: [docs/status.md](docs/status.md).
 
 The C# backend generates `sequence`, `choice`, `sequenceOf`, `set`, `setOf`, and `enumerated` as C# `enum`, as well as primitives (`boolean`, `integer`, `octetString`, `oid`, `bitString`, `string`, `time`, and `any` as `Asn1Any`).
 

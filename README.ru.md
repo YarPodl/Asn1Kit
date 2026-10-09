@@ -127,7 +127,12 @@ Value assignments (`id-pkix OBJECT IDENTIFIER ::= { … }`, `ub-name INTEGER ::=
 
 Полный граф DVCS основан на ASN.1:1988 из RFC 3029 и исходных CMP/CRMF/OCSP/ESS/S/MIME RFC; устаревшие X.509/CMS imports нормализованы на локальные RFC 5280 и `CryptographicMessageSyntax2004`. Публичные namespace: `Asn1Kit.Dvcs`, `.Cmp`, `.Crmf`, `.Ocsp`, `.Ess`, `.Smime`, `.Pkcs10`.
 
-Вне профиля (явная ошибка): information object classes (`CLASS`), `COMPONENTS OF`, параметризованные типы, `REAL`, `EXTERNAL`.
+Два профиля на одном IR и C# backend:
+
+- **Legacy** (PKCS/PKIX Explicit88/Implicit88, curated CMS 2004, граф DVCS) — ASN.1:1988 с `ANY` / overlay bindings; в этих модулях нет `CLASS` и параметризации.
+- **Modern** — корпус RFC 5911/5912/6268/8410 с `CLASS`, objects/sets, `WITH SYNTAX` и параметризованными типами; выпуск — [Asn1Kit.Modern](runtime-csharp/generated/Asn1Kit.Modern/).
+
+Всегда явный отказ: `COMPONENTS OF`, `REAL`, `EXTERNAL` и формы IOC/параметризации вне документированного modern-профиля. Детали и пробелы — [docs/status.md](docs/status.md).
 
 C# backend генерирует `sequence` / `choice` / `sequenceOf` / `set` / `setOf`, `enumerated` → C# `enum`, примитивы (`boolean`, `integer`, `octetString`, `oid`, `bitString`, `string`, `time`, `any` → `Asn1Any`).
 

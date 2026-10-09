@@ -16,27 +16,20 @@
 
 ---
 
-## Что есть сейчас
+## Сделано (P0 срез)
 
-| Объект | Кейсы | Статус |
-| --- | --- | --- |
-| `Certificate` | TrustAnchor, GoodCA, EE, NameConstraints CA: SPKI, signature, DN, Validity, typed extensions, BCL, DER round-trip | done |
-| `CertificateList` | GoodCACRL: entries + CRLReason, CRLNumber, AKI, DER round-trip | done |
-| `GeneralName` | SAN dNSName/rfc822/URI (PKITS) + iPAddress/registeredID (Formats.Asn1 hex) | done |
-| Negative | truncated / wrong-tag Certificate & CRL | done |
+`Certificate` / `CertificateList` / `GeneralName` / negative: TrustAnchor, GoodCA, EE, NameConstraints CA (SPKI, signature, DN, Validity, typed extensions, BCL, DER round-trip); GoodCACRL (entries + CRLReason, CRLNumber, AKI); SAN dNSName/rfc822/URI (PKITS) + iPAddress/registeredID (Formats.Asn1); truncated / wrong-tag Certificate & CRL.
+
+Typed extensions: KeyUsage, BasicConstraints, AKI, SKI, CertificatePolicies, CRLNumber, SAN, NameConstraints; round-trip typed `extnValue`. GeneralName `otherName` (XMPP, DNS SRV, SMTPUTF8). Printable/UTF8 DirectoryString из PKITS DN.
 
 ---
 
-## P0 — уже сгенерированные типы (Implicit88 / Explicit88)
+## P0 — открыто / deferred
 
 ### Certificate / TBSCertificate
 
 | Кейс | Статус |
 | --- | --- |
-| Decode + assert `SubjectPublicKeyInfo` (alg OID + BIT STRING unused bits / length) | done |
-| Assert `signature` BIT STRING (unused bits + contents length) | done |
-| `critical` + typed/raw `extnValue` per extension | done |
-| EE-сертификат из PKITS (`ValidCertificatePathTest1EE`) | done |
 | Encode-from-scratch без внешнего эталона | deferred |
 | UTCTime vs GeneralizedTime в Validity | deferred |
 | v1 cert без extensions / empty subject + SAN critical | deferred |
@@ -46,27 +39,16 @@
 
 | Кейс | Статус |
 | --- | --- |
-| `KeyUsage` → flags | done |
-| `BasicConstraints` cA / pathLen | done |
-| `AuthorityKeyIdentifier` keyIdentifier | done |
-| `SubjectKeyIdentifier` OCTET STRING | done |
-| `CertificatePolicies` → `PolicyInformation` | done |
-| `CRLNumber` INTEGER на CRL | done |
-| `SubjectAltName` → `GeneralName` (dNSName, rfc822, URI) | done |
 | `ExtKeyUsage` SEQUENCE OF OID | deferred |
 | `CRLDistributionPoints` | deferred |
 | `AuthorityInfoAccess` / `SubjectInfoAccess` | deferred |
-| `NameConstraints` (permitted DNS) | done |
 | `PolicyConstraints` / `PolicyMappings` / `InhibitAnyPolicy` | deferred |
 | `PrivateKeyUsagePeriod` | deferred |
-| Round-trip typed extension: Decode(extnValue) → Encode → byte-identical | done |
 
 ### CRL / CertificateList
 
 | Кейс | Статус |
 | --- | --- |
-| Per-entry `revocationDate` + `crlEntryExtensions` | done |
-| Entry `CRLReason` enum | done |
 | Entry `invalidityDate` / `certificateIssuer` | deferred |
 | Empty `revokedCertificates` | deferred |
 | `IssuingDistributionPoint` | deferred |
@@ -78,22 +60,16 @@
 
 | Кейс | Статус |
 | --- | --- |
-| Printable/UTF8 DirectoryString из PKITS DN | done |
 | Остальные DirectoryString kinds round-trip | deferred |
-| `GeneralName`: dNSName / rfc822 / URI | done |
-| `GeneralName`: iPAddress / registeredID (synthetic Formats.Asn1 hex) | done |
 | `GeneralName.directoryName` | deferred |
-| `GeneralName.otherName` → `AnotherName` (XMPP, DNS SRV, SMTPUTF8; synthetic DER) | done |
 | Multi-valued RDN | deferred |
 | Escaped DN chars | deferred |
 | Минимальный `ORAddress` | deferred |
 
-### Negative / malformed (P0 срез)
+### Negative / malformed
 
 | Кейс | Статус |
 | --- | --- |
-| Truncated Certificate / CRL | done |
-| Wrong tag / unexpected constructed | done |
 | Non-minimal length / duplicate OID / indefinite in DER | deferred |
 
 ---
@@ -122,7 +98,7 @@
 
 ---
 
-## CMS / PKCS#7 (ASN.1/IR/C# **добавлены**; codec-кейсы ниже — вторая половина; базовые DVCS codec-кейсы добавлены)
+## CMS / PKCS#7 (ASN.1/IR/C# **добавлены**; codec-кейсы — вторая половина; базовые DVCS codec-кейсы есть)
 
 Ориентиры: BouncyCastle `cms/test`, OpenSSL `80-test_cms.t`, .NET `SignedCms` / `EnvelopedCms`.  
 Типы: `Asn1Kit.Cms` из [cms-2004.asn](../compiler/fixtures/asn1/cms-2004.asn) / golden [cms-2004.json](../compiler/fixtures/ir/cms-2004.json).
@@ -185,7 +161,6 @@
 
 ## Рекомендуемый порядок
 
-1. ~~P0 typed extensions + SPKI/CRL entries + GeneralName на внешних `.crt`/`.crl`.~~
-2. Каркас CMS-тестов на модуле `Asn1Kit.Cms` (RFC 4134).
-3. CSR/OCSP — когда появятся ASN.1 модули.
-4. Не тащить path validation / verify / decrypt в `Asn1Kit.Pkix.Tests`.
+1. Каркас CMS-тестов на модуле `Asn1Kit.Cms` (RFC 4134).
+2. CSR/OCSP — когда появятся ASN.1 модули.
+3. Не тащить path validation / verify / decrypt в `Asn1Kit.Pkix.Tests`.

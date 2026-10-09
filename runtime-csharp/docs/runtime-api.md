@@ -107,34 +107,4 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 
 `Asn1Reader` / nested readers наследуют `Options` родителя.
 
-## Чеклист RuntimeTests
-
-Писать в `PrimitiveCodecTests` / `PrimitiveOracleTests` / `ExternalVectorTests` (и точечно в `RuntimeTests`) на байтовых векторах из [fixtures/ber-der/](../fixtures/ber-der/). Round-trip через Roslyn — дополнение, не замена.
-
-На каждый примитив из status § Runtime: DER encode/decode, BER где применимо, round-trip, границы, отказы (чужой тег, truncated, DER indefinite, BOOLEAN не `00`/`FF`). Для soft-форм — пара default-accept / strict-reject.
-
-| API | Минимум |
-| --- | --- |
-| `TryEncode` / `EncodedLength` | exact fit; short Span → false; равенство с `Encode()` |
-| `TryReadOctetString` | fit; short → false без продвижения; повторный fit; BER constructed OCTET |
-| `WriteBoolean` / `ReadBoolean` | DER `00`/`FF`; BER nonzero-as-true |
-| `WriteInteger` / `ReadInteger` / `ReadIntegerValue` / `ReadInt32`… | `0`, `-1`, 127/128, длинный; empty reject; soft non-minimal accept + as-is write через `Asn1Integer`; fixed-width range reject |
-| `WriteEnumerated` / `ReadEnumerated` | tag `0A`; contents как INTEGER; empty / wrong tag reject |
-| `WriteOctetString` / `ReadOctetString` | empty; long-form; BER constructed + indefinite; ROM overload |
-| `WriteNull` / `ReadNull` | empty OK; nonempty reject |
-| `WriteObjectIdentifier` / `ReadObjectIdentifier` | OID; arcs; rejects |
-| `WriteBitString` / `ReadBitString` | unusedBits; encode trailing-zero; soft nonzero trailing accept + strict reject; BER constructed |
-| `WriteString` / `ReadString` | 12 forms smoke; BER constructed UTF8 |
-| `WriteTime` / `ReadTime` | UTC + Generalized; fractionDigits; BER |
-| writer/reader `EnterSequence` | вложенность; OPTIONAL; writer single-dispose/LIFO |
-| writer/reader `EnterSet` | tag SET; writer сохраняет порядок полей |
-| `Asn1Writer.EnterSetOf` / `WriteSetOf<T>` | DER sort; BER order |
-| `Asn1Writer.EnterSequenceOf` / `WriteSequenceOf<T>` / `ReadSequenceOf<T>` / `ReadSetOf<T>` | array round-trip; empty → `Array.Empty` |
-| writer/reader `EnterExplicit` | constructed wrapper |
-| `WriteAny` / `ReadAny` | IMPLICIT peel; EncodedMemory bit-exact |
-| `ReadLazy` / `Asn1Lazy<T>` | defer decode; Value materialize; WriteTo raw TLV |
-| `ReadWithOriginalEncoding` / `Asn1Value<T>` | eager decode; исходный полный TLV доступен отдельно; encode текущего `Value` проверяется через generated round-trip |
-| `WriteRaw` | append TLV |
-| `ReadAny` | encoded/contents view; wrong expected tag |
-| Wrappers | smoke |
-| `Asn1BitString` / `Asn1Any` / `Asn1Integer` / `Asn1Null` | EncodedMemory/ContentsMemory alias source; `FromTagAndContents`; `ToArray` detach; equality; `Asn1Integer` numeric accessors + `Zero`/`default`=0; `Asn1Null` singleton value |
+Минимум покрытия API по тестам — [playbooks/runtime.md](playbooks/runtime.md) § Чеклист.

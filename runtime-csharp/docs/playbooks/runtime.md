@@ -23,7 +23,7 @@
 
 Кодировка выбирается через `Asn1Encoding.Ber` / `Asn1Encoding.Der` в конструкторе writer'а и reader'а.
 
-Публичный API (ownership, инвентарь, чеклист) — [runtime-api.md](../runtime-api.md).
+Публичный API (ownership, инвентарь) — [runtime-api.md](../runtime-api.md); чеклист тестов — § Чеклист ниже.
 
 ## Новый примитив
 
@@ -73,6 +73,35 @@ ReadOnlyMemory<byte> contents = input.Slice(offset, length);
 4. Границы: пустое значение, `0`, `-1`, длинный `BigInteger`, длина > 127 (длинная форма), вложенность.
 5. Отказы всегда: indefinite length в DER, BOOLEAN не `0x00` / `0xFF`, чужой тег, обрезанный TLV, EOF.
 6. Soft-формы: default decode OK; при включённой strict-опции — `Asn1Exception` (пара фикстур).
+
+### Чеклист
+
+Писать в `PrimitiveCodecTests` / `PrimitiveOracleTests` / `ExternalVectorTests` (и точечно в `RuntimeTests`) на байтовых векторах из [fixtures/ber-der/](../../fixtures/ber-der/). Round-trip через Roslyn — дополнение, не замена. Для soft-форм — пара default-accept / strict-reject.
+
+| API | Минимум |
+| --- | --- |
+| `TryEncode` / `EncodedLength` | exact fit; short Span → false; равенство с `Encode()` |
+| `TryReadOctetString` | fit; short → false без продвижения; повторный fit; BER constructed OCTET |
+| `WriteBoolean` / `ReadBoolean` | DER `00`/`FF`; BER nonzero-as-true |
+| `WriteInteger` / `ReadInteger` / `ReadIntegerValue` / `ReadInt32`… | `0`, `-1`, 127/128, длинный; empty reject; soft non-minimal accept + as-is write через `Asn1Integer`; fixed-width range reject |
+| `WriteEnumerated` / `ReadEnumerated` | tag `0A`; contents как INTEGER; empty / wrong tag reject |
+| `WriteOctetString` / `ReadOctetString` | empty; long-form; BER constructed + indefinite; ROM overload |
+| `WriteNull` / `ReadNull` | empty OK; nonempty reject |
+| `WriteObjectIdentifier` / `ReadObjectIdentifier` | OID; arcs; rejects |
+| `WriteBitString` / `ReadBitString` | unusedBits; encode trailing-zero; soft nonzero trailing accept + strict reject; BER constructed |
+| `WriteString` / `ReadString` | 12 forms smoke; BER constructed UTF8 |
+| `WriteTime` / `ReadTime` | UTC + Generalized; fractionDigits; BER |
+| writer/reader `EnterSequence` | вложенность; OPTIONAL; writer single-dispose/LIFO |
+| writer/reader `EnterSet` | tag SET; writer сохраняет порядок полей |
+| `Asn1Writer.EnterSetOf` / `WriteSetOf<T>` | DER sort; BER order |
+| `Asn1Writer.EnterSequenceOf` / `WriteSequenceOf<T>` / `ReadSequenceOf<T>` / `ReadSetOf<T>` | array round-trip; empty → `Array.Empty` |
+| writer/reader `EnterExplicit` | constructed wrapper |
+| `WriteAny` / `ReadAny` | IMPLICIT peel; EncodedMemory bit-exact; encoded/contents view; wrong expected tag |
+| `ReadLazy` / `Asn1Lazy<T>` | defer decode; Value materialize; WriteTo raw TLV |
+| `ReadWithOriginalEncoding` / `Asn1Value<T>` | eager decode; исходный полный TLV отдельно; encode текущего `Value` через generated round-trip |
+| `WriteRaw` | append TLV |
+| Wrappers | smoke |
+| `Asn1BitString` / `Asn1Any` / `Asn1Integer` / `Asn1Null` | EncodedMemory/ContentsMemory alias source; `FromTagAndContents`; `ToArray` detach; equality; `Asn1Integer` numeric accessors + `Zero`/`default`=0; `Asn1Null` singleton |
 
 ```csharp
 var ber = new byte[] { 0x24, 0x80, 0x04, 0x03, 0x41, 0x6E, 0x6E, 0x00, 0x00 };

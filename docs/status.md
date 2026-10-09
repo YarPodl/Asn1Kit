@@ -29,54 +29,30 @@
 ## Значения, теги, constraints
 
 - Значения IR: `integer`, `boolean`, `null`, `oid`, `string`, `bitString`, `octetString`, `structured`, `collection`, `choice`, `typed`, `ref` (в скомпилированном IR обычно раскрыт).
-- C# компоненты с `DEFAULT` генерируются как ненуллабельные свойства с ASN.1-значением по умолчанию; decoder подставляет его при отсутствии компонента, DER encoder не записывает равное default значение.
-- `EXPLICIT` / `IMPLICIT` / `AUTOMATIC TAGS`; `IMPORTS` между переданными файлами.
-- Тег без mode на локальном или импортированном `CHOICE` раскрывается как `EXPLICIT`.
-- Open-type `bindings`: CLI `--bindings` / overlay; ключи `Module.Type.field`.
-- C# `ANY DEFINED BY`: при неизвестном OID примитив с однозначно подходящей существующей альтернативой декодируется в её свойство по universal-тегу, сохраняя wire-форму и `Kind`. Неоднозначные, составные и нераспознанные значения остаются в `Asn1Any`; IMPLICIT-тег не используется для угадывания типа. Правило действует в soft и strict; mismatch известного binding сохраняет прежнее поведение.
-- Нетегированные `CHOICE` в open-type bindings рекурсивно раскрываются в альтернативы `Owner_Field`, включая именованные, импортированные и inline-типы. Вложенный объект `CHOICE` не создаётся; свойства группируются по CLR-типу, `Kind` сохраняет выбранную wire-альтернативу. OID ограничивает набор допустимых веток; тегированный или рекурсивный `CHOICE` остаётся отдельной альтернативой. Самостоятельные типы `CHOICE` сохраняют свой API.
-- Options patch: CLI `--patch` / `IrOptionsPatch`; `modules`, `fields` (`Module.Type.field`), `types` (`Module.Type`); продуктовый PKIX/CMS — [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json).
+- C# `DEFAULT`: ненуллабельное свойство; decoder подставляет значение при отсутствии; DER encoder не пишет равное default.
+- `EXPLICIT` / `IMPLICIT` / `AUTOMATIC TAGS`; `IMPORTS` между переданными файлами; тег без mode на `CHOICE` → `EXPLICIT`.
+- Open-type overlay: CLI `--bindings`, ключи `Module.Type.field`. Options patch: CLI `--patch` / `IrOptionsPatch`; продуктовый PKIX/CMS — [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json).
+- Legacy `ANY DEFINED BY`: неизвестный OID — fallback по universal-тегу только для однозначного примитива; иначе `Asn1Any`. Modern IOC — строго по ключу, без угадывания. Детали эмиссии — [csharp-backend.md](../compiler/docs/playbooks/csharp-backend.md).
 - `SIZE` / диапазоны → `constraint.size` / `constraint.value`; прочее → `constraint.unsupported`.
-- Вне профиля (явный `CompileException`): `COMPONENTS OF`, `REAL`, `EXTERNAL`, параметризованные значения/объекты и формы IOC, перечисленные ниже.
+- Вне профиля (`CompileException`): `COMPONENTS OF`, `REAL`, `EXTERNAL` и формы IOC/параметризации из § «Пока не».
 
 ## Современные PKIX/CMS
 
-Проверяемый корпус — **35 модулей** RFC 5911/5912, RFC 6268 и RFC 8410 со всеми зависимостями внутри корпуса. Исходники и документированные исправления: [modern/README.md](../compiler/fixtures/asn1/modern/README.md). Полный корпус компилируется в [modern-pkix-cms.json](../compiler/fixtures/ir/modern-pkix-cms.json), C# выпускается в отдельной сборке [Asn1Kit.Modern](../runtime-csharp/generated/Asn1Kit.Modern/README.md), с namespace на каждый модуль. Исходный граф PKIX/CMS/DVCS и его namespace сохраняются: современный граф имеет другие module identifiers.
+Корпус — **35 модулей** RFC 5911/5912/6268/8410 ([modern/README.md](../compiler/fixtures/asn1/modern/README.md) → IR [modern-pkix-cms.json](../compiler/fixtures/ir/modern-pkix-cms.json) → сборка [Asn1Kit.Modern](../runtime-csharp/generated/Asn1Kit.Modern/README.md)). Legacy PKIX/CMS/DVCS сохранён отдельно (другие module identifiers).
 
-Поддержано:
+**Поддержано:** `CLASS` / objects/sets / `WITH SYNTAX`; параметризованные типы со свёрткой одинаковых IOC-таблиц в `ref.openTypes`; governors и UNIQUE для OID/INTEGER; component relation selectors (в т.ч. через OF/SET); `CONTAINING`; составные DEFAULT; границы расширений / `[[n: …]]`; стандартный `INSTANCE OF TYPE-IDENTIFIER`; `IMPORTS` по имени или точному module OID (без эвристик).
 
-- `CLASS`, фиксированные поля типов/значений, поля объектов/наборов, обязательные/OPTIONAL/DEFAULT поля, default object syntax и `WITH SYNTAX` с вложенными optional groups по шаблону класса.
-- Объекты, aliases, наборы с объединением (`|`/`,`), ссылками, inline objects и `...`; обращения `object.&field`, включая вложенные поля. Проверяются governors, обязательные поля и конфликты UNIQUE для ключей OID/INTEGER.
-- Параметризованные типы с параметрами типов, классов, значений и object sets; специализации с одинаковой структурой и разными IOC-таблицами сворачиваются в один IR-тип, таблицы находятся на `ref.openTypes`. Структурно разные типы получают имена без хеша, преимущественно от ASN.1 typedef. Анонимные actual types сохраняют TAGS и ссылки исходного модуля. Обычная рекурсия остаётся ссылкой; растущая параметризация завершается диагностикой по лимиту.
-- `IMPORTS` разрешаются по объявлениям/governors, квалификация модулем снимает неоднозначность одноимённых наборов. При отсутствующем текстовом имени допускается точное совпадение явно указанного module OID; эвристики похожих имён нет.
-- Component relation selectors: локальный, внешний контекст и вложенный путь; `SEQUENCE OF`/`SET OF` передают состояние элементам через static callbacks. SET откладывает зависимое значение до чтения дискриминатора.
-- `OCTET STRING` / `BIT STRING (CONTAINING ...)`: исходные contents и типизированное содержимое, включая OID-таблицы. CMS `id-data`, которому не объявлена ASN.1-структура, сохраняет сырые октеты.
-- Составные assignments/DEFAULT (SEQUENCE/SET, OF, CHOICE, typed open values); каждый экземпляр получает собственные изменяемые значения. DER сравнивает DEFAULT структурно, SET OF — как мультимножество.
-- Граница расширений, trailing root и `[[n: ...]]`; неизвестные additions пропускаются при decode и не пишутся при encode, обязательные поля группы проверяются при её присутствии. Расширяемый CHOICE сохраняет неизвестную альтернативу. `INSTANCE OF TYPE-IDENTIFIER` поддерживается в стандартной форме.
+**Open-type (C#):** свёрнутая таблица → raw-контейнер + `Binding<T>` / table-каталог / contextual `TryDecode`·`Set`·`TryGet`; неизвестный ключ — raw; mismatch известного — reject. Потребительский срез — [Asn1Kit.Modern README](../runtime-csharp/generated/Asn1Kit.Modern/README.md); правила эмиссии — [csharp-backend.md](../compiler/docs/playbooks/csharp-backend.md).
 
-Современные открытые типы при неизвестном OID сохраняют raw TLV без угадывания по тегу; у несвёрнутых типов несовместимое содержимое известного binding вызывает `Asn1Exception` при `Decode`. Пустой набор `{...}` остаётся пустым. Legacy ANY сохраняет прежнюю политику fallback/mismatch.
+**Пока не** (профиль структуры и BER/DER, не полные X.680–X.683): закрытость наборов, `WITH COMPONENTS`, presence (`PRESENT`/`ABSENT`/`OPTIONAL`), переменные governors, параметризованные CLASS/объекты/наборы, пересечения/разности наборов, неоднозначные optional templates, обобщённый `INSTANCE OF`, перенос selector-типа через отдельный typedef.
 
-Для свёрнутой табличной специализации C# сохраняет raw-контейнер и публикует общий `Binding<T>` на форму носителя: например, `ExtnValueBinding<AuthorityKeyIdentifier>` / `PayloadBinding<int>` / `ParametersBinding<int>` и `ValuesBinding<ReadOnlyMemory<byte>>` (для SET OF параметр `T` — элемент, `TryDecode`/`Set` работают с `T[]`). Имя **каталога** берётся из `ref.openTypes[].table` (ASN.1 object set) плюс open-field при необходимости (`CertExtensionsBindings`, `SignatureAlgorithmsParametersBindings`), а не из SEQUENCE-владельца. Известный encodeable descriptor хранит OID/INTEGER key и `Asn1Codec<T>`; `TryDecode`/`Set` сами адаптируют direct ANY, CONTAINING и `DecodeEach`/`EncodeEach`. `Set…(binding, value)` записывает DER в raw-поле, устанавливает локальный selector и сохраняет остальные поля контейнера. OF сохраняет форму массивов, CONTAINING поддерживает исходные октеты и `HasValue`/`Value`; типизированный BIT STRING требует выравнивания по октетам. Отдельные классы для каждого известного binding и пары `To…` / `TryFrom…` не генерируются. Примитивные leaf-типы используют singleton-кодеки runtime `Asn1Codecs`; непримитивные wire-специализации дедуплицируются в один модульный `__…OpenTypeCodecs` (`Asn1Codec<T>`) для table Wrappers. Wrappers кладут codec в `Binding<T>` без per-OID `DecodeX`/`EncodeX` (они остаются только для сложного `BindingCodec`). Неразделяемые IOC-каталоги Uses (без совпадения с wrapper-сайтом) по-прежнему эмитят свой descriptor через method group codec. Custom `Create(key, decoder, encoder)` — escape hatch с `Func` на контейнер.
-
-Для каждой формы носителя C# генерирует один `Binding<T>` и `TryDecode`/`Set`/`array.TryGet` в модуле определения контейнера; для каждой таблицы — отдельный каталог без именованных convenience. Сайты с одинаковым контейнером, selector, формой payload и набором bindings переиспользуют один каталог (SEQUENCE-владелец в identity не входит). Contextual API: `algorithm.TryDecodeParameters(SignatureAlgorithmsParametersBindings.…)` / `extension.SetExtnValue(CertExtensionsBindings.…)`; instance Uses на SEQUENCE-родителе не эмитятся — вызывающий код идёт через поле-носитель. Поиск по плоскому OF: `extensions.TryGet(CertExtensionsBindings.…)` на `Carrier[]?` (`null` → `false`); для `Asn1Value`/`Asn1Lazy` — `field?.Value.TryGet(…) == true`. Owner `TryGet…` только для вложенных маршрутов (несколько OF, например Issuer/Subject DN) или ancestor selector (`Levels > 0`). Overload с `out Extension raw` возвращает совпавший контейнер. Тип результата выводится из descriptor; per-member named `TryDecode…` / `Set…` / `TryGet…` не генерируются. Таблицы одной формы носителя разделяют тип descriptor (различие — каталог); Custom binding создаётся public ctor’ом `Binding<T>`. Modern X.520 DirectoryString-like typedef сводятся к одному CLR-типу `DirectoryString` через `options.csharp.typeName` / `aliasOf` в patch. Если все members каталога уже имеют общий leaf-тип или homogeneous CHOICE с `.Value` того же типа, каталог эмитит вложенный `As…` (`AsString` и т.п.) с `Binding` на этот leaf (encode CHOICE — через UTF8/`From…` по умолчанию). Отсутствие даёт `false`, дубликаты поиска и повреждённые известные значения вызывают `Asn1Exception`. Selectors предков передаются явным контекстом; setter проверяет ключ предка и не изменяет его. Семейство `SIGNED` генерируется как `Signed<T>` с именованными производными; поля без объявленной таблицы остаются raw.
-
-Это профиль структуры и BER/DER-кодеков, **не полная поддержка X.680–X.683**. Пока не исполняются закрытость наборов, `WITH COMPONENTS`, фиксированные value sets и правила присутствия параметров (`PRESENT`/`ABSENT`/`OPTIONAL`). Нераспознанные ограничения сохраняются в `constraint.unsupported`; поля IOC остаются в частной семантической модели. Переменные governors `&Type`, параметризованные CLASS/объекты/наборы, произвольные операции пересечения/разности наборов, неоднозначные optional templates и обобщённый `INSTANCE OF` вне профиля. Контекст selectors требуется в месте определения; произвольное перенесение такого типа через отдельный typedef не поддерживается.
-
-Проверки: `ModernAsn1Tests` (минимальные конструкции, ошибки, специализации, selectors, defaults, extensions, Roslyn и DER), `OpenTypeBindingTests` (typed bindings, raw metadata, таблицы источников, aliases, imports, OF/CONTAINING, lazy/retainEncoded, value types), `ModernOpenTypeBindingTests` (PKIX/CMS, строковые CHOICE и внешние сертификаты), `ModernRfcTests` (весь IR/C# golden, внешние сертификаты, CMS, RSA-PSS), `ContainedValueTests` (DER/BER, opaque contents, повреждения). Старый граф и codec-тесты DVCS остаются в обязательном полном `dotnet test Asn1Kit.sln`.
-
-Bindings с типом `NULL` (включая алиасы) присутствуют в каталогах как `Binding<Asn1Null>`; для SET OF — `ValuesBinding<Asn1Null>` с `T[]` в `TryDecode`/`Set`. Основной descriptor-overload различает закодированный `NULL` и отсутствие поля. Запись `NULL` — через generic `Set…(binding, Asn1Null.Value)`; отдельных named setter/`TryDecode`/`TryGet` для `NULL` нет. Generic API остаётся полностью типизированным. Регрессии: `NullAlgorithmBindingsDoNotGenerateDataWrappersOrEmptySourceMethods`, `NullBindingsAreAvailableForContainingAndOfContainers`.
-
-Именованные OID в DEFAULT и open-type keys переиспользуются из каталогов всего документа: локальные значения имеют приоритет, затем идут импортированные модули. Внешние ссылки учитывают C# namespace, а `generate: false` исключает значение из поиска; отдельный разбор dotted-строки остаётся только для ключей без доступного именованного значения.
-
-Сборка современного generated-кода пока выдаёт nullable-предупреждения для обязательных ссылочных свойств и выбранных ветвей CHOICE. Объекты для encode должны быть заполнены вызывающим кодом; nullable-контекст включён, предупреждения не подавляются.
+Проверки: `ModernAsn1Tests`, `OpenTypeBindingTests`, `ModernOpenTypeBindingTests`, `ModernRfcTests`, `ContainedValueTests` + полный `dotnet test Asn1Kit.sln`. Nullable-предупреждения в modern generated пока не подавляются.
 
 ## Runtime BER/DER
 
-Runtime-значения и обёртки поддерживают полезный `ToString()`: числа и время независимы от культуры, бинарные данные показывают только длину, ANY — тег и длину TLV. Форматирование `Asn1Lazy<T>` не запускает декодирование. Сгенерированные CHOICE и ANY DEFINED BY с bindings показывают выбранное значение без имени альтернативы, используя существующие `Kind` и свойства без дополнительного состояния. Контракт описан в [runtime-api.md](../runtime-csharp/docs/runtime-api.md).
+Инвентарь `Write*` / `Read*`, ownership и `ToString` — [runtime-api.md](../runtime-csharp/docs/runtime-api.md). Hex-матрица — [ber-der/](../runtime-csharp/fixtures/ber-der/); oracle BCL — `PrimitiveOracleTests`.
 
-Полный инвентарь `Write*` / `Read*` и ownership — [runtime-api.md](../runtime-csharp/docs/runtime-api.md). Hex-матрица — [ber-der/](../runtime-csharp/fixtures/ber-der/); oracle BCL — `PrimitiveOracleTests`.
-
-**Запись** всегда канонический DER. **Чтение** — soft-profile ([decisions.md](decisions.md), инвентарь опций — [runtime-api.md](../runtime-csharp/docs/runtime-api.md)):
+**Запись** — канонический DER. **Чтение** — soft-profile ([decisions.md](decisions.md); полный инвентарь — [runtime-api.md](../runtime-csharp/docs/runtime-api.md)):
 
 | Soft-accept (default) | Strict-флаг |
 | --- | --- |
@@ -85,23 +61,11 @@ Runtime-значения и обёртки поддерживают полезн
 
 Не soft (default reject): non-minimal length, OID overlong base-128. Всегда reject: BOOLEAN length≠1 / constructed; empty INTEGER; truncated EOC; indefinite в DER. BER: indefinite, constructed строки/BIT STRING, время без секунд / `±hhmm`.
 
-## Демонстрация проверки CMS
+## Продуктовые артефакты
 
-Демонстрационный проект [Asn1Kit.Cms.Demo](../runtime-csharp/examples/Asn1Kit.Cms.Demo/) проверяет один сценарий attached `SignedData` в двух режимах: `Asn1Kit.Pkix` и `Asn1Kit.Modern` (`--modern`). Он проверяет структуру, атрибуты и связь подписанта с вложенным сертификатом. С переданными `--trusted-root` и `--certificate` инспекторы строят цепочку из generated-типов, сопоставляют `AuthorityKeyIdentifier` с `SubjectKeyIdentifier` либо парой issuer/serial и используют сохранённые исходные TLV сертификата, TBS, имён и SPKI; общий verifier проверяет подписи RSA/SHA-256. Без доверенных корней работает учебная заглушка. Ограничения алгоритма и различия API перечислены в README проекта.
-
-## Бенчмарки PKIX/CMS
-
-[runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks](../runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks/) — BenchmarkDotNet Decode/Encode для `Certificate`, `CertificateList`, CMS `ContentInfo` (attached SignedData). Типы из [Asn1Kit.Pkix](../runtime-csharp/generated/Asn1Kit.Pkix/) (`Asn1Kit.Pkix` / `Asn1Kit.Cms`) с продуктовыми options из [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json) (lazy на `CertificateChoices.certificate`; `retainEncoded` на `Certificate.tbsCertificate` и TBS Name/SPKI/Extensions; `AttributeTypeAndValue` как `struct`). Encode Cert/CRL — hand-built object graph (не decode→encode). CMS-группы: Lazy / Lazy+Materialize / BCL ± materialize / BouncyCastle. Не в gate `dotnet test`.
-
-```powershell
-dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks
-```
-
-## Сгенерированные протокольные модули
-
-Проект [Asn1Kit.Pkix](../runtime-csharp/generated/Asn1Kit.Pkix/) содержит PKIX/CMS и полный граф DVCS: `PKIXDVCS` (RFC 3029), `PKIXCMP` (RFC 2510), `PKIXCRMF` (RFC 2511), `OCSP` (RFC 2560), `ExtendedSecurityServices` (RFC 2634), `SecureMimeMessageV3` (RFC 2633) и предоставленный для CMP модуль PKCS#10 (RFC 2314). Namespace разделены по протоколам; отдельного golden IR для этого графа нет, golden C# воспроизводится из `.asn` + [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json) (namespaces, lazy cert choice, retainEncoded для verify-пути, `AttributeTypeAndValue` как value type).
-
-DVCS codec-тесты покрывают request `message` / `messageImprint`, обе response-альтернативы, DER round-trip и повреждённый TLV. Криптографическая проверка и транспорт не входят в этот слой.
+- Demo CMS verify: [Asn1Kit.Cms.Demo](../runtime-csharp/examples/Asn1Kit.Cms.Demo/) (`Asn1Kit.Pkix` / `--modern`).
+- Бенчмарки (не gate): [Asn1Kit.Pkix.Benchmarks](../runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks/).
+- Legacy generated: [Asn1Kit.Pkix](../runtime-csharp/generated/Asn1Kit.Pkix/) (PKIX/CMS/DVCS + зависимости; options — [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json)).
 
 ## Backlog
 

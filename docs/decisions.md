@@ -90,32 +90,19 @@
 
 ## ANY — `Asn1Any` или open-type + `bindings`
 
-**Причина.** В legacy PKIX `parameters ANY DEFINED BY algorithm` и `AttributeValue ::= ANY` встречаются постоянно. Для них таблица задаётся overlay; современные information object classes разрешаются компилятором в конкретные bindings. Без таблицы OID → тип нельзя честно выбрать concrete decode; молчаливый пропуск TLV недопустим. Представлять open-type как `object` неудобно; `bool` для NULL — ещё хуже.
+**Причина.** В legacy PKIX `ANY DEFINED BY` встречается постоянно; таблица задаётся overlay. Современные IOC компилятор разрешает в конкретные bindings. Без таблицы OID → тип нельзя честно выбрать; молчаливый пропуск TLV недопустим. `object` / `bool` для NULL — плохой API.
 
 **Последствие.**
-- Без `bindings`: runtime хранит полный TLV (`Asn1Any.EncodedMemory`); поле `definedBy` в IR информационное. `WriteAny` пишет байты as-is (`WriteRaw`); IMPLICIT-перегрузка снимает value-октеты и собирает новый TLV.
-- С `bindings` (sidecar `Module.Type.field` → `{ key, name?, type }[]`): C# эмитит тип `Owner_Field` — фабрики `From…` / `FromUnknown` и не более одного nullable-свойства на каждый различный CLR-тип. Если несколько семантических альтернатив имеют один CLR-тип, рядом эмитится `Owner_FieldKind`: фабрика и decode выставляют `Kind`, а encode по нему выбирает исходный ASN.1 wire-тип. При единственной CLR-группе общее свойство называется `Value`; при смешанных типах повторяющаяся группа получает имя по CLR-типу (`StringValue` и т.п.). Если повторяющихся CLR-типов нет, отдельный enum не нужен, а дискриминантом остаётся заданное свойство. Опциональный `name` задаёт имя фабрики и элемента enum; ASN.1 NULL → `Asn1Null`. Этот путь остаётся для **legacy inline ANY** с bindings на самом типе.
-- В PKIX DN overlay специализированные X.520 string typedef проецируются на `DirectoryString`, `Printable` и `Ia5`. Последние две альтернативы используют общее CLR-свойство `StringValue`, а `Kind` различает их wire-форму; `DirectoryString` сохраняет собственные `Kind` + `Value`. Исходные X.520 typedef остаются в модуле, а выбор компактных типов задаётся overlay для `AttributeTypeAndValue.value`.
-- Для свёрнутых IOC-таблиц (`ref.openTypes`) C# генерирует один descriptor на **форму носителя** (контейнер + open field + selector + payload): `ExtnValueBinding<T>`, `ParametersBinding<T>`, `PayloadBinding<T>`, `ValuesBinding<T>`. Опциональное `table` задаёт только stem **каталога** (`CertExtensionsBindings`, `NumbersPayloadBindings`). Известный encodeable binding — `sealed record Binding<T>` с primary ctor `(key, Asn1Codec<T>)` без per-stem named delegates и без отдельного CLR-типа на object set; отдельные классы `…Extension`/`…Attribute` не создаются. Для SET OF raw ANY параметр `T` — тип **элемента** (`ValuesBinding<Asn1Oid>`), а `TryDecode`/`Set` работают с `T[]`. Custom binding — через public ctor `Binding<T>(key, decoder, encoder)` (`Func` на контейнер). Сайты с идентичным контейнером, selector, формой payload и набором bindings переиспользуют один каталог (владелец SEQUENCE не входит в identity). Contextual `TryDecode`/`Set` и OF `array.TryGet` (`Carrier[]?`, `null` → `false`) эмитятся один раз в модуле определения носителя; каталоги — у таблицы без per-member named convenience; instance Uses на SEQUENCE не эмитятся. Owner `TryGet…` только для вложенных маршрутов (несколько OF) или ancestor selector. Один descriptor используется поиском, contextual decode и raw setter без `typeof(T)`. Значение open type — typed binding (`Binding<DirectoryString>` и т.п.); строка DN при необходимости берётся из `.Value`.
-- Codec не принадлежит binding key: примитивные ASN.1-типы используют один `Asn1Codec<T>` из runtime, а generated-типы переиспользуют один модульный `__…OpenTypeCodecs` на CLR-тип и wire-форму. Table Wrappers кладут `Asn1Codec<T>` в `Binding<T>`; адаптацию direct / CONTAINING / `DecodeEach` выполняют `TryDecode`/`Set` через `Asn1Codecs`. Неразделяемые IOC-каталоги Uses (без совпадения с wrapper) по-прежнему передают method group в свой descriptor. Именованные `DecodeX`/`EncodeX` в каталоге только для сложного `BindingCodec`.
-- Несовпадение **тега** TLV с ожидаемым для типа из таблицы: `options.openType.mismatch` = `soft` (default, → `Unknown`/`Asn1Any`) или `strict` (→ `Asn1Exception`). Содержимое при совпавшем теге разбирается обычным decode (ошибки длины и т.п. не глотаются). Неизвестный ключ всегда → `Unknown`.
-- RFC 5912 as published по-прежнему вне профиля (беклог 6c/6d).
+- Без `bindings`: полный TLV в `Asn1Any`; `definedBy` информационное.
+- С overlay / legacy inline bindings: C# эмитит `Owner_Field` (группировка по CLR-типу, при необходимости `Kind`).
+- Свёрнутые IOC-таблицы (`ref.openTypes`): raw на поле + typed `Binding<T>` / table-каталог на контейнере — детали эмиссии только в [csharp-backend.md](../compiler/docs/playbooks/csharp-backend.md).
+- Legacy mismatch тега: `options.openType.mismatch` = `soft` (default) / `strict`. Неизвестный ключ → `Unknown`. Modern таблицы всегда отвергают несовместимое содержимое известного ключа.
 
 ## Runtime: мягкое чтение неканоничных форм + опции строгости
 
-**Причина.** Реальные PKIX/CMS потоки часто несут TLV, запрещённые строгим DER (и иногда даже общим X.690): лишние leading-октеты INTEGER, ненулевые unused-биты BIT STRING и т.п. Жёсткий reject по умолчанию ломает разбор чужих данных; молчаливый accept без документации и без переключателя — скрытый soft-profile, который нельзя включить для аудита.
+**Причина.** Реальные PKIX/CMS потоки часто несут TLV, запрещённые строгим DER. Жёсткий reject по умолчанию ломает разбор чужих данных; молчаливый accept без документации и без переключателя — скрытый soft-profile.
 
-**Последствие.**
-- На **записи** runtime по-прежнему эмитит канонический DER (минимальный INTEGER, нулевые trailing bits BIT STRING, definite length, BOOLEAN `00`/`FF`, …).
-- На **чтении** отдельные проверки X.690/DER могут быть **выключены по умолчанию**: значение читается успешно. Инвентарь soft-accept и флагов — в [runtime-api.md](../runtime-csharp/docs/runtime-api.md) (краткий срез — [status.md](status.md) § Runtime); новый soft-accept без записи туда — регрессия процесса.
-- Предпочтительный механизм — опции reader’а (вкл/выкл строгую проверку), а не ветвление по `Asn1Encoding` в одиночку. Строгий режим должен отвергать те же векторы, что ожидают BoringSSL/BCL/BC.
-- Зафиксировано по умолчанию **выключено** (accept):
-  1. reject non-minimal INTEGER contents (X.690 §8.3.2) — флаг `Asn1ReaderOptions.RejectNonMinimalInteger`;
-  2. reject nonzero trailing bits BIT STRING при чтении (в т.ч. DER, X.690 §11.2) — флаг `RejectBitStringTrailingBits`.
-- Кандидаты **не** в soft-profile (по умолчанию reject; ослабление только явным профилем):
-  1. non-minimal definite length — `RejectNonMinimalLength` (default true; профиль `AllowNonMinimalLength`);
-  2. overlong OID base-128 — `RejectOverlongOidBase128` (default true; профиль `AllowOverlongOidBase128`).
-- Готовый профиль аудита: `Asn1ReaderOptions.Strict` (все optional rejects включены).
+**Последствие.** Encode всегда канонический DER. Decode по умолчанию принимает зафиксированные soft-формы; строгий режим — через `Asn1ReaderOptions` (`Default` / `Strict` / точечные профили), не через ветвление только по `Asn1Encoding`. Полный инвентарь soft-accept и флагов — [runtime-api.md](../runtime-csharp/docs/runtime-api.md) (срез — [status.md](status.md) § Runtime); новый soft-accept без записи туда — регрессия процесса.
 
 ## Decode — `options.lazy` и `Asn1Lazy<T>`
 
@@ -167,17 +154,9 @@
 
 ## Современный ASN.1 — частная семантика компилятора, конкретный IR v1
 
-**Причина.** CLASS, WITH SYNTAX, objects/sets и параметризация описывают связи идентификаторов и типов. Если передать их в публичный IR, каждый backend должен будет повторять ASN.1 resolver. RFC 5912 меняет язык описания PKIX без изменения wire-формы; существующий runtime подходит для разрешённой модели.
+**Причина.** CLASS, WITH SYNTAX, objects/sets и параметризация описывают связи идентификаторов и типов. Если передать их в публичный IR, каждый backend должен повторять ASN.1 resolver. RFC 5912 меняет язык описания PKIX без изменения wire-формы.
 
-**Последствие.** `InformationResolver` работает между AST и `IrBuilder`. Публичный IR содержит структурно различные специализации, bindings, selectors, CONTAINING, составные значения и метаданные расширений. Новые поля типизированы и аддитивны; options остаётся настройками. Во время разрешения специализации кэшируются по модулю/шаблону/actual arguments. После построения IR `SpecializationCompactor` сворачивает различия только в IOC-таблицах, переносит таблицы на ссылки и заменяет внутренние хешированные имена именами типов для публичного IR. Лимиты 512 специализаций и 128 активных разрешений превращают растущую рекурсию в диагностику.
-
-Современная таблица отмечается `tableExtensible` даже без `...`: неизвестный ключ сохраняется raw без legacy угадывания по universal-тегу; неверное содержимое известного binding отвергается. Пустой `{...}` не пополняется импортированными алгоритмами. Закрытость набора и правила присутствия параметров пока не исполняются, что явно отражено в [status.md](status.md).
-
-Для свёрнутого типа C# хранит табличное поле как `Asn1Any`; типизированное чтение/запись — на контейнере open type через общий `Binding<T>` формы носителя и table-scoped каталог (см. выше), а не отдельный CLR-subtype на каждый object set. Отдельные newtype/`SignatureAlgorithmsAlgorithmIdentifier` и обёртка `CertExtensions` над `Extension[]` не генерируются: wire-форма общая, различие таблиц — в каталогах (`CertExtensionsBindings` vs `CrlExtensionsBindings`), а поиск по плоскому OF — `array.TryGet(binding)` на `Carrier[]?`, owner `TryGet…(binding)` только для вложенных маршрутов (DN и т.п.). `SIGNED` с разными типами `toBeSigned` использует общую основу `Signed<T>` и именованные производные типы; таблицы его параметров и подписи в C# доступны как raw.
-
-CONTAINING сохраняет contents и типизированное значение в `Asn1Contained<T>`; runtime открывает окно содержимого в том же reader и пишет содержимое в тот же writer. OF получает состояние через static callback. SET читает зависимые TLV после дискриминатора. Составные DEFAULT создаются для каждого объекта, а DER сравнивает структуру, включая мультимножество SET OF. Неизвестные SEQUENCE/SET extension additions пропускаются при decode и не пишутся при encode; SET сортирует только известные компоненты.
-
-Корпус RFC 5911/5912/6268/8410 и все его зависимости хранится с документированными исправлениями. `Asn1Kit.Modern` имеет отдельную сборку и namespace на модуль; legacy PKIX/CMS/DVCS сохраняется и проверяется теми же consumer codec-тестами. Перенаправления по похожим именам нет; явно заданный module OID может разрешить импорт по точной идентичности.
+**Последствие.** `InformationResolver` между AST и `IrBuilder` разрешает IOC/параметризацию в конкретный IR (bindings, selectors, CONTAINING, extensions). `SpecializationCompactor` сворачивает типы, различающиеся лишь IOC-таблицами, и переносит таблицы на `ref.openTypes`. Лимиты специализаций превращают растущую рекурсию в диагностику. Modern unknown key → raw (без legacy tag-fallback); закрытость наборов и presence пока не исполняются — [status.md](status.md). Эмиссия C# Binding/каталогов — [csharp-backend.md](../compiler/docs/playbooks/csharp-backend.md). Корпус RFC и `Asn1Kit.Modern` отделены от legacy PKIX/CMS/DVCS (разные module identifiers; без эвристик имён).
 
 ## C++ — ещё один бэкенд, а не форк фронтенда
 
