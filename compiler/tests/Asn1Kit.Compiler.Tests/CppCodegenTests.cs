@@ -77,6 +77,7 @@ END
         Assert.Contains("std::optional", source);
         Assert.Contains("encode_Color", source);
         Assert.Contains("Color::red", source);
+        Assert.Contains("asn1kit::tag::context(", source);
     }
 
     [Fact]

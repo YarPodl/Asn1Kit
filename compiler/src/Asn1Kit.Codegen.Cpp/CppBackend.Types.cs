@@ -551,15 +551,18 @@ public sealed partial class CppBackend
 
     private static string TagFromIr(IrTag tag, bool constructed)
     {
-        var cls = tag.Class.ToLowerInvariant() switch
-        {
-            TagClasses.Universal => "asn1kit::tag_class::universal",
-            TagClasses.Application => "asn1kit::tag_class::application",
-            TagClasses.Private => "asn1kit::tag_class::private_",
-            _ => "asn1kit::tag_class::context_specific"
-        };
+        var number = tag.Number.ToString(CultureInfo.InvariantCulture);
+        var args = constructed ? $"{number}, true" : number;
 
-        return $"asn1kit::tag({cls}, {tag.Number.ToString(CultureInfo.InvariantCulture)}, {(constructed ? "true" : "false")})";
+        return tag.Class.ToLowerInvariant() switch
+        {
+            TagClasses.Universal => constructed
+                ? $"asn1kit::tag(asn1kit::tag_class::universal, {number}, true)"
+                : $"asn1kit::tag(asn1kit::tag_class::universal, {number})",
+            TagClasses.Application => $"asn1kit::tag::application({args})",
+            TagClasses.Private => $"asn1kit::tag::private_({args})",
+            _ => $"asn1kit::tag::context({args})"
+        };
     }
 
     private string UniversalTag(IrDocument document, IrModule module, TypeExpr type) => type switch

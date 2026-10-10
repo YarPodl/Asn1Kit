@@ -40,27 +40,39 @@ enum class time_form {
 /// ASN.1 tag: class, number, and primitive/constructed form.
 class tag {
 public:
-    tag() = default;
+    constexpr tag() = default;
 
-    tag(tag_class cls, int number, bool constructed = false)
+    constexpr tag(tag_class cls, int number, bool constructed = false)
         : class_(cls), number_(number), constructed_(constructed) {
         if (number < 0) {
             throw exception("Tag number must be non-negative.");
         }
     }
 
-    [[nodiscard]] tag_class tag_class_value() const noexcept { return class_; }
-    [[nodiscard]] int number() const noexcept { return number_; }
-    [[nodiscard]] bool constructed() const noexcept { return constructed_; }
+    [[nodiscard]] constexpr tag_class tag_class_value() const noexcept { return class_; }
+    [[nodiscard]] constexpr int number() const noexcept { return number_; }
+    [[nodiscard]] constexpr bool constructed() const noexcept { return constructed_; }
 
-    [[nodiscard]] tag as_constructed() const { return tag(class_, number_, true); }
-    [[nodiscard]] tag as_primitive() const { return tag(class_, number_, false); }
+    [[nodiscard]] constexpr tag as_constructed() const { return tag(class_, number_, true); }
+    [[nodiscard]] constexpr tag as_primitive() const { return tag(class_, number_, false); }
 
-    [[nodiscard]] bool matches_ignore_constructed(const tag& other) const noexcept {
+    [[nodiscard]] constexpr bool matches_ignore_constructed(const tag& other) const noexcept {
         return class_ == other.class_ && number_ == other.number_;
     }
 
     [[nodiscard]] std::string to_string() const;
+
+    [[nodiscard]] static constexpr tag context(int number, bool constructed = false) {
+        return tag(tag_class::context_specific, number, constructed);
+    }
+
+    [[nodiscard]] static constexpr tag application(int number, bool constructed = false) {
+        return tag(tag_class::application, number, constructed);
+    }
+
+    [[nodiscard]] static constexpr tag private_(int number, bool constructed = false) {
+        return tag(tag_class::private_, number, constructed);
+    }
 
     static const tag boolean;
     static const tag integer;
@@ -85,10 +97,10 @@ public:
     static const tag universal_string;
     static const tag bmp_string;
 
-    friend bool operator==(const tag& a, const tag& b) noexcept {
+    friend constexpr bool operator==(const tag& a, const tag& b) noexcept {
         return a.class_ == b.class_ && a.number_ == b.number_ && a.constructed_ == b.constructed_;
     }
-    friend bool operator!=(const tag& a, const tag& b) noexcept { return !(a == b); }
+    friend constexpr bool operator!=(const tag& a, const tag& b) noexcept { return !(a == b); }
 
 private:
     tag_class class_{tag_class::universal};

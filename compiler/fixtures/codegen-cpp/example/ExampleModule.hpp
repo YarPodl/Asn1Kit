@@ -35,10 +35,10 @@ struct Person {
     static Person decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
         Person value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.id = inner.read_integer_value(asn1kit::tag(asn1kit::tag_class::context_specific, 0, false));
-            value.name = inner.read_octet_string(asn1kit::tag(asn1kit::tag_class::context_specific, 1, false));
-            if (inner.next_is(asn1kit::tag(asn1kit::tag_class::context_specific, 2, false))) {
-                value.nick = inner.read_octet_string(asn1kit::tag(asn1kit::tag_class::context_specific, 2, false));
+            value.id = inner.read_integer_value(asn1kit::tag::context(0));
+            value.name = inner.read_octet_string(asn1kit::tag::context(1));
+            if (inner.next_is(asn1kit::tag::context(2))) {
+                value.nick = inner.read_octet_string(asn1kit::tag::context(2));
             }
         });
         return value;
@@ -46,10 +46,10 @@ struct Person {
 
     void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
         auto scope = w.enter_sequence(t);
-        w.write_integer(asn1kit::tag(asn1kit::tag_class::context_specific, 0, false), this->id);
-        w.write_octet_string(asn1kit::tag(asn1kit::tag_class::context_specific, 1, false), this->name.span());
+        w.write_integer(asn1kit::tag::context(0), this->id);
+        w.write_octet_string(asn1kit::tag::context(1), this->name.span());
         if (this->nick.has_value()) {
-            w.write_octet_string(asn1kit::tag(asn1kit::tag_class::context_specific, 2, false), (*this->nick).span());
+            w.write_octet_string(asn1kit::tag::context(2), (*this->nick).span());
         }
     }
 };

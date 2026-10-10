@@ -8,6 +8,7 @@ add_executable(asn1kit_tests
     exception_diagnostics_tests.cpp
     constructed_scope_tests.cpp
     generated_person_tests.cpp
+    tag_tests.cpp
 )
 
 target_link_libraries(asn1kit_tests
