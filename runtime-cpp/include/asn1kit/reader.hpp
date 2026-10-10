@@ -5,6 +5,7 @@
 
 #include "asn1kit/bit_string.hpp"
 #include "asn1kit/bytes.hpp"
+#include "asn1kit/detail/decode_cursor.hpp"
 #include "asn1kit/encoding.hpp"
 #include "asn1kit/integer.hpp"
 #include "asn1kit/oid.hpp"
@@ -12,8 +13,8 @@
 #include "asn1kit/tag.hpp"
 #include "asn1kit/utc_date_time.hpp"
 
+#include <cstddef>
 #include <cstdint>
-#include <memory>
 #include <span>
 #include <string>
 #include <vector>
@@ -40,14 +41,14 @@ public:
 
     reader(const reader&) = delete;
     reader& operator=(const reader&) = delete;
-    reader(reader&&) noexcept;
-    reader& operator=(reader&&) noexcept;
-    ~reader();
+    reader(reader&&) noexcept = default;
+    reader& operator=(reader&&) noexcept = default;
+    ~reader() = default;
 
     [[nodiscard]] encoding encoding_rules() const noexcept;
     [[nodiscard]] const reader_options& options() const noexcept;
     [[nodiscard]] bool eof() const noexcept;
-    [[nodiscard]] int remaining() const noexcept;
+    [[nodiscard]] std::size_t remaining() const noexcept;
 
     void throw_if_not_empty() const;
 
@@ -67,7 +68,7 @@ public:
     [[nodiscard]] bool try_read_octet_string(
         const tag& expected,
         std::span<std::uint8_t> destination,
-        int& bytes_written);
+        std::size_t& bytes_written);
 
     void read_null(const tag& expected = tag::null);
 
@@ -84,8 +85,7 @@ private:
     void ensure_minimal_integer_contents(std::span<const std::uint8_t> contents) const;
     static void ensure_expected_tag(const tag& actual, const tag& expected);
 
-    class impl;
-    std::unique_ptr<impl> impl_;
+    detail::decode_cursor cursor_;
 };
 
 [[nodiscard]] tag default_string_tag(string_form form);

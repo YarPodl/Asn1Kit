@@ -4,7 +4,6 @@
 #include "asn1kit/reader.hpp"
 
 #include "constructed_decoder.hpp"
-#include "decode_cursor.hpp"
 #include "text_codec.hpp"
 
 #include <utility>
@@ -14,16 +13,8 @@ namespace asn1kit {
 // Forward declare boolean decoder implemented in boolean.cpp
 bool decode_boolean_contents(std::span<const std::uint8_t> contents, encoding enc);
 
-class reader::impl {
-public:
-    detail::decode_cursor cursor;
-
-    impl(bytes data, encoding enc, reader_options options)
-        : cursor(std::move(data), enc, options) {}
-};
-
 reader::reader(bytes data, encoding enc, reader_options options)
-    : impl_(std::make_unique<impl>(std::move(data), enc, std::move(options))) {}
+    : cursor_(std::move(data), enc, std::move(options)) {}
 
 reader::reader(std::span<const std::uint8_t> data, encoding enc, reader_options options)
     : reader(bytes::borrow(data), enc, std::move(options)) {}
@@ -31,17 +22,13 @@ reader::reader(std::span<const std::uint8_t> data, encoding enc, reader_options 
 reader::reader(const std::vector<std::uint8_t>& data, encoding enc, reader_options options)
     : reader(bytes::from_vector(data), enc, std::move(options)) {}
 
-reader::~reader() = default;
-reader::reader(reader&&) noexcept = default;
-reader& reader::operator=(reader&&) noexcept = default;
+encoding reader::encoding_rules() const noexcept { return cursor_.encoding_rules(); }
 
-encoding reader::encoding_rules() const noexcept { return impl_->cursor.encoding_rules(); }
+const reader_options& reader::options() const noexcept { return cursor_.options(); }
 
-const reader_options& reader::options() const noexcept { return impl_->cursor.options(); }
+bool reader::eof() const noexcept { return cursor_.eof(); }
 
-bool reader::eof() const noexcept { return impl_->cursor.eof(); }
-
-int reader::remaining() const noexcept { return impl_->cursor.remaining(); }
+std::size_t reader::remaining() const noexcept { return cursor_.remaining(); }
 
 void reader::throw_if_not_empty() const {
     if (!eof()) {
@@ -50,7 +37,7 @@ void reader::throw_if_not_empty() const {
 }
 
 bool reader::try_peek_tag(tag& out) const {
-    return impl_->cursor.try_peek_tag(out);
+    return cursor_.try_peek_tag(out);
 }
 
 bool reader::read_boolean(const tag& expected) {
@@ -88,19 +75,19 @@ std::string reader::read_enumerated_decimal(const tag& expected) {
 }
 
 bytes reader::read_octet_string(const tag& expected) {
-    return detail::constructed_decoder::read_octet_like(impl_->cursor, expected);
+    return detail::constructed_decoder::read_octet_like(cursor_, expected);
 }
 
 bool reader::try_read_octet_string(
     const tag& expected,
     std::span<std::uint8_t> destination,
-    int& bytes_written) {
-    auto candidate = impl_->cursor;
+    std::size_t& bytes_written) {
+    auto candidate = cursor_;
     if (!detail::constructed_decoder::try_read_octet_like(
             candidate, expected, destination, bytes_written)) {
         return false;
     }
-    impl_->cursor = candidate;
+    cursor_ = candidate;
     return true;
 }
 
@@ -117,8 +104,8 @@ oid reader::read_oid(const tag& expected) {
         throw exception("OBJECT IDENTIFIER is empty.");
     }
     const auto span = contents.span();
-    int index = 0;
-    while (index < static_cast<int>(span.size())) {
+    std::size_t index = 0;
+    while (index < span.size()) {
         (void)oid::read_arc(span, index, options().reject_overlong_oid_base128);
     }
     return oid::from_contents(std::move(contents));
@@ -130,21 +117,21 @@ std::string reader::read_object_identifier(const tag& expected) {
 
 bit_string reader::read_bit_string(const tag& expected) {
     return detail::constructed_decoder::read_bit_string(
-        impl_->cursor, expected, options().reject_bit_string_trailing_bits);
+        cursor_, expected, options().reject_bit_string_trailing_bits);
 }
 
 std::string reader::read_string(const tag& expected, string_form form) {
-    auto data = detail::constructed_decoder::read_octet_like(impl_->cursor, expected);
+    auto data = detail::constructed_decoder::read_octet_like(cursor_, expected);
     return detail::text_codec::decode_string(data.span(), form);
 }
 
 utc_date_time reader::read_time(const tag& expected, time_form form) {
-    auto data = detail::constructed_decoder::read_octet_like(impl_->cursor, expected);
+    auto data = detail::constructed_decoder::read_octet_like(cursor_, expected);
     return detail::text_codec::parse_time(data.span(), form, encoding_rules());
 }
 
 bytes reader::read_primitive_contents(const tag& expected) {
-    auto tlv = impl_->cursor.read_tlv();
+    auto tlv = cursor_.read_tlv();
     ensure_expected_tag(tlv.tag_value, expected);
     if (tlv.tag_value.constructed()) {
         throw exception("Tag " + expected.to_string() + " must be primitive.");

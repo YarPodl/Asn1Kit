@@ -7,6 +7,7 @@
 #include "asn1kit/tag.hpp"
 #include "asn1kit/utc_date_time.hpp"
 
+#include <cstddef>
 #include <cstdint>
 #include <span>
 #include <string>
@@ -15,16 +16,16 @@
 namespace asn1kit::detail {
 
 struct text_codec {
-    static constexpr int max_encoded_time_bytes = 24;
+    static constexpr std::size_t max_encoded_time_bytes = 24;
 
     static tag default_string_tag(string_form form);
     static tag default_time_tag(time_form form);
 
-    static int get_encoded_byte_count(std::string_view value, string_form form);
+    static std::size_t get_encoded_byte_count(std::string_view value, string_form form);
     static void encode_string(std::string_view value, string_form form, std::span<std::uint8_t> destination);
     static std::string decode_string(std::span<const std::uint8_t> contents, string_form form);
 
-    static int encode_time(
+    static std::size_t encode_time(
         const utc_date_time& value,
         time_form form,
         int fraction_digits,

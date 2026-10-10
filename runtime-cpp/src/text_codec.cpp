@@ -585,19 +585,19 @@ tag text_codec::default_time_tag(time_form form) {
     throw exception("Unknown time form.");
 }
 
-int text_codec::get_encoded_byte_count(std::string_view value, string_form form) {
+std::size_t text_codec::get_encoded_byte_count(std::string_view value, string_form form) {
     switch (form) {
     case string_form::utf8:
-        return count_utf8_bytes(value);
+        return static_cast<std::size_t>(count_utf8_bytes(value));
     case string_form::bmp:
-        return static_cast<int>(to_utf16(value).size() * 2);
+        return to_utf16(value).size() * 2;
     case string_form::universal:
-        return count_universal_code_points(value) * 4;
+        return static_cast<std::size_t>(count_universal_code_points(value)) * 4;
     case string_form::numeric:
     case string_form::printable:
     case string_form::ia5:
     case string_form::visible:
-        return static_cast<int>(value.size());
+        return value.size();
     case string_form::teletex:
     case string_form::t61:
     case string_form::videotex:
@@ -611,7 +611,7 @@ int text_codec::get_encoded_byte_count(std::string_view value, string_form form)
             }
         }
         {
-            int count = 0;
+            std::size_t count = 0;
             for (std::size_t i = 0; i < value.size();) {
                 const auto cp = decode_utf8_codepoint(value, i);
                 if (cp > 0xFF) {
@@ -757,16 +757,16 @@ std::string text_codec::decode_string(std::span<const std::uint8_t> contents, st
     throw exception("Unknown string form.");
 }
 
-int text_codec::encode_time(
+std::size_t text_codec::encode_time(
     const utc_date_time& value,
     time_form form,
     int fraction_digits,
     std::span<std::uint8_t> destination) {
     switch (form) {
     case time_form::utc:
-        return encode_utc_time(value, destination);
+        return static_cast<std::size_t>(encode_utc_time(value, destination));
     case time_form::generalized:
-        return encode_generalized_time(value, fraction_digits, destination);
+        return static_cast<std::size_t>(encode_generalized_time(value, fraction_digits, destination));
     }
     throw exception("Unknown time form.");
 }

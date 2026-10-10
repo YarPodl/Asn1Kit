@@ -7,6 +7,7 @@
 #include "asn1kit/exception.hpp"
 #include "asn1kit/tag.hpp"
 
+#include <cstddef>
 #include <cstdint>
 #include <span>
 #include <vector>
@@ -28,8 +29,8 @@ public:
     [[nodiscard]] std::span<const std::uint8_t> span() const noexcept { return bytes_.span(); }
     [[nodiscard]] const bytes& contents() const noexcept { return bytes_; }
     [[nodiscard]] int unused_bits() const noexcept { return unused_bits_; }
-    [[nodiscard]] int bit_length() const noexcept {
-        return bytes_.empty() ? 0 : static_cast<int>(bytes_.size() * 8 - unused_bits_);
+    [[nodiscard]] std::size_t bit_length() const noexcept {
+        return bytes_.empty() ? 0 : bytes_.size() * 8 - static_cast<std::size_t>(unused_bits_);
     }
 
     [[nodiscard]] std::vector<std::uint8_t> to_vector() const { return bytes_.to_vector(); }

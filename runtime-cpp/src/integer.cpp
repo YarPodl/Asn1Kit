@@ -31,13 +31,13 @@ integer from_single_octet(int value) {
     return integer::from_contents(bytes::borrow(std::span<const std::uint8_t>(&k_single_octet_contents[b], 1)));
 }
 
-void ensure_encode_destination(std::span<std::uint8_t> destination, int required) {
-    if (static_cast<int>(destination.size()) < required) {
+void ensure_encode_destination(std::span<std::uint8_t> destination, std::size_t required) {
+    if (destination.size() < required) {
         throw exception("INTEGER encode destination is too small.");
     }
 }
 
-int encode_signed_contents(std::int64_t value, std::span<std::uint8_t> destination) {
+std::size_t encode_signed_contents(std::int64_t value, std::span<std::uint8_t> destination) {
     std::uint8_t full[8];
     for (int i = 7; i >= 0; --i) {
         full[i] = static_cast<std::uint8_t>(value & 0xFF);
@@ -57,13 +57,13 @@ int encode_signed_contents(std::int64_t value, std::span<std::uint8_t> destinati
         }
     }
 
-    const int length = 8 - start;
+    const std::size_t length = static_cast<std::size_t>(8 - start);
     ensure_encode_destination(destination, length);
-    std::memcpy(destination.data(), full + start, static_cast<std::size_t>(length));
+    std::memcpy(destination.data(), full + start, length);
     return length;
 }
 
-int encode_unsigned_contents(std::uint64_t value, std::span<std::uint8_t> destination) {
+std::size_t encode_unsigned_contents(std::uint64_t value, std::span<std::uint8_t> destination) {
     if (value <= static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max())) {
         return encode_signed_contents(static_cast<std::int64_t>(value), destination);
     }
@@ -86,7 +86,7 @@ bool try_read_signed(std::span<const std::uint8_t> contents, int max_bytes, std:
                || (span[0] == 0xFF && (span[1] & 0x80) != 0))) {
         span = span.subspan(1);
     }
-    if (static_cast<int>(span.size()) > max_bytes) {
+    if (span.size() > static_cast<std::size_t>(max_bytes)) {
         return false;
     }
     std::int64_t result = static_cast<std::int8_t>(span[0]);
@@ -108,7 +108,7 @@ bool try_read_unsigned(std::span<const std::uint8_t> contents, int max_bytes, st
     if (span.size() > 1 && span[0] == 0x00) {
         span = span.subspan(1);
     }
-    if (static_cast<int>(span.size()) > max_bytes) {
+    if (span.size() > static_cast<std::size_t>(max_bytes)) {
         return false;
     }
     std::uint64_t result = 0;
@@ -278,8 +278,8 @@ integer integer::from_int32(std::int32_t value) {
         return from_single_octet(value);
     }
     std::uint8_t buf[4];
-    const int n = encode_signed_contents(value, buf);
-    return copy_from(std::span<const std::uint8_t>(buf, static_cast<std::size_t>(n)));
+    const std::size_t n = encode_signed_contents(value, buf);
+    return copy_from(std::span<const std::uint8_t>(buf, n));
 }
 
 integer integer::from_uint32(std::uint32_t value) {
@@ -290,8 +290,8 @@ integer integer::from_uint32(std::uint32_t value) {
         return from_single_octet(static_cast<int>(value));
     }
     std::uint8_t buf[5];
-    const int n = encode_unsigned_contents(value, buf);
-    return copy_from(std::span<const std::uint8_t>(buf, static_cast<std::size_t>(n)));
+    const std::size_t n = encode_unsigned_contents(value, buf);
+    return copy_from(std::span<const std::uint8_t>(buf, n));
 }
 
 integer integer::from_int64(std::int64_t value) {
@@ -302,8 +302,8 @@ integer integer::from_int64(std::int64_t value) {
         return from_single_octet(static_cast<int>(value));
     }
     std::uint8_t buf[8];
-    const int n = encode_signed_contents(value, buf);
-    return copy_from(std::span<const std::uint8_t>(buf, static_cast<std::size_t>(n)));
+    const std::size_t n = encode_signed_contents(value, buf);
+    return copy_from(std::span<const std::uint8_t>(buf, n));
 }
 
 integer integer::from_uint64(std::uint64_t value) {
@@ -314,8 +314,8 @@ integer integer::from_uint64(std::uint64_t value) {
         return from_single_octet(static_cast<int>(value));
     }
     std::uint8_t buf[9];
-    const int n = encode_unsigned_contents(value, buf);
-    return copy_from(std::span<const std::uint8_t>(buf, static_cast<std::size_t>(n)));
+    const std::size_t n = encode_unsigned_contents(value, buf);
+    return copy_from(std::span<const std::uint8_t>(buf, n));
 }
 
 integer integer::from_decimal(std::string_view text) {
@@ -340,19 +340,19 @@ bool integer::is_minimal_contents(std::span<const std::uint8_t> contents) {
     return true;
 }
 
-int integer::encode_contents(std::int32_t value, std::span<std::uint8_t> destination) {
+std::size_t integer::encode_contents(std::int32_t value, std::span<std::uint8_t> destination) {
     return encode_signed_contents(value, destination);
 }
 
-int integer::encode_contents(std::uint32_t value, std::span<std::uint8_t> destination) {
+std::size_t integer::encode_contents(std::uint32_t value, std::span<std::uint8_t> destination) {
     return encode_unsigned_contents(value, destination);
 }
 
-int integer::encode_contents(std::int64_t value, std::span<std::uint8_t> destination) {
+std::size_t integer::encode_contents(std::int64_t value, std::span<std::uint8_t> destination) {
     return encode_signed_contents(value, destination);
 }
 
-int integer::encode_contents(std::uint64_t value, std::span<std::uint8_t> destination) {
+std::size_t integer::encode_contents(std::uint64_t value, std::span<std::uint8_t> destination) {
     return encode_unsigned_contents(value, destination);
 }
 

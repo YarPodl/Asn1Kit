@@ -303,7 +303,7 @@ TEST(PrimitiveCodecExtra, Writer_Reset_ClearsOutput) {
     w.write_integer(tag::integer, 1);
     EXPECT_EQ((std::vector<std::uint8_t>{0x02, 0x01, 0x01}), w.encode());
     w.reset();
-    EXPECT_EQ(0, w.encoded_length());
+    EXPECT_EQ(0u, w.encoded_length());
     w.write_integer(tag::integer, 2);
     EXPECT_EQ((std::vector<std::uint8_t>{0x02, 0x01, 0x02}), w.encode());
 }
@@ -312,9 +312,9 @@ TEST(PrimitiveCodecExtra, TryEncode_CopiesWhenDestinationFits) {
     writer w(encoding::der);
     w.write_null(tag::null);
     std::uint8_t dest[8]{};
-    int written = 0;
+    std::size_t written = 0;
     EXPECT_TRUE(w.try_encode(dest, written));
-    EXPECT_EQ(2, written);
+    EXPECT_EQ(2u, written);
     EXPECT_EQ(0x05, dest[0]);
     EXPECT_EQ(0x00, dest[1]);
 }

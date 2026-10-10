@@ -8,6 +8,7 @@
 #include "asn1kit/reader_options.hpp"
 #include "asn1kit/tag.hpp"
 
+#include <cstddef>
 #include <cstdint>
 #include <utility>
 
@@ -27,9 +28,9 @@ public:
     [[nodiscard]] encoding encoding_rules() const noexcept { return encoding_; }
     [[nodiscard]] const reader_options& options() const noexcept { return options_; }
     [[nodiscard]] bool eof() const noexcept;
-    [[nodiscard]] int remaining() const noexcept;
+    [[nodiscard]] std::size_t remaining() const noexcept;
     [[nodiscard]] const bytes& data() const noexcept { return data_; }
-    [[nodiscard]] int offset() const noexcept { return offset_; }
+    [[nodiscard]] std::size_t offset() const noexcept { return offset_; }
 
     [[nodiscard]] decode_cursor create_nested(bytes contents) const;
 
@@ -40,13 +41,13 @@ private:
     [[nodiscard]] bytes read_indefinite_contents();
     [[nodiscard]] tag read_tag();
     [[nodiscard]] int read_high_tag_number();
-    [[nodiscard]] std::pair<int, bool> read_length();
-    void ensure_available(int count) const;
+    [[nodiscard]] std::pair<std::size_t, bool> read_length();
+    void ensure_available(std::size_t count) const;
 
     bytes data_;
     encoding encoding_;
     reader_options options_;
-    int offset_{0};
+    std::size_t offset_{0};
 };
 
 } // namespace asn1kit::detail

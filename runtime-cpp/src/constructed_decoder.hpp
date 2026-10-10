@@ -5,9 +5,10 @@
 
 #include "asn1kit/bit_string.hpp"
 #include "asn1kit/bytes.hpp"
+#include "asn1kit/detail/decode_cursor.hpp"
 #include "asn1kit/tag.hpp"
-#include "decode_cursor.hpp"
 
+#include <cstddef>
 #include <cstdint>
 #include <span>
 
@@ -21,7 +22,7 @@ struct constructed_decoder {
         decode_cursor& cursor,
         const tag& expected,
         std::span<std::uint8_t> destination,
-        int& bytes_written);
+        std::size_t& bytes_written);
 
     static bit_string read_bit_string(
         decode_cursor& cursor,

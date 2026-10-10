@@ -4,14 +4,15 @@
 #pragma once
 
 #include "asn1kit/bit_string.hpp"
+#include "asn1kit/detail/encode_buffer.hpp"
 #include "asn1kit/encoding.hpp"
 #include "asn1kit/integer.hpp"
 #include "asn1kit/oid.hpp"
 #include "asn1kit/tag.hpp"
 #include "asn1kit/utc_date_time.hpp"
 
+#include <cstddef>
 #include <cstdint>
-#include <memory>
 #include <span>
 #include <string_view>
 #include <vector>
@@ -25,23 +26,18 @@ public:
 
     writer(const writer&) = delete;
     writer& operator=(const writer&) = delete;
-    writer(writer&&) noexcept;
-    writer& operator=(writer&&) noexcept;
-    ~writer();
+    writer(writer&&) noexcept = default;
+    writer& operator=(writer&&) noexcept = default;
+    ~writer() = default;
 
     [[nodiscard]] encoding encoding_rules() const noexcept;
-    [[nodiscard]] int encoded_length() const noexcept;
+    [[nodiscard]] std::size_t encoded_length() const noexcept;
 
-    void ensure_capacity(int capacity);
+    void ensure_capacity(std::size_t capacity);
     void reset();
 
     [[nodiscard]] std::vector<std::uint8_t> encode() const;
-    [[nodiscard]] bool try_encode(std::span<std::uint8_t> destination, int& bytes_written) const;
-
-    template <typename F>
-    auto encode(F&& callback) const -> decltype(callback(std::span<const std::uint8_t>{})) {
-        return callback(written_span());
-    }
+    [[nodiscard]] bool try_encode(std::span<std::uint8_t> destination, std::size_t& bytes_written) const;
 
     void write_boolean(const tag& t, bool value);
     void write_integer(const tag& t, std::int32_t value);
@@ -66,8 +62,8 @@ public:
     [[nodiscard]] std::span<const std::uint8_t> written_span() const;
 
 private:
-    class impl;
-    std::unique_ptr<impl> impl_;
+    encoding encoding_;
+    detail::encode_buffer buffer_;
 };
 
 } // namespace asn1kit

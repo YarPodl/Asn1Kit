@@ -62,7 +62,7 @@ int parse_next_arc(std::string_view span, std::size_t& index, std::string_view o
     return arc;
 }
 
-int encode_base128(std::span<std::uint8_t> destination, int value) {
+std::size_t encode_base128(std::span<std::uint8_t> destination, int value) {
     if (value < 0) {
         throw exception("OID arc must not be negative.");
     }
@@ -77,14 +77,14 @@ int encode_base128(std::span<std::uint8_t> destination, int value) {
     for (int i = 0; i < count; ++i) {
         destination[static_cast<std::size_t>(i)] = temp[count - 1 - i];
     }
-    return count;
+    return static_cast<std::size_t>(count);
 }
 
 std::string format_dotted(std::span<const std::uint8_t> contents) {
     if (contents.empty()) {
         throw exception("OBJECT IDENTIFIER is empty.");
     }
-    int i = 0;
+    std::size_t i = 0;
     const int first = oid::read_arc(contents, i, false);
     int arc0 = 0;
     int arc1 = 0;
@@ -99,7 +99,7 @@ std::string format_dotted(std::span<const std::uint8_t> contents) {
         arc1 = first - 80;
     }
     std::string result = std::to_string(arc0) + "." + std::to_string(arc1);
-    while (i < static_cast<int>(contents.size())) {
+    while (i < contents.size()) {
         result.push_back('.');
         result += std::to_string(oid::read_arc(contents, i, false));
     }
@@ -126,23 +126,23 @@ oid oid::parse(std::string_view dotted) {
     return copy_from(encode_contents(dotted));
 }
 
-int oid::get_encode_contents_max_length(std::string_view dotted) {
+std::size_t oid::get_encode_contents_max_length(std::string_view dotted) {
     const auto span = normalize_oid(dotted);
     const int arc_count = count_arcs(span);
     if (arc_count < 2) {
         throw exception("OID '" + std::string(dotted) + "' is too short.");
     }
-    return arc_count * 5;
+    return static_cast<std::size_t>(arc_count) * 5;
 }
 
-int oid::encode_contents(std::string_view dotted, std::span<std::uint8_t> destination) {
+std::size_t oid::encode_contents(std::string_view dotted, std::span<std::uint8_t> destination) {
     const auto span = normalize_oid(dotted);
     const int arc_count = count_arcs(span);
     if (arc_count < 2) {
         throw exception("OID '" + std::string(dotted) + "' is too short.");
     }
-    const int max_bytes = arc_count * 5;
-    if (static_cast<int>(destination.size()) < max_bytes) {
+    const std::size_t max_bytes = static_cast<std::size_t>(arc_count) * 5;
+    if (destination.size() < max_bytes) {
         throw exception("OID encode destination is too small.");
     }
     std::size_t index = 0;
@@ -160,19 +160,18 @@ int oid::encode_contents(std::string_view dotted, std::span<std::uint8_t> destin
     if (first > std::numeric_limits<int>::max()) {
         throw exception("OID '" + std::string(dotted) + "' first subidentifier is too large.");
     }
-    int written = encode_base128(destination, static_cast<int>(first));
+    std::size_t written = encode_base128(destination, static_cast<int>(first));
     for (int a = 2; a < arc_count; ++a) {
-        written += encode_base128(destination.subspan(static_cast<std::size_t>(written)),
-            parse_next_arc(span, index, dotted));
+        written += encode_base128(destination.subspan(written), parse_next_arc(span, index, dotted));
     }
     return written;
 }
 
 std::vector<std::uint8_t> oid::encode_contents(std::string_view dotted) {
-    const int max_bytes = get_encode_contents_max_length(dotted);
-    std::vector<std::uint8_t> scratch(static_cast<std::size_t>(max_bytes));
-    const int written = encode_contents(dotted, scratch);
-    scratch.resize(static_cast<std::size_t>(written));
+    const std::size_t max_bytes = get_encode_contents_max_length(dotted);
+    std::vector<std::uint8_t> scratch(max_bytes);
+    const std::size_t written = encode_contents(dotted, scratch);
+    scratch.resize(written);
     return scratch;
 }
 
@@ -180,18 +179,18 @@ std::string oid::to_string() const {
     return format_dotted(span());
 }
 
-int oid::read_arc(std::span<const std::uint8_t> contents, int& offset, bool reject_overlong) {
-    if (offset >= static_cast<int>(contents.size())) {
+int oid::read_arc(std::span<const std::uint8_t> contents, std::size_t& offset, bool reject_overlong) {
+    if (offset >= contents.size()) {
         throw exception("Truncated OBJECT IDENTIFIER.");
     }
     int value = 0;
     bool first = true;
     std::uint8_t b = 0;
     do {
-        if (offset >= static_cast<int>(contents.size())) {
+        if (offset >= contents.size()) {
             throw exception("Truncated OBJECT IDENTIFIER.");
         }
-        b = contents[static_cast<std::size_t>(offset++)];
+        b = contents[offset++];
         if (first) {
             if (reject_overlong && b == 0x80) {
                 throw exception("OID base-128 encoding is overlong.");

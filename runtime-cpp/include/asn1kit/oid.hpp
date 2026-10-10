@@ -7,6 +7,7 @@
 #include "asn1kit/exception.hpp"
 #include "asn1kit/tag.hpp"
 
+#include <cstddef>
 #include <cstdint>
 #include <span>
 #include <string>
@@ -34,13 +35,13 @@ public:
 
     [[nodiscard]] std::string to_string() const;
 
-    [[nodiscard]] static int get_encode_contents_max_length(std::string_view dotted);
-    [[nodiscard]] static int encode_contents(std::string_view dotted, std::span<std::uint8_t> destination);
+    [[nodiscard]] static std::size_t get_encode_contents_max_length(std::string_view dotted);
+    [[nodiscard]] static std::size_t encode_contents(std::string_view dotted, std::span<std::uint8_t> destination);
     [[nodiscard]] static std::vector<std::uint8_t> encode_contents(std::string_view dotted);
 
     [[nodiscard]] static int read_arc(
         std::span<const std::uint8_t> contents,
-        int& offset,
+        std::size_t& offset,
         bool reject_overlong);
 
     static void encode(writer& w, const oid& value, const tag& t = tag::object_identifier);

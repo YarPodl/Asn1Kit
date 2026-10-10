@@ -23,16 +23,16 @@ std::vector<bytes> collect_octet_like_segments(
     decode_cursor& parent,
     bytes constructed_contents,
     const tag& segment_tag,
-    int& total_length) {
+    std::size_t& total_length) {
     auto nested = parent.create_nested(std::move(constructed_contents));
     std::vector<bytes> segments;
-    int length = 0;
+    std::size_t length = 0;
     while (!nested.eof()) {
         auto segment = constructed_decoder::read_octet_like(nested, segment_tag);
-        if (segment.size() > static_cast<std::size_t>(std::numeric_limits<int>::max() - length)) {
-            throw exception("Constructed value exceeds Int32.");
+        if (length > (std::numeric_limits<std::size_t>::max() - segment.size())) {
+            throw exception("Constructed value is too large.");
         }
-        length += static_cast<int>(segment.size());
+        length += segment.size();
         segments.push_back(std::move(segment));
     }
     total_length = length;
@@ -50,12 +50,12 @@ void copy_segments(const std::vector<bytes>& segments, std::span<std::uint8_t> d
 }
 
 bytes concat_octet_like(decode_cursor& parent, bytes constructed_contents, const tag& segment_tag) {
-    int total = 0;
+    std::size_t total = 0;
     auto segments = collect_octet_like_segments(parent, std::move(constructed_contents), segment_tag, total);
     if (total == 0) {
         return bytes::from_vector({});
     }
-    std::vector<std::uint8_t> result(static_cast<std::size_t>(total));
+    std::vector<std::uint8_t> result(total);
     copy_segments(segments, result);
     return bytes::from_vector(std::move(result));
 }
@@ -65,10 +65,10 @@ bool try_copy_concat_octet_like(
     bytes constructed_contents,
     const tag& segment_tag,
     std::span<std::uint8_t> destination,
-    int& bytes_written) {
-    int total = 0;
+    std::size_t& bytes_written) {
+    std::size_t total = 0;
     auto segments = collect_octet_like_segments(parent, std::move(constructed_contents), segment_tag, total);
-    if (static_cast<int>(destination.size()) < total) {
+    if (destination.size() < total) {
         bytes_written = 0;
         return false;
     }
@@ -96,25 +96,22 @@ bit_string read_constructed_bit_string(
         throw exception("Constructed BIT STRING has no segments.");
     }
 
-    int total = 0;
+    std::size_t total = 0;
     for (const auto& segment : segments) {
-        if (segment.span().size() > static_cast<std::size_t>(std::numeric_limits<int>::max() - total)) {
-            throw exception("Constructed BIT STRING exceeds Int32.");
+        if (total > (std::numeric_limits<std::size_t>::max() - segment.span().size())) {
+            throw exception("Constructed BIT STRING is too large.");
         }
-        total += static_cast<int>(segment.span().size());
+        total += segment.span().size();
     }
 
     std::vector<std::uint8_t> concatenated;
     if (total > 0) {
-        concatenated.resize(static_cast<std::size_t>(total));
-        int offset = 0;
+        concatenated.resize(total);
+        std::size_t offset = 0;
         for (const auto& segment : segments) {
             if (!segment.span().empty()) {
-                std::memcpy(
-                    concatenated.data() + offset,
-                    segment.span().data(),
-                    segment.span().size());
-                offset += static_cast<int>(segment.span().size());
+                std::memcpy(concatenated.data() + offset, segment.span().data(), segment.span().size());
+                offset += segment.span().size();
             }
         }
     }
@@ -141,7 +138,7 @@ bool constructed_decoder::try_read_octet_like(
     decode_cursor& cursor,
     const tag& expected,
     std::span<std::uint8_t> destination,
-    int& bytes_written) {
+    std::size_t& bytes_written) {
     auto tlv = cursor.read_tlv();
     ensure_expected_tag(tlv.tag_value, expected);
     if (!tlv.tag_value.constructed()) {
@@ -152,7 +149,7 @@ bool constructed_decoder::try_read_octet_like(
         if (!tlv.contents.empty()) {
             std::memcpy(destination.data(), tlv.contents.data(), tlv.contents.size());
         }
-        bytes_written = static_cast<int>(tlv.contents.size());
+        bytes_written = tlv.contents.size();
         return true;
     }
     return try_copy_concat_octet_like(

@@ -1,7 +1,7 @@
 // Copyright Asn1Kit contributors
 // SPDX-License-Identifier: Apache-2.0
 
-#include "decode_cursor.hpp"
+#include "asn1kit/detail/decode_cursor.hpp"
 
 #include "asn1kit/exception.hpp"
 
@@ -13,11 +13,11 @@ decode_cursor::decode_cursor(bytes data, encoding enc, reader_options options)
     : data_(std::move(data)), encoding_(enc), options_(options) {}
 
 bool decode_cursor::eof() const noexcept {
-    return offset_ >= static_cast<int>(data_.size());
+    return offset_ >= data_.size();
 }
 
-int decode_cursor::remaining() const noexcept {
-    return static_cast<int>(data_.size()) - offset_;
+std::size_t decode_cursor::remaining() const noexcept {
+    return data_.size() - offset_;
 }
 
 decode_cursor decode_cursor::create_nested(bytes contents) const {
@@ -35,7 +35,7 @@ bool decode_cursor::try_peek_tag(tag& out) const {
 }
 
 tlv decode_cursor::read_tlv() {
-    const int encoded_start = offset_;
+    const std::size_t encoded_start = offset_;
     auto tag_value = read_tag();
     auto [length, indefinite] = read_length();
     bytes contents;
@@ -52,31 +52,26 @@ tlv decode_cursor::read_tlv() {
         if (length > remaining()) {
             throw exception("Length exceeds buffer.");
         }
-        contents = data_.slice(static_cast<std::size_t>(offset_), static_cast<std::size_t>(length));
+        contents = data_.slice(offset_, length);
         offset_ += length;
     }
 
     return tlv{
         tag_value,
         contents,
-        data_.slice(
-            static_cast<std::size_t>(encoded_start),
-            static_cast<std::size_t>(offset_ - encoded_start)),
+        data_.slice(encoded_start, offset_ - encoded_start),
     };
 }
 
 bytes decode_cursor::read_indefinite_contents() {
-    const int contents_start = offset_;
+    const std::size_t contents_start = offset_;
     while (true) {
         if (remaining() < 2) {
             throw exception("Unterminated indefinite length.");
         }
         const auto span = data_.span();
-        if (span[static_cast<std::size_t>(offset_)] == 0x00
-            && span[static_cast<std::size_t>(offset_ + 1)] == 0x00) {
-            auto contents = data_.slice(
-                static_cast<std::size_t>(contents_start),
-                static_cast<std::size_t>(offset_ - contents_start));
+        if (span[offset_] == 0x00 && span[offset_ + 1] == 0x00) {
+            auto contents = data_.slice(contents_start, offset_ - contents_start);
             offset_ += 2;
             return contents;
         }
@@ -87,7 +82,7 @@ bytes decode_cursor::read_indefinite_contents() {
 tag decode_cursor::read_tag() {
     ensure_available(1);
     const auto span = data_.span();
-    const std::uint8_t first = span[static_cast<std::size_t>(offset_++)];
+    const std::uint8_t first = span[offset_++];
     const auto cls = static_cast<tag_class>((first & 0xC0) >> 6);
     const bool constructed = (first & 0x20) != 0;
     int number = first & 0x1F;
@@ -106,7 +101,7 @@ tag decode_cursor::read_tag() {
 int decode_cursor::read_high_tag_number() {
     ensure_available(1);
     const auto span = data_.span();
-    if (span[static_cast<std::size_t>(offset_)] == 0x80) {
+    if (span[offset_] == 0x80) {
         throw exception("High-tag-number form is not minimally encoded.");
     }
 
@@ -114,10 +109,10 @@ int decode_cursor::read_high_tag_number() {
     std::uint8_t current = 0;
     do {
         ensure_available(1);
-        current = span[static_cast<std::size_t>(offset_++)];
+        current = span[offset_++];
         const int payload = current & 0x7F;
         if (number > (std::numeric_limits<int>::max() - payload) / 128) {
-            throw exception("Tag number exceeds Int32.");
+            throw exception("Tag number is too large.");
         }
         number = (number * 128) + payload;
     } while ((current & 0x80) != 0);
@@ -128,10 +123,10 @@ int decode_cursor::read_high_tag_number() {
     return number;
 }
 
-std::pair<int, bool> decode_cursor::read_length() {
+std::pair<std::size_t, bool> decode_cursor::read_length() {
     ensure_available(1);
     const auto span = data_.span();
-    const std::uint8_t first = span[static_cast<std::size_t>(offset_++)];
+    const std::uint8_t first = span[offset_++];
     if (first == 0x80) {
         return {0, true};
     }
@@ -139,30 +134,27 @@ std::pair<int, bool> decode_cursor::read_length() {
         return {first, false};
     }
 
-    const int count = first & 0x7F;
+    const std::size_t count = first & 0x7F;
     if (count == 0 || count > 4) {
         throw exception("Unsupported length form.");
     }
     ensure_available(count);
-    if (options_.reject_non_minimal_length && span[static_cast<std::size_t>(offset_)] == 0x00) {
+    if (options_.reject_non_minimal_length && span[offset_] == 0x00) {
         throw exception("Non-minimal length encoding.");
     }
 
-    std::uint32_t length = 0;
-    for (int i = 0; i < count; ++i) {
-        length = (length << 8) | span[static_cast<std::size_t>(offset_++)];
-    }
-    if (length > static_cast<std::uint32_t>(std::numeric_limits<int>::max())) {
-        throw exception("Length exceeds Int32.");
+    std::size_t length = 0;
+    for (std::size_t i = 0; i < count; ++i) {
+        length = (length << 8) | span[offset_++];
     }
     if (options_.reject_non_minimal_length && length < 128) {
         throw exception("Non-minimal length encoding.");
     }
-    return {static_cast<int>(length), false};
+    return {length, false};
 }
 
-void decode_cursor::ensure_available(int count) const {
-    if (count < 0 || count > remaining()) {
+void decode_cursor::ensure_available(std::size_t count) const {
+    if (count > remaining()) {
         throw exception("Unexpected end of ASN.1 data.");
     }
 }

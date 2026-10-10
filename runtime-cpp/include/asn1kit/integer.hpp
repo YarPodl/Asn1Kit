@@ -7,6 +7,7 @@
 #include "asn1kit/exception.hpp"
 #include "asn1kit/tag.hpp"
 
+#include <cstddef>
 #include <cstdint>
 #include <span>
 #include <string>
@@ -54,10 +55,10 @@ public:
 
     [[nodiscard]] static bool is_minimal_contents(std::span<const std::uint8_t> contents);
 
-    static int encode_contents(std::int32_t value, std::span<std::uint8_t> destination);
-    static int encode_contents(std::uint32_t value, std::span<std::uint8_t> destination);
-    static int encode_contents(std::int64_t value, std::span<std::uint8_t> destination);
-    static int encode_contents(std::uint64_t value, std::span<std::uint8_t> destination);
+    static std::size_t encode_contents(std::int32_t value, std::span<std::uint8_t> destination);
+    static std::size_t encode_contents(std::uint32_t value, std::span<std::uint8_t> destination);
+    static std::size_t encode_contents(std::int64_t value, std::span<std::uint8_t> destination);
+    static std::size_t encode_contents(std::uint64_t value, std::span<std::uint8_t> destination);
 
     static void encode(writer& w, const integer& value, const tag& t = tag::integer);
     static void encode(writer& w, std::int32_t value, const tag& t = tag::integer);
