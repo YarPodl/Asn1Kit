@@ -21,7 +21,7 @@ ASN.1 module  -->  Compiler (C#)  -->  IR JSON (schema v1)
 | --- | --- |
 | [compiler/](../compiler/) | IR, компилятор, codegen, CLI, ASN.1/IR-фикстуры и тесты инструментов |
 | [runtime-csharp/](../runtime-csharp/) | C# BER/DER runtime, hex-фикстуры и тесты кодека |
-| [runtime-cpp/](../runtime-cpp/) | Заглушка под будущий C++ runtime |
+| [runtime-cpp/](../runtime-cpp/) | C++20 BER/DER runtime (примитивы; CMake + Conan2) |
 | [schemas/](../schemas/) | Общий контракт IR (JSON Schema) |
 | [docs/](.) | Сквозная документация (этот файл, status, decisions, ir-schema) |
 
@@ -38,8 +38,9 @@ ASN.1 module  -->  Compiler (C#)  -->  IR JSON (schema v1)
 | `Asn1Kit.Cli` | compiler | Команды `compile` и `generate` |
 | `Asn1Kit.Runtime` | runtime-csharp | TLV, примитивы BER/DER |
 | `Asn1Kit.Modern` | runtime-csharp/generated | Отдельная сборка PKIX/CMS RFC 5911/5912/6268/8410 |
+| `asn1kit` (static lib) | runtime-cpp | C++20 TLV и примитивы BER/DER (`asn1kit::bytes` = span + keep-alive) |
 
-C++ планируется как backend в `compiler/` и runtime в `runtime-cpp/`, без изменений фронтенда.
+C++ codegen (`Asn1Kit.Codegen.Cpp`) планируется как backend в `compiler/`; runtime-примитивы уже в `runtime-cpp/`. Фронтенд компилятора не меняется ради C++.
 
 ## IR
 

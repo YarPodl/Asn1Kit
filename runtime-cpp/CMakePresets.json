@@ -1,0 +1,107 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "conan-default",
+      "displayName": "Conan Debug (Ninja)",
+      "description": "Configure after: conan install . -s build_type=Debug -of build --build=missing",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build/conan_toolchain.cmake",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ASN1KIT_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "conan-release",
+      "displayName": "Conan Release (Ninja)",
+      "description": "Configure after: conan install . -s build_type=Release -of build-release --build=missing",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-release",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build-release/conan_toolchain.cmake",
+        "CMAKE_BUILD_TYPE": "Release",
+        "ASN1KIT_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "fetch-default",
+      "displayName": "FetchContent Debug (Ninja)",
+      "description": "No Conan: downloads gtest/nlohmann_json into the build tree",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-fetch",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ASN1KIT_BUILD_TESTS": "ON",
+        "ASN1KIT_FETCH_TEST_DEPS": "ON"
+      }
+    },
+    {
+      "name": "conan-default-vs",
+      "displayName": "Conan Debug (Visual Studio)",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build-vs",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build/conan_toolchain.cmake",
+        "ASN1KIT_BUILD_TESTS": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "conan-default",
+      "configurePreset": "conan-default"
+    },
+    {
+      "name": "conan-release",
+      "configurePreset": "conan-release"
+    },
+    {
+      "name": "conan-default-vs",
+      "configurePreset": "conan-default-vs",
+      "configuration": "Debug"
+    },
+    {
+      "name": "fetch-default",
+      "configurePreset": "fetch-default"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "conan-default",
+      "configurePreset": "conan-default",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "conan-release",
+      "configurePreset": "conan-release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "conan-default-vs",
+      "configurePreset": "conan-default-vs",
+      "configuration": "Debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "fetch-default",
+      "configurePreset": "fetch-default",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
+}

@@ -52,6 +52,8 @@
 
 Инвентарь `Write*` / `Read*`, ownership и `ToString` — [runtime-api.md](../runtime-csharp/docs/runtime-api.md). Warm top-level decode: `Asn1Utils.Decode` / `DecodeRetained`. Hex-матрица — [ber-der/](../runtime-csharp/fixtures/ber-der/); oracle BCL — `PrimitiveOracleTests`.
 
+**C++ runtime** ([runtime-cpp/](../runtime-cpp/)): примитивы BER/DER **да** (boolean/null/integer/enumerated/octet/oid/bitstring/string/time + soft-profile + `asn1kit::bytes`); те же layer-1 фикстуры. Публичный SEQUENCE/SET API и codegen C++ — backlog (крупные §1).
+
 **Запись** — канонический DER. **Чтение** — soft-profile ([decisions.md](decisions.md); полный инвентарь — [runtime-api.md](../runtime-csharp/docs/runtime-api.md)):
 
 | Soft-accept (default) | Strict-флаг |
@@ -79,5 +81,5 @@
 
 ### Крупные
 
-1. C++ backend и C++ runtime — [new-backend.md](../compiler/docs/playbooks/new-backend.md)
+1. C++ codegen backend (`Asn1Kit.Codegen.Cpp`) и публичный SEQUENCE/SET/`Enter*` в runtime-cpp — [new-backend.md](../compiler/docs/playbooks/new-backend.md); примитивы runtime уже в [runtime-cpp/](../runtime-cpp/)
 2. Инструменты PKI поверх сгенерированного

@@ -164,8 +164,14 @@
 
 **Последствие.** Добавляется реализация `ILanguageBackend` в `compiler/` и отдельный C++ runtime в `runtime-cpp/` с теми же правилами BER/DER. Изменения в `Asn1Kit.Compiler` ради C++ — признак утечки слоёв.
 
+## C++ runtime — C++20, `bytes` = span + keep-alive, Conan только для тестов
+
+**Причина.** Нужен нативный runtime с тем же soft-profile и hex-матрицей, без runtime-зависимостей и без копирования фикстур. `std::span` сам по себе не удерживает backing store.
+
+**Последствие.** Стандарт C++20; публичный `asn1kit::bytes` (span + type-erased keep-alive); библиотека без внешних deps; gtest и nlohmann_json — Conan 2 только для `tests/` (или FetchContent). Windows и Linux равноправны (MSVC/Clang/GCC). Soft-read и constructed string/BIT/OCTET под DER совпадают с эталонным runtime; фикстуры — `runtime-csharp/fixtures/ber-der`. Codegen C++ — отдельный крупный шаг.
+
 ## Репозиторий — три каталога продуктов
 
-**Причина.** Компилятор/codegen, C# runtime и будущий C++ runtime развиваются разным темпом и имеют разные зависимости; общий `src/` смешивал слои и фикстуры.
+**Причина.** Компилятор/codegen, C# runtime и C++ runtime развиваются разным темпом и имеют разные зависимости; общий `src/` смешивал слои и фикстуры.
 
-**Последствие.** `compiler/`, `runtime-csharp/`, `runtime-cpp/` — отдельные деревья с локальными README и тестами. Схема IR и сквозная документация остаются в корне. Один `Asn1Kit.sln` собирает оба рабочих каталога.
+**Последствие.** `compiler/`, `runtime-csharp/`, `runtime-cpp/` — отдельные деревья с локальными README и тестами. Схема IR и сквозная документация остаются в корне. `Asn1Kit.sln` собирает .NET-каталоги; C++ — через CMake в `runtime-cpp/`.

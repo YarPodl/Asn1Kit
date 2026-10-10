@@ -1,0 +1,10 @@
+/build/
+/build-release/
+/build-vs/
+/build-fetch/
+/CMakeUserPresets.json
+/CMakeFiles/
+/Testing/
+*.user
+.vs/
+out/
