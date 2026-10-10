@@ -5,6 +5,7 @@ add_executable(asn1kit_tests
     ber_der_fixtures.cpp
     primitive_codec_tests.cpp
     bytes_tests.cpp
+    exception_diagnostics_tests.cpp
 )
 
 target_link_libraries(asn1kit_tests

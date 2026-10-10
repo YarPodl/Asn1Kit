@@ -32,7 +32,7 @@ std::size_t reader::remaining() const noexcept { return cursor_.remaining(); }
 
 void reader::throw_if_not_empty() const {
     if (!eof()) {
-        throw exception("ASN.1 reader contains trailing data.");
+        throw exception("ASN.1 reader contains trailing data.", cursor_.absolute_offset());
     }
 }
 
@@ -46,7 +46,7 @@ bool reader::read_boolean(const tag& expected) {
 
 integer reader::read_integer_value(const tag& expected) {
     auto contents = read_primitive_contents(expected);
-    ensure_minimal_integer_contents(contents.span());
+    ensure_minimal_integer_contents(contents);
     return integer::from_contents(std::move(contents));
 }
 
@@ -131,23 +131,26 @@ utc_date_time reader::read_time(const tag& expected, time_form form) {
 }
 
 bytes reader::read_primitive_contents(const tag& expected) {
+    const std::size_t tlv_start = cursor_.absolute_offset();
     auto tlv = cursor_.read_tlv();
-    ensure_expected_tag(tlv.tag_value, expected);
+    ensure_expected_tag(tlv_start, tlv.tag_value, expected);
     if (tlv.tag_value.constructed()) {
-        throw exception("Tag " + expected.to_string() + " must be primitive.");
+        throw exception("Tag " + expected.to_string() + " must be primitive.", tlv_start);
     }
     return tlv.contents;
 }
 
-void reader::ensure_minimal_integer_contents(std::span<const std::uint8_t> contents) const {
-    if (options().reject_non_minimal_integer && !integer::is_minimal_contents(contents)) {
+void reader::ensure_minimal_integer_contents(const bytes& contents) const {
+    if (options().reject_non_minimal_integer && !integer::is_minimal_contents(contents.span())) {
         throw exception("INTEGER contents are not minimally encoded.");
     }
 }
 
-void reader::ensure_expected_tag(const tag& actual, const tag& expected) {
+void reader::ensure_expected_tag(std::size_t tlv_start, const tag& actual, const tag& expected) {
     if (!actual.matches_ignore_constructed(expected)) {
-        throw exception("Expected tag " + expected.to_string() + ", found " + actual.to_string() + ".");
+        throw exception(
+            "Expected tag " + expected.to_string() + ", found " + actual.to_string() + ".",
+            tlv_start);
     }
 }
 

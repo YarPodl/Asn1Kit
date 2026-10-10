@@ -41,6 +41,19 @@ Constructed OCTET/BIT/string soft-accept и под DER (как у эталонн
 
 Encode всегда канонический DER.
 
+## `exception`
+
+Ошибки encode/decode — `asn1kit::exception` (`std::runtime_error`).
+
+На decode-path исключение может нести **absolute offset** во входном буфере root-`reader` (вложенные constructed-окна учитывают base вложенности):
+
+- `has_offset()` / `offset()` — позиция TLV/EOF во входном буфере (для ориентации во вложенных структурах);
+- `what()` = reason + суффикс ` (offset=N)` при наличии offset.
+
+Пример: `Length exceeds buffer. (offset=42)`.
+
+Ошибки разбора contents примитива (BOOLEAN, OID arcs, charset и т.п.) остаются message-only: достаточно reason. Имена файлов и номера строк в сообщение не входят. Encode без курсора — тоже message-only (`has_offset() == false`).
+
 ## Внутренности
 
 `encode_buffer`, `decode_cursor`, `constructed_decoder`, `text_codec` — не публичный ABI; лежат в `src/`.

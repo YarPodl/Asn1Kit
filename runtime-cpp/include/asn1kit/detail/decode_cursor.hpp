@@ -5,6 +5,7 @@
 
 #include "asn1kit/bytes.hpp"
 #include "asn1kit/encoding.hpp"
+#include "asn1kit/exception.hpp"
 #include "asn1kit/reader_options.hpp"
 #include "asn1kit/tag.hpp"
 
@@ -31,6 +32,11 @@ public:
     [[nodiscard]] std::size_t remaining() const noexcept;
     [[nodiscard]] const bytes& data() const noexcept { return data_; }
     [[nodiscard]] std::size_t offset() const noexcept { return offset_; }
+    [[nodiscard]] std::size_t base_offset() const noexcept { return base_offset_; }
+    [[nodiscard]] std::size_t absolute_offset() const noexcept { return base_offset_ + offset_; }
+
+    /// Absolute start of a window that is a slice of this cursor's data.
+    [[nodiscard]] std::size_t absolute_offset_of(const bytes& window) const noexcept;
 
     [[nodiscard]] decode_cursor create_nested(bytes contents) const;
 
@@ -38,6 +44,8 @@ public:
     [[nodiscard]] tlv read_tlv();
 
 private:
+    decode_cursor(bytes data, encoding enc, reader_options options, std::size_t base_offset);
+
     [[nodiscard]] bytes read_indefinite_contents();
     [[nodiscard]] tag read_tag();
     [[nodiscard]] int read_high_tag_number();
@@ -47,6 +55,7 @@ private:
     bytes data_;
     encoding encoding_;
     reader_options options_;
+    std::size_t base_offset_{0};
     std::size_t offset_{0};
 };
 

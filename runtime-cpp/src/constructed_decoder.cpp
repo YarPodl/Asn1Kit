@@ -13,9 +13,11 @@
 namespace asn1kit::detail {
 namespace {
 
-void ensure_expected_tag(const tag& actual, const tag& expected) {
+void ensure_expected_tag(std::size_t tlv_start, const tag& actual, const tag& expected) {
     if (!actual.matches_ignore_constructed(expected)) {
-        throw exception("Expected tag " + expected.to_string() + ", found " + actual.to_string() + ".");
+        throw exception(
+            "Expected tag " + expected.to_string() + ", found " + actual.to_string() + ".",
+            tlv_start);
     }
 }
 
@@ -30,7 +32,7 @@ std::vector<bytes> collect_octet_like_segments(
     while (!nested.eof()) {
         auto segment = constructed_decoder::read_octet_like(nested, segment_tag);
         if (length > (std::numeric_limits<std::size_t>::max() - segment.size())) {
-            throw exception("Constructed value is too large.");
+            throw exception("Constructed value is too large.", nested.absolute_offset());
         }
         length += segment.size();
         segments.push_back(std::move(segment));
@@ -87,19 +89,21 @@ bit_string read_constructed_bit_string(
     while (!nested.eof()) {
         auto segment = constructed_decoder::read_bit_string(nested, tag::bit_string, reject_trailing_bits);
         if (!segments.empty() && unused_bits != 0) {
-            throw exception("Only the last BIT STRING segment may have unused bits.");
+            throw exception(
+                "Only the last BIT STRING segment may have unused bits.",
+                nested.absolute_offset());
         }
         unused_bits = segment.unused_bits();
         segments.push_back(std::move(segment));
     }
     if (segments.empty()) {
-        throw exception("Constructed BIT STRING has no segments.");
+        throw exception("Constructed BIT STRING has no segments.", nested.absolute_offset());
     }
 
     std::size_t total = 0;
     for (const auto& segment : segments) {
         if (total > (std::numeric_limits<std::size_t>::max() - segment.span().size())) {
-            throw exception("Constructed BIT STRING is too large.");
+            throw exception("Constructed BIT STRING is too large.", nested.absolute_offset());
         }
         total += segment.span().size();
     }
@@ -126,8 +130,9 @@ bit_string read_constructed_bit_string(
 } // namespace
 
 bytes constructed_decoder::read_octet_like(decode_cursor& cursor, const tag& expected) {
+    const std::size_t tlv_start = cursor.absolute_offset();
     auto tlv = cursor.read_tlv();
-    ensure_expected_tag(tlv.tag_value, expected);
+    ensure_expected_tag(tlv_start, tlv.tag_value, expected);
     if (!tlv.tag_value.constructed()) {
         return tlv.contents;
     }
@@ -139,8 +144,9 @@ bool constructed_decoder::try_read_octet_like(
     const tag& expected,
     std::span<std::uint8_t> destination,
     std::size_t& bytes_written) {
+    const std::size_t tlv_start = cursor.absolute_offset();
     auto tlv = cursor.read_tlv();
-    ensure_expected_tag(tlv.tag_value, expected);
+    ensure_expected_tag(tlv_start, tlv.tag_value, expected);
     if (!tlv.tag_value.constructed()) {
         if (destination.size() < tlv.contents.size()) {
             bytes_written = 0;
@@ -164,8 +170,9 @@ bit_string constructed_decoder::read_bit_string(
     decode_cursor& cursor,
     const tag& expected,
     bool reject_trailing_bits) {
+    const std::size_t tlv_start = cursor.absolute_offset();
     auto tlv = cursor.read_tlv();
-    ensure_expected_tag(tlv.tag_value, expected);
+    ensure_expected_tag(tlv_start, tlv.tag_value, expected);
     if (!tlv.tag_value.constructed()) {
         return bit_string::parse_primitive(std::move(tlv.contents), reject_trailing_bits);
     }

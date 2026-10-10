@@ -82,8 +82,8 @@ public:
 
 private:
     bytes read_primitive_contents(const tag& expected);
-    void ensure_minimal_integer_contents(std::span<const std::uint8_t> contents) const;
-    static void ensure_expected_tag(const tag& actual, const tag& expected);
+    void ensure_minimal_integer_contents(const bytes& contents) const;
+    static void ensure_expected_tag(std::size_t tlv_start, const tag& actual, const tag& expected);
 
     detail::decode_cursor cursor_;
 };
