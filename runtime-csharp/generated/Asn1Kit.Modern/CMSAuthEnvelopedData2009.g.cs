@@ -43,7 +43,7 @@ public sealed class AuthEnvelopedData
             writer.WriteInteger(Asn1Tag.Integer, Version);
             if (OriginatorInfo != null)
             {
-                OriginatorInfo.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                OriginatorInfo.Encode(writer, Asn1Tag.Context(0, true));
             }
             writer.WriteSetOf(Asn1Tag.Set, RecipientInfos, static (inner, item) =>
             {
@@ -52,7 +52,7 @@ public sealed class AuthEnvelopedData
             AuthEncryptedContentInfo.Encode(writer, Asn1Tag.Sequence);
             if (AuthAttrs != null)
             {
-                writer.WriteSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), AuthAttrs, static (inner, item) =>
+                writer.WriteSetOf(Asn1Tag.Context(1, true), AuthAttrs, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
@@ -60,7 +60,7 @@ public sealed class AuthEnvelopedData
             writer.WriteOctetString(Asn1Tag.OctetString, Mac.Span);
             if (UnauthAttrs != null)
             {
-                writer.WriteSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), UnauthAttrs, static (inner, item) =>
+                writer.WriteSetOf(Asn1Tag.Context(2, true), UnauthAttrs, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
@@ -76,20 +76,20 @@ public sealed class AuthEnvelopedData
         {
             var value = new AuthEnvelopedData();
             value.Version = reader.ReadInt32(Asn1Tag.Integer);
-            if (reader.TryPeekTag(out var tag_OriginatorInfo) && tag_OriginatorInfo.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            if (reader.TryPeekTag(out var tag_OriginatorInfo) && tag_OriginatorInfo.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
             {
-                value.OriginatorInfo = Asn1Kit.Modern.CryptographicMessageSyntax2009.OriginatorInfo.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                value.OriginatorInfo = Asn1Kit.Modern.CryptographicMessageSyntax2009.OriginatorInfo.Decode(reader, Asn1Tag.Context(0, true));
             }
             value.RecipientInfos = reader.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.CryptographicMessageSyntax2009.RecipientInfo.Decode(inner));
             value.AuthEncryptedContentInfo = Asn1Kit.Modern.CMSAuthEnvelopedData2010.EncryptedContentInfo.Decode(reader, Asn1Tag.Sequence);
-            if (reader.TryPeekTag(out var tag_AuthAttrs) && tag_AuthAttrs.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            if (reader.TryPeekTag(out var tag_AuthAttrs) && tag_AuthAttrs.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
             {
-                value.AuthAttrs = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), static inner => Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute.Decode(inner, Asn1Tag.Sequence));
+                value.AuthAttrs = reader.ReadSetOf(Asn1Tag.Context(1, true), static inner => Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute.Decode(inner, Asn1Tag.Sequence));
             }
             value.Mac = reader.ReadOctetString(Asn1Tag.OctetString);
-            if (reader.TryPeekTag(out var tag_UnauthAttrs) && tag_UnauthAttrs.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
+            if (reader.TryPeekTag(out var tag_UnauthAttrs) && tag_UnauthAttrs.MatchesIgnoreConstructed(Asn1Tag.Context(2, true)))
             {
-                value.UnauthAttrs = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), static inner => Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute.Decode(inner, Asn1Tag.Sequence));
+                value.UnauthAttrs = reader.ReadSetOf(Asn1Tag.Context(2, true), static inner => Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute.Decode(inner, Asn1Tag.Sequence));
             }
             reader.ThrowIfNotEmpty();
             return value;

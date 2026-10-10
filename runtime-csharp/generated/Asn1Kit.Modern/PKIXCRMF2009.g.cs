@@ -181,7 +181,7 @@ public sealed class CertReqMsg
         {
             var value = new CertReqMsg();
             value.CertReq = Asn1Kit.Modern.PKIXCRMF2009.CertRequest.Decode(reader, Asn1Tag.Sequence);
-            if (reader.TryPeekTag(out var tag_Popo) && (tag_Popo.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false)) || tag_Popo.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)) || tag_Popo.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)) || tag_Popo.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true))))
+            if (reader.TryPeekTag(out var tag_Popo) && (tag_Popo.MatchesIgnoreConstructed(Asn1Tag.Context(0)) || tag_Popo.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)) || tag_Popo.MatchesIgnoreConstructed(Asn1Tag.Context(2, true)) || tag_Popo.MatchesIgnoreConstructed(Asn1Tag.Context(3, true))))
             {
                 value.Popo = Asn1Kit.Modern.PKIXCRMF2009.ProofOfPossession.Decode(reader);
             }
@@ -269,19 +269,19 @@ public sealed class CertTemplate
         {
             if (Version != null)
             {
-                writer.WriteInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), Version.Value);
+                writer.WriteInteger(Asn1Tag.Context(0), Version.Value);
             }
             if (SerialNumber != null)
             {
-                writer.WriteInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), SerialNumber.Value);
+                writer.WriteInteger(Asn1Tag.Context(1), SerialNumber.Value);
             }
             if (SigningAlg != null)
             {
-                SigningAlg.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true));
+                SigningAlg.Encode(writer, Asn1Tag.Context(2, true));
             }
             if (Issuer != null)
             {
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(3, true)))
                 {
                     writer.WriteSequenceOf(Asn1Tag.Sequence, Issuer, static (inner, item) =>
                     {
@@ -294,11 +294,11 @@ public sealed class CertTemplate
             }
             if (Validity != null)
             {
-                Validity.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true));
+                Validity.Encode(writer, Asn1Tag.Context(4, true));
             }
             if (Subject != null)
             {
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 5, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(5, true)))
                 {
                     writer.WriteSequenceOf(Asn1Tag.Sequence, Subject, static (inner, item) =>
                     {
@@ -311,19 +311,19 @@ public sealed class CertTemplate
             }
             if (PublicKey != null)
             {
-                PublicKey.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 6, true));
+                PublicKey.Encode(writer, Asn1Tag.Context(6, true));
             }
             if (IssuerUID != null)
             {
-                writer.WriteBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 7, false), IssuerUID.Value);
+                writer.WriteBitString(Asn1Tag.Context(7), IssuerUID.Value);
             }
             if (SubjectUID != null)
             {
-                writer.WriteBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 8, false), SubjectUID.Value);
+                writer.WriteBitString(Asn1Tag.Context(8), SubjectUID.Value);
             }
             if (Extensions != null)
             {
-                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 9, true), Extensions, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Context(9, true), Extensions, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
@@ -338,53 +338,53 @@ public sealed class CertTemplate
         using (reader.EnterSequence(tag))
         {
             var value = new CertTemplate();
-            if (reader.TryPeekTag(out var tag_Version) && tag_Version.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false)))
+            if (reader.TryPeekTag(out var tag_Version) && tag_Version.MatchesIgnoreConstructed(Asn1Tag.Context(0)))
             {
-                value.Version = reader.ReadInt32(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
+                value.Version = reader.ReadInt32(Asn1Tag.Context(0));
             }
-            if (reader.TryPeekTag(out var tag_SerialNumber) && tag_SerialNumber.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
+            if (reader.TryPeekTag(out var tag_SerialNumber) && tag_SerialNumber.MatchesIgnoreConstructed(Asn1Tag.Context(1)))
             {
-                value.SerialNumber = reader.ReadIntegerValue(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
+                value.SerialNumber = reader.ReadIntegerValue(Asn1Tag.Context(1));
             }
-            if (reader.TryPeekTag(out var tag_SigningAlg) && tag_SigningAlg.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
+            if (reader.TryPeekTag(out var tag_SigningAlg) && tag_SigningAlg.MatchesIgnoreConstructed(Asn1Tag.Context(2, true)))
             {
-                value.SigningAlg = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true));
+                value.SigningAlg = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Context(2, true));
             }
-            if (reader.TryPeekTag(out var tag_Issuer) && tag_Issuer.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
+            if (reader.TryPeekTag(out var tag_Issuer) && tag_Issuer.MatchesIgnoreConstructed(Asn1Tag.Context(3, true)))
             {
-                using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
+                using (reader.EnterExplicit(Asn1Tag.Context(3, true)))
                 {
                     value.Issuer = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute.Decode(inner, Asn1Tag.Sequence)));
                     reader.ThrowIfNotEmpty();
                 }
             }
-            if (reader.TryPeekTag(out var tag_Validity) && tag_Validity.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true)))
+            if (reader.TryPeekTag(out var tag_Validity) && tag_Validity.MatchesIgnoreConstructed(Asn1Tag.Context(4, true)))
             {
-                value.Validity = Asn1Kit.Modern.PKIXCRMF2009.OptionalValidity.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true));
+                value.Validity = Asn1Kit.Modern.PKIXCRMF2009.OptionalValidity.Decode(reader, Asn1Tag.Context(4, true));
             }
-            if (reader.TryPeekTag(out var tag_Subject) && tag_Subject.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 5, true)))
+            if (reader.TryPeekTag(out var tag_Subject) && tag_Subject.MatchesIgnoreConstructed(Asn1Tag.Context(5, true)))
             {
-                using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 5, true)))
+                using (reader.EnterExplicit(Asn1Tag.Context(5, true)))
                 {
                     value.Subject = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute.Decode(inner, Asn1Tag.Sequence)));
                     reader.ThrowIfNotEmpty();
                 }
             }
-            if (reader.TryPeekTag(out var tag_PublicKey) && tag_PublicKey.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 6, true)))
+            if (reader.TryPeekTag(out var tag_PublicKey) && tag_PublicKey.MatchesIgnoreConstructed(Asn1Tag.Context(6, true)))
             {
-                value.PublicKey = Asn1Kit.Modern.PKCS10.SubjectPublicKeyInfo.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 6, true));
+                value.PublicKey = Asn1Kit.Modern.PKCS10.SubjectPublicKeyInfo.Decode(reader, Asn1Tag.Context(6, true));
             }
-            if (reader.TryPeekTag(out var tag_IssuerUID) && tag_IssuerUID.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 7, false)))
+            if (reader.TryPeekTag(out var tag_IssuerUID) && tag_IssuerUID.MatchesIgnoreConstructed(Asn1Tag.Context(7)))
             {
-                value.IssuerUID = reader.ReadBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 7, false));
+                value.IssuerUID = reader.ReadBitString(Asn1Tag.Context(7));
             }
-            if (reader.TryPeekTag(out var tag_SubjectUID) && tag_SubjectUID.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 8, false)))
+            if (reader.TryPeekTag(out var tag_SubjectUID) && tag_SubjectUID.MatchesIgnoreConstructed(Asn1Tag.Context(8)))
             {
-                value.SubjectUID = reader.ReadBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 8, false));
+                value.SubjectUID = reader.ReadBitString(Asn1Tag.Context(8));
             }
-            if (reader.TryPeekTag(out var tag_Extensions) && tag_Extensions.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 9, true)))
+            if (reader.TryPeekTag(out var tag_Extensions) && tag_Extensions.MatchesIgnoreConstructed(Asn1Tag.Context(9, true)))
             {
-                value.Extensions = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 9, true), static inner => Asn1Kit.Modern.PKIXCommonTypes2009.Extension.Decode(inner, Asn1Tag.Sequence));
+                value.Extensions = reader.ReadSequenceOf(Asn1Tag.Context(9, true), static inner => Asn1Kit.Modern.PKIXCommonTypes2009.Extension.Decode(inner, Asn1Tag.Sequence));
             }
             reader.ThrowIfNotEmpty();
             return value;
@@ -407,14 +407,14 @@ public sealed class OptionalValidity
         {
             if (NotBefore != null)
             {
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(0, true)))
                 {
                     NotBefore.Encode(writer);
                 }
             }
             if (NotAfter != null)
             {
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(1, true)))
                 {
                     NotAfter.Encode(writer);
                 }
@@ -429,17 +429,17 @@ public sealed class OptionalValidity
         using (reader.EnterSequence(tag))
         {
             var value = new OptionalValidity();
-            if (reader.TryPeekTag(out var tag_NotBefore) && tag_NotBefore.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            if (reader.TryPeekTag(out var tag_NotBefore) && tag_NotBefore.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
             {
-                using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+                using (reader.EnterExplicit(Asn1Tag.Context(0, true)))
                 {
                     value.NotBefore = Asn1Kit.Modern.CryptographicMessageSyntax2009.Time.Decode(reader);
                     reader.ThrowIfNotEmpty();
                 }
             }
-            if (reader.TryPeekTag(out var tag_NotAfter) && tag_NotAfter.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            if (reader.TryPeekTag(out var tag_NotAfter) && tag_NotAfter.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
             {
-                using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+                using (reader.EnterExplicit(Asn1Tag.Context(1, true)))
                 {
                     value.NotAfter = Asn1Kit.Modern.CryptographicMessageSyntax2009.Time.Decode(reader);
                     reader.ThrowIfNotEmpty();
@@ -510,19 +510,19 @@ public sealed class ProofOfPossession
         switch (Kind)
         {
             case ProofOfPossessionKind.RaVerified:
-                writer.WriteNull(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
+                writer.WriteNull(Asn1Tag.Context(0));
                 break;
             case ProofOfPossessionKind.Signature:
-                Signature.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
+                Signature.Encode(writer, Asn1Tag.Context(1, true));
                 break;
             case ProofOfPossessionKind.KeyEncipherment:
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(2, true)))
                 {
                     KeyEncipherment.Encode(writer);
                 }
                 break;
             case ProofOfPossessionKind.KeyAgreement:
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(3, true)))
                 {
                     KeyAgreement.Encode(writer);
                 }
@@ -535,29 +535,29 @@ public sealed class ProofOfPossession
     {
         if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
         var value = new ProofOfPossession();
-        if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false)))
+        if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(0)))
         {
             value.Kind = ProofOfPossessionKind.RaVerified;
-            value.RaVerified = Asn1Null.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
+            value.RaVerified = Asn1Null.Decode(reader, Asn1Tag.Context(0));
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
         {
             value.Kind = ProofOfPossessionKind.Signature;
-            value.Signature = Asn1Kit.Modern.PKIXCRMF2009.POPOSigningKey.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
+            value.Signature = Asn1Kit.Modern.PKIXCRMF2009.POPOSigningKey.Decode(reader, Asn1Tag.Context(1, true));
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(2, true)))
         {
             value.Kind = ProofOfPossessionKind.KeyEncipherment;
-            using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
+            using (reader.EnterExplicit(Asn1Tag.Context(2, true)))
             {
                 value.KeyEncipherment = Asn1Kit.Modern.PKIXCRMF2009.POPOPrivKey.Decode(reader);
                 reader.ThrowIfNotEmpty();
             }
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(3, true)))
         {
             value.Kind = ProofOfPossessionKind.KeyAgreement;
-            using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
+            using (reader.EnterExplicit(Asn1Tag.Context(3, true)))
             {
                 value.KeyAgreement = Asn1Kit.Modern.PKIXCRMF2009.POPOPrivKey.Decode(reader);
                 reader.ThrowIfNotEmpty();
@@ -582,7 +582,7 @@ public sealed class POPOSigningKey
         {
             if (PoposkInput != null)
             {
-                PoposkInput.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                PoposkInput.Encode(writer, Asn1Tag.Context(0, true));
             }
             AlgorithmIdentifier.Encode(writer, Asn1Tag.Sequence);
             writer.WriteBitString(Asn1Tag.BitString, Signature);
@@ -596,9 +596,9 @@ public sealed class POPOSigningKey
         using (reader.EnterSequence(tag))
         {
             var value = new POPOSigningKey();
-            if (reader.TryPeekTag(out var tag_PoposkInput) && tag_PoposkInput.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            if (reader.TryPeekTag(out var tag_PoposkInput) && tag_PoposkInput.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
             {
-                value.PoposkInput = Asn1Kit.Modern.PKIXCRMF2009.POPOSigningKeyInput.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                value.PoposkInput = Asn1Kit.Modern.PKIXCRMF2009.POPOSigningKeyInput.Decode(reader, Asn1Tag.Context(0, true));
             }
             value.AlgorithmIdentifier = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.Signature = reader.ReadBitString(Asn1Tag.BitString);
@@ -781,19 +781,19 @@ public sealed class POPOPrivKey
         switch (Kind)
         {
             case POPOPrivKeyKind.ThisMessage:
-                writer.WriteBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), ThisMessage.Value);
+                writer.WriteBitString(Asn1Tag.Context(0), ThisMessage.Value);
                 break;
             case POPOPrivKeyKind.SubsequentMessage:
-                writer.WriteInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), SubsequentMessage.Value);
+                writer.WriteInteger(Asn1Tag.Context(1), SubsequentMessage.Value);
                 break;
             case POPOPrivKeyKind.DhMAC:
-                writer.WriteBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false), DhMAC.Value);
+                writer.WriteBitString(Asn1Tag.Context(2), DhMAC.Value);
                 break;
             case POPOPrivKeyKind.AgreeMAC:
-                AgreeMAC.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true));
+                AgreeMAC.Encode(writer, Asn1Tag.Context(3, true));
                 break;
             case POPOPrivKeyKind.EncryptedKey:
-                EncryptedKey.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true));
+                EncryptedKey.Encode(writer, Asn1Tag.Context(4, true));
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -803,30 +803,30 @@ public sealed class POPOPrivKey
     {
         if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
         var value = new POPOPrivKey();
-        if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false)))
+        if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(0)))
         {
             value.Kind = POPOPrivKeyKind.ThisMessage;
-            value.ThisMessage = reader.ReadBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
+            value.ThisMessage = reader.ReadBitString(Asn1Tag.Context(0));
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(1)))
         {
             value.Kind = POPOPrivKeyKind.SubsequentMessage;
-            value.SubsequentMessage = reader.ReadInt32(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
+            value.SubsequentMessage = reader.ReadInt32(Asn1Tag.Context(1));
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(2)))
         {
             value.Kind = POPOPrivKeyKind.DhMAC;
-            value.DhMAC = reader.ReadBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false));
+            value.DhMAC = reader.ReadBitString(Asn1Tag.Context(2));
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(3, true)))
         {
             value.Kind = POPOPrivKeyKind.AgreeMAC;
-            value.AgreeMAC = Asn1Kit.Modern.PKIXCRMF2009.PKMACValue.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true));
+            value.AgreeMAC = Asn1Kit.Modern.PKIXCRMF2009.PKMACValue.Decode(reader, Asn1Tag.Context(3, true));
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(4, true)))
         {
             value.Kind = POPOPrivKeyKind.EncryptedKey;
-            value.EncryptedKey = Asn1Kit.Modern.CryptographicMessageSyntax2009.EnvelopedData.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true));
+            value.EncryptedKey = Asn1Kit.Modern.CryptographicMessageSyntax2009.EnvelopedData.Decode(reader, Asn1Tag.Context(4, true));
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
@@ -899,7 +899,7 @@ public sealed class PrivateKeyInfo
             writer.WriteOctetString(Asn1Tag.OctetString, PrivateKey.Span);
             if (Attributes != null)
             {
-                writer.WriteSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), Attributes, static (inner, item) =>
+                writer.WriteSetOf(Asn1Tag.Context(0, true), Attributes, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
@@ -917,9 +917,9 @@ public sealed class PrivateKeyInfo
             value.Version = reader.ReadIntegerValue(Asn1Tag.Integer);
             value.PrivateKeyAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
             value.PrivateKey = reader.ReadOctetString(Asn1Tag.OctetString);
-            if (reader.TryPeekTag(out var tag_Attributes) && tag_Attributes.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            if (reader.TryPeekTag(out var tag_Attributes) && tag_Attributes.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
             {
-                value.Attributes = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), static inner => Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet.Decode(inner, Asn1Tag.Sequence));
+                value.Attributes = reader.ReadSetOf(Asn1Tag.Context(0, true), static inner => Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet.Decode(inner, Asn1Tag.Sequence));
             }
             reader.ThrowIfNotEmpty();
             return value;
@@ -998,7 +998,7 @@ public sealed class SinglePubInfo
         {
             var value = new SinglePubInfo();
             value.PubMethod = reader.ReadInt32(Asn1Tag.Integer);
-            if (reader.TryPeekTag(out var tag_PubLocation) && (tag_PubLocation.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)) || tag_PubLocation.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)) || tag_PubLocation.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false)) || tag_PubLocation.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)) || tag_PubLocation.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true)) || tag_PubLocation.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 5, true)) || tag_PubLocation.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 6, false)) || tag_PubLocation.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 7, false)) || tag_PubLocation.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 8, false))))
+            if (reader.TryPeekTag(out var tag_PubLocation) && (tag_PubLocation.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)) || tag_PubLocation.MatchesIgnoreConstructed(Asn1Tag.Context(1)) || tag_PubLocation.MatchesIgnoreConstructed(Asn1Tag.Context(2)) || tag_PubLocation.MatchesIgnoreConstructed(Asn1Tag.Context(3, true)) || tag_PubLocation.MatchesIgnoreConstructed(Asn1Tag.Context(4, true)) || tag_PubLocation.MatchesIgnoreConstructed(Asn1Tag.Context(5, true)) || tag_PubLocation.MatchesIgnoreConstructed(Asn1Tag.Context(6)) || tag_PubLocation.MatchesIgnoreConstructed(Asn1Tag.Context(7)) || tag_PubLocation.MatchesIgnoreConstructed(Asn1Tag.Context(8))))
             {
                 value.PubLocation = Asn1Kit.Modern.PKIX1Implicit2009.GeneralName.Decode(reader);
             }
@@ -1059,16 +1059,16 @@ public sealed class PKIArchiveOptions
         switch (Kind)
         {
             case PKIArchiveOptionsKind.EncryptedPrivKey:
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(0, true)))
                 {
                     EncryptedPrivKey.Encode(writer);
                 }
                 break;
             case PKIArchiveOptionsKind.KeyGenParameters:
-                writer.WriteOctetString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), KeyGenParameters.Value.Span);
+                writer.WriteOctetString(Asn1Tag.Context(1), KeyGenParameters.Value.Span);
                 break;
             case PKIArchiveOptionsKind.ArchiveRemGenPrivKey:
-                writer.WriteBoolean(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false), ArchiveRemGenPrivKey.Value);
+                writer.WriteBoolean(Asn1Tag.Context(2), ArchiveRemGenPrivKey.Value);
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -1078,24 +1078,24 @@ public sealed class PKIArchiveOptions
     {
         if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
         var value = new PKIArchiveOptions();
-        if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+        if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
         {
             value.Kind = PKIArchiveOptionsKind.EncryptedPrivKey;
-            using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            using (reader.EnterExplicit(Asn1Tag.Context(0, true)))
             {
                 value.EncryptedPrivKey = Asn1Kit.Modern.PKIXCRMF2009.EncryptedKey.Decode(reader);
                 reader.ThrowIfNotEmpty();
             }
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(1)))
         {
             value.Kind = PKIArchiveOptionsKind.KeyGenParameters;
-            value.KeyGenParameters = reader.ReadOctetString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
+            value.KeyGenParameters = reader.ReadOctetString(Asn1Tag.Context(1));
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(2)))
         {
             value.Kind = PKIArchiveOptionsKind.ArchiveRemGenPrivKey;
-            value.ArchiveRemGenPrivKey = reader.ReadBoolean(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false));
+            value.ArchiveRemGenPrivKey = reader.ReadBoolean(Asn1Tag.Context(2));
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
@@ -1144,7 +1144,7 @@ public sealed class EncryptedKey
                 EncryptedValue.Encode(writer, Asn1Tag.Sequence);
                 break;
             case EncryptedKeyKind.EnvelopedData:
-                EnvelopedData.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                EnvelopedData.Encode(writer, Asn1Tag.Context(0, true));
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -1159,10 +1159,10 @@ public sealed class EncryptedKey
             value.Kind = EncryptedKeyKind.EncryptedValue;
             value.EncryptedValue = Asn1Kit.Modern.PKIXCRMF2009.EncryptedValue.Decode(reader, Asn1Tag.Sequence);
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
         {
             value.Kind = EncryptedKeyKind.EnvelopedData;
-            value.EnvelopedData = Asn1Kit.Modern.CryptographicMessageSyntax2009.EnvelopedData.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+            value.EnvelopedData = Asn1Kit.Modern.CryptographicMessageSyntax2009.EnvelopedData.Decode(reader, Asn1Tag.Context(0, true));
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
@@ -1186,23 +1186,23 @@ public sealed class EncryptedValue
         {
             if (IntendedAlg != null)
             {
-                IntendedAlg.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                IntendedAlg.Encode(writer, Asn1Tag.Context(0, true));
             }
             if (SymmAlg != null)
             {
-                SymmAlg.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
+                SymmAlg.Encode(writer, Asn1Tag.Context(1, true));
             }
             if (EncSymmKey != null)
             {
-                writer.WriteBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false), EncSymmKey.Value);
+                writer.WriteBitString(Asn1Tag.Context(2), EncSymmKey.Value);
             }
             if (KeyAlg != null)
             {
-                KeyAlg.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true));
+                KeyAlg.Encode(writer, Asn1Tag.Context(3, true));
             }
             if (ValueHint != null)
             {
-                writer.WriteOctetString(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, false), ValueHint.Value.Span);
+                writer.WriteOctetString(Asn1Tag.Context(4), ValueHint.Value.Span);
             }
             writer.WriteBitString(Asn1Tag.BitString, EncValue);
         }
@@ -1215,25 +1215,25 @@ public sealed class EncryptedValue
         using (reader.EnterSequence(tag))
         {
             var value = new EncryptedValue();
-            if (reader.TryPeekTag(out var tag_IntendedAlg) && tag_IntendedAlg.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            if (reader.TryPeekTag(out var tag_IntendedAlg) && tag_IntendedAlg.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
             {
-                value.IntendedAlg = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                value.IntendedAlg = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Context(0, true));
             }
-            if (reader.TryPeekTag(out var tag_SymmAlg) && tag_SymmAlg.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            if (reader.TryPeekTag(out var tag_SymmAlg) && tag_SymmAlg.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
             {
-                value.SymmAlg = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
+                value.SymmAlg = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Context(1, true));
             }
-            if (reader.TryPeekTag(out var tag_EncSymmKey) && tag_EncSymmKey.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false)))
+            if (reader.TryPeekTag(out var tag_EncSymmKey) && tag_EncSymmKey.MatchesIgnoreConstructed(Asn1Tag.Context(2)))
             {
-                value.EncSymmKey = reader.ReadBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false));
+                value.EncSymmKey = reader.ReadBitString(Asn1Tag.Context(2));
             }
-            if (reader.TryPeekTag(out var tag_KeyAlg) && tag_KeyAlg.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
+            if (reader.TryPeekTag(out var tag_KeyAlg) && tag_KeyAlg.MatchesIgnoreConstructed(Asn1Tag.Context(3, true)))
             {
-                value.KeyAlg = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true));
+                value.KeyAlg = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Context(3, true));
             }
-            if (reader.TryPeekTag(out var tag_ValueHint) && tag_ValueHint.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, false)))
+            if (reader.TryPeekTag(out var tag_ValueHint) && tag_ValueHint.MatchesIgnoreConstructed(Asn1Tag.Context(4)))
             {
-                value.ValueHint = reader.ReadOctetString(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, false));
+                value.ValueHint = reader.ReadOctetString(Asn1Tag.Context(4));
             }
             value.EncValue = reader.ReadBitString(Asn1Tag.BitString);
             reader.ThrowIfNotEmpty();
@@ -1316,7 +1316,7 @@ public sealed class POPOSigningKeyInput_AuthInfo
         switch (Kind)
         {
             case POPOSigningKeyInput_AuthInfoKind.Sender:
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(0, true)))
                 {
                     Sender.Encode(writer);
                 }
@@ -1332,10 +1332,10 @@ public sealed class POPOSigningKeyInput_AuthInfo
     {
         if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
         var value = new POPOSigningKeyInput_AuthInfo();
-        if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+        if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
         {
             value.Kind = POPOSigningKeyInput_AuthInfoKind.Sender;
-            using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            using (reader.EnterExplicit(Asn1Tag.Context(0, true)))
             {
                 value.Sender = Asn1Kit.Modern.PKIX1Implicit2009.GeneralName.Decode(reader);
                 reader.ThrowIfNotEmpty();

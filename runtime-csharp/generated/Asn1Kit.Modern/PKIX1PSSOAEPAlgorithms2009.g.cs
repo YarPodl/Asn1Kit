@@ -145,28 +145,28 @@ public sealed class RSASSAPSSParams
         {
             if (!((HashAlgorithm != null && HashAlgorithm.Algorithm == global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdSha1 && HashAlgorithm.Parameters != null && HashAlgorithm.Parameters.Value.Equals(PKIX1PSSOAEPAlgorithms2009Defaults.Value0))))
             {
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(0, true)))
                 {
                     HashAlgorithm.Encode(writer, Asn1Tag.Sequence);
                 }
             }
             if (!((MaskGenAlgorithm != null && MaskGenAlgorithm.Algorithm == global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdMgf1 && MaskGenAlgorithm.Parameters != null && MaskGenAlgorithm.Parameters.Value.Equals(PKIX1PSSOAEPAlgorithms2009Defaults.Value1))))
             {
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(1, true)))
                 {
                     MaskGenAlgorithm.Encode(writer, Asn1Tag.Sequence);
                 }
             }
             if (SaltLength != Asn1Integer.FromInt64(20L))
             {
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(2, true)))
                 {
                     writer.WriteInteger(Asn1Tag.Integer, SaltLength);
                 }
             }
             if (TrailerField != Asn1Integer.FromInt64(1L))
             {
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(3, true)))
                 {
                     writer.WriteInteger(Asn1Tag.Integer, TrailerField);
                 }
@@ -181,33 +181,33 @@ public sealed class RSASSAPSSParams
         using (reader.EnterSequence(tag))
         {
             var value = new RSASSAPSSParams();
-            if (reader.TryPeekTag(out var tag_HashAlgorithm) && tag_HashAlgorithm.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            if (reader.TryPeekTag(out var tag_HashAlgorithm) && tag_HashAlgorithm.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
             {
-                using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+                using (reader.EnterExplicit(Asn1Tag.Context(0, true)))
                 {
                     value.HashAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
                     reader.ThrowIfNotEmpty();
                 }
             }
-            if (reader.TryPeekTag(out var tag_MaskGenAlgorithm) && tag_MaskGenAlgorithm.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            if (reader.TryPeekTag(out var tag_MaskGenAlgorithm) && tag_MaskGenAlgorithm.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
             {
-                using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+                using (reader.EnterExplicit(Asn1Tag.Context(1, true)))
                 {
                     value.MaskGenAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
                     reader.ThrowIfNotEmpty();
                 }
             }
-            if (reader.TryPeekTag(out var tag_SaltLength) && tag_SaltLength.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
+            if (reader.TryPeekTag(out var tag_SaltLength) && tag_SaltLength.MatchesIgnoreConstructed(Asn1Tag.Context(2, true)))
             {
-                using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
+                using (reader.EnterExplicit(Asn1Tag.Context(2, true)))
                 {
                     value.SaltLength = reader.ReadIntegerValue(Asn1Tag.Integer);
                     reader.ThrowIfNotEmpty();
                 }
             }
-            if (reader.TryPeekTag(out var tag_TrailerField) && tag_TrailerField.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
+            if (reader.TryPeekTag(out var tag_TrailerField) && tag_TrailerField.MatchesIgnoreConstructed(Asn1Tag.Context(3, true)))
             {
-                using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
+                using (reader.EnterExplicit(Asn1Tag.Context(3, true)))
                 {
                     value.TrailerField = reader.ReadIntegerValue(Asn1Tag.Integer);
                     reader.ThrowIfNotEmpty();
@@ -238,21 +238,21 @@ public sealed class RSAESOAEPParams
         {
             if (!((HashFunc != null && HashFunc.Algorithm == global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdSha1 && HashFunc.Parameters != null && HashFunc.Parameters.Value.Equals(PKIX1PSSOAEPAlgorithms2009Defaults.Value0))))
             {
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(0, true)))
                 {
                     HashFunc.Encode(writer, Asn1Tag.Sequence);
                 }
             }
             if (!((MaskGenFunc != null && MaskGenFunc.Algorithm == global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdMgf1 && MaskGenFunc.Parameters != null && MaskGenFunc.Parameters.Value.Equals(PKIX1PSSOAEPAlgorithms2009Defaults.Value1))))
             {
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(1, true)))
                 {
                     MaskGenFunc.Encode(writer, Asn1Tag.Sequence);
                 }
             }
             if (!((PSourceFunc != null && PSourceFunc.Algorithm == global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdPSpecified && PSourceFunc.Parameters != null && PSourceFunc.Parameters.Value.Equals(PKIX1PSSOAEPAlgorithms2009Defaults.Value3))))
             {
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(2, true)))
                 {
                     PSourceFunc.Encode(writer, Asn1Tag.Sequence);
                 }
@@ -267,25 +267,25 @@ public sealed class RSAESOAEPParams
         using (reader.EnterSequence(tag))
         {
             var value = new RSAESOAEPParams();
-            if (reader.TryPeekTag(out var tag_HashFunc) && tag_HashFunc.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            if (reader.TryPeekTag(out var tag_HashFunc) && tag_HashFunc.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
             {
-                using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+                using (reader.EnterExplicit(Asn1Tag.Context(0, true)))
                 {
                     value.HashFunc = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
                     reader.ThrowIfNotEmpty();
                 }
             }
-            if (reader.TryPeekTag(out var tag_MaskGenFunc) && tag_MaskGenFunc.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            if (reader.TryPeekTag(out var tag_MaskGenFunc) && tag_MaskGenFunc.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
             {
-                using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+                using (reader.EnterExplicit(Asn1Tag.Context(1, true)))
                 {
                     value.MaskGenFunc = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
                     reader.ThrowIfNotEmpty();
                 }
             }
-            if (reader.TryPeekTag(out var tag_PSourceFunc) && tag_PSourceFunc.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
+            if (reader.TryPeekTag(out var tag_PSourceFunc) && tag_PSourceFunc.MatchesIgnoreConstructed(Asn1Tag.Context(2, true)))
             {
-                using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
+                using (reader.EnterExplicit(Asn1Tag.Context(2, true)))
                 {
                     value.PSourceFunc = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Sequence);
                     reader.ThrowIfNotEmpty();

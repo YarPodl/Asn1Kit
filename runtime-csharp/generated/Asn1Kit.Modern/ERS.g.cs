@@ -61,14 +61,14 @@ public sealed class EvidenceRecord
             });
             if (CryptoInfos != null)
             {
-                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), CryptoInfos, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Context(0, true), CryptoInfos, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
             }
             if (EncryptionInfo != null)
             {
-                EncryptionInfo.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
+                EncryptionInfo.Encode(writer, Asn1Tag.Context(1, true));
             }
             writer.WriteSequenceOf(Asn1Tag.Sequence, ArchiveTimeStampSequence, static (inner, item) =>
             {
@@ -89,13 +89,13 @@ public sealed class EvidenceRecord
             var value = new EvidenceRecord();
             value.Version = reader.ReadInt32(Asn1Tag.Integer);
             value.DigestAlgorithms = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(inner, Asn1Tag.Sequence));
-            if (reader.TryPeekTag(out var tag_CryptoInfos) && tag_CryptoInfos.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            if (reader.TryPeekTag(out var tag_CryptoInfos) && tag_CryptoInfos.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
             {
-                value.CryptoInfos = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), static inner => Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet.Decode(inner, Asn1Tag.Sequence));
+                value.CryptoInfos = reader.ReadSequenceOf(Asn1Tag.Context(0, true), static inner => Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet.Decode(inner, Asn1Tag.Sequence));
             }
-            if (reader.TryPeekTag(out var tag_EncryptionInfo) && tag_EncryptionInfo.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            if (reader.TryPeekTag(out var tag_EncryptionInfo) && tag_EncryptionInfo.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
             {
-                value.EncryptionInfo = Asn1Kit.Modern.ERS.EncryptionInfo.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
+                value.EncryptionInfo = Asn1Kit.Modern.ERS.EncryptionInfo.Decode(reader, Asn1Tag.Context(1, true));
             }
             value.ArchiveTimeStampSequence = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.ERS.ArchiveTimeStamp.Decode(inner, Asn1Tag.Sequence)));
             reader.ThrowIfNotEmpty();
@@ -122,18 +122,18 @@ public sealed class ArchiveTimeStamp
         {
             if (DigestAlgorithm != null)
             {
-                DigestAlgorithm.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                DigestAlgorithm.Encode(writer, Asn1Tag.Context(0, true));
             }
             if (Attributes != null)
             {
-                writer.WriteSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), Attributes, static (inner, item) =>
+                writer.WriteSetOf(Asn1Tag.Context(1, true), Attributes, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
             }
             if (ReducedHashtree != null)
             {
-                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), ReducedHashtree, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Context(2, true), ReducedHashtree, static (inner, item) =>
                 {
                     inner.WriteSequenceOf(Asn1Tag.Sequence, item, static (inner, item) =>
                     {
@@ -152,17 +152,17 @@ public sealed class ArchiveTimeStamp
         using (reader.EnterSequence(tag))
         {
             var value = new ArchiveTimeStamp();
-            if (reader.TryPeekTag(out var tag_DigestAlgorithm) && tag_DigestAlgorithm.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            if (reader.TryPeekTag(out var tag_DigestAlgorithm) && tag_DigestAlgorithm.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
             {
-                value.DigestAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                value.DigestAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader, Asn1Tag.Context(0, true));
             }
-            if (reader.TryPeekTag(out var tag_Attributes) && tag_Attributes.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            if (reader.TryPeekTag(out var tag_Attributes) && tag_Attributes.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
             {
-                value.Attributes = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), static inner => Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet.Decode(inner, Asn1Tag.Sequence));
+                value.Attributes = reader.ReadSetOf(Asn1Tag.Context(1, true), static inner => Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet.Decode(inner, Asn1Tag.Sequence));
             }
-            if (reader.TryPeekTag(out var tag_ReducedHashtree) && tag_ReducedHashtree.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
+            if (reader.TryPeekTag(out var tag_ReducedHashtree) && tag_ReducedHashtree.MatchesIgnoreConstructed(Asn1Tag.Context(2, true)))
             {
-                value.ReducedHashtree = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), static inner => inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadOctetString(Asn1Tag.OctetString)));
+                value.ReducedHashtree = reader.ReadSequenceOf(Asn1Tag.Context(2, true), static inner => inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadOctetString(Asn1Tag.OctetString)));
             }
             value.TimeStamp = Asn1Kit.Modern.CryptographicMessageSyntax2009.ContentInfo.Decode(reader, Asn1Tag.Sequence);
             reader.ThrowIfNotEmpty();

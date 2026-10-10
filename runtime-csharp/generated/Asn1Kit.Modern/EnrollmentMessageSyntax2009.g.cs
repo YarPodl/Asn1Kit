@@ -492,13 +492,13 @@ public sealed class TaggedRequest
         switch (Kind)
         {
             case TaggedRequestKind.Tcr:
-                Tcr.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                Tcr.Encode(writer, Asn1Tag.Context(0, true));
                 break;
             case TaggedRequestKind.Crm:
-                Crm.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
+                Crm.Encode(writer, Asn1Tag.Context(1, true));
                 break;
             case TaggedRequestKind.Orm:
-                Orm.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true));
+                Orm.Encode(writer, Asn1Tag.Context(2, true));
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -508,20 +508,20 @@ public sealed class TaggedRequest
     {
         if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
         var value = new TaggedRequest();
-        if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+        if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
         {
             value.Kind = TaggedRequestKind.Tcr;
-            value.Tcr = Asn1Kit.Modern.EnrollmentMessageSyntax2009.TaggedCertificationRequest.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+            value.Tcr = Asn1Kit.Modern.EnrollmentMessageSyntax2009.TaggedCertificationRequest.Decode(reader, Asn1Tag.Context(0, true));
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
         {
             value.Kind = TaggedRequestKind.Crm;
-            value.Crm = Asn1Kit.Modern.PKIXCRMF2009.CertReqMsg.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
+            value.Crm = Asn1Kit.Modern.PKIXCRMF2009.CertReqMsg.Decode(reader, Asn1Tag.Context(1, true));
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(2, true)))
         {
             value.Kind = TaggedRequestKind.Orm;
-            value.Orm = Asn1Kit.Modern.EnrollmentMessageSyntax2009.TaggedRequest_Orm.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true));
+            value.Orm = Asn1Kit.Modern.EnrollmentMessageSyntax2009.TaggedRequest_Orm.Decode(reader, Asn1Tag.Context(2, true));
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
@@ -1087,7 +1087,7 @@ public sealed class GetCRL
         {
             var value = new GetCRL();
             value.IssuerName = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute.Decode(inner, Asn1Tag.Sequence)));
-            if (reader.TryPeekTag(out var tag_CRLName) && (tag_CRLName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)) || tag_CRLName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)) || tag_CRLName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false)) || tag_CRLName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)) || tag_CRLName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true)) || tag_CRLName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 5, true)) || tag_CRLName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 6, false)) || tag_CRLName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 7, false)) || tag_CRLName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 8, false))))
+            if (reader.TryPeekTag(out var tag_CRLName) && (tag_CRLName.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)) || tag_CRLName.MatchesIgnoreConstructed(Asn1Tag.Context(1)) || tag_CRLName.MatchesIgnoreConstructed(Asn1Tag.Context(2)) || tag_CRLName.MatchesIgnoreConstructed(Asn1Tag.Context(3, true)) || tag_CRLName.MatchesIgnoreConstructed(Asn1Tag.Context(4, true)) || tag_CRLName.MatchesIgnoreConstructed(Asn1Tag.Context(5, true)) || tag_CRLName.MatchesIgnoreConstructed(Asn1Tag.Context(6)) || tag_CRLName.MatchesIgnoreConstructed(Asn1Tag.Context(7)) || tag_CRLName.MatchesIgnoreConstructed(Asn1Tag.Context(8))))
             {
                 value.CRLName = Asn1Kit.Modern.PKIX1Implicit2009.GeneralName.Decode(reader);
             }
@@ -1259,7 +1259,7 @@ public sealed class CMCStatusInfoV2
             {
                 value.StatusString = reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8);
             }
-            if (reader.TryPeekTag(out var tag_OtherInfo) && (tag_OtherInfo.MatchesIgnoreConstructed(Asn1Tag.Integer) || tag_OtherInfo.MatchesIgnoreConstructed(Asn1Tag.Sequence) || tag_OtherInfo.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true))))
+            if (reader.TryPeekTag(out var tag_OtherInfo) && (tag_OtherInfo.MatchesIgnoreConstructed(Asn1Tag.Integer) || tag_OtherInfo.MatchesIgnoreConstructed(Asn1Tag.Sequence) || tag_OtherInfo.MatchesIgnoreConstructed(Asn1Tag.Context(1, true))))
             {
                 value.OtherInfo = Asn1Kit.Modern.EnrollmentMessageSyntax2009.CMCStatusInfoV2_OtherInfo.Decode(reader);
             }
@@ -1613,7 +1613,7 @@ public sealed class TaggedRequest_Orm
         }
     }
 
-    public static Asn1Tag DefaultTag { get; } = new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true);
+    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Context(2, true);
 }
 
 public sealed class CertificationRequest_CertificationRequestInfo
@@ -1639,7 +1639,7 @@ public sealed class CertificationRequest_CertificationRequestInfo
                 });
             });
             SubjectPublicKeyInfo.Encode(writer, Asn1Tag.Sequence);
-            writer.WriteSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), Attributes, static (inner, item) =>
+            writer.WriteSetOf(Asn1Tag.Context(0, true), Attributes, static (inner, item) =>
             {
                 item.Encode(inner, Asn1Tag.Sequence);
             });
@@ -1656,7 +1656,7 @@ public sealed class CertificationRequest_CertificationRequestInfo
             value.Version = reader.ReadIntegerValue(Asn1Tag.Integer);
             value.Subject = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute.Decode(inner, Asn1Tag.Sequence)));
             value.SubjectPublicKeyInfo = Asn1Kit.Modern.EnrollmentMessageSyntax2009.CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo.Decode(reader, Asn1Tag.Sequence);
-            value.Attributes = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), static inner => Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet.Decode(inner, Asn1Tag.Sequence));
+            value.Attributes = reader.ReadSetOf(Asn1Tag.Context(0, true), static inner => Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet.Decode(inner, Asn1Tag.Sequence));
             reader.ThrowIfNotEmpty();
             return value;
         }
@@ -1819,7 +1819,7 @@ public sealed class CMCStatusInfoV2_OtherInfo
                 PendInfo.Encode(writer, Asn1Tag.Sequence);
                 break;
             case CMCStatusInfoV2_OtherInfoKind.ExtendedFailInfo:
-                ExtendedFailInfo.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
+                ExtendedFailInfo.Encode(writer, Asn1Tag.Context(1, true));
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -1839,10 +1839,10 @@ public sealed class CMCStatusInfoV2_OtherInfo
             value.Kind = CMCStatusInfoV2_OtherInfoKind.PendInfo;
             value.PendInfo = Asn1Kit.Modern.EnrollmentMessageSyntax2009.PendInfo.Decode(reader, Asn1Tag.Sequence);
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
         {
             value.Kind = CMCStatusInfoV2_OtherInfoKind.ExtendedFailInfo;
-            value.ExtendedFailInfo = Asn1Kit.Modern.EnrollmentMessageSyntax2009.CMCStatusInfoV2_OtherInfo_ExtendedFailInfo.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
+            value.ExtendedFailInfo = Asn1Kit.Modern.EnrollmentMessageSyntax2009.CMCStatusInfoV2_OtherInfo_ExtendedFailInfo.Decode(reader, Asn1Tag.Context(1, true));
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
@@ -1879,7 +1879,7 @@ public sealed class CMCStatusInfoV2_OtherInfo_ExtendedFailInfo
         }
     }
 
-    public static Asn1Tag DefaultTag { get; } = new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true);
+    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Context(1, true);
 }
 
 internal static class __EnrollmentMessageSyntax2009OpenTypeCodecs

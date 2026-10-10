@@ -139,13 +139,13 @@ public sealed class AttributeCertificateInfoV1_Subject
         switch (Kind)
         {
             case AttributeCertificateInfoV1_SubjectKind.BaseCertificateID:
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(0, true)))
                 {
                     BaseCertificateID.Encode(writer, Asn1Tag.Sequence);
                 }
                 break;
             case AttributeCertificateInfoV1_SubjectKind.SubjectName:
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(1, true)))
                 {
                     writer.WriteSequenceOf(Asn1Tag.Sequence, SubjectName, static (inner, item) =>
                     {
@@ -161,19 +161,19 @@ public sealed class AttributeCertificateInfoV1_Subject
     {
         if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
         var value = new AttributeCertificateInfoV1_Subject();
-        if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+        if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
         {
             value.Kind = AttributeCertificateInfoV1_SubjectKind.BaseCertificateID;
-            using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            using (reader.EnterExplicit(Asn1Tag.Context(0, true)))
             {
                 value.BaseCertificateID = Asn1Kit.Modern.ExtendedSecurityServices2009.IssuerSerial.Decode(reader, Asn1Tag.Sequence);
                 reader.ThrowIfNotEmpty();
             }
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
         {
             value.Kind = AttributeCertificateInfoV1_SubjectKind.SubjectName;
-            using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            using (reader.EnterExplicit(Asn1Tag.Context(1, true)))
             {
                 value.SubjectName = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIX1Implicit2009.GeneralName.Decode(inner));
                 reader.ThrowIfNotEmpty();

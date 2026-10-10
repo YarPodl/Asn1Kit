@@ -80,7 +80,7 @@ public sealed class EncapsulatedContentInfo
             writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, EContentType);
             if (EContent != null)
             {
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(0, true)))
                 {
                     writer.WriteOctetString(Asn1Tag.OctetString, EContent.Value.Span);
                 }
@@ -96,9 +96,9 @@ public sealed class EncapsulatedContentInfo
         {
             var value = new EncapsulatedContentInfo();
             value.EContentType = reader.ReadOid(Asn1Tag.ObjectIdentifier);
-            if (reader.TryPeekTag(out var tag_EContent) && tag_EContent.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            if (reader.TryPeekTag(out var tag_EContent) && tag_EContent.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
             {
-                using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+                using (reader.EnterExplicit(Asn1Tag.Context(0, true)))
                 {
                     value.EContent = reader.ReadOctetString(Asn1Tag.OctetString);
                     reader.ThrowIfNotEmpty();

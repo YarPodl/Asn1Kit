@@ -55,8 +55,8 @@ public sealed class SecurityCategory
     {
         using (writer.EnterSequence(tag))
         {
-            writer.WriteObjectIdentifier(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), Type);
-            using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            writer.WriteObjectIdentifier(Asn1Tag.Context(0), Type);
+            using (writer.EnterExplicit(Asn1Tag.Context(1, true)))
             {
                 writer.WriteAny(Value);
             }
@@ -70,8 +70,8 @@ public sealed class SecurityCategory
         using (reader.EnterSequence(tag))
         {
             var value = new SecurityCategory();
-            value.Type = reader.ReadOid(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
-            using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            value.Type = reader.ReadOid(Asn1Tag.Context(0));
+            using (reader.EnterExplicit(Asn1Tag.Context(1, true)))
             {
                 value.Value = reader.ReadAny();
                 reader.ThrowIfNotEmpty();

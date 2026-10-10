@@ -89,6 +89,18 @@ public readonly struct Asn1Tag : IEquatable<Asn1Tag>
     /// <summary>Returns this tag in primitive form.</summary>
     public Asn1Tag AsPrimitive() => new(TagClass, Number, constructed: false);
 
+    /// <summary>Creates a context-specific tag.</summary>
+    public static Asn1Tag Context(int number, bool constructed = false) =>
+        new(Asn1TagClass.ContextSpecific, number, constructed);
+
+    /// <summary>Creates an application tag.</summary>
+    public static Asn1Tag Application(int number, bool constructed = false) =>
+        new(Asn1TagClass.Application, number, constructed);
+
+    /// <summary>Creates a private tag.</summary>
+    public static Asn1Tag Private(int number, bool constructed = false) =>
+        new(Asn1TagClass.Private, number, constructed);
+
     /// <summary>Gets the <c>Boolean</c> value.</summary>
     public static Asn1Tag Boolean { get; } = new(Asn1TagClass.Universal, 1);
     /// <summary>Gets the <c>Integer</c> value.</summary>

@@ -248,14 +248,14 @@ public sealed class ASIdentifiers
         {
             if (Asnum != null)
             {
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(0, true)))
                 {
                     Asnum.Encode(writer);
                 }
             }
             if (Rdi != null)
             {
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(1, true)))
                 {
                     Rdi.Encode(writer);
                 }
@@ -270,17 +270,17 @@ public sealed class ASIdentifiers
         using (reader.EnterSequence(tag))
         {
             var value = new ASIdentifiers();
-            if (reader.TryPeekTag(out var tag_Asnum) && tag_Asnum.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            if (reader.TryPeekTag(out var tag_Asnum) && tag_Asnum.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
             {
-                using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+                using (reader.EnterExplicit(Asn1Tag.Context(0, true)))
                 {
                     value.Asnum = Asn1Kit.Modern.IPAddrAndASCertExtn2010.ASIdentifierChoice.Decode(reader);
                     reader.ThrowIfNotEmpty();
                 }
             }
-            if (reader.TryPeekTag(out var tag_Rdi) && tag_Rdi.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            if (reader.TryPeekTag(out var tag_Rdi) && tag_Rdi.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
             {
-                using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+                using (reader.EnterExplicit(Asn1Tag.Context(1, true)))
                 {
                     value.Rdi = Asn1Kit.Modern.IPAddrAndASCertExtn2010.ASIdentifierChoice.Decode(reader);
                     reader.ThrowIfNotEmpty();

@@ -469,7 +469,7 @@ public sealed class TBSCertificate
         {
             if (Version != 0)
             {
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(0, true)))
                 {
                     writer.WriteInteger(Asn1Tag.Integer, Version);
                 }
@@ -494,15 +494,15 @@ public sealed class TBSCertificate
             SubjectPublicKeyInfo.Value.Encode(writer, Asn1Tag.Sequence);
             if (IssuerUniqueID != null)
             {
-                writer.WriteBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), IssuerUniqueID.Value);
+                writer.WriteBitString(Asn1Tag.Context(1), IssuerUniqueID.Value);
             }
             if (SubjectUniqueID != null)
             {
-                writer.WriteBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false), SubjectUniqueID.Value);
+                writer.WriteBitString(Asn1Tag.Context(2), SubjectUniqueID.Value);
             }
             if (Extensions != null)
             {
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(3, true)))
                 {
                     writer.WriteSequenceOf(Asn1Tag.Sequence, Extensions, static (inner, item) =>
                     {
@@ -520,9 +520,9 @@ public sealed class TBSCertificate
         using (reader.EnterSequence(tag))
         {
             var value = new TBSCertificate();
-            if (reader.TryPeekTag(out var tag_Version) && tag_Version.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            if (reader.TryPeekTag(out var tag_Version) && tag_Version.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
             {
-                using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+                using (reader.EnterExplicit(Asn1Tag.Context(0, true)))
                 {
                     value.Version = reader.ReadInt32(Asn1Tag.Integer);
                     reader.ThrowIfNotEmpty();
@@ -546,22 +546,22 @@ public sealed class TBSCertificate
             var nextExtension = 7;
             while (reader.TryPeekTag(out var extensionTag))
             {
-                if (extensionTag.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
+                if (extensionTag.MatchesIgnoreConstructed(Asn1Tag.Context(1)))
                 {
                     if (nextExtension > 7) throw new Asn1Exception("Duplicate or unordered extension component 'issuerUniqueID'.");
-                    value.IssuerUniqueID = reader.ReadBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
+                    value.IssuerUniqueID = reader.ReadBitString(Asn1Tag.Context(1));
                     nextExtension = 8;
                 }
-                else if (extensionTag.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false)))
+                else if (extensionTag.MatchesIgnoreConstructed(Asn1Tag.Context(2)))
                 {
                     if (nextExtension > 8) throw new Asn1Exception("Duplicate or unordered extension component 'subjectUniqueID'.");
-                    value.SubjectUniqueID = reader.ReadBitString(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false));
+                    value.SubjectUniqueID = reader.ReadBitString(Asn1Tag.Context(2));
                     nextExtension = 9;
                 }
-                else if (extensionTag.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
+                else if (extensionTag.MatchesIgnoreConstructed(Asn1Tag.Context(3, true)))
                 {
                     if (nextExtension > 9) throw new Asn1Exception("Duplicate or unordered extension component 'extensions'.");
-                    using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
+                    using (reader.EnterExplicit(Asn1Tag.Context(3, true)))
                     {
                         value.Extensions = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.Extension.Decode(inner, Asn1Tag.Sequence));
                         reader.ThrowIfNotEmpty();
@@ -766,7 +766,7 @@ public sealed class TBSCertList
             }
             if (CrlExtensions != null)
             {
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(0, true)))
                 {
                     writer.WriteSequenceOf(Asn1Tag.Sequence, CrlExtensions, static (inner, item) =>
                     {
@@ -802,10 +802,10 @@ public sealed class TBSCertList
             var nextExtension = 6;
             while (reader.TryPeekTag(out var extensionTag))
             {
-                if (extensionTag.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+                if (extensionTag.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
                 {
                     if (nextExtension > 6) throw new Asn1Exception("Duplicate or unordered extension component 'crlExtensions'.");
-                    using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+                    using (reader.EnterExplicit(Asn1Tag.Context(0, true)))
                     {
                         value.CrlExtensions = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXCommonTypes2009.Extension.Decode(inner, Asn1Tag.Sequence));
                         reader.ThrowIfNotEmpty();

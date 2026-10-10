@@ -198,7 +198,7 @@ public sealed class TargetEtcChain
             }
             if (PathProcInput != null)
             {
-                PathProcInput.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                PathProcInput.Encode(writer, Asn1Tag.Context(0, true));
             }
         }
     }
@@ -215,9 +215,9 @@ public sealed class TargetEtcChain
             {
                 value.Chain = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Dvcs.CertEtcToken.Decode(inner));
             }
-            if (reader.TryPeekTag(out var tag_PathProcInput) && tag_PathProcInput.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            if (reader.TryPeekTag(out var tag_PathProcInput) && tag_PathProcInput.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
             {
-                value.PathProcInput = Asn1Kit.Dvcs.PathProcInput.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                value.PathProcInput = Asn1Kit.Dvcs.PathProcInput.Decode(reader, Asn1Tag.Context(0, true));
             }
             reader.ThrowIfNotEmpty();
             return value;
@@ -390,31 +390,31 @@ public sealed class CertEtcToken
         switch (Kind)
         {
             case CertEtcTokenKind.Certificate:
-                Certificate.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                Certificate.Encode(writer, Asn1Tag.Context(0, true));
                 break;
             case CertEtcTokenKind.Esscertid:
-                Esscertid.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
+                Esscertid.Encode(writer, Asn1Tag.Context(1, true));
                 break;
             case CertEtcTokenKind.Pkistatus:
-                Pkistatus.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true));
+                Pkistatus.Encode(writer, Asn1Tag.Context(2, true));
                 break;
             case CertEtcTokenKind.Assertion:
-                Assertion.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true));
+                Assertion.Encode(writer, Asn1Tag.Context(3, true));
                 break;
             case CertEtcTokenKind.Crl:
-                Crl.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true));
+                Crl.Encode(writer, Asn1Tag.Context(4, true));
                 break;
             case CertEtcTokenKind.Ocspcertstatus:
                 Ocspcertstatus.Encode(writer);
                 break;
             case CertEtcTokenKind.Oscpcertid:
-                Oscpcertid.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 6, true));
+                Oscpcertid.Encode(writer, Asn1Tag.Context(6, true));
                 break;
             case CertEtcTokenKind.Oscpresponse:
-                Oscpresponse.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 7, true));
+                Oscpresponse.Encode(writer, Asn1Tag.Context(7, true));
                 break;
             case CertEtcTokenKind.Capabilities:
-                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 8, true), Capabilities, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Context(8, true), Capabilities, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
@@ -430,50 +430,50 @@ public sealed class CertEtcToken
     {
         if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
         var value = new CertEtcToken();
-        if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+        if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
         {
             value.Kind = CertEtcTokenKind.Certificate;
-            value.Certificate = Asn1Kit.Pkix.Certificate.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+            value.Certificate = Asn1Kit.Pkix.Certificate.Decode(reader, Asn1Tag.Context(0, true));
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
         {
             value.Kind = CertEtcTokenKind.Esscertid;
-            value.Esscertid = Asn1Kit.Ess.ESSCertID.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
+            value.Esscertid = Asn1Kit.Ess.ESSCertID.Decode(reader, Asn1Tag.Context(1, true));
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(2, true)))
         {
             value.Kind = CertEtcTokenKind.Pkistatus;
-            value.Pkistatus = Asn1Kit.Cmp.PKIStatusInfo.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true));
+            value.Pkistatus = Asn1Kit.Cmp.PKIStatusInfo.Decode(reader, Asn1Tag.Context(2, true));
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(3, true)))
         {
             value.Kind = CertEtcTokenKind.Assertion;
-            value.Assertion = Asn1Kit.Cms.ContentInfo.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true));
+            value.Assertion = Asn1Kit.Cms.ContentInfo.Decode(reader, Asn1Tag.Context(3, true));
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(4, true)))
         {
             value.Kind = CertEtcTokenKind.Crl;
-            value.Crl = Asn1Kit.Pkix.CertificateList.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true));
+            value.Crl = Asn1Kit.Pkix.CertificateList.Decode(reader, Asn1Tag.Context(4, true));
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 5, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(5, true)))
         {
             value.Kind = CertEtcTokenKind.Ocspcertstatus;
             value.Ocspcertstatus = Asn1Kit.Ocsp.CertStatus.Decode(reader);
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 6, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(6, true)))
         {
             value.Kind = CertEtcTokenKind.Oscpcertid;
-            value.Oscpcertid = Asn1Kit.Ocsp.CertID.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 6, true));
+            value.Oscpcertid = Asn1Kit.Ocsp.CertID.Decode(reader, Asn1Tag.Context(6, true));
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 7, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(7, true)))
         {
             value.Kind = CertEtcTokenKind.Oscpresponse;
-            value.Oscpresponse = Asn1Kit.Ocsp.OCSPResponse.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 7, true));
+            value.Oscpresponse = Asn1Kit.Ocsp.OCSPResponse.Decode(reader, Asn1Tag.Context(7, true));
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 8, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(8, true)))
         {
             value.Kind = CertEtcTokenKind.Capabilities;
-            value.Capabilities = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 8, true), static inner => Asn1Kit.Smime.SMIMECapability.Decode(inner, Asn1Tag.Sequence));
+            value.Capabilities = reader.ReadSequenceOf(Asn1Tag.Context(8, true), static inner => Asn1Kit.Smime.SMIMECapability.Decode(inner, Asn1Tag.Sequence));
         }
         else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Sequence))
         {
@@ -523,32 +523,32 @@ public sealed class DVCSRequestInformation
             }
             if (Requester != null)
             {
-                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), Requester, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Context(0, true), Requester, static (inner, item) =>
                 {
                     item.Encode(inner);
                 });
             }
             if (RequestPolicy != null)
             {
-                RequestPolicy.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
+                RequestPolicy.Encode(writer, Asn1Tag.Context(1, true));
             }
             if (Dvcs != null)
             {
-                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), Dvcs, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Context(2, true), Dvcs, static (inner, item) =>
                 {
                     item.Encode(inner);
                 });
             }
             if (DataLocations != null)
             {
-                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true), DataLocations, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Context(3, true), DataLocations, static (inner, item) =>
                 {
                     item.Encode(inner);
                 });
             }
             if (Extensions != null)
             {
-                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true), Extensions, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Context(4, true), Extensions, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
@@ -576,25 +576,25 @@ public sealed class DVCSRequestInformation
             {
                 value.RequestTime = Asn1Kit.Dvcs.DVCSTime.Decode(reader);
             }
-            if (reader.TryPeekTag(out var tag_Requester) && tag_Requester.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            if (reader.TryPeekTag(out var tag_Requester) && tag_Requester.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
             {
-                value.Requester = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), static inner => Asn1Kit.Pkix.GeneralName.Decode(inner));
+                value.Requester = reader.ReadSequenceOf(Asn1Tag.Context(0, true), static inner => Asn1Kit.Pkix.GeneralName.Decode(inner));
             }
-            if (reader.TryPeekTag(out var tag_RequestPolicy) && tag_RequestPolicy.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            if (reader.TryPeekTag(out var tag_RequestPolicy) && tag_RequestPolicy.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
             {
-                value.RequestPolicy = Asn1Kit.Pkix.PolicyInformation.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
+                value.RequestPolicy = Asn1Kit.Pkix.PolicyInformation.Decode(reader, Asn1Tag.Context(1, true));
             }
-            if (reader.TryPeekTag(out var tag_Dvcs) && tag_Dvcs.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
+            if (reader.TryPeekTag(out var tag_Dvcs) && tag_Dvcs.MatchesIgnoreConstructed(Asn1Tag.Context(2, true)))
             {
-                value.Dvcs = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), static inner => Asn1Kit.Pkix.GeneralName.Decode(inner));
+                value.Dvcs = reader.ReadSequenceOf(Asn1Tag.Context(2, true), static inner => Asn1Kit.Pkix.GeneralName.Decode(inner));
             }
-            if (reader.TryPeekTag(out var tag_DataLocations) && tag_DataLocations.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
+            if (reader.TryPeekTag(out var tag_DataLocations) && tag_DataLocations.MatchesIgnoreConstructed(Asn1Tag.Context(3, true)))
             {
-                value.DataLocations = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true), static inner => Asn1Kit.Pkix.GeneralName.Decode(inner));
+                value.DataLocations = reader.ReadSequenceOf(Asn1Tag.Context(3, true), static inner => Asn1Kit.Pkix.GeneralName.Decode(inner));
             }
-            if (reader.TryPeekTag(out var tag_Extensions) && tag_Extensions.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true)))
+            if (reader.TryPeekTag(out var tag_Extensions) && tag_Extensions.MatchesIgnoreConstructed(Asn1Tag.Context(4, true)))
             {
-                value.Extensions = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true), static inner => Asn1Kit.Pkix.Extension.Decode(inner, Asn1Tag.Sequence));
+                value.Extensions = reader.ReadSequenceOf(Asn1Tag.Context(4, true), static inner => Asn1Kit.Pkix.Extension.Decode(inner, Asn1Tag.Sequence));
             }
             reader.ThrowIfNotEmpty();
             return value;
@@ -646,7 +646,7 @@ public sealed class DVCSRequest
             var value = new DVCSRequest();
             value.RequestInformation = Asn1Kit.Dvcs.DVCSRequestInformation.Decode(reader, Asn1Tag.Sequence);
             value.Data = Asn1Kit.Dvcs.Data.Decode(reader);
-            if (reader.TryPeekTag(out var tag_TransactionIdentifier) && (tag_TransactionIdentifier.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 5, true)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 6, false)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 7, false)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 8, false))))
+            if (reader.TryPeekTag(out var tag_TransactionIdentifier) && (tag_TransactionIdentifier.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(Asn1Tag.Context(1)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(Asn1Tag.Context(2)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(Asn1Tag.Context(3, true)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(Asn1Tag.Context(4, true)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(Asn1Tag.Context(5, true)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(Asn1Tag.Context(6)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(Asn1Tag.Context(7)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(Asn1Tag.Context(8))))
             {
                 value.TransactionIdentifier = Asn1Kit.Pkix.GeneralName.Decode(reader);
             }
@@ -787,7 +787,7 @@ public sealed class DVCSResponse
                 DvCertInfo.Encode(writer, Asn1Tag.Sequence);
                 break;
             case DVCSResponseKind.DvErrorNote:
-                DvErrorNote.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                DvErrorNote.Encode(writer, Asn1Tag.Context(0, true));
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -802,10 +802,10 @@ public sealed class DVCSResponse
             value.Kind = DVCSResponseKind.DvCertInfo;
             value.DvCertInfo = Asn1Kit.Dvcs.DVCSCertInfo.Decode(reader, Asn1Tag.Sequence);
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
         {
             value.Kind = DVCSResponseKind.DvErrorNote;
-            value.DvErrorNote = Asn1Kit.Dvcs.DVCSErrorNotice.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+            value.DvErrorNote = Asn1Kit.Dvcs.DVCSErrorNotice.Decode(reader, Asn1Tag.Context(0, true));
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
@@ -843,22 +843,22 @@ public sealed class DVCSCertInfo
             ResponseTime.Encode(writer);
             if (DvStatus != null)
             {
-                DvStatus.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                DvStatus.Encode(writer, Asn1Tag.Context(0, true));
             }
             if (Policy != null)
             {
-                Policy.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
+                Policy.Encode(writer, Asn1Tag.Context(1, true));
             }
             if (ReqSignature != null)
             {
-                writer.WriteSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), ReqSignature, static (inner, item) =>
+                writer.WriteSetOf(Asn1Tag.Context(2, true), ReqSignature, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
             }
             if (Certs != null)
             {
-                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true), Certs, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Context(3, true), Certs, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
@@ -888,21 +888,21 @@ public sealed class DVCSCertInfo
             value.MessageImprint = Asn1Kit.Dvcs.DigestInfo.Decode(reader, Asn1Tag.Sequence);
             value.SerialNumber = reader.ReadIntegerValue(Asn1Tag.Integer);
             value.ResponseTime = Asn1Kit.Dvcs.DVCSTime.Decode(reader);
-            if (reader.TryPeekTag(out var tag_DvStatus) && tag_DvStatus.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            if (reader.TryPeekTag(out var tag_DvStatus) && tag_DvStatus.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
             {
-                value.DvStatus = Asn1Kit.Cmp.PKIStatusInfo.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                value.DvStatus = Asn1Kit.Cmp.PKIStatusInfo.Decode(reader, Asn1Tag.Context(0, true));
             }
-            if (reader.TryPeekTag(out var tag_Policy) && tag_Policy.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            if (reader.TryPeekTag(out var tag_Policy) && tag_Policy.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
             {
-                value.Policy = Asn1Kit.Pkix.PolicyInformation.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
+                value.Policy = Asn1Kit.Pkix.PolicyInformation.Decode(reader, Asn1Tag.Context(1, true));
             }
-            if (reader.TryPeekTag(out var tag_ReqSignature) && tag_ReqSignature.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
+            if (reader.TryPeekTag(out var tag_ReqSignature) && tag_ReqSignature.MatchesIgnoreConstructed(Asn1Tag.Context(2, true)))
             {
-                value.ReqSignature = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), static inner => Asn1Kit.Cms.SignerInfo.Decode(inner, Asn1Tag.Sequence));
+                value.ReqSignature = reader.ReadSetOf(Asn1Tag.Context(2, true), static inner => Asn1Kit.Cms.SignerInfo.Decode(inner, Asn1Tag.Sequence));
             }
-            if (reader.TryPeekTag(out var tag_Certs) && tag_Certs.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)))
+            if (reader.TryPeekTag(out var tag_Certs) && tag_Certs.MatchesIgnoreConstructed(Asn1Tag.Context(3, true)))
             {
-                value.Certs = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true), static inner => Asn1Kit.Dvcs.TargetEtcChain.Decode(inner, Asn1Tag.Sequence));
+                value.Certs = reader.ReadSequenceOf(Asn1Tag.Context(3, true), static inner => Asn1Kit.Dvcs.TargetEtcChain.Decode(inner, Asn1Tag.Sequence));
             }
             if (reader.TryPeekTag(out var tag_Extensions) && tag_Extensions.MatchesIgnoreConstructed(Asn1Tag.Sequence))
             {
@@ -943,7 +943,7 @@ public sealed class DVCSErrorNotice
         {
             var value = new DVCSErrorNotice();
             value.TransactionStatus = Asn1Kit.Cmp.PKIStatusInfo.Decode(reader, Asn1Tag.Sequence);
-            if (reader.TryPeekTag(out var tag_TransactionIdentifier) && (tag_TransactionIdentifier.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 5, true)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 6, false)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 7, false)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 8, false))))
+            if (reader.TryPeekTag(out var tag_TransactionIdentifier) && (tag_TransactionIdentifier.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(Asn1Tag.Context(1)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(Asn1Tag.Context(2)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(Asn1Tag.Context(3, true)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(Asn1Tag.Context(4, true)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(Asn1Tag.Context(5, true)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(Asn1Tag.Context(6)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(Asn1Tag.Context(7)) || tag_TransactionIdentifier.MatchesIgnoreConstructed(Asn1Tag.Context(8))))
             {
                 value.TransactionIdentifier = Asn1Kit.Pkix.GeneralName.Decode(reader);
             }

@@ -183,10 +183,10 @@ public sealed class ReceiptsFrom
         switch (Kind)
         {
             case ReceiptsFromKind.AllOrFirstTier:
-                writer.WriteInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), AllOrFirstTier.Value);
+                writer.WriteInteger(Asn1Tag.Context(0), AllOrFirstTier.Value);
                 break;
             case ReceiptsFromKind.ReceiptList:
-                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), ReceiptList, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Context(1, true), ReceiptList, static (inner, item) =>
                 {
                     inner.WriteSequenceOf(Asn1Tag.Sequence, item, static (inner, item) =>
                     {
@@ -202,15 +202,15 @@ public sealed class ReceiptsFrom
     {
         if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
         var value = new ReceiptsFrom();
-        if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false)))
+        if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(0)))
         {
             value.Kind = ReceiptsFromKind.AllOrFirstTier;
-            value.AllOrFirstTier = reader.ReadInt32(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
+            value.AllOrFirstTier = reader.ReadInt32(Asn1Tag.Context(0));
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
         {
             value.Kind = ReceiptsFromKind.ReceiptList;
-            value.ReceiptList = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), static inner => inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.GeneralName.Decode(inner)));
+            value.ReceiptList = reader.ReadSequenceOf(Asn1Tag.Context(1, true), static inner => inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.GeneralName.Decode(inner)));
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
@@ -522,8 +522,8 @@ public sealed class SecurityCategory
     {
         using (writer.EnterSequence(tag))
         {
-            writer.WriteObjectIdentifier(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), Type);
-            writer.WriteAny(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), Value);
+            writer.WriteObjectIdentifier(Asn1Tag.Context(0), Type);
+            writer.WriteAny(Asn1Tag.Context(1), Value);
         }
     }
 
@@ -534,8 +534,8 @@ public sealed class SecurityCategory
         using (reader.EnterSequence(tag))
         {
             var value = new SecurityCategory();
-            value.Type = reader.ReadOid(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
-            value.Value = reader.ReadAny(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
+            value.Type = reader.ReadOid(Asn1Tag.Context(0));
+            value.Value = reader.ReadAny(Asn1Tag.Context(1));
             reader.ThrowIfNotEmpty();
             return value;
         }
@@ -574,7 +574,7 @@ public sealed class MLData
             var value = new MLData();
             value.MailListIdentifier = Asn1Kit.Ess.EntityIdentifier.Decode(reader);
             value.ExpansionTime = reader.ReadTime(Asn1Tag.GeneralizedTime, Asn1TimeForm.Generalized);
-            if (reader.TryPeekTag(out var tag_MlReceiptPolicy) && (tag_MlReceiptPolicy.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false)) || tag_MlReceiptPolicy.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)) || tag_MlReceiptPolicy.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true))))
+            if (reader.TryPeekTag(out var tag_MlReceiptPolicy) && (tag_MlReceiptPolicy.MatchesIgnoreConstructed(Asn1Tag.Context(0)) || tag_MlReceiptPolicy.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)) || tag_MlReceiptPolicy.MatchesIgnoreConstructed(Asn1Tag.Context(2, true))))
             {
                 value.MlReceiptPolicy = Asn1Kit.Ess.MLReceiptPolicy.Decode(reader);
             }
@@ -702,10 +702,10 @@ public sealed class MLReceiptPolicy
         switch (Kind)
         {
             case MLReceiptPolicyKind.None:
-                writer.WriteNull(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
+                writer.WriteNull(Asn1Tag.Context(0));
                 break;
             case MLReceiptPolicyKind.InsteadOf:
-                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), InsteadOf, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Context(1, true), InsteadOf, static (inner, item) =>
                 {
                     inner.WriteSequenceOf(Asn1Tag.Sequence, item, static (inner, item) =>
                     {
@@ -714,7 +714,7 @@ public sealed class MLReceiptPolicy
                 });
                 break;
             case MLReceiptPolicyKind.InAdditionTo:
-                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), InAdditionTo, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Context(2, true), InAdditionTo, static (inner, item) =>
                 {
                     inner.WriteSequenceOf(Asn1Tag.Sequence, item, static (inner, item) =>
                     {
@@ -730,20 +730,20 @@ public sealed class MLReceiptPolicy
     {
         if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
         var value = new MLReceiptPolicy();
-        if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false)))
+        if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(0)))
         {
             value.Kind = MLReceiptPolicyKind.None;
-            value.None = Asn1Null.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
+            value.None = Asn1Null.Decode(reader, Asn1Tag.Context(0));
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
         {
             value.Kind = MLReceiptPolicyKind.InsteadOf;
-            value.InsteadOf = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), static inner => inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.GeneralName.Decode(inner)));
+            value.InsteadOf = reader.ReadSequenceOf(Asn1Tag.Context(1, true), static inner => inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.GeneralName.Decode(inner)));
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(2, true)))
         {
             value.Kind = MLReceiptPolicyKind.InAdditionTo;
-            value.InAdditionTo = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), static inner => inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.GeneralName.Decode(inner)));
+            value.InAdditionTo = reader.ReadSequenceOf(Asn1Tag.Context(2, true), static inner => inner.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Pkix.GeneralName.Decode(inner)));
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;

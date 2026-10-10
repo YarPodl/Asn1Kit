@@ -338,23 +338,23 @@ public sealed class GLKeyAttributes
         {
             if (RekeyControlledByGLO != false)
             {
-                writer.WriteBoolean(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), RekeyControlledByGLO);
+                writer.WriteBoolean(Asn1Tag.Context(0), RekeyControlledByGLO);
             }
             if (RecipientsNotMutuallyAware != true)
             {
-                writer.WriteBoolean(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), RecipientsNotMutuallyAware);
+                writer.WriteBoolean(Asn1Tag.Context(1), RecipientsNotMutuallyAware);
             }
             if (Duration != Asn1Integer.FromInt64(0L))
             {
-                writer.WriteInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false), Duration);
+                writer.WriteInteger(Asn1Tag.Context(2), Duration);
             }
             if (GenerationCounter != Asn1Integer.FromInt64(2L))
             {
-                writer.WriteInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false), GenerationCounter);
+                writer.WriteInteger(Asn1Tag.Context(3), GenerationCounter);
             }
             if (!((RequestedAlgorithm != null && RequestedAlgorithm.CapabilityID == global::Asn1Kit.Modern.CMSAesRsaesOaep2009.CMSAesRsaesOaep2009Oids.IdAes128Wrap && RequestedAlgorithm.Parameters == null)))
             {
-                RequestedAlgorithm.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true));
+                RequestedAlgorithm.Encode(writer, Asn1Tag.Context(4, true));
             }
         }
     }
@@ -366,25 +366,25 @@ public sealed class GLKeyAttributes
         using (reader.EnterSequence(tag))
         {
             var value = new GLKeyAttributes();
-            if (reader.TryPeekTag(out var tag_RekeyControlledByGLO) && tag_RekeyControlledByGLO.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false)))
+            if (reader.TryPeekTag(out var tag_RekeyControlledByGLO) && tag_RekeyControlledByGLO.MatchesIgnoreConstructed(Asn1Tag.Context(0)))
             {
-                value.RekeyControlledByGLO = reader.ReadBoolean(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
+                value.RekeyControlledByGLO = reader.ReadBoolean(Asn1Tag.Context(0));
             }
-            if (reader.TryPeekTag(out var tag_RecipientsNotMutuallyAware) && tag_RecipientsNotMutuallyAware.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
+            if (reader.TryPeekTag(out var tag_RecipientsNotMutuallyAware) && tag_RecipientsNotMutuallyAware.MatchesIgnoreConstructed(Asn1Tag.Context(1)))
             {
-                value.RecipientsNotMutuallyAware = reader.ReadBoolean(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
+                value.RecipientsNotMutuallyAware = reader.ReadBoolean(Asn1Tag.Context(1));
             }
-            if (reader.TryPeekTag(out var tag_Duration) && tag_Duration.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false)))
+            if (reader.TryPeekTag(out var tag_Duration) && tag_Duration.MatchesIgnoreConstructed(Asn1Tag.Context(2)))
             {
-                value.Duration = reader.ReadIntegerValue(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false));
+                value.Duration = reader.ReadIntegerValue(Asn1Tag.Context(2));
             }
-            if (reader.TryPeekTag(out var tag_GenerationCounter) && tag_GenerationCounter.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false)))
+            if (reader.TryPeekTag(out var tag_GenerationCounter) && tag_GenerationCounter.MatchesIgnoreConstructed(Asn1Tag.Context(3)))
             {
-                value.GenerationCounter = reader.ReadIntegerValue(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false));
+                value.GenerationCounter = reader.ReadIntegerValue(Asn1Tag.Context(3));
             }
-            if (reader.TryPeekTag(out var tag_RequestedAlgorithm) && tag_RequestedAlgorithm.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true)))
+            if (reader.TryPeekTag(out var tag_RequestedAlgorithm) && tag_RequestedAlgorithm.MatchesIgnoreConstructed(Asn1Tag.Context(4, true)))
             {
-                value.RequestedAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true));
+                value.RequestedAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability.Decode(reader, Asn1Tag.Context(4, true));
             }
             reader.ThrowIfNotEmpty();
             return value;
@@ -459,7 +459,7 @@ public sealed class GLMember
         {
             var value = new GLMember();
             value.GlMemberName = Asn1Kit.Modern.PKIX1Implicit2009.GeneralName.Decode(reader);
-            if (reader.TryPeekTag(out var tag_GlMemberAddress) && (tag_GlMemberAddress.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)) || tag_GlMemberAddress.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)) || tag_GlMemberAddress.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false)) || tag_GlMemberAddress.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)) || tag_GlMemberAddress.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true)) || tag_GlMemberAddress.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 5, true)) || tag_GlMemberAddress.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 6, false)) || tag_GlMemberAddress.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 7, false)) || tag_GlMemberAddress.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 8, false))))
+            if (reader.TryPeekTag(out var tag_GlMemberAddress) && (tag_GlMemberAddress.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)) || tag_GlMemberAddress.MatchesIgnoreConstructed(Asn1Tag.Context(1)) || tag_GlMemberAddress.MatchesIgnoreConstructed(Asn1Tag.Context(2)) || tag_GlMemberAddress.MatchesIgnoreConstructed(Asn1Tag.Context(3, true)) || tag_GlMemberAddress.MatchesIgnoreConstructed(Asn1Tag.Context(4, true)) || tag_GlMemberAddress.MatchesIgnoreConstructed(Asn1Tag.Context(5, true)) || tag_GlMemberAddress.MatchesIgnoreConstructed(Asn1Tag.Context(6)) || tag_GlMemberAddress.MatchesIgnoreConstructed(Asn1Tag.Context(7)) || tag_GlMemberAddress.MatchesIgnoreConstructed(Asn1Tag.Context(8))))
             {
                 value.GlMemberAddress = Asn1Kit.Modern.PKIX1Implicit2009.GeneralName.Decode(reader);
             }
@@ -490,18 +490,18 @@ public sealed class Certificates
         {
             if (PKC != null)
             {
-                PKC.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                PKC.Encode(writer, Asn1Tag.Context(0, true));
             }
             if (AC != null)
             {
-                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), AC, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Context(1, true), AC, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
             }
             if (CertPath != null)
             {
-                writer.WriteSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), CertPath, static (inner, item) =>
+                writer.WriteSetOf(Asn1Tag.Context(2, true), CertPath, static (inner, item) =>
                 {
                     item.Encode(inner);
                 });
@@ -516,17 +516,17 @@ public sealed class Certificates
         using (reader.EnterSequence(tag))
         {
             var value = new Certificates();
-            if (reader.TryPeekTag(out var tag_PKC) && tag_PKC.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            if (reader.TryPeekTag(out var tag_PKC) && tag_PKC.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
             {
-                value.PKC = Asn1Kit.Modern.PKIX1Explicit2009.Certificate.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                value.PKC = Asn1Kit.Modern.PKIX1Explicit2009.Certificate.Decode(reader, Asn1Tag.Context(0, true));
             }
-            if (reader.TryPeekTag(out var tag_AC) && tag_AC.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            if (reader.TryPeekTag(out var tag_AC) && tag_AC.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
             {
-                value.AC = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), static inner => Asn1Kit.Modern.PKIXAttributeCertificate2009.AttributeCertificate.Decode(inner, Asn1Tag.Sequence));
+                value.AC = reader.ReadSequenceOf(Asn1Tag.Context(1, true), static inner => Asn1Kit.Modern.PKIXAttributeCertificate2009.AttributeCertificate.Decode(inner, Asn1Tag.Sequence));
             }
-            if (reader.TryPeekTag(out var tag_CertPath) && tag_CertPath.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
+            if (reader.TryPeekTag(out var tag_CertPath) && tag_CertPath.MatchesIgnoreConstructed(Asn1Tag.Context(2, true)))
             {
-                value.CertPath = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), static inner => Asn1Kit.Modern.CryptographicMessageSyntax2009.CertificateChoices.Decode(inner));
+                value.CertPath = reader.ReadSetOf(Asn1Tag.Context(2, true), static inner => Asn1Kit.Modern.CryptographicMessageSyntax2009.CertificateChoices.Decode(inner));
             }
             reader.ThrowIfNotEmpty();
             return value;
@@ -643,23 +643,23 @@ public sealed class GLNewKeyAttributes
         {
             if (RekeyControlledByGLO != null)
             {
-                writer.WriteBoolean(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), RekeyControlledByGLO.Value);
+                writer.WriteBoolean(Asn1Tag.Context(0), RekeyControlledByGLO.Value);
             }
             if (RecipientsNotMutuallyAware != null)
             {
-                writer.WriteBoolean(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), RecipientsNotMutuallyAware.Value);
+                writer.WriteBoolean(Asn1Tag.Context(1), RecipientsNotMutuallyAware.Value);
             }
             if (Duration != null)
             {
-                writer.WriteInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false), Duration.Value);
+                writer.WriteInteger(Asn1Tag.Context(2), Duration.Value);
             }
             if (GenerationCounter != null)
             {
-                writer.WriteInteger(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false), GenerationCounter.Value);
+                writer.WriteInteger(Asn1Tag.Context(3), GenerationCounter.Value);
             }
             if (RequestedAlgorithm != null)
             {
-                RequestedAlgorithm.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true));
+                RequestedAlgorithm.Encode(writer, Asn1Tag.Context(4, true));
             }
         }
     }
@@ -671,25 +671,25 @@ public sealed class GLNewKeyAttributes
         using (reader.EnterSequence(tag))
         {
             var value = new GLNewKeyAttributes();
-            if (reader.TryPeekTag(out var tag_RekeyControlledByGLO) && tag_RekeyControlledByGLO.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false)))
+            if (reader.TryPeekTag(out var tag_RekeyControlledByGLO) && tag_RekeyControlledByGLO.MatchesIgnoreConstructed(Asn1Tag.Context(0)))
             {
-                value.RekeyControlledByGLO = reader.ReadBoolean(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
+                value.RekeyControlledByGLO = reader.ReadBoolean(Asn1Tag.Context(0));
             }
-            if (reader.TryPeekTag(out var tag_RecipientsNotMutuallyAware) && tag_RecipientsNotMutuallyAware.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
+            if (reader.TryPeekTag(out var tag_RecipientsNotMutuallyAware) && tag_RecipientsNotMutuallyAware.MatchesIgnoreConstructed(Asn1Tag.Context(1)))
             {
-                value.RecipientsNotMutuallyAware = reader.ReadBoolean(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
+                value.RecipientsNotMutuallyAware = reader.ReadBoolean(Asn1Tag.Context(1));
             }
-            if (reader.TryPeekTag(out var tag_Duration) && tag_Duration.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false)))
+            if (reader.TryPeekTag(out var tag_Duration) && tag_Duration.MatchesIgnoreConstructed(Asn1Tag.Context(2)))
             {
-                value.Duration = reader.ReadIntegerValue(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false));
+                value.Duration = reader.ReadIntegerValue(Asn1Tag.Context(2));
             }
-            if (reader.TryPeekTag(out var tag_GenerationCounter) && tag_GenerationCounter.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false)))
+            if (reader.TryPeekTag(out var tag_GenerationCounter) && tag_GenerationCounter.MatchesIgnoreConstructed(Asn1Tag.Context(3)))
             {
-                value.GenerationCounter = reader.ReadIntegerValue(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, false));
+                value.GenerationCounter = reader.ReadIntegerValue(Asn1Tag.Context(3));
             }
-            if (reader.TryPeekTag(out var tag_RequestedAlgorithm) && tag_RequestedAlgorithm.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true)))
+            if (reader.TryPeekTag(out var tag_RequestedAlgorithm) && tag_RequestedAlgorithm.MatchesIgnoreConstructed(Asn1Tag.Context(4, true)))
             {
-                value.RequestedAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true));
+                value.RequestedAlgorithm = Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability.Decode(reader, Asn1Tag.Context(4, true));
             }
             reader.ThrowIfNotEmpty();
             return value;

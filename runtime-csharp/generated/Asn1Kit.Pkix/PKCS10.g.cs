@@ -33,7 +33,7 @@ public sealed class CertificationRequestInfo
                 });
             });
             SubjectPublicKeyInfo.Encode(writer, Asn1Tag.Sequence);
-            writer.WriteSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), Attributes, static (inner, item) =>
+            writer.WriteSetOf(Asn1Tag.Context(0, true), Attributes, static (inner, item) =>
             {
                 item.Encode(inner, Asn1Tag.Sequence);
             });
@@ -50,7 +50,7 @@ public sealed class CertificationRequestInfo
             value.Version = reader.ReadIntegerValue(Asn1Tag.Integer);
             value.Subject = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => inner.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Pkix.AttributeTypeAndValue.Decode(inner, Asn1Tag.Sequence)));
             value.SubjectPublicKeyInfo = Asn1Kit.Pkix.SubjectPublicKeyInfo.Decode(reader, Asn1Tag.Sequence);
-            value.Attributes = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), static inner => Asn1Kit.Pkcs10.Attribute.Decode(inner, Asn1Tag.Sequence));
+            value.Attributes = reader.ReadSetOf(Asn1Tag.Context(0, true), static inner => Asn1Kit.Pkcs10.Attribute.Decode(inner, Asn1Tag.Sequence));
             reader.ThrowIfNotEmpty();
             return value;
         }

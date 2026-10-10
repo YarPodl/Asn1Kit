@@ -588,7 +588,7 @@ public sealed class FirmwarePackageLoadReceipt
             }
             if (DecryptKeyID != null)
             {
-                writer.WriteOctetString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false), DecryptKeyID.Value.Span);
+                writer.WriteOctetString(Asn1Tag.Context(1), DecryptKeyID.Value.Span);
             }
         }
     }
@@ -611,9 +611,9 @@ public sealed class FirmwarePackageLoadReceipt
             {
                 value.TrustAnchorKeyID = reader.ReadOctetString(Asn1Tag.OctetString);
             }
-            if (reader.TryPeekTag(out var tag_DecryptKeyID) && tag_DecryptKeyID.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
+            if (reader.TryPeekTag(out var tag_DecryptKeyID) && tag_DecryptKeyID.MatchesIgnoreConstructed(Asn1Tag.Context(1)))
             {
-                value.DecryptKeyID = reader.ReadOctetString(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
+                value.DecryptKeyID = reader.ReadOctetString(Asn1Tag.Context(1));
             }
             reader.ThrowIfNotEmpty();
             return value;
@@ -663,7 +663,7 @@ public sealed class FirmwarePackageLoadError
             }
             if (Config != null)
             {
-                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), Config, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Context(1, true), Config, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
@@ -693,9 +693,9 @@ public sealed class FirmwarePackageLoadError
             {
                 value.FwPkgName = Asn1Kit.Modern.CMSFirmwareWrapper2009.PreferredOrLegacyPackageIdentifier.Decode(reader);
             }
-            if (reader.TryPeekTag(out var tag_Config) && tag_Config.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            if (reader.TryPeekTag(out var tag_Config) && tag_Config.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
             {
-                value.Config = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), static inner => Asn1Kit.Modern.CMSFirmwareWrapper2009.CurrentFWConfig.Decode(inner, Asn1Tag.Sequence));
+                value.Config = reader.ReadSequenceOf(Asn1Tag.Context(1, true), static inner => Asn1Kit.Modern.CMSFirmwareWrapper2009.CurrentFWConfig.Decode(inner, Asn1Tag.Sequence));
             }
             reader.ThrowIfNotEmpty();
             return value;

@@ -114,13 +114,13 @@ public sealed class SMIMEEncryptionKeyPreference
         switch (Kind)
         {
             case SMIMEEncryptionKeyPreferenceKind.IssuerAndSerialNumber:
-                IssuerAndSerialNumber.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                IssuerAndSerialNumber.Encode(writer, Asn1Tag.Context(0, true));
                 break;
             case SMIMEEncryptionKeyPreferenceKind.ReceipentKeyId:
-                ReceipentKeyId.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
+                ReceipentKeyId.Encode(writer, Asn1Tag.Context(1, true));
                 break;
             case SMIMEEncryptionKeyPreferenceKind.SubjectAltKeyIdentifier:
-                writer.WriteOctetString(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false), SubjectAltKeyIdentifier.Value.Span);
+                writer.WriteOctetString(Asn1Tag.Context(2), SubjectAltKeyIdentifier.Value.Span);
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -130,20 +130,20 @@ public sealed class SMIMEEncryptionKeyPreference
     {
         if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
         var value = new SMIMEEncryptionKeyPreference();
-        if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+        if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
         {
             value.Kind = SMIMEEncryptionKeyPreferenceKind.IssuerAndSerialNumber;
-            value.IssuerAndSerialNumber = Asn1Kit.Modern.CryptographicMessageSyntax2009.IssuerAndSerialNumber.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+            value.IssuerAndSerialNumber = Asn1Kit.Modern.CryptographicMessageSyntax2009.IssuerAndSerialNumber.Decode(reader, Asn1Tag.Context(0, true));
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
         {
             value.Kind = SMIMEEncryptionKeyPreferenceKind.ReceipentKeyId;
-            value.ReceipentKeyId = Asn1Kit.Modern.CryptographicMessageSyntax2009.RecipientKeyIdentifier.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
+            value.ReceipentKeyId = Asn1Kit.Modern.CryptographicMessageSyntax2009.RecipientKeyIdentifier.Decode(reader, Asn1Tag.Context(1, true));
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(2)))
         {
             value.Kind = SMIMEEncryptionKeyPreferenceKind.SubjectAltKeyIdentifier;
-            value.SubjectAltKeyIdentifier = reader.ReadOctetString(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false));
+            value.SubjectAltKeyIdentifier = reader.ReadOctetString(Asn1Tag.Context(2));
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;

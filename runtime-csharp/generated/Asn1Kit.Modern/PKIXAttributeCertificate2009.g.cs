@@ -233,18 +233,18 @@ public sealed class Holder
         {
             if (BaseCertificateID != null)
             {
-                BaseCertificateID.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                BaseCertificateID.Encode(writer, Asn1Tag.Context(0, true));
             }
             if (EntityName != null)
             {
-                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), EntityName, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Context(1, true), EntityName, static (inner, item) =>
                 {
                     item.Encode(inner);
                 });
             }
             if (ObjectDigestInfo != null)
             {
-                ObjectDigestInfo.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true));
+                ObjectDigestInfo.Encode(writer, Asn1Tag.Context(2, true));
             }
         }
     }
@@ -256,17 +256,17 @@ public sealed class Holder
         using (reader.EnterSequence(tag))
         {
             var value = new Holder();
-            if (reader.TryPeekTag(out var tag_BaseCertificateID) && tag_BaseCertificateID.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            if (reader.TryPeekTag(out var tag_BaseCertificateID) && tag_BaseCertificateID.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
             {
-                value.BaseCertificateID = Asn1Kit.Modern.PKIXAttributeCertificate2009.IssuerSerial.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                value.BaseCertificateID = Asn1Kit.Modern.PKIXAttributeCertificate2009.IssuerSerial.Decode(reader, Asn1Tag.Context(0, true));
             }
-            if (reader.TryPeekTag(out var tag_EntityName) && tag_EntityName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            if (reader.TryPeekTag(out var tag_EntityName) && tag_EntityName.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
             {
-                value.EntityName = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), static inner => Asn1Kit.Modern.PKIX1Implicit2009.GeneralName.Decode(inner));
+                value.EntityName = reader.ReadSequenceOf(Asn1Tag.Context(1, true), static inner => Asn1Kit.Modern.PKIX1Implicit2009.GeneralName.Decode(inner));
             }
-            if (reader.TryPeekTag(out var tag_ObjectDigestInfo) && tag_ObjectDigestInfo.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
+            if (reader.TryPeekTag(out var tag_ObjectDigestInfo) && tag_ObjectDigestInfo.MatchesIgnoreConstructed(Asn1Tag.Context(2, true)))
             {
-                value.ObjectDigestInfo = Asn1Kit.Modern.PKIXAttributeCertificate2009.ObjectDigestInfo.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true));
+                value.ObjectDigestInfo = Asn1Kit.Modern.PKIXAttributeCertificate2009.ObjectDigestInfo.Decode(reader, Asn1Tag.Context(2, true));
             }
             reader.ThrowIfNotEmpty();
             return value;
@@ -367,7 +367,7 @@ public sealed class AttCertIssuer
                 });
                 break;
             case AttCertIssuerKind.V2Form:
-                V2Form.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                V2Form.Encode(writer, Asn1Tag.Context(0, true));
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -382,10 +382,10 @@ public sealed class AttCertIssuer
             value.Kind = AttCertIssuerKind.V1Form;
             value.V1Form = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIX1Implicit2009.GeneralName.Decode(inner));
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
         {
             value.Kind = AttCertIssuerKind.V2Form;
-            value.V2Form = Asn1Kit.Modern.PKIXAttributeCertificate2009.V2Form.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+            value.V2Form = Asn1Kit.Modern.PKIXAttributeCertificate2009.V2Form.Decode(reader, Asn1Tag.Context(0, true));
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
@@ -414,11 +414,11 @@ public sealed class V2Form
             }
             if (BaseCertificateID != null)
             {
-                BaseCertificateID.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                BaseCertificateID.Encode(writer, Asn1Tag.Context(0, true));
             }
             if (ObjectDigestInfo != null)
             {
-                ObjectDigestInfo.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
+                ObjectDigestInfo.Encode(writer, Asn1Tag.Context(1, true));
             }
         }
     }
@@ -434,13 +434,13 @@ public sealed class V2Form
             {
                 value.IssuerName = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIX1Implicit2009.GeneralName.Decode(inner));
             }
-            if (reader.TryPeekTag(out var tag_BaseCertificateID) && tag_BaseCertificateID.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            if (reader.TryPeekTag(out var tag_BaseCertificateID) && tag_BaseCertificateID.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
             {
-                value.BaseCertificateID = Asn1Kit.Modern.PKIXAttributeCertificate2009.IssuerSerial.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true));
+                value.BaseCertificateID = Asn1Kit.Modern.PKIXAttributeCertificate2009.IssuerSerial.Decode(reader, Asn1Tag.Context(0, true));
             }
-            if (reader.TryPeekTag(out var tag_ObjectDigestInfo) && tag_ObjectDigestInfo.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            if (reader.TryPeekTag(out var tag_ObjectDigestInfo) && tag_ObjectDigestInfo.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
             {
-                value.ObjectDigestInfo = Asn1Kit.Modern.PKIXAttributeCertificate2009.ObjectDigestInfo.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true));
+                value.ObjectDigestInfo = Asn1Kit.Modern.PKIXAttributeCertificate2009.ObjectDigestInfo.Decode(reader, Asn1Tag.Context(1, true));
             }
             reader.ThrowIfNotEmpty();
             return value;
@@ -579,19 +579,19 @@ public sealed class Target
         switch (Kind)
         {
             case TargetKind.TargetName:
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(0, true)))
                 {
                     TargetName.Encode(writer);
                 }
                 break;
             case TargetKind.TargetGroup:
-                using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+                using (writer.EnterExplicit(Asn1Tag.Context(1, true)))
                 {
                     TargetGroup.Encode(writer);
                 }
                 break;
             case TargetKind.TargetCert:
-                TargetCert.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true));
+                TargetCert.Encode(writer, Asn1Tag.Context(2, true));
                 break;
             default: throw new Asn1Exception("CHOICE has no alternative.");
         }
@@ -601,28 +601,28 @@ public sealed class Target
     {
         if (!reader.TryPeekTag(out var peeked)) throw new Asn1Exception("Empty CHOICE.");
         var value = new Target();
-        if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+        if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
         {
             value.Kind = TargetKind.TargetName;
-            using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            using (reader.EnterExplicit(Asn1Tag.Context(0, true)))
             {
                 value.TargetName = Asn1Kit.Modern.PKIX1Implicit2009.GeneralName.Decode(reader);
                 reader.ThrowIfNotEmpty();
             }
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
         {
             value.Kind = TargetKind.TargetGroup;
-            using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            using (reader.EnterExplicit(Asn1Tag.Context(1, true)))
             {
                 value.TargetGroup = Asn1Kit.Modern.PKIX1Implicit2009.GeneralName.Decode(reader);
                 reader.ThrowIfNotEmpty();
             }
         }
-        else if (peeked.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
+        else if (peeked.MatchesIgnoreConstructed(Asn1Tag.Context(2, true)))
         {
             value.Kind = TargetKind.TargetCert;
-            value.TargetCert = Asn1Kit.Modern.PKIXAttributeCertificate2009.TargetCert.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true));
+            value.TargetCert = Asn1Kit.Modern.PKIXAttributeCertificate2009.TargetCert.Decode(reader, Asn1Tag.Context(2, true));
         }
         else throw new Asn1Exception("Unknown CHOICE alternative.");
         return value;
@@ -661,7 +661,7 @@ public sealed class TargetCert
         {
             var value = new TargetCert();
             value.TargetCertificate = Asn1Kit.Modern.PKIXAttributeCertificate2009.IssuerSerial.Decode(reader, Asn1Tag.Sequence);
-            if (reader.TryPeekTag(out var tag_TargetName) && (tag_TargetName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)) || tag_TargetName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)) || tag_TargetName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, false)) || tag_TargetName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 3, true)) || tag_TargetName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 4, true)) || tag_TargetName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 5, true)) || tag_TargetName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 6, false)) || tag_TargetName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 7, false)) || tag_TargetName.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 8, false))))
+            if (reader.TryPeekTag(out var tag_TargetName) && (tag_TargetName.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)) || tag_TargetName.MatchesIgnoreConstructed(Asn1Tag.Context(1)) || tag_TargetName.MatchesIgnoreConstructed(Asn1Tag.Context(2)) || tag_TargetName.MatchesIgnoreConstructed(Asn1Tag.Context(3, true)) || tag_TargetName.MatchesIgnoreConstructed(Asn1Tag.Context(4, true)) || tag_TargetName.MatchesIgnoreConstructed(Asn1Tag.Context(5, true)) || tag_TargetName.MatchesIgnoreConstructed(Asn1Tag.Context(6)) || tag_TargetName.MatchesIgnoreConstructed(Asn1Tag.Context(7)) || tag_TargetName.MatchesIgnoreConstructed(Asn1Tag.Context(8))))
             {
                 value.TargetName = Asn1Kit.Modern.PKIX1Implicit2009.GeneralName.Decode(reader);
             }
@@ -698,14 +698,14 @@ public sealed class AAControls
             }
             if (PermittedAttrs != null)
             {
-                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), PermittedAttrs, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Context(0, true), PermittedAttrs, static (inner, item) =>
                 {
                     inner.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, item);
                 });
             }
             if (ExcludedAttrs != null)
             {
-                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), ExcludedAttrs, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Context(1, true), ExcludedAttrs, static (inner, item) =>
                 {
                     inner.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, item);
                 });
@@ -728,13 +728,13 @@ public sealed class AAControls
             {
                 value.PathLenConstraint = reader.ReadIntegerValue(Asn1Tag.Integer);
             }
-            if (reader.TryPeekTag(out var tag_PermittedAttrs) && tag_PermittedAttrs.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            if (reader.TryPeekTag(out var tag_PermittedAttrs) && tag_PermittedAttrs.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
             {
-                value.PermittedAttrs = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), static inner => inner.ReadOid(Asn1Tag.ObjectIdentifier));
+                value.PermittedAttrs = reader.ReadSequenceOf(Asn1Tag.Context(0, true), static inner => inner.ReadOid(Asn1Tag.ObjectIdentifier));
             }
-            if (reader.TryPeekTag(out var tag_ExcludedAttrs) && tag_ExcludedAttrs.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            if (reader.TryPeekTag(out var tag_ExcludedAttrs) && tag_ExcludedAttrs.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
             {
-                value.ExcludedAttrs = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true), static inner => inner.ReadOid(Asn1Tag.ObjectIdentifier));
+                value.ExcludedAttrs = reader.ReadSequenceOf(Asn1Tag.Context(1, true), static inner => inner.ReadOid(Asn1Tag.ObjectIdentifier));
             }
             if (reader.TryPeekTag(out var tag_PermitUnSpecified) && tag_PermitUnSpecified.MatchesIgnoreConstructed(Asn1Tag.Boolean))
             {
@@ -762,7 +762,7 @@ public sealed class IetfAttrSyntax
         {
             if (PolicyAuthority != null)
             {
-                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), PolicyAuthority, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Context(0, true), PolicyAuthority, static (inner, item) =>
                 {
                     item.Encode(inner);
                 });
@@ -781,9 +781,9 @@ public sealed class IetfAttrSyntax
         using (reader.EnterSequence(tag))
         {
             var value = new IetfAttrSyntax();
-            if (reader.TryPeekTag(out var tag_PolicyAuthority) && tag_PolicyAuthority.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            if (reader.TryPeekTag(out var tag_PolicyAuthority) && tag_PolicyAuthority.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
             {
-                value.PolicyAuthority = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), static inner => Asn1Kit.Modern.PKIX1Implicit2009.GeneralName.Decode(inner));
+                value.PolicyAuthority = reader.ReadSequenceOf(Asn1Tag.Context(0, true), static inner => Asn1Kit.Modern.PKIX1Implicit2009.GeneralName.Decode(inner));
             }
             value.Values = reader.ReadSequenceOf(Asn1Tag.Sequence, static inner => Asn1Kit.Modern.PKIXAttributeCertificate2009.IetfAttrSyntax_Values_Item.Decode(inner));
             reader.ThrowIfNotEmpty();
@@ -850,12 +850,12 @@ public sealed class RoleSyntax
         {
             if (RoleAuthority != null)
             {
-                writer.WriteSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), RoleAuthority, static (inner, item) =>
+                writer.WriteSequenceOf(Asn1Tag.Context(0, true), RoleAuthority, static (inner, item) =>
                 {
                     item.Encode(inner);
                 });
             }
-            using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            using (writer.EnterExplicit(Asn1Tag.Context(1, true)))
             {
                 RoleName.Encode(writer);
             }
@@ -869,11 +869,11 @@ public sealed class RoleSyntax
         using (reader.EnterSequence(tag))
         {
             var value = new RoleSyntax();
-            if (reader.TryPeekTag(out var tag_RoleAuthority) && tag_RoleAuthority.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true)))
+            if (reader.TryPeekTag(out var tag_RoleAuthority) && tag_RoleAuthority.MatchesIgnoreConstructed(Asn1Tag.Context(0, true)))
             {
-                value.RoleAuthority = reader.ReadSequenceOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, true), static inner => Asn1Kit.Modern.PKIX1Implicit2009.GeneralName.Decode(inner));
+                value.RoleAuthority = reader.ReadSequenceOf(Asn1Tag.Context(0, true), static inner => Asn1Kit.Modern.PKIX1Implicit2009.GeneralName.Decode(inner));
             }
-            using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            using (reader.EnterExplicit(Asn1Tag.Context(1, true)))
             {
                 value.RoleName = Asn1Kit.Modern.PKIX1Implicit2009.GeneralName.Decode(reader);
                 reader.ThrowIfNotEmpty();
@@ -950,8 +950,8 @@ public sealed class SecurityCategoryRfc3281
     {
         using (writer.EnterSequence(tag))
         {
-            writer.WriteObjectIdentifier(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), Type);
-            using (writer.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            writer.WriteObjectIdentifier(Asn1Tag.Context(0), Type);
+            using (writer.EnterExplicit(Asn1Tag.Context(1, true)))
             {
                 writer.WriteAny(Value);
             }
@@ -965,8 +965,8 @@ public sealed class SecurityCategoryRfc3281
         using (reader.EnterSequence(tag))
         {
             var value = new SecurityCategoryRfc3281();
-            value.Type = reader.ReadOid(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
-            using (reader.EnterExplicit(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, true)))
+            value.Type = reader.ReadOid(Asn1Tag.Context(0));
+            using (reader.EnterExplicit(Asn1Tag.Context(1, true)))
             {
                 value.Value = reader.ReadAny();
                 reader.ThrowIfNotEmpty();
@@ -993,14 +993,14 @@ public sealed class ClearanceRfc3281
     {
         using (writer.EnterSequence(tag))
         {
-            writer.WriteObjectIdentifier(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false), PolicyId);
+            writer.WriteObjectIdentifier(Asn1Tag.Context(0), PolicyId);
             if (ClassList.Value != s_defaultClassList)
             {
-                ClassList.Encode(writer, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
+                ClassList.Encode(writer, Asn1Tag.Context(1));
             }
             if (SecurityCategories != null)
             {
-                writer.WriteSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), SecurityCategories, static (inner, item) =>
+                writer.WriteSetOf(Asn1Tag.Context(2, true), SecurityCategories, static (inner, item) =>
                 {
                     item.Encode(inner, Asn1Tag.Sequence);
                 });
@@ -1015,14 +1015,14 @@ public sealed class ClearanceRfc3281
         using (reader.EnterSequence(tag))
         {
             var value = new ClearanceRfc3281();
-            value.PolicyId = reader.ReadOid(new Asn1Tag(Asn1TagClass.ContextSpecific, 0, false));
-            if (reader.TryPeekTag(out var tag_ClassList) && tag_ClassList.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false)))
+            value.PolicyId = reader.ReadOid(Asn1Tag.Context(0));
+            if (reader.TryPeekTag(out var tag_ClassList) && tag_ClassList.MatchesIgnoreConstructed(Asn1Tag.Context(1)))
             {
-                value.ClassList = Asn1Kit.Modern.PKIXAttributeCertificate2009.ClassList.Decode(reader, new Asn1Tag(Asn1TagClass.ContextSpecific, 1, false));
+                value.ClassList = Asn1Kit.Modern.PKIXAttributeCertificate2009.ClassList.Decode(reader, Asn1Tag.Context(1));
             }
-            if (reader.TryPeekTag(out var tag_SecurityCategories) && tag_SecurityCategories.MatchesIgnoreConstructed(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true)))
+            if (reader.TryPeekTag(out var tag_SecurityCategories) && tag_SecurityCategories.MatchesIgnoreConstructed(Asn1Tag.Context(2, true)))
             {
-                value.SecurityCategories = reader.ReadSetOf(new Asn1Tag(Asn1TagClass.ContextSpecific, 2, true), static inner => Asn1Kit.Modern.PKIXAttributeCertificate2009.SecurityCategoryRfc3281.Decode(inner, Asn1Tag.Sequence));
+                value.SecurityCategories = reader.ReadSetOf(Asn1Tag.Context(2, true), static inner => Asn1Kit.Modern.PKIXAttributeCertificate2009.SecurityCategoryRfc3281.Decode(inner, Asn1Tag.Sequence));
             }
             reader.ThrowIfNotEmpty();
             return value;

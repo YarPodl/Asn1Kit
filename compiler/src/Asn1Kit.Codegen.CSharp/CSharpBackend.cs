@@ -3070,15 +3070,18 @@ public sealed partial class CSharpBackend : ILanguageBackend
 
     private static string TagFromIr(IrTag tag, bool constructed)
     {
-        var cls = tag.Class.ToLowerInvariant() switch
-        {
-            TagClasses.Universal => "Asn1TagClass.Universal",
-            TagClasses.Application => "Asn1TagClass.Application",
-            TagClasses.Private => "Asn1TagClass.Private",
-            _ => "Asn1TagClass.ContextSpecific"
-        };
+        var number = tag.Number.ToString(CultureInfo.InvariantCulture);
+        var args = constructed ? $"{number}, true" : number;
 
-        return $"new Asn1Tag({cls}, {tag.Number.ToString(CultureInfo.InvariantCulture)}, {(constructed ? "true" : "false")})";
+        return tag.Class.ToLowerInvariant() switch
+        {
+            TagClasses.Application => $"Asn1Tag.Application({args})",
+            TagClasses.Private => $"Asn1Tag.Private({args})",
+            TagClasses.Universal => constructed
+                ? $"new Asn1Tag(Asn1TagClass.Universal, {number}, true)"
+                : $"new Asn1Tag(Asn1TagClass.Universal, {number})",
+            _ => $"Asn1Tag.Context({args})"
+        };
     }
 
     private string UniversalTag(IrDocument document, IrModule module, TypeExpr type)
