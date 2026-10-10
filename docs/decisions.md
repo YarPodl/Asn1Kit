@@ -168,7 +168,7 @@
 
 **Причина.** Нужен нативный runtime с тем же soft-profile и hex-матрицей, без runtime-зависимостей и без копирования фикстур. `std::span` сам по себе не удерживает backing store.
 
-**Последствие.** Стандарт C++20; публичный `asn1kit::bytes` (span + type-erased keep-alive); библиотека без внешних deps; gtest и nlohmann_json — Conan 2 только для `tests/` (или FetchContent). Windows и Linux равноправны (MSVC/Clang/GCC). Soft-read и constructed string/BIT/OCTET под DER совпадают с эталонным runtime; фикстуры — `runtime-csharp/fixtures/ber-der`. Codegen C++ — отдельный крупный шаг.
+**Последствие.** Стандарт C++20; публичный `asn1kit::bytes` (span + type-erased keep-alive); библиотека без внешних deps; gtest и nlohmann_json — Conan 2 только для `tests/` (или FetchContent). Windows и Linux равноправны (MSVC/Clang/GCC). Soft-read и constructed string/BIT/OCTET под DER совпадают с эталонным runtime; фикстуры — `runtime-csharp/fixtures/ber-der`. Публичные SEQUENCE/SET scopes — move-only RAII + рекомендуемые `with_*` (auto empty-check на success). Codegen C++ — отдельный крупный шаг.
 
 ## Репозиторий — три каталога продуктов
 

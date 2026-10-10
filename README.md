@@ -10,7 +10,7 @@ The repository is organized into the following directories:
 | --- | --- |
 | [compiler/](compiler/) | IR, compiler, C# code generator, CLI, and their tests |
 | [runtime-csharp/](runtime-csharp/) | C# BER/DER runtime and its tests |
-| [runtime-cpp/](runtime-cpp/) | Placeholder for a future C++ runtime |
+| [runtime-cpp/](runtime-cpp/) | C++20 BER/DER runtime (primitives + SEQUENCE/SET scopes) |
 
 ## Components
 

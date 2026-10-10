@@ -6,6 +6,7 @@ add_executable(asn1kit_tests
     primitive_codec_tests.cpp
     bytes_tests.cpp
     exception_diagnostics_tests.cpp
+    constructed_scope_tests.cpp
 )
 
 target_link_libraries(asn1kit_tests

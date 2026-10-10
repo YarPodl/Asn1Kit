@@ -6,12 +6,53 @@
 #include "constructed_decoder.hpp"
 #include "text_codec.hpp"
 
+#include <exception>
+#include <stdexcept>
 #include <utility>
 
 namespace asn1kit {
 
 // Forward declare boolean decoder implemented in boolean.cpp
 bool decode_boolean_contents(std::span<const std::uint8_t> contents, encoding enc);
+
+reader_scope::reader_scope(
+    reader* r,
+    detail::decode_cursor saved_cursor,
+    std::uint64_t expected_scope_token,
+    std::uint64_t parent_scope_token) noexcept
+    : reader_(r)
+    , saved_cursor_(std::move(saved_cursor))
+    , expected_scope_token_(expected_scope_token)
+    , parent_scope_token_(parent_scope_token)
+    , active_(true) {}
+
+reader_scope::reader_scope(reader_scope&& other) noexcept
+    : reader_(std::exchange(other.reader_, nullptr))
+    , saved_cursor_(std::move(other.saved_cursor_))
+    , expected_scope_token_(other.expected_scope_token_)
+    , parent_scope_token_(other.parent_scope_token_)
+    , active_(std::exchange(other.active_, false)) {}
+
+reader_scope::~reader_scope() noexcept {
+    if (!active_) {
+        return;
+    }
+    try {
+        end();
+    } catch (...) {
+        std::terminate();
+    }
+}
+
+void reader_scope::end() {
+    if (!active_) {
+        return;
+    }
+    reader_->pop_contents_window(
+        std::move(saved_cursor_), expected_scope_token_, parent_scope_token_);
+    active_ = false;
+    reader_ = nullptr;
+}
 
 reader::reader(bytes data, encoding enc, reader_options options)
     : cursor_(std::move(data), enc, std::move(options)) {}
@@ -38,6 +79,11 @@ void reader::throw_if_not_empty() const {
 
 bool reader::try_peek_tag(tag& out) const {
     return cursor_.try_peek_tag(out);
+}
+
+bool reader::next_is(const tag& expected) const {
+    tag peeked;
+    return try_peek_tag(peeked) && peeked.matches_ignore_constructed(expected);
 }
 
 bool reader::read_boolean(const tag& expected) {
@@ -128,6 +174,53 @@ std::string reader::read_string(const tag& expected, string_form form) {
 utc_date_time reader::read_time(const tag& expected, time_form form) {
     auto data = detail::constructed_decoder::read_octet_like(cursor_, expected);
     return detail::text_codec::parse_time(data.span(), form, encoding_rules());
+}
+
+reader_scope reader::enter_sequence(const tag& expected) {
+    return push_contents_window(read_constructed_contents(expected));
+}
+
+reader_scope reader::enter_set(const tag& expected) {
+    return push_contents_window(read_constructed_contents(expected));
+}
+
+reader_scope reader::enter_explicit(const tag& expected) {
+    return push_contents_window(read_constructed_contents(expected));
+}
+
+reader_scope reader::enter_encoded(bytes encoded) {
+    return push_contents_window(std::move(encoded));
+}
+
+reader_scope reader::push_contents_window(bytes contents) {
+    auto nested = cursor_.create_nested(std::move(contents));
+    detail::decode_cursor saved = std::move(cursor_);
+    cursor_ = std::move(nested);
+    const std::uint64_t parent = active_scope_token_;
+    const std::uint64_t token = ++next_scope_token_;
+    active_scope_token_ = token;
+    return reader_scope(this, std::move(saved), token, parent);
+}
+
+void reader::pop_contents_window(
+    detail::decode_cursor saved_cursor,
+    std::uint64_t expected_scope_token,
+    std::uint64_t parent_scope_token) {
+    if (active_scope_token_ != expected_scope_token) {
+        throw std::logic_error("ASN.1 reader scopes must be disposed once in LIFO order.");
+    }
+    cursor_ = std::move(saved_cursor);
+    active_scope_token_ = parent_scope_token;
+}
+
+bytes reader::read_constructed_contents(const tag& expected) {
+    const std::size_t tlv_start = cursor_.absolute_offset();
+    auto tlv = cursor_.read_tlv();
+    ensure_expected_tag(tlv_start, tlv.tag_value, expected);
+    if (!tlv.tag_value.constructed()) {
+        throw exception("Tag " + expected.to_string() + " must be constructed.", tlv_start);
+    }
+    return std::move(tlv.contents);
 }
 
 bytes reader::read_primitive_contents(const tag& expected) {

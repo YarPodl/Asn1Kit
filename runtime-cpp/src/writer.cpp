@@ -5,10 +5,53 @@
 
 #include "text_codec.hpp"
 
-#include <array>
+#include <exception>
+#include <stdexcept>
+#include <utility>
 #include <vector>
 
 namespace asn1kit {
+
+writer_scope::writer_scope(
+    writer* w,
+    detail::encode_frame frame,
+    std::uint64_t scope_token,
+    std::uint64_t parent_scope_token,
+    bool sort_der_set_of) noexcept
+    : writer_(w)
+    , frame_(frame)
+    , scope_token_(scope_token)
+    , parent_scope_token_(parent_scope_token)
+    , sort_der_set_of_(sort_der_set_of)
+    , active_(true) {}
+
+writer_scope::writer_scope(writer_scope&& other) noexcept
+    : writer_(std::exchange(other.writer_, nullptr))
+    , frame_(other.frame_)
+    , scope_token_(other.scope_token_)
+    , parent_scope_token_(other.parent_scope_token_)
+    , sort_der_set_of_(other.sort_der_set_of_)
+    , active_(std::exchange(other.active_, false)) {}
+
+writer_scope::~writer_scope() noexcept {
+    if (!active_) {
+        return;
+    }
+    try {
+        end();
+    } catch (...) {
+        std::terminate();
+    }
+}
+
+void writer_scope::end() {
+    if (!active_) {
+        throw std::logic_error("ASN.1 writer scopes must be disposed once in LIFO order.");
+    }
+    writer_->end_scope(frame_, scope_token_, parent_scope_token_, sort_der_set_of_);
+    active_ = false;
+    writer_ = nullptr;
+}
 
 writer::writer(encoding enc) : encoding_(enc) {}
 
@@ -18,11 +61,18 @@ std::size_t writer::encoded_length() const noexcept { return buffer_.length(); }
 
 void writer::ensure_capacity(std::size_t capacity) { buffer_.ensure_capacity(capacity); }
 
-void writer::reset() { buffer_.reset(); }
+void writer::reset() {
+    ensure_no_active_scope("reset");
+    buffer_.reset();
+}
 
-std::vector<std::uint8_t> writer::encode() const { return buffer_.to_vector(); }
+std::vector<std::uint8_t> writer::encode() const {
+    ensure_no_active_scope("encode");
+    return buffer_.to_vector();
+}
 
 bool writer::try_encode(std::span<std::uint8_t> destination, std::size_t& bytes_written) const {
+    ensure_no_active_scope("try_encode");
     return buffer_.try_copy_to(destination, bytes_written);
 }
 
@@ -128,6 +178,53 @@ void writer::write_time(const tag& t, const utc_date_time& value, time_form form
 
 void writer::write_raw(std::span<const std::uint8_t> tlv) {
     buffer_.write_raw(tlv);
+}
+
+writer_scope writer::enter_sequence(const tag& t) {
+    return begin_scope(t, false);
+}
+
+writer_scope writer::enter_set(const tag& t) {
+    return begin_scope(t, false);
+}
+
+writer_scope writer::enter_sequence_of(const tag& t) {
+    return begin_scope(t, false);
+}
+
+writer_scope writer::enter_set_of(const tag& t) {
+    return begin_scope(t, encoding_ == encoding::der);
+}
+
+writer_scope writer::enter_explicit(const tag& t) {
+    return begin_scope(t, false);
+}
+
+writer_scope writer::begin_scope(const tag& t, bool sort_der_set_of) {
+    const std::uint64_t parent = active_scope_token_;
+    const std::uint64_t token = ++next_scope_token_;
+    auto frame = buffer_.begin_constructed(t);
+    active_scope_token_ = token;
+    return writer_scope(this, frame, token, parent, sort_der_set_of);
+}
+
+void writer::end_scope(
+    const detail::encode_frame& frame,
+    std::uint64_t scope_token,
+    std::uint64_t parent_scope_token,
+    bool sort_der_set_of) {
+    if (active_scope_token_ != scope_token) {
+        throw std::logic_error("ASN.1 writer scopes must be disposed once in LIFO order.");
+    }
+    buffer_.end_constructed(frame, sort_der_set_of);
+    active_scope_token_ = parent_scope_token;
+}
+
+void writer::ensure_no_active_scope(const char* operation) const {
+    if (active_scope_token_ != 0) {
+        throw std::logic_error(
+            std::string("Cannot ") + operation + " while an ASN.1 writer scope is active.");
+    }
 }
 
 } // namespace asn1kit

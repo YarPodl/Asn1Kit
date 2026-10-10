@@ -10,7 +10,7 @@
 | --- | --- |
 | [compiler/](compiler/) | IR, компилятор, codegen (C#), CLI и их тесты |
 | [runtime-csharp/](runtime-csharp/) | C# runtime BER/DER и его тесты |
-| [runtime-cpp/](runtime-cpp/) | Заглушка под будущий C++ runtime |
+| [runtime-cpp/](runtime-cpp/) | C++20 BER/DER runtime (примитивы + SEQUENCE/SET scopes) |
 
 ## Компоненты
 
