@@ -1,0 +1,13 @@
+﻿library,repo,branch,sha,fetched_at,scopes,downloaded_files,failures,tree_truncated,dependency
+Asn1c,vlm/asn1c,master,8a274c3f99761f249b6c205e1c89be1b1cb7c669,2026-10-10T15:47:58Z,tests;skeletons/tests;tests/tests-skeletons,262,[],False,Дополнительные зависимости не собирались; анализ исходников.
+Asn1crypto,wbond/asn1crypto,master,a767d2daa8ef4549d497b67a0304561c2eb4b858,2026-10-10T15:48:04Z,tests,157,[],False,Дополнительные зависимости не собирались; анализ исходников.
+Botan,randombit/botan,master,9e77f3d520ff1baebe6468c2aed2ba112796853f,2026-10-10T15:48:12Z,src/tests;src/fuzzer;src/tests/data/asn1;src/tests/data/asn1*,110,[],False,Дополнительные зависимости не собирались; анализ исходников.
+BouncyCastle,bcgit/bc-csharp,master,4ccf1e6d2785aa8c3745723c21a4aa027eace7df,2026-10-10T15:47:32Z,crypto/test/src/asn1/test;crypto/test/src/cms/test;crypto/test/src/x509/test;crypto/test/src/pkcs/test;crypto/test/src/dvcs/test,116,[],False,Дополнительные зависимости не собирались; анализ исходников.
+Dotnet,dotnet/runtime,main,f5dec974b0218b88eb9ba31652f71467aa5f7482,2026-10-10T15:47:25Z,src/libraries/System.Formats.Asn1/tests,47,[],False,Дополнительные зависимости не собирались; анализ исходников.
+Go,golang/go,master,966c78ed74f45dc3a3ffcb5c4a983de0271a17ce,2026-10-10T15:48:21Z,src/encoding/asn1,2,[],False,Дополнительные зависимости не собирались; анализ исходников.
+Libtasn1,gnutls/libtasn1,master,2f1943343b113e1f5648373a9b109072ffb48c99,2026-10-10T15:47:45Z,tests;fuzz,673,[],False,Дополнительные зависимости не собирались; анализ исходников.
+MbedCrypto,Mbed-TLS/TF-PSA-Crypto,gitlink in MbedTLS de23569aa95ac518e1c794236219dcb04fca4ae5,a22ae75f6f09a9b395454e1182547fa06710f0b3,2026-10-10T15:52:02Z,tests/suites;tests/src,11,[],False,gitlink TF-PSA-Crypto of MbedTLS
+MbedTLS,Mbed-TLS/mbedtls,development,de23569aa95ac518e1c794236219dcb04fca4ae5,2026-10-10T15:48:16Z,tests/suites;tests/src;tests/scripts,9,[],False,Дополнительные зависимости не собирались; анализ исходников.
+OpenSSL,openssl/openssl,master,1300f36c559a74d28ac1e74b166bcb22429d97db,2026-10-10T15:47:40Z,test;fuzz,87,[],False,Дополнительные зависимости не собирались; анализ исходников.
+Pyasn1,pyasn1/pyasn1,main,8003397013f6c0e0eabbd2605770477acbc2dc44,2026-10-10T15:48:01Z,tests,34,[],False,Дополнительные зависимости не собирались; анализ исходников.
+Rasn,librasn/rasn,main,3c431c0117e612d58e56c7807fde5a2742772444,2026-10-10T15:48:26Z,tests;src/ber;src/der;standards/pkix;standards/cms;fuzz,95,[],False,Дополнительные зависимости не собирались; анализ исходников.

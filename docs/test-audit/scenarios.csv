@@ -1,0 +1,173 @@
+﻿id,group,title,query,compare
+boolean.der,BOOLEAN / NULL,"BOOLEAN: DER false=00, true=FF и round-trip",boolean|bool,True
+boolean.ber,BOOLEAN / NULL,"BOOLEAN: ненулевой BER true, отдельная DER-политика",boolean|bool,True
+boolean.malformed,BOOLEAN / NULL,"BOOLEAN: пустой/длинный contents, constructed и wrong tag",boolean|bool,True
+null.der,BOOLEAN / NULL,"NULL: пустое значение, DER-байты и round-trip",null,True
+null.malformed,BOOLEAN / NULL,NULL: непустой contents и чужой tag,null,True
+integer.der,INTEGER / ENUMERATED,"INTEGER: signed DER, границы 127/128 и -128/-129",integer|int32|int64,True
+integer.big,INTEGER / ENUMERATED,INTEGER: значение шире 64 бит,big.?integer|integer|170141183,True
+integer.fixed-width,INTEGER / ENUMERATED,"INTEGER: Int32/UInt32/Int64/UInt64, включая крайние значения",int32|uint32|int64|uint64,True
+integer.overflow,INTEGER / ENUMERATED,INTEGER: переполнение фиксированной ширины и unsigned negative,overflow|out.?of.?range|too.?much|negative|integer,True
+integer.nonminimal,INTEGER / ENUMERATED,"INTEGER: non-minimal contents, явные permissive/strict ожидания",non.?minimal|redundant|unsafe.integer|malformed.integer,True
+integer.raw-preserve,INTEGER / ENUMERATED,Запись INTEGER из contents: сохранение non-minimal байтов,integer|encoded.?value,True
+integer.invalid,INTEGER / ENUMERATED,INTEGER: empty contents и truncated TLV,integer|truncat,True
+integer.zero,INTEGER / ENUMERATED,INTEGER: default/Zero и канонический ноль,integer|zero,True
+enumerated.der,INTEGER / ENUMERATED,"ENUMERATED: DER, signed values и explicit numbers",enumerated,True
+enumerated.unknown,INTEGER / ENUMERATED,ENUMERATED: значение вне объявленных enum members,enumerated|unknown.enum,True
+enumerated.nonminimal,INTEGER / ENUMERATED,"ENUMERATED: empty, wrong tag и non-minimal contents",enumerated,True
+length.boundaries,Теги / длины / TLV,Definite length: 0/1/127/128/255/256/65535/65536,length|65536|65_536|0x10000,True
+length.nonminimal,Теги / длины / TLV,Длинная форма для короткой длины: default reject / allow profile,non.?minimal|length,True
+tag.high,Теги / длины / TLV,High-tag-number: minimal base-128 encode/decode,high.?tag|tag.number|tagvalue,True
+tag.invalid,Теги / длины / TLV,"High-tag-number: <31, leading-zero, truncated и Int32 overflow",tag|overflow,True
+tag.mismatch,Теги / длины / TLV,Отказ typed decode при чужом tag,wrong.tag|tagmust|mismatch|bad.tag,True
+length.overflow,Теги / длины / TLV,Length > Int32 и длина за границей входного буфера,length|overflow|limit,True
+tlv.truncated,Теги / длины / TLV,Truncated tag/length/contents: контролируемый отказ,truncat|insufficient|invaliddata,True
+ber.eoc,Теги / длины / TLV,EOC вне indefinite-контейнера и truncated EOC,eoc|end.of.contents|indefinite,True
+ber.primitive-indefinite,Теги / длины / TLV,Отказ primitive indefinite length,indefinite|primitive,True
+der.indefinite,Теги / длины / TLV,DER: отказ indefinite length,indefinite|der,True
+der.constructed-strings,Теги / длины / TLV,DER: явная проверка отказа constructed OCTET/BIT/character string,constructed|der,True
+ber.depth-limit,Теги / длины / TLV,Враждебная BER-вложенность: лимит и отказ до исчерпания стека,depth|recurs|nesting.limit|eoc.decoding,True
+ber.size-limit,Теги / длины / TLV,Лимит размера materialized constructed value до большой аллокации,max.object|size.limit|stream.limit|out.of.bounds,True
+octet.der,OCTET / BIT STRING,OCTET STRING: пустой/непустой primitive и DER-байты,octet,True
+octet.ber-constructed,OCTET / BIT STRING,OCTET STRING: BER constructed definite/indefinite concat,octet|constructed,True
+octet.nested-segments,OCTET / BIT STRING,"OCTET STRING: nested constructed, неверный segment tag, пустые сегменты",octet|constructed|string,True
+bit.der,OCTET / BIT STRING,"BIT STRING: empty, unused bits 0/3/5/7 и exact DER",bit.?string|pad.?bits,True
+bit.trailing,OCTET / BIT STRING,"BIT STRING: nonzero trailing bits; soft read, strict reject, write reject",bit.?string|pad.?bits|unused,True
+bit.ber-constructed,OCTET / BIT STRING,BIT STRING: BER constructed indefinite concat,bit.?string|constructed,True
+bit.invalid,OCTET / BIT STRING,BIT STRING: empty contents и invalid unused count,bit.?string|unused|pad,True
+bit.segment-padding,OCTET / BIT STRING,BIT STRING: unused bits в промежуточном BER-сегменте и empty constructed,bit.?string|unused|pad|constructed,True
+oid.der,OID,"OID: dotted↔arcs↔contents, DER и round-trip",object.identifier|oid,True
+oid.large-second,OID,"OID: первая дуга 2 и вторая дуга 999, base-128 первого subidentifier",2\.999|object.identifier|oid,True
+oid.invalid,OID,OID: empty/truncated contents и неверная dotted строка,object.identifier|oid,True
+oid.overlong,OID,"OID: overlong base-128, default reject / allow profile",overlong|object.identifier|oid,True
+oid.extreme-arcs,OID,OID: очень большие дуги и numeric overflow subidentifier,object.identifier|oid|overflow,True
+string.utf8,Строки,UTF8String: encode/decode с известным содержимым,utf8|character.string,True
+string.printable,Строки,PrintableString: encode/decode с известным содержимым,printable|character.string,True
+string.ia5,Строки,IA5String: encode/decode с известным содержимым,ia5|character.string,True
+string.numeric,Строки,NumericString: encode/decode с известным содержимым,numeric|character.string,True
+string.visible,Строки,VisibleString: encode/decode с известным содержимым,visible|character.string,True
+string.bmp,Строки,BMPString: encode/decode с известным содержимым,bmp|character.string,True
+string.universal,Строки,UniversalString: encode/decode с известным содержимым,universal|character.string,True
+string.legacy-charsets,Строки,Teletex/T61/General/Graphic/Videotex: заданная Latin-1 политика,teletex|t61|generalstring|graphicstring|videotex,True
+string.invalid-characters,Строки,Printable/Numeric/IA5: invalid character; BMP: odd length,invalid|string|bmp|printable|numeric|ia5,True
+string.ber-constructed,Строки,Character string: BER constructed definite/indefinite concat,constructed|string,True
+string.unicode-invalid,Строки,"Malformed UTF-8, surrogate/non-BMP и invalid UTF-32 scalar",utf8|unicode|surrogate|codepoint|ucs4,True
+time.utc,Время,UTCTime: DER bytes и round-trip,utctime|utc.time,True
+time.pivot,Время,UTCTime: 49→2049 и 50→1950,pivot|2049|1950|utc,True
+time.generalized,Время,GeneralizedTime: whole seconds и fractional DER,generalized|fraction,True
+time.fraction-precision,Время,"GeneralizedTime: 1..7 digits, rounding/trimming, 0 digits и malformed fractions",fraction|generalized,True
+time.ber-offset,Время,BER time: offset ±hhmm/no seconds; отдельный DER reject,offset|time.zone|without.seconds|generalized|utc,True
+time.invalid-calendar,Время,"Время: invalid month/day/leap day, invalid offset и encode year range",invalid|leap|month|day|time,True
+sequence.roundtrip,Составные типы,"SEQUENCE: empty/nested values, field asserts и round-trip",sequence|nested,True
+sequence.constructed-tag,Составные типы,SEQUENCE: отказ primitive tag,sequence|constructed,True
+sequence.of,Составные типы,SEQUENCE OF: empty/multiple elements и BER indefinite,sequence.of|sequenceof|indefinite,True
+set.fields,Составные типы,SET: порядок полей encoder и decode в ином порядке,set|ordering,True
+set.duplicate,Составные типы,SET: duplicate component / unknown field reject,duplicate|set|unknown,True
+setof.der-sort,Составные типы,"SET OF: lexicographic DER sort, переставленные входные элементы",set.of|setof|sorting|ordering,True
+setof.ber-order,Составные типы,SET OF: BER сохраняет исходный порядок,set.of|setof|ber,True
+setof.decode-sort,Составные типы,DER SET OF reader: явная проверка отказа unsorted input,sort|setof|set.of,True
+tags.explicit-implicit,Составные типы,EXPLICIT/IMPLICIT: вложенная обёртка и context-specific primitive,explicit|implicit|tag,True
+choice.optional,Составные типы,"OPTIONAL CHOICE: присутствует/отсутствует, следующий обязательный field",choice|optional,True
+default.scalar,Составные типы,DEFAULT: omit равного scalar и восстановление отсутствующего значения,default,True
+default.structured,Составные типы,"DEFAULT: структурное равенство, fresh objects/arrays и отсутствие aliasing",default,True
+extension.sequence,Составные типы,"Extensible SEQUENCE/SET: skip additions, trailing roots и extension groups",extension|extensible,True
+extension.choice,Составные типы,Extensible CHOICE: unknown alternative сохраняется как TLV,extensible|choice|unknown,True
+any.raw,ANY / CONTAINING,"ANY: tag, contents, полный TLV, BER indefinite и byte-preserving rewrite",any|encoded.value|open,True
+any.single-value,ANY / CONTAINING,"ANY/typed factory: exactly one TLV, trailing bytes, full callback consumption",encoded.value|any|trailing,True
+containing.typed,ANY / CONTAINING,CONTAINING: typed OCTET STRING encode/decode и сохранение contents,containing|octet|contained,True
+containing.opaque,ANY / CONTAINING,"CONTAINING: неизвестный selector остаётся opaque, BER concat",containing|open.type|opentype|octet,True
+containing.invalid,ANY / CONTAINING,"Known CONTAINING: corrupt, wrong tag, truncated и trailing reject",containing|open.type|opentype,True
+containing.bit-align,ANY / CONTAINING,Typed BIT STRING CONTAINING: octet alignment required,bitstring|bit.string|containing,True
+open.known-unknown,Open types,Известный selector: typed decode; неизвестный: raw без угадывания,open.?type|opentype|any|unknown,True
+open.mismatch,Open types,Известный selector с неверным wire kind: typed getter reject,open.?type|opentype|mismatch|wrong,True
+open.integer-selector,Open types,INTEGER selectors и custom integer-key descriptors,open.?type|selector|governor,True
+open.ancestor,Open types,"Ancestor/nested selector, включая коллекции и отложенный SET decode",open.?type|selector|ancestor,True
+open.duplicate,Open types,"Typed lookup: duplicate до decode, absence→false",duplicate|open.?type,True
+open.descriptor-metadata,Open types,"Typed setter/Create: selector и payload согласованы, metadata сохранены",binding|descriptor|open.?type,True
+open.table-key-identity,Open types,"Одинаковый leaf type, разные OID и таблицы: раздельный lookup",open.?type|binding|selector,True
+open.string-choice,Open types,"CHOICE leaf: typed descriptor, разные string codecs и AsString projection",choice|open.?type|string,True
+open.null-absent,Open types,"NULL binding, encoded NULL и absent OPTIONAL различаются",null|absent|optional|algorithm,True
+open.wrapped-containers,Open types,Lazy/retained/struct sources: typed setters обновляют правильный owner,binding|descriptor,True
+open.nested-of,Open types,Typed OF payload: nested arrays и callback state,open.?type|sequenceof|setof,True
+open.catalog-reuse,Open types,Descriptor/codecs/catalog reuse и table-scoped route naming,binding|descriptor|specializ,True
+api.reader-constructor,API / ownership,"Reader: array/memory slices, custom MemoryManager, invalid/null args",constructor|memory|offset|argument,True
+api.reader-view,API / ownership,"Primitive/ANY decode: alias исходного массива, правильный offset",memory|alias|overlap,True
+api.owned-copy,API / ownership,Constructed value и Clone/ToArray: detach от исходного буфера,clone|copy|memory|constructed,True
+api.try-copy,API / ownership,"Try read/write: short destination, written=0, cursor unchanged и retry",tryencode|trycopy|destination|buffer,True
+api.peek-transaction,API / ownership,"Peek malformed tag: exception без продвижения, повторный вызов",peek|hasdata,True
+api.scope-reader,API / ownership,"Reader scopes: LIFO, copied/stale/double disposal и восстановление окна",scope|dispose|state,True
+api.scope-writer,API / ownership,"Writer scopes: LIFO, double disposal, snapshot/reset при открытом scope",scope|dispose|popsequence|popsetof,True
+api.unwind-error,API / ownership,Unwind сохраняет decode exception; writer финализирует partial value,exception|scope|throw,True
+api.trailing,API / ownership,Top-level/nested full consumption: trailing data reject без сдвига cursor,trailing|throwifnotempty|remaining|hasdata,True
+api.null-callback,API / ownership,Null callbacks/collections и callback без consumption,null|callback|consume,True
+api.lazy,API / ownership,"Lazy: deferred decode, single materialization, deferred error и rewrite",lazy|defer|cache,True
+api.retained,API / ownership,Retain original TLV; изменение Value влияет на последующий encode,retain|original|encoded,True
+api.reset,API / ownership,Writer Reset: output очищен и writer пригоден повторно,reset|clear,True
+api.capacity,API / ownership,EnsureCapacity: доказательство роста/reuse capacity,capacity|buffer,True
+api.zero-copy-callback,API / ownership,Encode callback: доказательство отсутствия копии,callback|allocation|memory,True
+api.format,API / ownership,"Invariant formatting значений, ANY tag/length и lazy без materialization",format|tostring|culture,True
+api.codec-adapters,API / ownership,Shared primitive codec singleton и contained/OF/string-choice adapters,codec|adapter,True
+api.allocations,API / ownership,Числовые factories/TryGet/OF: assert числа выделенных байтов,allocat|getallocated,True
+api.tag-constants,API / ownership,"Universal SET tag = 17, class/constructed metadata",tag|set,True
+codegen.oid-catalog,Generated C#,"OID catalog: constants, lazy reuse, defaults и cross-module refs",oid|codegen,True
+codegen.collisions,Generated C#,Явный отказ generation при collision имён или incompatible DEFAULT,collision|default|name,True
+codegen.aliases,Generated C#,Aliases/OF/CHOICE свёрнуты; named BIT flags и enum representations,alias|choice|enumerated,True
+codegen.integer-representation,Generated C#,Inference fixed-width / explicit representation option и отказ invalid choice,integer|representation,True
+codegen.namespaces,Generated C#,Cross-module qualified/unqualified C# refs и namespace options,namespace|import|qualif,True
+codegen.golden,Generated C#,Регенерация сравнивается с полным committed C# golden и списком файлов,golden|codegen,True
+codegen.product-options,Generated C#,Поставляемые lazy/retainEncoded/struct options действительно эмитятся,lazy|retain|struct,True
+codegen.compile,Generated C#,"Roslyn компилирует generated C# и probe, выполняется Decode/Encode",compile|codegen,True
+pkix.certificate,PKIX / CRL,"Внешний Certificate: fields, SPKI/signature lengths и exact DER round-trip",certificate|x509|pkix,True
+pkix.crl,PKIX / CRL,"Внешний CRL: fields, revoked entries и exact DER round-trip",crl|certificatelist,True
+pkix.negative,PKIX / CRL,Certificate/CRL: root wrong tag и усечение внешнего вектора,certificate|crl|x509|decode,True
+extension.ski,PKIX / CRL,SubjectKeyIdentifier: typed fields и extnValue round-trip,SubjectKeyIdentifier|extension,True
+extension.aki,PKIX / CRL,AuthorityKeyIdentifier: typed fields и extnValue round-trip,AuthorityKeyIdentifier|extension,True
+extension.key-usage,PKIX / CRL,KeyUsage: typed fields и extnValue round-trip,KeyUsage|extension,True
+extension.basic-constraints,PKIX / CRL,BasicConstraints: typed fields и extnValue round-trip,BasicConstraints|extension,True
+extension.policies,PKIX / CRL,CertificatePolicies: typed fields и extnValue round-trip,CertificatePolicies|extension,True
+extension.name-constraints,PKIX / CRL,NameConstraints: typed fields и extnValue round-trip,NameConstraints|extension,True
+extension.san,PKIX / CRL,SubjectAltName: typed fields и extnValue round-trip,SubjectAltName|extension,True
+crl.extensions,PKIX / CRL,CRLReason/CRLNumber/AKI: typed values и extnValue DER,crl|revok,True
+generalname.forms,PKIX / CRL,GeneralName: DNS/rfc822/URI/IP/registeredID; field assertions,generalname|subjectaltname,True
+generalname.othername,PKIX / CRL,otherName: XMPP/DNS SRV/SMTPUTF8 typed lookup и exact DER,othername|generalname,True
+pkix.directory-string,PKIX / CRL,DirectoryString: UTF8/Printable/BMP и Name typed values,directorystring|x509name|rdn,True
+pkix.extended-extensions,PKIX / CRL,EKU/CDP/AIA/PolicyConstraints и другие extensions: codec vectors,extendedkeyusage|distributionpoint|authorityinfo|policyconstraint|extension,True
+pkix.certificate-variants,PKIX / CRL,"v1, unique IDs, empty subject и GeneralizedTime validity: codec vectors",uniqueid|version|generalized|certificate,True
+pkix.crl-variants,PKIX / CRL,"Empty CRL, absent nextUpdate, delta/IDP/invalidityDate: codec vectors",crl|nextupdate|invaliditydate|delta,True
+pkix.attribute-cert,PKIX / CRL,AttributeCertificate v1/v2: внешний codec vector,attribute.certificate|attrcert|acert,True
+pkix.csr,PKIX / CRL,"PKCS#10 CSR: fields, attributes и DER round-trip",pkcs10|certificationrequest|csr,True
+pkix.ocsp,PKIX / CRL,"OCSPRequest/Response: status, extensions и DER round-trip",ocsp,True
+pkix.algorithm-params,PKIX / CRL,AlgorithmIdentifier: NULL/absent и RSASSA-PSS defaults,algorithmidentifier|pss|algorithm,True
+cms.attached,CMS / DVCS,ContentInfo/SignedData attached: структура и extraction payload,signeddata|signed.data|contentinfo|cms,True
+cms.signed-attrs,CMS / DVCS,"signedAttrs: [0]→universal SET, retained contents и claimed digest",signedattr|signed.attr|cms,True
+cms.signer-id,CMS / DVCS,SignerIdentifier: IssuerAndSerial / SKID и lookup сертификата,signer|subjectkeyidentifier|cms,True
+cms.malformed,CMS / DVCS,Malformed/trailing CMS и отсутствие обязательных application fields,cms|signeddata|contentinfo,True
+cms.opaque-data,CMS / DVCS,CMS id-data: opaque payload и exact DER round-trip,contentinfo|cms|pkcs7,True
+cms.from-scratch,CMS / DVCS,Создание нового attached SignedData с signedAttrs и encode/decode,signeddata|cms|pkcs7,True
+cms.detached,CMS / DVCS,Detached SignedData: codec decode/encode при absent eContent,detached|signeddata,True
+cms.multiple-signers,CMS / DVCS,SignedData: несколько SignerInfo и разных identifiers,signers|signerinfos|signeddata,True
+cms.ber-indefinite,CMS / DVCS,CMS ContentInfo/SignedData: внешний BER indefinite vector,indefinite|ber|cms,True
+cms.enveloped,CMS / DVCS,EnvelopedData: recipient variants и внешний codec vector,enveloped|recipient,True
+cms.other-types,CMS / DVCS,Authenticated/AuthEnveloped/Compressed/Encrypted/DigestedData: codec,authenticated|authenveloped|compressed|digested|encrypteddata,True
+cms.external-rfc,CMS / DVCS,CMS: независимо опубликованные RFC 4134/OpenSSL/BC vectors,rfc4134|rfc.4134|cms,True
+dvcs.request,CMS / DVCS,"DVCSRequest: message/messageImprint, nonce, exact DER",dvcs,True
+dvcs.response,CMS / DVCS,DVCSResponse: error/certInfo и round-trip,dvcs,True
+dvcs.negative,CMS / DVCS,DVCS: wrong root tag и truncated vector reject,dvcs,True
+quality.vectors,Методы тестирования,Опубликованные primitive vectors с provenance и exact-byte expectations,vector|sample|testdata,True
+quality.oracle,Методы тестирования,Двусторонний независимый oracle и byte equality,oracle|cross|interop,True
+quality.second-oracle,Методы тестирования,Второй независимый codec oracle поверх первого,interop|oracle|bouncycastle|openssl,True
+quality.fuzz,Методы тестирования,ASN.1 fuzz harness / deterministic fuzz regressions с конкретной property,fuzz|havoc|fuzzer|afl|oss.fuzz,True
+quality.property,Методы тестирования,Генерация значений/байтов и property round-trip с assert,random|property|proptest|quickcheck,True
+demo.dn-format,Demo integration,RFC4514 rendering: multi-valued RDN и escaped characters,rdn,False
+demo.crypto,Demo integration,Demo: настоящая RSA/chain проверка отдельным verifier,rsa,False
+demo.chain,Demo integration,Demo: intermediate/AKI/SKI issuer selection и missing link,issuer,False
+demo.commands,Demo integration,"Demo CLI: exit codes, dumps и educational placeholder sign",command,False
+demo.retained-names,Demo integration,Demo: original issuer TLV для сравнения имён,issuer,False
+default.explicit-reject,Дополнительные внешние сценарии,"DER decoder: явно записанный DEFAULT, отдельная accept/reject policy",default.*reject|default.value,True
+real.codec,Дополнительные внешние сценарии,"REAL: binary/decimal encoding и значения IEEE, включая infinities",real|infinity|nan,True
+relative-oid.codec,Дополнительные внешние сценарии,RELATIVE-OID: encode/decode и malformed base-128,relative.?oid|roid,True
+constraint.enforcement,Дополнительные внешние сценарии,Generated/schema decode: enforce SIZE и value constraints,constraint|size.constraint,True
+stream.fragmented,Дополнительные внешние сценарии,Потоковый decoder: неполные fragments и повторное продолжение,stream|fragment|partial|restart,True
+set.tag-order,Дополнительные внешние сценарии,"DER SET: порядок полей по ASN.1 tags, отдельно от SET OF",set.*order|set.components,True
+string.repertoire,Дополнительные внешние сценарии,Полная негативная матрица допустимых символов каждого string kind,string|alphabet|character,True
+api.redecode-error,Дополнительные внешние сценарии,Повторный decode повреждённого lazy/sequence поля не меняет ожидаемую ошибку,broken.*repeated|reuse|mutation,True

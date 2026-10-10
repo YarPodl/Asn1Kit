@@ -1,0 +1,157 @@
+{
+  "audit_date": "2026-10-10",
+  "mode": "static_artifact_validation_only",
+  "product_tests_run": false,
+  "passed": true,
+  "counts": {
+    "methods": 354,
+    "included": 282,
+    "excluded": 72,
+    "facts": 306,
+    "theories": 48,
+    "theory_rows": 245,
+    "included_theory_rows": 223,
+    "xunit_rows": 551,
+    "included_xunit_rows": 462,
+    "parameters": 313,
+    "json_vector_rows": 91,
+    "scenarios": 172,
+    "matrix_rows": 167,
+    "cells": 2004,
+    "evidence": 2672,
+    "local_files": 262,
+    "foreign_files": 1603,
+    "helper_methods": 170,
+    "runtime_api_methods": 222,
+    "status_counts": {
+      "есть": 162,
+      "частично": 405,
+      "не подтверждено": 875,
+      "не найден": 201,
+      "неприменимо": 354,
+      "косвенно": 7
+    },
+    "matrix_libraries": 12,
+    "active_matrix_evidence": 2004,
+    "component_evidence": 668
+  },
+  "gaps": 32,
+  "external_data_rows": 3327,
+  "input_files": 1865,
+  "source_file_declarations": 51,
+  "checks_total": 26111,
+  "check_groups": [
+    {
+      "group": "csv_ids",
+      "checks": 13,
+      "passed": true
+    },
+    {
+      "group": "csv_preserved",
+      "checks": 13,
+      "passed": true
+    },
+    {
+      "group": "csv_format",
+      "checks": 26,
+      "passed": true
+    },
+    {
+      "group": "inventory_links",
+      "checks": 1062,
+      "passed": true
+    },
+    {
+      "group": "inventory_scope",
+      "checks": 354,
+      "passed": true
+    },
+    {
+      "group": "parameter_links",
+      "checks": 313,
+      "passed": true
+    },
+    {
+      "group": "provider_links",
+      "checks": 22,
+      "passed": true
+    },
+    {
+      "group": "fixture_links",
+      "checks": 321,
+      "passed": true
+    },
+    {
+      "group": "matrix_scope",
+      "checks": 167,
+      "passed": true
+    },
+    {
+      "group": "matrix_proofs",
+      "checks": 2004,
+      "passed": true
+    },
+    {
+      "group": "aggregation",
+      "checks": 167,
+      "passed": true
+    },
+    {
+      "group": "evidence_links",
+      "checks": 3507,
+      "passed": true
+    },
+    {
+      "group": "positive_proofs",
+      "checks": 743,
+      "passed": true
+    },
+    {
+      "group": "local_source_links",
+      "checks": 808,
+      "passed": true
+    },
+    {
+      "group": "pinned_sources",
+      "checks": 7163,
+      "passed": true
+    },
+    {
+      "group": "negative_proofs",
+      "checks": 330,
+      "passed": true
+    },
+    {
+      "group": "external_data_links",
+      "checks": 3327,
+      "passed": true
+    },
+    {
+      "group": "gap_links",
+      "checks": 32,
+      "passed": true
+    },
+    {
+      "group": "counts",
+      "checks": 26,
+      "passed": true
+    },
+    {
+      "group": "markdown_index",
+      "checks": 2,
+      "passed": true
+    },
+    {
+      "group": "markdown_links",
+      "checks": 5711,
+      "passed": true
+    }
+  ],
+  "recorded_source_audit": {
+    "passed": true,
+    "checks_total": 28169,
+    "product_tests_run": false,
+    "source_file_declarations": 51,
+    "input_files": 1865
+  }
+}

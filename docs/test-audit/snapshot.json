@@ -1,0 +1,73 @@
+{
+  "audit_date": "2026-10-10",
+  "head": "1c906a3456dd0d60557a60c84531301851002d6e",
+  "analysis_mode": "source_only; no dotnet/ctest/coverage/benchmark/fuzz execution",
+  "local_oracle": "System.Formats.Asn1 NuGet8.0.1",
+  "counts": {
+    "methods": 354,
+    "included": 282,
+    "excluded": 72,
+    "facts": 306,
+    "theories": 48,
+    "theory_rows": 245,
+    "included_theory_rows": 223,
+    "xunit_rows": 551,
+    "included_xunit_rows": 462,
+    "parameters": 313,
+    "json_vector_rows": 91,
+    "scenarios": 172,
+    "matrix_rows": 167,
+    "cells": 2004,
+    "evidence": 2672,
+    "local_files": 262,
+    "foreign_files": 1603,
+    "helper_methods": 170,
+    "runtime_api_methods": 222,
+    "status_counts": {
+      "есть": 162,
+      "частично": 405,
+      "не подтверждено": 875,
+      "не найден": 201,
+      "неприменимо": 354,
+      "косвенно": 7
+    },
+    "matrix_libraries": 12,
+    "active_matrix_evidence": 2004,
+    "component_evidence": 668
+  },
+  "external_revisions": {
+    "Asn1c": "8a274c3f99761f249b6c205e1c89be1b1cb7c669",
+    "Asn1crypto": "a767d2daa8ef4549d497b67a0304561c2eb4b858",
+    "Botan": "9e77f3d520ff1baebe6468c2aed2ba112796853f",
+    "BouncyCastle": "4ccf1e6d2785aa8c3745723c21a4aa027eace7df",
+    "Dotnet": "f5dec974b0218b88eb9ba31652f71467aa5f7482",
+    "Go": "966c78ed74f45dc3a3ffcb5c4a983de0271a17ce",
+    "Libtasn1": "2f1943343b113e1f5648373a9b109072ffb48c99",
+    "MbedCrypto": "a22ae75f6f09a9b395454e1182547fa06710f0b3",
+    "MbedTLS": "de23569aa95ac518e1c794236219dcb04fca4ae5",
+    "OpenSSL": "1300f36c559a74d28ac1e74b166bcb22429d97db",
+    "Pyasn1": "8003397013f6c0e0eabbd2605770477acbc2dc44",
+    "Rasn": "3c431c0117e612d58e56c7807fde5a2742772444"
+  },
+  "matrix_columns": [
+    "Asn1Kit",
+    "Dotnet",
+    "BouncyCastle",
+    "OpenSSL",
+    "Libtasn1",
+    "Asn1c",
+    "Pyasn1",
+    "Asn1crypto",
+    "Botan",
+    "MbedTLS",
+    "Go",
+    "Rasn"
+  ],
+  "aggregation": "Максимальная подтверждённая сила проверки Runtime/Legacy/Modern/Synthetic; частичные проверки не повышаются до полной автоматически.",
+  "input_manifest": {
+    "file": "files.csv",
+    "local_source": "working_tree",
+    "hash_algorithm": "SHA256"
+  },
+  "external_sources": "sources.csv"
+}

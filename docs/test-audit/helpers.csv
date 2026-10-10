@@ -1,0 +1,1320 @@
+﻿helper_id,file,line,name,signature,assertions,source
+H0001,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateCodecTests.cs,76,AssertDn,"private static void AssertDn(List<ExpectedDnAttribute> expected, AttributeTypeAndValue[][] actual)","Assert.Equal(expected.Count, flat.Count)
+Assert.Equal(expected[i].Oid, flat[i].Oid)
+Assert.Equal(expected[i].Value, flat[i].Value)
+Assert.True(attribute.TryDecodeValue( AttributeTypeAndValueValueBindings.AsString.DirectoryString6, out var cn))
+Assert.Equal(expected[i].Value, cn)
+Assert.True(attribute.TryDecodeValue( AttributeTypeAndValueValueBindings.AsString.Oid2546, out var country))
+Assert.Equal(expected[i].Value, country)
+Assert.True(attribute.TryDecodeValue( AttributeTypeAndValueValueBindings.AsString.DirectoryString9, out var org))
+Assert.Equal(expected[i].Value, org)","{
+        var actualAttributes = actual.SelectMany(rdn => rdn).ToArray();
+        var flat = PkixFixtures.FlattenName(actual);
+        Assert.Equal(expected.Count, flat.Count);
+        for (var i = 0; i < expected.Count; i++)
+        {
+            Assert.Equal(expected[i].Oid, flat[i].Oid);
+            Assert.Equal(expected[i].Value, flat[i].Value);
+            var attribute = actualAttributes[i];
+            switch (expected[i].Oid)
+            {
+                case ""2.5.4.3"":
+                    Assert.True(attribute.TryDecodeValue(
+                        AttributeTypeAndValueValueBindings.AsString.DirectoryString6, out var cn));
+                    Assert.Equal(expected[i].Value, cn);
+                    break;
+                case ""2.5.4.6"":
+                    Assert.True(attribute.TryDecodeValue(
+                        AttributeTypeAndValueValueBindings.AsString.Oid2546, out var country));
+                    Assert.Equal(expected[i].Value, country);
+                    break;
+                case ""2.5.4.10"":
+                    Assert.True(attribute.TryDecodeValue(
+                        AttributeTypeAndValueValueBindings.AsString.DirectoryString9, out var org));
+                    Assert.Equal(expected[i].Value, org);
+                    break;
+                default:
+                    throw new Xunit.Sdk.XunitException($""Unexpected test-fixture DN OID '{expected[i].Oid}'."");
+            }
+        }
+    }"
+H0002,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateExtensionCodecTests.cs,73,AssertSubjectKeyIdentifier,"private static void AssertSubjectKeyIdentifier(Extension extension, ExpectedExtension expected)","Assert.False(string.IsNullOrEmpty(expected.SubjectKeyIdentifierHex))
+Assert.Equal(expected.SubjectKeyIdentifierHex, PkixFixtures.ToHex(keyId.Span))","{
+        Assert.False(string.IsNullOrEmpty(expected.SubjectKeyIdentifierHex));
+        var keyId = PkixFixtures.ExtnValueReader(extension).ReadOctetString(Asn1Tag.OctetString);
+        Assert.Equal(expected.SubjectKeyIdentifierHex, PkixFixtures.ToHex(keyId.Span));
+        PkixFixtures.AssertExtnValueRoundTrip(extension, writer => writer.WriteOctetString(Asn1Tag.OctetString, keyId.Span));
+    }"
+H0003,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateExtensionCodecTests.cs,81,AssertAuthorityKeyIdentifier,"private static void AssertAuthorityKeyIdentifier(Extension extension, ExpectedExtension expected)","Assert.False(string.IsNullOrEmpty(expected.AuthorityKeyIdentifierHex))
+Assert.NotNull(aki.KeyIdentifier)
+Assert.Equal(expected.AuthorityKeyIdentifierHex, PkixFixtures.ToHex(aki.KeyIdentifier!.Value.Span))","{
+        Assert.False(string.IsNullOrEmpty(expected.AuthorityKeyIdentifierHex));
+        var aki = AuthorityKeyIdentifier.Decode(PkixFixtures.ExtnValueReader(extension));
+        Assert.NotNull(aki.KeyIdentifier);
+        Assert.Equal(expected.AuthorityKeyIdentifierHex, PkixFixtures.ToHex(aki.KeyIdentifier!.Value.Span));
+        PkixFixtures.AssertExtnValueRoundTrip(extension, aki.Encode);
+    }"
+H0004,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateExtensionCodecTests.cs,90,AssertKeyUsage,"private static void AssertKeyUsage(Extension extension, ExpectedExtension expected)","Assert.NotNull(expected.KeyUsage)
+Assert.Equal(PkixFixtures.ParseKeyUsage(expected.KeyUsage!), keyUsage.Flags)","{
+        Assert.NotNull(expected.KeyUsage);
+        var keyUsage = KeyUsage.Decode(PkixFixtures.ExtnValueReader(extension));
+        Assert.Equal(PkixFixtures.ParseKeyUsage(expected.KeyUsage!), keyUsage.Flags);
+        PkixFixtures.AssertExtnValueRoundTrip(extension, keyUsage.Encode);
+    }"
+H0005,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateExtensionCodecTests.cs,98,AssertBasicConstraints,"private static void AssertBasicConstraints(Extension extension, ExpectedExtension expected)","Assert.NotNull(expected.BasicConstraints)
+Assert.Equal(expected.BasicConstraints!.Ca, bc.CA)
+Assert.NotNull(bc.PathLenConstraint)
+Assert.Equal(expected.BasicConstraints.PathLen!.Value, bc.PathLenConstraint!.Value.GetInt32())
+Assert.Null(bc.PathLenConstraint)","{
+        Assert.NotNull(expected.BasicConstraints);
+        var bc = BasicConstraints.Decode(PkixFixtures.ExtnValueReader(extension));
+        Assert.Equal(expected.BasicConstraints!.Ca, bc.CA);
+        if (expected.BasicConstraints.PathLenPresent)
+        {
+                    Assert.NotNull(bc.PathLenConstraint);
+                    Assert.Equal(expected.BasicConstraints.PathLen!.Value, bc.PathLenConstraint!.Value.GetInt32());
+        }
+        else
+        {
+            Assert.Null(bc.PathLenConstraint);
+        }
+
+        PkixFixtures.AssertExtnValueRoundTrip(extension, bc.Encode);
+    }"
+H0006,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateExtensionCodecTests.cs,116,AssertCertificatePolicies,"private static void AssertCertificatePolicies(Extension extension, ExpectedExtension expected)","Assert.NotNull(expected.CertificatePolicies)
+Assert.Equal(expected.CertificatePolicies!, policies.Select(p => p.PolicyIdentifier.ToString()).ToList())","{
+        Assert.NotNull(expected.CertificatePolicies);
+        var policies = PkixFixtures.ExtnValueReader(extension)
+            .ReadSequenceOf(Asn1Tag.Sequence, static reader => PolicyInformation.Decode(reader, Asn1Tag.Sequence));
+        Assert.Equal(expected.CertificatePolicies!, policies.Select(p => p.PolicyIdentifier.ToString()).ToList());
+        PkixFixtures.AssertExtnValueRoundTrip(extension, writer =>
+        {
+            using (writer.EnterSequenceOf(Asn1Tag.Sequence))
+            {
+                foreach (var item in policies)
+                {
+                    item.Encode(writer, Asn1Tag.Sequence);
+                }
+            }
+        });
+    }"
+H0007,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateExtensionCodecTests.cs,134,AssertNameConstraints,"private static void AssertNameConstraints(Extension extension, ExpectedExtension expected)","Assert.NotNull(expected.NameConstraints)
+Assert.NotNull(nc.PermittedSubtrees)
+Assert.Equal(expected.NameConstraints!.PermittedDns, dns)
+Assert.NotNull(nc.ExcludedSubtrees)
+Assert.Null(nc.ExcludedSubtrees)","{
+        Assert.NotNull(expected.NameConstraints);
+        var nc = NameConstraints.Decode(PkixFixtures.ExtnValueReader(extension));
+        Assert.NotNull(nc.PermittedSubtrees);
+        var dns = nc.PermittedSubtrees!
+            .Where(s => s.Base.Kind == GeneralNameKind.DNSName)
+            .Select(s => s.Base.DNSName!)
+            .ToList();
+        Assert.Equal(expected.NameConstraints!.PermittedDns, dns);
+        if (expected.NameConstraints.ExcludedPresent)
+        {
+            Assert.NotNull(nc.ExcludedSubtrees);
+        }
+        else
+        {
+            Assert.Null(nc.ExcludedSubtrees);
+        }
+
+        PkixFixtures.AssertExtnValueRoundTrip(extension, nc.Encode);
+    }"
+H0008,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateExtensionCodecTests.cs,156,AssertSubjectAltName,"private static void AssertSubjectAltName(Extension extension, ExpectedExtension expected)","Assert.NotNull(expected.SubjectAltName)
+Assert.Equal(expected.SubjectAltName!.Count, names.Length)
+Assert.Equal(GeneralNameKind.DNSName, got.Kind)
+Assert.Equal(want.Value, got.DNSName)
+Assert.Equal(GeneralNameKind.Rfc822Name, got.Kind)
+Assert.Equal(want.Value, got.Rfc822Name)
+Assert.Equal(GeneralNameKind.UniformResourceIdentifier, got.Kind)
+Assert.Equal(want.Value, got.UniformResourceIdentifier)","{
+        Assert.NotNull(expected.SubjectAltName);
+        var names = PkixFixtures.ExtnValueReader(extension)
+            .ReadSequenceOf(Asn1Tag.Sequence, static reader => GeneralName.Decode(reader));
+        Assert.Equal(expected.SubjectAltName!.Count, names.Length);
+        for (var i = 0; i < names.Length; i++)
+        {
+            var want = expected.SubjectAltName[i];
+            var got = names[i];
+            switch (want.Kind.ToLowerInvariant())
+            {
+                case ""dnsname"":
+                    Assert.Equal(GeneralNameKind.DNSName, got.Kind);
+                    Assert.Equal(want.Value, got.DNSName);
+                    break;
+                case ""rfc822name"":
+                    Assert.Equal(GeneralNameKind.Rfc822Name, got.Kind);
+                    Assert.Equal(want.Value, got.Rfc822Name);
+                    break;
+                case ""uniformresourceidentifier"":
+                    Assert.Equal(GeneralNameKind.UniformResourceIdentifier, got.Kind);
+                    Assert.Equal(want.Value, got.UniformResourceIdentifier);
+                    break;
+                default:
+                    throw new Xunit.Sdk.XunitException($""Unhandled GeneralName kind '{want.Kind}'."");
+            }
+        }
+
+        PkixFixtures.AssertExtnValueRoundTrip(extension, writer =>
+        {
+            using (writer.EnterSequenceOf(Asn1Tag.Sequence))
+            {
+                foreach (var item in names)
+                {
+                    item.Encode(writer);
+                }
+            }
+        });
+    }"
+H0009,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateListCodecTests.cs,82,AssertDn,"private static void AssertDn(List<ExpectedDnAttribute> expected, AttributeTypeAndValue[][] actual)","Assert.Equal(expected.Count, flat.Count)
+Assert.Equal(expected[i].Oid, flat[i].Oid)
+Assert.Equal(expected[i].Value, flat[i].Value)","{
+        var flat = PkixFixtures.FlattenName(actual);
+        Assert.Equal(expected.Count, flat.Count);
+        for (var i = 0; i < expected.Count; i++)
+        {
+            Assert.Equal(expected[i].Oid, flat[i].Oid);
+            Assert.Equal(expected[i].Value, flat[i].Value);
+        }
+    }"
+H0010,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs,419,SetSubjectKeyIdentifier,"private static void SetSubjectKeyIdentifier(Asn1Kit.Pkix.Certificate certificate, byte[] keyIdentifier)",,"{
+        var encoded = Asn1Any.FromValue(keyIdentifier,
+            static (writer, value) => writer.WriteOctetString(Asn1Tag.OctetString, value)).EncodedMemory;
+        SetExtension(certificate, PKIX1Implicit88Oids.IdCeSubjectKeyIdentifier, encoded);
+    }"
+H0011,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs,426,SetAuthorityKeyIdentifier,"private static void SetAuthorityKeyIdentifier(Asn1Kit.Pkix.Certificate certificate, byte[] keyIdentifier)",,"=> SetAuthorityKeyIdentifier(certificate, new Asn1Kit.Pkix.AuthorityKeyIdentifier { KeyIdentifier = keyIdentifier });"
+H0012,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs,429,SetAuthorityKeyIdentifier,"private static void SetAuthorityKeyIdentifier(Asn1Kit.Pkix.Certificate certificate, Asn1Kit.Pkix.AuthorityKeyIdentifier identifier)",,"{
+        var encoded = Asn1Any.FromValue(identifier,
+            static (writer, value) => value.Encode(writer)).EncodedMemory;
+        SetExtension(certificate, PKIX1Implicit88Oids.IdCeAuthorityKeyIdentifier, encoded);
+    }"
+H0013,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs,437,SetExtension,"private static void SetExtension(Asn1Kit.Pkix.Certificate certificate, Asn1Oid oid, ReadOnlyMemory<byte> value)",,"{
+        var extensions = certificate.TbsCertificate.Value.Extensions is { } existing
+            ? existing.Value : Array.Empty<Asn1Kit.Pkix.Extension>();
+        certificate.TbsCertificate.Value.Extensions = extensions
+            .Where(extension => extension.ExtnID != oid)
+            .Append(new Asn1Kit.Pkix.Extension { ExtnID = oid, ExtnValue = value }).ToArray();
+    }"
+H0014,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs,446,RetainModernCertificate,private static Asn1Value<Asn1Kit.Modern.PKIX1Explicit2009.Certificate> RetainModernCertificate(ReadOnlyMemory<byte> encoded),,"=>
+        new Asn1Reader(encoded, Asn1Encoding.Der)
+            .ReadWithOriginalEncoding(Asn1Kit.Modern.PKIX1Explicit2009.Certificate.Decode);"
+H0015,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs,450,CloneCertificate,private static Asn1Kit.Pkix.Certificate CloneCertificate(Asn1Kit.Pkix.Certificate certificate),,"{
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        certificate.Encode(writer);
+        return Asn1Kit.Pkix.Certificate.Decode(new Asn1Reader(writer.Encode(), Asn1Encoding.Der));
+    }"
+H0016,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs,457,RetainCertificate,private static Asn1Value<Asn1Kit.Pkix.Certificate> RetainCertificate(Asn1Kit.Pkix.Certificate certificate),,"{
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        certificate.Encode(writer);
+        return new Asn1Reader(writer.Encode(), Asn1Encoding.Der)
+            .ReadWithOriginalEncoding(Asn1Kit.Pkix.Certificate.Decode);
+    }"
+H0017,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs,465,BuildName,private static Asn1Kit.Pkix.AttributeTypeAndValue[][] BuildName(string commonName),,"{
+        var attribute = new Asn1Kit.Pkix.AttributeTypeAndValue();
+        attribute.SetValue(Asn1Kit.Pkix.AttributeTypeAndValueValueBindings.AsString.DirectoryString6, commonName);
+        return new[] { new[] { attribute } };
+    }"
+H0018,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs,472,RequireSignedData,private static SignedData RequireSignedData(ContentInfo info),"Assert.True(info.TryDecodeContent(ContentInfoContentBindings.SignedData, out var signedData))","{
+        Assert.True(info.TryDecodeContent(ContentInfoContentBindings.SignedData, out var signedData));
+        return signedData;
+    }"
+H0019,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs,478,GetSigner,private static SignerInfo GetSigner(SignedData signedData),,=> signedData.SignerInfos[0];
+H0020,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs,480,WithSignedAttrs,private static byte[] WithSignedAttrs(),,"=> Mutate((_, signedData) => GetSigner(signedData).SignedAttrs = new[]
+    {
+        new CmsAttribute
+        {
+            AttrType = CryptographicMessageSyntax2004Oids.IdContentType,
+            AttrValues = new[] { Asn1Any.FromValue(signedData.EncapContentInfo.EContentType,
+                static (writer, value) => writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, value)) }
+        },
+        new CmsAttribute
+        {
+            AttrType = CryptographicMessageSyntax2004Oids.IdMessageDigest,
+            AttrValues = new[] { Asn1Any.FromValue(new byte[] { 0xAA },
+                static (writer, value) => writer.WriteOctetString(Asn1Tag.OctetString, value)) }
+        }
+    });"
+H0021,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs,496,Mutate,"private static byte[] Mutate(Action<ContentInfo, SignedData> mutate)",,"=> Mutate(Fixture, mutate);"
+H0022,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs,498,Mutate,"private static byte[] Mutate(byte[] encoded, Action<ContentInfo, SignedData> mutate)",,"{
+        var info = ContentInfo.Decode(new Asn1Reader(encoded, Asn1Encoding.Ber));
+        var signedData = RequireSignedData(info);
+        mutate(info, signedData);
+        info.SetContent(ContentInfoContentBindings.SignedData, signedData);
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        info.Encode(writer);
+        return writer.Encode();
+    }"
+H0023,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs,509,AssertRejected,"private static void AssertRejected(byte[] encoded, string reason)","Assert.Single(result)
+Assert.False(result[0].Accepted)
+Assert.Contains(reason, result[0].Reason, StringComparison.OrdinalIgnoreCase)","{
+        var result = CmsSignedDataInspector.Inspect(encoded, new RecordingVerifier());
+        Assert.Single(result);
+        Assert.False(result[0].Accepted);
+        Assert.Contains(reason, result[0].Reason, StringComparison.OrdinalIgnoreCase);
+    }"
+H0024,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs,524,VerifyDigest,"public bool VerifyDigest(Asn1Oid algorithm, ReadOnlyMemory<byte> content, ReadOnlyMemory<byte> claimedDigest, Asn1Kit.Pkix.Certificate certificate)",,"{
+            Content = content.ToArray();
+            Digest = claimedDigest.ToArray();
+            return true;
+        }"
+H0025,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs,531,VerifySignature,"public bool VerifySignature(Asn1Oid algorithm, ReadOnlyMemory<byte> signedBytes, ReadOnlyMemory<byte> signature, Asn1Kit.Pkix.Certificate certificate)",,"{
+            SignedBytes = signedBytes.ToArray();
+            Signature = signature.ToArray();
+            return true;
+        }"
+H0026,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs,541,VerifyDigest,"public bool VerifyDigest(Asn1Oid algorithm, ReadOnlyMemory<byte> content, ReadOnlyMemory<byte> claimedDigest, Asn1Kit.Modern.PKIX1Explicit2009.Certificate certificate)",,=> true;
+H0027,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs,544,VerifySignature,"public bool VerifySignature(Asn1Oid algorithm, ReadOnlyMemory<byte> signedBytes, ReadOnlyMemory<byte> signature, Asn1Kit.Modern.PKIX1Explicit2009.Certificate certificate)",,=> true;
+H0028,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsModernDemoTests.cs,18,WithSignedAttrs,private static byte[] WithSignedAttrs(),,"=> Mutate((info, signedData) =>
+    {
+        signedData.SignerInfos[0].SignedAttrs = new[]
+        {
+            new CmsAttribute
+            {
+                AttrType = CryptographicMessageSyntax2004Oids.IdContentType,
+                AttrValues = new[] { Asn1Any.FromValue(signedData.EncapContentInfo.EContentType,
+                    static (writer, value) => writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, value)) }
+            },
+            new CmsAttribute
+            {
+                AttrType = CryptographicMessageSyntax2004Oids.IdMessageDigest,
+                AttrValues = new[] { Asn1Any.FromValue(new byte[] { 0xAA },
+                    static (writer, value) => writer.WriteOctetString(Asn1Tag.OctetString, value)) }
+            }
+        };
+        info.SetContent(ContentInfoContentBindings.SignedData, signedData);
+    });"
+H0029,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsModernDemoTests.cs,169,Mutate,"private static byte[] Mutate(Action<CmsContentInfo, CmsSignedData> mutate)",,"=> Mutate(Fixture, mutate);"
+H0030,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsModernDemoTests.cs,171,Mutate,"private static byte[] Mutate(byte[] encoded, Action<CmsContentInfo, CmsSignedData> mutate)","Assert.True(info.TryDecodeContent(ContentInfoContentBindings.SignedData, out CmsSignedData signedData))","{
+        var info = CmsContentInfo.Decode(new Asn1Reader(encoded, Asn1Encoding.Ber));
+        Assert.True(info.TryDecodeContent(ContentInfoContentBindings.SignedData, out CmsSignedData signedData));
+        mutate(info, signedData);
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        info.Encode(writer);
+        return writer.Encode();
+    }"
+H0031,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsModernDemoTests.cs,181,AssertRejected,"private static void AssertRejected(byte[] encoded, string reason)","Assert.Single(result)
+Assert.False(result[0].Accepted)
+Assert.Contains(reason, result[0].Reason, StringComparison.OrdinalIgnoreCase)","{
+        var result = CmsModernSignedDataInspector.Inspect(encoded, new RecordingVerifier());
+        Assert.Single(result);
+        Assert.False(result[0].Accepted);
+        Assert.Contains(reason, result[0].Reason, StringComparison.OrdinalIgnoreCase);
+    }"
+H0032,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsModernDemoTests.cs,195,VerifyDigest,"public bool VerifyDigest(Asn1Oid algorithm, ReadOnlyMemory<byte> content, ReadOnlyMemory<byte> claimedDigest, ModernCertificate certificate)",,"{
+            Digest = claimedDigest.ToArray();
+            return true;
+        }"
+H0033,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsModernDemoTests.cs,201,VerifySignature,"public bool VerifySignature(Asn1Oid algorithm, ReadOnlyMemory<byte> signedBytes, ReadOnlyMemory<byte> signature, ModernCertificate certificate)",,"{
+            SignedBytes = signedBytes.ToArray();
+            Signature = signature.ToArray();
+            return true;
+        }"
+H0034,runtime-csharp/tests/Asn1Kit.Pkix.Tests/DvcsCodecTests.cs,105,CreateImprint,private static DigestInfo CreateImprint(),,"=> new()
+    {
+        DigestAlgorithm = new AlgorithmIdentifier
+        {
+            Algorithm = Asn1Oid.Parse(""2.16.840.1.101.3.4.2.1"")
+        },
+        Digest = new byte[] { 0xAA, 0xBB }
+    };"
+H0035,runtime-csharp/tests/Asn1Kit.Pkix.Tests/DvcsCodecTests.cs,114,Encode,private static byte[] Encode(DVCSRequest value),,"{
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        value.Encode(writer);
+        return writer.Encode();
+    }"
+H0036,runtime-csharp/tests/Asn1Kit.Pkix.Tests/DvcsCodecTests.cs,121,Encode,private static byte[] Encode(DVCSResponse value),,"{
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        value.Encode(writer);
+        return writer.Encode();
+    }"
+H0037,runtime-csharp/tests/Asn1Kit.Pkix.Tests/PkixFixtures.cs,17,FixturePath,public static string FixturePath(string fileName),,"=>
+        TestData.RepoPath(Path.Combine(""runtime-csharp"", ""fixtures"", ""pkix"", fileName));"
+H0038,runtime-csharp/tests/Asn1Kit.Pkix.Tests/PkixFixtures.cs,20,ReadDer,public static byte[] ReadDer(string fileName),,=> File.ReadAllBytes(FixturePath(fileName));
+H0039,runtime-csharp/tests/Asn1Kit.Pkix.Tests/PkixFixtures.cs,22,LoadExpected,public static ExpectedDocument LoadExpected(),,"{
+        var json = File.ReadAllText(FixturePath(""expected.json""));
+        return JsonSerializer.Deserialize<ExpectedDocument>(json, JsonOptions)
+            ?? throw new InvalidOperationException(""expected.json deserialized to null."");
+    }"
+H0040,runtime-csharp/tests/Asn1Kit.Pkix.Tests/PkixFixtures.cs,29,ParseHex,public static byte[] ParseHex(string hex),,"{
+        if ((hex.Length & 1) != 0)
+        {
+            throw new ArgumentException(""Hex string must have even length."", nameof(hex));
+        }
+
+        var bytes = new byte[hex.Length / 2];
+        for (var i = 0; i < bytes.Length; i++)
+        {
+            bytes[i] = byte.Parse(hex.AsSpan(i * 2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+        }
+
+        return bytes;
+    }"
+H0041,runtime-csharp/tests/Asn1Kit.Pkix.Tests/PkixFixtures.cs,45,ToHex,public static string ToHex(ReadOnlySpan<byte> bytes),,"{
+        return Convert.ToHexString(bytes).ToLowerInvariant();
+    }"
+H0042,runtime-csharp/tests/Asn1Kit.Pkix.Tests/PkixFixtures.cs,50,ReadDirectoryString,public static string ReadDirectoryString(Asn1Any value),,"{
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteAny(value);
+        return DirectoryString.Decode(new Asn1Reader(writer.Encode(), Asn1Encoding.Der)).Value;
+    }"
+H0043,runtime-csharp/tests/Asn1Kit.Pkix.Tests/PkixFixtures.cs,57,ReadDirectoryString,public static string ReadDirectoryString(AttributeTypeAndValue attribute),,"{
+        foreach (var binding in AttributeTypeAndValueStringBindings())
+        {
+            if (attribute.TryDecodeValue(binding, out var value))
+                return value;
+        }
+
+        return ReadDirectoryString(attribute.Value);
+    }"
+H0044,runtime-csharp/tests/Asn1Kit.Pkix.Tests/PkixFixtures.cs,68,AttributeTypeAndValueStringBindings,private static IEnumerable<ValueBinding<string>> AttributeTypeAndValueStringBindings(),,"{
+        yield return AttributeTypeAndValueValueBindings.AsString.DirectoryString;
+        yield return AttributeTypeAndValueValueBindings.AsString.DirectoryString2;
+        yield return AttributeTypeAndValueValueBindings.AsString.DirectoryString3;
+        yield return AttributeTypeAndValueValueBindings.AsString.DirectoryString4;
+        yield return AttributeTypeAndValueValueBindings.AsString.DirectoryString5;
+        yield return AttributeTypeAndValueValueBindings.AsString.DirectoryString6;
+        yield return AttributeTypeAndValueValueBindings.AsString.DirectoryString7;
+        yield return AttributeTypeAndValueValueBindings.AsString.DirectoryString8;
+        yield return AttributeTypeAndValueValueBindings.AsString.DirectoryString9;
+        yield return AttributeTypeAndValueValueBindings.AsString.DirectoryString10;
+        yield return AttributeTypeAndValueValueBindings.AsString.DirectoryString11;
+        yield return AttributeTypeAndValueValueBindings.AsString.DirectoryString12;
+        yield return AttributeTypeAndValueValueBindings.AsString.Oid25446;
+        yield return AttributeTypeAndValueValueBindings.AsString.Oid2546;
+        yield return AttributeTypeAndValueValueBindings.AsString.Oid2545;
+        yield return AttributeTypeAndValueValueBindings.AsString.Oid09234219200300100125;
+        yield return AttributeTypeAndValueValueBindings.AsString.Oid12840113549191;
+    }"
+H0045,runtime-csharp/tests/Asn1Kit.Pkix.Tests/PkixFixtures.cs,103,RequireExtension,"public static Extension RequireExtension(IEnumerable<Extension> extensions, string oid)",,"{
+        var expected = Asn1Oid.Parse(oid);
+        return extensions.Single(e => e.ExtnID == expected);
+    }"
+H0046,runtime-csharp/tests/Asn1Kit.Pkix.Tests/PkixFixtures.cs,109,ExtnValueReader,public static Asn1Reader ExtnValueReader(Extension extension),,"=>
+        new(extension.ExtnValue, Asn1Encoding.Der);"
+H0047,runtime-csharp/tests/Asn1Kit.Pkix.Tests/PkixFixtures.cs,112,AssertExtnValueRoundTrip,"public static void AssertExtnValueRoundTrip(Extension extension, Action<Asn1Writer> encode)","Assert.Equal(ToHex(extension.ExtnValue.Span), ToHex(writer.Encode()))","{
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        encode(writer);
+        Assert.Equal(ToHex(extension.ExtnValue.Span), ToHex(writer.Encode()));
+    }"
+H0048,runtime-csharp/tests/Asn1Kit.Pkix.Tests/PkixFixtures.cs,119,ParseKeyUsage,public static KeyUsageFlags ParseKeyUsage(IEnumerable<string> names),,"{
+        var flags = KeyUsageFlags.None;
+        foreach (var name in names)
+        {
+            flags |= name.ToLowerInvariant() switch
+            {
+                ""digitalsignature"" => KeyUsageFlags.DigitalSignature,
+                ""nonrepudiation"" => KeyUsageFlags.NonRepudiation,
+                ""keyencipherment"" => KeyUsageFlags.KeyEncipherment,
+                ""dataencipherment"" => KeyUsageFlags.DataEncipherment,
+                ""keyagreement"" => KeyUsageFlags.KeyAgreement,
+                ""keycertsign"" => KeyUsageFlags.KeyCertSign,
+                ""crlsign"" => KeyUsageFlags.CRLSign,
+                ""encipheronly"" => KeyUsageFlags.EncipherOnly,
+                ""decipheronly"" => KeyUsageFlags.DecipherOnly,
+                _ => throw new ArgumentException($""Unknown KeyUsage name '{name}'.""),
+            };
+        }
+
+        return flags;
+    }"
+H0049,runtime-csharp/tests/Asn1Kit.Pkix.Tests/PkixFixtures.cs,142,ParseCrlReason,public static CRLReason ParseCrlReason(string name),,"=>
+        name.ToLowerInvariant() switch
+        {
+            ""unspecified"" => CRLReason.Unspecified,
+            ""keycompromise"" => CRLReason.KeyCompromise,
+            ""cacompromise"" => CRLReason.CACompromise,
+            ""affiliationchanged"" => CRLReason.AffiliationChanged,
+            ""superseded"" => CRLReason.Superseded,
+            ""cessationofoperation"" => CRLReason.CessationOfOperation,
+            ""certificatehold"" => CRLReason.CertificateHold,
+            ""removefromcrl"" => CRLReason.RemoveFromCRL,
+            ""privilegewithdrawn"" => CRLReason.PrivilegeWithdrawn,
+            ""aacompromise"" => CRLReason.AACompromise,
+            _ => throw new ArgumentException($""Unknown CRLReason '{name}'.""),
+        };"
+H0050,runtime-csharp/tests/Asn1Kit.Pkix.Tests/TestData.cs,5,RepoPath,public static string RepoPath(string relative),,"{
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null)
+        {
+            if (File.Exists(Path.Combine(dir.FullName, ""Asn1Kit.sln"")))
+            {
+                return Path.Combine(dir.FullName, relative);
+            }
+
+            dir = dir.Parent;
+        }
+
+        throw new DirectoryNotFoundException(""Repository root not found."");
+    }"
+H0051,runtime-csharp/tests/Asn1Kit.Runtime.Tests/Asn1ReaderTests.cs,151,GetSpan,public override Span<byte> GetSpan(),,=> _buffer;
+H0052,runtime-csharp/tests/Asn1Kit.Runtime.Tests/Asn1ReaderTests.cs,153,Pin,public override MemoryHandle Pin(int elementIndex = 0),,"=>
+            throw new NotSupportedException();"
+H0053,runtime-csharp/tests/Asn1Kit.Runtime.Tests/Asn1ReaderTests.cs,156,Unpin,public override void Unpin(),,"{
+        }"
+H0054,runtime-csharp/tests/Asn1Kit.Runtime.Tests/Asn1ReaderTests.cs,160,Dispose,protected override void Dispose(bool disposing),,"{
+        }"
+H0055,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/BerDerFixtures.cs,8,Parse,public static byte[] Parse(string hex),,"{
+        if (hex is null)
+        {
+            throw new ArgumentNullException(nameof(hex));
+        }
+
+        var cleaned = hex.Replace("" "", string.Empty, StringComparison.Ordinal)
+            .Replace(""-"", string.Empty, StringComparison.Ordinal);
+        if ((cleaned.Length & 1) != 0)
+        {
+            throw new FormatException($""Hex string '{hex}' has odd length."");
+        }
+
+        return Convert.FromHexString(cleaned);
+    }"
+H0056,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/BerDerFixtures.cs,25,Format,public static string Format(ReadOnlySpan<byte> bytes),,=> Convert.ToHexString(bytes);
+H0057,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/BerDerFixtures.cs,52,GetReaderOptions,public Asn1Kit.Runtime.Asn1ReaderOptions GetReaderOptions(),,"{
+        if (string.IsNullOrWhiteSpace(ReaderProfile)
+            || string.Equals(ReaderProfile, ""default"", StringComparison.OrdinalIgnoreCase))
+        {
+            return Asn1Kit.Runtime.Asn1ReaderOptions.Default;
+        }
+
+        if (string.Equals(ReaderProfile, ""strict"", StringComparison.OrdinalIgnoreCase))
+        {
+            return Asn1Kit.Runtime.Asn1ReaderOptions.Strict;
+        }
+
+        if (string.Equals(ReaderProfile, ""allowNonMinimalLength"", StringComparison.OrdinalIgnoreCase))
+        {
+            return Asn1Kit.Runtime.Asn1ReaderOptions.AllowNonMinimalLength;
+        }
+
+        if (string.Equals(ReaderProfile, ""allowOverlongOid"", StringComparison.OrdinalIgnoreCase))
+        {
+            return Asn1Kit.Runtime.Asn1ReaderOptions.AllowOverlongOidBase128;
+        }
+
+        throw new InvalidOperationException($""Unknown readerProfile '{ReaderProfile}'."");
+    }"
+H0058,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/BerDerFixtures.cs,78,GetBytes,public byte[] GetBytes(),,=> Hex.Parse(Bytes);
+H0059,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/BerDerFixtures.cs,87,Load,public static IReadOnlyList<BerDerCase> Load(string relativePath),,"{
+        var path = TestData.RepoPath(relativePath);
+        var json = File.ReadAllText(path);
+        var cases = JsonSerializer.Deserialize<List<BerDerCase>>(json, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            ReadCommentHandling = JsonCommentHandling.Skip,
+            AllowTrailingCommas = true
+        });
+
+        if (cases is null || cases.Count == 0)
+        {
+            throw new InvalidOperationException($""No cases in '{relativePath}'."");
+        }
+
+        foreach (var c in cases)
+        {
+            if (string.IsNullOrWhiteSpace(c.Name))
+            {
+                throw new InvalidOperationException($""Case in '{relativePath}' is missing name."");
+            }
+        }
+
+        return cases;
+    }"
+H0060,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/BerDerFixtures.cs,114,AsTheoryData,public static IEnumerable<object[]> AsTheoryData(string relativePath),,"=>
+        Load(relativePath).Select(c => new object[] { c });"
+H0061,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/BerDerFixtures.cs,117,GetString,public static string? GetString(BerDerCase c),,"{
+        if (!c.HasValue)
+        {
+            return null;
+        }
+
+        return c.Value.ValueKind == JsonValueKind.String
+            ? c.Value.GetString()
+            : c.Value.GetRawText();
+    }"
+H0062,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/BerDerFixtures.cs,129,GetBoolean,public static bool GetBoolean(BerDerCase c),,"=>
+        c.Value.ValueKind == JsonValueKind.True
+        || (c.Value.ValueKind == JsonValueKind.String
+            && bool.Parse(c.Value.GetString()!));"
+H0063,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/BerDerFixtures.cs,134,GetInteger,public static System.Numerics.BigInteger GetInteger(BerDerCase c),,"{
+        var text = GetString(c) ?? throw new InvalidOperationException($""Case '{c.Name}' missing integer value."");
+        return System.Numerics.BigInteger.Parse(text, CultureInfo.InvariantCulture);
+    }"
+H0064,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/BerDerFixtures.cs,140,GetOctetValue,public static byte[] GetOctetValue(BerDerCase c),,"{
+        var text = GetString(c) ?? """";
+        return text.Length == 0 ? Array.Empty<byte>() : Hex.Parse(text);
+    }"
+H0065,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/BerDerFixtures.cs,146,GetTime,public static DateTimeOffset GetTime(BerDerCase c),,"{
+        var text = GetString(c) ?? throw new InvalidOperationException($""Case '{c.Name}' missing time value."");
+        return DateTimeOffset.Parse(text, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+    }"
+H0066,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/DotnetAsnOracle.cs,15,EncodeBoolean,"public static byte[] EncodeBoolean(bool value, AsnEncodingRules rules = AsnEncodingRules.DER)",,"{
+        var writer = new AsnWriter(rules);
+        writer.WriteBoolean(value);
+        return writer.Encode();
+    }"
+H0067,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/DotnetAsnOracle.cs,22,DecodeBoolean,"public static bool DecodeBoolean(ReadOnlyMemory<byte> encoded, AsnEncodingRules rules = AsnEncodingRules.DER)",,"{
+        var reader = new AsnReader(encoded, rules);
+        var value = reader.ReadBoolean();
+        reader.ThrowIfNotEmpty();
+        return value;
+    }"
+H0068,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/DotnetAsnOracle.cs,30,EncodeInteger,"public static byte[] EncodeInteger(BigInteger value, AsnEncodingRules rules = AsnEncodingRules.DER)",,"{
+        var writer = new AsnWriter(rules);
+        writer.WriteInteger(value);
+        return writer.Encode();
+    }"
+H0069,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/DotnetAsnOracle.cs,37,DecodeInteger,"public static BigInteger DecodeInteger(ReadOnlyMemory<byte> encoded, AsnEncodingRules rules = AsnEncodingRules.DER)",,"{
+        var reader = new AsnReader(encoded, rules);
+        var value = reader.ReadInteger();
+        reader.ThrowIfNotEmpty();
+        return value;
+    }"
+H0070,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/DotnetAsnOracle.cs,45,EncodeNull,public static byte[] EncodeNull(AsnEncodingRules rules = AsnEncodingRules.DER),,"{
+        var writer = new AsnWriter(rules);
+        writer.WriteNull();
+        return writer.Encode();
+    }"
+H0071,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/DotnetAsnOracle.cs,52,DecodeNull,"public static void DecodeNull(ReadOnlyMemory<byte> encoded, AsnEncodingRules rules = AsnEncodingRules.DER)",,"{
+        var reader = new AsnReader(encoded, rules);
+        reader.ReadNull();
+        reader.ThrowIfNotEmpty();
+    }"
+H0072,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/DotnetAsnOracle.cs,59,EncodeOctetString,"public static byte[] EncodeOctetString(ReadOnlySpan<byte> value, AsnEncodingRules rules = AsnEncodingRules.DER)",,"{
+        var writer = new AsnWriter(rules);
+        writer.WriteOctetString(value);
+        return writer.Encode();
+    }"
+H0073,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/DotnetAsnOracle.cs,66,DecodeOctetString,"public static byte[] DecodeOctetString(ReadOnlyMemory<byte> encoded, AsnEncodingRules rules = AsnEncodingRules.DER)",,"{
+        var reader = new AsnReader(encoded, rules);
+        var value = reader.ReadOctetString();
+        reader.ThrowIfNotEmpty();
+        return value;
+    }"
+H0074,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/DotnetAsnOracle.cs,74,EncodeObjectIdentifier,"public static byte[] EncodeObjectIdentifier(string oid, AsnEncodingRules rules = AsnEncodingRules.DER)",,"{
+        var writer = new AsnWriter(rules);
+        writer.WriteObjectIdentifier(oid);
+        return writer.Encode();
+    }"
+H0075,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/DotnetAsnOracle.cs,81,DecodeObjectIdentifier,"public static string DecodeObjectIdentifier(ReadOnlyMemory<byte> encoded, AsnEncodingRules rules = AsnEncodingRules.DER)",,"{
+        var reader = new AsnReader(encoded, rules);
+        var value = reader.ReadObjectIdentifier();
+        reader.ThrowIfNotEmpty();
+        return value;
+    }"
+H0076,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/DotnetAsnOracle.cs,89,EncodeBitString,"public static byte[] EncodeBitString(ReadOnlySpan<byte> value, int unusedBits, AsnEncodingRules rules = AsnEncodingRules.DER)",,"{
+        var writer = new AsnWriter(rules);
+        writer.WriteBitString(value, unusedBits);
+        return writer.Encode();
+    }"
+H0077,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/DotnetAsnOracle.cs,107,EncodeCharacterString,"public static byte[] EncodeCharacterString( UniversalTagNumber tagNumber, string value, AsnEncodingRules rules = AsnEncodingRules.DER)",,"{
+        var writer = new AsnWriter(rules);
+        writer.WriteCharacterString(tagNumber, value);
+        return writer.Encode();
+    }"
+H0078,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/DotnetAsnOracle.cs,117,DecodeCharacterString,"public static string DecodeCharacterString( ReadOnlyMemory<byte> encoded, UniversalTagNumber tagNumber, AsnEncodingRules rules = AsnEncodingRules.DER)",,"{
+        var reader = new AsnReader(encoded, rules);
+        var value = reader.ReadCharacterString(tagNumber);
+        reader.ThrowIfNotEmpty();
+        return value;
+    }"
+H0079,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/DotnetAsnOracle.cs,128,EncodeUtcTime,"public static byte[] EncodeUtcTime(DateTimeOffset value, AsnEncodingRules rules = AsnEncodingRules.DER)",,"{
+        var writer = new AsnWriter(rules);
+        writer.WriteUtcTime(value);
+        return writer.Encode();
+    }"
+H0080,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/DotnetAsnOracle.cs,135,DecodeUtcTime,"public static DateTimeOffset DecodeUtcTime(ReadOnlyMemory<byte> encoded, AsnEncodingRules rules = AsnEncodingRules.DER)",,"{
+        var reader = new AsnReader(encoded, rules);
+        var value = reader.ReadUtcTime();
+        reader.ThrowIfNotEmpty();
+        return value;
+    }"
+H0081,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/DotnetAsnOracle.cs,143,EncodeGeneralizedTime,"public static byte[] EncodeGeneralizedTime( DateTimeOffset value, bool omitFractionalSeconds = false, AsnEncodingRules rules = AsnEncodingRules.DER)",,"{
+        var writer = new AsnWriter(rules);
+        writer.WriteGeneralizedTime(value, omitFractionalSeconds);
+        return writer.Encode();
+    }"
+H0082,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/DotnetAsnOracle.cs,153,DecodeGeneralizedTime,"public static DateTimeOffset DecodeGeneralizedTime( ReadOnlyMemory<byte> encoded, AsnEncodingRules rules = AsnEncodingRules.DER)",,"{
+        var reader = new AsnReader(encoded, rules);
+        var value = reader.ReadGeneralizedTime();
+        reader.ThrowIfNotEmpty();
+        return value;
+    }"
+H0083,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/DotnetAsnOracle.cs,163,ToDotnet,public static AsnEncodingRules ToDotnet(Asn1Encoding encoding),,"=> encoding switch
+    {
+        Asn1Encoding.Der => AsnEncodingRules.DER,
+        Asn1Encoding.Ber => AsnEncodingRules.BER,
+        _ => throw new ArgumentOutOfRangeException(nameof(encoding))
+    };"
+H0084,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/DotnetAsnOracle.cs,170,TryMapStringForm,public static UniversalTagNumber? TryMapStringForm(Asn1StringForm form),,"=> form switch
+    {
+        Asn1StringForm.Utf8 => UniversalTagNumber.UTF8String,
+        Asn1StringForm.Numeric => UniversalTagNumber.NumericString,
+        Asn1StringForm.Printable => UniversalTagNumber.PrintableString,
+        Asn1StringForm.Ia5 => UniversalTagNumber.IA5String,
+        Asn1StringForm.Visible => UniversalTagNumber.VisibleString,
+        Asn1StringForm.Bmp => UniversalTagNumber.BMPString,
+        // UniversalString: BCL charset API unsupported on net6 — see EncodeUniversalStringUtf32Be.
+        // Teletex/T61/Videotex/Graphic/General: Asn1Kit uses Latin-1; BCL charset differs — exclude from oracle.
+        _ => null
+    };"
+H0085,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/DotnetAsnOracle.cs,186,EncodeUniversalStringUtf32Be,public static byte[] EncodeUniversalStringUtf32Be(string value),,"{
+        var contents = Utf32Be.GetBytes(value);
+        if (contents.Length > 127)
+        {
+            throw new InvalidOperationException(""Test helper supports short-form length only."");
+        }
+
+        var result = new byte[2 + contents.Length];
+        result[0] = 0x1C;
+        result[1] = (byte)contents.Length;
+        contents.CopyTo(result.AsSpan(2));
+        return result;
+    }"
+H0086,runtime-csharp/tests/Asn1Kit.Runtime.Tests/BerDer/DotnetAsnOracle.cs,201,DecodeUniversalStringUtf32Be,public static string DecodeUniversalStringUtf32Be(ReadOnlyMemory<byte> encoded),,"{
+        var span = encoded.Span;
+        if (span.Length < 2 || span[0] != 0x1C || (span[1] & 0x80) != 0)
+        {
+            throw new InvalidOperationException(""Expected short-form UniversalString TLV."");
+        }
+
+        var length = span[1];
+        if (span.Length != 2 + length)
+        {
+            throw new InvalidOperationException(""UniversalString TLV length mismatch."");
+        }
+
+        return Utf32Be.GetString(span.Slice(2, length));
+    }"
+H0087,runtime-csharp/tests/Asn1Kit.Runtime.Tests/ExternalVectorTests.cs,10,ExternalCases,public static IEnumerable<object[]> ExternalCases(),,"=>
+        BerDerFixtures.AsTheoryData(""runtime-csharp/fixtures/ber-der/external/rfc-and-dotnet.json"");"
+H0088,runtime-csharp/tests/Asn1Kit.Runtime.Tests/ExternalVectorTests.cs,76,RunPrimitive,"private static void RunPrimitive( BerDerCase c, byte[] bytes, Action<Asn1Writer> encode, Action<Asn1Reader> decode)","Assert.Equal(Hex.Format(bytes), Hex.Format(writer.Encode()))
+Assert.True(reader.Eof)","{
+        if (c.ShouldEncode)
+        {
+            var writer = new Asn1Writer(Asn1Encoding.Der);
+            encode(writer);
+            Assert.Equal(Hex.Format(bytes), Hex.Format(writer.Encode()));
+        }
+
+        var reader = new Asn1Reader(bytes, c.Encoding, c.GetReaderOptions());
+        decode(reader);
+        Assert.True(reader.Eof);
+    }"
+H0089,runtime-csharp/tests/Asn1Kit.Runtime.Tests/ExternalVectorTests.cs,94,DecodeAlgorithmIdentifier,"private static void DecodeAlgorithmIdentifier(BerDerCase c, byte[] bytes)","Assert.Equal(expectedOid, reader.ReadObjectIdentifier(Asn1Tag.ObjectIdentifier))
+Assert.True(reader.Eof)
+Assert.True(reader.Eof)","{
+        var expectedOid = c.Value.GetProperty(""oid"").GetString()
+            ?? throw new InvalidOperationException($""Case '{c.Name}' missing oid."");
+        var paramsTag = c.Value.GetProperty(""paramsTag"").GetString();
+
+        var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
+        using (reader.EnterSequence(Asn1Tag.Sequence))
+        {
+            Assert.Equal(expectedOid, reader.ReadObjectIdentifier(Asn1Tag.ObjectIdentifier));
+            if (paramsTag == ""null"")
+            {
+                reader.ReadNull(Asn1Tag.Null);
+            }
+
+            Assert.True(reader.Eof);
+        }
+        Assert.True(reader.Eof);
+    }"
+H0090,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,12,BooleanCases,public static IEnumerable<object[]> BooleanCases(),,"=> BerDerFixtures.AsTheoryData(""runtime-csharp/fixtures/ber-der/boolean.json"");"
+H0091,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,13,NullCases,public static IEnumerable<object[]> NullCases(),,"=> BerDerFixtures.AsTheoryData(""runtime-csharp/fixtures/ber-der/null.json"");"
+H0092,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,14,IntegerCases,public static IEnumerable<object[]> IntegerCases(),,"=> BerDerFixtures.AsTheoryData(""runtime-csharp/fixtures/ber-der/integer.json"");"
+H0093,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,15,EnumeratedCases,public static IEnumerable<object[]> EnumeratedCases(),,"=> BerDerFixtures.AsTheoryData(""runtime-csharp/fixtures/ber-der/enumerated.json"");"
+H0094,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,16,OctetCases,public static IEnumerable<object[]> OctetCases(),,"=> BerDerFixtures.AsTheoryData(""runtime-csharp/fixtures/ber-der/octet-string.json"");"
+H0095,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,17,OidCases,public static IEnumerable<object[]> OidCases(),,"=> BerDerFixtures.AsTheoryData(""runtime-csharp/fixtures/ber-der/oid.json"");"
+H0096,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,18,BitStringCases,public static IEnumerable<object[]> BitStringCases(),,"=> BerDerFixtures.AsTheoryData(""runtime-csharp/fixtures/ber-der/bit-string.json"");"
+H0097,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,19,StringCases,public static IEnumerable<object[]> StringCases(),,"=> BerDerFixtures.AsTheoryData(""runtime-csharp/fixtures/ber-der/string.json"");"
+H0098,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,20,TimeCases,public static IEnumerable<object[]> TimeCases(),,"=> BerDerFixtures.AsTheoryData(""runtime-csharp/fixtures/ber-der/time.json"");"
+H0099,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,22,Int32EncodingCases,public static IEnumerable<object[]> Int32EncodingCases(),,"{
+        yield return new object[] { 127, ""02017F"" };
+        yield return new object[] { 128, ""02020080"" };
+        yield return new object[] { -128, ""020180"" };
+        yield return new object[] { -129, ""0202FF7F"" };
+        yield return new object[] { 255, ""020200FF"" };
+        yield return new object[] { 256, ""02020100"" };
+        yield return new object[] { int.MinValue, ""020480000000"" };
+        yield return new object[] { int.MaxValue, ""02047FFFFFFF"" };
+    }"
+H0100,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,34,UInt32EncodingCases,public static IEnumerable<object[]> UInt32EncodingCases(),,"{
+        yield return new object[] { 0u, ""020100"" };
+        yield return new object[] { 127u, ""02017F"" };
+        yield return new object[] { 128u, ""02020080"" };
+        yield return new object[] { 255u, ""020200FF"" };
+        yield return new object[] { 256u, ""02020100"" };
+        yield return new object[] { uint.MaxValue, ""020500FFFFFFFF"" };
+    }"
+H0101,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,44,Int64EncodingCases,public static IEnumerable<object[]> Int64EncodingCases(),,"{
+        yield return new object[] { 127L, ""02017F"" };
+        yield return new object[] { 128L, ""02020080"" };
+        yield return new object[] { -128L, ""020180"" };
+        yield return new object[] { -129L, ""0202FF7F"" };
+        yield return new object[] { 255L, ""020200FF"" };
+        yield return new object[] { 256L, ""02020100"" };
+        yield return new object[] { long.MinValue, ""02088000000000000000"" };
+        yield return new object[] { long.MaxValue, ""02087FFFFFFFFFFFFFFF"" };
+    }"
+H0102,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,56,UInt64EncodingCases,public static IEnumerable<object[]> UInt64EncodingCases(),,"{
+        yield return new object[] { 0UL, ""020100"" };
+        yield return new object[] { 127UL, ""02017F"" };
+        yield return new object[] { 128UL, ""02020080"" };
+        yield return new object[] { 255UL, ""020200FF"" };
+        yield return new object[] { 256UL, ""02020100"" };
+        yield return new object[] { ulong.MaxValue, ""020900FFFFFFFFFFFFFFFF"" };
+    }"
+H0103,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,66,ConstructedLengthCases,public static IEnumerable<object[]> ConstructedLengthCases(),,"{
+        yield return new object[] { 0, ""3000"" };
+        yield return new object[] { 1, ""3001"" };
+        yield return new object[] { 127, ""307F"" };
+        yield return new object[] { 128, ""308180"" };
+        yield return new object[] { 254, ""3081FE"" };
+        yield return new object[] { 255, ""3081FF"" };
+        yield return new object[] { 256, ""30820100"" };
+        yield return new object[] { 65_535, ""3082FFFF"" };
+        yield return new object[] { 65_536, ""3083010000"" };
+    }"
+H0104,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,506,Run,"private static void Run(BerDerCase c, Action<BerDerCase, Asn1Writer> encode, Action<BerDerCase, Asn1Reader, byte[]> decode)","Assert.Throws<Asn1Exception>(() => decode(c, reader, expected))
+Assert.Equal(Hex.Format(expected), Hex.Format(encoded))
+Assert.Equal(encoded, roundTrip.Encode())
+Assert.True(decodeReader.Eof)","{
+        var expected = c.GetBytes();
+        var options = c.GetReaderOptions();
+        if (c.Reject)
+        {
+            var reader = new Asn1Reader(expected, c.Encoding, options);
+            Assert.Throws<Asn1Exception>(() => decode(c, reader, expected));
+            return;
+        }
+
+        if (c.ShouldEncode)
+        {
+            var writer = new Asn1Writer(Asn1Encoding.Der);
+            encode(c, writer);
+            var encoded = writer.Encode();
+            Assert.Equal(Hex.Format(expected), Hex.Format(encoded));
+
+            var roundTrip = new Asn1Writer(Asn1Encoding.Der);
+            encode(c, roundTrip);
+            Assert.Equal(encoded, roundTrip.Encode());
+        }
+
+        var decodeReader = new Asn1Reader(expected, c.Encoding, options);
+        decode(c, decodeReader, expected);
+        Assert.True(decodeReader.Eof);
+    }"
+H0105,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,534,EncodeBoolean,"private static void EncodeBoolean(BerDerCase c, Asn1Writer w)",,"=> w.WriteBoolean(Asn1Tag.Boolean, BerDerFixtures.GetBoolean(c));"
+H0106,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,536,DecodeBoolean,"private static void DecodeBoolean(BerDerCase c, Asn1Reader r, byte[] _)","Assert.Equal(BerDerFixtures.GetBoolean(c), value)","{
+        var value = r.ReadBoolean(Asn1Tag.Boolean);
+        if (c.HasValue)
+        {
+            Assert.Equal(BerDerFixtures.GetBoolean(c), value);
+        }
+    }"
+H0107,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,545,EncodeNull,"private static void EncodeNull(BerDerCase _, Asn1Writer w)",,=> w.WriteNull(Asn1Tag.Null);
+H0108,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,547,DecodeNull,"private static void DecodeNull(BerDerCase _, Asn1Reader r, byte[] __)",,=> r.ReadNull(Asn1Tag.Null);
+H0109,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,549,EncodeInteger,"private static void EncodeInteger(BerDerCase c, Asn1Writer w)",,"=> w.WriteInteger(Asn1Tag.Integer, BerDerFixtures.GetInteger(c));"
+H0110,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,551,DecodeInteger,"private static void DecodeInteger(BerDerCase c, Asn1Reader r, byte[] _)","Assert.Equal(BerDerFixtures.GetInteger(c), value)","{
+        var value = r.ReadInteger(Asn1Tag.Integer);
+        if (c.HasValue)
+        {
+            Assert.Equal(BerDerFixtures.GetInteger(c), value);
+        }
+    }"
+H0111,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,560,EncodeEnumerated,"private static void EncodeEnumerated(BerDerCase c, Asn1Writer w)",,"=>
+        w.WriteEnumerated(Asn1Tag.Enumerated, BerDerFixtures.GetInteger(c));"
+H0112,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,563,DecodeEnumerated,"private static void DecodeEnumerated(BerDerCase c, Asn1Reader r, byte[] _)","Assert.Equal(BerDerFixtures.GetInteger(c), value)","{
+        var value = r.ReadEnumerated(Asn1Tag.Enumerated);
+        if (c.HasValue)
+        {
+            Assert.Equal(BerDerFixtures.GetInteger(c), value);
+        }
+    }"
+H0113,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,572,EncodeOctet,"private static void EncodeOctet(BerDerCase c, Asn1Writer w)",,"=>
+        w.WriteOctetString(Asn1Tag.OctetString, BerDerFixtures.GetOctetValue(c));"
+H0114,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,575,DecodeOctet,"private static void DecodeOctet(BerDerCase c, Asn1Reader r, byte[] _)","Assert.Equal(BerDerFixtures.GetOctetValue(c), value.ToArray())","{
+        var value = r.ReadOctetString(Asn1Tag.OctetString);
+        if (c.HasValue)
+        {
+            Assert.Equal(BerDerFixtures.GetOctetValue(c), value.ToArray());
+        }
+    }"
+H0115,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,584,EncodeOid,"private static void EncodeOid(BerDerCase c, Asn1Writer w)",,"=>
+        w.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, BerDerFixtures.GetString(c)!);"
+H0116,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,587,DecodeOid,"private static void DecodeOid(BerDerCase c, Asn1Reader r, byte[] _)","Assert.Equal(BerDerFixtures.GetString(c), value)","{
+        var value = r.ReadObjectIdentifier(Asn1Tag.ObjectIdentifier);
+        if (c.HasValue)
+        {
+            Assert.Equal(BerDerFixtures.GetString(c), value);
+        }
+    }"
+H0117,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,596,EncodeBitString,"private static void EncodeBitString(BerDerCase c, Asn1Writer w)",,"{
+        var payload = BerDerFixtures.GetOctetValue(c);
+        var unused = c.UnusedBits ?? 0;
+        w.WriteBitString(Asn1Tag.BitString, new Asn1BitString(payload, unused));
+    }"
+H0118,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,603,DecodeBitString,"private static void DecodeBitString(BerDerCase c, Asn1Reader r, byte[] _)","Assert.Equal(c.UnusedBits ?? 0, decoded.UnusedBits)
+Assert.Equal(BerDerFixtures.GetOctetValue(c), decoded.Span.ToArray())","{
+        var decoded = r.ReadBitString(Asn1Tag.BitString);
+        if (c.HasValue)
+        {
+            Assert.Equal(c.UnusedBits ?? 0, decoded.UnusedBits);
+            Assert.Equal(BerDerFixtures.GetOctetValue(c), decoded.Span.ToArray());
+        }
+    }"
+H0119,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,613,EncodeString,"private static void EncodeString(BerDerCase c, Asn1Writer w)",,"{
+        var form = ParseStringForm(c.Form!);
+        w.WriteString(Asn1String.DefaultTag(form), BerDerFixtures.GetString(c)!, form);
+    }"
+H0120,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,619,DecodeString,"private static void DecodeString(BerDerCase c, Asn1Reader r, byte[] _)","Assert.Equal(BerDerFixtures.GetString(c), value)","{
+        var form = ParseStringForm(c.Form!);
+        var value = r.ReadString(Asn1String.DefaultTag(form), form);
+        if (c.HasValue)
+        {
+            Assert.Equal(BerDerFixtures.GetString(c), value);
+        }
+    }"
+H0121,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,629,EncodeTime,"private static void EncodeTime(BerDerCase c, Asn1Writer w)",,"{
+        var form = ParseTimeForm(c.Form!);
+        var digits = c.FractionDigits ?? 3;
+        w.WriteTime(Asn1Time.DefaultTag(form), BerDerFixtures.GetTime(c), form, digits);
+    }"
+H0122,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,636,DecodeTime,"private static void DecodeTime(BerDerCase c, Asn1Reader r, byte[] _)","Assert.Equal(BerDerFixtures.GetTime(c), value)","{
+        var form = ParseTimeForm(c.Form!);
+        var value = r.ReadTime(Asn1Time.DefaultTag(form), form);
+        if (c.HasValue)
+        {
+            Assert.Equal(BerDerFixtures.GetTime(c), value);
+        }
+    }"
+H0123,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,646,ParseStringForm,private static Asn1StringForm ParseStringForm(string form),,"=>
+        Enum.Parse<Asn1StringForm>(form, ignoreCase: true);"
+H0124,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,649,ParseTimeForm,private static Asn1TimeForm ParseTimeForm(string form),,"=>
+        Enum.Parse<Asn1TimeForm>(form, ignoreCase: true);"
+H0125,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs,652,AssertIntegerEncoding,"private static void AssertIntegerEncoding( BigInteger numericValue, Asn1Integer integerValue, Action<Asn1Writer> write, string expectedHex)","Assert.Equal(expected.AsSpan(2).ToArray(), integerValue.Span.ToArray())
+Assert.Equal(expected, actual)
+Assert.Equal(DotnetAsnOracle.EncodeInteger(numericValue), actual)","{
+        var expected = Hex.Parse(expectedHex);
+        Assert.Equal(expected.AsSpan(2).ToArray(), integerValue.Span.ToArray());
+
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        write(writer);
+        var actual = writer.Encode();
+
+        Assert.Equal(expected, actual);
+        Assert.Equal(DotnetAsnOracle.EncodeInteger(numericValue), actual);
+    }"
+H0126,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs,13,Booleans,public static IEnumerable<object[]> Booleans(),,"=>
+        new object[] { false }.Concat(new object[] { true }).Select(v => new[] { v });"
+H0127,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs,16,Integers,public static IEnumerable<object[]> Integers(),,"{
+        BigInteger[] values =
+        {
+            0, 1, -1, 127, 128, -128, -129, 255, 256,
+            BigInteger.Parse(""170141183460469231731687303715884105728"")
+        };
+        return values.Select(v => new object[] { v });
+    }"
+H0128,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs,26,Octets,public static IEnumerable<object[]> Octets(),,"{
+        yield return new object[] { Array.Empty<byte>() };
+        yield return new object[] { new byte[] { 0x41, 0x6E, 0x6E } };
+        yield return new object[] { Enumerable.Repeat((byte)0x5A, 128).ToArray() };
+    }"
+H0129,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs,33,Oids,public static IEnumerable<object[]> Oids(),,"{
+        yield return new object[] { ""1.2.3"" };
+        yield return new object[] { ""1.2.840.113549.1.1.1"" };
+        yield return new object[] { ""2.16.840.1.101.3.4.2.1"" };
+        yield return new object[] { ""2.999.3"" };
+    }"
+H0130,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs,41,BitStrings,public static IEnumerable<object[]> BitStrings(),,"{
+        yield return new object[] { Array.Empty<byte>(), 0 };
+        yield return new object[] { new byte[] { 0xAA }, 0 };
+        yield return new object[] { new byte[] { 0xA8 }, 3 };
+        yield return new object[] { new byte[] { 0x80 }, 7 };
+    }"
+H0131,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs,49,CompatibleStrings,public static IEnumerable<object[]> CompatibleStrings(),,"{
+        yield return new object[] { Asn1StringForm.Utf8, ""Hello"" };
+        yield return new object[] { Asn1StringForm.Printable, ""ABC12"" };
+        yield return new object[] { Asn1StringForm.Ia5, ""a@b.c"" };
+        yield return new object[] { Asn1StringForm.Numeric, ""123 4"" };
+        yield return new object[] { Asn1StringForm.Visible, ""Abc"" };
+        yield return new object[] { Asn1StringForm.Bmp, ""AB"" };
+    }"
+H0132,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs,59,UtcTimePivots,public static IEnumerable<object[]> UtcTimePivots(),,"{
+        yield return new object[] { new DateTimeOffset(2049, 1, 2, 3, 4, 5, TimeSpan.Zero) };
+        yield return new object[] { new DateTimeOffset(1950, 1, 2, 3, 4, 5, TimeSpan.Zero) };
+    }"
+H0133,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs,281,EncodeUs,private static byte[] EncodeUs(Action<Asn1Writer> write),,"{
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        write(writer);
+        return writer.Encode();
+    }"
+H0134,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs,288,CrossDer,"private static void CrossDer( Func<byte[]> encodeUs, Func<byte[]> encodeDotnet, Action<byte[]> decodeUs, Action<byte[]> decodeDotnet)","Assert.Equal(Hex.Format(dotnetBytes), Hex.Format(usBytes))","{
+        var usBytes = encodeUs();
+        var dotnetBytes = encodeDotnet();
+        Assert.Equal(Hex.Format(dotnetBytes), Hex.Format(usBytes));
+
+        decodeUs(usBytes);
+        decodeUs(dotnetBytes);
+        decodeDotnet(usBytes);
+        decodeDotnet(dotnetBytes);
+    }"
+H0135,runtime-csharp/tests/Asn1Kit.Runtime.Tests/RuntimeTests.cs,314,AssertSameArray,"private static void AssertSameArray(byte[] source, ReadOnlyMemory<byte> view, int expectedOffset)","Assert.True(MemoryMarshal.TryGetArray(view, out ArraySegment<byte> segment))
+Assert.Same(source, segment.Array)
+Assert.Equal(expectedOffset, segment.Offset)
+Assert.Equal(view.Length, segment.Count)","{
+        Assert.True(MemoryMarshal.TryGetArray(view, out ArraySegment<byte> segment));
+        Assert.Same(source, segment.Array);
+        Assert.Equal(expectedOffset, segment.Offset);
+        Assert.Equal(view.Length, segment.Count);
+    }"
+H0136,runtime-csharp/tests/Asn1Kit.Runtime.Tests/RuntimeTests.cs,839,FractionTicksOf,"private static int FractionTicksOf(string generalized, Asn1Encoding encoding = Asn1Encoding.Ber)",,"{
+        var bytes = WrapTime(Asn1Tag.GeneralizedTime, generalized);
+        var value = Asn1Time.Decode(new Asn1Reader(bytes, encoding), Asn1TimeForm.Generalized);
+        return (int)(value.Ticks % TimeSpan.TicksPerSecond);
+    }"
+H0137,runtime-csharp/tests/Asn1Kit.Runtime.Tests/RuntimeTests.cs,846,AssertDerFraction,"private static void AssertDerFraction(int fractionTicks, string expectedText, int fractionDigits = 3)","Assert.Equal(Encoding.ASCII.GetBytes(expectedText), writer.Encode().AsSpan(2).ToArray())","{
+        var value = new DateTimeOffset(2017, 1, 2, 3, 4, 5, TimeSpan.Zero).AddTicks(fractionTicks);
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        Asn1Time.Encode(writer, value, Asn1TimeForm.Generalized, fractionDigits: fractionDigits);
+        Assert.Equal(Encoding.ASCII.GetBytes(expectedText), writer.Encode().AsSpan(2).ToArray());
+    }"
+H0138,runtime-csharp/tests/Asn1Kit.Runtime.Tests/RuntimeTests.cs,882,RoundTripString,"private static void RoundTripString(Asn1StringForm form, string value, Asn1Tag tag)","Assert.Equal(bytes, again.Encode())
+Assert.Equal(value, Asn1String.Decode(new Asn1Reader(bytes, Asn1Encoding.Der), form, tag))","{
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        Asn1String.Encode(writer, value, form, tag);
+        var bytes = writer.Encode();
+        var again = new Asn1Writer(Asn1Encoding.Der);
+        Asn1String.Encode(again, Asn1String.Decode(new Asn1Reader(bytes, Asn1Encoding.Der), form, tag), form, tag);
+        Assert.Equal(bytes, again.Encode());
+        Assert.Equal(value, Asn1String.Decode(new Asn1Reader(bytes, Asn1Encoding.Der), form, tag));
+    }"
+H0139,runtime-csharp/tests/Asn1Kit.Runtime.Tests/RuntimeTests.cs,893,WrapTime,"private static byte[] WrapTime(Asn1Tag tag, string text)",,"{
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteString(tag, text, Asn1StringForm.Visible);
+        return writer.Encode();
+    }"
+H0140,runtime-csharp/tests/Asn1Kit.Runtime.Tests/TestData.cs,5,RepoPath,public static string RepoPath(string relative),,"{
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null)
+        {
+            if (File.Exists(Path.Combine(dir.FullName, ""Asn1Kit.sln"")))
+            {
+                return Path.Combine(dir.FullName, relative);
+            }
+
+            dir = dir.Parent;
+        }
+
+        throw new DirectoryNotFoundException(""Repository root not found."");
+    }"
+H0141,compiler/tests/Asn1Kit.Compiler.Tests/Asn1KitTests.cs,1747,CompileGenerated,private static Assembly CompileGenerated(params string[] sources),,"{
+        var compilation = CSharpCompilation.Create(
+            ""GeneratedAsn1"",
+            sources.Select(source => CSharpSyntaxTree.ParseText(source)),
+            GeneratedCompilation.References,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        using var stream = new MemoryStream();
+        var result = compilation.Emit(stream);
+        if (!result.Success)
+        {
+            var errors = string.Join(""\n"", result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
+            throw new InvalidOperationException(errors);
+        }
+
+        return Assembly.Load(stream.ToArray());
+    }"
+H0142,compiler/tests/Asn1Kit.Compiler.Tests/Cms2004TestData.cs,23,CompileRaw,public static IrDocument CompileRaw(),,"=>
+        IrSerializer.FromJson(RawJson.Value, validateSchema: false);"
+H0143,compiler/tests/Asn1Kit.Compiler.Tests/Cms2004TestData.cs,26,CompileGolden,public static IrDocument CompileGolden(),,"=>
+        IrSerializer.FromJson(GoldenJson.Value, validateSchema: false);"
+H0144,compiler/tests/Asn1Kit.Compiler.Tests/Cms2004TestData.cs,29,SerializeRaw,private static string SerializeRaw(),,"{
+        var document = new Asn1Compiler().CompileFiles(AsnPaths.Select(TestData.RepoPath));
+        var json = IrSerializer.ToJson(document);
+        IrSerializer.ValidateSchema(json);
+        return json;
+    }"
+H0145,compiler/tests/Asn1Kit.Compiler.Tests/Cms2004TestData.cs,37,SerializeGolden,private static string SerializeGolden(),,"{
+        var document = IrSerializer.FromJson(RawJson.Value, validateSchema: false);
+        OpenTypeBindings.ApplyFile(document, TestData.RepoPath(""compiler/fixtures/opentype/pkix-bindings.json""));
+        OpenTypeBindings.ApplyFile(document, TestData.RepoPath(""compiler/fixtures/opentype/cms-bindings.json""));
+        foreach (var module in document.Modules)
+        {
+            var ns = module.Name == ""CryptographicMessageSyntax2004""
+                ? ""Asn1Kit.Cms""
+                : ""Asn1Kit.Pkix"";
+            module.Options = IrOptions.SetCSharp(module.Options, ""namespace"", ns);
+        }
+
+        var json = IrSerializer.ToJson(document);
+        IrSerializer.ValidateSchema(json);
+        return json;
+    }"
+H0146,compiler/tests/Asn1Kit.Compiler.Tests/DvcsTestData.cs,26,Compile,public static IrDocument Compile(),,"=>
+        IrSerializer.FromJson(ValidatedDocumentJson.Value, validateSchema: false);"
+H0147,compiler/tests/Asn1Kit.Compiler.Tests/DvcsTestData.cs,29,CompileAndSerialize,private static string CompileAndSerialize(),,"{
+        var document = new Asn1Compiler().CompileFiles(AsnPaths.Select(TestData.RepoPath));
+        OpenTypeBindings.ApplyFile(document, TestData.RepoPath(""compiler/fixtures/opentype/pkix-bindings.json""));
+        OpenTypeBindings.ApplyFile(document, TestData.RepoPath(""compiler/fixtures/opentype/cms-bindings.json""));
+        IrOptionsPatch.ApplyFile(document, TestData.RepoPath(""compiler/fixtures/ir/dvcs.patch.json""));
+        var json = IrSerializer.ToJson(document);
+        IrSerializer.ValidateSchema(json);
+        return json;
+    }"
+H0148,compiler/tests/Asn1Kit.Compiler.Tests/GeneratedCompilation.cs,37,CompileSources,public static Assembly CompileSources(params string[] sources),,"{
+        var pe = Emit(sources, References, out var assemblyName);
+        var assembly = Assembly.Load(pe);
+        LoadedByName[assemblyName] = assembly;
+        return assembly;
+    }"
+H0149,compiler/tests/Asn1Kit.Compiler.Tests/GeneratedCompilation.cs,49,CompileProbeAgainstCachedModule,"public static Assembly CompileProbeAgainstCachedModule( string cacheKey, Func<string[]> moduleSourcesFactory, string probeSource)",,"{
+        var module = Modules.GetOrAdd(
+            cacheKey,
+            static (_, factory) => new Lazy<CachedModule>(
+                () => CachedModule.Compile(factory()),
+                LazyThreadSafetyMode.ExecutionAndPublication),
+            moduleSourcesFactory).Value;
+        var pe = Emit(
+            new[] { probeSource },
+            References.Append(module.Reference).ToArray(),
+            out var probeName);
+        var assembly = Assembly.Load(pe);
+        LoadedByName[probeName] = assembly;
+        return assembly;
+    }"
+H0150,compiler/tests/Asn1Kit.Compiler.Tests/GeneratedCompilation.cs,69,Emit,"private static byte[] Emit( string[] sources, IEnumerable<MetadataReference> references, out string assemblyName)",,"{
+        assemblyName = ""Generated"" + Guid.NewGuid().ToString(""N"");
+        var compilation = CSharpCompilation.Create(
+            assemblyName,
+            sources.Select(s => CSharpSyntaxTree.ParseText(s)),
+            references,
+            new CSharpCompilationOptions(
+                OutputKind.DynamicallyLinkedLibrary,
+                nullableContextOptions: NullableContextOptions.Enable));
+        using var stream = new MemoryStream();
+        var result = compilation.Emit(stream);
+        if (!result.Success)
+        {
+            throw new InvalidOperationException(string.Join(
+                ""\n"",
+                result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error)));
+        }
+
+        return stream.ToArray();
+    }"
+H0151,compiler/tests/Asn1Kit.Compiler.Tests/GeneratedCompilation.cs,105,Compile,public static CachedModule Compile(string[] sources),,"{
+            var pe = Emit(sources, References, out var assemblyName);
+            var assembly = Assembly.Load(pe);
+            LoadedByName[assemblyName] = assembly;
+            var reference = MetadataReference.CreateFromImage(ImmutableArray.Create(pe));
+            return new CachedModule(reference, assembly);
+        }"
+H0152,compiler/tests/Asn1Kit.Compiler.Tests/ModernAsn1Tests.cs,78,CompileGenerated,internal static Assembly CompileGenerated(params string[] sources),,"=>
+        GeneratedCompilation.CompileSources(sources);"
+H0153,compiler/tests/Asn1Kit.Compiler.Tests/ModernRfcTests.cs,110,ResolveType,"private static Type ResolveType(string moduleName, string name)",,"{
+        var module = Corpus.Value.Modules.Single(m => m.Name == moduleName);
+        var definition = module.Types.Single(t => t.Name == name);
+        while (definition.Type is RefType reference)
+        {
+            module = Corpus.Value.Modules.Single(m => m.Name == (reference.Module ?? module.Name));
+            definition = module.Types.Single(t => t.Name == reference.Name);
+        }
+        var typeName = IrOptions.CSharpTypeName(definition.Options) ?? string.Concat(definition.Name.Split('-', '_').Select(p => char.ToUpperInvariant(p[0]) + p.Substring(1)));
+        return ModernAssembly.GetType(IrOptions.CSharpNamespace(module.Options) + ""."" + typeName, throwOnError: true)!;
+    }"
+H0154,compiler/tests/Asn1Kit.Compiler.Tests/ModernRfcTests.cs,123,RoundTrip,"private static byte[] RoundTrip(Type type, byte[] bytes)",,"{
+        var reader = new Asn1Reader(bytes, Asn1Encoding.Der);
+        var value = type.GetMethod(""Decode"", new[] { typeof(Asn1Reader) })!.Invoke(null, new object[] { reader });
+        reader.ThrowIfNotEmpty();
+        var writer = new Asn1Writer();
+        type.GetMethod(""Encode"", new[] { typeof(Asn1Writer) })!.Invoke(value, new object[] { writer });
+        return writer.Encode();
+    }"
+H0155,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeBindingsTests.cs,361,MinimalAlgDocument,private static IrDocument MinimalAlgDocument(),,"=> new()
+    {
+        IrVersion = 1,
+        Modules =
+        {
+            new IrModule
+            {
+                Name = ""M"",
+                TagDefault = TagDefaults.Explicit,
+                Types =
+                {
+                    new IrTypeDef
+                    {
+                        Name = ""Alg"",
+                        Type = new SequenceType
+                        {
+                            Components =
+                            {
+                                new IrComponent { Name = ""algorithm"", Type = new OidType() },
+                                new IrComponent
+                                {
+                                    Name = ""parameters"",
+                                    Optional = true,
+                                    Type = new AnyType { DefinedBy = ""algorithm"" }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    };"
+H0156,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs,28,Run,"private static object? Run(string body, Action<IrDocument>? configure = null, string source = Source)",,"{
+        var probe = @""using System; using Asn1Kit.Runtime; namespace M;
+          public static class Probe { public static object Run() { "" + body + "" } }"";
+        Assembly assembly;
+        if (configure is null)
+        {
+            // Cache CompileText+Generate+Emit of the ASN module; only probe is re-emitted.
+            assembly = GeneratedCompilation.CompileProbeAgainstCachedModule(
+                source,
+                () =>
+                {
+                    var document = new Asn1Compiler().CompileText(source);
+                    IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
+                    return new CSharpBackend().Generate(document).Select(f => f.Contents).ToArray();
+                },
+                probe);
+        }
+        else
+        {
+            var document = new Asn1Compiler().CompileText(source);
+            configure(document);
+            IrSerializer.ValidateSchema(IrSerializer.ToJson(document));
+            var files = new CSharpBackend().Generate(document).Select(f => f.Contents).Append(probe).ToArray();
+            assembly = ModernAsn1Tests.CompileGenerated(files);
+        }
+
+        try { return assembly.GetType(""M.Probe"")!.GetMethod(""Run"")!.Invoke(null, null); }
+        catch (TargetInvocationException ex) when (ex.InnerException is not null)
+        { System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(ex.InnerException).Throw(); throw; }
+    }"
+H0157,compiler/tests/Asn1Kit.Compiler.Tests/OptionalChoiceDecodeTests.cs,75,CompileGenerated,private static Assembly CompileGenerated(string source),,"{
+        var compilation = CSharpCompilation.Create(
+            ""GeneratedOptionalChoice"",
+            new[] { CSharpSyntaxTree.ParseText(source) },
+            GeneratedCompilation.References,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        using var stream = new MemoryStream();
+        var result = compilation.Emit(stream);
+        if (!result.Success)
+        {
+            var errors = string.Join(""\n"", result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
+            throw new InvalidOperationException(errors);
+        }
+
+        return Assembly.Load(stream.ToArray());
+    }"
+H0158,compiler/tests/Asn1Kit.Compiler.Tests/PkixExplicit88TestData.cs,16,CompileRaw,public static IrDocument CompileRaw(),,"=>
+        IrSerializer.FromJson(RawJson.Value, validateSchema: false);"
+H0159,compiler/tests/Asn1Kit.Compiler.Tests/PkixExplicit88TestData.cs,19,CompileWithBindings,public static IrDocument CompileWithBindings(),,"=>
+        IrSerializer.FromJson(WithBindingsJson.Value, validateSchema: false);"
+H0160,compiler/tests/Asn1Kit.Compiler.Tests/PkixExplicit88TestData.cs,22,SerializeRaw,private static string SerializeRaw(),,"{
+        var document = new Asn1Compiler().CompileFiles(new[]
+        {
+            TestData.RepoPath(""compiler/fixtures/asn1/pkix1-explicit88.asn"")
+        });
+        var json = IrSerializer.ToJson(document);
+        IrSerializer.ValidateSchema(json);
+        return json;
+    }"
+H0161,compiler/tests/Asn1Kit.Compiler.Tests/PkixExplicit88TestData.cs,33,SerializeWithBindings,private static string SerializeWithBindings(),,"{
+        var document = IrSerializer.FromJson(RawJson.Value, validateSchema: false);
+        OpenTypeBindings.ApplyFile(document, TestData.RepoPath(""compiler/fixtures/opentype/pkix-bindings.json""));
+        var json = IrSerializer.ToJson(document);
+        IrSerializer.ValidateSchema(json);
+        return json;
+    }"
+H0162,compiler/tests/Asn1Kit.Compiler.Tests/PkixExplicit88Tests.cs,43,FindAttributeTypeAndValueOpenTypes,private static IrOpenTypeUse? FindAttributeTypeAndValueOpenTypes(IrDocument document),,"{
+        IrOpenTypeUse? found = null;
+        foreach (var module in document.Modules)
+        foreach (var type in module.Types)
+            Walk(type.Type);
+        return found;
+
+        void Walk(TypeExpr expression)
+        {
+            if (found is not null) return;
+            switch (expression)
+            {
+                case RefType { Name: ""AttributeTypeAndValue"", OpenTypes: { Count: > 0 } openTypes }:
+                    found = openTypes[0];
+                    break;
+                case RefType { OpenTypes: { } nested }:
+                    foreach (var use in nested)
+                    foreach (var binding in use.Bindings)
+                        Walk(binding.Type);
+                    break;
+                case SequenceType sequence:
+                    foreach (var component in sequence.Components) Walk(component.Type);
+                    break;
+                case SetType set:
+                    foreach (var component in set.Components) Walk(component.Type);
+                    break;
+                case ChoiceType choice:
+                    foreach (var component in choice.Components) Walk(component.Type);
+                    break;
+                case SequenceOfType of:
+                    Walk(of.Element);
+                    break;
+                case SetOfType of:
+                    Walk(of.Element);
+                    break;
+            }
+        }
+    }"
+H0163,compiler/tests/Asn1Kit.Compiler.Tests/PkixGeneratedCodeTests.cs,34,NormalizeNewlines,private static string NormalizeNewlines(string text),,"=>
+        text.Replace(""\r\n"", ""\n"", StringComparison.Ordinal).Replace('\r', '\n');"
+H0164,compiler/tests/Asn1Kit.Compiler.Tests/PkixImplicit88TestData.cs,22,CompileRaw,public static IrDocument CompileRaw(),,"=>
+        IrSerializer.FromJson(RawJson.Value, validateSchema: false);"
+H0165,compiler/tests/Asn1Kit.Compiler.Tests/PkixImplicit88TestData.cs,25,CompileWithBindings,public static IrDocument CompileWithBindings(),,"=>
+        IrSerializer.FromJson(WithBindingsJson.Value, validateSchema: false);"
+H0166,compiler/tests/Asn1Kit.Compiler.Tests/PkixImplicit88TestData.cs,28,SerializeRaw,private static string SerializeRaw(),,"{
+        var document = new Asn1Compiler().CompileFiles(AsnPaths.Select(TestData.RepoPath));
+        var json = IrSerializer.ToJson(document);
+        IrSerializer.ValidateSchema(json);
+        return json;
+    }"
+H0167,compiler/tests/Asn1Kit.Compiler.Tests/PkixImplicit88TestData.cs,36,SerializeWithBindings,private static string SerializeWithBindings(),,"{
+        var document = IrSerializer.FromJson(RawJson.Value, validateSchema: false);
+        OpenTypeBindings.ApplyFile(document, TestData.RepoPath(""compiler/fixtures/opentype/pkix-bindings.json""));
+        var json = IrSerializer.ToJson(document);
+        IrSerializer.ValidateSchema(json);
+        return json;
+    }"
+H0168,compiler/tests/Asn1Kit.Compiler.Tests/TestData.cs,11,RepoPath,public static string RepoPath(string relative),,"{
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null)
+        {
+            if (File.Exists(Path.Combine(dir.FullName, ""Asn1Kit.sln"")))
+            {
+                return Path.Combine(dir.FullName, relative);
+            }
+
+            dir = dir.Parent;
+        }
+
+        throw new DirectoryNotFoundException(""Repository root not found."");
+    }"
+H0169,compiler/tests/Asn1Kit.Compiler.Tests/TestData.cs,27,LoadIr,public static IrDocument LoadIr(string relative),,"{
+        var path = RepoPath(relative);
+        var json = ValidatedIrJson.GetOrAdd(
+            path,
+            static p => new Lazy<string>(
+                () => ReadAndValidateIr(p),
+                LazyThreadSafetyMode.ExecutionAndPublication)).Value;
+        return IrSerializer.FromJson(json, validateSchema: false);
+    }"
+H0170,compiler/tests/Asn1Kit.Compiler.Tests/TestData.cs,38,ReadAndValidateIr,private static string ReadAndValidateIr(string path),,"{
+        var json = File.ReadAllText(path);
+        IrSerializer.ValidateSchema(json);
+        return json;
+    }"

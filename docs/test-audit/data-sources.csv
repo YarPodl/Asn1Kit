@@ -1,0 +1,98 @@
+﻿provider_id,test_id,member,helper_id,source,row_count,resolution,provider_source
+D001,T0069,ExternalCases,H0087,runtime-csharp/tests/Asn1Kit.Runtime.Tests/ExternalVectorTests.cs:10,13,Статически раскрыт,"=>
+        BerDerFixtures.AsTheoryData(""runtime-csharp/fixtures/ber-der/external/rfc-and-dotnet.json"");"
+D002,T0073,BooleanCases,H0090,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:12,8,Статически раскрыт,"=> BerDerFixtures.AsTheoryData(""runtime-csharp/fixtures/ber-der/boolean.json"");"
+D003,T0074,NullCases,H0091,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:13,3,Статически раскрыт,"=> BerDerFixtures.AsTheoryData(""runtime-csharp/fixtures/ber-der/null.json"");"
+D004,T0075,IntegerCases,H0092,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:14,17,Статически раскрыт,"=> BerDerFixtures.AsTheoryData(""runtime-csharp/fixtures/ber-der/integer.json"");"
+D005,T0076,EnumeratedCases,H0093,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:15,10,Статически раскрыт,"=> BerDerFixtures.AsTheoryData(""runtime-csharp/fixtures/ber-der/enumerated.json"");"
+D006,T0077,OctetCases,H0094,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:16,6,Статически раскрыт,"=> BerDerFixtures.AsTheoryData(""runtime-csharp/fixtures/ber-der/octet-string.json"");"
+D007,T0078,OidCases,H0095,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:17,6,Статически раскрыт,"=> BerDerFixtures.AsTheoryData(""runtime-csharp/fixtures/ber-der/oid.json"");"
+D008,T0079,BitStringCases,H0096,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:18,6,Статически раскрыт,"=> BerDerFixtures.AsTheoryData(""runtime-csharp/fixtures/ber-der/bit-string.json"");"
+D009,T0080,StringCases,H0097,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:19,14,Статически раскрыт,"=> BerDerFixtures.AsTheoryData(""runtime-csharp/fixtures/ber-der/string.json"");"
+D010,T0081,TimeCases,H0098,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:20,8,Статически раскрыт,"=> BerDerFixtures.AsTheoryData(""runtime-csharp/fixtures/ber-der/time.json"");"
+D011,T0095,Int32EncodingCases,H0099,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:22,8,Статически раскрыт,"{
+        yield return new object[] { 127, ""02017F"" };
+        yield return new object[] { 128, ""02020080"" };
+        yield return new object[] { -128, ""020180"" };
+        yield return new object[] { -129, ""0202FF7F"" };
+        yield return new object[] { 255, ""020200FF"" };
+        yield return new object[] { 256, ""02020100"" };
+        yield return new object[] { int.MinValue, ""020480000000"" };
+        yield return new object[] { int.MaxValue, ""02047FFFFFFF"" };
+    }"
+D012,T0096,UInt32EncodingCases,H0100,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:34,6,Статически раскрыт,"{
+        yield return new object[] { 0u, ""020100"" };
+        yield return new object[] { 127u, ""02017F"" };
+        yield return new object[] { 128u, ""02020080"" };
+        yield return new object[] { 255u, ""020200FF"" };
+        yield return new object[] { 256u, ""02020100"" };
+        yield return new object[] { uint.MaxValue, ""020500FFFFFFFF"" };
+    }"
+D013,T0097,Int64EncodingCases,H0101,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:44,8,Статически раскрыт,"{
+        yield return new object[] { 127L, ""02017F"" };
+        yield return new object[] { 128L, ""02020080"" };
+        yield return new object[] { -128L, ""020180"" };
+        yield return new object[] { -129L, ""0202FF7F"" };
+        yield return new object[] { 255L, ""020200FF"" };
+        yield return new object[] { 256L, ""02020100"" };
+        yield return new object[] { long.MinValue, ""02088000000000000000"" };
+        yield return new object[] { long.MaxValue, ""02087FFFFFFFFFFFFFFF"" };
+    }"
+D014,T0098,UInt64EncodingCases,H0102,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:56,6,Статически раскрыт,"{
+        yield return new object[] { 0UL, ""020100"" };
+        yield return new object[] { 127UL, ""02017F"" };
+        yield return new object[] { 128UL, ""02020080"" };
+        yield return new object[] { 255UL, ""020200FF"" };
+        yield return new object[] { 256UL, ""02020100"" };
+        yield return new object[] { ulong.MaxValue, ""020900FFFFFFFFFFFFFFFF"" };
+    }"
+D015,T0106,ConstructedLengthCases,H0103,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:66,9,Статически раскрыт,"{
+        yield return new object[] { 0, ""3000"" };
+        yield return new object[] { 1, ""3001"" };
+        yield return new object[] { 127, ""307F"" };
+        yield return new object[] { 128, ""308180"" };
+        yield return new object[] { 254, ""3081FE"" };
+        yield return new object[] { 255, ""3081FF"" };
+        yield return new object[] { 256, ""30820100"" };
+        yield return new object[] { 65_535, ""3082FFFF"" };
+        yield return new object[] { 65_536, ""3083010000"" };
+    }"
+D016,T0111,Booleans,H0126,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:13,2,Статически раскрыт,"=>
+        new object[] { false }.Concat(new object[] { true }).Select(v => new[] { v });"
+D017,T0113,Integers,H0127,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:16,10,Статически раскрыт,"{
+        BigInteger[] values =
+        {
+            0, 1, -1, 127, 128, -128, -129, 255, 256,
+            BigInteger.Parse(""170141183460469231731687303715884105728"")
+        };
+        return values.Select(v => new object[] { v });
+    }"
+D018,T0114,Octets,H0128,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:26,3,Статически раскрыт,"{
+        yield return new object[] { Array.Empty<byte>() };
+        yield return new object[] { new byte[] { 0x41, 0x6E, 0x6E } };
+        yield return new object[] { Enumerable.Repeat((byte)0x5A, 128).ToArray() };
+    }"
+D019,T0115,Oids,H0129,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:33,4,Статически раскрыт,"{
+        yield return new object[] { ""1.2.3"" };
+        yield return new object[] { ""1.2.840.113549.1.1.1"" };
+        yield return new object[] { ""2.16.840.1.101.3.4.2.1"" };
+        yield return new object[] { ""2.999.3"" };
+    }"
+D020,T0116,BitStrings,H0130,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:41,4,Статически раскрыт,"{
+        yield return new object[] { Array.Empty<byte>(), 0 };
+        yield return new object[] { new byte[] { 0xAA }, 0 };
+        yield return new object[] { new byte[] { 0xA8 }, 3 };
+        yield return new object[] { new byte[] { 0x80 }, 7 };
+    }"
+D021,T0117,CompatibleStrings,H0131,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:49,6,Статически раскрыт,"{
+        yield return new object[] { Asn1StringForm.Utf8, ""Hello"" };
+        yield return new object[] { Asn1StringForm.Printable, ""ABC12"" };
+        yield return new object[] { Asn1StringForm.Ia5, ""a@b.c"" };
+        yield return new object[] { Asn1StringForm.Numeric, ""123 4"" };
+        yield return new object[] { Asn1StringForm.Visible, ""Abc"" };
+        yield return new object[] { Asn1StringForm.Bmp, ""AB"" };
+    }"
+D022,T0120,UtcTimePivots,H0132,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:59,2,Статически раскрыт,"{
+        yield return new object[] { new DateTimeOffset(2049, 1, 2, 3, 4, 5, TimeSpan.Zero) };
+        yield return new object[] { new DateTimeOffset(1950, 1, 2, 3, 4, 5, TimeSpan.Zero) };
+    }"

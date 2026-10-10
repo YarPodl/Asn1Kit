@@ -1,0 +1,594 @@
+﻿parameter_id,test_id,included,row_kind,count_unit,ordinal,source,value,origin,encoding_reader_profile,branch_condition,static_iterations,scenario_ids
+P00001,T0001,да,InlineData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateCodecTests.cs:14,"""TrustAnchorRootCertificate.crt""",Литералы теста,,,не является циклом,pkix.certificate;pkix.directory-string
+P00002,T0001,да,InlineData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateCodecTests.cs:14,"""GoodCACert.crt""",Литералы теста,,,не является циклом,pkix.certificate;pkix.directory-string
+P00003,T0001,да,InlineData,xunit_row,3,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateCodecTests.cs:14,"""ValidCertificatePathTest1EE.crt""",Литералы теста,,,не является циклом,pkix.certificate;pkix.directory-string
+P00004,T0001,да,InlineData,xunit_row,4,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateCodecTests.cs:14,"""nameConstraintsDNS1CACert.crt""",Литералы теста,,,не является циклом,pkix.certificate;pkix.directory-string
+P00005,T0001,да,control_flow,branch_or_loop,1,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateCodecTests.cs:15,foreach (var expectedExt in expected.Extensions),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,TrustAnchorRootCertificate.crt: 3; GoodCACert.crt: 5; ValidCertificatePathTest1EE.crt: 4; nameConstraintsDNS1CACert.crt: 6,pkix.certificate;pkix.directory-string
+P00006,T0001,да,control_flow,branch_or_loop,1,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateCodecTests.cs:15,if (expected.SubjectPublicKeyParametersNull),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,не является циклом,pkix.certificate;pkix.directory-string
+P00007,T0002,да,InlineData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateExtensionCodecTests.cs:13,"""TrustAnchorRootCertificate.crt""",Литералы теста,,,не является циклом,extension.ski;extension.aki;extension.key-usage;extension.basic-constraints;extension.policies;extension.name-constraints;extension.san
+P00008,T0002,да,InlineData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateExtensionCodecTests.cs:13,"""GoodCACert.crt""",Литералы теста,,,не является циклом,extension.ski;extension.aki;extension.key-usage;extension.basic-constraints;extension.policies;extension.name-constraints;extension.san
+P00009,T0002,да,InlineData,xunit_row,3,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateExtensionCodecTests.cs:13,"""ValidCertificatePathTest1EE.crt""",Литералы теста,,,не является циклом,extension.ski;extension.aki;extension.key-usage;extension.basic-constraints;extension.policies;extension.name-constraints;extension.san
+P00010,T0002,да,InlineData,xunit_row,4,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateExtensionCodecTests.cs:13,"""nameConstraintsDNS1CACert.crt""",Литералы теста,,,не является циклом,extension.ski;extension.aki;extension.key-usage;extension.basic-constraints;extension.policies;extension.name-constraints;extension.san
+P00011,T0002,да,control_flow,branch_or_loop,1,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateExtensionCodecTests.cs:14,foreach (var expected in expectedCert.Extensions),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,TrustAnchorRootCertificate.crt: 3; GoodCACert.crt: 5; ValidCertificatePathTest1EE.crt: 4; nameConstraintsDNS1CACert.crt: 6,extension.ski;extension.aki;extension.key-usage;extension.basic-constraints;extension.policies;extension.name-constraints;extension.san
+P00012,T0002,да,control_flow,branch_or_loop,1,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateExtensionCodecTests.cs:14,switch (expected.Oid),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,не является циклом,extension.ski;extension.aki;extension.key-usage;extension.basic-constraints;extension.policies;extension.name-constraints;extension.san
+P00013,T0003,да,InlineData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateExtensionCodecTests.cs:59,"""ValidDNSnameConstraintsTest30EE.crt""",Литералы теста,,,не является циклом,extension.san
+P00014,T0003,да,InlineData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateExtensionCodecTests.cs:59,"""ValidRFC822nameConstraintsTest21EE.crt""",Литералы теста,,,не является циклом,extension.san
+P00015,T0003,да,InlineData,xunit_row,3,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateExtensionCodecTests.cs:59,"""ValidURInameConstraintsTest34EE.crt""",Литералы теста,,,не является циклом,extension.san
+P00016,T0004,да,control_flow,branch_or_loop,1,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateListCodecTests.cs:10,for (var i = 0; i < expected.RevokedCertificates.Count; i++),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,2 (expected.json: GoodCACRL.crl),pkix.crl;crl.extensions
+P00017,T0004,да,control_flow,branch_or_loop,1,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateListCodecTests.cs:10,foreach (var expectedExt in expected.CrlExtensions),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,GoodCACRL.crl: 2,pkix.crl;crl.extensions
+P00018,T0004,да,control_flow,branch_or_loop,1,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateListCodecTests.cs:10,"if (expectedExt.Oid == ""2.5.29.35"")",Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,не является циклом,pkix.crl;crl.extensions
+P00019,T0004,да,control_flow,branch_or_loop,2,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateListCodecTests.cs:10,"if (expectedExt.Oid == ""2.5.29.20"")",Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,не является циклом,pkix.crl;crl.extensions
+P00020,T0005,да,control_flow,branch_or_loop,1,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs:16,"foreach (var args in new[] { new[] { ""verify"", path }, new[] { ""verify"", ""--modern"", path } })",Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,2 (элементы литерального массива),demo.dn-format
+P00021,T0015,да,control_flow,branch_or_loop,1,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs:314,"foreach (var args in new[] { new[] { ""print-cert"", certPath }, new[] { ""print-cert"", ""--modern"", certPath } })",Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,2 (элементы литерального массива),demo.commands
+P00022,T0016,да,control_flow,branch_or_loop,1,runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs:333,"foreach (var args in new[] { new[] { ""print-cms"", cmsPath }, new[] { ""print-cms"", ""--modern"", cmsPath } })",Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,2 (элементы литерального массива),demo.commands
+P00023,T0029,да,InlineData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Pkix.Tests/DvcsCodecTests.cs:98,"""3100""",Литералы теста,,,не является циклом,dvcs.negative
+P00024,T0029,да,InlineData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Pkix.Tests/DvcsCodecTests.cs:98,"""300930030A0101040201""",Литералы теста,,,не является циклом,dvcs.negative
+P00025,T0030,да,InlineData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Pkix.Tests/GeneralNameCodecTests.cs:12,"""a01106082b06010505070805a0050c03614062"", ""1.3.6.1.5.5.7.8.5"", ""xmpp"", ""a@b""",Литералы теста,,,не является циклом,generalname.othername
+P00026,T0030,да,InlineData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Pkix.Tests/GeneralNameCodecTests.cs:12,"""a01106082b06010505070807a0051603737276"", ""1.3.6.1.5.5.7.8.7"", ""srv"", ""srv""",Литералы теста,,,не является циклом,generalname.othername
+P00027,T0030,да,InlineData,xunit_row,3,runtime-csharp/tests/Asn1Kit.Pkix.Tests/GeneralNameCodecTests.cs:12,"""a01206082b06010505070809a0060c04c3a94078"", ""1.3.6.1.5.5.7.8.9"", ""smtp"", ""é@x""",Литералы теста,,,не является циклом,generalname.othername
+P00028,T0031,да,control_flow,branch_or_loop,1,runtime-csharp/tests/Asn1Kit.Pkix.Tests/GeneralNameCodecTests.cs:41,foreach (var testCase in document.Cases),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,2 (векторы GeneralNames из expected.json),generalname.forms
+P00029,T0031,да,control_flow,branch_or_loop,1,runtime-csharp/tests/Asn1Kit.Pkix.Tests/GeneralNameCodecTests.cs:41,switch (testCase.Kind.ToLowerInvariant()),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,не является циклом,generalname.forms
+P00030,T0032,да,InlineData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Pkix.Tests/GeneralNameCodecTests.cs:74,"""ValidDNSnameConstraintsTest30EE.crt"", GeneralNameKind.DNSName, ""testserver.testcertificates.gov""",Литералы теста,,,не является циклом,extension.san;generalname.forms
+P00031,T0032,да,InlineData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Pkix.Tests/GeneralNameCodecTests.cs:74,"""ValidRFC822nameConstraintsTest21EE.crt"", GeneralNameKind.Rfc822Name, ""Test21EE@mailserver.testcertificates.gov""",Литералы теста,,,не является циклом,extension.san;generalname.forms
+P00032,T0032,да,InlineData,xunit_row,3,runtime-csharp/tests/Asn1Kit.Pkix.Tests/GeneralNameCodecTests.cs:74,"""ValidURInameConstraintsTest34EE.crt"", GeneralNameKind.UniformResourceIdentifier, ""http://testserver.testcertificates.gov/index.html""",Литералы теста,,,не является циклом,extension.san;generalname.forms
+P00033,T0036,да,InlineData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Pkix.Tests/ModernOpenTypeWrapperTests.cs:90,"""0C0141""",Литералы теста,,,не является циклом,open.string-choice;pkix.directory-string
+P00034,T0036,да,InlineData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Pkix.Tests/ModernOpenTypeWrapperTests.cs:90,"""130141""",Литералы теста,,,не является циклом,open.string-choice;pkix.directory-string
+P00035,T0036,да,InlineData,xunit_row,3,runtime-csharp/tests/Asn1Kit.Pkix.Tests/ModernOpenTypeWrapperTests.cs:90,"""1E020041""",Литералы теста,,,не является циклом,open.string-choice;pkix.directory-string
+P00036,T0038,да,InlineData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Pkix.Tests/ModernOpenTypeWrapperTests.cs:157,"""TrustAnchorRootCertificate.crt""",Литералы теста,,,не является циклом,pkix.certificate;extension.ski;extension.aki;pkix.directory-string
+P00037,T0038,да,InlineData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Pkix.Tests/ModernOpenTypeWrapperTests.cs:157,"""ValidCertificatePathTest1EE.crt""",Литералы теста,,,не является циклом,pkix.certificate;extension.ski;extension.aki;pkix.directory-string
+P00038,T0039,да,InlineData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Pkix.Tests/PkixNegativeCodecTests.cs:12,"""TrustAnchorRootCertificate.crt""",Литералы теста,,,не является циклом,pkix.negative
+P00039,T0039,да,InlineData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Pkix.Tests/PkixNegativeCodecTests.cs:12,"""GoodCACert.crt""",Литералы теста,,,не является циклом,pkix.negative
+P00040,T0039,да,InlineData,xunit_row,3,runtime-csharp/tests/Asn1Kit.Pkix.Tests/PkixNegativeCodecTests.cs:12,"""ValidCertificatePathTest1EE.crt""",Литералы теста,,,не является циклом,pkix.negative
+P00041,T0047,да,InlineData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/Asn1CodecTests.cs:33,"""0C0141"", ""A""",Литералы теста,,,не является циклом,api.codec-adapters
+P00042,T0047,да,InlineData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Runtime.Tests/Asn1CodecTests.cs:33,"""130141"", ""A""",Литералы теста,,,не является циклом,api.codec-adapters
+P00043,T0047,да,InlineData,xunit_row,3,runtime-csharp/tests/Asn1Kit.Runtime.Tests/Asn1CodecTests.cs:33,"""1E020041"", ""A""",Литералы теста,,,не является циклом,api.codec-adapters
+P00044,T0050,да,InlineData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/Asn1ReaderTests.cs:15,"""04800000""",Литералы теста,,,не является циклом,tag.invalid;length.overflow;tlv.truncated;ber.eoc;ber.primitive-indefinite
+P00045,T0050,да,InlineData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Runtime.Tests/Asn1ReaderTests.cs:15,"""1F1E00""",Литералы теста,,,не является циклом,tag.invalid;length.overflow;tlv.truncated;ber.eoc;ber.primitive-indefinite
+P00046,T0050,да,InlineData,xunit_row,3,runtime-csharp/tests/Asn1Kit.Runtime.Tests/Asn1ReaderTests.cs:15,"""1F801F00""",Литералы теста,,,не является циклом,tag.invalid;length.overflow;tlv.truncated;ber.eoc;ber.primitive-indefinite
+P00047,T0050,да,InlineData,xunit_row,4,runtime-csharp/tests/Asn1Kit.Runtime.Tests/Asn1ReaderTests.cs:15,"""1F888080800000""",Литералы теста,,,не является циклом,tag.invalid;length.overflow;tlv.truncated;ber.eoc;ber.primitive-indefinite
+P00048,T0050,да,InlineData,xunit_row,5,runtime-csharp/tests/Asn1Kit.Runtime.Tests/Asn1ReaderTests.cs:15,"""048480000000""",Литералы теста,,,не является циклом,tag.invalid;length.overflow;tlv.truncated;ber.eoc;ber.primitive-indefinite
+P00049,T0050,да,InlineData,xunit_row,6,runtime-csharp/tests/Asn1Kit.Runtime.Tests/Asn1ReaderTests.cs:15,"""0000""",Литералы теста,,,не является циклом,tag.invalid;length.overflow;tlv.truncated;ber.eoc;ber.primitive-indefinite
+P00050,T0064,да,InlineData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/ContainedValueTests.cs:35,"""04020201""",Литералы теста,,,не является циклом,containing.invalid
+P00051,T0064,да,InlineData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Runtime.Tests/ContainedValueTests.cs:35,"""040402010100""",Литералы теста,,,не является циклом,containing.invalid
+P00052,T0064,да,InlineData,xunit_row,3,runtime-csharp/tests/Asn1Kit.Runtime.Tests/ContainedValueTests.cs:35,"""040105""",Литералы теста,,,не является циклом,containing.invalid
+P00053,T0069,да,JSON vector,xunit_row,1,runtime-csharp/fixtures/ber-der/external/rfc-and-dotnet.json#1,"{""name"":""pkcs1-rsaEncryption-oid"",""rules"":""der"",""op"":""oid"",""bytes"":""06092A864886F70D010101"",""value"":""1.2.840.113549.1.1.1"",""source"":""RFC 8017 Appendix C (rsaEncryption)""}",RFC 8017 Appendix C (rsaEncryption),"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,pkix.algorithm-params;quality.vectors
+P00054,T0069,да,JSON vector,xunit_row,2,runtime-csharp/fixtures/ber-der/external/rfc-and-dotnet.json#2,"{""name"":""pkcs1-sha256WithRSAEncryption-oid"",""rules"":""der"",""op"":""oid"",""bytes"":""06092A864886F70D01010B"",""value"":""1.2.840.113549.1.1.11"",""source"":""RFC 8017 Appendix C (sha256WithRSAEncryption)""}",RFC 8017 Appendix C (sha256WithRSAEncryption),"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,pkix.algorithm-params;quality.vectors
+P00055,T0069,да,JSON vector,xunit_row,3,runtime-csharp/fixtures/ber-der/external/rfc-and-dotnet.json#3,"{""name"":""pkix-algorithmIdentifier-sha256-null"",""rules"":""der"",""op"":""rawDecode"",""bytes"":""300D06096086480165030402010500"",""value"":{""kind"":""algorithmIdentifier"",""oid"":""2.16.840.1.101.3.4.2.1"",""paramsTag"":""null""},""source"":""RFC 5754 / SHA-256 AlgorithmIdentifier with NULL parameters""}",RFC 5754 / SHA-256 AlgorithmIdentifier with NULL parameters,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,pkix.algorithm-params;quality.vectors
+P00056,T0069,да,JSON vector,xunit_row,4,runtime-csharp/fixtures/ber-der/external/rfc-and-dotnet.json#4,"{""name"":""pkix-algorithmIdentifier-rsa-null"",""rules"":""der"",""op"":""rawDecode"",""bytes"":""300D06092A864886F70D0101010500"",""value"":{""kind"":""algorithmIdentifier"",""oid"":""1.2.840.113549.1.1.1"",""paramsTag"":""null""},""source"":""RFC 5280 AlgorithmIdentifier pattern (rsaEncryption + NULL)""}",RFC 5280 AlgorithmIdentifier pattern (rsaEncryption + NULL),"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,pkix.algorithm-params;quality.vectors
+P00057,T0069,да,JSON vector,xunit_row,5,runtime-csharp/fixtures/ber-der/external/rfc-and-dotnet.json#5,"{""name"":""pkix-utctime-notBefore-sample"",""rules"":""der"",""op"":""time"",""form"":""Utc"",""bytes"":""170D3135303432313138353835305A"",""value"":""2015-04-21T18:58:50Z"",""source"":""RFC 5280 UTCTime form (YYMMDDHHMMSSZ); synthetic sample""}",RFC 5280 UTCTime form (YYMMDDHHMMSSZ); synthetic sample,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,pkix.algorithm-params;quality.vectors
+P00058,T0069,да,JSON vector,xunit_row,6,runtime-csharp/fixtures/ber-der/external/rfc-and-dotnet.json#6,"{""name"":""pkix-generalizedtime-sample"",""rules"":""der"",""op"":""time"",""form"":""Generalized"",""bytes"":""180F32303530303130313030303030305A"",""value"":""2050-01-01T00:00:00Z"",""fractionDigits"":0,""source"":""RFC 5280 GeneralizedTime form; synthetic sample past UTCTime pivot""}",RFC 5280 GeneralizedTime form; synthetic sample past UTCTime pivot,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,pkix.algorithm-params;quality.vectors
+P00059,T0069,да,JSON vector,xunit_row,7,runtime-csharp/fixtures/ber-der/external/rfc-and-dotnet.json#7,"{""name"":""x690-boolean-true"",""rules"":""der"",""op"":""boolean"",""bytes"":""0101FF"",""value"":true,""source"":""X.690 DER BOOLEAN true encoding""}",X.690 DER BOOLEAN true encoding,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,pkix.algorithm-params;quality.vectors
+P00060,T0069,да,JSON vector,xunit_row,8,runtime-csharp/fixtures/ber-der/external/rfc-and-dotnet.json#8,"{""name"":""x690-null"",""rules"":""der"",""op"":""null"",""bytes"":""0500"",""source"":""X.690 NULL""}",X.690 NULL,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode без assert логического value/Eof; encode→expected и повторный encode,не является циклом,pkix.algorithm-params;quality.vectors
+P00061,T0069,да,JSON vector,xunit_row,9,runtime-csharp/fixtures/ber-der/external/rfc-and-dotnet.json#9,"{""name"":""x690-integer-zero"",""rules"":""der"",""op"":""integer"",""bytes"":""020100"",""value"":""0"",""source"":""X.690 INTEGER zero""}",X.690 INTEGER zero,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,pkix.algorithm-params;quality.vectors
+P00062,T0069,да,JSON vector,xunit_row,10,runtime-csharp/fixtures/ber-der/external/rfc-and-dotnet.json#10,"{""name"":""x690-octet-empty"",""rules"":""der"",""op"":""octetString"",""bytes"":""0400"",""value"":"""",""source"":""X.690 empty OCTET STRING""}",X.690 empty OCTET STRING,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,pkix.algorithm-params;quality.vectors
+P00063,T0069,да,JSON vector,xunit_row,11,runtime-csharp/fixtures/ber-der/external/rfc-and-dotnet.json#11,"{""name"":""dotnet-bitstring-named-bits-style"",""rules"":""der"",""op"":""bitString"",""bytes"":""03020780"",""value"":""80"",""unusedBits"":7,""source"":""Regenerated via System.Formats.Asn1 AsnWriter (single high bit)""}",Regenerated via System.Formats.Asn1 AsnWriter (single high bit),"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,pkix.algorithm-params;quality.vectors
+P00064,T0069,да,JSON vector,xunit_row,12,runtime-csharp/fixtures/ber-der/external/rfc-and-dotnet.json#12,"{""name"":""dotnet-oid-joint-iso-itu"",""rules"":""der"",""op"":""oid"",""bytes"":""0603883703"",""value"":""2.999.3"",""source"":""Regenerated via System.Formats.Asn1 (example OID under 2.999)""}",Regenerated via System.Formats.Asn1 (example OID under 2.999),"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,pkix.algorithm-params;quality.vectors
+P00065,T0069,да,JSON vector,xunit_row,13,runtime-csharp/fixtures/ber-der/external/rfc-and-dotnet.json#13,"{""name"":""pkcs1-public-exponent-65537"",""rules"":""der"",""op"":""integer"",""bytes"":""0203010001"",""value"":""65537"",""source"":""RFC 8017 §A.1.1 RSAPublicKey.publicExponent (common F4 value 65537)""}",RFC 8017 §A.1.1 RSAPublicKey.publicExponent (common F4 value 65537),"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,pkix.algorithm-params;quality.vectors
+P00066,T0069,да,control_flow,branch_or_loop,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/ExternalVectorTests.cs:16,switch (c.Op),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,не является циклом,pkix.algorithm-params;quality.vectors
+P00067,T0071,да,InlineData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/FormattingTests.cs:48,"""02012A"", ""Universal-2P (3 bytes)""",Литералы теста,,,не является циклом,api.format
+P00068,T0071,да,InlineData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Runtime.Tests/FormattingTests.cs:48,"""3000"", ""Universal-16C (2 bytes)""",Литералы теста,,,не является циклом,api.format
+P00069,T0071,да,InlineData,xunit_row,3,runtime-csharp/tests/Asn1Kit.Runtime.Tests/FormattingTests.cs:48,"""308002012A0000"", ""Universal-16C (7 bytes)""",Литералы теста,,,не является циклом,api.format
+P00070,T0073,да,JSON vector,xunit_row,1,runtime-csharp/fixtures/ber-der/boolean.json#1,"{""name"":""boolean-false-der"",""rules"":""der"",""op"":""boolean"",""bytes"":""010100"",""value"":false}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,boolean.der
+P00071,T0073,да,JSON vector,xunit_row,2,runtime-csharp/fixtures/ber-der/boolean.json#2,"{""name"":""boolean-true-der"",""rules"":""der"",""op"":""boolean"",""bytes"":""0101FF"",""value"":true}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,boolean.der
+P00072,T0073,да,JSON vector,xunit_row,3,runtime-csharp/fixtures/ber-der/boolean.json#3,"{""name"":""boolean-ber-nonzero-true"",""rules"":""ber"",""op"":""boolean"",""bytes"":""010101"",""value"":true,""encode"":false}",Собственная fixture; независимый источник не указан,"{""encoding"":""ber"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode не вызывается,не является циклом,boolean.ber
+P00073,T0073,да,JSON vector,xunit_row,4,runtime-csharp/fixtures/ber-der/boolean.json#4,"{""name"":""boolean-der-rejects-nonzero"",""rules"":""der"",""op"":""boolean"",""bytes"":""010101"",""reject"":true}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode без assert логического value/Eof; encode не вызывается,не является циклом,boolean.malformed;tag.mismatch
+P00074,T0073,да,JSON vector,xunit_row,5,runtime-csharp/fixtures/ber-der/boolean.json#5,"{""name"":""boolean-rejects-empty"",""rules"":""der"",""op"":""boolean"",""bytes"":""0100"",""reject"":true}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode без assert логического value/Eof; encode не вызывается,не является циклом,boolean.malformed;tag.mismatch
+P00075,T0073,да,JSON vector,xunit_row,6,runtime-csharp/fixtures/ber-der/boolean.json#6,"{""name"":""boolean-rejects-length-2"",""rules"":""der"",""op"":""boolean"",""bytes"":""01020000"",""reject"":true}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode без assert логического value/Eof; encode не вызывается,не является циклом,boolean.malformed;tag.mismatch
+P00076,T0073,да,JSON vector,xunit_row,7,runtime-csharp/fixtures/ber-der/boolean.json#7,"{""name"":""boolean-rejects-constructed"",""rules"":""ber"",""op"":""boolean"",""bytes"":""21030101FF"",""reject"":true}",Собственная fixture; независимый источник не указан,"{""encoding"":""ber"",""profile"":""default""}",reject → Throws; иначе decode без assert логического value/Eof; encode не вызывается,не является циклом,boolean.malformed;tag.mismatch
+P00077,T0073,да,JSON vector,xunit_row,8,runtime-csharp/fixtures/ber-der/boolean.json#8,"{""name"":""boolean-rejects-wrong-tag"",""rules"":""der"",""op"":""boolean"",""bytes"":""020100"",""reject"":true}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode без assert логического value/Eof; encode не вызывается,не является циклом,boolean.malformed;tag.mismatch
+P00078,T0074,да,JSON vector,xunit_row,1,runtime-csharp/fixtures/ber-der/null.json#1,"{""name"":""null-der"",""rules"":""der"",""op"":""null"",""bytes"":""0500""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode без assert логического value/Eof; encode→expected и повторный encode,не является циклом,null.der
+P00079,T0074,да,JSON vector,xunit_row,2,runtime-csharp/fixtures/ber-der/null.json#2,"{""name"":""null-rejects-nonempty"",""rules"":""der"",""op"":""null"",""bytes"":""050100"",""reject"":true}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode без assert логического value/Eof; encode не вызывается,не является циклом,null.malformed;tag.mismatch
+P00080,T0074,да,JSON vector,xunit_row,3,runtime-csharp/fixtures/ber-der/null.json#3,"{""name"":""null-rejects-wrong-tag"",""rules"":""der"",""op"":""null"",""bytes"":""010100"",""reject"":true}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode без assert логического value/Eof; encode не вызывается,не является циклом,null.malformed;tag.mismatch
+P00081,T0075,да,JSON vector,xunit_row,1,runtime-csharp/fixtures/ber-der/integer.json#1,"{""name"":""integer-0"",""rules"":""der"",""op"":""integer"",""bytes"":""020100"",""value"":""0""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,integer.der
+P00082,T0075,да,JSON vector,xunit_row,2,runtime-csharp/fixtures/ber-der/integer.json#2,"{""name"":""integer-1"",""rules"":""der"",""op"":""integer"",""bytes"":""020101"",""value"":""1""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,integer.der
+P00083,T0075,да,JSON vector,xunit_row,3,runtime-csharp/fixtures/ber-der/integer.json#3,"{""name"":""integer-127"",""rules"":""der"",""op"":""integer"",""bytes"":""02017F"",""value"":""127""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,integer.der
+P00084,T0075,да,JSON vector,xunit_row,4,runtime-csharp/fixtures/ber-der/integer.json#4,"{""name"":""integer-128"",""rules"":""der"",""op"":""integer"",""bytes"":""02020080"",""value"":""128""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,integer.der
+P00085,T0075,да,JSON vector,xunit_row,5,runtime-csharp/fixtures/ber-der/integer.json#5,"{""name"":""integer-minus-1"",""rules"":""der"",""op"":""integer"",""bytes"":""0201FF"",""value"":""-1""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,integer.der
+P00086,T0075,да,JSON vector,xunit_row,6,runtime-csharp/fixtures/ber-der/integer.json#6,"{""name"":""integer-minus-128"",""rules"":""der"",""op"":""integer"",""bytes"":""020180"",""value"":""-128""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,integer.der
+P00087,T0075,да,JSON vector,xunit_row,7,runtime-csharp/fixtures/ber-der/integer.json#7,"{""name"":""integer-minus-129"",""rules"":""der"",""op"":""integer"",""bytes"":""0202FF7F"",""value"":""-129""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,integer.der
+P00088,T0075,да,JSON vector,xunit_row,8,runtime-csharp/fixtures/ber-der/integer.json#8,"{""name"":""integer-255"",""rules"":""der"",""op"":""integer"",""bytes"":""020200FF"",""value"":""255""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,integer.der
+P00089,T0075,да,JSON vector,xunit_row,9,runtime-csharp/fixtures/ber-der/integer.json#9,"{""name"":""integer-2pow127"",""rules"":""der"",""op"":""integer"",""bytes"":""02110080000000000000000000000000000000"",""value"":""170141183460469231731687303715884105728""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,integer.der;integer.big
+P00090,T0075,да,JSON vector,xunit_row,10,runtime-csharp/fixtures/ber-der/integer.json#10,"{""name"":""integer-soft-non-minimal-1"",""rules"":""der"",""op"":""integer"",""bytes"":""02020001"",""value"":""1"",""encode"":false}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode не вызывается,не является циклом,integer.nonminimal
+P00091,T0075,да,JSON vector,xunit_row,11,runtime-csharp/fixtures/ber-der/integer.json#11,"{""name"":""integer-soft-non-minimal-minus-1"",""rules"":""der"",""op"":""integer"",""bytes"":""0202FFFF"",""value"":""-1"",""encode"":false}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode не вызывается,не является циклом,integer.nonminimal
+P00092,T0075,да,JSON vector,xunit_row,12,runtime-csharp/fixtures/ber-der/integer.json#12,"{""name"":""integer-strict-rejects-non-minimal-1"",""rules"":""der"",""op"":""integer"",""bytes"":""02020001"",""reject"":true,""readerProfile"":""strict""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""strict""}",reject → Throws; иначе decode без assert логического value/Eof; encode не вызывается,не является циклом,integer.nonminimal;integer.invalid;tlv.truncated
+P00093,T0075,да,JSON vector,xunit_row,13,runtime-csharp/fixtures/ber-der/integer.json#13,"{""name"":""integer-strict-rejects-non-minimal-minus-1"",""rules"":""der"",""op"":""integer"",""bytes"":""0202FFFF"",""reject"":true,""readerProfile"":""strict""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""strict""}",reject → Throws; иначе decode без assert логического value/Eof; encode не вызывается,не является циклом,integer.nonminimal;integer.invalid;tlv.truncated
+P00094,T0075,да,JSON vector,xunit_row,14,runtime-csharp/fixtures/ber-der/integer.json#14,"{""name"":""integer-rejects-non-minimal-length"",""rules"":""der"",""op"":""integer"",""bytes"":""02810101"",""reject"":true}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode без assert логического value/Eof; encode не вызывается,не является циклом,integer.nonminimal;integer.invalid;length.nonminimal;tlv.truncated
+P00095,T0075,да,JSON vector,xunit_row,15,runtime-csharp/fixtures/ber-der/integer.json#15,"{""name"":""integer-allows-non-minimal-length"",""rules"":""der"",""op"":""integer"",""bytes"":""02810101"",""value"":""1"",""encode"":false,""readerProfile"":""allowNonMinimalLength""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""allowNonMinimalLength""}",reject → Throws; иначе decode/value/Eof; encode не вызывается,не является циклом,integer.nonminimal;length.nonminimal
+P00096,T0075,да,JSON vector,xunit_row,16,runtime-csharp/fixtures/ber-der/integer.json#16,"{""name"":""integer-rejects-empty"",""rules"":""der"",""op"":""integer"",""bytes"":""0200"",""reject"":true}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode без assert логического value/Eof; encode не вызывается,не является циклом,integer.invalid;tlv.truncated
+P00097,T0075,да,JSON vector,xunit_row,17,runtime-csharp/fixtures/ber-der/integer.json#17,"{""name"":""integer-rejects-truncated"",""rules"":""der"",""op"":""integer"",""bytes"":""020201"",""reject"":true}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode без assert логического value/Eof; encode не вызывается,не является циклом,integer.invalid;tlv.truncated
+P00098,T0076,да,JSON vector,xunit_row,1,runtime-csharp/fixtures/ber-der/enumerated.json#1,"{""name"":""enumerated-0"",""rules"":""der"",""op"":""enumerated"",""bytes"":""0A0100"",""value"":""0""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,enumerated.der
+P00099,T0076,да,JSON vector,xunit_row,2,runtime-csharp/fixtures/ber-der/enumerated.json#2,"{""name"":""enumerated-1"",""rules"":""der"",""op"":""enumerated"",""bytes"":""0A0101"",""value"":""1""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,enumerated.der
+P00100,T0076,да,JSON vector,xunit_row,3,runtime-csharp/fixtures/ber-der/enumerated.json#3,"{""name"":""enumerated-10"",""rules"":""der"",""op"":""enumerated"",""bytes"":""0A010A"",""value"":""10""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,enumerated.der
+P00101,T0076,да,JSON vector,xunit_row,4,runtime-csharp/fixtures/ber-der/enumerated.json#4,"{""name"":""enumerated-127"",""rules"":""der"",""op"":""enumerated"",""bytes"":""0A017F"",""value"":""127""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,enumerated.der
+P00102,T0076,да,JSON vector,xunit_row,5,runtime-csharp/fixtures/ber-der/enumerated.json#5,"{""name"":""enumerated-128"",""rules"":""der"",""op"":""enumerated"",""bytes"":""0A020080"",""value"":""128""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,enumerated.der
+P00103,T0076,да,JSON vector,xunit_row,6,runtime-csharp/fixtures/ber-der/enumerated.json#6,"{""name"":""enumerated-minus-1"",""rules"":""der"",""op"":""enumerated"",""bytes"":""0A01FF"",""value"":""-1""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,enumerated.der
+P00104,T0076,да,JSON vector,xunit_row,7,runtime-csharp/fixtures/ber-der/enumerated.json#7,"{""name"":""enumerated-empty-reject"",""rules"":""der"",""op"":""enumerated"",""bytes"":""0A00"",""reject"":true}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode без assert логического value/Eof; encode не вызывается,не является циклом,enumerated.der;enumerated.nonminimal;tag.mismatch
+P00105,T0076,да,JSON vector,xunit_row,8,runtime-csharp/fixtures/ber-der/enumerated.json#8,"{""name"":""enumerated-soft-non-minimal"",""rules"":""der"",""op"":""enumerated"",""bytes"":""0A020001"",""value"":""1"",""encode"":false}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode не вызывается,не является циклом,enumerated.der
+P00106,T0076,да,JSON vector,xunit_row,9,runtime-csharp/fixtures/ber-der/enumerated.json#9,"{""name"":""enumerated-strict-rejects-non-minimal"",""rules"":""der"",""op"":""enumerated"",""bytes"":""0A020001"",""reject"":true,""readerProfile"":""strict""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""strict""}",reject → Throws; иначе decode без assert логического value/Eof; encode не вызывается,не является циклом,enumerated.der;enumerated.nonminimal;tag.mismatch
+P00107,T0076,да,JSON vector,xunit_row,10,runtime-csharp/fixtures/ber-der/enumerated.json#10,"{""name"":""enumerated-wrong-tag-reject"",""rules"":""der"",""op"":""enumerated"",""bytes"":""020101"",""reject"":true}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode без assert логического value/Eof; encode не вызывается,не является циклом,enumerated.der;enumerated.nonminimal;tag.mismatch
+P00108,T0077,да,JSON vector,xunit_row,1,runtime-csharp/fixtures/ber-der/octet-string.json#1,"{""name"":""octet-empty"",""rules"":""der"",""op"":""octetString"",""bytes"":""0400"",""value"":""""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,octet.der
+P00109,T0077,да,JSON vector,xunit_row,2,runtime-csharp/fixtures/ber-der/octet-string.json#2,"{""name"":""octet-ann"",""rules"":""der"",""op"":""octetString"",""bytes"":""0403416E6E"",""value"":""416E6E""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,octet.der
+P00110,T0077,да,JSON vector,xunit_row,3,runtime-csharp/fixtures/ber-der/octet-string.json#3,"{""name"":""octet-ber-constructed-indefinite"",""rules"":""ber"",""op"":""octetString"",""bytes"":""24800403416E6E0000"",""value"":""416E6E"",""encode"":false}",Собственная fixture; независимый источник не указан,"{""encoding"":""ber"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode не вызывается,не является циклом,octet.ber-constructed
+P00111,T0077,да,JSON vector,xunit_row,4,runtime-csharp/fixtures/ber-der/octet-string.json#4,"{""name"":""octet-ber-constructed-definite"",""rules"":""ber"",""op"":""octetString"",""bytes"":""24050403416E6E"",""value"":""416E6E"",""encode"":false}",Собственная fixture; независимый источник не указан,"{""encoding"":""ber"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode не вызывается,не является циклом,octet.ber-constructed
+P00112,T0077,да,JSON vector,xunit_row,5,runtime-csharp/fixtures/ber-der/octet-string.json#5,"{""name"":""octet-der-rejects-indefinite"",""rules"":""der"",""op"":""octetString"",""bytes"":""24800403416E6E0000"",""reject"":true}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode без assert логического value/Eof; encode не вызывается,не является циклом,der.indefinite
+P00113,T0077,да,JSON vector,xunit_row,6,runtime-csharp/fixtures/ber-der/octet-string.json#6,"{""name"":""octet-rejects-truncated-eoc"",""rules"":""ber"",""op"":""octetString"",""bytes"":""24800403416E6E00"",""reject"":true}",Собственная fixture; независимый источник не указан,"{""encoding"":""ber"",""profile"":""default""}",reject → Throws; иначе decode без assert логического value/Eof; encode не вызывается,не является циклом,ber.eoc
+P00114,T0078,да,JSON vector,xunit_row,1,runtime-csharp/fixtures/ber-der/oid.json#1,"{""name"":""oid-rsa"",""rules"":""der"",""op"":""oid"",""bytes"":""06092A864886F70D010101"",""value"":""1.2.840.113549.1.1.1""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,oid.der
+P00115,T0078,да,JSON vector,xunit_row,2,runtime-csharp/fixtures/ber-der/oid.json#2,"{""name"":""oid-short"",""rules"":""der"",""op"":""oid"",""bytes"":""06022A03"",""value"":""1.2.3""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,oid.der
+P00116,T0078,да,JSON vector,xunit_row,3,runtime-csharp/fixtures/ber-der/oid.json#3,"{""name"":""oid-rejects-empty"",""rules"":""der"",""op"":""oid"",""bytes"":""0600"",""reject"":true}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode без assert логического value/Eof; encode не вызывается,не является циклом,tlv.truncated;oid.invalid
+P00117,T0078,да,JSON vector,xunit_row,4,runtime-csharp/fixtures/ber-der/oid.json#4,"{""name"":""oid-rejects-truncated"",""rules"":""der"",""op"":""oid"",""bytes"":""06032A86"",""reject"":true}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode без assert логического value/Eof; encode не вызывается,не является циклом,tlv.truncated;oid.invalid
+P00118,T0078,да,JSON vector,xunit_row,5,runtime-csharp/fixtures/ber-der/oid.json#5,"{""name"":""oid-rejects-overlong-base128"",""rules"":""der"",""op"":""oid"",""bytes"":""06032A8001"",""reject"":true}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode без assert логического value/Eof; encode не вызывается,не является циклом,tlv.truncated;oid.invalid;oid.overlong
+P00119,T0078,да,JSON vector,xunit_row,6,runtime-csharp/fixtures/ber-der/oid.json#6,"{""name"":""oid-allows-overlong-base128"",""rules"":""der"",""op"":""oid"",""bytes"":""06032A8001"",""value"":""1.2.1"",""encode"":false,""readerProfile"":""allowOverlongOid""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""allowOverlongOid""}",reject → Throws; иначе decode/value/Eof; encode не вызывается,не является циклом,oid.overlong
+P00120,T0079,да,JSON vector,xunit_row,1,runtime-csharp/fixtures/ber-der/bit-string.json#1,"{""name"":""bitstring-empty"",""rules"":""der"",""op"":""bitString"",""bytes"":""030100"",""value"":"""",""unusedBits"":0}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,bit.der
+P00121,T0079,да,JSON vector,xunit_row,2,runtime-csharp/fixtures/ber-der/bit-string.json#2,"{""name"":""bitstring-unused-0"",""rules"":""der"",""op"":""bitString"",""bytes"":""030200AA"",""value"":""AA"",""unusedBits"":0}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,bit.der
+P00122,T0079,да,JSON vector,xunit_row,3,runtime-csharp/fixtures/ber-der/bit-string.json#3,"{""name"":""bitstring-unused-3"",""rules"":""der"",""op"":""bitString"",""bytes"":""030203A8"",""value"":""A8"",""unusedBits"":3}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,bit.der
+P00123,T0079,да,JSON vector,xunit_row,4,runtime-csharp/fixtures/ber-der/bit-string.json#4,"{""name"":""bitstring-ber-constructed-indefinite"",""rules"":""ber"",""op"":""bitString"",""bytes"":""2380030200A0030205000000"",""value"":""A000"",""unusedBits"":5,""encode"":false}",Собственная fixture; независимый источник не указан,"{""encoding"":""ber"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode не вызывается,не является циклом,bit.ber-constructed
+P00124,T0079,да,JSON vector,xunit_row,5,runtime-csharp/fixtures/ber-der/bit-string.json#5,"{""name"":""bitstring-soft-trailing-bits"",""rules"":""der"",""op"":""bitString"",""bytes"":""030203A9"",""value"":""A9"",""unusedBits"":3,""encode"":false}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode не вызывается,не является циклом,bit.trailing
+P00125,T0079,да,JSON vector,xunit_row,6,runtime-csharp/fixtures/ber-der/bit-string.json#6,"{""name"":""bitstring-strict-rejects-trailing-bits"",""rules"":""der"",""op"":""bitString"",""bytes"":""030203A9"",""reject"":true,""readerProfile"":""strict""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""strict""}",reject → Throws; иначе decode без assert логического value/Eof; encode не вызывается,не является циклом,bit.trailing
+P00126,T0080,да,JSON vector,xunit_row,1,runtime-csharp/fixtures/ber-der/string.json#1,"{""name"":""string-utf8"",""rules"":""der"",""op"":""string"",""form"":""Utf8"",""bytes"":""0C0548656C6C6F"",""value"":""Hello""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,string.utf8
+P00127,T0080,да,JSON vector,xunit_row,2,runtime-csharp/fixtures/ber-der/string.json#2,"{""name"":""string-printable"",""rules"":""der"",""op"":""string"",""form"":""Printable"",""bytes"":""13054142433132"",""value"":""ABC12""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,string.printable
+P00128,T0080,да,JSON vector,xunit_row,3,runtime-csharp/fixtures/ber-der/string.json#3,"{""name"":""string-ia5"",""rules"":""der"",""op"":""string"",""form"":""Ia5"",""bytes"":""16056140622E63"",""value"":""a@b.c""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,string.ia5
+P00129,T0080,да,JSON vector,xunit_row,4,runtime-csharp/fixtures/ber-der/string.json#4,"{""name"":""string-numeric"",""rules"":""der"",""op"":""string"",""form"":""Numeric"",""bytes"":""12053132332034"",""value"":""123 4""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,string.numeric
+P00130,T0080,да,JSON vector,xunit_row,5,runtime-csharp/fixtures/ber-der/string.json#5,"{""name"":""string-visible"",""rules"":""der"",""op"":""string"",""form"":""Visible"",""bytes"":""1A03416263"",""value"":""Abc""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,string.visible
+P00131,T0080,да,JSON vector,xunit_row,6,runtime-csharp/fixtures/ber-der/string.json#6,"{""name"":""string-teletex-latin1"",""rules"":""der"",""op"":""string"",""form"":""Teletex"",""bytes"":""1401E9"",""value"":""é""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,string.legacy-charsets
+P00132,T0080,да,JSON vector,xunit_row,7,runtime-csharp/fixtures/ber-der/string.json#7,"{""name"":""string-t61-latin1"",""rules"":""der"",""op"":""string"",""form"":""T61"",""bytes"":""140141"",""value"":""A""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,
+P00133,T0080,да,JSON vector,xunit_row,8,runtime-csharp/fixtures/ber-der/string.json#8,"{""name"":""string-general-latin1"",""rules"":""der"",""op"":""string"",""form"":""General"",""bytes"":""1B0142"",""value"":""B""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,string.legacy-charsets
+P00134,T0080,да,JSON vector,xunit_row,9,runtime-csharp/fixtures/ber-der/string.json#9,"{""name"":""string-graphic-latin1"",""rules"":""der"",""op"":""string"",""form"":""Graphic"",""bytes"":""190143"",""value"":""C""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,string.legacy-charsets
+P00135,T0080,да,JSON vector,xunit_row,10,runtime-csharp/fixtures/ber-der/string.json#10,"{""name"":""string-videotex-latin1"",""rules"":""der"",""op"":""string"",""form"":""Videotex"",""bytes"":""150144"",""value"":""D""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,string.legacy-charsets
+P00136,T0080,да,JSON vector,xunit_row,11,runtime-csharp/fixtures/ber-der/string.json#11,"{""name"":""string-bmp"",""rules"":""der"",""op"":""string"",""form"":""Bmp"",""bytes"":""1E0400410042"",""value"":""AB""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,string.bmp
+P00137,T0080,да,JSON vector,xunit_row,12,runtime-csharp/fixtures/ber-der/string.json#12,"{""name"":""string-universal"",""rules"":""der"",""op"":""string"",""form"":""Universal"",""bytes"":""1C080000004100000042"",""value"":""AB""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,string.universal
+P00138,T0080,да,JSON vector,xunit_row,13,runtime-csharp/fixtures/ber-der/string.json#13,"{""name"":""string-utf8-ber-constructed"",""rules"":""ber"",""op"":""string"",""form"":""Utf8"",""bytes"":""2C070C0548656C6C6F"",""value"":""Hello"",""encode"":false}",Собственная fixture; независимый источник не указан,"{""encoding"":""ber"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode не вызывается,не является циклом,string.utf8;string.ber-constructed
+P00139,T0080,да,JSON vector,xunit_row,14,runtime-csharp/fixtures/ber-der/string.json#14,"{""name"":""string-printable-rejects-at"",""rules"":""der"",""op"":""string"",""form"":""Printable"",""bytes"":""130140"",""reject"":true}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode без assert логического value/Eof; encode не вызывается,не является циклом,string.invalid-characters
+P00140,T0081,да,JSON vector,xunit_row,1,runtime-csharp/fixtures/ber-der/time.json#1,"{""name"":""time-utc-der"",""rules"":""der"",""op"":""time"",""form"":""Utc"",""bytes"":""170D3137303130323033303430355A"",""value"":""2017-01-02T03:04:05Z""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,time.utc
+P00141,T0081,да,JSON vector,xunit_row,2,runtime-csharp/fixtures/ber-der/time.json#2,"{""name"":""time-utc-pivot-49"",""rules"":""der"",""op"":""time"",""form"":""Utc"",""bytes"":""170D3439303130323033303430355A"",""value"":""2049-01-02T03:04:05Z""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,time.utc;time.pivot
+P00142,T0081,да,JSON vector,xunit_row,3,runtime-csharp/fixtures/ber-der/time.json#3,"{""name"":""time-utc-pivot-50"",""rules"":""der"",""op"":""time"",""form"":""Utc"",""bytes"":""170D3530303130323033303430355A"",""value"":""1950-01-02T03:04:05Z""}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,time.utc;time.pivot
+P00143,T0081,да,JSON vector,xunit_row,4,runtime-csharp/fixtures/ber-der/time.json#4,"{""name"":""time-generalized-der-no-fraction"",""rules"":""der"",""op"":""time"",""form"":""Generalized"",""bytes"":""180F32303137303130323033303430355A"",""value"":""2017-01-02T03:04:05Z"",""fractionDigits"":0}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,time.generalized
+P00144,T0081,да,JSON vector,xunit_row,5,runtime-csharp/fixtures/ber-der/time.json#5,"{""name"":""time-generalized-der-fraction"",""rules"":""der"",""op"":""time"",""form"":""Generalized"",""bytes"":""181232303137303130323033303430352E31325A"",""value"":""2017-01-02T03:04:05.120Z"",""fractionDigits"":3}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode→expected и повторный encode,не является циклом,time.generalized
+P00145,T0081,да,JSON vector,xunit_row,6,runtime-csharp/fixtures/ber-der/time.json#6,"{""name"":""time-utc-ber-offset"",""rules"":""ber"",""op"":""time"",""form"":""Utc"",""bytes"":""170F313730313032303330342B30353030"",""value"":""2017-01-01T22:04:00Z"",""encode"":false}",Собственная fixture; независимый источник не указан,"{""encoding"":""ber"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode не вызывается,не является циклом,time.utc;time.ber-offset
+P00146,T0081,да,JSON vector,xunit_row,7,runtime-csharp/fixtures/ber-der/time.json#7,"{""name"":""time-generalized-ber-no-seconds"",""rules"":""ber"",""op"":""time"",""form"":""Generalized"",""bytes"":""180D3230313730313032303330345A"",""value"":""2017-01-02T03:04:00Z"",""encode"":false}",Собственная fixture; независимый источник не указан,"{""encoding"":""ber"",""profile"":""default""}",reject → Throws; иначе decode/value/Eof; encode не вызывается,не является циклом,time.generalized
+P00147,T0081,да,JSON vector,xunit_row,8,runtime-csharp/fixtures/ber-der/time.json#8,"{""name"":""time-utc-der-rejects-offset"",""rules"":""der"",""op"":""time"",""form"":""Utc"",""bytes"":""170F313730313032303330342B30353030"",""reject"":true}",Собственная fixture; независимый источник не указан,"{""encoding"":""der"",""profile"":""default""}",reject → Throws; иначе decode без assert логического value/Eof; encode не вызывается,не является циклом,time.ber-offset
+P00148,T0090,да,control_flow,branch_or_loop,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:214,for (var i = -128; i <= 127; i++),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,256,api.allocations
+P00149,T0090,да,control_flow,branch_or_loop,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:214,if (i >= 0),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,не является циклом,api.allocations
+P00150,T0095,да,MemberData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:22,"{ 127, ""02017F"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00151,T0095,да,MemberData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:22,"{ 128, ""02020080"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00152,T0095,да,MemberData,xunit_row,3,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:22,"{ -128, ""020180"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00153,T0095,да,MemberData,xunit_row,4,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:22,"{ -129, ""0202FF7F"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00154,T0095,да,MemberData,xunit_row,5,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:22,"{ 255, ""020200FF"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00155,T0095,да,MemberData,xunit_row,6,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:22,"{ 256, ""02020100"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00156,T0095,да,MemberData,xunit_row,7,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:22,"{ int.MinValue, ""020480000000"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00157,T0095,да,MemberData,xunit_row,8,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:22,"{ int.MaxValue, ""02047FFFFFFF"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00158,T0096,да,MemberData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:34,"{ 0u, ""020100"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00159,T0096,да,MemberData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:34,"{ 127u, ""02017F"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00160,T0096,да,MemberData,xunit_row,3,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:34,"{ 128u, ""02020080"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00161,T0096,да,MemberData,xunit_row,4,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:34,"{ 255u, ""020200FF"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00162,T0096,да,MemberData,xunit_row,5,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:34,"{ 256u, ""02020100"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00163,T0096,да,MemberData,xunit_row,6,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:34,"{ uint.MaxValue, ""020500FFFFFFFF"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00164,T0097,да,MemberData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:44,"{ 127L, ""02017F"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00165,T0097,да,MemberData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:44,"{ 128L, ""02020080"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00166,T0097,да,MemberData,xunit_row,3,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:44,"{ -128L, ""020180"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00167,T0097,да,MemberData,xunit_row,4,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:44,"{ -129L, ""0202FF7F"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00168,T0097,да,MemberData,xunit_row,5,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:44,"{ 255L, ""020200FF"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00169,T0097,да,MemberData,xunit_row,6,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:44,"{ 256L, ""02020100"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00170,T0097,да,MemberData,xunit_row,7,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:44,"{ long.MinValue, ""02088000000000000000"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00171,T0097,да,MemberData,xunit_row,8,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:44,"{ long.MaxValue, ""02087FFFFFFFFFFFFFFF"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00172,T0098,да,MemberData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:56,"{ 0UL, ""020100"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00173,T0098,да,MemberData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:56,"{ 127UL, ""02017F"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00174,T0098,да,MemberData,xunit_row,3,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:56,"{ 128UL, ""02020080"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00175,T0098,да,MemberData,xunit_row,4,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:56,"{ 255UL, ""020200FF"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00176,T0098,да,MemberData,xunit_row,5,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:56,"{ 256UL, ""02020100"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00177,T0098,да,MemberData,xunit_row,6,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:56,"{ ulong.MaxValue, ""020900FFFFFFFFFFFFFFFF"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.der;integer.fixed-width
+P00178,T0099,да,InlineData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:335,"new byte[] { 0x00 }, 0",Литералы теста,,,не является циклом,integer.fixed-width
+P00179,T0099,да,InlineData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:335,"new byte[] { 0x7F }, 127",Литералы теста,,,не является циклом,integer.fixed-width
+P00180,T0099,да,InlineData,xunit_row,3,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:335,"new byte[] { 0x00, 0x80 }, 128",Литералы теста,,,не является циклом,integer.fixed-width
+P00181,T0099,да,InlineData,xunit_row,4,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:335,"new byte[] { 0x7F, 0xFF, 0xFF, 0xFF }, int.MaxValue",Литералы теста,,,не является циклом,integer.fixed-width
+P00182,T0099,да,InlineData,xunit_row,5,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:335,"new byte[] { 0x80, 0x00, 0x00, 0x00 }, int.MinValue",Литералы теста,,,не является циклом,integer.fixed-width
+P00183,T0099,да,InlineData,xunit_row,6,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:335,"new byte[] { 0xFF, 0x80, 0x00, 0x00, 0x00 }, int.MinValue",Литералы теста,,,не является циклом,integer.fixed-width
+P00184,T0100,да,InlineData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:345,"new byte[] { 0x00, 0x80, 0x00, 0x00, 0x00 }",Литералы теста,,,не является циклом,integer.overflow
+P00185,T0100,да,InlineData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:345,"new byte[] { 0xFF, 0x7F, 0xFF, 0xFF, 0xFF }",Литералы теста,,,не является циклом,integer.overflow
+P00186,T0102,да,control_flow,branch_or_loop,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:360,for (var i = 0; i < 1000; i++),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,1000,api.allocations
+P00187,T0105,да,control_flow,branch_or_loop,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:407,for (var i = 0; i < payload.Length; i++),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,зависит от параметра/состояния; статическое число не установлено,length.boundaries
+P00188,T0106,да,MemberData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:66,"{ 0, ""3000"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,length.boundaries
+P00189,T0106,да,MemberData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:66,"{ 1, ""3001"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,length.boundaries
+P00190,T0106,да,MemberData,xunit_row,3,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:66,"{ 127, ""307F"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,length.boundaries
+P00191,T0106,да,MemberData,xunit_row,4,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:66,"{ 128, ""308180"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,length.boundaries
+P00192,T0106,да,MemberData,xunit_row,5,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:66,"{ 254, ""3081FE"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,length.boundaries
+P00193,T0106,да,MemberData,xunit_row,6,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:66,"{ 255, ""3081FF"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,length.boundaries
+P00194,T0106,да,MemberData,xunit_row,7,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:66,"{ 256, ""30820100"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,length.boundaries
+P00195,T0106,да,MemberData,xunit_row,8,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:66,"{ 65_535, ""3082FFFF"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,length.boundaries
+P00196,T0106,да,MemberData,xunit_row,9,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs:66,"{ 65_536, ""3083010000"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,length.boundaries
+P00197,T0111,да,MemberData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:13,{ false },Литералы/формулы provider; код не выполнялся,,,не является циклом,boolean.der;quality.oracle
+P00198,T0111,да,MemberData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:13,{ true },Литералы/формулы provider; код не выполнялся,,,не является циклом,boolean.der;quality.oracle
+P00199,T0113,да,MemberData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:16,0,Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.big;quality.oracle
+P00200,T0113,да,MemberData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:16,1,Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.big;quality.oracle
+P00201,T0113,да,MemberData,xunit_row,3,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:16,-1,Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.big;quality.oracle
+P00202,T0113,да,MemberData,xunit_row,4,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:16,127,Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.big;quality.oracle
+P00203,T0113,да,MemberData,xunit_row,5,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:16,128,Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.big;quality.oracle
+P00204,T0113,да,MemberData,xunit_row,6,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:16,-128,Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.big;quality.oracle
+P00205,T0113,да,MemberData,xunit_row,7,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:16,-129,Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.big;quality.oracle
+P00206,T0113,да,MemberData,xunit_row,8,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:16,255,Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.big;quality.oracle
+P00207,T0113,да,MemberData,xunit_row,9,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:16,256,Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.big;quality.oracle
+P00208,T0113,да,MemberData,xunit_row,10,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:16,"BigInteger.Parse(""170141183460469231731687303715884105728"")",Литералы/формулы provider; код не выполнялся,,,не является циклом,integer.big;quality.oracle
+P00209,T0114,да,MemberData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:26,{ Array.Empty<byte>() },Литералы/формулы provider; код не выполнялся,,,не является циклом,octet.der;quality.oracle
+P00210,T0114,да,MemberData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:26,"{ new byte[] { 0x41, 0x6E, 0x6E } }",Литералы/формулы provider; код не выполнялся,,,не является циклом,octet.der;quality.oracle
+P00211,T0114,да,MemberData,xunit_row,3,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:26,"{ Enumerable.Repeat((byte)0x5A, 128).ToArray() }",Литералы/формулы provider; код не выполнялся,,,не является циклом,octet.der;quality.oracle
+P00212,T0115,да,MemberData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:33,"{ ""1.2.3"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,oid.der;oid.large-second;quality.oracle
+P00213,T0115,да,MemberData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:33,"{ ""1.2.840.113549.1.1.1"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,oid.der;oid.large-second;quality.oracle
+P00214,T0115,да,MemberData,xunit_row,3,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:33,"{ ""2.16.840.1.101.3.4.2.1"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,oid.der;oid.large-second;quality.oracle
+P00215,T0115,да,MemberData,xunit_row,4,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:33,"{ ""2.999.3"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,oid.der;oid.large-second;quality.oracle
+P00216,T0116,да,MemberData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:41,"{ Array.Empty<byte>(), 0 }",Литералы/формулы provider; код не выполнялся,,,не является циклом,bit.der;quality.oracle
+P00217,T0116,да,MemberData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:41,"{ new byte[] { 0xAA }, 0 }",Литералы/формулы provider; код не выполнялся,,,не является циклом,bit.der;quality.oracle
+P00218,T0116,да,MemberData,xunit_row,3,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:41,"{ new byte[] { 0xA8 }, 3 }",Литералы/формулы provider; код не выполнялся,,,не является циклом,bit.der;quality.oracle
+P00219,T0116,да,MemberData,xunit_row,4,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:41,"{ new byte[] { 0x80 }, 7 }",Литералы/формулы provider; код не выполнялся,,,не является циклом,bit.der;quality.oracle
+P00220,T0117,да,MemberData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:49,"{ Asn1StringForm.Utf8, ""Hello"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,quality.oracle;string.utf8
+P00221,T0117,да,MemberData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:49,"{ Asn1StringForm.Printable, ""ABC12"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,quality.oracle;string.printable
+P00222,T0117,да,MemberData,xunit_row,3,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:49,"{ Asn1StringForm.Ia5, ""a@b.c"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,quality.oracle;string.ia5
+P00223,T0117,да,MemberData,xunit_row,4,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:49,"{ Asn1StringForm.Numeric, ""123 4"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,quality.oracle;string.numeric
+P00224,T0117,да,MemberData,xunit_row,5,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:49,"{ Asn1StringForm.Visible, ""Abc"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,quality.oracle;string.visible
+P00225,T0117,да,MemberData,xunit_row,6,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:49,"{ Asn1StringForm.Bmp, ""AB"" }",Литералы/формулы provider; код не выполнялся,,,не является циклом,quality.oracle;string.bmp
+P00226,T0120,да,MemberData,xunit_row,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:59,"{ new DateTimeOffset(2049, 1, 2, 3, 4, 5, TimeSpan.Zero) }",Литералы/формулы provider; код не выполнялся,,,не является циклом,time.pivot;quality.oracle
+P00227,T0120,да,MemberData,xunit_row,2,runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveOracleTests.cs:59,"{ new DateTimeOffset(1950, 1, 2, 3, 4, 5, TimeSpan.Zero) }",Литералы/формулы provider; код не выполнялся,,,не является циклом,time.pivot;quality.oracle
+P00228,T0128,да,control_flow,branch_or_loop,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/RuntimeTests.cs:39,for (var i = 0; i < payload.Length; i++),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,зависит от параметра/состояния; статическое число не установлено,length.boundaries
+P00229,T0187,да,control_flow,branch_or_loop,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/RuntimeTests.cs:1181,for (var i = 0; i < 16; i++),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,16,api.allocations
+P00230,T0187,да,control_flow,branch_or_loop,2,runtime-csharp/tests/Asn1Kit.Runtime.Tests/RuntimeTests.cs:1181,for (var i = 0; i < 8; i++),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,8,api.allocations
+P00231,T0187,да,control_flow,branch_or_loop,3,runtime-csharp/tests/Asn1Kit.Runtime.Tests/RuntimeTests.cs:1181,for (var i = 0; i < iterations; i++),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,200,api.allocations
+P00232,T0187,да,control_flow,branch_or_loop,4,runtime-csharp/tests/Asn1Kit.Runtime.Tests/RuntimeTests.cs:1181,for (var i = 0; i < iterations; i++),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,200,api.allocations
+P00233,T0187,да,control_flow,branch_or_loop,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/RuntimeTests.cs:1181,foreach (var item in items),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,зависит от коллекции/ветви; статическое число не установлено,api.allocations
+P00234,T0187,да,control_flow,branch_or_loop,1,runtime-csharp/tests/Asn1Kit.Runtime.Tests/RuntimeTests.cs:1181,if (inner.Eof),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,не является циклом,api.allocations
+P00235,T0187,да,control_flow,branch_or_loop,2,runtime-csharp/tests/Asn1Kit.Runtime.Tests/RuntimeTests.cs:1181,if (inner.Eof),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,не является циклом,api.allocations
+P00236,T0187,да,control_flow,branch_or_loop,3,runtime-csharp/tests/Asn1Kit.Runtime.Tests/RuntimeTests.cs:1181,if (count == rented.Length),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,не является циклом,api.allocations
+P00237,T0198,да,control_flow,branch_or_loop,1,compiler/tests/Asn1Kit.Compiler.Tests/Asn1KitTests.cs:230,"foreach (var name in new[] {""Consumer.Sample"", ""Consumer.Structured""})",Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,2 (элементы литерального массива),codegen.oid-catalog
+P00238,T0218,да,control_flow,branch_or_loop,1,compiler/tests/Asn1Kit.Compiler.Tests/Asn1KitTests.cs:1500,foreach (var component in outer.Components),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,2 (два поля исходного ASN.1),api.retained
+P00239,T0221,да,control_flow,branch_or_loop,1,compiler/tests/Asn1Kit.Compiler.Tests/Asn1KitTests.cs:1680,"foreach (var test in new[] { (Type: text, Hex: ""0C03616263"", Display: ""abc""), (Type: text, Hex: ""1600"", Display: """"), (Type: mixed, Hex: ""0201D6"", Display: ""-42""), (Type: mixed, Hex: ""0402A0FF"", Display: ""2 bytes""), (Type: mixed, Hex: ""0500"", Display: ""NULL""), (Type: mixed, Hex: ""030205A0"", Display: ""3 bits"") })",Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,6 (элементы литерального массива),api.format
+P00240,T0232,да,control_flow,branch_or_loop,1,compiler/tests/Asn1Kit.Compiler.Tests/ImportResolutionTests.cs:111,foreach (var module in document.Modules),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,2 (два исходных модуля),codegen.namespaces
+P00241,T0242,нет,InlineData,xunit_row,1,compiler/tests/Asn1Kit.Compiler.Tests/IrOptionsTests.cs:28,"""Asn1Kit.Pkix"", ""Asn1Kit.Pkix""",Литералы теста,,,не является циклом,
+P00242,T0242,нет,InlineData,xunit_row,2,compiler/tests/Asn1Kit.Compiler.Tests/IrOptionsTests.cs:28,"""\""quoted\"""", ""quoted""",Литералы теста,,,не является циклом,
+P00243,T0245,нет,InlineData,xunit_row,1,compiler/tests/Asn1Kit.Compiler.Tests/IrOptionsTests.cs:54,"""""",Литералы теста,,,не является циклом,
+P00244,T0245,нет,InlineData,xunit_row,2,compiler/tests/Asn1Kit.Compiler.Tests/IrOptionsTests.cs:54,"""=value""",Литералы теста,,,не является циклом,
+P00245,T0245,нет,InlineData,xunit_row,3,compiler/tests/Asn1Kit.Compiler.Tests/IrOptionsTests.cs:54,"""csharp.namespace""",Литералы теста,,,не является циклом,
+P00246,T0257,нет,InlineData,xunit_row,1,compiler/tests/Asn1Kit.Compiler.Tests/ModernAsn1Tests.cs:48,"""one ENTRY ::= { &id {1 2 3} }"", ""Required""",Литералы теста,,,не является циклом,
+P00247,T0257,нет,InlineData,xunit_row,2,compiler/tests/Asn1Kit.Compiler.Tests/ModernAsn1Tests.cs:48,"""one ENTRY ::= { INTEGER IDENTIFIED BY {1 2 3} } two ENTRY ::= { BOOLEAN IDENTIFIED BY {1 2 3} } Entries ENTRY ::= {one | two}"", ""UNIQUE""",Литералы теста,,,не является циклом,
+P00248,T0257,нет,InlineData,xunit_row,3,compiler/tests/Asn1Kit.Compiler.Tests/ModernAsn1Tests.cs:48,"""T{ENTRY:S} ::= INTEGER R ::= T{}"", ""arguments""",Литералы теста,,,не является циклом,
+P00249,T0262,нет,InlineData,xunit_row,1,compiler/tests/Asn1Kit.Compiler.Tests/ModernAsn1Tests.cs:151,"""[[-1: a [0] INTEGER]]""",Литералы теста,,,не является циклом,
+P00250,T0262,нет,InlineData,xunit_row,2,compiler/tests/Asn1Kit.Compiler.Tests/ModernAsn1Tests.cs:151,"""[[2: a [0] INTEGER]], [[2: b [1] INTEGER]]""",Литералы теста,,,не является циклом,
+P00251,T0262,нет,InlineData,xunit_row,3,compiler/tests/Asn1Kit.Compiler.Tests/ModernAsn1Tests.cs:151,"""[[]]""",Литералы теста,,,не является циклом,
+P00252,T0265,нет,control_flow,branch_or_loop,1,compiler/tests/Asn1Kit.Compiler.Tests/ModernAsn1Tests.cs:207,foreach (var template in templates),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,1 при выполнении Assert.Single,
+P00253,T0272,нет,InlineData,xunit_row,1,compiler/tests/Asn1Kit.Compiler.Tests/ModernAsn1Tests.cs:424,"""C ::= CLASS { &id OBJECT IDENTIFIER UNIQUE, &n INTEGER } entry C ::= { &id {1 2 3}, &n TRUE }"", ""governing""",Литералы теста,,,не является циклом,
+P00254,T0272,нет,InlineData,xunit_row,2,compiler/tests/Asn1Kit.Compiler.Tests/ModernAsn1Tests.cs:424,"""C ::= CLASS { &id OBJECT IDENTIFIER UNIQUE, &n INTEGER } entry C ::= { &id {1 2 3}, &n missing }"", ""governing""",Литералы теста,,,не является циклом,
+P00255,T0272,нет,InlineData,xunit_row,3,compiler/tests/Asn1Kit.Compiler.Tests/ModernAsn1Tests.cs:424,"""C ::= CLASS { &id OBJECT IDENTIFIER UNIQUE } D ::= CLASS { &id OBJECT IDENTIFIER UNIQUE } entry D ::= { &id {1 2 3} } Entries C ::= {entry}"", ""class""",Литералы теста,,,не является циклом,
+P00256,T0272,нет,InlineData,xunit_row,4,compiler/tests/Asn1Kit.Compiler.Tests/ModernAsn1Tests.cs:424,"""P{INTEGER:n} ::= INTEGER T ::= P{TRUE}"", ""governing""",Литералы теста,,,не является циклом,
+P00257,T0272,нет,InlineData,xunit_row,5,compiler/tests/Asn1Kit.Compiler.Tests/ModernAsn1Tests.cs:424,"""P{T} ::= SEQUENCE { value T } R ::= P"", ""arguments""",Литералы теста,,,не является циклом,
+P00258,T0272,нет,InlineData,xunit_row,6,compiler/tests/Asn1Kit.Compiler.Tests/ModernAsn1Tests.cs:424,"""P{T} ::= INTEGER R ::= P{TRUE}"", ""type""",Литералы теста,,,не является циклом,
+P00259,T0272,нет,InlineData,xunit_row,7,compiler/tests/Asn1Kit.Compiler.Tests/ModernAsn1Tests.cs:424,"""value INTEGER ::= 7 P{T} ::= INTEGER R ::= P{value}"", ""type""",Литералы теста,,,не является циклом,
+P00260,T0272,нет,InlineData,xunit_row,8,compiler/tests/Asn1Kit.Compiler.Tests/ModernAsn1Tests.cs:424,"""P{T, T} ::= T"", ""Duplicate""",Литералы теста,,,не является циклом,
+P00261,T0272,нет,InlineData,xunit_row,9,compiler/tests/Asn1Kit.Compiler.Tests/ModernAsn1Tests.cs:424,"""C{T} ::= CLASS { &value T }"", ""profile""",Литералы теста,,,не является циклом,
+P00262,T0272,нет,InlineData,xunit_row,10,compiler/tests/Asn1Kit.Compiler.Tests/ModernAsn1Tests.cs:424,"""C ::= CHOICE { n INTEGER } wrong C ::= unknown:1"", ""alternative""",Литералы теста,,,не является циклом,
+P00263,T0272,нет,InlineData,xunit_row,11,compiler/tests/Asn1Kit.Compiler.Tests/ModernAsn1Tests.cs:424,"""C ::= CLASS { &id OBJECT IDENTIFIER UNIQUE, &T } entry C ::= { &id {1 2 3}, &T INTEGER } Items C ::= {entry} R ::= SEQUENCE { id BOOLEAN, value C.&T({Items}{@id}) }"", ""selector""",Литералы теста,,,не является циклом,
+P00264,T0277,да,InlineData,xunit_row,1,compiler/tests/Asn1Kit.Compiler.Tests/ModernAsn1Tests.cs:501,"""300F06022A0331002480040302012A0000"", ""02012A""",Литералы теста,,,не является циклом,containing.opaque
+P00265,T0277,да,InlineData,xunit_row,2,compiler/tests/Asn1Kit.Compiler.Tests/ModernAsn1Tests.cs:501,"""300A06022A0431000402FFFF"", ""FFFF""",Литералы теста,,,не является циклом,containing.opaque
+P00266,T0279,да,control_flow,branch_or_loop,1,compiler/tests/Asn1Kit.Compiler.Tests/ModernAsn1Tests.cs:534,"foreach (var (moduleName, hex) in new[] { (""Auto"", ""3005300380012A""), (""Explicit"", ""3005300302012A"") })",Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,2 (элементы литерального массива),tags.explicit-implicit;codegen.compile
+P00267,T0281,нет,control_flow,branch_or_loop,1,compiler/tests/Asn1Kit.Compiler.Tests/ModernRfcTests.cs:31,"foreach (var year in new[] { ""2009"", ""2010"" })",Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,2 (элементы литерального массива),
+P00268,T0282,да,control_flow,branch_or_loop,1,compiler/tests/Asn1Kit.Compiler.Tests/ModernRfcTests.cs:46,foreach (var file in files),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,35 при выполнении проверки golden: 35 модулей/файлов,codegen.golden
+P00269,T0282,да,control_flow,branch_or_loop,2,compiler/tests/Asn1Kit.Compiler.Tests/ModernRfcTests.cs:46,"foreach (var type in new[] { typeof(ModernCertificate), typeof(ModernCertificateList), typeof(ModernAttributeCertificate), typeof(ModernAttributeCertificateV1) })",Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,4 (элементы литерального массива),codegen.golden
+P00270,T0283,да,InlineData,xunit_row,1,compiler/tests/Asn1Kit.Compiler.Tests/ModernRfcTests.cs:83,"""TrustAnchorRootCertificate.crt""",Литералы теста,,,не является циклом,pkix.certificate
+P00271,T0283,да,InlineData,xunit_row,2,compiler/tests/Asn1Kit.Compiler.Tests/ModernRfcTests.cs:83,"""ValidCertificatePathTest1EE.crt""",Литералы теста,,,не является циклом,pkix.certificate
+P00272,T0284,да,InlineData,xunit_row,1,compiler/tests/Asn1Kit.Compiler.Tests/ModernRfcTests.cs:93,"""ContentInfo""",Литералы теста,,,не является циклом,cms.opaque-data
+P00273,T0284,да,InlineData,xunit_row,2,compiler/tests/Asn1Kit.Compiler.Tests/ModernRfcTests.cs:93,"""EncapsulatedContentInfo""",Литералы теста,,,не является циклом,cms.opaque-data
+P00274,T0297,да,embedded_CSharp_probe,embedded_check,2,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:62,"
+          var raw = AlgorithmInfo.Decode(new Asn1Reader(Convert.FromHexString(""300606022A030500"")));
+          var holder = new Holder {Mixed = raw, Empty = raw};
+          if (!holder.Mixed.TryDecodeParameters(MixedParametersBindings.EmptyEntry, out _) ||
+              !holder.Empty.TryDecodeParameters(EmptyParametersBindings.EmptyEntry, out _)) throw new Exception();
+          holder.Mixed.SetParameters(MixedParametersBindings.EmptyEntry, Asn1Null.Value);
+          var writer = new Asn1Writer(); raw.Encode(writer);
+          if (Convert.ToHexString(writer.Encode()) != ""300606022A030500"") throw new Exception();
+          holder.Mixed = AlgorithmInfo.Decode(new Asn1Reader(Convert.FromHexString(""300406022A03"")));
+          if (holder.Mixed.TryDecodeParameters(MixedParametersBindings.EmptyEntry, out _) ||
+              holder.Mixed.TryDecodeParameters(MixedParametersBindings.DataEntry, out _)) throw new Exception();
+          holder.Mixed = raw;
+          raw.Parameters = new Asn1Any(Convert.FromHexString(""02012A""));
+          try { holder.Mixed.TryDecodeParameters(MixedParametersBindings.EmptyEntry, out _); throw new Exception(); }
+          catch (Asn1Exception) { }
+          holder.Mixed = new AlgorithmInfo();
+          holder.Mixed.SetParameters(MixedParametersBindings.DataEntry, 42);
+          if (!holder.Mixed.TryDecodeParameters(MixedParametersBindings.DataEntry, out var typed)) throw new Exception();
+          return typed;
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.null-absent;codegen.compile
+P00275,T0298,да,embedded_CSharp_probe,embedded_check,2,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:128,"
+          var key = new System.Numerics.BigInteger(9);
+          var binding = new ParametersBinding<int>(key,
+            static source => {
+              var reader = new Asn1Reader(source.Parameters!.Value.EncodedMemory);
+              var decoded = reader.ReadInt32(Asn1Tag.Integer);
+              reader.ThrowIfNotEmpty();
+              return decoded;
+            },
+            static value => {
+              var writer = new Asn1Writer();
+              writer.WriteInteger(Asn1Tag.Integer, value);
+              return new Asn1Any(writer.Encode());
+            });
+          var holder = new Holder {Mixed = new AlgorithmIdentifier {
+            Algorithm = Asn1Integer.FromInt32(9),
+            Parameters = new Asn1Any(Convert.FromHexString(""020107"")) }};
+          if (!holder.Mixed.TryDecodeParameters(binding, out var initial) || initial != 7)
+            throw new Exception();
+          holder.Mixed.SetParameters(binding, 42);
+          if (!holder.Mixed.TryDecodeParameters(binding, out var updated)) throw new Exception();
+          return updated;
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.integer-selector
+P00276,T0299,да,InlineData,xunit_row,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:168,"""lazy""",Литералы теста,,,не является циклом,open.wrapped-containers
+P00277,T0299,да,InlineData,xunit_row,2,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:168,"""retainEncoded""",Литералы теста,,,не является циклом,open.wrapped-containers
+P00278,T0299,да,embedded_CSharp_probe,embedded_check,4,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:169,";
+          if (!holder.Mixed.Value.TryDecodeParameters(descriptor, out var value)) throw new Exception();
+          return value;
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.wrapped-containers
+P00279,T0300,да,embedded_CSharp_probe,embedded_check,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:208,"
+          var raw = Extension.Decode(new Asn1Reader(Convert.FromHexString(""300806022A0504020500"")));
+          var attribute = Attribute.Decode(new Asn1Reader(Convert.FromHexString(""300A06022A05310405000500"")));
+          if (attribute.Values.Length != 2) throw new Exception();
+          var attributesWriter = new Asn1Writer(); attribute.Encode(attributesWriter);
+          if (Convert.ToHexString(attributesWriter.Encode()) != ""300A06022A05310405000500"") throw new Exception();
+          var writer = new Asn1Writer(); raw.Encode(writer);
+          return Convert.ToHexString(writer.Encode());
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.null-absent
+P00280,T0301,да,embedded_CSharp_probe,embedded_check,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:238,"
+          var raw = new Extension { Critical = true };
+          raw.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
+          var writer = new Asn1Writer(); raw.Encode(writer);
+          var bytes = writer.Encode();
+          raw = Extension.Decode(new Asn1Reader(bytes));
+          if (!raw.TryDecodePayload(NumbersPayloadBindings.IntegerEntry, out var decoded) ||
+              decoded != 42 || !raw.Critical) throw new Exception(""Conversion failed."");
+          var before = raw.Payload.Contents;
+          raw.SetPayload(NumbersPayloadBindings.IntegerEntry, 7);
+          if (!raw.TryDecodePayload(NumbersPayloadBindings.IntegerEntry, out var changed) || changed != 7)
+              throw new Exception(""Updated data was not encoded."");
+          if (before.Span.SequenceEqual(raw.Payload.Contents.Span)) throw new Exception(""Source was not updated."");
+          if (!raw.Critical) throw new Exception(""Metadata was not preserved."");
+          return Convert.ToHexString(bytes);
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.descriptor-metadata
+P00281,T0305,да,embedded_CSharp_probe,embedded_check,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:323,"
+          var extension = NumbersPayloadBindings.IntegerEntry.Create(42);
+          if (!extension.TryDecodePayload(NumbersPayloadBindings.IntegerEntry, out var payload) || payload != 42)
+              throw new Exception();
+          var multi = NumbersBindings.IntegerEntry.Create(new[] {7, 42});
+          if (!multi.TryDecodeValues(NumbersBindings.IntegerEntry, out var values) ||
+              values.Length != 2 || values[0] != 7 || values[1] != 42)
+              throw new Exception();
+          var single = NumbersBindings.IntegerEntry.Create(42);
+          if (!single.TryDecodeValues(NumbersBindings.IntegerEntry, out var one) ||
+              one.Length != 1 || one[0] != 42)
+              throw new Exception();
+          single.SetValues(NumbersBindings.IntegerEntry, 7);
+          if (!single.TryDecodeValues(NumbersBindings.IntegerEntry, out var replaced) ||
+              replaced.Length != 1 || replaced[0] != 7)
+              throw new Exception();
+          return payload;
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.descriptor-metadata
+P00282,T0307,да,embedded_CSharp_probe,embedded_check,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:380,"
+          var raw = new Extension();
+          raw.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
+          if (!raw.TryDecodePayload(NumbersPayloadBindings.IntegerEntry, out var known) || known != 42)
+              throw new Exception();
+          var oid = Asn1Oid.Parse(""1.2.99"");
+          raw.Oid = oid;
+          raw.Critical = true;
+          var custom = new PayloadBinding<int>(oid,
+              static source => source.Critical ? 99 : 0,
+              static value =>
+              {
+                  var writer = new Asn1Writer();
+                  writer.WriteInteger(Asn1Tag.Integer, value);
+                  return Asn1Contained<Asn1Any>.FromValue(new Asn1Any(writer.Encode()));
+              });
+          if (!raw.TryDecodePayload(custom, out var value)) throw new Exception();
+          return value;
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.descriptor-metadata
+P00283,T0308,да,embedded_CSharp_probe,embedded_check,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:404,"
+          var raw = new Extension {Oid = Asn1Integer.FromInt32(99), Critical = true};
+          var custom = new PayloadBinding<int>(
+              new System.Numerics.BigInteger(99),
+              static source => source.Critical ? 99 : 0,
+              static value =>
+              {
+                  var writer = new Asn1Writer();
+                  writer.WriteInteger(Asn1Tag.Integer, value);
+                  return Asn1Contained<Asn1Any>.FromValue(new Asn1Any(writer.Encode()));
+              });
+          if (!raw.TryDecodePayload(custom, out var value)) throw new Exception();
+          return value;
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.integer-selector
+P00284,T0310,да,embedded_CSharp_probe,embedded_check,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:437,"
+          var oid = Asn1Oid.Parse(""1.2.99"");
+          var raw = new Extension {Critical = true};
+          var calls = 0;
+          var binding = new PayloadBinding<int>(oid, source =>
+          {
+            calls++;
+            var reader = new Asn1Reader(source.Payload.Value.EncodedMemory);
+            var decoded = reader.ReadInt32(Asn1Tag.Integer);
+            reader.ThrowIfNotEmpty();
+            return decoded;
+          }, static value =>
+          {
+            var writer = new Asn1Writer();
+            writer.WriteInteger(Asn1Tag.Integer, value);
+            return Asn1Contained<Asn1Any>.FromValue(new Asn1Any(writer.Encode()));
+          });
+          raw.SetPayload(binding, 7);
+          var holder = new Holder {Extensions = new[] {raw}};
+          if (!holder.Extensions.TryGet(binding, out var value, out var matched) || value != 7 ||
+              !matched.Critical || matched.Oid != oid) throw new Exception();
+          holder.Extensions = new[] {raw, raw};
+          try { holder.Extensions.TryGet(binding, out _); throw new Exception(); }
+          catch (Asn1Exception) { }
+          return calls;
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.duplicate
+P00285,T0312,да,InlineData,xunit_row,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:482,"""0201"", true",Литералы теста,,,не является циклом,containing.invalid;open.mismatch
+P00286,T0312,да,InlineData,xunit_row,2,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:482,"""0101FF"", true",Литералы теста,,,не является циклом,containing.invalid;open.mismatch
+P00287,T0312,да,InlineData,xunit_row,3,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:482,"""02012A00"", true",Литералы теста,,,не является циклом,containing.invalid;open.mismatch
+P00288,T0312,да,InlineData,xunit_row,4,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:482,"""02012A"", false",Литералы теста,,,не является циклом,containing.invalid;open.mismatch
+P00289,T0312,да,control_flow,branch_or_loop,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:483,if (fails),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,не является циклом,containing.invalid;open.mismatch
+P00290,T0313,да,embedded_CSharp_probe,embedded_check,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:496,"
+          var raw = new Extension();
+          raw.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
+          raw.Payload = Asn1Contained<Asn1Any>.FromEncoded(new byte[] {0xFF});
+          var holder = new Holder { Extensions = new[] {raw, raw} };
+          return holder.Extensions.TryGet(NumbersPayloadBindings.IntegerEntry, out _);
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.duplicate
+P00291,T0314,да,embedded_CSharp_probe,embedded_check,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:510,"
+          var raw = Extension.Decode(new Asn1Reader(Convert.FromHexString(
+              ""301006022A030101FF2480040302012A0000""), Asn1Encoding.Ber));
+          var holder = new Holder { Items = new[] {raw} };
+          if (holder.Items?.Value.TryGet(NumbersPayloadBindings.IntegerEntry, out var value) != true)
+              throw new Exception();
+          return value;
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.wrapped-containers
+P00292,T0315,да,embedded_CSharp_probe,embedded_check,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:526,"
+          var raw = new Extension(); raw.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
+          var writer = new Asn1Writer(); raw.Encode(writer);
+          var holder = new Holder { Extensions = new[] {Extension.Decode(new Asn1Reader(writer.Encode()))} };
+          if (!holder.Extensions.TryGet(NumbersPayloadBindings.IntegerEntry, out var value)) throw new Exception();
+          return value;
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.wrapped-containers
+P00293,T0315,да,embedded_CSharp_probe,embedded_check,2,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:526,"
+          var original = new Holder {Extensions = Asn1Lazy<Extension[]>.FromValue(
+              new[] {new Extension()})};
+          original.Extensions.Value[0].SetPayload(NumbersPayloadBindings.IntegerEntry, 7);
+          var writer = new Asn1Writer(); original.Encode(writer);
+          var holder = Holder.Decode(new Asn1Reader(writer.Encode()));
+          if (holder.Extensions?.Value.TryGet(NumbersPayloadBindings.IntegerEntry, out var value) != true)
+              throw new Exception();
+          return value;
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.wrapped-containers
+P00294,T0316,да,control_flow,branch_or_loop,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:553,"foreach (var option in new[] { ""retainEncoded"", ""lazy"" })",Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,2 (элементы литерального массива),open.wrapped-containers
+P00295,T0316,да,embedded_CSharp_probe,embedded_check,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:553,"
+              var raw = new Attribute();
+              raw.SetValues(NumbersBindings.IntegerEntry, new[] {7, 42});
+              var writer = new Asn1Writer(); raw.Encode(writer);
+              raw = Attribute.Decode(new Asn1Reader(writer.Encode()));
+              if (!raw.TryDecodeValues(NumbersBindings.IntegerEntry, out var typed)) throw new Exception();
+              return typed[1];
+            ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.wrapped-containers
+P00296,T0317,да,embedded_CSharp_probe,embedded_check,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:568,"
+          var holder = new Holder { SourceOid = NumbersPayloadBindings.IntegerEntry.Oid };
+          var raw = new Extension {Oid = Asn1Oid.Parse(""1.2.99"")};
+          raw.SetPayload(holder, NumbersPayloadBindings.IntegerEntry, 42);
+          holder.Extensions = new[] {raw};
+          if (!holder.TryGetExtensions(NumbersPayloadBindings.IntegerEntry, out var value) ||
+              !raw.TryDecodePayload(holder, NumbersPayloadBindings.IntegerEntry, out var payload) || payload != 42 ||
+              raw.Oid.ToString() != ""1.2.99"") throw new Exception();
+          return value;
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.ancestor
+P00297,T0318,да,embedded_CSharp_probe,embedded_check,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:591,"
+          var raw = new Extension {Label = new Label {Number = 7}};
+          MOpenTypeExtensions.SetPayload(raw,
+              Use.NumbersPayloadBindings.IntegerEntry, 42);
+          var holder = new Use.Holder {Extensions = new[] {raw}};
+          if (!holder.Extensions.TryGet(
+                  Use.NumbersPayloadBindings.IntegerEntry, out var value, out var matched))
+              throw new Exception();
+          if (value != 42) throw new Exception();
+          return matched.Label.Number;
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.catalog-reuse
+P00298,T0319,да,embedded_CSharp_probe,embedded_check,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:620,"
+          var raw = new Extension();
+          raw.SetPayload(NumbersPayloadBindings.IntegerEntry, new IntegerEntryExtension_Value {Number = 42});
+          if (!raw.TryDecodePayload(NumbersPayloadBindings.IntegerEntry, out var value)) throw new Exception();
+          return value.Number;
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.nested-of
+P00299,T0320,да,embedded_CSharp_probe,embedded_check,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:632,"
+          var raw = new Attribute();
+          raw.SetValues(NumbersBindings.IntegerEntry, new[] {new[] {7, 42}, Array.Empty<int>()});
+          if (!raw.TryDecodeValues(NumbersBindings.IntegerEntry, out var value) || value[1].Length != 0)
+              throw new Exception();
+          return value[0][1];
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.nested-of
+P00300,T0321,да,embedded_CSharp_probe,embedded_check,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:644,"
+          var raw = new Extension(); raw.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
+          var holder = new Holder {Extensions = new[] {raw}};
+          if (!holder.Extensions.TryGet(NumbersPayloadBindings.IntegerEntry, out var value) ||
+              NumbersPayloadBindings.IntegerEntry.Key != 3) throw new Exception();
+          return value;
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.integer-selector
+P00301,T0322,да,embedded_CSharp_probe,embedded_check,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:657,"
+          var raw = new Extension {Oid = Asn1Integer.FromInt32(99), Critical = true};
+          var holder = new Holder {Extensions = new[] {raw}};
+          var binding = new PayloadBinding<int>(new System.Numerics.BigInteger(99),
+            static source => source.Critical ? 99 : 0, static _ => default);
+          if (!holder.Extensions.TryGet(binding, out var value)) throw new Exception();
+          return value;
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.integer-selector
+P00302,T0323,да,embedded_CSharp_probe,embedded_check,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:671,"
+          var raw = new Extension(); raw.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
+          raw.Payload = Asn1Contained<Asn1Any>.FromEncoded(Convert.FromHexString(""02012A""), 1);
+          return raw.TryDecodePayload(NumbersPayloadBindings.IntegerEntry, out _);
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,containing.bit-align
+P00303,T0324,да,embedded_CSharp_probe,embedded_check,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:681,"
+          var original = new Header {Oid = NumbersPayloadBindings.AnotherEntry.Oid, Label = ""preserved""};
+          var raw = new Extension {Header = original};
+          raw.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
+          if (raw.Header.Oid != NumbersPayloadBindings.IntegerEntry.Oid ||
+              original.Oid != NumbersPayloadBindings.AnotherEntry.Oid ||
+              !raw.TryDecodePayload(NumbersPayloadBindings.IntegerEntry, out var value) || value != 42)
+              throw new Exception(""Key owner was changed."");
+          return raw.Header.Label;
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.wrapped-containers
+P00304,T0325,да,InlineData,xunit_row,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:709,"""lazy""",Литералы теста,,,не является циклом,open.wrapped-containers
+P00305,T0325,да,InlineData,xunit_row,2,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:709,"""retainEncoded""",Литералы теста,,,не является циклом,open.wrapped-containers
+P00306,T0325,да,embedded_CSharp_probe,embedded_check,2,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:710,"};
+          raw.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
+          if (!raw.Header.Value.Oid.Equals(NumbersPayloadBindings.IntegerEntry.Oid) ||
+              !raw.TryDecodePayload(NumbersPayloadBindings.IntegerEntry, out _)) throw new Exception();
+          return raw.Header.Value.Label;
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.wrapped-containers
+P00307,T0326,да,embedded_CSharp_probe,embedded_check,2,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:742,"
+          var raw = new AlgorithmInfo();
+          raw.SetParameters(NumbersParametersBindings.MixedEntry, Mixed.FromUtf8(""A""));
+          if (!raw.TryDecodeParameters(NumbersParametersBindings.MixedEntry, out var mixed) ||
+              mixed.Utf8 != ""A"") throw new Exception();
+          return mixed.Utf8;
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.string-choice
+P00308,T0327,да,embedded_CSharp_probe,embedded_check,2,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:775,"
+          var raw = new Attribute();
+          raw.SetValue(AttrsValueBindings.NameAttr, DirectoryString.FromUtf8(""A""));
+          if (!raw.TryDecodeValue(AttrsValueBindings.AsString.NameAttr, out var text) || text != ""A"")
+              throw new Exception();
+          raw.SetValue(AttrsValueBindings.AsString.CountryAttr, ""US"");
+          if (!raw.TryDecodeValue(AttrsValueBindings.AsString.CountryAttr, out var country) || country != ""US"")
+              throw new Exception();
+          return text;
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.string-choice
+P00309,T0328,да,embedded_CSharp_probe,embedded_check,2,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:808,"
+          var holder = new Holder
+          {
+              Big = DirectoryString.FromUtf8(""A""),
+              Small = DirectoryString.FromPrintable(""B"")
+          };
+          if (holder.Big.Value != ""A"" || holder.Small.Value != ""B"") throw new Exception();
+          return holder.Big.Value;
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,codegen.aliases
+P00310,T0330,да,embedded_CSharp_probe,embedded_check,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:866,"
+          var item = new Extension();
+          item.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
+          var items = new[] { item };
+          if (!items.TryGet(NumbersPayloadBindings.IntegerEntry, out var value)) throw new Exception();
+          return value;
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.catalog-reuse
+P00311,T0331,да,embedded_CSharp_probe,embedded_check,2,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:888,"
+          var item = new Extension();
+          item.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
+          var holder = new Holder { Extensions = new[] { item } };
+          var other = new OtherHolder { Extensions = new[] { item } };
+          if (!holder.Extensions.TryGet(NumbersPayloadBindings.IntegerEntry, out var a) || a != 42)
+              throw new Exception();
+          if (!other.Extensions.TryGet(NumbersPayloadBindings.IntegerEntry, out var b) || b != 42) throw new Exception();
+          return a;
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.catalog-reuse
+P00312,T0332,да,embedded_CSharp_probe,embedded_check,1,compiler/tests/Asn1Kit.Compiler.Tests/OpenTypeWrapperTests.cs:916,"
+          var item = new Extension();
+          item.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
+          var holder = new Holder { Extensions = new[] { new[] { item } } };
+          if (!holder.TryGetExtensions(NumbersPayloadBindings.IntegerEntry, out var value)) throw new Exception();
+          return value;
+        ","C# код, компилируемый Run/GeneratedCompilation",,if/throw и return внутри probe — дополнительные semantic checks; count_unit не xUnit row,не является циклом,open.catalog-reuse
+P00313,T0345,да,control_flow,branch_or_loop,1,compiler/tests/Asn1Kit.Compiler.Tests/PkixGeneratedCodeTests.cs:12,foreach (var file in generated),Ветка/цикл внутри метода,,См. выражение и полное тело метода; число итераций не является числом xUnit cases,"10 при выполнении Assert.Equal(10, generated.Count)",codegen.golden
