@@ -5,6 +5,7 @@
 
 #include "asn1kit/bit_string.hpp"
 #include "asn1kit/concepts.hpp"
+#include "asn1kit/contained.hpp"
 #include "asn1kit/detail/encode_buffer.hpp"
 #include "asn1kit/detail/typed_value.hpp"
 #include "asn1kit/encoding.hpp"
@@ -14,9 +15,11 @@
 #include "asn1kit/utc_date_time.hpp"
 #include "asn1kit/writer_scope.hpp"
 
+#include <array>
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <ranges>
 #include <span>
 #include <string_view>
@@ -71,6 +74,26 @@ public:
     void write_any(const any& value);
     /// IMPLICIT outer tag: class/number from `t`, constructed flag from `value`.
     void write_any(const tag& t, const any& value);
+
+    /// Writes opaque octets or encodes typed CONTAINING content into a primitive TLV.
+    template <typename T, std::invocable<writer&, const T&> F>
+    void write_contained(const tag& t, bool is_bit_string, const contained<T>& value, F&& encode) {
+        if (!value.has_value()) {
+            if (is_bit_string) {
+                write_bit_string(t, asn1kit::bit_string{value.contents(), value.unused_bits()});
+            } else {
+                write_octet_string(t, value.contents().span());
+            }
+            return;
+        }
+
+        [[maybe_unused]] auto scope = begin_primitive(t);
+        if (is_bit_string) {
+            const std::array<std::uint8_t, 1> unused{0};
+            write_raw(unused);
+        }
+        std::invoke(std::forward<F>(encode), *this, value.value());
+    }
 
     [[nodiscard]] writer_scope enter_sequence(const tag& t);
     [[nodiscard]] writer_scope enter_set(const tag& t);
@@ -165,6 +188,7 @@ private:
     }
 
     [[nodiscard]] writer_scope begin_scope(const tag& t, bool sort_der_set_of);
+    [[nodiscard]] writer_scope begin_primitive(const tag& t);
     void end_scope(
         const detail::encode_frame& frame,
         std::uint64_t scope_token,

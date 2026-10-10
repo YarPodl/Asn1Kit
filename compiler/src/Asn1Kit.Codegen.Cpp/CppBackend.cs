@@ -28,6 +28,7 @@ public sealed partial class CppBackend : ILanguageBackend
         builder.AppendLine("#include \"asn1kit/any.hpp\"");
         builder.AppendLine("#include \"asn1kit/bit_string.hpp\"");
         builder.AppendLine("#include \"asn1kit/bytes.hpp\"");
+        builder.AppendLine("#include \"asn1kit/contained.hpp\"");
         builder.AppendLine("#include \"asn1kit/exception.hpp\"");
         builder.AppendLine("#include \"asn1kit/integer.hpp\"");
         builder.AppendLine("#include \"asn1kit/null.hpp\"");
@@ -170,6 +171,12 @@ public sealed partial class CppBackend : ILanguageBackend
     {
         switch (type)
         {
+            case OctetStringType { Containing: { } content }:
+                OfferNested(document, module, owner + "_Content", content, queue);
+                break;
+            case BitStringType { Containing: { } bitContent }:
+                OfferNested(document, module, owner + "_Content", bitContent, queue);
+                break;
             case SequenceType sequence:
                 foreach (var component in sequence.Components)
                 {
@@ -240,6 +247,10 @@ public sealed partial class CppBackend : ILanguageBackend
         else if (type is RefType)
         {
             return;
+        }
+        else if (ContainedType(type) is { } content)
+        {
+            OfferNested(document, module, hint + "_Content", content, queue);
         }
         else if (type is SequenceOfType or SetOfType or SequenceType or SetType or ChoiceType)
         {

@@ -72,6 +72,49 @@ END
     }
 
     [Fact]
+    public void GeneratesContainingOctetAndBitString()
+    {
+        const string asn = @"
+ContainingModule DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+Inner ::= SEQUENCE { n INTEGER }
+Box ::= SEQUENCE {
+  typed OCTET STRING (CONTAINING Inner),
+  inline OCTET STRING (CONTAINING SEQUENCE { n INTEGER }),
+  opaque OCTET STRING (CONTAINING ANY),
+  bits BIT STRING (CONTAINING Inner)
+}
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        var source = new CppBackend().Generate(document).Single().Contents;
+
+        Assert.Contains("#include \"asn1kit/contained.hpp\"", source);
+        Assert.Contains("asn1kit::contained<Inner> typed{}", source);
+        Assert.Contains("struct Box_Inline_Content", source);
+        Assert.Contains("asn1kit::contained<Box_Inline_Content> inline_{}", source);
+        Assert.Contains("asn1kit::contained<asn1kit::any> opaque{}", source);
+        Assert.Contains("asn1kit::contained<Inner> bits{}", source);
+        Assert.Contains(
+            "inner.read_contained<Inner>(asn1kit::tag::context(0), false, true, 0",
+            source);
+        Assert.Contains(
+            "inner.read_contained<Box_Inline_Content>(asn1kit::tag::context(1), false, true, 0",
+            source);
+        Assert.Contains(
+            "inner.read_contained<asn1kit::any>(asn1kit::tag::context(2), false, false, 0",
+            source);
+        Assert.Contains(
+            "inner.read_contained<Inner>(asn1kit::tag::context(3), true, true, 0",
+            source);
+        Assert.Contains(
+            "w.write_contained(asn1kit::tag::context(0), false, this->typed",
+            source);
+        Assert.Contains(
+            "w.write_contained(asn1kit::tag::context(3), true, this->bits",
+            source);
+    }
+
+    [Fact]
     public void BackendRejectsLazyOption()
     {
         var document = TestData.LoadIr("compiler/fixtures/ir/example.json");

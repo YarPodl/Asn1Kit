@@ -34,11 +34,12 @@
 | Reader OF (callback) | `for_each_sequence_of` / `for_each_set_of`; `read_sequence_of` / `read_set_of` + invocable |
 | Reader type-driven | `read<T>` / `read_from_explicit<T>` / `read_sequence_of<T>` / `read_set_of<T>` / `read_sequence_of_from_explicit<T>` — без лямбд (T = generated или примитив) |
 | Writer type-driven | `write` / `write_to_explicit` / `write_sequence_of` / `write_set_of` / `write_sequence_of_to_explicit` — без лямбд |
-| Value types | `integer`, `bit_string`, `oid`, `null_value`, `utc_date_time`, `any` |
+| Value types | `integer`, `bit_string`, `oid`, `null_value`, `utc_date_time`, `any`, `contained<T>` |
 | ANY | `any` — полный TLV (`tag` + `encoded` + `contents`); `read_any` / `write_any` (+ IMPLICIT retag); `from_tag_and_contents` / `from_value` / `decode_value` |
+| Contained | `contained<T>` — OCTET/BIT STRING CONTAINING; `read_contained` / `write_contained` (typed primitive frame / opaque octets; known BIT STRING octet-aligned) |
 | Time | `utc_date_time` (календарные поля UTC + `time_fraction` до 7 десятичных цифр) |
 
-Вне текущего среза: Lazy / Value / Contained / Codec, open-type Binding, modern IOC, oracle, `external/` фикстуры. Codegen C++ — [cpp-backend.md](../../compiler/docs/playbooks/cpp-backend.md).
+Вне текущего среза: Lazy / Value / Codec, open-type Binding, modern IOC, oracle, `external/` фикстуры. Codegen C++ — [cpp-backend.md](../../compiler/docs/playbooks/cpp-backend.md).
 
 ## Constructed scopes
 

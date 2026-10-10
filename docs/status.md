@@ -11,8 +11,8 @@
 | `boolean` | да | `bool` | `bool` | `ParserTests`, `PrimitiveCodecTests`, `PrimitiveOracleTests`, `CppCodegenTests` |
 | `integer` | да, `namedValues` | `int`…`Asn1Integer` по опции / выводу | `int32_t`…`asn1kit::integer`; namedValues → константы | `CompilerTests`, `Primitive*`, `RoundTripTests`, `CppCodegenTests` |
 | `enumerated` | да, автоматическая нумерация и `...` | C# `enum`; inline → `Owner_Field` | `enum class` + `encode_`/`decode_` | `ModernAsn1Tests`, `PkixImplicit88Tests`, `PrimitiveCodecTests`, `CppCodegenTests` |
-| `bitString` | да, `namedBits` | `Asn1BitString` или класс + `[Flags]` | `asn1kit::bit_string` или класс + Flags | `Primitive*`, `RuntimeTests`, `RoundTripTests`, `CppCodegenTests` |
-| `octetString` | да, `CONTAINING` | `ReadOnlyMemory<byte>` / `Asn1Contained<T>` | `asn1kit::bytes` (CONTAINING — нет) | `ModernAsn1Tests`, `ContainedValueTests`, `Primitive*`, `CppCodegenTests` |
+| `bitString` | да, `namedBits` | `Asn1BitString` или класс + `[Flags]` | `asn1kit::bit_string` / Flags / `asn1kit::contained<T>` | `Primitive*`, `RuntimeTests`, `RoundTripTests`, `CppCodegenTests`, `contained_tests` |
+| `octetString` | да, `CONTAINING` | `ReadOnlyMemory<byte>` / `Asn1Contained<T>` | `asn1kit::bytes` / `asn1kit::contained<T>` | `ModernAsn1Tests`, `ContainedValueTests`, `Primitive*`, `CppCodegenTests`, `contained_tests` |
 | `oid` | да (dotted; base-128 в т.ч. `2.999…`) | `Asn1Oid` — единственный codec (string↔arcs↔contents); dotted `string` — warm (`Encode`/`DecodeString`) | `asn1kit::oid` + каталог `…Oids` | `Primitive*`, `RuntimeTests`, `CppCodegenTests` |
 | `string` (12 форм) | да | `string` + `Asn1StringForm` | `std::string` + `string_form` | `Primitive*` (все 12), `RuntimeTests`, `RoundTripTests` |
 | `time` (`utc` / `generalized`) | да; `fractionDigits` 0…7 | `DateTimeOffset` + `Asn1TimeForm` | `asn1kit::utc_date_time` + `time_form` | `Primitive*`, `RuntimeTests`, `RoundTripTests` |
@@ -52,9 +52,9 @@
 
 Инвентарь `Write*` / `Read*`, ownership и `ToString` — [runtime-api.md](../runtime-csharp/docs/runtime-api.md). Warm top-level decode: `Asn1Utils.Decode` / `DecodeRetained`. Hex-матрица — [ber-der/](../runtime-csharp/fixtures/ber-der/); oracle BCL — `PrimitiveOracleTests`.
 
-**C++ runtime** ([runtime-cpp/](../runtime-cpp/)): примитивы BER/DER **да** (boolean/null/integer/enumerated/octet/oid/bitstring/string/time/`any` + soft-profile + `asn1kit::bytes`); публичные SEQUENCE/SET/OF/EXPLICIT `enter_*` / `with_*` **да**; те же layer-1 фикстуры.
+**C++ runtime** ([runtime-cpp/](../runtime-cpp/)): примитивы BER/DER **да** (boolean/null/integer/enumerated/octet/oid/bitstring/string/time/`any`/`contained` + soft-profile + `asn1kit::bytes`); публичные SEQUENCE/SET/OF/EXPLICIT `enter_*` / `with_*` **да**; те же layer-1 фикстуры.
 
-**C++ codegen** ([Asn1Kit.Codegen.Cpp](../compiler/src/Asn1Kit.Codegen.Cpp/)): MVP **да** (`--lang cpp`, golden `compiler/fixtures/codegen-cpp/`, native Person round-trip). Bare `any` → `asn1kit::any`. Пока нет: open-type Binding, `CONTAINING`, `extensible`, `lazy`, `retainEncoded`, PKIX/Modern C++ golden.
+**C++ codegen** ([Asn1Kit.Codegen.Cpp](../compiler/src/Asn1Kit.Codegen.Cpp/)): MVP **да** (`--lang cpp`, golden `compiler/fixtures/codegen-cpp/`, native Person round-trip). Bare `any` → `asn1kit::any`; `CONTAINING` → `asn1kit::contained<T>`. Пока нет: open-type Binding, `extensible`, `lazy`, `retainEncoded`, PKIX/Modern C++ golden.
 
 **Запись** — канонический DER. **Чтение** — soft-profile ([decisions.md](decisions.md); полный инвентарь — [runtime-api.md](../runtime-csharp/docs/runtime-api.md)):
 
@@ -83,5 +83,5 @@
 
 ### Крупные
 
-1. C++ codegen: паритет с C# — open-type Binding, `CONTAINING`, extensible SEQUENCE/SET, `lazy` / `retainEncoded`, PKIX/Modern golden (нужен runtime Lazy/Contained + Binding) — [cpp-backend.md](../compiler/docs/playbooks/cpp-backend.md)
+1. C++ codegen: паритет с C# — open-type Binding, extensible SEQUENCE/SET, `lazy` / `retainEncoded`, PKIX/Modern golden (нужен runtime Lazy + Binding) — [cpp-backend.md](../compiler/docs/playbooks/cpp-backend.md)
 2. Инструменты PKI поверх сгенерированного

@@ -6,6 +6,7 @@
 #include "asn1kit/bit_string.hpp"
 #include "asn1kit/bytes.hpp"
 #include "asn1kit/concepts.hpp"
+#include "asn1kit/contained.hpp"
 #include "asn1kit/detail/decode_cursor.hpp"
 #include "asn1kit/detail/typed_value.hpp"
 #include "asn1kit/encoding.hpp"
@@ -20,6 +21,7 @@
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <span>
 #include <string>
 #include <type_traits>
@@ -94,6 +96,37 @@ public:
 
     [[nodiscard]] any read_any();
     [[nodiscard]] any read_any(const tag& expected);
+
+    /// Reads contained OCTET STRING or BIT STRING content, decoding known structures in-place.
+    template <typename T, typename State, std::invocable<reader&, State> F>
+    [[nodiscard]] contained<T> read_contained(
+        const tag& expected,
+        bool is_bit_string,
+        bool known,
+        State state,
+        F&& decode) {
+        bytes contents;
+        int unused_bits = 0;
+        if (is_bit_string) {
+            const auto bits = read_bit_string(expected);
+            contents = bits.contents();
+            unused_bits = bits.unused_bits();
+        } else {
+            contents = read_octet_string(expected);
+        }
+        if (!known) {
+            return contained<T>::from_encoded(std::move(contents), unused_bits);
+        }
+        if (unused_bits != 0) {
+            throw exception("ASN.1 contained content must be octet-aligned.");
+        }
+
+        T value{};
+        with_encoded(contents, [&](reader& r) {
+            value = std::invoke(std::forward<F>(decode), r, state);
+        });
+        return contained<T>::decoded(std::move(contents), std::move(value));
+    }
 
     [[nodiscard]] reader_scope enter_sequence(const tag& expected);
     [[nodiscard]] reader_scope enter_set(const tag& expected);

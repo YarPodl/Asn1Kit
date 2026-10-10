@@ -25,6 +25,38 @@ public sealed partial class CppBackend
     private static bool IsCollapsibleAlias(TypeExpr type) =>
         !NeedsNamedType(type) && !IsNamedBitString(type) && !IsEnumerated(type) && !IsNamedInteger(type);
 
+    private static TypeExpr? ContainedType(TypeExpr type) => type switch
+    {
+        OctetStringType octets => octets.Containing,
+        BitStringType bits => bits.Containing,
+        _ => null
+    };
+
+    private void ContainedNaming(
+        IrDocument document,
+        IrModule module,
+        TypeExpr original,
+        string owner,
+        string hint,
+        out IrModule contentModule,
+        out string contentOwner,
+        out string contentHint)
+    {
+        contentModule = module;
+        contentOwner = owner + "_" + CppNames.SanitizeTypeName(hint);
+        contentHint = "Content";
+        while (original is RefType reference)
+        {
+            var found = FindWithModule(document, contentModule, reference)
+                ?? throw new NotSupportedException($"Unresolved contained type '{reference.Name}'.");
+            contentModule = found.Module;
+            original = found.Def.Type;
+            contentOwner = IrOptions.CppTypeName(found.Def.Options)
+                ?? CppNames.SanitizeTypeName(found.Def.Name);
+            contentHint = "Content";
+        }
+    }
+
     private void EnsureBackendSupport(IrDocument document, IrModule module, TypeExpr type)
     {
         RejectUnsupportedOptions(type);
@@ -32,9 +64,12 @@ public sealed partial class CppBackend
         {
             case AnyType:
                 break;
-            case OctetStringType { Containing: not null }:
-            case BitStringType { Containing: not null }:
-                throw new NotSupportedException("containing");
+            case OctetStringType { Containing: { } octetContent }:
+                EnsureBackendSupport(document, module, octetContent);
+                break;
+            case BitStringType { Containing: { } bitContent }:
+                EnsureBackendSupport(document, module, bitContent);
+                break;
             case SequenceType { Extensible: true }:
             case SetType { Extensible: true }:
             case ChoiceType { Extensible: true }:
@@ -119,6 +154,22 @@ public sealed partial class CppBackend
         var original = type;
         var resolvedModule = module;
         type = UnwrapAliases(document, ref resolvedModule, type);
+
+        if (ContainedType(type) is { } content)
+        {
+            ContainedNaming(
+                document,
+                resolvedModule,
+                original,
+                owner,
+                hint,
+                out var contentModule,
+                out var contentOwner,
+                out var contentHint);
+            var contained =
+                $"asn1kit::contained<{CppType(document, contentModule, contentOwner, contentHint, content, optional: false)}>";
+            return optional ? $"std::optional<{contained}>" : contained;
+        }
 
         if (type is SequenceOfType or SetOfType)
         {
@@ -392,8 +443,8 @@ public sealed partial class CppBackend
     {
         BooleanType => TypeKinds.Boolean,
         IntegerType => TypeKinds.Integer,
-        BitStringType => TypeKinds.BitString,
-        OctetStringType => TypeKinds.OctetString,
+        BitStringType { Containing: null } => TypeKinds.BitString,
+        OctetStringType { Containing: null } => TypeKinds.OctetString,
         NullType => TypeKinds.Null,
         OidType => TypeKinds.Oid,
         StringType => TypeKinds.String,

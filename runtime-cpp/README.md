@@ -1,6 +1,6 @@
 # C++ runtime (Asn1Kit)
 
-Нативный BER/DER runtime на **C++20**: примитивы (включая `asn1kit::any`) и публичные SEQUENCE/SET/OF/EXPLICIT scopes (`enter_*` / `with_*`). Ownership — `asn1kit::bytes` (`span` + keep-alive источника). Soft-profile и layer-1 hex-векторы общие с эталонным runtime ([`runtime-csharp/fixtures/ber-der`](../runtime-csharp/fixtures/ber-der/)).
+Нативный BER/DER runtime на **C++20**: примитивы (включая `asn1kit::any` и `asn1kit::contained<T>`) и публичные SEQUENCE/SET/OF/EXPLICIT scopes (`enter_*` / `with_*`). Ownership — `asn1kit::bytes` (`span` + keep-alive источника). Soft-profile и layer-1 hex-векторы общие с эталонным runtime ([`runtime-csharp/fixtures/ber-der`](../runtime-csharp/fixtures/ber-der/)).
 
 **Windows и Linux — равноправные first-class платформы** (MSVC / Clang / GCC + Ninja).
 

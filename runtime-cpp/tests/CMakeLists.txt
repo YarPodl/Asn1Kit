@@ -10,6 +10,7 @@ add_executable(asn1kit_tests
     generated_person_tests.cpp
     tag_tests.cpp
     any_tests.cpp
+    contained_tests.cpp
 )
 
 target_link_libraries(asn1kit_tests

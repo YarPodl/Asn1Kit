@@ -113,6 +113,35 @@ public sealed partial class CppBackend
             return;
         }
 
+        if (ContainedType(type) is { } content)
+        {
+            ContainedNaming(
+                document,
+                resolvedModule,
+                original,
+                owner,
+                hint,
+                out var contentModule,
+                out var contentOwner,
+                out var contentHint);
+            var containedTag = forceTag ?? TagExpr(document, module, type);
+            var isBitString = type is BitStringType ? "true" : "false";
+            sb.AppendLine(
+                $"{indent}{writer}.write_contained({containedTag}, {isBitString}, {expr}, [&](asn1kit::writer& inner, const auto& value) {{");
+            EmitEncodeValue(
+                sb,
+                document,
+                contentModule,
+                contentOwner,
+                contentHint,
+                content,
+                indent + "    ",
+                "inner",
+                "value");
+            sb.AppendLine($"{indent}}});");
+            return;
+        }
+
         if (type is AnyType)
         {
             if (forceTag is not null || type.Tag is not null)
@@ -442,6 +471,45 @@ public sealed partial class CppBackend
                 reader,
                 target,
                 forceTag);
+            return;
+        }
+
+        if (ContainedType(type) is { } content)
+        {
+            ContainedNaming(
+                document,
+                resolvedModule,
+                original,
+                owner,
+                hint,
+                out var contentModule,
+                out var contentOwner,
+                out var contentHint);
+            var containedTag = forceTag ?? TagExpr(document, module, type);
+            var isBitString = type is BitStringType ? "true" : "false";
+            var known = content is AnyType ? "false" : "true";
+            var contentCppType = CppType(
+                document,
+                contentModule,
+                contentOwner,
+                contentHint,
+                content,
+                optional: false);
+            sb.AppendLine(
+                $"{indent}{target} = {reader}.read_contained<{contentCppType}>({containedTag}, {isBitString}, {known}, 0, [&](asn1kit::reader& inner, auto) {{");
+            sb.AppendLine($"{indent}    {contentCppType} item{{}};");
+            EmitDecodeAssign(
+                sb,
+                document,
+                contentModule,
+                contentOwner,
+                contentHint,
+                content,
+                indent + "    ",
+                "inner",
+                "item");
+            sb.AppendLine($"{indent}    return item;");
+            sb.AppendLine($"{indent}}});");
             return;
         }
 

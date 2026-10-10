@@ -218,6 +218,14 @@ writer_scope writer::begin_scope(const tag& t, bool sort_der_set_of) {
     return writer_scope(this, frame, token, parent, sort_der_set_of);
 }
 
+writer_scope writer::begin_primitive(const tag& t) {
+    const std::uint64_t parent = active_scope_token_;
+    const std::uint64_t token = ++next_scope_token_;
+    auto frame = buffer_.begin_value(t.as_primitive());
+    active_scope_token_ = token;
+    return writer_scope(this, frame, token, parent, false);
+}
+
 void writer::end_scope(
     const detail::encode_frame& frame,
     std::uint64_t scope_token,
