@@ -39,8 +39,14 @@
 
 ## Проверка результата
 
+Гони только затронутое дерево:
+
 ```powershell
+# compiler / runtime-csharp
 dotnet test Asn1Kit.sln
+
+# runtime-cpp (из runtime-cpp/, актуальный preset)
+ctest --preset fetch-default
 ```
 
-Прогон занимает секунды, так что «проверю потом» не окупается. Отдельно стоит посмотреть `git diff` по [compiler/fixtures/ir/pkix1-explicit88.json](../compiler/fixtures/ir/pkix1-explicit88.json): неожиданные строки в нём означают регрессию компилятора, даже если тесты зелёные после пересборки фикстуры.
+Общие BER/DER-фикстуры (`runtime-csharp/fixtures/ber-der/`) — оба прогона. Точечный фильтр не заменяет полный набор дерева.
