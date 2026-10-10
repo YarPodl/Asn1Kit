@@ -6,7 +6,6 @@ namespace Asn1Kit.Codegen.CSharp;
 public sealed partial class CSharpBackend
 {
     private readonly Dictionary<string, int> _contextDepth = new(StringComparer.Ordinal);
-    private string _activeDecodeOwner = "";
     private IReadOnlyList<string>? _callbackContext;
 
     private void PlanDecodeContexts(IReadOnlyList<(string Name, TypeExpr Type)> types)

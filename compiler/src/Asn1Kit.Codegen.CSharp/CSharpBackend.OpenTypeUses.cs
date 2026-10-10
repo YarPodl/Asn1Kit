@@ -274,13 +274,4 @@ public sealed partial class CSharpBackend
         return $"BigInteger.Parse(\"{EscapeCSharpString(key)}\", CultureInfo.InvariantCulture)";
     }
 
-    /// <summary>
-    /// Instance Uses forwarders were removed: callers use carrier TryDecode/Set on the nested
-    /// open-type container (and array.TryGet for OF). Non-shared catalogs still emit via
-    /// <see cref="EmitOpenTypeUseDescriptors"/>.
-    /// </summary>
-    private void EmitOpenTypeUseMethods(StringBuilder sb, IrDocument document, IrModule module, string owner)
-    {
-    }
-
 }

@@ -1,6 +1,18 @@
 # Плейбук: поддержка `kind` в C# backend
 
-Всё происходит в [CSharpBackend.cs](../../src/Asn1Kit.Codegen.CSharp/CSharpBackend.cs). Текущее состояние — в [docs/status.md](../../../docs/status.md).
+Реализация — `partial class CSharpBackend` в [Asn1Kit.Codegen.CSharp](../../src/Asn1Kit.Codegen.CSharp/). Текущее состояние — в [docs/status.md](../../../docs/status.md).
+
+| Файл | Роль |
+| --- | --- |
+| [CSharpBackend.cs](../../src/Asn1Kit.Codegen.CSharp/CSharpBackend.cs) | Pipeline модуля, SEQUENCE/SET/CHOICE, encode/decode, `CsType`, теги, OID, lazy/retainEncoded |
+| [CSharpBackend.OpenTypeWrappers.cs](../../src/Asn1Kit.Codegen.CSharp/CSharpBackend.OpenTypeWrappers.cs) | Open-type Binding/каталоги: `PlanOpenTypeWrappers`, carrier shapes, `Asn1Codec` cache, TryDecode/Set |
+| [CSharpBackend.OpenTypeUses.cs](../../src/Asn1Kit.Codegen.CSharp/CSharpBackend.OpenTypeUses.cs) | IOC Uses без общего wrapper-каталога (`PlanOpenTypeUses`, descriptors) |
+| [StructuredDefaults.cs](../../src/Asn1Kit.Codegen.CSharp/StructuredDefaults.cs) | DEFAULT literals / module defaults class |
+| [DecodeContexts.cs](../../src/Asn1Kit.Codegen.CSharp/DecodeContexts.cs) | Ancestor-selector decode signatures |
+| [Extensibility.cs](../../src/Asn1Kit.Codegen.CSharp/Extensibility.cs) | Extension groups / SEQUENCE extension decode |
+| [ModernTypes.cs](../../src/Asn1Kit.Codegen.CSharp/ModernTypes.cs) | Nested-parent registry, CONTAINING helpers, selector key expr |
+
+Ключевой порядок open-type: `CollectOpenCarrierShapes` → `AssignOpenCarrierBindingStems` → в модуле `PlanOpenTypeWrappers` → `AssignOpenWrapperApiNames` → `PlanOpenTypeUses` → emit codecs/wrappers. Wrappers эмитят `Binding<T>(key, Asn1Codec<T>)`; non-shared Uses могут ещё использовать `Func<>` ctors (см. § канона ниже).
 
 ## Предусловие
 

@@ -174,7 +174,6 @@ public sealed partial class CSharpBackend : ILanguageBackend
         }
         foreach (var (name, type) in nested)
         {
-            _activeDecodeOwner = name;
             EmitType(builder, document, module, name, type);
             builder.AppendLine();
         }
@@ -599,13 +598,20 @@ public sealed partial class CSharpBackend : ILanguageBackend
         }
     }
 
-    private void EmitSequence(StringBuilder sb, IrDocument document, IrModule module, string typeName, SequenceType type)
+    private bool EmitStructuredTypeShell(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string typeName,
+        TypeExpr type,
+        IReadOnlyList<IrComponent> components)
     {
-        var typeKeyword = IsCSharpValueTypeEmit(module, typeName, type) ? "struct" : "sealed class";
+        var valueType = IsCSharpValueTypeEmit(module, typeName, type);
+        var typeKeyword = valueType ? "struct" : "sealed class";
         sb.AppendLine($"public {typeKeyword} {typeName}");
         sb.AppendLine("{");
-        EmitCachedDefaults(sb, document, module, typeName, type.Components);
-        foreach (var field in type.Components)
+        EmitCachedDefaults(sb, document, module, typeName, components);
+        foreach (var field in components)
         {
             EmitProperty(
                 sb,
@@ -617,17 +623,29 @@ public sealed partial class CSharpBackend : ILanguageBackend
                 privateSetter: false);
         }
 
-        if (typeKeyword == "struct") EmitStructConstructor(sb, document, module, typeName, type.Components);
-        EmitOpenTypeUseMethods(sb, document, module, typeName);
+        if (valueType) EmitStructConstructor(sb, document, module, typeName, components);
+        return valueType;
+    }
 
+    private void EmitStructuredEncode(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string typeName,
+        IReadOnlyList<IrComponent> components,
+        IEnumerable<IrComponent> encodeOrder,
+        bool valueType,
+        bool extensible,
+        string enterMethod)
+    {
         sb.AppendLine();
         sb.AppendLine("    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);");
         sb.AppendLine();
         sb.AppendLine("    public void Encode(Asn1Writer writer, Asn1Tag tag)");
         sb.AppendLine("    {");
-        if (IsCSharpValueTypeEmit(module, typeName, type))
+        if (valueType)
         {
-            foreach (var field in type.Components)
+            foreach (var field in components)
             {
                 var prop = PropertyName(field, typeName);
                 var local = "enc_" + prop.TrimStart('@');
@@ -635,13 +653,13 @@ public sealed partial class CSharpBackend : ILanguageBackend
             }
         }
 
-        sb.AppendLine("        using (writer.EnterSequence(tag))");
+        sb.AppendLine($"        using (writer.{enterMethod}(tag))");
         sb.AppendLine("        {");
-        if (type.Extensible)
-            EmitExtensionGroupChecks(sb, document, module, typeName, type.Components, "            ", null);
-        foreach (var field in type.Components)
+        if (extensible)
+            EmitExtensionGroupChecks(sb, document, module, typeName, components, "            ", null);
+        foreach (var field in encodeOrder)
         {
-            if (IsCSharpValueTypeEmit(module, typeName, type))
+            if (valueType)
             {
                 var prop = PropertyName(field, typeName);
                 var local = "enc_" + prop.TrimStart('@');
@@ -663,6 +681,13 @@ public sealed partial class CSharpBackend : ILanguageBackend
 
         sb.AppendLine("        }");
         sb.AppendLine("    }");
+    }
+
+    private void EmitSequence(StringBuilder sb, IrDocument document, IrModule module, string typeName, SequenceType type)
+    {
+        var valueType = EmitStructuredTypeShell(sb, document, module, typeName, type, type.Components);
+        EmitStructuredEncode(
+            sb, document, module, typeName, type.Components, type.Components, valueType, type.Extensible, "EnterSequence");
         sb.AppendLine();
         sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader) => Decode(reader, DefaultTag);");
         sb.AppendLine();
@@ -691,67 +716,17 @@ public sealed partial class CSharpBackend : ILanguageBackend
         var deferredFields = type.Components.Where(f =>
             _contextDepth.GetValueOrDefault(typeName + "_" + SanitizeIdentifier(f.Name)) > 0 ||
             _contextDepth.GetValueOrDefault(typeName + "_" + SanitizeIdentifier(f.Name) + "_Item") > 0).ToHashSet();
-        var typeKeyword = IsCSharpValueTypeEmit(module, typeName, type) ? "struct" : "sealed class";
-        sb.AppendLine($"public {typeKeyword} {typeName}");
-        sb.AppendLine("{");
-        EmitCachedDefaults(sb, document, module, typeName, type.Components);
-        foreach (var field in type.Components)
-        {
-            EmitProperty(
-                sb,
-                document,
-                module,
-                typeName,
-                field,
-                (field.Optional || field.ExtensionAddition == true) && field.Default is null,
-                privateSetter: false);
-        }
-
-        if (typeKeyword == "struct") EmitStructConstructor(sb, document, module, typeName, type.Components);
-        EmitOpenTypeUseMethods(sb, document, module, typeName);
-
-        sb.AppendLine();
-        sb.AppendLine("    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);");
-        sb.AppendLine();
-        sb.AppendLine("    public void Encode(Asn1Writer writer, Asn1Tag tag)");
-        sb.AppendLine("    {");
-        if (IsCSharpValueTypeEmit(module, typeName, type))
-        {
-            foreach (var field in type.Components)
-            {
-                var prop = PropertyName(field, typeName);
-                var local = "enc_" + prop.TrimStart('@');
-                sb.AppendLine($"        var {local} = {prop};");
-            }
-        }
-
-        sb.AppendLine($"        using (writer.{(type.Extensible ? "EnterSetOf" : "EnterSet")}(tag))");
-        sb.AppendLine("        {");
-        if (type.Extensible) EmitExtensionGroupChecks(sb, document, module, typeName, type.Components, "            ", null);
-        foreach (var field in SortedSetComponents(document, module, type.Components))
-        {
-            if (IsCSharpValueTypeEmit(module, typeName, type))
-            {
-                var prop = PropertyName(field, typeName);
-                var local = "enc_" + prop.TrimStart('@');
-                EmitEncodeFieldFromExpr(
-                    sb,
-                    document,
-                    module,
-                    typeName,
-                    field,
-                    "            ",
-                    "writer",
-                    local);
-            }
-            else
-            {
-                EmitEncodeField(sb, document, module, typeName, field, "            ", "writer");
-            }
-        }
-
-        sb.AppendLine("        }");
-        sb.AppendLine("    }");
+        var valueType = EmitStructuredTypeShell(sb, document, module, typeName, type, type.Components);
+        EmitStructuredEncode(
+            sb,
+            document,
+            module,
+            typeName,
+            type.Components,
+            SortedSetComponents(document, module, type.Components),
+            valueType,
+            type.Extensible,
+            type.Extensible ? "EnterSetOf" : "EnterSet");
         sb.AppendLine();
         sb.AppendLine($"    public static {typeName} Decode(Asn1Reader reader) => Decode(reader, DefaultTag);");
         sb.AppendLine();
@@ -2858,82 +2833,24 @@ public sealed partial class CSharpBackend : ILanguageBackend
         IrDocument document,
         IrModule module,
         TypeExpr type,
-        JsonObject? fieldOptions)
-    {
-        if (IrOptions.IsLazy(fieldOptions) || IrOptions.IsLazy(type.Options))
-        {
-            return true;
-        }
-
-        var visited = new HashSet<string>(StringComparer.Ordinal);
-        var cursor = type;
-        var currentModule = module;
-        while (true)
-        {
-            if (IsSingleAlternativeChoice(cursor))
-            {
-                cursor = ((ChoiceType)cursor).Components[0].Type;
-                if (IrOptions.IsLazy(cursor.Options))
-                {
-                    return true;
-                }
-
-                continue;
-            }
-
-            if (cursor is not RefType reference)
-            {
-                break;
-            }
-
-            var key = (reference.Module ?? currentModule.Name) + "::" + reference.Name;
-            if (!visited.Add(key))
-            {
-                break;
-            }
-
-            var found = FindWithModule(document, currentModule, reference);
-            if (found is null)
-            {
-                break;
-            }
-
-            var (definingModule, def) = found.Value;
-            if (IrOptions.IsLazy(def.Options) || IrOptions.IsLazy(def.Type.Options))
-            {
-                return true;
-            }
-
-            var inner = def.Type;
-            if (IsNamedBitString(inner) || NeedsNamedType(inner) || IsEnumerated(inner))
-            {
-                break;
-            }
-
-            cursor = inner;
-            currentModule = definingModule;
-            if (IrOptions.IsLazy(cursor.Options))
-            {
-                return true;
-            }
-        }
-
-        var unwrapped = UnwrapAliases(document, module, type);
-        if (IrOptions.IsLazy(unwrapped.Options))
-        {
-            return true;
-        }
-
-        return IrOptions.IsLazy(module.Options);
-    }
+        JsonObject? fieldOptions) =>
+        ResolvePropagatedOptionFlag(document, module, type, fieldOptions, IrOptions.IsLazy);
 
     private bool ResolveRetainEncodedFlag(
         IrDocument document,
         IrModule module,
         TypeExpr type,
-        JsonObject? fieldOptions)
+        JsonObject? fieldOptions) =>
+        ResolvePropagatedOptionFlag(document, module, type, fieldOptions, IrOptions.IsRetainEncoded);
+
+    private bool ResolvePropagatedOptionFlag(
+        IrDocument document,
+        IrModule module,
+        TypeExpr type,
+        JsonObject? fieldOptions,
+        Func<JsonObject?, bool> isSet)
     {
-        if (IrOptions.IsRetainEncoded(fieldOptions) || IrOptions.IsRetainEncoded(type.Options))
+        if (isSet(fieldOptions) || isSet(type.Options))
         {
             return true;
         }
@@ -2946,7 +2863,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
             if (IsSingleAlternativeChoice(cursor))
             {
                 cursor = ((ChoiceType)cursor).Components[0].Type;
-                if (IrOptions.IsRetainEncoded(cursor.Options))
+                if (isSet(cursor.Options))
                 {
                     return true;
                 }
@@ -2972,7 +2889,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
             }
 
             var (definingModule, def) = found.Value;
-            if (IrOptions.IsRetainEncoded(def.Options) || IrOptions.IsRetainEncoded(def.Type.Options))
+            if (isSet(def.Options) || isSet(def.Type.Options))
             {
                 return true;
             }
@@ -2985,19 +2902,19 @@ public sealed partial class CSharpBackend : ILanguageBackend
 
             cursor = inner;
             currentModule = definingModule;
-            if (IrOptions.IsRetainEncoded(cursor.Options))
+            if (isSet(cursor.Options))
             {
                 return true;
             }
         }
 
         var unwrapped = UnwrapAliases(document, module, type);
-        if (IrOptions.IsRetainEncoded(unwrapped.Options))
+        if (isSet(unwrapped.Options))
         {
             return true;
         }
 
-        return IrOptions.IsRetainEncoded(module.Options);
+        return isSet(module.Options);
     }
 
     private static string InferNamedIntegerRepresentation(IReadOnlyList<IrNamedNumber> namedValues)
