@@ -10,6 +10,7 @@
 | `src/Asn1Kit.Compiler` | Лексер, парсер, резолв имён, эмит IR |
 | `src/Asn1Kit.Codegen` | Контракт `ILanguageBackend` |
 | `src/Asn1Kit.Codegen.CSharp` | Генерация `.g.cs` |
+| `src/Asn1Kit.Codegen.Cpp` | Генерация `.hpp` |
 | `src/Asn1Kit.Cli` | Команды `compile` и `generate` |
 | `tests/Asn1Kit.Compiler.Tests` | IR, лексер/парсер, PKIX golden, codegen round-trip |
 
@@ -22,6 +23,7 @@
 ```powershell
 dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/asn1/example.asn -o out.json
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/ir/example.json --lang csharp -o ./generated
+dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/ir/example.json --lang cpp -o ./generated-cpp
 
 # -O / --option path=value — override module.options (repeatable); same flag on compile
 # --bindings — open-type overlay (Module.Type.field → OID/INTEGER → type); объектная форма
@@ -30,6 +32,7 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/i
 # составные workflow регенерации
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-ir-goldens.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-csharp-golden.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-cpp-golden.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-modern.ps1
 ```
 
@@ -47,7 +50,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-modern.ps
 | `fixtures/ir/pkix1-implicit88.json` | **Golden**: Explicit + Implicit (оба `-i`) + `--bindings`, руками не править |
 | `fixtures/ir/cms-2004.json` | **Golden**: Explicit + Implicit + CMS + оба bindings; namespaces в `options` |
 | `fixtures/ir/dvcs.patch.json` | Product overlay для полного DVCS-графа: namespaces, lazy cert, retainEncoded, ATV valueType; отдельный DVCS IR не коммитится |
-| `fixtures/ir/example.json` | **Ручная**: `options.csharp.*`; компилятором не пересобирать |
+| `fixtures/ir/example.json` | **Ручная**: `options.csharp.*` / `options.cpp.*`; компилятором не пересобирать |
+| `fixtures/codegen-cpp/example/*.hpp` | **Golden C++** из `example.json`; `scripts/regenerate-cpp-golden.ps1` |
 | `../runtime-csharp/generated/Asn1Kit.Pkix/*.g.cs` | **Golden C#**: PKIX/CMS/DVCS и зависимости из полного `.asn`-графа + `dvcs.patch.json`, руками не править |
 | `../runtime-csharp/generated/Asn1Kit.Modern/*.g.cs` | **Modern C#**: общие структурные типы и методы доступа к IOC-таблицам из корпуса; руками не править |
 
@@ -60,6 +64,7 @@ Golden IR сверяют `PkixExplicit88Tests` / `PkixImplicit88Tests` / `Cms200
 - [Новая конструкция ASN.1](docs/playbooks/compiler-construct.md)
 - [Новый kind IR](docs/playbooks/new-ir-kind.md)
 - [C# backend](docs/playbooks/csharp-backend.md)
-- [Новый язык (C++)](docs/playbooks/new-backend.md)
+- [C++ backend](docs/playbooks/cpp-backend.md)
+- [Новый язык (каркас)](docs/playbooks/new-backend.md)
 
 Сквозная документация: [docs/architecture.md](../docs/architecture.md), [docs/status.md](../docs/status.md), [docs/ir-schema.md](../docs/ir-schema.md).

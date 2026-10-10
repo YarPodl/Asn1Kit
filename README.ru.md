@@ -8,14 +8,14 @@
 
 | Каталог | Содержание |
 | --- | --- |
-| [compiler/](compiler/) | IR, компилятор, codegen (C#), CLI и их тесты |
+| [compiler/](compiler/) | IR, компилятор, codegen (C# / C++), CLI и их тесты |
 | [runtime-csharp/](runtime-csharp/) | C# runtime BER/DER и его тесты |
 | [runtime-cpp/](runtime-cpp/) | C++20 BER/DER runtime (примитивы + SEQUENCE/SET scopes) |
 
 ## Компоненты
 
 1. **Компилятор** — текст ASN.1 → JSON IR (`irVersion` + схема [schemas/asn1kit-ir-v1.json](schemas/asn1kit-ir-v1.json)). Файл можно править: `options.csharp.namespace`, имена типов, `generate: false`.
-2. **Генератор** — IR → исходный код. Сейчас C#, позже C++.
+2. **Генератор** — IR → исходный код. C# и C++ (`--lang csharp` / `--lang cpp`); C++ MVP без open-type/`any`.
 3. **Runtime** — примитивы BER и DER на языке цели. Сгенерированный код вызывает эту библиотеку.
 
 ## Начало работы

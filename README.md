@@ -15,7 +15,7 @@ The repository is organized into the following directories:
 ## Components
 
 1. **Compiler** — converts ASN.1 text into JSON IR (`irVersion` plus the [schemas/asn1kit-ir-v1.json](schemas/asn1kit-ir-v1.json) schema). The resulting file can be edited to configure `options.csharp.namespace`, type names, and `generate: false`.
-2. **Generator** — converts IR into source code. C# is currently supported, with C++ planned for the future.
+2. **Generator** — converts IR into source code. C# and C++ (`--lang csharp` / `--lang cpp`) are supported; C++ MVP covers constructed types and primitives (no open-type/`any` yet).
 3. **Runtime** — provides BER and DER primitives for the target language. Generated code calls this library.
 
 ## Get started
@@ -51,6 +51,16 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- generate `
 ```
 
 You can pass an `.asn` file directly to `generate` for a shorter workflow, but keeping the IR is useful when its options need to be reviewed or maintained.
+
+For C++ (`--lang cpp`), emit a header into a directory that can include `runtime-cpp/include` (see [compiler/docs/playbooks/cpp-backend.md](compiler/docs/playbooks/cpp-backend.md)):
+
+```powershell
+dotnet run --project compiler/src/Asn1Kit.Cli -- generate `
+  -i artifacts/MyProtocol.json `
+  --lang cpp `
+  -O cpp.namespace=my_protocol `
+  -o generated-cpp/MyProtocol
+```
 
 ### 3. Reference the runtime
 

@@ -1,5 +1,6 @@
 ﻿using System.CommandLine;
 using Asn1Kit.Codegen;
+using Asn1Kit.Codegen.Cpp;
 using Asn1Kit.Codegen.CSharp;
 using Asn1Kit.Compiler;
 using Asn1Kit.Ir;
@@ -155,7 +156,7 @@ internal static class Program
             Console.WriteLine($"Wrote {irOutput.FullName}");
         }
 
-        var generator = new CodeGenerator(new ILanguageBackend[] { new CSharpBackend() });
+        var generator = new CodeGenerator(new ILanguageBackend[] { new CSharpBackend(), new CppBackend() });
         var files = generator.Generate(document, language);
         output.Create();
         foreach (var file in files)

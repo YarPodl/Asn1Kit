@@ -7,6 +7,7 @@ add_executable(asn1kit_tests
     bytes_tests.cpp
     exception_diagnostics_tests.cpp
     constructed_scope_tests.cpp
+    generated_person_tests.cpp
 )
 
 target_link_libraries(asn1kit_tests
@@ -15,6 +16,11 @@ target_link_libraries(asn1kit_tests
         GTest::gtest
         GTest::gtest_main
         nlohmann_json::nlohmann_json
+)
+
+target_include_directories(asn1kit_tests
+    PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/../generated/example"
 )
 
 # Prefer forward slashes so the string macro is portable on Windows and Linux.

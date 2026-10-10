@@ -17,6 +17,7 @@
     <ProjectReference Include="..\Asn1Kit.Compiler\Asn1Kit.Compiler.csproj" />
     <ProjectReference Include="..\Asn1Kit.Codegen\Asn1Kit.Codegen.csproj" />
     <ProjectReference Include="..\Asn1Kit.Codegen.CSharp\Asn1Kit.Codegen.CSharp.csproj" />
+    <ProjectReference Include="..\Asn1Kit.Codegen.Cpp\Asn1Kit.Codegen.Cpp.csproj" />
     <ProjectReference Include="..\Asn1Kit.Ir\Asn1Kit.Ir.csproj" />
   </ItemGroup>
 

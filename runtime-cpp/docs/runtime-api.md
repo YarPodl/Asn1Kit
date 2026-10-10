@@ -37,7 +37,7 @@
 | Value types | `integer`, `bit_string`, `oid`, `null_value`, `utc_date_time` |
 | Time | `utc_date_time` (календарные поля UTC + `time_fraction` до 7 десятичных цифр) |
 
-Вне фазы 2: ANY / Lazy / Value / Contained / Codec, modern IOC, oracle, `external/` фикстуры, codegen C++.
+Вне фазы 2: ANY / Lazy / Value / Contained / Codec, modern IOC, oracle, `external/` фикстуры. Codegen C++ MVP — [cpp-backend.md](../../compiler/docs/playbooks/cpp-backend.md).
 
 ## Constructed scopes
 

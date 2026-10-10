@@ -8,11 +8,12 @@ ASN.1 module  -->  Compiler (C#)  -->  IR JSON (schema v1)
                                            v  (можно править options)
                                       Code generator
                                            |
-                                           v
-                                   Generated C# types
-                                           |
-                                           v
-                                   Asn1Kit.Runtime (BER/DER)
+                    +----------------------+----------------------+
+                    v                                             v
+            Generated C# types                          Generated C++ types
+                    |                                             |
+                    v                                             v
+            Asn1Kit.Runtime                               asn1kit (C++)
 ```
 
 ## Каталоги репозитория
@@ -35,12 +36,13 @@ ASN.1 module  -->  Compiler (C#)  -->  IR JSON (schema v1)
 | `Asn1Kit.Compiler` | compiler | Лексер, парсер AST, семантический resolver, построение IR |
 | `Asn1Kit.Codegen` | compiler | `ILanguageBackend` |
 | `Asn1Kit.Codegen.CSharp` | compiler | Генерация `.cs` |
+| `Asn1Kit.Codegen.Cpp` | compiler | Генерация `.hpp` |
 | `Asn1Kit.Cli` | compiler | Команды `compile` и `generate` |
 | `Asn1Kit.Runtime` | runtime-csharp | TLV, примитивы BER/DER |
 | `Asn1Kit.Modern` | runtime-csharp/generated | Отдельная сборка PKIX/CMS RFC 5911/5912/6268/8410 |
 | `asn1kit` (static lib) | runtime-cpp | C++20 TLV, примитивы и SEQUENCE/SET scopes BER/DER (`asn1kit::bytes` = span + keep-alive) |
 
-C++ codegen (`Asn1Kit.Codegen.Cpp`) планируется как backend в `compiler/`; runtime scopes уже в `runtime-cpp/`. Фронтенд компилятора не меняется ради C++.
+C++ codegen (`Asn1Kit.Codegen.Cpp`) — backend в `compiler/`; runtime scopes в `runtime-cpp/`. Фронтенд компилятора не меняется ради C++.
 
 ## IR
 

@@ -1,0 +1,741 @@
+using System.Globalization;
+using System.Text;
+using Asn1Kit.Ir;
+
+namespace Asn1Kit.Codegen.Cpp;
+
+public sealed partial class CppBackend
+{
+    private void EmitEncodeField(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string owner,
+        IrComponent field,
+        string indent,
+        string writer)
+    {
+        var expr = "this->" + FieldName(field);
+        if (field.Default is not null)
+        {
+            sb.AppendLine($"{indent}if ({DefaultNotEqualExpression(document, module, owner, field, expr)}) {{");
+            EmitEncodeValue(
+                sb,
+                document,
+                module,
+                owner,
+                field.Name,
+                field.Type,
+                indent + "    ",
+                writer,
+                expr);
+            sb.AppendLine($"{indent}}}");
+        }
+        else if (field.Optional || field.ExtensionAddition == true)
+        {
+            sb.AppendLine($"{indent}if ({expr}.has_value()) {{");
+            EmitEncodeValue(
+                sb,
+                document,
+                module,
+                owner,
+                field.Name,
+                field.Type,
+                indent + "    ",
+                writer,
+                "(*" + expr + ")");
+            sb.AppendLine($"{indent}}}");
+        }
+        else
+        {
+            EmitEncodeValue(
+                sb,
+                document,
+                module,
+                owner,
+                field.Name,
+                field.Type,
+                indent,
+                writer,
+                expr);
+        }
+    }
+
+    private void EmitEncodeValue(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string owner,
+        string hint,
+        TypeExpr type,
+        string indent,
+        string writer,
+        string expr,
+        string? forceTag = null)
+    {
+        var original = type;
+        var resolvedModule = module;
+        type = UnwrapAliases(document, ref resolvedModule, type);
+
+        if (type.Tag?.Mode == TagModes.Explicit && forceTag is null)
+        {
+            sb.AppendLine($"{indent}{{");
+            sb.AppendLine($"{indent}    auto scope = {writer}.enter_explicit({TagFromIr(type.Tag, constructed: true)});");
+            var inner = CloneUntagged(type);
+            EmitEncodeValue(
+                sb,
+                document,
+                resolvedModule,
+                owner,
+                hint,
+                inner,
+                indent + "    ",
+                writer,
+                expr);
+            sb.AppendLine($"{indent}}}");
+            return;
+        }
+
+        if (type is SequenceOfType or SetOfType)
+        {
+            EmitOfEncode(
+                sb,
+                document,
+                resolvedModule,
+                original,
+                owner,
+                hint,
+                type,
+                indent,
+                writer,
+                expr,
+                forceTag);
+            return;
+        }
+
+        var encodeTag = forceTag ?? TagExpr(document, module, type);
+        if (IsEnumeratedRefOrType(document, module, type))
+        {
+            var enumName = NamedTypeName(document, resolvedModule, owner, hint, type);
+            if (type is RefType)
+            {
+                enumName = NamedTypeName(document, resolvedModule, owner, hint, type);
+            }
+            else if (type is EnumeratedType)
+            {
+                enumName = owner + "_" + CppNames.SanitizeTypeName(hint);
+            }
+
+            // Named ENUMERATED typedef uses the typedef name; inline uses Owner_Field.
+            if (type is RefType reference)
+            {
+                var found = Find(document, module, reference);
+                if (found is not null)
+                {
+                    enumName = IrOptions.CppTypeName(found.Options) ?? CppNames.SanitizeTypeName(found.Name);
+                }
+            }
+
+            sb.AppendLine($"{indent}encode_{enumName}({writer}, {expr}, {encodeTag});");
+            return;
+        }
+
+        if (type is RefType namedBitRef && Find(document, module, namedBitRef)?.Type is BitStringType { NamedBits.Count: > 0 })
+        {
+            sb.AppendLine($"{indent}{expr}.encode({writer}, {encodeTag});");
+            return;
+        }
+
+        if (IsNamedBitString(type))
+        {
+            sb.AppendLine($"{indent}{expr}.encode({writer}, {encodeTag});");
+            return;
+        }
+
+        var primitive = ResolvePrimitive(type);
+        if (primitive is not null)
+        {
+            sb.AppendLine($"{indent}{WriteCall(document, module, writer, encodeTag, expr, type)};");
+            return;
+        }
+
+        if (type is ChoiceType || (type is RefType choiceRef && Find(document, module, choiceRef)?.Type is ChoiceType))
+        {
+            if (forceTag is not null || type.Tag is not null)
+            {
+                sb.AppendLine($"{indent}{expr}.encode({writer}, {encodeTag});");
+            }
+            else
+            {
+                sb.AppendLine($"{indent}{expr}.encode({writer});");
+            }
+
+            return;
+        }
+
+        sb.AppendLine($"{indent}{expr}.encode({writer}, {encodeTag});");
+    }
+
+    private void EmitOfEncode(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        TypeExpr original,
+        string owner,
+        string hint,
+        TypeExpr ofType,
+        string indent,
+        string writer,
+        string expr,
+        string? forceTag)
+    {
+        ResolveOfItemNaming(document, module, original, owner, hint, out var itemOwner, out var itemHint);
+        var writeMethod = ofType is SetOfType ? "write_set_of" : "write_sequence_of";
+        var tag = forceTag ?? TagExpr(document, module, ofType);
+        var element = ofType is SetOfType setOf ? setOf.Element : ((SequenceOfType)ofType).Element;
+        sb.AppendLine($"{indent}{writer}.{writeMethod}({tag}, {expr}, [&](asn1kit::writer& inner, const auto& item) {{");
+        EmitEncodeValue(
+            sb,
+            document,
+            module,
+            itemOwner,
+            itemHint,
+            element,
+            indent + "    ",
+            "inner",
+            "item");
+        sb.AppendLine($"{indent}}});");
+    }
+
+    private void EmitDecodeField(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string owner,
+        IrComponent field,
+        IReadOnlyList<IrComponent> ownerComponents,
+        string indent,
+        string reader,
+        string target)
+    {
+        _ = ownerComponents;
+        var prop = FieldName(field);
+        if (field.Optional || field.ExtensionAddition == true || field.Default is not null)
+        {
+            if (TryGetUntaggedMultiAltChoice(document, module, field.Type, out _))
+            {
+                sb.AppendLine($"{indent}{{");
+                sb.AppendLine($"{indent}    asn1kit::tag peeked_opt;");
+                sb.AppendLine(
+                    $"{indent}    if ({reader}.try_peek_tag(peeked_opt) && {PeekMatchExpr(document, module, field.Type, "peeked_opt")}) {{");
+                EmitDecodeAssign(
+                    sb,
+                    document,
+                    module,
+                    owner,
+                    field.Name,
+                    field.Type,
+                    indent + "        ",
+                    reader,
+                    $"{target}.{prop}");
+                sb.AppendLine($"{indent}    }}");
+                if (field.Default is not null)
+                {
+                    sb.AppendLine($"{indent}    else {{");
+                    sb.AppendLine(
+                        $"{indent}        {target}.{prop} = {DefaultExpression(document, module, owner, field)};");
+                    sb.AppendLine($"{indent}    }}");
+                }
+
+                sb.AppendLine($"{indent}}}");
+            }
+            else
+            {
+                sb.AppendLine($"{indent}if ({reader}.next_is({TagExpr(document, module, field.Type)})) {{");
+                EmitDecodeAssign(
+                    sb,
+                    document,
+                    module,
+                    owner,
+                    field.Name,
+                    field.Type,
+                    indent + "    ",
+                    reader,
+                    $"{target}.{prop}");
+                sb.AppendLine($"{indent}}}");
+                if (field.Default is not null)
+                {
+                    sb.AppendLine($"{indent}else {{");
+                    sb.AppendLine(
+                        $"{indent}    {target}.{prop} = {DefaultExpression(document, module, owner, field)};");
+                    sb.AppendLine($"{indent}}}");
+                }
+            }
+        }
+        else
+        {
+            EmitDecodeAssign(
+                sb,
+                document,
+                module,
+                owner,
+                field.Name,
+                field.Type,
+                indent,
+                reader,
+                $"{target}.{prop}");
+        }
+    }
+
+    private string PeekMatchExpr(IrDocument document, IrModule module, TypeExpr type, string peekedVar)
+    {
+        if (TryGetUntaggedMultiAltChoice(document, module, type, out var choice))
+        {
+            var alts = choice.Components
+                .Select(c => $"{peekedVar}.matches_ignore_constructed({TagExpr(document, module, c.Type)})");
+            return "(" + string.Join(" || ", alts) + ")";
+        }
+
+        return $"{peekedVar}.matches_ignore_constructed({TagExpr(document, module, type)})";
+    }
+
+    private bool TryGetUntaggedMultiAltChoice(
+        IrDocument document,
+        IrModule module,
+        TypeExpr type,
+        out ChoiceType choice)
+    {
+        choice = null!;
+        if (type.Tag is not null)
+        {
+            return false;
+        }
+
+        var cursor = UnwrapAliases(document, module, type);
+        if (cursor.Tag is not null)
+        {
+            return false;
+        }
+
+        if (cursor is RefType reference)
+        {
+            var found = Find(document, module, reference);
+            if (found?.Type is ChoiceType named &&
+                !IsSingleAlternativeChoice(named) &&
+                named.Tag is null)
+            {
+                choice = named;
+                return true;
+            }
+
+            return false;
+        }
+
+        if (cursor is ChoiceType inline &&
+            !IsSingleAlternativeChoice(inline) &&
+            inline.Tag is null)
+        {
+            choice = inline;
+            return true;
+        }
+
+        return false;
+    }
+
+    private void EmitDecodeAssign(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string owner,
+        string hint,
+        TypeExpr type,
+        string indent,
+        string reader,
+        string target,
+        string? forceTag = null)
+    {
+        var original = type;
+        var resolvedModule = module;
+        type = UnwrapAliases(document, ref resolvedModule, type);
+
+        if (type.Tag?.Mode == TagModes.Explicit && forceTag is null)
+        {
+            var tmp = "tmp_" + CppNames.SanitizeFieldName(hint);
+            var tmpType = CppType(document, module, owner, hint, CloneUntagged(type), optional: false);
+            sb.AppendLine($"{indent}{tmpType} {tmp}{{}};");
+            sb.AppendLine(
+                $"{indent}{reader}.with_explicit({TagFromIr(type.Tag, constructed: true)}, [&](asn1kit::reader& scoped) {{");
+            EmitDecodeAssign(
+                sb,
+                document,
+                resolvedModule,
+                owner,
+                hint,
+                CloneUntagged(type),
+                indent + "    ",
+                "scoped",
+                tmp);
+            sb.AppendLine($"{indent}}});");
+            sb.AppendLine($"{indent}{target} = std::move({tmp});");
+            return;
+        }
+
+        if (type is SequenceOfType or SetOfType)
+        {
+            EmitOfDecode(
+                sb,
+                document,
+                resolvedModule,
+                original,
+                owner,
+                hint,
+                type,
+                indent,
+                reader,
+                target,
+                forceTag);
+            return;
+        }
+
+        var decodeTag = forceTag ?? TagExpr(document, module, type);
+        if (IsEnumeratedRefOrType(document, module, type))
+        {
+            var enumName = owner + "_" + CppNames.SanitizeTypeName(hint);
+            if (type is RefType reference)
+            {
+                var found = Find(document, module, reference);
+                if (found is not null)
+                {
+                    enumName = IrOptions.CppTypeName(found.Options) ?? CppNames.SanitizeTypeName(found.Name);
+                }
+            }
+
+            sb.AppendLine($"{indent}{target} = decode_{enumName}({reader}, {decodeTag});");
+            return;
+        }
+
+        if (type is RefType namedBitRef && Find(document, module, namedBitRef)?.Type is BitStringType { NamedBits.Count: > 0 })
+        {
+            var name = NamedTypeName(document, resolvedModule, owner, hint, type);
+            sb.AppendLine($"{indent}{target} = {name}::decode({reader}, {decodeTag});");
+            return;
+        }
+
+        if (IsNamedBitString(type))
+        {
+            var name = owner + "_" + CppNames.SanitizeTypeName(hint);
+            sb.AppendLine($"{indent}{target} = {name}::decode({reader}, {decodeTag});");
+            return;
+        }
+
+        var primitive = ResolvePrimitive(type);
+        if (primitive is not null)
+        {
+            var integerRepresentation = TryResolveIntegerRepresentation(document, module, original);
+            sb.AppendLine(
+                $"{indent}{target} = {ReadCall(reader, decodeTag, type, integerRepresentation)};");
+            return;
+        }
+
+        if (type is ChoiceType || (type is RefType choiceRef && Find(document, module, choiceRef)?.Type is ChoiceType choice))
+        {
+            var name = type is RefType
+                ? NamedTypeName(document, resolvedModule, owner, hint, type)
+                : owner + "_" + CppNames.SanitizeTypeName(hint);
+            if (forceTag is not null || type.Tag is not null)
+            {
+                sb.AppendLine($"{indent}{target} = {name}::decode({reader}, {decodeTag});");
+            }
+            else
+            {
+                sb.AppendLine($"{indent}{target} = {name}::decode({reader});");
+            }
+
+            return;
+        }
+
+        var typeName = NamedTypeName(document, resolvedModule, owner, hint, type);
+        sb.AppendLine($"{indent}{target} = {typeName}::decode({reader}, {decodeTag});");
+    }
+
+    private void EmitOfDecode(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        TypeExpr original,
+        string owner,
+        string hint,
+        TypeExpr ofType,
+        string indent,
+        string reader,
+        string target,
+        string? forceTag)
+    {
+        ResolveOfItemNaming(document, module, original, owner, hint, out var itemOwner, out var itemHint);
+        var readMethod = ofType is SetOfType ? "read_set_of" : "read_sequence_of";
+        var tag = forceTag ?? TagExpr(document, module, ofType);
+        var element = ofType is SetOfType setOf ? setOf.Element : ((SequenceOfType)ofType).Element;
+        var itemType = CppType(document, module, itemOwner, itemHint, element, optional: false);
+        sb.AppendLine(
+            $"{indent}{target} = {reader}.{readMethod}<{itemType}>({tag}, [&](asn1kit::reader& inner) {{");
+        sb.AppendLine($"{indent}    {itemType} item{{}};");
+        EmitDecodeAssign(
+            sb,
+            document,
+            module,
+            itemOwner,
+            itemHint,
+            element,
+            indent + "    ",
+            "inner",
+            "item");
+        sb.AppendLine($"{indent}    return item;");
+        sb.AppendLine($"{indent}}});");
+    }
+
+    private string WriteCall(
+        IrDocument document,
+        IrModule module,
+        string writer,
+        string tag,
+        string expr,
+        TypeExpr type)
+    {
+        var integerRepresentation = TryResolveIntegerRepresentation(document, module, type);
+        return type switch
+        {
+            BooleanType => $"{writer}.write_boolean({tag}, {expr})",
+            IntegerType => IntegerWriteCall(writer, tag, expr, integerRepresentation),
+            BitStringType => $"{writer}.write_bit_string({tag}, {expr})",
+            OctetStringType => $"{writer}.write_octet_string({tag}, {expr}.span())",
+            NullType => $"{writer}.write_null({tag})",
+            OidType => $"{writer}.write_object_identifier({tag}, {expr})",
+            StringType stringType =>
+                $"{writer}.write_string({tag}, {expr}, {StringFormEnum(stringType.Form)})",
+            TimeType timeType => timeType.Form == TimeTypes.Generalized
+                ? $"{writer}.write_time({tag}, {expr}, {TimeFormEnum(timeType.Form)}, {timeType.FractionDigits ?? 3})"
+                : $"{writer}.write_time({tag}, {expr}, {TimeFormEnum(timeType.Form)})",
+            _ => throw new InvalidOperationException(type.Kind)
+        };
+    }
+
+    private static string IntegerWriteCall(
+        string writer,
+        string tag,
+        string expr,
+        string? representation) =>
+        (representation ?? IrOptions.IntegerRepresentations.Der) switch
+        {
+            IrOptions.IntegerRepresentations.Int32 => $"{writer}.write_integer({tag}, {expr})",
+            IrOptions.IntegerRepresentations.UInt32 => $"{writer}.write_integer({tag}, {expr})",
+            IrOptions.IntegerRepresentations.Int64 => $"{writer}.write_integer({tag}, {expr})",
+            IrOptions.IntegerRepresentations.UInt64 => $"{writer}.write_integer({tag}, {expr})",
+            IrOptions.IntegerRepresentations.BigInt => $"{writer}.write_integer({tag}, {expr})",
+            IrOptions.IntegerRepresentations.Der => $"{writer}.write_integer({tag}, {expr})",
+            _ => throw new NotSupportedException($"Unknown integer representation '{representation}'.")
+        };
+
+    private static string ReadCall(
+        string reader,
+        string tag,
+        TypeExpr type,
+        string? integerRepresentation) => type switch
+    {
+        BooleanType => $"{reader}.read_boolean({tag})",
+        IntegerType => IntegerReadCall(reader, tag, integerRepresentation),
+        BitStringType => $"{reader}.read_bit_string({tag})",
+        OctetStringType => $"{reader}.read_octet_string({tag})",
+        NullType => $"asn1kit::null_value::decode({reader}, {tag})",
+        OidType => $"{reader}.read_oid({tag})",
+        StringType stringType =>
+            $"{reader}.read_string({tag}, {StringFormEnum(stringType.Form)})",
+        TimeType timeType => $"{reader}.read_time({tag}, {TimeFormEnum(timeType.Form)})",
+        _ => throw new InvalidOperationException(type.Kind)
+    };
+
+    private static string IntegerReadCall(string reader, string tag, string? representation) =>
+        (representation ?? IrOptions.IntegerRepresentations.Der) switch
+        {
+            IrOptions.IntegerRepresentations.Int32 => $"{reader}.read_int32({tag})",
+            IrOptions.IntegerRepresentations.UInt32 => $"{reader}.read_uint32({tag})",
+            IrOptions.IntegerRepresentations.Int64 => $"{reader}.read_int64({tag})",
+            IrOptions.IntegerRepresentations.UInt64 => $"{reader}.read_uint64({tag})",
+            IrOptions.IntegerRepresentations.BigInt => $"{reader}.read_integer_value({tag})",
+            IrOptions.IntegerRepresentations.Der => $"{reader}.read_integer_value({tag})",
+            _ => throw new NotSupportedException($"Unknown integer representation '{representation}'.")
+        };
+
+    private string DefaultNotEqualExpression(
+        IrDocument document,
+        IrModule module,
+        string owner,
+        IrComponent field,
+        string valueExpression)
+    {
+        var defaultValue = DefaultExpression(document, module, owner, field);
+        return $"{valueExpression} != {defaultValue}";
+    }
+
+    private string DefaultExpression(
+        IrDocument document,
+        IrModule module,
+        string owner,
+        IrComponent field)
+    {
+        if (field.Default is null)
+        {
+            throw new InvalidOperationException("DEFAULT expression requested without default.");
+        }
+
+        var resolvedModule = module;
+        var type = UnwrapAliases(document, ref resolvedModule, field.Type);
+        if (field.Default is IrIntegerValue enumDefault &&
+            ResolveEnumeratedDefault(document, module, owner, field, type, enumDefault) is { } enumExpr)
+        {
+            return enumExpr;
+        }
+
+        return (type, field.Default) switch
+        {
+            (BooleanType, IrBooleanValue value) => value.Value ? "true" : "false",
+            (NullType, IrNullValue) => "asn1kit::null_value::value()",
+            (OidType, IrOidValue value) =>
+                $"asn1kit::oid::parse(\"{CppNames.EscapeString(value.Value)}\")",
+            (StringType, IrStringValue value) => $"std::string(\"{CppNames.EscapeString(value.Value)}\")",
+            (IntegerType, IrIntegerValue value) => IntegerDefaultExpression(
+                document,
+                module,
+                field.Type,
+                value.Value),
+            (BitStringType, IrBitStringValue value) => BitStringDefaultExpression(value),
+            (OctetStringType, IrOctetStringValue value) => OctetStringDefaultExpression(value),
+            _ => throw new NotSupportedException(
+                $"C++ backend does not support DEFAULT kind '{field.Default.Kind}' for field '{field.Name}'.")
+        };
+    }
+
+    private string? ResolveEnumeratedDefault(
+        IrDocument document,
+        IrModule module,
+        string owner,
+        IrComponent field,
+        TypeExpr unwrapped,
+        IrIntegerValue enumDefault)
+    {
+        EnumeratedType? enumerated = null;
+        string? enumName = null;
+        if (unwrapped is EnumeratedType inline)
+        {
+            enumerated = inline;
+            enumName = owner + "_" + CppNames.SanitizeTypeName(field.Name);
+        }
+        else if (unwrapped is RefType reference)
+        {
+            var found = Find(document, module, reference);
+            if (found?.Type is EnumeratedType named)
+            {
+                enumerated = named;
+                enumName = IrOptions.CppTypeName(found.Options) ?? CppNames.SanitizeTypeName(found.Name);
+            }
+        }
+
+        if (enumerated is null || enumName is null)
+        {
+            return null;
+        }
+
+        var member = enumerated.Values.FirstOrDefault(v => v.Value == enumDefault.Value)?.Name;
+        if (member is null)
+        {
+            throw new NotSupportedException(
+                $"ENUMERATED DEFAULT value {enumDefault.Value} is not a named member for field '{field.Name}'.");
+        }
+
+        return $"{enumName}::{CppNames.SanitizeEnumMember(member)}";
+    }
+
+    private string IntegerDefaultExpression(
+        IrDocument document,
+        IrModule module,
+        TypeExpr type,
+        long value)
+    {
+        var representation = TryResolveIntegerRepresentation(document, module, type)
+            ?? IrOptions.IntegerRepresentations.Der;
+        return representation switch
+        {
+            IrOptions.IntegerRepresentations.Int32 => IntegerLiteral(value),
+            IrOptions.IntegerRepresentations.UInt32 => IntegerLiteral(value) + "u",
+            IrOptions.IntegerRepresentations.Int64 => IntegerLiteral(value) + "ll",
+            IrOptions.IntegerRepresentations.UInt64 => IntegerLiteral(value) + "ull",
+            IrOptions.IntegerRepresentations.BigInt =>
+                $"asn1kit::integer::from_decimal(\"{IntegerLiteral(value)}\")",
+            IrOptions.IntegerRepresentations.Der =>
+                $"asn1kit::integer::from_int64({IntegerLiteral(value)}ll)",
+            _ => throw new NotSupportedException($"Unknown integer representation '{representation}'.")
+        };
+    }
+
+    private static string BitStringDefaultExpression(IrBitStringValue value)
+    {
+        if (!string.IsNullOrEmpty(value.Hex))
+        {
+            var bytes = ParseHex(value.Hex);
+            return $"asn1kit::bit_string::copy_from(std::vector<std::uint8_t>{{{string.Join(", ", bytes.Select(b => "0x" + b.ToString("X2", CultureInfo.InvariantCulture)))}}}, 0)";
+        }
+
+        if (string.IsNullOrEmpty(value.Bits))
+        {
+            throw new NotSupportedException("BIT STRING DEFAULT requires bits or hex.");
+        }
+
+        var bits = value.Bits;
+        var data = new List<byte>();
+        for (var i = 0; i < bits.Length; i += 8)
+        {
+            byte b = 0;
+            for (var j = 0; j < 8 && i + j < bits.Length; j++)
+            {
+                if (bits[i + j] == '1')
+                {
+                    b = (byte)(b | (0x80 >> j));
+                }
+                else if (bits[i + j] != '0')
+                {
+                    throw new NotSupportedException(
+                        "BIT STRING DEFAULT contains a character other than '0' or '1'.");
+                }
+            }
+
+            data.Add(b);
+        }
+
+        var unused = bits.Length % 8 == 0 ? 0 : 8 - (bits.Length % 8);
+        return $"asn1kit::bit_string::copy_from(std::vector<std::uint8_t>{{{string.Join(", ", data.Select(b => "0x" + b.ToString("X2", CultureInfo.InvariantCulture)))}}}, {unused})";
+    }
+
+    private static string OctetStringDefaultExpression(IrOctetStringValue value)
+    {
+        var bytes = string.IsNullOrEmpty(value.Hex)
+            ? Array.Empty<byte>()
+            : ParseHex(value.Hex);
+        return $"asn1kit::bytes::copy_from(std::vector<std::uint8_t>{{{string.Join(", ", bytes.Select(b => "0x" + b.ToString("X2", CultureInfo.InvariantCulture)))}}})";
+    }
+
+    private static byte[] ParseHex(string hex)
+    {
+        var cleaned = hex.Replace(" ", "", StringComparison.Ordinal);
+        if (cleaned.Length % 2 != 0)
+        {
+            throw new NotSupportedException("DEFAULT hex length must be even.");
+        }
+
+        var result = new byte[cleaned.Length / 2];
+        for (var i = 0; i < result.Length; i++)
+        {
+            result[i] = byte.Parse(cleaned.AsSpan(i * 2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+        }
+
+        return result;
+    }
+}

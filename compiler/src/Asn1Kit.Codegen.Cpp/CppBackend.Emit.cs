@@ -1,0 +1,479 @@
+using System.Globalization;
+using System.Text;
+using Asn1Kit.Ir;
+
+namespace Asn1Kit.Codegen.Cpp;
+
+public sealed partial class CppBackend
+{
+    private void EmitSequence(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string typeName,
+        SequenceType type)
+    {
+        EmitStructuredType(sb, document, module, typeName, type, type.Components, isSet: false);
+    }
+
+    private void EmitSet(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string typeName,
+        SetType type)
+    {
+        EmitStructuredType(sb, document, module, typeName, type, type.Components, isSet: true);
+    }
+
+    private void EmitStructuredType(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string typeName,
+        TypeExpr type,
+        IReadOnlyList<IrComponent> components,
+        bool isSet)
+    {
+        sb.AppendLine($"struct {typeName} {{");
+        foreach (var field in components)
+        {
+            var optional = (field.Optional || field.ExtensionAddition == true) && field.Default is null;
+            var fieldType = CppType(document, module, typeName, field.Name, field.Type, optional);
+            var name = FieldName(field);
+            var init = FieldInitializer(document, module, typeName, field, optional);
+            sb.AppendLine($"    {fieldType} {name}{init};");
+        }
+
+        sb.AppendLine();
+        sb.AppendLine("    static asn1kit::tag default_tag() {");
+        sb.AppendLine($"        return {UniversalTag(document, module, type)};");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        sb.AppendLine(
+            $"    static {typeName} decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {{");
+        sb.AppendLine($"        {typeName} value{{}};");
+        if (isSet)
+        {
+            EmitSetDecodeBody(sb, document, module, typeName, components);
+        }
+        else
+        {
+            sb.AppendLine("        r.with_sequence(t, [&](asn1kit::reader& inner) {");
+            foreach (var field in components)
+            {
+                EmitDecodeField(sb, document, module, typeName, field, components, "            ", "inner", "value");
+            }
+
+            sb.AppendLine("        });");
+        }
+
+        sb.AppendLine("        return value;");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        sb.AppendLine(
+            "    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {");
+        var enter = isSet ? "enter_set" : "enter_sequence";
+        sb.AppendLine($"        auto scope = w.{enter}(t);");
+        var encodeFields = isSet
+            ? SortedSetComponents(document, module, components)
+            : components;
+        foreach (var field in encodeFields)
+        {
+            EmitEncodeField(sb, document, module, typeName, field, "        ", "w");
+        }
+
+        sb.AppendLine("    }");
+        sb.AppendLine("};");
+    }
+
+    private void EmitSetDecodeBody(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string typeName,
+        IReadOnlyList<IrComponent> components)
+    {
+        sb.AppendLine("        r.with_set(t, [&](asn1kit::reader& inner) {");
+        foreach (var field in components)
+        {
+            if (!field.Optional || field.Default is not null)
+            {
+                sb.AppendLine($"            bool seen_{CppNames.SanitizeFieldName(field.Name)} = false;");
+            }
+        }
+
+        sb.AppendLine("            while (!inner.eof()) {");
+        sb.AppendLine("                asn1kit::tag peeked;");
+        sb.AppendLine("                if (!inner.try_peek_tag(peeked)) {");
+        sb.AppendLine("                    break;");
+        sb.AppendLine("                }");
+        var first = true;
+        foreach (var field in components)
+        {
+            var prop = FieldName(field);
+            var cond = first ? "if" : "} else if";
+            first = false;
+            sb.AppendLine(
+                $"                {cond} ({PeekMatchExpr(document, module, field.Type, "peeked")}) {{");
+            if (!field.Optional || field.Default is not null)
+            {
+                var seen = $"seen_{CppNames.SanitizeFieldName(field.Name)}";
+                sb.AppendLine(
+                    $"                    if ({seen}) throw asn1kit::exception(\"Duplicate SET component '{field.Name}'.\");");
+                sb.AppendLine($"                    {seen} = true;");
+            }
+            else
+            {
+                sb.AppendLine(
+                    $"                    if (value.{prop}.has_value()) throw asn1kit::exception(\"Duplicate SET component '{field.Name}'.\");");
+            }
+
+            EmitDecodeAssign(
+                sb,
+                document,
+                module,
+                typeName,
+                field.Name,
+                field.Type,
+                "                    ",
+                "inner",
+                $"value.{prop}");
+        }
+
+        sb.AppendLine("                } else {");
+        sb.AppendLine("                    throw asn1kit::exception(\"Unknown SET component.\");");
+        sb.AppendLine("                }");
+        sb.AppendLine("            }");
+        foreach (var field in components)
+        {
+            if (!field.Optional && field.ExtensionAddition != true && field.Default is null)
+            {
+                sb.AppendLine(
+                    $"            if (!seen_{CppNames.SanitizeFieldName(field.Name)}) throw asn1kit::exception(\"Missing SET component '{field.Name}'.\");");
+            }
+            else if (field.Default is not null)
+            {
+                var prop = FieldName(field);
+                sb.AppendLine($"            if (!seen_{CppNames.SanitizeFieldName(field.Name)}) {{");
+                sb.AppendLine(
+                    $"                value.{prop} = {DefaultExpression(document, module, typeName, field)};");
+                sb.AppendLine("            }");
+            }
+        }
+
+        sb.AppendLine("        });");
+    }
+
+    private void EmitChoice(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string typeName,
+        ChoiceType type)
+    {
+        if (IsSingleAlternativeChoice(type))
+        {
+            throw new InvalidOperationException("Single-alternative CHOICE must be collapsed before emit.");
+        }
+
+        var alts = type.Components;
+        var kinds = alts.Select(a => CppNames.SanitizeEnumMember(a.Name)).ToList();
+        sb.AppendLine($"enum class {typeName}_kind {{");
+        for (var i = 0; i < kinds.Count; i++)
+        {
+            sb.AppendLine($"    {kinds[i]}{(i + 1 < kinds.Count ? "," : "")}");
+        }
+
+        sb.AppendLine("};");
+        sb.AppendLine();
+        sb.AppendLine($"struct {typeName} {{");
+        sb.AppendLine($"    {typeName}_kind kind{{}};");
+        var variantTypes = alts
+            .Select(a => CppType(document, module, typeName, a.Name, a.Type, optional: false))
+            .ToList();
+        sb.AppendLine($"    std::variant<{string.Join(", ", variantTypes)}> value{{}};");
+        sb.AppendLine();
+
+        for (var i = 0; i < alts.Count; i++)
+        {
+            var alt = alts[i];
+            var altType = variantTypes[i];
+            var factory = "from_" + kinds[i];
+            sb.AppendLine($"    static {typeName} {factory}({altType} v) {{");
+            sb.AppendLine($"        {typeName} result{{}};");
+            sb.AppendLine($"        result.kind = {typeName}_kind::{kinds[i]};");
+            sb.AppendLine("        result.value = std::move(v);");
+            sb.AppendLine("        return result;");
+            sb.AppendLine("    }");
+            sb.AppendLine();
+        }
+
+        sb.AppendLine("    static asn1kit::tag default_tag() {");
+        if (type.Tag is not null)
+        {
+            sb.AppendLine($"        return {TagFromIr(type.Tag, constructed: true)};");
+        }
+        else
+        {
+            sb.AppendLine("        throw asn1kit::exception(\"Untagged CHOICE has no default_tag.\");");
+        }
+
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        sb.AppendLine($"    static {typeName} decode(asn1kit::reader& r) {{");
+        sb.AppendLine("        asn1kit::tag peeked;");
+        sb.AppendLine(
+            "        if (!r.try_peek_tag(peeked)) throw asn1kit::exception(\"Expected CHOICE alternative.\");");
+        for (var i = 0; i < alts.Count; i++)
+        {
+            var alt = alts[i];
+            var cond = i == 0 ? "if" : "} else if";
+            sb.AppendLine($"        {cond} ({PeekMatchExpr(document, module, alt.Type, "peeked")}) {{");
+            sb.AppendLine($"            {typeName} result{{}};");
+            sb.AppendLine($"            result.kind = {typeName}_kind::{kinds[i]};");
+            var tmpType = variantTypes[i];
+            sb.AppendLine($"            {tmpType} alt{{}};");
+            EmitDecodeAssign(
+                sb,
+                document,
+                module,
+                typeName,
+                alt.Name,
+                alt.Type,
+                "            ",
+                "r",
+                "alt");
+            sb.AppendLine("            result.value = std::move(alt);");
+            sb.AppendLine("            return result;");
+        }
+
+        sb.AppendLine("        } else {");
+        sb.AppendLine("            throw asn1kit::exception(\"Unknown CHOICE alternative.\");");
+        sb.AppendLine("        }");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        sb.AppendLine(
+            $"    static {typeName} decode(asn1kit::reader& r, const asn1kit::tag& t) {{");
+        if (type.Tag is not null && type.Tag.Mode == TagModes.Explicit)
+        {
+            sb.AppendLine($"        {typeName} value{{}};");
+            sb.AppendLine("        r.with_explicit(t, [&](asn1kit::reader& inner) {");
+            sb.AppendLine("            value = decode(inner);");
+            sb.AppendLine("        });");
+            sb.AppendLine("        return value;");
+        }
+        else if (type.Tag is not null)
+        {
+            // IMPLICIT CHOICE: decode alternatives under outer tag is unusual; treat as explicit wrapper.
+            sb.AppendLine($"        {typeName} value{{}};");
+            sb.AppendLine("        r.with_explicit(t, [&](asn1kit::reader& inner) {");
+            sb.AppendLine("            value = decode(inner);");
+            sb.AppendLine("        });");
+            sb.AppendLine("        return value;");
+        }
+        else
+        {
+            sb.AppendLine("        (void)t;");
+            sb.AppendLine("        return decode(r);");
+        }
+
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        sb.AppendLine("    void encode(asn1kit::writer& w) const {");
+        sb.AppendLine("        switch (kind) {");
+        for (var i = 0; i < alts.Count; i++)
+        {
+            var alt = alts[i];
+            sb.AppendLine($"        case {typeName}_kind::{kinds[i]}:");
+            sb.AppendLine("            {");
+            sb.AppendLine($"                const auto& alt = std::get<{i}>(value);");
+            EmitEncodeValue(
+                sb,
+                document,
+                module,
+                typeName,
+                alt.Name,
+                alt.Type,
+                "                ",
+                "w",
+                "alt");
+            sb.AppendLine("                break;");
+            sb.AppendLine("            }");
+        }
+
+        sb.AppendLine("        }");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        sb.AppendLine("    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {");
+        if (type.Tag is not null)
+        {
+            sb.AppendLine("        auto scope = w.enter_explicit(t);");
+            sb.AppendLine("        encode(w);");
+        }
+        else
+        {
+            sb.AppendLine("        (void)t;");
+            sb.AppendLine("        encode(w);");
+        }
+
+        sb.AppendLine("    }");
+        sb.AppendLine("};");
+    }
+
+    private void EmitEnumerated(StringBuilder sb, string typeName, EnumeratedType type)
+    {
+        var useLong = type.Values.Any(v => v.Value is < int.MinValue or > int.MaxValue);
+        var underlying = useLong ? " : std::int64_t" : "";
+        sb.AppendLine($"enum class {typeName}{underlying} {{");
+        for (var i = 0; i < type.Values.Count; i++)
+        {
+            var value = type.Values[i];
+            var comma = i + 1 < type.Values.Count ? "," : "";
+            sb.AppendLine(
+                $"    {CppNames.SanitizeEnumMember(value.Name)} = {IntegerLiteral(value.Value)}{comma}");
+        }
+
+        sb.AppendLine("};");
+        sb.AppendLine();
+        sb.AppendLine($"inline void encode_{typeName}(asn1kit::writer& w, {typeName} value, const asn1kit::tag& t = asn1kit::tag::enumerated) {{");
+        sb.AppendLine(
+            $"    w.write_enumerated_decimal(t, std::to_string(static_cast<{(useLong ? "std::int64_t" : "std::int32_t")}>(value)));");
+        sb.AppendLine("}");
+        sb.AppendLine();
+        sb.AppendLine(
+            $"inline {typeName} decode_{typeName}(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::enumerated) {{");
+        sb.AppendLine("    const auto text = r.read_enumerated_decimal(t);");
+        sb.AppendLine($"    const auto number = std::stoll(text);");
+        foreach (var value in type.Values)
+        {
+            sb.AppendLine(
+                $"    if (number == {IntegerLiteral(value.Value)}) return {typeName}::{CppNames.SanitizeEnumMember(value.Name)};");
+        }
+
+        sb.AppendLine("    throw asn1kit::exception(\"Unknown ENUMERATED value.\");");
+        sb.AppendLine("}");
+    }
+
+    private void EmitNamedIntegerConstants(StringBuilder sb, string typeName, IntegerType type)
+    {
+        var useLong = type.NamedValues!.Any(v => v.Value is < int.MinValue or > int.MaxValue);
+        var cppType = useLong ? "std::int64_t" : "std::int32_t";
+        sb.AppendLine($"struct {typeName} {{");
+        foreach (var value in type.NamedValues!)
+        {
+            sb.AppendLine(
+                $"    static constexpr {cppType} {CppNames.SanitizeTypeName(value.Name)} = {IntegerLiteral(value.Value)};");
+        }
+
+        sb.AppendLine("};");
+    }
+
+    private void EmitNamedBitString(StringBuilder sb, string typeName, BitStringType type)
+    {
+        sb.AppendLine($"enum class {typeName}Flags : std::uint32_t {{");
+        sb.AppendLine("    none = 0,");
+        for (var i = 0; i < type.NamedBits!.Count; i++)
+        {
+            var bit = type.NamedBits[i];
+            var comma = i + 1 < type.NamedBits.Count ? "," : "";
+            sb.AppendLine(
+                $"    {CppNames.SanitizeEnumMember(bit.Name)} = 1u << {bit.Value.ToString(CultureInfo.InvariantCulture)}{comma}");
+        }
+
+        sb.AppendLine("};");
+        sb.AppendLine();
+        sb.AppendLine(
+            $"inline constexpr {typeName}Flags operator|({typeName}Flags a, {typeName}Flags b) {{");
+        sb.AppendLine(
+            $"    return static_cast<{typeName}Flags>(static_cast<std::uint32_t>(a) | static_cast<std::uint32_t>(b));");
+        sb.AppendLine("}");
+        sb.AppendLine();
+        sb.AppendLine($"struct {typeName} {{");
+        sb.AppendLine("    asn1kit::bit_string value{};");
+        sb.AppendLine();
+        sb.AppendLine("    static bool bit_is_set(const asn1kit::bit_string& bits, int index) {");
+        sb.AppendLine("        if (index < 0 || static_cast<std::size_t>(index) >= bits.bit_length()) return false;");
+        sb.AppendLine("        const auto byte = bits.span()[static_cast<std::size_t>(index) / 8];");
+        sb.AppendLine("        return (byte & static_cast<std::uint8_t>(0x80 >> (index % 8))) != 0;");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        sb.AppendLine($"    {typeName}Flags flags() const {{");
+        sb.AppendLine($"        auto result = {typeName}Flags::none;");
+        foreach (var bit in type.NamedBits!)
+        {
+            var member = CppNames.SanitizeEnumMember(bit.Name);
+            sb.AppendLine(
+                $"        if (bit_is_set(value, {bit.Value.ToString(CultureInfo.InvariantCulture)})) result = result | {typeName}Flags::{member};");
+        }
+
+        sb.AppendLine("        return result;");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        sb.AppendLine($"    static {typeName} from_flags({typeName}Flags flags) {{");
+        sb.AppendLine($"        {typeName} result{{}};");
+        var maxBit = type.NamedBits.Max(b => b.Value);
+        var byteCount = (maxBit / 8) + 1;
+        sb.AppendLine($"        std::vector<std::uint8_t> data({byteCount.ToString(CultureInfo.InvariantCulture)}, 0);");
+        foreach (var bit in type.NamedBits)
+        {
+            var member = CppNames.SanitizeEnumMember(bit.Name);
+            var index = bit.Value.ToString(CultureInfo.InvariantCulture);
+            sb.AppendLine(
+                $"        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>({typeName}Flags::{member})) != 0) {{");
+            sb.AppendLine(
+                $"            data[{index} / 8] = static_cast<std::uint8_t>(data[{index} / 8] | static_cast<std::uint8_t>(0x80 >> ({index} % 8)));");
+            sb.AppendLine("        }");
+        }
+
+        sb.AppendLine("        result.value = asn1kit::bit_string::copy_from(data, 0);");
+        sb.AppendLine("        return result;");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        sb.AppendLine("    static asn1kit::tag default_tag() { return asn1kit::tag::bit_string; }");
+        sb.AppendLine();
+        sb.AppendLine(
+            $"    static {typeName} decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {{");
+        sb.AppendLine($"        {typeName} result{{}};");
+        sb.AppendLine("        result.value = r.read_bit_string(t);");
+        sb.AppendLine("        return result;");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        sb.AppendLine(
+            "    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {");
+        sb.AppendLine("        w.write_bit_string(t, value);");
+        sb.AppendLine("    }");
+        sb.AppendLine("};");
+    }
+
+    private string FieldInitializer(
+        IrDocument document,
+        IrModule module,
+        string owner,
+        IrComponent field,
+        bool optional)
+    {
+        if (optional)
+        {
+            return "{}";
+        }
+
+        if (field.Default is not null)
+        {
+            return " = " + DefaultExpression(document, module, owner, field);
+        }
+
+        var unwrapped = UnwrapAliases(document, module, field.Type);
+        if (unwrapped is SequenceOfType or SetOfType)
+        {
+            return "{}";
+        }
+
+        if (unwrapped is StringType)
+        {
+            return "{}";
+        }
+
+        return "{}";
+    }
+}

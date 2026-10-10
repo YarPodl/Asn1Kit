@@ -4,7 +4,7 @@
 
 **Windows и Linux — равноправные first-class платформы** (MSVC / Clang / GCC + Ninja).
 
-Codegen C++ (`Asn1Kit.Codegen.Cpp`) — backlog; см. [docs/status.md](../docs/status.md).
+Codegen C++ (`Asn1Kit.Codegen.Cpp`, `--lang cpp`) — MVP; golden и Person round-trip — см. [docs/status.md](../docs/status.md), [cpp-backend.md](../compiler/docs/playbooks/cpp-backend.md).
 
 ## Зависимости
 

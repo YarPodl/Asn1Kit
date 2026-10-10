@@ -37,6 +37,22 @@ public static class IrOptions
     public static string? CSharpPropertyName(JsonObject? options) =>
         GetCSharp(options, "propertyName");
 
+    public static string? CppNamespace(JsonObject? options) =>
+        GetCpp(options, "namespace");
+
+    public static string? CppTypeName(JsonObject? options) =>
+        GetCpp(options, "typeName");
+
+    /// <summary>
+    /// When set on a typedef, C++ codegen does not emit a type for it and resolves references
+    /// to the named ASN.1 typedef (same module / import resolution as <c>ref</c>).
+    /// </summary>
+    public static string? CppAliasOf(JsonObject? options) =>
+        GetCpp(options, "aliasOf");
+
+    public static string? CppFieldName(JsonObject? options) =>
+        GetCpp(options, "fieldName");
+
     public static string? IntegerRepresentation(JsonObject? options)
     {
         if (options?["integer"] is not JsonObject integer)
@@ -188,6 +204,9 @@ public static class IrOptions
     public static JsonObject SetCSharp(JsonObject? options, string key, string value) =>
         Set(options, "csharp." + key, JsonValue.Create(value)!);
 
+    public static JsonObject SetCpp(JsonObject? options, string key, string value) =>
+        Set(options, "cpp." + key, JsonValue.Create(value)!);
+
     public static JsonObject SetIntegerRepresentation(JsonObject? options, string value) =>
         Set(options, "integer.representation", JsonValue.Create(value)!);
 
@@ -296,5 +315,15 @@ public static class IrOptions
         }
 
         return csharp[key] is JsonValue value && value.TryGetValue<string>(out var text) ? text : null;
+    }
+
+    private static string? GetCpp(JsonObject? options, string key)
+    {
+        if (options?["cpp"] is not JsonObject cpp)
+        {
+            return null;
+        }
+
+        return cpp[key] is JsonValue value && value.TryGetValue<string>(out var text) ? text : null;
     }
 }

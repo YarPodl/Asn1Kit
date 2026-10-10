@@ -18,9 +18,10 @@
 | Расширение компилятора | [compiler/docs/playbooks/compiler-construct.md](../compiler/docs/playbooks/compiler-construct.md) |
 | Новое поле или `kind` в IR | [compiler/docs/playbooks/new-ir-kind.md](../compiler/docs/playbooks/new-ir-kind.md) |
 | Генерация C# | [compiler/docs/playbooks/csharp-backend.md](../compiler/docs/playbooks/csharp-backend.md) |
+| Генерация C++ | [compiler/docs/playbooks/cpp-backend.md](../compiler/docs/playbooks/cpp-backend.md) |
 | BER/DER | [runtime-csharp/docs/playbooks/runtime.md](../runtime-csharp/docs/playbooks/runtime.md) |
 | Публичный API runtime | [runtime-csharp/docs/runtime-api.md](../runtime-csharp/docs/runtime-api.md) |
-| C++ | [compiler/docs/playbooks/new-backend.md](../compiler/docs/playbooks/new-backend.md) |
+| Новый язык / каркас бэкенда | [compiler/docs/playbooks/new-backend.md](../compiler/docs/playbooks/new-backend.md) |
 | «Почему так сделано» | [docs/decisions.md](decisions.md) |
 
 Конкретный `.asn`-фрагмент, на котором воспроизводится проблема, стоит больше любого описания словами.

@@ -9,6 +9,9 @@
       "options": {
         "csharp": {
           "namespace": "Example.Asn1"
+        },
+        "cpp": {
+          "namespace": "example::asn1"
         }
       },
       "types": [
