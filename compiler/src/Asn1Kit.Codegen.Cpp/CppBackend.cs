@@ -25,6 +25,7 @@ public sealed partial class CppBackend : ILanguageBackend
         builder.AppendLine($"#ifndef {guard}");
         builder.AppendLine($"#define {guard}");
         builder.AppendLine();
+        builder.AppendLine("#include \"asn1kit/any.hpp\"");
         builder.AppendLine("#include \"asn1kit/bit_string.hpp\"");
         builder.AppendLine("#include \"asn1kit/bytes.hpp\"");
         builder.AppendLine("#include \"asn1kit/exception.hpp\"");

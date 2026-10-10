@@ -26,6 +26,8 @@
 
 namespace asn1kit {
 
+class any;
+
 /// Public BER/DER encode facade.
 class writer {
 public:
@@ -65,6 +67,10 @@ public:
     void write_time(const tag& t, const utc_date_time& value, time_form form, int fraction_digits = 3);
 
     void write_raw(std::span<const std::uint8_t> tlv);
+
+    void write_any(const any& value);
+    /// IMPLICIT outer tag: class/number from `t`, constructed flag from `value`.
+    void write_any(const tag& t, const any& value);
 
     [[nodiscard]] writer_scope enter_sequence(const tag& t);
     [[nodiscard]] writer_scope enter_set(const tag& t);

@@ -113,6 +113,21 @@ public sealed partial class CppBackend
             return;
         }
 
+        if (type is AnyType)
+        {
+            if (forceTag is not null || type.Tag is not null)
+            {
+                var anyTag = forceTag ?? TagExpr(document, module, type);
+                sb.AppendLine($"{indent}{writer}.write_any({anyTag}, {expr});");
+            }
+            else
+            {
+                sb.AppendLine($"{indent}{writer}.write_any({expr});");
+            }
+
+            return;
+        }
+
         var encodeTag = forceTag ?? TagExpr(document, module, type);
         if (IsEnumeratedRefOrType(document, module, type))
         {
@@ -222,7 +237,29 @@ public sealed partial class CppBackend
         var prop = FieldName(field);
         if (field.Optional || field.ExtensionAddition == true || field.Default is not null)
         {
-            if (TryGetUntaggedMultiAltChoice(document, module, field.Type, out _))
+            if (IsUntaggedAny(document, module, field.Type))
+            {
+                sb.AppendLine($"{indent}if (!{reader}.eof()) {{");
+                EmitDecodeAssign(
+                    sb,
+                    document,
+                    module,
+                    owner,
+                    field.Name,
+                    field.Type,
+                    indent + "    ",
+                    reader,
+                    $"{target}.{prop}");
+                sb.AppendLine($"{indent}}}");
+                if (field.Default is not null)
+                {
+                    sb.AppendLine($"{indent}else {{");
+                    sb.AppendLine(
+                        $"{indent}    {target}.{prop} = {DefaultExpression(document, module, owner, field)};");
+                    sb.AppendLine($"{indent}}}");
+                }
+            }
+            else if (TryGetUntaggedMultiAltChoice(document, module, field.Type, out _))
             {
                 sb.AppendLine($"{indent}{{");
                 sb.AppendLine($"{indent}    asn1kit::tag peeked_opt;");
@@ -342,6 +379,17 @@ public sealed partial class CppBackend
         return false;
     }
 
+    private bool IsUntaggedAny(IrDocument document, IrModule module, TypeExpr type)
+    {
+        if (type.Tag is not null)
+        {
+            return false;
+        }
+
+        var unwrapped = UnwrapAliases(document, module, type);
+        return unwrapped is AnyType { Tag: null };
+    }
+
     private void EmitDecodeAssign(
         StringBuilder sb,
         IrDocument document,
@@ -394,6 +442,21 @@ public sealed partial class CppBackend
                 reader,
                 target,
                 forceTag);
+            return;
+        }
+
+        if (type is AnyType)
+        {
+            if (forceTag is not null || type.Tag is not null)
+            {
+                var anyTag = forceTag ?? TagExpr(document, module, type);
+                sb.AppendLine($"{indent}{target} = {reader}.read_any({anyTag});");
+            }
+            else
+            {
+                sb.AppendLine($"{indent}{target} = {reader}.read_any();");
+            }
+
             return;
         }
 

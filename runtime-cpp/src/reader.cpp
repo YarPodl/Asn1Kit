@@ -3,6 +3,8 @@
 
 #include "asn1kit/reader.hpp"
 
+#include "asn1kit/any.hpp"
+
 #include "constructed_decoder.hpp"
 #include "text_codec.hpp"
 
@@ -174,6 +176,18 @@ std::string reader::read_string(const tag& expected, string_form form) {
 utc_date_time reader::read_time(const tag& expected, time_form form) {
     auto data = detail::constructed_decoder::read_octet_like(cursor_, expected);
     return detail::text_codec::parse_time(data.span(), form, encoding_rules());
+}
+
+any reader::read_any() {
+    auto tlv = cursor_.read_tlv();
+    return any::wrap(tlv.tag_value, std::move(tlv.encoded), std::move(tlv.contents));
+}
+
+any reader::read_any(const tag& expected) {
+    const std::size_t tlv_start = cursor_.absolute_offset();
+    auto tlv = cursor_.read_tlv();
+    ensure_expected_tag(tlv_start, tlv.tag_value, expected);
+    return any::wrap(tlv.tag_value, std::move(tlv.encoded), std::move(tlv.contents));
 }
 
 reader_scope reader::enter_sequence(const tag& expected) {

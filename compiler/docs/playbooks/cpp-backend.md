@@ -21,7 +21,8 @@
 - OPTIONAL → `std::optional<T>`; OF → `std::vector<T>`; CHOICE → `enum class …_kind` + `std::variant`.
 - `string` / `time` / `null` — явные `read_string` / `write_string` / `read_time` / `write_time` / `write_null` / `null_value::decode` (не type-driven примитивы).
 - Опции: `options.cpp.namespace`, `typeName`, `fieldName`, `aliasOf`; общие `generate`, `integer.representation`.
-- Пока отклоняются: `any`, `containing`, `extensible`, `lazy`, `retainEncoded`.
+- `any` → `asn1kit::any` (`read_any` / `write_any`; untagged OPTIONAL — через `eof()`). Open-type Binding-каталоги — нет.
+- Пока отклоняются: `containing`, `extensible`, `lazy`, `retainEncoded`.
 
 ## CLI и golden
 

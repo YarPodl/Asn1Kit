@@ -2,6 +2,7 @@
 #ifndef ASN1KIT_GENERATED_EXAMPLEMODULE_HPP
 #define ASN1KIT_GENERATED_EXAMPLEMODULE_HPP
 
+#include "asn1kit/any.hpp"
 #include "asn1kit/bit_string.hpp"
 #include "asn1kit/bytes.hpp"
 #include "asn1kit/exception.hpp"

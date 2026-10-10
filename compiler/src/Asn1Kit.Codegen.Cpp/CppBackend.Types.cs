@@ -31,7 +31,7 @@ public sealed partial class CppBackend
         switch (type)
         {
             case AnyType:
-                throw new NotSupportedException("any");
+                break;
             case OctetStringType { Containing: not null }:
             case BitStringType { Containing: not null }:
                 throw new NotSupportedException("containing");
@@ -150,6 +150,7 @@ public sealed partial class CppBackend
                 TypeKinds.BitString => "asn1kit::bit_string",
                 TypeKinds.String => "std::string",
                 TypeKinds.Time => "asn1kit::utc_date_time",
+                TypeKinds.Any => "asn1kit::any",
                 _ => throw new NotSupportedException(primitive)
             };
             return optional ? $"std::optional<{mapped}>" : mapped;

@@ -3,6 +3,7 @@
 
 #include "asn1kit/writer.hpp"
 
+#include "asn1kit/any.hpp"
 #include "text_codec.hpp"
 
 #include <exception>
@@ -178,6 +179,15 @@ void writer::write_time(const tag& t, const utc_date_time& value, time_form form
 
 void writer::write_raw(std::span<const std::uint8_t> tlv) {
     buffer_.write_raw(tlv);
+}
+
+void writer::write_any(const any& value) {
+    write_raw(value.span());
+}
+
+void writer::write_any(const tag& t, const any& value) {
+    const tag wire_tag(t.tag_class_value(), t.number(), value.tag_value().constructed());
+    buffer_.write_tlv(wire_tag, value.contents().span());
 }
 
 writer_scope writer::enter_sequence(const tag& t) {

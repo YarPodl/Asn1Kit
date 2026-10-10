@@ -31,6 +31,7 @@ add_library(asn1kit STATIC
     src/null.cpp
     src/boolean.cpp
     src/utc_date_time.cpp
+    src/any.cpp
 )
 add_library(asn1kit::asn1kit ALIAS asn1kit)
 

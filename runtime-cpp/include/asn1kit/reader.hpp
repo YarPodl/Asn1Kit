@@ -28,6 +28,8 @@
 
 namespace asn1kit {
 
+class any;
+
 /// BER/DER decode facade.
 class reader {
 public:
@@ -89,6 +91,9 @@ public:
 
     [[nodiscard]] std::string read_string(const tag& expected, string_form form);
     [[nodiscard]] utc_date_time read_time(const tag& expected, time_form form);
+
+    [[nodiscard]] any read_any();
+    [[nodiscard]] any read_any(const tag& expected);
 
     [[nodiscard]] reader_scope enter_sequence(const tag& expected);
     [[nodiscard]] reader_scope enter_set(const tag& expected);

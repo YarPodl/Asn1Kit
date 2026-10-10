@@ -23,16 +23,52 @@ public sealed class CppCodegenTests
     }
 
     [Fact]
-    public void BackendRejectsAnyKind()
+    public void GeneratesBareAnyFields()
     {
         const string asn = @"
 AnyModule DEFINITIONS ::= BEGIN
 Payload ::= ANY
+Box ::= SEQUENCE {
+  required ANY,
+  optional ANY OPTIONAL,
+  tagged [0] ANY
+}
 END
 ";
         var document = new Asn1Compiler().CompileText(asn);
-        var ex = Assert.Throws<NotSupportedException>(() => new CppBackend().Generate(document));
-        Assert.Equal("any", ex.Message);
+        var source = new CppBackend().Generate(document).Single().Contents;
+
+        Assert.Contains("#include \"asn1kit/any.hpp\"", source);
+        Assert.Contains("asn1kit::any required{}", source);
+        Assert.Contains("std::optional<asn1kit::any> optional{}", source);
+        Assert.Contains("asn1kit::any tagged{}", source);
+        Assert.Contains("value.required = inner.read_any();", source);
+        Assert.Contains("if (!inner.eof())", source);
+        Assert.Contains("inner.with_explicit(asn1kit::tag::context(0, true)", source);
+        Assert.Contains("scoped.read_any();", source);
+        Assert.Contains("w.write_any(this->required);", source);
+        Assert.Contains("w.enter_explicit(asn1kit::tag::context(0, true))", source);
+        Assert.Contains("w.write_any(this->tagged);", source);
+        Assert.DoesNotContain("struct Payload", source);
+    }
+
+    [Fact]
+    public void GeneratesTaggedAnyWithAutomaticTags()
+    {
+        const string asn = @"
+AutoAny DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+Box ::= SEQUENCE {
+  a INTEGER,
+  payload ANY
+}
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        var source = new CppBackend().Generate(document).Single().Contents;
+
+        Assert.Contains("asn1kit::any payload{}", source);
+        Assert.Contains("inner.read_any(asn1kit::tag::context(1))", source);
+        Assert.Contains("w.write_any(asn1kit::tag::context(1), this->payload);", source);
     }
 
     [Fact]
