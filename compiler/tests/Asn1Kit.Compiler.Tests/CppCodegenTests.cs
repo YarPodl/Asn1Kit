@@ -115,6 +115,40 @@ END
     }
 
     [Fact]
+    public void GeneratesDirectOpenTypeBindings()
+    {
+        const string asn = @"
+M DEFINITIONS ::= BEGIN
+  C ::= CLASS { &id OBJECT IDENTIFIER UNIQUE, &T } WITH SYNTAX { &T IDENTIFIED BY &id }
+  NoData ::= NULL
+  emptyEntry C ::= { NoData IDENTIFIED BY {1 2 3} }
+  dataEntry C ::= { INTEGER (0..100) IDENTIFIED BY {1 2 4} }
+  Mixed C ::= {emptyEntry | dataEntry} Empty C ::= {emptyEntry}
+  AlgorithmIdentifier{C:S} ::= SEQUENCE {
+    algorithm C.&id({S}), parameters C.&T({S}{@algorithm}) OPTIONAL }
+  Holder ::= SEQUENCE { mixed AlgorithmIdentifier{Mixed}, empty AlgorithmIdentifier{Empty} }
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        var source = new CppBackend().Generate(document).Single().Contents;
+
+        Assert.Contains("#include \"asn1kit/codec.hpp\"", source);
+        Assert.Contains("struct AlgorithmIdentifier", source);
+        Assert.Contains("struct parameters_binding", source);
+        Assert.Contains("asn1kit::oid key{}", source);
+        Assert.DoesNotContain("open_codec", source);
+        Assert.DoesNotContain("asn1kit::codecs::", source);
+        Assert.Contains("bool try_decode(const AlgorithmIdentifier& src, T& out) const", source);
+        Assert.Contains("out = asn1kit::decode_open<T>(", source);
+        Assert.Contains("src.parameters = asn1kit::encode_open(value);", source);
+        Assert.Contains("AlgorithmIdentifier create(const T& value) const", source);
+        Assert.Contains("namespace mixed_parameters_bindings", source);
+        Assert.Contains("empty_entry{", source);
+        Assert.Contains("data_entry{", source);
+        Assert.DoesNotContain("std::function", source);
+    }
+
+    [Fact]
     public void BackendRejectsLazyOption()
     {
         var document = TestData.LoadIr("compiler/fixtures/ir/example.json");

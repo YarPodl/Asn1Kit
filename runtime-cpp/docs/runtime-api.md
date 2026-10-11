@@ -37,9 +37,10 @@
 | Value types | `integer`, `bit_string`, `oid`, `null_value`, `utc_date_time`, `any`, `contained<T>` |
 | ANY | `any` — полный TLV (`tag` + `encoded` + `contents`); `read_any` / `write_any` (+ IMPLICIT retag); `from_tag_and_contents` / `from_value` / `decode_value` |
 | Contained | `contained<T>` — OCTET/BIT STRING CONTAINING; `read_contained` / `write_contained` (typed primitive frame / opaque octets; known BIT STRING octet-aligned) |
+| Open type | `encode_open` / `decode_open` — wire из `T` (`open_typed`); `asn_string<form>` / `asn_time<form>` для неоднозначных string/time; адаптеры `decode_contained` / `encode_contained` / `decode_each` / `encode_each` |
 | Time | `utc_date_time` (календарные поля UTC + `time_fraction` до 7 десятичных цифр) |
 
-Вне текущего среза: Lazy / Value / Codec, open-type Binding, modern IOC, oracle, `external/` фикстуры. Codegen C++ — [cpp-backend.md](../../compiler/docs/playbooks/cpp-backend.md).
+Вне текущего среза: Lazy / Value, полный open-type Binding (codegen: contained/SET OF/ancestor), modern IOC, oracle, `external/` фикстуры. Codegen C++ — [cpp-backend.md](../../compiler/docs/playbooks/cpp-backend.md).
 
 ## Constructed scopes
 

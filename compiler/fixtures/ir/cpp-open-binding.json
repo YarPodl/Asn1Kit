@@ -1,0 +1,107 @@
+{
+  "irVersion": 1,
+  "sourceFiles": [
+    "cpp-open-binding.asn"
+  ],
+  "modules": [
+    {
+      "name": "M",
+      "tagDefault": "explicit",
+      "imports": [],
+      "options": {
+        "csharp": {
+          "namespace": "M"
+        }
+      },
+      "types": [
+        {
+          "name": "NoData",
+          "type": {
+            "kind": "null"
+          }
+        },
+        {
+          "name": "AlgorithmIdentifier",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "algorithm",
+                "type": {
+                  "kind": "oid",
+                  "constraint": {
+                    "unsupported": " table({ S })"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "parameters",
+                "type": {
+                  "kind": "any",
+                  "bindings": [
+                    {
+                      "key": "1.2.3",
+                      "name": "emptyEntry",
+                      "type": {
+                        "kind": "ref",
+                        "name": "NoData",
+                        "module": "M"
+                      }
+                    },
+                    {
+                      "key": "1.2.4",
+                      "name": "dataEntry",
+                      "type": {
+                        "kind": "integer",
+                        "constraint": {
+                          "value": {
+                            "min": 0,
+                            "max": 100
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "selector": {
+                    "levels": 0,
+                    "path": [
+                      "algorithm"
+                    ]
+                  },
+                  "table": "Mixed",
+                  "tableExtensible": false
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          },
+          "specialization": {
+            "module": "M",
+            "name": "AlgorithmIdentifier"
+          }
+        },
+        {
+          "name": "Holder",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "mixed",
+                "type": {
+                  "kind": "ref",
+                  "name": "AlgorithmIdentifier",
+                  "module": "M"
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        }
+      ],
+      "values": []
+    }
+  ]
+}

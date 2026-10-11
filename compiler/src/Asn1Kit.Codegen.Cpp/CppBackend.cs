@@ -10,6 +10,7 @@ public sealed partial class CppBackend : ILanguageBackend
 
     public IReadOnlyList<GeneratedFile> Generate(IrDocument document)
     {
+        OpenTypeBindings.NormalizeLegacy(document);
         return document.Modules
             .Where(module => module.Types.Any(static type => IrOptions.ShouldGenerate(type.Options)))
             .Select(module => GenerateModule(document, module))
@@ -18,6 +19,7 @@ public sealed partial class CppBackend : ILanguageBackend
 
     private GeneratedFile GenerateModule(IrDocument document, IrModule module)
     {
+        ResetOpenTypeState();
         var ns = ModuleNamespace(module);
         var builder = new StringBuilder();
         var guard = CppNames.IncludeGuard(module.Name);
@@ -28,6 +30,7 @@ public sealed partial class CppBackend : ILanguageBackend
         builder.AppendLine("#include \"asn1kit/any.hpp\"");
         builder.AppendLine("#include \"asn1kit/bit_string.hpp\"");
         builder.AppendLine("#include \"asn1kit/bytes.hpp\"");
+        builder.AppendLine("#include \"asn1kit/codec.hpp\"");
         builder.AppendLine("#include \"asn1kit/contained.hpp\"");
         builder.AppendLine("#include \"asn1kit/exception.hpp\"");
         builder.AppendLine("#include \"asn1kit/integer.hpp\"");
@@ -88,6 +91,20 @@ public sealed partial class CppBackend : ILanguageBackend
             nested.Add((name, type));
         }
 
+        var openPlan = PlanDirectOpenTypes(document, module, nested, emitted);
+        CollectOpenTypeNested(document, module, openPlan, queue);
+        while (queue.Count > 0)
+        {
+            var (name, type) = queue.Dequeue();
+            if (!emitted.Add(name))
+            {
+                continue;
+            }
+
+            CollectNested(document, module, name, type, queue);
+            nested.Add((name, type));
+        }
+
         var oidValues = CollectOidValues(module);
         if (oidValues.Count > 0)
         {
@@ -107,6 +124,8 @@ public sealed partial class CppBackend : ILanguageBackend
             EmitType(builder, document, module, name, type);
             builder.AppendLine();
         }
+
+        EmitOpenTypes(builder, document, module, openPlan);
 
         builder.Append(CppNames.NamespaceClose(ns));
         builder.AppendLine($"#endif // {guard}");

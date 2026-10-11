@@ -16,7 +16,7 @@
 | `oid` | да (dotted; base-128 в т.ч. `2.999…`) | `Asn1Oid` — единственный codec (string↔arcs↔contents); dotted `string` — warm (`Encode`/`DecodeString`) | `asn1kit::oid` + каталог `…Oids` | `Primitive*`, `RuntimeTests`, `CppCodegenTests` |
 | `string` (12 форм) | да | `string` + `Asn1StringForm` | `std::string` + `string_form` | `Primitive*` (все 12), `RuntimeTests`, `RoundTripTests` |
 | `time` (`utc` / `generalized`) | да; `fractionDigits` 0…7 | `DateTimeOffset` + `Asn1TimeForm` | `asn1kit::utc_date_time` + `time_form` | `Primitive*`, `RuntimeTests`, `RoundTripTests` |
-| `any` | `definedBy` / overlay / IOC → `selector` + `ref.openTypes` (или definition-scoped bindings) | `Asn1Any` + `Binding<T>` / каталоги; unknown→raw, known mismatch→reject | `asn1kit::any` (raw TLV; Binding/open-type — нет) | `ModernAsn1Tests`, `ModernRfcTests`, `OpenTypeBindingsTests`, `OpenTypeWrapperTests`, `CppCodegenTests`, `any_tests` |
+| `any` | `definedBy` / overlay / IOC → `selector` + `ref.openTypes` (или definition-scoped bindings) | `Asn1Any` + `Binding<T>` / каталоги; unknown→raw, known mismatch→reject | `asn1kit::any` + Binding MVP (direct-`any`, local selector: key-only `*_binding<T>`, wire из `T` / `asn_string`); contained/SET OF/ancestor — нет | `ModernAsn1Tests`, `ModernRfcTests`, `OpenTypeBindingsTests`, `OpenTypeWrapperTests`, `CppCodegenTests`, `any_tests`, `codec_tests`, `open_binding_tests` |
 | `sequence` | да, `extensible` | класс или `struct` (`options.csharp.valueType`); `lazy` → `Asn1Lazy<T>`; `retainEncoded` → `Asn1Value<T>` с исходным TLV | `struct` + scopes; extensible/lazy/retainEncoded — нет | `RoundTripTests`, `Pkix*`, `Asn1Kit.Pkix.Tests`, `CppCodegenTests`, `generated_person_tests` |
 | `set` | да | класс/`struct`; DER-порядок по тегу; `lazy` / `retainEncoded` | `struct`; encode по тегу; extensible — нет | `RoundTripTests`, `ParserTests`, `RuntimeTests`, `CppCodegenTests` |
 | `choice` | да | `…Kind` + `From…`; однотипные → `Kind`+`Value`; один вариант → алиас | `…_kind` + `std::variant`; один вариант → алиас | `ParserTests`, `Pkix*`, `RoundTripTests`, `CppCodegenTests` |
@@ -52,9 +52,9 @@
 
 Инвентарь `Write*` / `Read*`, ownership и `ToString` — [runtime-api.md](../runtime-csharp/docs/runtime-api.md). Warm top-level decode: `Asn1Utils.Decode` / `DecodeRetained`. Hex-матрица — [ber-der/](../runtime-csharp/fixtures/ber-der/); oracle BCL — `PrimitiveOracleTests`.
 
-**C++ runtime** ([runtime-cpp/](../runtime-cpp/)): примитивы BER/DER **да** (boolean/null/integer/enumerated/octet/oid/bitstring/string/time/`any`/`contained` + soft-profile + `asn1kit::bytes`); публичные SEQUENCE/SET/OF/EXPLICIT `enter_*` / `with_*` **да**; те же layer-1 фикстуры.
+**C++ runtime** ([runtime-cpp/](../runtime-cpp/)): примитивы BER/DER **да** (boolean/null/integer/enumerated/octet/oid/bitstring/string/time/`any`/`contained`/`encode_open`/`asn_string` + soft-profile + `asn1kit::bytes`); публичные SEQUENCE/SET/OF/EXPLICIT `enter_*` / `with_*` **да**; те же layer-1 фикстуры.
 
-**C++ codegen** ([Asn1Kit.Codegen.Cpp](../compiler/src/Asn1Kit.Codegen.Cpp/)): MVP **да** (`--lang cpp`, golden `compiler/fixtures/codegen-cpp/`, native Person round-trip). Bare `any` → `asn1kit::any`; `CONTAINING` → `asn1kit::contained<T>`. Пока нет: open-type Binding, `extensible`, `lazy`, `retainEncoded`, PKIX/Modern C++ golden.
+**C++ codegen** ([Asn1Kit.Codegen.Cpp](../compiler/src/Asn1Kit.Codegen.Cpp/)): MVP **да** (`--lang cpp`, golden `compiler/fixtures/codegen-cpp/`, native Person + open-binding round-trip). Bare `any` → `asn1kit::any`; `CONTAINING` → `asn1kit::contained<T>`; open-type Binding MVP (direct-`any`, local selector). Пока нет: contained/SET OF/ancestor Binding, `extensible`, `lazy`, `retainEncoded`, PKIX/Modern C++ golden.
 
 **Запись** — канонический DER. **Чтение** — soft-profile ([decisions.md](decisions.md); полный инвентарь — [runtime-api.md](../runtime-csharp/docs/runtime-api.md)):
 
@@ -83,5 +83,5 @@
 
 ### Крупные
 
-1. C++ codegen: паритет с C# — open-type Binding, extensible SEQUENCE/SET, `lazy` / `retainEncoded`, PKIX/Modern golden (нужен runtime Lazy + Binding) — [cpp-backend.md](../compiler/docs/playbooks/cpp-backend.md)
+1. C++ codegen: паритет с C# — Binding (contained/SET OF/ancestor), extensible SEQUENCE/SET, `lazy` / `retainEncoded`, PKIX/Modern golden — [cpp-backend.md](../compiler/docs/playbooks/cpp-backend.md)
 2. Инструменты PKI поверх сгенерированного

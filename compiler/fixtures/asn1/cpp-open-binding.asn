@@ -1,0 +1,10 @@
+M DEFINITIONS ::= BEGIN
+  C ::= CLASS { &id OBJECT IDENTIFIER UNIQUE, &T } WITH SYNTAX { &T IDENTIFIED BY &id }
+  NoData ::= NULL
+  emptyEntry C ::= { NoData IDENTIFIED BY {1 2 3} }
+  dataEntry C ::= { INTEGER (0..100) IDENTIFIED BY {1 2 4} }
+  Mixed C ::= {emptyEntry | dataEntry}
+  AlgorithmIdentifier{C:S} ::= SEQUENCE {
+    algorithm C.&id({S}), parameters C.&T({S}{@algorithm}) OPTIONAL }
+  Holder ::= SEQUENCE { mixed AlgorithmIdentifier{Mixed} }
+END
