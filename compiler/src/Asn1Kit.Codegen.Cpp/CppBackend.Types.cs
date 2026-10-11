@@ -125,17 +125,13 @@ public sealed partial class CppBackend
     private static void RejectUnsupportedOptions(TypeExpr type) =>
         RejectUnsupportedOptions(type.Options, type);
 
-    private static void RejectUnsupportedOptions(System.Text.Json.Nodes.JsonObject? options, TypeExpr type)
+    private static void RejectUnsupportedOptions(
+        System.Text.Json.Nodes.JsonObject? options,
+        TypeExpr type)
     {
-        if (IrOptions.IsLazy(options) || IrOptions.IsLazy(type.Options))
-        {
-            throw new NotSupportedException("lazy");
-        }
-
-        if (IrOptions.IsRetainEncoded(options) || IrOptions.IsRetainEncoded(type.Options))
-        {
-            throw new NotSupportedException("retainEncoded");
-        }
+        _ = options;
+        _ = type;
+        // lazy / retainEncoded are handled by deferred wrappers when eligible; ignored otherwise.
     }
 
     private string CppType(
@@ -144,7 +140,32 @@ public sealed partial class CppBackend
         string owner,
         string hint,
         TypeExpr type,
-        bool optional)
+        bool optional,
+        System.Text.Json.Nodes.JsonObject? fieldOptions = null,
+        bool allowDeferredWrapper = true)
+    {
+        var core = CppTypeCore(document, module, owner, hint, type);
+        if (allowDeferredWrapper)
+        {
+            if (ShouldEmitLazy(document, module, type, fieldOptions))
+            {
+                core = $"asn1kit::lazy<{core}>";
+            }
+            else if (ShouldEmitRetainEncoded(document, module, type, fieldOptions))
+            {
+                core = $"asn1kit::value<{core}>";
+            }
+        }
+
+        return optional ? $"std::optional<{core}>" : core;
+    }
+
+    private string CppTypeCore(
+        IrDocument document,
+        IrModule module,
+        string owner,
+        string hint,
+        TypeExpr type)
     {
         var integerRepresentation = TryResolveIntegerRepresentation(document, module, type);
         var original = type;
@@ -162,9 +183,8 @@ public sealed partial class CppBackend
                 out var contentModule,
                 out var contentOwner,
                 out var contentHint);
-            var contained =
+            return
                 $"asn1kit::contained<{CppType(document, contentModule, contentOwner, contentHint, content, optional: false)}>";
-            return optional ? $"std::optional<{contained}>" : contained;
         }
 
         if (type is SequenceOfType or SetOfType)
@@ -179,14 +199,13 @@ public sealed partial class CppBackend
                 out var itemHint);
             var element = type is SetOfType setOf ? setOf.Element : ((SequenceOfType)type).Element;
             var itemType = CppType(document, resolvedModule, itemOwner, itemHint, element, optional: false);
-            var vector = $"std::vector<{itemType}>";
-            return optional ? $"std::optional<{vector}>" : vector;
+            return $"std::vector<{itemType}>";
         }
 
         var primitive = ResolvePrimitive(type);
         if (primitive is not null)
         {
-            var mapped = primitive switch
+            return primitive switch
             {
                 TypeKinds.Boolean => "bool",
                 TypeKinds.Integer => MapIntegerCppType(
@@ -200,17 +219,14 @@ public sealed partial class CppBackend
                 TypeKinds.Any => "asn1kit::any",
                 _ => throw new NotSupportedException(primitive)
             };
-            return optional ? $"std::optional<{mapped}>" : mapped;
         }
 
         if (IsEnumeratedRefOrType(document, resolvedModule, type))
         {
-            var name = NamedTypeName(document, resolvedModule, owner, hint, type);
-            return optional ? $"std::optional<{name}>" : name;
+            return NamedTypeName(document, resolvedModule, owner, hint, type);
         }
 
-        var named = NamedTypeName(document, resolvedModule, owner, hint, type);
-        return optional ? $"std::optional<{named}>" : named;
+        return NamedTypeName(document, resolvedModule, owner, hint, type);
     }
 
     private static string MapIntegerCppType(string representation) => representation switch

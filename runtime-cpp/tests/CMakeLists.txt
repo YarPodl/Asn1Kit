@@ -14,6 +14,8 @@ add_executable(asn1kit_tests
     contained_tests.cpp
     codec_tests.cpp
     open_binding_tests.cpp
+    value_lazy_tests.cpp
+    generated_deferred_tests.cpp
 )
 
 target_link_libraries(asn1kit_tests
@@ -29,6 +31,7 @@ target_include_directories(asn1kit_tests
         "${CMAKE_CURRENT_SOURCE_DIR}/../generated/example"
         "${CMAKE_CURRENT_SOURCE_DIR}/../generated/open-binding"
         "${CMAKE_CURRENT_SOURCE_DIR}/../generated/extensible"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../generated/deferred"
 )
 
 # Prefer forward slashes so the string macro is portable on Windows and Linux.

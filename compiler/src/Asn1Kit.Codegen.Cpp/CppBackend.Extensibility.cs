@@ -116,7 +116,8 @@ public sealed partial class CppBackend
                 field.Type,
                 indent + "        ",
                 "inner",
-                "value." + FieldName(field));
+                "value." + FieldName(field),
+                fieldOptions: field.Options);
             sb.AppendLine(
                 $"{indent}        next_extension = {(i + 1).ToString(System.Globalization.CultureInfo.InvariantCulture)};");
             sb.AppendLine($"{indent}    }}");

@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using System.Text.Json.Nodes;
 using Asn1Kit.Ir;
 
 namespace Asn1Kit.Codegen.Cpp;
@@ -13,8 +14,10 @@ public sealed partial class CppBackend
         string owner,
         IrComponent field,
         string indent,
-        string writer)
+        string writer,
+        JsonObject? fieldOptions = null)
     {
+        fieldOptions ??= field.Options;
         var expr = "this->" + FieldName(field);
         if (field.Default is not null)
         {
@@ -28,7 +31,8 @@ public sealed partial class CppBackend
                 field.Type,
                 indent + "    ",
                 writer,
-                expr);
+                expr,
+                fieldOptions: fieldOptions);
             sb.AppendLine($"{indent}}}");
         }
         else if (field.Optional || field.ExtensionAddition == true)
@@ -43,7 +47,8 @@ public sealed partial class CppBackend
                 field.Type,
                 indent + "    ",
                 writer,
-                "(*" + expr + ")");
+                "(*" + expr + ")",
+                fieldOptions: fieldOptions);
             sb.AppendLine($"{indent}}}");
         }
         else
@@ -57,7 +62,8 @@ public sealed partial class CppBackend
                 field.Type,
                 indent,
                 writer,
-                expr);
+                expr,
+                fieldOptions: fieldOptions);
         }
     }
 
@@ -71,8 +77,50 @@ public sealed partial class CppBackend
         string indent,
         string writer,
         string expr,
-        string? forceTag = null)
+        string? forceTag = null,
+        JsonObject? fieldOptions = null,
+        bool encodeDeferredWrapper = true)
     {
+        if (encodeDeferredWrapper && ShouldEmitLazy(document, module, type, fieldOptions))
+        {
+            sb.AppendLine($"{indent}if ({expr}.has_encoded()) {{");
+            sb.AppendLine($"{indent}    {writer}.write_raw({expr}.encoded().span());");
+            sb.AppendLine($"{indent}}} else {{");
+            EmitEncodeValue(
+                sb,
+                document,
+                module,
+                owner,
+                hint,
+                type,
+                indent + "    ",
+                writer,
+                expr + ".get()",
+                forceTag,
+                fieldOptions: null,
+                encodeDeferredWrapper: false);
+            sb.AppendLine($"{indent}}}");
+            return;
+        }
+
+        if (encodeDeferredWrapper && ShouldEmitRetainEncoded(document, module, type, fieldOptions))
+        {
+            EmitEncodeValue(
+                sb,
+                document,
+                module,
+                owner,
+                hint,
+                type,
+                indent,
+                writer,
+                expr + ".get()",
+                forceTag,
+                fieldOptions: null,
+                encodeDeferredWrapper: false);
+            return;
+        }
+
         var original = type;
         var resolvedModule = module;
         type = UnwrapAliases(document, ref resolvedModule, type);
@@ -278,7 +326,8 @@ public sealed partial class CppBackend
                     field.Type,
                     indent + "    ",
                     reader,
-                    $"{target}.{prop}");
+                    $"{target}.{prop}",
+                    fieldOptions: field.Options);
                 sb.AppendLine($"{indent}}}");
                 if (field.Default is not null)
                 {
@@ -303,7 +352,8 @@ public sealed partial class CppBackend
                     field.Type,
                     indent + "        ",
                     reader,
-                    $"{target}.{prop}");
+                    $"{target}.{prop}",
+                    fieldOptions: field.Options);
                 sb.AppendLine($"{indent}    }}");
                 if (field.Default is not null)
                 {
@@ -327,7 +377,8 @@ public sealed partial class CppBackend
                     field.Type,
                     indent + "    ",
                     reader,
-                    $"{target}.{prop}");
+                    $"{target}.{prop}",
+                    fieldOptions: field.Options);
                 sb.AppendLine($"{indent}}}");
                 if (field.Default is not null)
                 {
@@ -349,7 +400,8 @@ public sealed partial class CppBackend
                 field.Type,
                 indent,
                 reader,
-                $"{target}.{prop}");
+                $"{target}.{prop}",
+                fieldOptions: field.Options);
         }
     }
 
@@ -429,8 +481,40 @@ public sealed partial class CppBackend
         string indent,
         string reader,
         string target,
-        string? forceTag = null)
+        string? forceTag = null,
+        JsonObject? fieldOptions = null,
+        bool allowDeferredWrapper = true)
     {
+        if (allowDeferredWrapper &&
+            (ShouldEmitLazy(document, module, type, fieldOptions) ||
+             ShouldEmitRetainEncoded(document, module, type, fieldOptions)))
+        {
+            var method = ShouldEmitLazy(document, module, type, fieldOptions)
+                ? "read_lazy"
+                : "read_with_original_encoding";
+            var coreType = CppType(
+                document, module, owner, hint, type, optional: false, fieldOptions, allowDeferredWrapper: false);
+            sb.AppendLine(
+                $"{indent}{target} = {reader}.{method}<{coreType}>([&](asn1kit::reader& deferred) {{");
+            sb.AppendLine($"{indent}    {coreType} item{{}};");
+            EmitDecodeAssign(
+                sb,
+                document,
+                module,
+                owner,
+                hint,
+                type,
+                indent + "    ",
+                "deferred",
+                "item",
+                forceTag,
+                fieldOptions: null,
+                allowDeferredWrapper: false);
+            sb.AppendLine($"{indent}    return item;");
+            sb.AppendLine($"{indent}}});");
+            return;
+        }
+
         var original = type;
         var resolvedModule = module;
         type = UnwrapAliases(document, ref resolvedModule, type);

@@ -1,0 +1,7 @@
+Deferred DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+Inner ::= SEQUENCE { n INTEGER }
+Box ::= SEQUENCE {
+  retained Inner,
+  deferred Inner
+}
+END

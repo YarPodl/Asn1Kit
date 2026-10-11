@@ -34,11 +34,13 @@ public sealed partial class CppBackend : ILanguageBackend
         builder.AppendLine("#include \"asn1kit/contained.hpp\"");
         builder.AppendLine("#include \"asn1kit/exception.hpp\"");
         builder.AppendLine("#include \"asn1kit/integer.hpp\"");
+        builder.AppendLine("#include \"asn1kit/lazy.hpp\"");
         builder.AppendLine("#include \"asn1kit/null.hpp\"");
         builder.AppendLine("#include \"asn1kit/oid.hpp\"");
         builder.AppendLine("#include \"asn1kit/reader.hpp\"");
         builder.AppendLine("#include \"asn1kit/tag.hpp\"");
         builder.AppendLine("#include \"asn1kit/utc_date_time.hpp\"");
+        builder.AppendLine("#include \"asn1kit/value.hpp\"");
         builder.AppendLine("#include \"asn1kit/writer.hpp\"");
         builder.AppendLine();
         builder.AppendLine("#include <cstdint>");

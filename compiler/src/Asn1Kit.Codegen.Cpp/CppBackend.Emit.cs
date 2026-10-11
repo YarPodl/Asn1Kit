@@ -46,7 +46,8 @@ public sealed partial class CppBackend
         foreach (var field in components)
         {
             var optional = (field.Optional || field.ExtensionAddition == true) && field.Default is null;
-            var fieldType = CppType(document, module, typeName, field.Name, field.Type, optional);
+            var fieldType = CppType(
+                document, module, typeName, field.Name, field.Type, optional, field.Options);
             var name = FieldName(field);
             var init = FieldInitializer(document, module, typeName, field, optional);
             sb.AppendLine($"    {fieldType} {name}{init};");
@@ -100,7 +101,7 @@ public sealed partial class CppBackend
             : components;
         foreach (var field in encodeFields)
         {
-            EmitEncodeField(sb, document, module, typeName, field, "        ", "w");
+            EmitEncodeField(sb, document, module, typeName, field, "        ", "w", field.Options);
         }
 
         sb.AppendLine("    }");
@@ -159,7 +160,8 @@ public sealed partial class CppBackend
                 field.Type,
                 "                    ",
                 "inner",
-                $"value.{prop}");
+                $"value.{prop}",
+                fieldOptions: field.Options);
         }
 
         if (extensible)

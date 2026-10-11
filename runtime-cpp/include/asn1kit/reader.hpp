@@ -12,11 +12,13 @@
 #include "asn1kit/encoding.hpp"
 #include "asn1kit/exception.hpp"
 #include "asn1kit/integer.hpp"
+#include "asn1kit/lazy.hpp"
 #include "asn1kit/oid.hpp"
 #include "asn1kit/reader_options.hpp"
 #include "asn1kit/reader_scope.hpp"
 #include "asn1kit/tag.hpp"
 #include "asn1kit/utc_date_time.hpp"
+#include "asn1kit/value.hpp"
 
 #include <concepts>
 #include <cstddef>
@@ -96,6 +98,28 @@ public:
 
     [[nodiscard]] any read_any();
     [[nodiscard]] any read_any(const tag& expected);
+
+    /// Consumes a TLV, eagerly decodes it, and retains its original complete encoding.
+    template <typename T, std::invocable<reader&> F>
+    [[nodiscard]] value<T> read_with_original_encoding(F&& decode) {
+        auto tlv = cursor_.read_tlv();
+        T decoded{};
+        with_encoded(tlv.encoded, [&](reader& r) {
+            decoded = std::invoke(std::forward<F>(decode), r);
+        });
+        return value<T>::decoded(std::move(decoded), std::move(tlv.encoded));
+    }
+
+    /// Consumes a TLV without decoding content until `lazy::get()`.
+    template <typename T, std::invocable<reader&> F>
+    [[nodiscard]] lazy<T> read_lazy(F&& decode) {
+        auto tlv = cursor_.read_tlv();
+        return lazy<T>::from_encoded(
+            std::move(tlv.encoded),
+            encoding_rules(),
+            options(),
+            std::function<T(reader&)>(std::forward<F>(decode)));
+    }
 
     /// Reads contained OCTET STRING or BIT STRING content, decoding known structures in-place.
     template <typename T, typename State, std::invocable<reader&, State> F>
@@ -303,5 +327,33 @@ private:
 
 [[nodiscard]] tag default_string_tag(string_form form);
 [[nodiscard]] tag default_time_tag(time_form form);
+
+template <typename T>
+void lazy<T>::materialize() const {
+    if (cached_.has_value()) {
+        return;
+    }
+    if (!decode_) {
+        throw std::invalid_argument("Lazy value has no decoder.");
+    }
+    reader r(encoded_, encoding_, options_);
+    auto decoded = decode_(r);
+    r.throw_if_not_empty();
+    cached_ = std::move(decoded);
+}
+
+} // namespace asn1kit
+
+#include "asn1kit/writer.hpp"
+
+namespace asn1kit {
+
+template <typename T>
+void lazy<T>::write_to(writer& w) const {
+    if (!has_encoded_) {
+        throw std::invalid_argument("Lazy value has no encoded TLV; encode get() explicitly.");
+    }
+    w.write_raw(encoded_.span());
+}
 
 } // namespace asn1kit

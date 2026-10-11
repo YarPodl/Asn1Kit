@@ -39,4 +39,16 @@ $extRuntime = "runtime-cpp/generated/extensible"
 New-Item -ItemType Directory -Force -Path $extRuntime | Out-Null
 Copy-Item -Force "$extOut/ExtModule.hpp" "$extRuntime/ExtModule.hpp"
 
-Write-Host "Updated $out, $runtimeOut, $openOut, $openRuntime, $extOut, $extRuntime"
+$defIr = "compiler/fixtures/ir/cpp-deferred.json"
+$defOut = "compiler/fixtures/codegen-cpp/deferred"
+New-Item -ItemType Directory -Force -Path $defOut | Out-Null
+dotnet run --project compiler/src/Asn1Kit.Cli -- generate `
+  -i $defIr `
+  --lang cpp `
+  -o $defOut
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+$defRuntime = "runtime-cpp/generated/deferred"
+New-Item -ItemType Directory -Force -Path $defRuntime | Out-Null
+Copy-Item -Force "$defOut/Deferred.hpp" "$defRuntime/Deferred.hpp"
+
+Write-Host "Updated $out, $runtimeOut, $openOut, $openRuntime, $extOut, $extRuntime, $defOut, $defRuntime"

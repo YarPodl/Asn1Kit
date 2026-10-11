@@ -9,11 +9,13 @@
 #include "asn1kit/contained.hpp"
 #include "asn1kit/exception.hpp"
 #include "asn1kit/integer.hpp"
+#include "asn1kit/lazy.hpp"
 #include "asn1kit/null.hpp"
 #include "asn1kit/oid.hpp"
 #include "asn1kit/reader.hpp"
 #include "asn1kit/tag.hpp"
 #include "asn1kit/utc_date_time.hpp"
+#include "asn1kit/value.hpp"
 #include "asn1kit/writer.hpp"
 
 #include <cstdint>

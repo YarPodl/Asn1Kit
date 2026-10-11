@@ -31,7 +31,7 @@
   - Вне среза MVP: contained/SET OF payload, ancestor selector (`levels > 0`), `AsString`, INTEGER selector.
 - `OCTET STRING` / `BIT STRING` `CONTAINING` → `asn1kit::contained<T>` (`read_contained` / `write_contained`; content ANY → `known=false`; nested content — `Owner_Content`).
 - Extensible SEQUENCE/SET: skip-unknown через `read_any`, extension additions + groups (`CppBackend.Extensibility.cs`); extensible SET encode — `enter_set_of`. Extensible CHOICE → `…_kind::unknown` + `asn1kit::any`.
-- Пока отклоняются: `lazy`, `retainEncoded`.
+- `retainEncoded` → `asn1kit::value<T>` + `read_with_original_encoding` (encode из `.get()`); `lazy` → `asn1kit::lazy<T>` + `read_lazy` (encode: raw TLV если есть, иначе `.get()`). Только SEQUENCE/SET/OF; lazy побеждает при обоих флагах (`CppBackend.Deferred.cs`).
 
 ## CLI и golden
 
@@ -44,4 +44,4 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- generate `
 ./scripts/regenerate-cpp-golden.ps1
 ```
 
-Golden сверяет `CppCodegenTests.GenerateMatchesCommittedExampleGolden` и `GenerateMatchesCommittedExtensibleGolden`. Нативный round-trip — `generated_person_tests.cpp`, open-type — `open_binding_tests.cpp`, extensible — `generated_extensible_tests.cpp` (`ctest`; headers в `runtime-cpp/generated/`).
+Golden сверяет `CppCodegenTests` (example / extensible / deferred). Нативный round-trip — `generated_person_tests.cpp`, open-type — `open_binding_tests.cpp`, extensible — `generated_extensible_tests.cpp`, deferred — `generated_deferred_tests.cpp` + `value_lazy_tests.cpp` (`ctest`; headers в `runtime-cpp/generated/`).

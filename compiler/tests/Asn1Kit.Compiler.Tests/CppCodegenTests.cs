@@ -149,12 +149,48 @@ END
     }
 
     [Fact]
-    public void BackendRejectsLazyOption()
+    public void GeneratesLazyAndRetainEncodedWrappers()
     {
-        var document = TestData.LoadIr("compiler/fixtures/ir/example.json");
-        document.Modules[0].Types[0].Options = IrOptions.SetLazy(document.Modules[0].Types[0].Options, true);
-        var ex = Assert.Throws<NotSupportedException>(() => new CppBackend().Generate(document));
-        Assert.Equal("lazy", ex.Message);
+        const string asn = @"
+Deferred DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+Inner ::= SEQUENCE { n INTEGER }
+Box ::= SEQUENCE {
+  retained Inner,
+  deferred Inner
+}
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        var box = document.Modules[0].Types.Single(t => t.Name == "Box");
+        var sequence = Assert.IsType<SequenceType>(box.Type);
+        sequence.Components[0].Options = IrOptions.SetRetainEncoded(null, true);
+        sequence.Components[1].Options = IrOptions.SetLazy(null, true);
+
+        var source = new CppBackend().Generate(document).Single().Contents;
+        Assert.Contains("#include \"asn1kit/value.hpp\"", source);
+        Assert.Contains("#include \"asn1kit/lazy.hpp\"", source);
+        Assert.Contains("asn1kit::value<Inner> retained{}", source);
+        Assert.Contains("asn1kit::lazy<Inner> deferred{}", source);
+        Assert.Contains("read_with_original_encoding<Inner>", source);
+        Assert.Contains("read_lazy<Inner>", source);
+        Assert.Contains("this->retained.get()", source);
+        Assert.Contains("if (this->deferred.has_encoded())", source);
+        Assert.Contains("w.write_raw(this->deferred.encoded().span());", source);
+        Assert.Contains("this->deferred.get()", source);
+    }
+
+    [Fact]
+    public void GenerateMatchesCommittedDeferredGolden()
+    {
+        var document = TestData.LoadIr("compiler/fixtures/ir/cpp-deferred.json");
+        var files = new CppBackend().Generate(document);
+        var file = Assert.Single(files);
+        Assert.Equal("Deferred.hpp", file.RelativePath);
+
+        var expectedPath = TestData.RepoPath("compiler/fixtures/codegen-cpp/deferred/Deferred.hpp");
+        var expected = File.ReadAllText(expectedPath).Replace("\r\n", "\n", StringComparison.Ordinal);
+        var actual = file.Contents.Replace("\r\n", "\n", StringComparison.Ordinal);
+        Assert.Equal(expected, actual);
     }
 
     [Fact]
