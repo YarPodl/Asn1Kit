@@ -20,12 +20,6 @@
     },
     "CryptographicMessageSyntax-2009.SignerInfo.signedAttrs": {
       "retainEncoded": true
-    },
-    "CryptographicMessageSyntax-2010.IssuerAndSerialNumber.issuer": {
-      "retainEncoded": true
-    },
-    "CryptographicMessageSyntax-2010.SignerInfo.signedAttrs": {
-      "retainEncoded": true
     }
   },
   "types": {

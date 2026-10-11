@@ -27,24 +27,21 @@ public sealed class ModernRfcTests
     private static readonly Assembly ModernAssembly = typeof(ModernCertificate).Assembly;
 
     [Fact]
-    public void ModernCmsPatchRetainsIssuerAndSignedAttributesInBothVersions()
+    public void ModernCmsPatchRetainsIssuerAndSignedAttributes()
     {
-        foreach (var year in new[] { "2009", "2010" })
-        {
-            var module = Corpus.Value.Modules.Single(m => m.Name == "CryptographicMessageSyntax-" + year);
-            var issuer = Assert.IsType<SequenceType>(module.Types.Single(t => t.Name == "IssuerAndSerialNumber").Type)
-                .Components.Single(c => c.Name == "issuer");
-            var signedAttrs = Assert.IsType<SequenceType>(module.Types.Single(t => t.Name == "SignerInfo").Type)
-                .Components.Single(c => c.Name == "signedAttrs");
-            Assert.True(IrOptions.IsRetainEncoded(issuer.Options));
-            Assert.True(IrOptions.IsRetainEncoded(signedAttrs.Options));
-        }
+        var module = Corpus.Value.Modules.Single(m => m.Name == "CryptographicMessageSyntax-2009");
+        var issuer = Assert.IsType<SequenceType>(module.Types.Single(t => t.Name == "IssuerAndSerialNumber").Type)
+            .Components.Single(c => c.Name == "issuer");
+        var signedAttrs = Assert.IsType<SequenceType>(module.Types.Single(t => t.Name == "SignerInfo").Type)
+            .Components.Single(c => c.Name == "signedAttrs");
+        Assert.True(IrOptions.IsRetainEncoded(issuer.Options));
+        Assert.True(IrOptions.IsRetainEncoded(signedAttrs.Options));
     }
 
     [Fact]
     public void WholeRfcCorpusMatchesIrAndGeneratedGoldenSources()
     {
-        Assert.Equal(35, Corpus.Value.Modules.Count);
+        Assert.Equal(30, Corpus.Value.Modules.Count);
         Assert.DoesNotContain(Corpus.Value.Modules.SelectMany(m => m.Types),
             t => System.Text.RegularExpressions.Regex.IsMatch(t.Name, "-[0-9A-F]{16}$"));
         var algorithmModule = Corpus.Value.Modules.Single(m => m.Name == "AlgorithmInformation-2009");
@@ -93,7 +90,7 @@ public sealed class ModernRfcTests
     public void CmsDataRemainsOpaque(string name)
     {
         var bytes = Convert.FromHexString("301206092A864886F70D010701A0050403616263");
-        var type = ResolveType("CryptographicMessageSyntax-2010", name);
+        var type = ResolveType("CryptographicMessageSyntax-2009", name);
         Assert.Equal(bytes, RoundTrip(type, bytes));
     }
 

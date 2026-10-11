@@ -26,13 +26,13 @@ public sealed class AuthEnvelopedData
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.OriginatorInfo? OriginatorInfo { get; set; }
     /// <summary>ASN.1 alias RecipientInfos ::= SET OF RecipientInfo.</summary>
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.RecipientInfo[] RecipientInfos { get; set; } = Array.Empty<Asn1Kit.Modern.CryptographicMessageSyntax2009.RecipientInfo>();
-    public Asn1Kit.Modern.CMSAuthEnvelopedData2010.EncryptedContentInfo AuthEncryptedContentInfo { get; set; }
-    /// <summary>ASN.1 alias AuthAttributes ::= Attributes.</summary>
-    public Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[]? AuthAttrs { get; set; }
+    public Asn1Kit.Modern.CryptographicMessageSyntax2009.EncryptedContentInfo AuthEncryptedContentInfo { get; set; }
+    /// <summary>ASN.1 alias AuthAttributes ::= SET OF Attribute.</summary>
+    public Asn1Kit.Modern.CryptographicMessageSyntax2009.Attribute[]? AuthAttrs { get; set; }
     /// <summary>ASN.1 alias MessageAuthenticationCode ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> Mac { get; set; }
-    /// <summary>ASN.1 alias UnauthAttributes ::= Attributes.</summary>
-    public Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute[]? UnauthAttrs { get; set; }
+    /// <summary>ASN.1 alias UnauthAttributes ::= SET OF Attribute.</summary>
+    public Asn1Kit.Modern.CryptographicMessageSyntax2009.Attribute[]? UnauthAttrs { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -81,15 +81,15 @@ public sealed class AuthEnvelopedData
                 value.OriginatorInfo = Asn1Kit.Modern.CryptographicMessageSyntax2009.OriginatorInfo.Decode(reader, Asn1Tag.Context(0, true));
             }
             value.RecipientInfos = reader.ReadSetOf(Asn1Tag.Set, static inner => Asn1Kit.Modern.CryptographicMessageSyntax2009.RecipientInfo.Decode(inner));
-            value.AuthEncryptedContentInfo = Asn1Kit.Modern.CMSAuthEnvelopedData2010.EncryptedContentInfo.Decode(reader, Asn1Tag.Sequence);
+            value.AuthEncryptedContentInfo = Asn1Kit.Modern.CryptographicMessageSyntax2009.EncryptedContentInfo.Decode(reader, Asn1Tag.Sequence);
             if (reader.TryPeekTag(out var tag_AuthAttrs) && tag_AuthAttrs.MatchesIgnoreConstructed(Asn1Tag.Context(1, true)))
             {
-                value.AuthAttrs = reader.ReadSetOf(Asn1Tag.Context(1, true), static inner => Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute.Decode(inner, Asn1Tag.Sequence));
+                value.AuthAttrs = reader.ReadSetOf(Asn1Tag.Context(1, true), static inner => Asn1Kit.Modern.CryptographicMessageSyntax2009.Attribute.Decode(inner, Asn1Tag.Sequence));
             }
             value.Mac = reader.ReadOctetString(Asn1Tag.OctetString);
             if (reader.TryPeekTag(out var tag_UnauthAttrs) && tag_UnauthAttrs.MatchesIgnoreConstructed(Asn1Tag.Context(2, true)))
             {
-                value.UnauthAttrs = reader.ReadSetOf(Asn1Tag.Context(2, true), static inner => Asn1Kit.Modern.CryptographicMessageSyntax2010.Attribute.Decode(inner, Asn1Tag.Sequence));
+                value.UnauthAttrs = reader.ReadSetOf(Asn1Tag.Context(2, true), static inner => Asn1Kit.Modern.CryptographicMessageSyntax2009.Attribute.Decode(inner, Asn1Tag.Sequence));
             }
             reader.ThrowIfNotEmpty();
             return value;
@@ -101,20 +101,20 @@ public sealed class AuthEnvelopedData
 
 internal static class __CMSAuthEnvelopedData2009OpenTypeCodecs
 {
-    internal static Asn1Codec<Asn1Kit.Modern.CryptographicMessageSyntax2010.Time> SigningTimeAttribute { get; } =
-        new(static reader => Asn1Kit.Modern.CryptographicMessageSyntax2010.Time.Decode(reader), static (writer, value) => value.Encode(writer));
+    internal static Asn1Codec<Asn1Kit.Modern.CryptographicMessageSyntax2009.Time> SigningTimeAttribute { get; } =
+        new(static reader => Asn1Kit.Modern.CryptographicMessageSyntax2009.Time.Decode(reader), static (writer, value) => value.Encode(writer));
 
 }
 
-public static class AuthEnvDataAttributeSetBindings
+public static class AuthAttributeSetBindings
 {
-    public static Asn1Kit.Modern.CryptographicMessageSyntax2010.AttrValuesBinding<Asn1Oid> ContentType { get; } =
+    public static Asn1Kit.Modern.CryptographicMessageSyntax2009.AttrValuesBinding<Asn1Oid> ContentType { get; } =
         new(global::Asn1Kit.Modern.CryptographicMessageSyntax2009.CryptographicMessageSyntax2009Oids.IdContentType, Asn1Codecs.ObjectIdentifier);
 
-    public static Asn1Kit.Modern.CryptographicMessageSyntax2010.AttrValuesBinding<ReadOnlyMemory<byte>> MessageDigest { get; } =
+    public static Asn1Kit.Modern.CryptographicMessageSyntax2009.AttrValuesBinding<ReadOnlyMemory<byte>> MessageDigest { get; } =
         new(global::Asn1Kit.Modern.CryptographicMessageSyntax2009.CryptographicMessageSyntax2009Oids.IdMessageDigest, Asn1Codecs.OctetString);
 
-    public static Asn1Kit.Modern.CryptographicMessageSyntax2010.AttrValuesBinding<Asn1Kit.Modern.CryptographicMessageSyntax2010.Time> SigningTime { get; } =
+    public static Asn1Kit.Modern.CryptographicMessageSyntax2009.AttrValuesBinding<Asn1Kit.Modern.CryptographicMessageSyntax2009.Time> SigningTime { get; } =
         new(global::Asn1Kit.Modern.CryptographicMessageSyntax2009.CryptographicMessageSyntax2009Oids.IdSigningTime, __CMSAuthEnvelopedData2009OpenTypeCodecs.SigningTimeAttribute);
 }
 

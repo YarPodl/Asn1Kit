@@ -179,7 +179,7 @@ BER indefinite и простая конкатенация constructed-сегме
 
 Compiler tests проверяют текст/golden, Roslyn Emit, имена/коллизии/алиасы/представления INTEGER, составные типы, DEFAULT, расширения SEQUENCE/CHOICE, OPTIONAL CHOICE без тега, lazy/retained и open types. Встроенные C# проверки if/throw/return учтены в parameters.embedded_CSharp_probe и inventory.embedded_checks.
 
-GeneratedCompilation выбрасывает InvalidOperationException при неуспешном Emit. Golden сравнивает списки и содержимое файлов; 35 modern-модулей и reflection базовых Signed-типов проверяют структуру сборки. Выполнение кодеков сообщений проверяется отдельно.
+GeneratedCompilation выбрасывает InvalidOperationException при неуспешном Emit. Golden сравнивает списки и содержимое файлов; 30 modern-модулей и reflection базовых Signed-типов проверяют структуру сборки. Выполнение кодеков сообщений проверяется отдельно.
 
 Open-type tests различают raw Decode и Binding TryDecode: неизвестный ключ сохраняет opaque Any; неверное содержимое известного ключа может остаться raw после Decode, но отвергается при типизированном доступе. Binding общий для modern/legacy. Дескрипторы с совпадающими формой/ключом допускают использование между каталогами в проверенных случаях. T0035 проверяет знаковые/беззнаковые ключи и дубликаты.
 

@@ -107,12 +107,6 @@ internal static class __AlgorithmInformation2009OpenTypeCodecs
     internal static Asn1Codec<AlgorithmIdentifier> SmimeCapsSMIMECapability { get; } =
         new(static reader => AlgorithmIdentifier.Decode(reader), static (writer, value) => value.Encode(writer));
 
-    internal static Asn1Codec<Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters> CeaAes128CCMAlgorithmIdentifier { get; } =
-        new(static reader => Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters.Decode(reader), static (writer, value) => value.Encode(writer));
-
-    internal static Asn1Codec<Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters> CeaAes128GCMAlgorithmIdentifier { get; } =
-        new(static reader => Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters.Decode(reader), static (writer, value) => value.Encode(writer));
-
     internal static Asn1Codec<Asn1Kit.Modern.PKIXAlgs2009.DomainParameters> PkDhAlgorithmIdentifier { get; } =
         new(static reader => Asn1Kit.Modern.PKIXAlgs2009.DomainParameters.Decode(reader), static (writer, value) => value.Encode(writer));
 
@@ -202,33 +196,6 @@ public static class SMimeCapsSetParametersBindings
 
     public static SMIMECapabilityParametersBinding<AlgorithmIdentifier> SmimeCaps { get; } =
         new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.IdAlgESDH, __AlgorithmInformation2009OpenTypeCodecs.SmimeCapsSMIMECapability);
-}
-
-public static class AuthContentEncryptionAlgorithmSetParametersBindings
-{
-    public static ParametersBinding<Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters> CeaAes128CCM { get; } =
-        new(global::Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CMSAESCCMAndAESGCM2009Oids.IdAes128CCM, __AlgorithmInformation2009OpenTypeCodecs.CeaAes128CCMAlgorithmIdentifier);
-
-    public static ParametersBinding<Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters> CeaAes192CCM { get; } =
-        new(global::Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CMSAESCCMAndAESGCM2009Oids.IdAes192CCM, __AlgorithmInformation2009OpenTypeCodecs.CeaAes128CCMAlgorithmIdentifier);
-
-    public static ParametersBinding<Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CCMParameters> CeaAes256CCM { get; } =
-        new(global::Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CMSAESCCMAndAESGCM2009Oids.IdAes256CCM, __AlgorithmInformation2009OpenTypeCodecs.CeaAes128CCMAlgorithmIdentifier);
-
-    public static ParametersBinding<Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters> CeaAes128GCM { get; } =
-        new(global::Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CMSAESCCMAndAESGCM2009Oids.IdAes128GCM, __AlgorithmInformation2009OpenTypeCodecs.CeaAes128GCMAlgorithmIdentifier);
-
-    public static ParametersBinding<Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters> CeaAes192GCM { get; } =
-        new(global::Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CMSAESCCMAndAESGCM2009Oids.IdAes192GCM, __AlgorithmInformation2009OpenTypeCodecs.CeaAes128GCMAlgorithmIdentifier);
-
-    public static ParametersBinding<Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.GCMParameters> CeaAes256GCM { get; } =
-        new(global::Asn1Kit.Modern.CMSAESCCMAndAESGCM2009.CMSAESCCMAndAESGCM2009Oids.IdAes256GCM, __AlgorithmInformation2009OpenTypeCodecs.CeaAes128GCMAlgorithmIdentifier);
-}
-
-public static class CompressAlgorithmSetParametersBindings
-{
-    public static ParametersBinding<Asn1Null> CpaZlibCompress { get; } =
-        new(global::Asn1Kit.Modern.CompressedDataContent2010.CompressedDataContent2010Oids.IdAlgZlibCompress, Asn1Codecs.Null);
 }
 
 public static class KeyTransportAlgorithmSetParametersBindings

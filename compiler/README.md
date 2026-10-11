@@ -41,7 +41,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-modern.ps
 | Путь | Назначение |
 | --- | --- |
 | `fixtures/asn1/` | Входные модули ASN.1 (в т.ч. `cms-2004.asn`) |
-| `fixtures/asn1/modern/` | 35 модулей RFC 5911/5912/6268/8410; происхождение и исправления в [README](fixtures/asn1/modern/README.md) |
+| `fixtures/asn1/modern/` | 30 модулей RFC 5911/5912/6268/8410 (без CMS-2010-стека); происхождение и исправления в [README](fixtures/asn1/modern/README.md) |
 | `fixtures/ir/modern-pkix-cms.json` | **Golden**: весь современный корпус; регенерация через `scripts/regenerate-modern.ps1` |
 | `fixtures/ir/modern-pkix-cms.patch.json` | Options overlay для modern PKIX/CMS: исходные TLV сертификата, TBS, имён, SPKI и `signedAttrs` |
 | `fixtures/opentype/pkix-bindings.json` | Sidecar open-type bindings для golden PKIX |

@@ -7,6 +7,14 @@ $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $destination = Join-Path $repositoryRoot 'compiler/fixtures/asn1/modern'
 New-Item -ItemType Directory -Force -Path $destination | Out-Null
 $seen = @{}
+# CMS-2010 stack excluded from the curated corpus (parallel to CMS-2009; niche dependents only).
+$excludedModules = @(
+    'CryptographicMessageSyntax-2010',
+    'CMS-AuthEnvelopedData-2010',
+    'CompressedDataContent-2010',
+    'ContentCollectionModule-2010',
+    'MultipleSignatures-2010'
+)
 foreach ($rfcNumber in @(5912, 5911, 6268, 8410)) {
     $sourcePath = Join-Path $InputDirectory ('rfc' + $rfcNumber + '.txt')
     $lines = @(Get-Content -Encoding UTF8 -LiteralPath $sourcePath | Where-Object {
@@ -23,6 +31,12 @@ foreach ($rfcNumber in @(5912, 5911, 6268, 8410)) {
         $end = $index + 1
         while ($end -lt $lines.Count -and $lines[$end] -notmatch '^\s*END\s*$') { $end++ }
         if ($end -eq $lines.Count) { throw "Module END not found for $name." }
+        if ($excludedModules -contains $name) {
+            $seen[$name] = $rfcNumber
+            Write-Output "$name (RFC $rfcNumber) skipped"
+            $index = $end
+            continue
+        }
         if (!$seen.ContainsKey($name)) {
             $body = ($lines[$start..$end] -join "`n").TrimEnd() + "`n"
             # Verified EID 2612 (RFC 5911), EID 3130 (RFC 5912): CMS id-data has no ASN.1 content type.
