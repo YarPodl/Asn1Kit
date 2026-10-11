@@ -29,7 +29,7 @@
     <ProjectReference Include="..\..\src\Asn1Kit.Codegen.CSharp\Asn1Kit.Codegen.CSharp.csproj" />
     <ProjectReference Include="..\..\src\Asn1Kit.Codegen.Cpp\Asn1Kit.Codegen.Cpp.csproj" />
     <ProjectReference Include="..\..\..\runtime-csharp\src\Asn1Kit.Runtime\Asn1Kit.Runtime.csproj" />
-    <ProjectReference Include="..\..\..\runtime-csharp\generated\Asn1Kit.Pkix\Asn1Kit.Pkix.csproj" />
+    <ProjectReference Include="..\..\..\runtime-csharp\generated\Asn1Kit.Legacy\Asn1Kit.Legacy.csproj" />
     <ProjectReference Include="..\..\..\runtime-csharp\generated\Asn1Kit.Modern\Asn1Kit.Modern.csproj" />
   </ItemGroup>
 

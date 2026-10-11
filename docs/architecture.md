@@ -39,7 +39,8 @@ ASN.1 module  -->  Compiler (C#)  -->  IR JSON (schema v1)
 | `Asn1Kit.Codegen.Cpp` | compiler | Генерация `.hpp` |
 | `Asn1Kit.Cli` | compiler | Команды `compile` и `generate` |
 | `Asn1Kit.Runtime` | runtime-csharp | TLV, примитивы BER/DER |
-| `Asn1Kit.Modern` | runtime-csharp/generated | Отдельная сборка PKIX/CMS RFC 5911/5912/6268/8410 |
+| `Asn1Kit.Modern` | runtime-csharp/generated | Modern PKIX/CMS (курированный корпус) |
+| `Asn1Kit.Legacy` | runtime-csharp/generated | ASN.1:1988 PKIX/CMS/DVCS (регрессия) |
 | `asn1kit` (static lib) | runtime-cpp | C++20 TLV, примитивы и SEQUENCE/SET scopes BER/DER (`asn1kit::bytes` = span + keep-alive) |
 
 C++ codegen (`Asn1Kit.Codegen.Cpp`) — backend в `compiler/`; runtime scopes в `runtime-cpp/`. Фронтенд компилятора не меняется ради C++.

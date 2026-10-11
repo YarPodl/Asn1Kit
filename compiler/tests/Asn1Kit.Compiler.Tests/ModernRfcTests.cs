@@ -41,7 +41,7 @@ public sealed class ModernRfcTests
     [Fact]
     public void WholeRfcCorpusMatchesIrAndGeneratedGoldenSources()
     {
-        Assert.Equal(30, Corpus.Value.Modules.Count);
+        Assert.Equal(24, Corpus.Value.Modules.Count);
         Assert.DoesNotContain(Corpus.Value.Modules.SelectMany(m => m.Types),
             t => System.Text.RegularExpressions.Regex.IsMatch(t.Name, "-[0-9A-F]{16}$"));
         var algorithmModule = Corpus.Value.Modules.Single(m => m.Name == "AlgorithmInformation-2009");

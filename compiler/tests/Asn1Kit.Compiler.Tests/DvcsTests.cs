@@ -27,7 +27,7 @@ public sealed class DvcsTests
 
         Assert.Equal("1.3.6.1.5.5.7.0.15", module.Oid);
         Assert.Equal(TagDefaults.Implicit, module.TagDefault);
-        Assert.Equal("Asn1Kit.Dvcs", IrOptions.CSharpNamespace(module.Options));
+        Assert.Equal("Asn1Kit.Legacy.Dvcs", IrOptions.CSharpNamespace(module.Options));
         Assert.Contains(module.Imports, i => i.Module == "PKIX1Implicit88" && i.Types.Contains("GeneralNames"));
         Assert.Contains(module.Imports, i =>
             i.Module == "CryptographicMessageSyntax2004" &&

@@ -121,9 +121,9 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/as
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/ir/example.json --lang csharp -o ./generated
 ```
 
-`generate` also accepts `.asn` files directly and compiles them in memory. The repeatable `-O` / `--option path=value` argument applies `options` to every module, for example `-O csharp.namespace=Asn1Kit.Pkix` for the PKIX golden output.
+`generate` also accepts `.asn` files directly and compiles them in memory. The repeatable `-O` / `--option path=value` argument applies `options` to every module, for example `-O csharp.namespace=Asn1Kit.Legacy.Pkix` for the PKIX golden output.
 
-The reference generated C# code for PKIX, CMS, DVCS, and their dependent protocols is located in [runtime-csharp/generated/Asn1Kit.Pkix](runtime-csharp/generated/Asn1Kit.Pkix/).
+The reference generated C# code for PKIX, CMS, DVCS, and their dependent protocols is located in [runtime-csharp/generated/Asn1Kit.Legacy](runtime-csharp/generated/Asn1Kit.Legacy/).
 
 ## Compiler profile
 

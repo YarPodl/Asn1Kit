@@ -88,7 +88,7 @@ internal static class Program
     }
 
     private static Option<string[]> CreateOptionOverrides() =>
-        new(new[] { "--option", "-O" }, "Set module options as path=value (e.g. csharp.namespace=Asn1Kit.Pkix). Repeatable.")
+        new(new[] { "--option", "-O" }, "Set module options as path=value (e.g. csharp.namespace=Asn1Kit.Legacy.Pkix). Repeatable.")
         {
             Arity = ArgumentArity.ZeroOrMore
         };

@@ -1,5 +1,5 @@
 using Asn1Kit.Runtime;
-using PkixCertificate = Asn1Kit.Pkix.Certificate;
+using PkixCertificate = Asn1Kit.Legacy.Pkix.Certificate;
 using ModernCertificate = Asn1Kit.Modern.PKIX1Explicit2009.Certificate;
 
 namespace Asn1Kit.Cms.Demo;
@@ -45,7 +45,7 @@ public static class CertificateTextFormatter
         writer.Line("Public Key Algorithm: " + CmsDemoOidNames.Format(spki.Algorithm.Algorithm));
         writer.Line("Public-Key: (" + DemoTextWriter.FormatBitLength(spki.SubjectPublicKey) + ")");
         writer.Pop();
-        var extensions = tbs.Extensions?.Value ?? Array.Empty<Asn1Kit.Pkix.Extension>();
+        var extensions = tbs.Extensions?.Value ?? Array.Empty<Asn1Kit.Legacy.Pkix.Extension>();
         if (extensions.Length != 0)
         {
             writer.Line("X509v3 extensions:");

@@ -11,16 +11,16 @@ Dated folders under this path are **checked-in baselines** for comparing optimiz
 
 ```powershell
 # краткий прогон после правок Asn1Kit (Cert/CRL + CMS Lazy, Decode и Encode; PowerShell)
-dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter "*CertificateBenchmarks.Asn1Kit_Decode" "*CertificateBenchmarks.Asn1Kit_Encode" "*CertificateListBenchmarks.Asn1Kit_Decode" "*CertificateListBenchmarks.Asn1Kit_Encode" "*CmsBenchmarks.Asn1Kit_Lazy_Decode" "*CmsBenchmarks.Asn1Kit_Lazy_Encode"
+dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Legacy.Benchmarks -- --filter "*CertificateBenchmarks.Asn1Kit_Decode" "*CertificateBenchmarks.Asn1Kit_Encode" "*CertificateListBenchmarks.Asn1Kit_Decode" "*CertificateListBenchmarks.Asn1Kit_Encode" "*CmsBenchmarks.Asn1Kit_Lazy_Decode" "*CmsBenchmarks.Asn1Kit_Lazy_Encode"
 
 # инвентарь аллокаций (без BDN)
-dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --alloc-profile
+dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Legacy.Benchmarks -- --alloc-profile
 
 # все Asn1Kit-методы без peers
-dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *Asn1Kit_*
+dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Legacy.Benchmarks -- --filter *Asn1Kit_*
 
 # полный suite (peers + Asn1Kit)
-dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks -- --filter *
+dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Legacy.Benchmarks -- --filter *
 ```
 
 ## How to add a run
@@ -36,7 +36,7 @@ Copy-Item (Get-ChildItem BenchmarkDotNet.Artifacts/BenchmarkRun-*.log | Sort-Obj
 ```
 
 В `SUMMARY.md`: git SHA, фильтр (краткий / `*Asn1Kit_*` / `*`), и таблицы Asn1Kit; для peers укажи ссылку на полный baseline, если прогон был без peers.
-Update the “current baseline” section in [../Asn1Kit.Pkix.Benchmarks/README.md](../Asn1Kit.Pkix.Benchmarks/README.md).
+Update the “current baseline” section in [../Asn1Kit.Legacy.Benchmarks/README.md](../Asn1Kit.Legacy.Benchmarks/README.md).
 
 ## Index
 

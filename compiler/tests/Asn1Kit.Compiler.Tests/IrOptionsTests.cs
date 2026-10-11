@@ -23,7 +23,7 @@ public sealed class IrOptionsTests
     }
 
     [Theory]
-    [InlineData("Asn1Kit.Pkix", "Asn1Kit.Pkix")]
+    [InlineData("Asn1Kit.Legacy.Pkix", "Asn1Kit.Legacy.Pkix")]
     [InlineData("\"quoted\"", "quoted")]
     public void ParseCliValue_Strings(string raw, string expected)
     {
@@ -42,9 +42,9 @@ public sealed class IrOptionsTests
     [Fact]
     public void ParseCliAssignment_SplitsPathAndValue()
     {
-        var (path, value) = IrOptions.ParseCliAssignment("csharp.namespace=Asn1Kit.Pkix");
+        var (path, value) = IrOptions.ParseCliAssignment("csharp.namespace=Asn1Kit.Legacy.Pkix");
         Assert.Equal("csharp.namespace", path);
-        Assert.Equal("Asn1Kit.Pkix", value.GetValue<string>());
+        Assert.Equal("Asn1Kit.Legacy.Pkix", value.GetValue<string>());
     }
 
     [Theory]

@@ -1,8 +1,8 @@
 using System.Text;
 using Asn1Kit.Runtime;
-using Asn1Kit.Pkix;
+using Asn1Kit.Legacy.Pkix;
 using Asn1Kit.Modern.PKIXCommonTypes2009;
-using PkixAttribute = Asn1Kit.Pkix.AttributeTypeAndValue;
+using PkixAttribute = Asn1Kit.Legacy.Pkix.AttributeTypeAndValue;
 using ModernAttribute = Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute;
 using ModernValueBindings = Asn1Kit.Modern.PKIXCommonTypes2009.SupportedAttributesValueBindings;
 
@@ -74,7 +74,7 @@ public static class RdnSequenceFormatter
         return attribute.TryDecodeValue(binding, out value);
     }
 
-    private static Asn1Kit.Pkix.ValueBinding<string>? PkixStringBinding(string type) => type switch
+    private static Asn1Kit.Legacy.Pkix.ValueBinding<string>? PkixStringBinding(string type) => type switch
     {
         "CN" => AttributeTypeAndValueValueBindings.AsString.DirectoryString6,
         "C" => AttributeTypeAndValueValueBindings.AsString.Oid2546,

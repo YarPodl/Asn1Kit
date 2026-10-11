@@ -8,6 +8,51 @@ using Asn1Kit.Runtime;
 
 namespace Asn1Kit.Modern.PKIXCommonTypes2009;
 
+public sealed class Extension
+{
+    public Asn1Oid ExtnID { get; set; }
+    public bool Critical { get; set; } = false;
+    public Asn1Contained<Asn1Any> ExtnValue { get; set; }
+
+    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
+
+    public void Encode(Asn1Writer writer, Asn1Tag tag)
+    {
+        using (writer.EnterSequence(tag))
+        {
+            writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, ExtnID);
+            if (Critical != false)
+            {
+                writer.WriteBoolean(Asn1Tag.Boolean, Critical);
+            }
+            writer.WriteContained(Asn1Tag.OctetString, false, ExtnValue, static (inner, value) =>
+            {
+                inner.WriteAny(value);
+            });
+        }
+    }
+
+    public static Extension Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
+
+    public static Extension Decode(Asn1Reader reader, Asn1Tag tag)
+    {
+        using (reader.EnterSequence(tag))
+        {
+            var value = new Extension();
+            value.ExtnID = reader.ReadOid(Asn1Tag.ObjectIdentifier);
+            if (reader.TryPeekTag(out var tag_Critical) && tag_Critical.MatchesIgnoreConstructed(Asn1Tag.Boolean))
+            {
+                value.Critical = reader.ReadBoolean(Asn1Tag.Boolean);
+            }
+            value.ExtnValue = reader.ReadContained(Asn1Tag.OctetString, false, false, 0, static (inner, key) => inner.ReadAny());
+            reader.ThrowIfNotEmpty();
+            return value;
+        }
+    }
+
+    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
+}
+
 public sealed class AttributeSet
 {
     public Asn1Oid Type { get; set; }
@@ -109,51 +154,6 @@ public sealed class SingleAttribute
             var value = new SingleAttribute();
             value.Type = reader.ReadOid(Asn1Tag.ObjectIdentifier);
             value.Value = reader.ReadAny();
-            reader.ThrowIfNotEmpty();
-            return value;
-        }
-    }
-
-    public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
-}
-
-public sealed class Extension
-{
-    public Asn1Oid ExtnID { get; set; }
-    public bool Critical { get; set; } = false;
-    public Asn1Contained<Asn1Any> ExtnValue { get; set; }
-
-    public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
-
-    public void Encode(Asn1Writer writer, Asn1Tag tag)
-    {
-        using (writer.EnterSequence(tag))
-        {
-            writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, ExtnID);
-            if (Critical != false)
-            {
-                writer.WriteBoolean(Asn1Tag.Boolean, Critical);
-            }
-            writer.WriteContained(Asn1Tag.OctetString, false, ExtnValue, static (inner, value) =>
-            {
-                inner.WriteAny(value);
-            });
-        }
-    }
-
-    public static Extension Decode(Asn1Reader reader) => Decode(reader, DefaultTag);
-
-    public static Extension Decode(Asn1Reader reader, Asn1Tag tag)
-    {
-        using (reader.EnterSequence(tag))
-        {
-            var value = new Extension();
-            value.ExtnID = reader.ReadOid(Asn1Tag.ObjectIdentifier);
-            if (reader.TryPeekTag(out var tag_Critical) && tag_Critical.MatchesIgnoreConstructed(Asn1Tag.Boolean))
-            {
-                value.Critical = reader.ReadBoolean(Asn1Tag.Boolean);
-            }
-            value.ExtnValue = reader.ReadContained(Asn1Tag.OctetString, false, false, 0, static (inner, key) => inner.ReadAny());
             reader.ThrowIfNotEmpty();
             return value;
         }

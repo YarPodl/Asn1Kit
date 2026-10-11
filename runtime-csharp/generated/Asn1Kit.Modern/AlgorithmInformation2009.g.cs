@@ -421,37 +421,6 @@ public static class AlgorithmInformation2009OpenTypeExtensions
         result.Parameters = encoded;
     }
 
-    public static bool TryGet<T>(this AlgorithmIdentifier[]? source, ParametersBinding<T> binding, out T value)
-        => TryGet(source, binding, out value, out _);
-
-    public static bool TryGet<T>(this AlgorithmIdentifier[]? source, ParametersBinding<T> binding, out T value, out AlgorithmIdentifier raw)
-    {
-        value = default!;
-        raw = default!;
-        if (source is null) return false;
-        ArgumentNullException.ThrowIfNull(binding);
-        AlgorithmIdentifier? match = null;
-        foreach (var item in source)
-        {
-            if (item.Algorithm.Equals(binding.Oid))
-            {
-                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
-                match = item;
-            }
-        }
-        if (match is null) return false;
-        if (match.Parameters is null) return false;
-        raw = match;
-        if (binding.Codec is { } codec)
-        {
-            if (match.Parameters is not { } openRaw) throw new Asn1Exception("Missing open-type value.");
-            value = codec.Decode(openRaw);
-        }
-        else
-            value = binding.Decoder!(match);
-        return true;
-    }
-
     public static bool TryDecodeParameters<T>(this SMIMECapability source, SMIMECapabilityParametersBinding<T> binding, out T value)
     {
         value = default!;

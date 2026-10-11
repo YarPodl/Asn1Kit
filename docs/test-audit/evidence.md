@@ -4994,7 +4994,7 @@
 
 ## E01248
 
-`open.duplicate` · Modern generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/ModernOpenTypeWrapperTests.cs#L60).
+`open.duplicate` · Modern generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/ModernOpenTypeWrapperTests.cs#L60).
 
 ## E01249
 
@@ -5054,7 +5054,7 @@
 
 ## E01263
 
-`open.descriptor-metadata` · Modern generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/ModernOpenTypeWrapperTests.cs#L16).
+`open.descriptor-metadata` · Modern generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/ModernOpenTypeWrapperTests.cs#L16).
 
 ## E01264
 
@@ -5114,7 +5114,7 @@
 
 ## E01278
 
-`open.table-key-identity` · Modern generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/ModernOpenTypeWrapperTests.cs#L40).
+`open.table-key-identity` · Modern generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/ModernOpenTypeWrapperTests.cs#L40).
 
 ## E01279
 
@@ -5174,7 +5174,7 @@
 
 ## E01293
 
-`open.string-choice` · Modern generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/ModernOpenTypeWrapperTests.cs#L90).
+`open.string-choice` · Modern generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/ModernOpenTypeWrapperTests.cs#L90).
 
 ## E01294
 
@@ -7090,11 +7090,11 @@
 
 ## E01772
 
-`pkix.certificate` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateCodecTests.cs#L14).
+`pkix.certificate` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CertificateCodecTests.cs#L14).
 
 ## E01773
 
-`pkix.certificate` · Modern generated · **частично** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/ModernOpenTypeWrapperTests.cs#L157).
+`pkix.certificate` · Modern generated · **частично** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/ModernOpenTypeWrapperTests.cs#L157).
 
 ## E01774
 
@@ -7150,7 +7150,7 @@
 
 ## E01787
 
-`pkix.crl` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateListCodecTests.cs#L9).
+`pkix.crl` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CertificateListCodecTests.cs#L9).
 
 ## E01788
 
@@ -7210,7 +7210,7 @@
 
 ## E01802
 
-`pkix.negative` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/PkixNegativeCodecTests.cs#L12).
+`pkix.negative` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/PkixNegativeCodecTests.cs#L12).
 
 ## E01803
 
@@ -7270,11 +7270,11 @@
 
 ## E01817
 
-`extension.ski` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateExtensionCodecTests.cs#L13).
+`extension.ski` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CertificateExtensionCodecTests.cs#L13).
 
 ## E01818
 
-`extension.ski` · Modern generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/ModernOpenTypeWrapperTests.cs#L16).
+`extension.ski` · Modern generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/ModernOpenTypeWrapperTests.cs#L16).
 
 ## E01819
 
@@ -7330,11 +7330,11 @@
 
 ## E01832
 
-`extension.aki` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateExtensionCodecTests.cs#L13).
+`extension.aki` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CertificateExtensionCodecTests.cs#L13).
 
 ## E01833
 
-`extension.aki` · Modern generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/ModernOpenTypeWrapperTests.cs#L16).
+`extension.aki` · Modern generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/ModernOpenTypeWrapperTests.cs#L16).
 
 ## E01834
 
@@ -7390,7 +7390,7 @@
 
 ## E01847
 
-`extension.key-usage` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateExtensionCodecTests.cs#L13).
+`extension.key-usage` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CertificateExtensionCodecTests.cs#L13).
 
 ## E01848
 
@@ -7450,7 +7450,7 @@
 
 ## E01862
 
-`extension.basic-constraints` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateExtensionCodecTests.cs#L13).
+`extension.basic-constraints` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CertificateExtensionCodecTests.cs#L13).
 
 ## E01863
 
@@ -7510,7 +7510,7 @@
 
 ## E01877
 
-`extension.policies` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateExtensionCodecTests.cs#L13).
+`extension.policies` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CertificateExtensionCodecTests.cs#L13).
 
 ## E01878
 
@@ -7570,7 +7570,7 @@
 
 ## E01892
 
-`extension.name-constraints` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateExtensionCodecTests.cs#L13).
+`extension.name-constraints` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CertificateExtensionCodecTests.cs#L13).
 
 ## E01893
 
@@ -7630,7 +7630,7 @@
 
 ## E01907
 
-`extension.san` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateExtensionCodecTests.cs#L13).
+`extension.san` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CertificateExtensionCodecTests.cs#L13).
 
 ## E01908
 
@@ -7690,7 +7690,7 @@
 
 ## E01922
 
-`crl.extensions` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateListCodecTests.cs#L9).
+`crl.extensions` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CertificateListCodecTests.cs#L9).
 
 ## E01923
 
@@ -7750,7 +7750,7 @@
 
 ## E01937
 
-`generalname.forms` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/GeneralNameCodecTests.cs#L40).
+`generalname.forms` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/GeneralNameCodecTests.cs#L40).
 
 ## E01938
 
@@ -7810,7 +7810,7 @@
 
 ## E01952
 
-`generalname.othername` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/GeneralNameCodecTests.cs#L12).
+`generalname.othername` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/GeneralNameCodecTests.cs#L12).
 
 ## E01953
 
@@ -7870,11 +7870,11 @@
 
 ## E01967
 
-`pkix.directory-string` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateCodecTests.cs#L14).
+`pkix.directory-string` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CertificateCodecTests.cs#L14).
 
 ## E01968
 
-`pkix.directory-string` · Modern generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/ModernOpenTypeWrapperTests.cs#L90).
+`pkix.directory-string` · Modern generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/ModernOpenTypeWrapperTests.cs#L90).
 
 ## E01969
 
@@ -8294,7 +8294,7 @@
 
 ## E02073
 
-`pkix.algorithm-params` · Modern generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/ModernOpenTypeWrapperTests.cs#L113).
+`pkix.algorithm-params` · Modern generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/ModernOpenTypeWrapperTests.cs#L113).
 
 ## E02074
 
@@ -8350,11 +8350,11 @@
 
 ## E02087
 
-`cms.attached` · Legacy generated · **косвенно** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs#L62).
+`cms.attached` · Legacy generated · **косвенно** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CmsDemoTests.cs#L62).
 
 ## E02088
 
-`cms.attached` · Modern generated · **косвенно** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsModernDemoTests.cs#L39).
+`cms.attached` · Modern generated · **косвенно** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CmsModernDemoTests.cs#L39).
 
 ## E02089
 
@@ -8410,11 +8410,11 @@
 
 ## E02102
 
-`cms.signed-attrs` · Legacy generated · **частично** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs#L76).
+`cms.signed-attrs` · Legacy generated · **частично** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CmsDemoTests.cs#L76).
 
 ## E02103
 
-`cms.signed-attrs` · Modern generated · **частично** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsModernDemoTests.cs#L60).
+`cms.signed-attrs` · Modern generated · **частично** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CmsModernDemoTests.cs#L60).
 
 ## E02104
 
@@ -8470,11 +8470,11 @@
 
 ## E02117
 
-`cms.signer-id` · Legacy generated · **косвенно** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs#L111).
+`cms.signer-id` · Legacy generated · **косвенно** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CmsDemoTests.cs#L111).
 
 ## E02118
 
-`cms.signer-id` · Modern generated · **косвенно** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsModernDemoTests.cs#L116).
+`cms.signer-id` · Modern generated · **косвенно** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CmsModernDemoTests.cs#L116).
 
 ## E02119
 
@@ -8530,11 +8530,11 @@
 
 ## E02132
 
-`cms.malformed` · Legacy generated · **косвенно** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs#L104).
+`cms.malformed` · Legacy generated · **косвенно** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CmsDemoTests.cs#L104).
 
 ## E02133
 
-`cms.malformed` · Modern generated · **косвенно** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsModernDemoTests.cs#L77).
+`cms.malformed` · Modern generated · **косвенно** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CmsModernDemoTests.cs#L77).
 
 ## E02134
 
@@ -8650,7 +8650,7 @@
 
 ## E02162
 
-`cms.from-scratch` · Legacy generated · **частично** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs#L359).
+`cms.from-scratch` · Legacy generated · **частично** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CmsDemoTests.cs#L359).
 
 ## E02163
 
@@ -9070,7 +9070,7 @@
 
 ## E02267
 
-`dvcs.request` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/DvcsCodecTests.cs#L11).
+`dvcs.request` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/DvcsCodecTests.cs#L11).
 
 ## E02268
 
@@ -9130,7 +9130,7 @@
 
 ## E02282
 
-`dvcs.response` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/DvcsCodecTests.cs#L57).
+`dvcs.response` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/DvcsCodecTests.cs#L57).
 
 ## E02283
 
@@ -9190,7 +9190,7 @@
 
 ## E02297
 
-`dvcs.negative` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Pkix.Tests/DvcsCodecTests.cs#L98).
+`dvcs.negative` · Legacy generated · **есть** · [исходник](../../runtime-csharp/tests/Asn1Kit.Legacy.Tests/DvcsCodecTests.cs#L98).
 
 ## E02298
 

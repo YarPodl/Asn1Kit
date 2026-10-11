@@ -138,7 +138,7 @@
 
 **Причина.** При введении legacy CMS конструкции CLASS и parameterized types ещё не поддерживались. RFC 5652 §12.1 (`CryptographicMessageSyntax2004`) — ASN.1:1988 с `ANY DEFINED BY`, как PKIX Explicit88. Полный `CertificateChoices` тянет `AttributeCertificate` / `AttributeCertificateV1` (в legacy-графе этих модулей нет; RFC 5755 импортирует `ContentInfo` из CMS → цикл). Имена `Attribute`, `Time`, `AttributeValue`, `SubjectKeyIdentifier` совпадают с PKIX, но формы другие — общий C# namespace дал бы коллизии типов.
 
-**Последствие.** Фикстура [cms-2004.asn](../compiler/fixtures/asn1/cms-2004.asn): IMPORTS только из PKIX1Explicit88; в `CertificateChoices` оставлены `certificate` / `extendedCertificate` / `other` (ветки `[1]`/`[2]` attr-cert отложены). Golden IR [cms-2004.json](../compiler/fixtures/ir/cms-2004.json) — Explicit + Implicit + CMS; C# CMS в `Asn1Kit.Cms`, PKIX в `Asn1Kit.Pkix` (тот же csproj). Open-type `ContentInfo.content` — [cms-bindings.json](../compiler/fixtures/opentype/cms-bindings.json). IrBuilder резолвит типы/значения **по модулю** (одно имя в разных модулях допустимо).
+**Последствие.** Фикстура [cms-2004.asn](../compiler/fixtures/asn1/cms-2004.asn): IMPORTS только из PKIX1Explicit88; в `CertificateChoices` оставлены `certificate` / `extendedCertificate` / `other` (ветки `[1]`/`[2]` attr-cert отложены). Golden IR [cms-2004.json](../compiler/fixtures/ir/cms-2004.json) — Explicit + Implicit + CMS; C# CMS в `Asn1Kit.Legacy.Cms`, PKIX в `Asn1Kit.Legacy.Pkix` (сборка `Asn1Kit.Legacy`). Open-type `ContentInfo.content` — [cms-bindings.json](../compiler/fixtures/opentype/cms-bindings.json). IrBuilder резолвит типы/значения **по модулю** (одно имя в разных модулях допустимо).
 
 ## DVCS — RFC 3029 и исходный граф ASN.1:1988 без отдельного golden IR
 
@@ -150,7 +150,7 @@
 
 **Причина.** Отдельная сборка `Asn1Kit.Pkix.Bench` дублировала Explicit/Implicit/CMS (~300 KB `.g.cs`) ради performance/verify options (`lazy` на `CertificateChoices.certificate`, `retainEncoded` на TBS/Name/SPKI/Extensions/`signedAttrs`, `AttributeTypeAndValue` как `struct`). Demo и бенчмарки уже требовали этот API; eager golden мешал практическому CMS-пути и раздувал репозиторий.
 
-**Последствие.** Те же field/type options входят в [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json) и применяются к продуктовому `Asn1Kit.Pkix` / `Asn1Kit.Cms`. Отдельные `Asn1Kit.Pkix.Bench`, `cms-2004-bench.*` и `regenerate-bench.ps1` сняты. IR-goldens (`cms-2004.json` и др.) остаются без этих options; они накладываются на generate. CMS-бенчмарки сравнивают Lazy / Lazy+Materialize с BCL/BouncyCastle без отдельного Eager-assembly.
+**Последствие.** Те же field/type options входят в [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json) и применяются к `Asn1Kit.Legacy.Pkix` / `Asn1Kit.Legacy.Cms`. Отдельные `Asn1Kit.Pkix.Bench`, `cms-2004-bench.*` и `regenerate-bench.ps1` сняты. IR-goldens (`cms-2004.json` и др.) остаются без этих options; они накладываются на generate. CMS-бенчмарки сравнивают Lazy / Lazy+Materialize с BCL/BouncyCastle без отдельного Eager-assembly.
 
 ## Современный ASN.1 — частная семантика компилятора, конкретный IR v1
 

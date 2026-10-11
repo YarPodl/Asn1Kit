@@ -42,8 +42,8 @@ internal static class Cms2004TestData
         foreach (var module in document.Modules)
         {
             var ns = module.Name == "CryptographicMessageSyntax2004"
-                ? "Asn1Kit.Cms"
-                : "Asn1Kit.Pkix";
+                ? "Asn1Kit.Legacy.Cms"
+                : "Asn1Kit.Legacy.Pkix";
             module.Options = IrOptions.SetCSharp(module.Options, "namespace", ns);
         }
 

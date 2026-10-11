@@ -27,8 +27,15 @@ try {
     $arguments += @('--patch', $patchPath, '--patch', 'compiler/fixtures/ir/modern-pkix-cms.patch.json',
         '-o', 'compiler/fixtures/ir/modern-pkix-cms.json')
     Invoke-DotNet $arguments
+    $outDir = 'runtime-csharp/generated/Asn1Kit.Modern'
     Invoke-DotNet @('run', '--project', 'compiler/src/Asn1Kit.Cli', '--', 'generate',
-        '-i', 'compiler/fixtures/ir/modern-pkix-cms.json', '--lang', 'csharp', '-o', 'runtime-csharp/generated/Asn1Kit.Modern')
+        '-i', 'compiler/fixtures/ir/modern-pkix-cms.json', '--lang', 'csharp', '-o', $outDir)
+    $expected = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($name in $modules.Keys) {
+        $identifier = -join ($name -split '[-_]' | ForEach-Object { $_.Substring(0, 1).ToUpperInvariant() + $_.Substring(1) })
+        [void]$expected.Add($identifier + '.g.cs')
+    }
+    Get-ChildItem -LiteralPath $outDir -Filter '*.g.cs' | Where-Object { -not $expected.Contains($_.Name) } | Remove-Item -Force
 }
 finally {
     Pop-Location

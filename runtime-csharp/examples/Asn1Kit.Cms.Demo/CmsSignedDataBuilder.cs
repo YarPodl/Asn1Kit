@@ -1,7 +1,7 @@
-using Asn1Kit.Cms;
-using Asn1Kit.Pkix;
+using Asn1Kit.Legacy.Cms;
+using Asn1Kit.Legacy.Pkix;
 using Asn1Kit.Runtime;
-using CmsAttribute = Asn1Kit.Cms.Attribute;
+using CmsAttribute = Asn1Kit.Legacy.Cms.Attribute;
 
 namespace Asn1Kit.Cms.Demo;
 

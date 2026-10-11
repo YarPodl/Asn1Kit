@@ -496,7 +496,7 @@ public sealed partial class CSharpBackend
                      .ThenBy(static s => s.Identity, StringComparer.Ordinal))
         {
             var site = shape.Representative;
-            // Key by C# namespace so Explicit88/Implicit88 (shared Asn1Kit.Pkix) disambiguate stems.
+            // Key by C# namespace so Explicit88/Implicit88 (shared Asn1Kit.Legacy.Pkix) disambiguate stems.
             var moduleKey = ModuleNamespace(site.Container.Module);
             if (!_carrierBindingNamesByModule.TryGetValue(moduleKey, out var names))
                 _carrierBindingNamesByModule.Add(moduleKey, names = new HashSet<string>(StringComparer.Ordinal));

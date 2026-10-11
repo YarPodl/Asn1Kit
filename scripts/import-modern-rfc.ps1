@@ -7,13 +7,19 @@ $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $destination = Join-Path $repositoryRoot 'compiler/fixtures/asn1/modern'
 New-Item -ItemType Directory -Force -Path $destination | Out-Null
 $seen = @{}
-# CMS-2010 stack excluded from the curated corpus (parallel to CMS-2009; niche dependents only).
+# Modules excluded from the curated modern corpus (niche / parallel editions).
 $excludedModules = @(
     'CryptographicMessageSyntax-2010',
     'CMS-AuthEnvelopedData-2010',
     'CompressedDataContent-2010',
     'ContentCollectionModule-2010',
-    'MultipleSignatures-2010'
+    'MultipleSignatures-2010',
+    'WLANCertExtn-2010',
+    'IPAddrAndASCertExtn-2010',
+    'BinarySigningTimeModule-2010',
+    'HMAC-2010',
+    'SCVP-2009',
+    'CMS-AES-CCM-and-AES-GCM-2009'
 )
 foreach ($rfcNumber in @(5912, 5911, 6268, 8410)) {
     $sourcePath = Join-Path $InputDirectory ('rfc' + $rfcNumber + '.txt')

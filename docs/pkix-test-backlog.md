@@ -1,6 +1,6 @@
-# Беклог тестов Asn1Kit.Pkix (encode/decode)
+# Беклог тестов Asn1Kit.Legacy (encode/decode)
 
-Область: **ASN.1 encode/decode** сгенерированных PKIX/CMS структур в `Asn1Kit.Pkix.Tests`.  
+Область: **ASN.1 encode/decode** сгенерированных PKIX/CMS структур в `Asn1Kit.Legacy.Tests`.  
 Не входит: path validation, signature verify, CMS decrypt/encrypt crypto — слой «инструменты PKI» ([status.md](status.md)).
 
 ## Принцип фикстур
@@ -163,4 +163,4 @@ Typed extensions: KeyUsage, BasicConstraints, AKI, SKI, CertificatePolicies, CRL
 
 1. Каркас CMS-тестов на модуле `Asn1Kit.Cms` (RFC 4134).
 2. CSR/OCSP — когда появятся ASN.1 модули.
-3. Не тащить path validation / verify / decrypt в `Asn1Kit.Pkix.Tests`.
+3. Не тащить path validation / verify / decrypt в `Asn1Kit.Legacy.Tests`.

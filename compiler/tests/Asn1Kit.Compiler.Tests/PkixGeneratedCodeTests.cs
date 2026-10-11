@@ -5,7 +5,7 @@ namespace Asn1Kit.Tests;
 
 public sealed class PkixGeneratedCodeTests
 {
-    private static readonly string GoldenDir = "runtime-csharp/generated/Asn1Kit.Pkix";
+    private static readonly string GoldenDir = "runtime-csharp/generated/Asn1Kit.Legacy";
 
     [Fact]
     public void GenerateMatchesCommittedGoldenSources()

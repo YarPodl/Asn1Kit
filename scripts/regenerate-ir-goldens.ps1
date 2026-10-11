@@ -45,9 +45,9 @@ try {
     $utf8WithoutBom = [System.Text.UTF8Encoding]::new($false)
     $cmsJson = [System.IO.File]::ReadAllText((Join-Path $repositoryRoot $cmsPath), $utf8WithoutBom)
     $namespaces = @{
-        'PKIX1Explicit88' = 'Asn1Kit.Pkix'
-        'PKIX1Implicit88' = 'Asn1Kit.Pkix'
-        'CryptographicMessageSyntax2004' = 'Asn1Kit.Cms'
+        'PKIX1Explicit88' = 'Asn1Kit.Legacy.Pkix'
+        'PKIX1Implicit88' = 'Asn1Kit.Legacy.Pkix'
+        'CryptographicMessageSyntax2004' = 'Asn1Kit.Legacy.Cms'
     }
 
     foreach ($entry in $namespaces.GetEnumerator()) {

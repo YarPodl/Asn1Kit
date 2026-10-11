@@ -39,7 +39,7 @@ try {
         '-i', $temporaryIr,
         '--patch', 'compiler/fixtures/ir/dvcs.patch.json',
         '--lang', 'csharp',
-        '-o', 'runtime-csharp/generated/Asn1Kit.Pkix'
+        '-o', 'runtime-csharp/generated/Asn1Kit.Legacy'
     )
 }
 finally {

@@ -13,7 +13,7 @@
       "imports": [],
       "options": {
         "csharp": {
-          "namespace": "Asn1Kit.Pkix"
+          "namespace": "Asn1Kit.Legacy.Pkix"
         }
       },
       "types": [
@@ -3845,7 +3845,7 @@
       ],
       "options": {
         "csharp": {
-          "namespace": "Asn1Kit.Pkix"
+          "namespace": "Asn1Kit.Legacy.Pkix"
         }
       },
       "types": [
@@ -5540,7 +5540,7 @@
       ],
       "options": {
         "csharp": {
-          "namespace": "Asn1Kit.Cms"
+          "namespace": "Asn1Kit.Legacy.Cms"
         }
       },
       "types": [

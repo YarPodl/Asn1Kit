@@ -27,7 +27,7 @@ CSV: UTF-8 BOM, разделитель — запятая, стандартно�
 
 Прочитаны все 51 C# файл трёх тестовых проектов, включая вспомогательные методы и поставщиков данных. Каждый Fact/Theory сопоставлен с вызовами, данными и assert. Из compiler/tests исключены только проверки lexer/parser/AST/IR/schema/options/overlay; методы с генерацией, компиляцией или выполнением C# включены, в том числе смешанные T0271 и T0273.
 
-Охват: Runtime, legacy Asn1Kit.Pkix/Cms/DVCS, modern Asn1Kit.Modern и отдельная группа CMS demo. Synthetic generated C# — мини-модули compiler tests; их проверки не приписываются поставляемым сборкам. RSA и цепочки сертификатов учтены только в demo-сценариях вне ASN.1 матрицы. C++ Runtime вне охвата.
+Охват: Runtime, legacy Asn1Kit.Legacy/Cms/DVCS, modern Asn1Kit.Modern и отдельная группа CMS demo. Synthetic generated C# — мини-модули compiler tests; их проверки не приписываются поставляемым сборкам. RSA и цепочки сертификатов учтены только в demo-сценариях вне ASN.1 матрицы. C++ Runtime вне охвата.
 
 Столбец Asn1Kit объединяет проверки Runtime и generated-кода: берётся самая сильная подтверждённая отметка из включённых проектов. Частичные проверки автоматически не суммируются до «есть». Компонент и область теста сохранены в описи и доказательствах; общий статус не обещает одинаковую глубину проверки каждой сборки. REAL, RELATIVE-OID и полная проверка constraints вне локального профиля.
 
@@ -88,22 +88,22 @@ inventory.proof_modes различает текст/golden, компиляцию
 | Проект | Методы | Fact | Theory | Строки Theory | В основной описи | Исключено |
 | --- | --- | --- | --- | --- | --- | --- |
 | Asn1Kit.Compiler.Tests | 167 | 156 | 11 | 36 | 95 | 72 |
-| Asn1Kit.Pkix.Tests | 42 | 33 | 9 | 27 | 42 | 0 |
+| Asn1Kit.Legacy.Tests | 42 | 33 | 9 | 27 | 42 | 0 |
 | Asn1Kit.Runtime.Tests | 145 | 117 | 28 | 182 | 145 | 0 |
 
 Построчная опись — [inventory.csv](test-audit/inventory.csv); ниже — группировка по классам без повторного подсчёта методов.
 
 | Класс / исходник | Методы | Включено | Строки Theory | Сценарии |
 | --- | --- | --- | --- | --- |
-| [CertificateCodecTests](../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateCodecTests.cs#L14) | 1 | 1 | 4 | pkix.certificate; pkix.directory-string |
-| [CertificateExtensionCodecTests](../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateExtensionCodecTests.cs#L13) | 2 | 2 | 7 | extension.ski; extension.aki; extension.key-usage; extension.basic-constraints; extension.policies; extension.name-constraints; extension.san |
-| [CertificateListCodecTests](../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CertificateListCodecTests.cs#L9) | 1 | 1 | 0 | pkix.crl; crl.extensions |
-| [CmsDemoTests](../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsDemoTests.cs#L15) | 14 | 14 | 0 | demo.dn-format; cms.attached; cms.signed-attrs; demo.retained-names; cms.malformed; cms.signer-id; demo.commands; demo.crypto; demo.chain; cms.from-scratch |
-| [CmsModernDemoTests](../runtime-csharp/tests/Asn1Kit.Pkix.Tests/CmsModernDemoTests.cs#L39) | 6 | 6 | 0 | cms.attached; cms.signed-attrs; cms.malformed; cms.signer-id; demo.crypto |
-| [DvcsCodecTests](../runtime-csharp/tests/Asn1Kit.Pkix.Tests/DvcsCodecTests.cs#L11) | 5 | 5 | 2 | dvcs.request; dvcs.response; dvcs.negative |
-| [GeneralNameCodecTests](../runtime-csharp/tests/Asn1Kit.Pkix.Tests/GeneralNameCodecTests.cs#L12) | 3 | 3 | 6 | generalname.othername; generalname.forms; extension.san |
-| [ModernOpenTypeBindingTests](../runtime-csharp/tests/Asn1Kit.Pkix.Tests/ModernOpenTypeWrapperTests.cs#L16) | 6 | 6 | 5 | open.descriptor-metadata; extension.ski; extension.aki; open.table-key-identity; open.duplicate; open.string-choice; pkix.directory-string; pkix.algorithm-params; pkix.certificate |
-| [PkixNegativeCodecTests](../runtime-csharp/tests/Asn1Kit.Pkix.Tests/PkixNegativeCodecTests.cs#L12) | 4 | 4 | 3 | pkix.negative |
+| [CertificateCodecTests](../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CertificateCodecTests.cs#L14) | 1 | 1 | 4 | pkix.certificate; pkix.directory-string |
+| [CertificateExtensionCodecTests](../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CertificateExtensionCodecTests.cs#L13) | 2 | 2 | 7 | extension.ski; extension.aki; extension.key-usage; extension.basic-constraints; extension.policies; extension.name-constraints; extension.san |
+| [CertificateListCodecTests](../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CertificateListCodecTests.cs#L9) | 1 | 1 | 0 | pkix.crl; crl.extensions |
+| [CmsDemoTests](../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CmsDemoTests.cs#L15) | 14 | 14 | 0 | demo.dn-format; cms.attached; cms.signed-attrs; demo.retained-names; cms.malformed; cms.signer-id; demo.commands; demo.crypto; demo.chain; cms.from-scratch |
+| [CmsModernDemoTests](../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CmsModernDemoTests.cs#L39) | 6 | 6 | 0 | cms.attached; cms.signed-attrs; cms.malformed; cms.signer-id; demo.crypto |
+| [DvcsCodecTests](../runtime-csharp/tests/Asn1Kit.Legacy.Tests/DvcsCodecTests.cs#L11) | 5 | 5 | 2 | dvcs.request; dvcs.response; dvcs.negative |
+| [GeneralNameCodecTests](../runtime-csharp/tests/Asn1Kit.Legacy.Tests/GeneralNameCodecTests.cs#L12) | 3 | 3 | 6 | generalname.othername; generalname.forms; extension.san |
+| [ModernOpenTypeBindingTests](../runtime-csharp/tests/Asn1Kit.Legacy.Tests/ModernOpenTypeWrapperTests.cs#L16) | 6 | 6 | 5 | open.descriptor-metadata; extension.ski; extension.aki; open.table-key-identity; open.duplicate; open.string-choice; pkix.directory-string; pkix.algorithm-params; pkix.certificate |
+| [PkixNegativeCodecTests](../runtime-csharp/tests/Asn1Kit.Legacy.Tests/PkixNegativeCodecTests.cs#L12) | 4 | 4 | 3 | pkix.negative |
 | [Asn1AnyDecodeValueTests](../runtime-csharp/tests/Asn1Kit.Runtime.Tests/Asn1AnyDecodeValueTests.cs#L8) | 2 | 2 | 0 | any.raw; tag.mismatch; any.single-value; api.trailing; api.null-callback |
 | [Asn1CodecTests](../runtime-csharp/tests/Asn1Kit.Runtime.Tests/Asn1CodecTests.cs#L8) | 5 | 5 | 3 | api.codec-adapters; containing.typed; tag.mismatch; containing.bit-align |
 | [Asn1ReaderTests](../runtime-csharp/tests/Asn1Kit.Runtime.Tests/Asn1ReaderTests.cs#L15) | 8 | 8 | 6 | tag.invalid; length.overflow; tlv.truncated; ber.eoc; ber.primitive-indefinite; api.peek-transaction; sequence.constructed-tag; api.scope-reader; api.reader-constructor |
@@ -179,7 +179,7 @@ BER indefinite и простая конкатенация constructed-сегме
 
 Compiler tests проверяют текст/golden, Roslyn Emit, имена/коллизии/алиасы/представления INTEGER, составные типы, DEFAULT, расширения SEQUENCE/CHOICE, OPTIONAL CHOICE без тега, lazy/retained и open types. Встроенные C# проверки if/throw/return учтены в parameters.embedded_CSharp_probe и inventory.embedded_checks.
 
-GeneratedCompilation выбрасывает InvalidOperationException при неуспешном Emit. Golden сравнивает списки и содержимое файлов; 30 modern-модулей и reflection базовых Signed-типов проверяют структуру сборки. Выполнение кодеков сообщений проверяется отдельно.
+GeneratedCompilation выбрасывает InvalidOperationException при неуспешном Emit. Golden сравнивает списки и содержимое файлов; 24 modern-модуля Full и reflection базовых Signed-типов проверяют структуру сборки. Выполнение кодеков сообщений проверяется отдельно.
 
 Open-type tests различают raw Decode и Binding TryDecode: неизвестный ключ сохраняет opaque Any; неверное содержимое известного ключа может остаться raw после Decode, но отвергается при типизированном доступе. Binding общий для modern/legacy. Дескрипторы с совпадающими формой/ключом допускают использование между каталогами в проверенных случаях. T0035 проверяет знаковые/беззнаковые ключи и дубликаты.
 

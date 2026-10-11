@@ -111,9 +111,9 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- compile -i compiler/fixtures/as
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate -i compiler/fixtures/ir/example.json --lang csharp -o ./generated
 ```
 
-`generate` также принимает `.asn` напрямую: компиляция выполняется в памяти. Повторяемый `-O` / `--option path=value` задаёт `options` всем модулям (например `-O csharp.namespace=Asn1Kit.Pkix` для golden PKIX).
+`generate` также принимает `.asn` напрямую: компиляция выполняется в памяти. Повторяемый `-O` / `--option path=value` задаёт `options` всем модулям (например `-O csharp.namespace=Asn1Kit.Legacy.Pkix` для golden PKIX).
 
-Эталонный C# PKIX/CMS/DVCS и зависимых протоколов: [runtime-csharp/generated/Asn1Kit.Pkix](runtime-csharp/generated/Asn1Kit.Pkix/).
+Эталонный C# PKIX/CMS/DVCS и зависимых протоколов: [runtime-csharp/generated/Asn1Kit.Legacy](runtime-csharp/generated/Asn1Kit.Legacy/).
 
 ## Профиль компилятора
 

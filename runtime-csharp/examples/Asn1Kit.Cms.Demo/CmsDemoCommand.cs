@@ -1,6 +1,6 @@
 using Asn1Kit.Cms.Demo.Modern;
 using Asn1Kit.Runtime;
-using PkixCertificate = Asn1Kit.Pkix.Certificate;
+using PkixCertificate = Asn1Kit.Legacy.Pkix.Certificate;
 using ModernCertificate = Asn1Kit.Modern.PKIX1Explicit2009.Certificate;
 
 namespace Asn1Kit.Cms.Demo;
@@ -26,14 +26,14 @@ public static class CmsDemoCommand
 
     private static int RunVerify(string[] args, TextWriter output, TextWriter error)
     {
-        var modern = false;
+        var modern = true;
         var rootPaths = new List<string>();
         var certificatePaths = new List<string>();
         string? cmsPath = null;
         for (var index = 0; index < args.Length; index++)
         {
-            if (args[index] == "--modern")
-                modern = true;
+            if (args[index] == "--legacy")
+                modern = false;
             else if ((args[index] is "--trusted-root" or "--certificate") && index + 1 < args.Length)
             {
                 var paths = args[index] == "--trusted-root" ? rootPaths : certificatePaths;
@@ -106,12 +106,12 @@ public static class CmsDemoCommand
 
     private static int RunPrintCert(string[] args, TextWriter output, TextWriter error)
     {
-        var modern = false;
+        var modern = true;
         string? certPath = null;
         for (var index = 0; index < args.Length; index++)
         {
-            if (args[index] == "--modern")
-                modern = true;
+            if (args[index] == "--legacy")
+                modern = false;
             else if (!args[index].StartsWith("--", StringComparison.Ordinal) && certPath is null)
                 certPath = args[index];
             else
@@ -143,12 +143,12 @@ public static class CmsDemoCommand
 
     private static int RunPrintCms(string[] args, TextWriter output, TextWriter error)
     {
-        var modern = false;
+        var modern = true;
         string? cmsPath = null;
         for (var index = 0; index < args.Length; index++)
         {
-            if (args[index] == "--modern")
-                modern = true;
+            if (args[index] == "--legacy")
+                modern = false;
             else if (!args[index].StartsWith("--", StringComparison.Ordinal) && cmsPath is null)
                 cmsPath = args[index];
             else
@@ -177,14 +177,14 @@ public static class CmsDemoCommand
 
     private static int RunSign(string[] args, TextWriter output, TextWriter error)
     {
-        var modern = false;
+        var modern = true;
         string? certificatePath = null;
         string? contentPath = null;
         string? outputPath = null;
         for (var index = 0; index < args.Length; index++)
         {
-            if (args[index] == "--modern")
-                modern = true;
+            if (args[index] == "--legacy")
+                modern = false;
             else if (args[index] == "--certificate" && index + 1 < args.Length)
                 certificatePath = args[++index];
             else if (args[index] == "--content" && index + 1 < args.Length)
@@ -248,10 +248,11 @@ public static class CmsDemoCommand
     private static int Usage(TextWriter error)
     {
         error.WriteLine("Usage:");
-        error.WriteLine("  Asn1Kit.Cms.Demo verify [--modern] [--trusted-root <root.cer>]... [--certificate <intermediate.cer>]... <attached-signeddata.p7m>");
-        error.WriteLine("  Asn1Kit.Cms.Demo print-cert [--modern] <certificate.cer>");
-        error.WriteLine("  Asn1Kit.Cms.Demo print-cms [--modern] <attached-signeddata.p7m>");
-        error.WriteLine("  Asn1Kit.Cms.Demo sign [--modern] --certificate <signer.cer> --content <data> --output <out.p7m>");
+        error.WriteLine("  Asn1Kit.Cms.Demo verify [--legacy] [--trusted-root <root.cer>]... [--certificate <intermediate.cer>]... <attached-signeddata.p7m>");
+        error.WriteLine("  Asn1Kit.Cms.Demo print-cert [--legacy] <certificate.cer>");
+        error.WriteLine("  Asn1Kit.Cms.Demo print-cms [--legacy] <attached-signeddata.p7m>");
+        error.WriteLine("  Asn1Kit.Cms.Demo sign [--legacy] --certificate <signer.cer> --content <data> --output <out.p7m>");
+        error.WriteLine("Default stack is Asn1Kit.Modern (CMS-2009). Pass --legacy for Asn1Kit.Legacy (ASN.1:1988 regression graph).");
         return 2;
     }
 }

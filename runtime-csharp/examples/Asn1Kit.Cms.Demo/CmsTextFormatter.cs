@@ -1,7 +1,7 @@
 using Asn1Kit.Runtime;
-using Asn1Kit.Cms;
+using Asn1Kit.Legacy.Cms;
 using ModernCms = Asn1Kit.Modern.CryptographicMessageSyntax2009;
-using CmsAttribute = Asn1Kit.Cms.Attribute;
+using CmsAttribute = Asn1Kit.Legacy.Cms.Attribute;
 using ModernAttribute = Asn1Kit.Modern.CryptographicMessageSyntax2009.Attribute;
 
 namespace Asn1Kit.Cms.Demo;

@@ -12,13 +12,13 @@ public sealed class IrOptionsPatchTests
         var document = DvcsTestData.Compile();
 
         Assert.Equal(
-            "Asn1Kit.Pkix",
+            "Asn1Kit.Legacy.Pkix",
             IrOptions.CSharpNamespace(document.Modules.Single(m => m.Name == "PKIX1Explicit88").Options));
         Assert.Equal(
-            "Asn1Kit.Pkix",
+            "Asn1Kit.Legacy.Pkix",
             IrOptions.CSharpNamespace(document.Modules.Single(m => m.Name == "PKIX1Implicit88").Options));
         Assert.Equal(
-            "Asn1Kit.Cms",
+            "Asn1Kit.Legacy.Cms",
             IrOptions.CSharpNamespace(
                 document.Modules.Single(m => m.Name == "CryptographicMessageSyntax2004").Options));
 
@@ -104,16 +104,16 @@ public sealed class IrOptionsPatchTests
         var files = new CSharpBackend().Generate(document);
         var joined = string.Join('\n', files.Select(f => f.Contents));
 
-        Assert.Contains("namespace Asn1Kit.Pkix", joined, StringComparison.Ordinal);
-        Assert.Contains("namespace Asn1Kit.Cms", joined, StringComparison.Ordinal);
+        Assert.Contains("namespace Asn1Kit.Legacy.Pkix", joined, StringComparison.Ordinal);
+        Assert.Contains("namespace Asn1Kit.Legacy.Cms", joined, StringComparison.Ordinal);
 
         var cmsFile = files.Single(f => f.RelativePath.Contains("CryptographicMessageSyntax", StringComparison.Ordinal));
         Assert.Contains(
-            "Asn1Lazy<Asn1Kit.Pkix.Certificate>",
+            "Asn1Lazy<Asn1Kit.Legacy.Pkix.Certificate>",
             cmsFile.Contents,
             StringComparison.Ordinal);
         Assert.Contains("Asn1Value<Attribute[]>? SignedAttrs", cmsFile.Contents, StringComparison.Ordinal);
-        Assert.Contains("Asn1Value<Asn1Kit.Pkix.AttributeTypeAndValue[][]> Issuer", cmsFile.Contents, StringComparison.Ordinal);
+        Assert.Contains("Asn1Value<Asn1Kit.Legacy.Pkix.AttributeTypeAndValue[][]> Issuer", cmsFile.Contents, StringComparison.Ordinal);
 
         var pkixFile = files.Single(f => f.RelativePath.Contains("PKIX1Explicit88", StringComparison.Ordinal));
         Assert.Contains("Asn1Value<", pkixFile.Contents, StringComparison.Ordinal);

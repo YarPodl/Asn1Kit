@@ -2,18 +2,19 @@
 
 Библиотека кодека: `Asn1Writer` / `Asn1Reader` и примитивы. Не знает про ASN.1-модули и IR — только TLV и правила кодирования.
 
-Рядом лежит эталонный сгенерированный код PKIX/CMS ([generated/Asn1Kit.Pkix](generated/Asn1Kit.Pkix/)) — golden артефакт C# backend (`Asn1Kit.Pkix` + `Asn1Kit.Cms`). Encode/decode на PKIX — в [tests/Asn1Kit.Pkix.Tests](tests/Asn1Kit.Pkix.Tests/) с фикстурами [fixtures/pkix/](fixtures/pkix/) (NIST PKITS). Мелкий round-trip через Roslyn остаётся в `compiler/tests`.
+Сгенерированные типы: product — [generated/Asn1Kit.Modern](generated/Asn1Kit.Modern/); регрессия ASN.1:1988 — [generated/Asn1Kit.Legacy](generated/Asn1Kit.Legacy/). Codec-тесты PKITS — [tests/Asn1Kit.Legacy.Tests](tests/Asn1Kit.Legacy.Tests/) с фикстурами [fixtures/pkix/](fixtures/pkix/).
 
 ## Проекты
 
 | Проект | Роль |
 | --- | --- |
 | `src/Asn1Kit.Runtime` | Теги, writer/reader, примитивы |
-| `generated/Asn1Kit.Pkix` | Golden C# PKIX1Explicit88 + PKIX1Implicit88 + CryptographicMessageSyntax2004; `*.g.cs` руками не править |
-| `generated/Asn1Kit.Modern` | Отдельная сборка современного корпуса PKIX/CMS; [профиль и регенерация](generated/Asn1Kit.Modern/README.md) |
-| `tests/Asn1Kit.Runtime.Tests` | Матрица hex, oracle BCL, внешние векторы, `RuntimeTests` |
-| `tests/Asn1Kit.Pkix.Tests` | Encode/decode `Certificate` / `CertificateList` на NIST PKITS |
-| `benchmarks/Asn1Kit.Pkix.Benchmarks` | BenchmarkDotNet: Decode/Encode Cert/CRL/CMS vs BCL и BouncyCastle (не `dotnet test`) |
+| `generated/Asn1Kit.Modern` | Modern PKIX/CMS (24 модуля) |
+| `generated/Asn1Kit.Legacy` | Legacy ASN.1:1988 PKIX/CMS/DVCS (регрессия) |
+| `tests/Asn1Kit.Runtime.Tests` | Матрица hex, oracle BCL, внешние векторы |
+| `tests/Asn1Kit.Legacy.Tests` | Encode/decode Cert/CRL/CMS/DVCS + Demo |
+| `benchmarks/Asn1Kit.Legacy.Benchmarks` | BenchmarkDotNet (не `dotnet test`) |
+| `examples/Asn1Kit.Cms.Demo` | Demo; default Modern, `--legacy` для Legacy |
 
 ## Фикстуры
 
@@ -23,21 +24,14 @@
 
 `fixtures/cms/` — attached SignedData для бенчмарков (см. [fixtures/cms/README.md](fixtures/cms/README.md)).
 
-Слои тестов:
-
-1. `PrimitiveCodecTests` — своя матрица
-2. `PrimitiveOracleTests` — `System.Formats.Asn1`
-3. `ExternalVectorTests` — RFC / внешние фрагменты
-
 ## Документация
 
 - [Публичный API](docs/runtime-api.md)
 - [Плейбук runtime](docs/playbooks/runtime.md)
-- Матрица поддержки — [docs/status.md](../docs/status.md); API Writer/Reader — [docs/runtime-api.md](docs/runtime-api.md)
+- Матрица поддержки — [docs/status.md](../docs/status.md)
 
 ```powershell
 dotnet test Asn1Kit.sln --filter FullyQualifiedName~Asn1Kit.Runtime.Tests
 
-# бенчмарки Cert/CRL/CMS (не входят в dotnet test)
-dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Pkix.Benchmarks
+dotnet run -c Release --project runtime-csharp/benchmarks/Asn1Kit.Legacy.Benchmarks
 ```
