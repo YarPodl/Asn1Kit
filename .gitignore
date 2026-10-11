@@ -11,3 +11,6 @@ test-timing*.log
 /generated/
 artifacts/
 /.cache/
+
+# Local NuGet cache override
+.nuget-packages/

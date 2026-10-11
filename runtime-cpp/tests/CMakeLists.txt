@@ -8,6 +8,7 @@ add_executable(asn1kit_tests
     exception_diagnostics_tests.cpp
     constructed_scope_tests.cpp
     generated_person_tests.cpp
+    generated_extensible_tests.cpp
     tag_tests.cpp
     any_tests.cpp
     contained_tests.cpp
@@ -27,6 +28,7 @@ target_include_directories(asn1kit_tests
     PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/../generated/example"
         "${CMAKE_CURRENT_SOURCE_DIR}/../generated/open-binding"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../generated/extensible"
 )
 
 # Prefer forward slashes so the string macro is portable on Windows and Linux.

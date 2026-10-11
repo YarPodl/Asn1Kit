@@ -27,4 +27,16 @@ $openRuntime = "runtime-cpp/generated/open-binding"
 New-Item -ItemType Directory -Force -Path $openRuntime | Out-Null
 Copy-Item -Force "$openOut/M.hpp" "$openRuntime/M.hpp"
 
-Write-Host "Updated $out, $runtimeOut, $openOut, $openRuntime"
+$extIr = "compiler/fixtures/ir/cpp-extensible.json"
+$extOut = "compiler/fixtures/codegen-cpp/extensible"
+New-Item -ItemType Directory -Force -Path $extOut | Out-Null
+dotnet run --project compiler/src/Asn1Kit.Cli -- generate `
+  -i $extIr `
+  --lang cpp `
+  -o $extOut
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+$extRuntime = "runtime-cpp/generated/extensible"
+New-Item -ItemType Directory -Force -Path $extRuntime | Out-Null
+Copy-Item -Force "$extOut/ExtModule.hpp" "$extRuntime/ExtModule.hpp"
+
+Write-Host "Updated $out, $runtimeOut, $openOut, $openRuntime, $extOut, $extRuntime"

@@ -1,0 +1,14 @@
+ExtModule DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+Box ::= SEQUENCE {
+  root INTEGER,
+  ...,
+  [[2: mid BOOLEAN, flag NULL OPTIONAL]],
+  tail OCTET STRING OPTIONAL
+}
+Bag ::= SET {
+  a INTEGER,
+  b BOOLEAN OPTIONAL,
+  ...
+}
+Pick ::= CHOICE { left INTEGER, ... }
+END

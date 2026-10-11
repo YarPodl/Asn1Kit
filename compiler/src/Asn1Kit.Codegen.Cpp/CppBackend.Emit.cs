@@ -35,6 +35,13 @@ public sealed partial class CppBackend
         IReadOnlyList<IrComponent> components,
         bool isSet)
     {
+        var extensible = type switch
+        {
+            SequenceType sequence => sequence.Extensible,
+            SetType set => set.Extensible,
+            _ => false
+        };
+
         sb.AppendLine($"struct {typeName} {{");
         foreach (var field in components)
         {
@@ -55,7 +62,13 @@ public sealed partial class CppBackend
         sb.AppendLine($"        {typeName} value{{}};");
         if (isSet)
         {
-            EmitSetDecodeBody(sb, document, module, typeName, components);
+            EmitSetDecodeBody(sb, document, module, typeName, components, extensible);
+        }
+        else if (extensible && type is SequenceType sequence)
+        {
+            sb.AppendLine("        r.with_sequence(t, [&](asn1kit::reader& inner) {");
+            EmitSequenceExtensionDecode(sb, document, module, typeName, sequence, "            ");
+            sb.AppendLine("        });");
         }
         else
         {
@@ -73,8 +86,15 @@ public sealed partial class CppBackend
         sb.AppendLine();
         sb.AppendLine(
             "    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {");
-        var enter = isSet ? "enter_set" : "enter_sequence";
+        var enter = isSet
+            ? (extensible ? "enter_set_of" : "enter_set")
+            : "enter_sequence";
         sb.AppendLine($"        auto scope = w.{enter}(t);");
+        if (extensible)
+        {
+            EmitExtensionGroupChecks(sb, document, module, typeName, components, "        ", null);
+        }
+
         var encodeFields = isSet
             ? SortedSetComponents(document, module, components)
             : components;
@@ -92,7 +112,8 @@ public sealed partial class CppBackend
         IrDocument document,
         IrModule module,
         string typeName,
-        IReadOnlyList<IrComponent> components)
+        IReadOnlyList<IrComponent> components,
+        bool extensible)
     {
         sb.AppendLine("        r.with_set(t, [&](asn1kit::reader& inner) {");
         foreach (var field in components)
@@ -141,9 +162,19 @@ public sealed partial class CppBackend
                 $"value.{prop}");
         }
 
-        sb.AppendLine("                } else {");
-        sb.AppendLine("                    throw asn1kit::exception(\"Unknown SET component.\");");
-        sb.AppendLine("                }");
+        if (extensible)
+        {
+            sb.AppendLine("                } else {");
+            sb.AppendLine("                    (void)inner.read_any();");
+            sb.AppendLine("                }");
+        }
+        else
+        {
+            sb.AppendLine("                } else {");
+            sb.AppendLine("                    throw asn1kit::exception(\"Unknown SET component.\");");
+            sb.AppendLine("                }");
+        }
+
         sb.AppendLine("            }");
         foreach (var field in components)
         {
@@ -160,6 +191,11 @@ public sealed partial class CppBackend
                     $"                value.{prop} = {DefaultExpression(document, module, typeName, field)};");
                 sb.AppendLine("            }");
             }
+        }
+
+        if (extensible)
+        {
+            EmitExtensionGroupChecks(sb, document, module, typeName, components, "            ", "value");
         }
 
         sb.AppendLine("        });");
@@ -182,7 +218,13 @@ public sealed partial class CppBackend
         sb.AppendLine($"enum class {typeName}_kind {{");
         for (var i = 0; i < kinds.Count; i++)
         {
-            sb.AppendLine($"    {kinds[i]}{(i + 1 < kinds.Count ? "," : "")}");
+            var trailing = i + 1 < kinds.Count || type.Extensible ? "," : "";
+            sb.AppendLine($"    {kinds[i]}{trailing}");
+        }
+
+        if (type.Extensible)
+        {
+            sb.AppendLine("    unknown");
         }
 
         sb.AppendLine("};");
@@ -193,6 +235,11 @@ public sealed partial class CppBackend
             .Select(a => CppType(document, module, typeName, a.Name, a.Type, optional: false))
             .ToList();
         sb.AppendLine($"    std::variant<{string.Join(", ", variantTypes)}> value{{}};");
+        if (type.Extensible)
+        {
+            sb.AppendLine("    std::optional<asn1kit::any> unknown{};");
+        }
+
         sb.AppendLine();
 
         for (var i = 0; i < alts.Count; i++)
@@ -204,6 +251,17 @@ public sealed partial class CppBackend
             sb.AppendLine($"        {typeName} result{{}};");
             sb.AppendLine($"        result.kind = {typeName}_kind::{kinds[i]};");
             sb.AppendLine("        result.value = std::move(v);");
+            sb.AppendLine("        return result;");
+            sb.AppendLine("    }");
+            sb.AppendLine();
+        }
+
+        if (type.Extensible)
+        {
+            sb.AppendLine($"    static {typeName} from_unknown(asn1kit::any v) {{");
+            sb.AppendLine($"        {typeName} result{{}};");
+            sb.AppendLine($"        result.kind = {typeName}_kind::unknown;");
+            sb.AppendLine("        result.unknown = std::move(v);");
             sb.AppendLine("        return result;");
             sb.AppendLine("    }");
             sb.AppendLine();
@@ -248,9 +306,19 @@ public sealed partial class CppBackend
             sb.AppendLine("            return result;");
         }
 
-        sb.AppendLine("        } else {");
-        sb.AppendLine("            throw asn1kit::exception(\"Unknown CHOICE alternative.\");");
-        sb.AppendLine("        }");
+        if (type.Extensible)
+        {
+            sb.AppendLine("        } else {");
+            sb.AppendLine("            return from_unknown(r.read_any());");
+            sb.AppendLine("        }");
+        }
+        else
+        {
+            sb.AppendLine("        } else {");
+            sb.AppendLine("            throw asn1kit::exception(\"Unknown CHOICE alternative.\");");
+            sb.AppendLine("        }");
+        }
+
         sb.AppendLine("    }");
         sb.AppendLine();
         sb.AppendLine(
@@ -300,6 +368,15 @@ public sealed partial class CppBackend
                 "alt");
             sb.AppendLine("                break;");
             sb.AppendLine("            }");
+        }
+
+        if (type.Extensible)
+        {
+            sb.AppendLine($"        case {typeName}_kind::unknown:");
+            sb.AppendLine(
+                "            if (!unknown.has_value()) throw asn1kit::exception(\"Missing unknown CHOICE value.\");");
+            sb.AppendLine("            w.write_any(*unknown);");
+            sb.AppendLine("            break;");
         }
 
         sb.AppendLine("        }");

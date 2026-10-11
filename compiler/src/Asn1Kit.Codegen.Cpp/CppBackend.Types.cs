@@ -70,10 +70,6 @@ public sealed partial class CppBackend
             case BitStringType { Containing: { } bitContent }:
                 EnsureBackendSupport(document, module, bitContent);
                 break;
-            case SequenceType { Extensible: true }:
-            case SetType { Extensible: true }:
-            case ChoiceType { Extensible: true }:
-                throw new NotSupportedException("extensible");
             case SequenceType sequence:
                 foreach (var component in sequence.Components)
                 {

@@ -30,7 +30,8 @@
   - Policy: unknown/wrong key → `try_decode` = false (raw живёт); match + bad wire → reject.
   - Вне среза MVP: contained/SET OF payload, ancestor selector (`levels > 0`), `AsString`, INTEGER selector.
 - `OCTET STRING` / `BIT STRING` `CONTAINING` → `asn1kit::contained<T>` (`read_contained` / `write_contained`; content ANY → `known=false`; nested content — `Owner_Content`).
-- Пока отклоняются: `extensible`, `lazy`, `retainEncoded`.
+- Extensible SEQUENCE/SET: skip-unknown через `read_any`, extension additions + groups (`CppBackend.Extensibility.cs`); extensible SET encode — `enter_set_of`. Extensible CHOICE → `…_kind::unknown` + `asn1kit::any`.
+- Пока отклоняются: `lazy`, `retainEncoded`.
 
 ## CLI и golden
 
@@ -43,4 +44,4 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- generate `
 ./scripts/regenerate-cpp-golden.ps1
 ```
 
-Golden сверяет `CppCodegenTests.GenerateMatchesCommittedExampleGolden`. Нативный round-trip — `generated_person_tests.cpp`, open-type — `open_binding_tests.cpp` (`ctest`; header `runtime-cpp/generated/open-binding/M.hpp`).
+Golden сверяет `CppCodegenTests.GenerateMatchesCommittedExampleGolden` и `GenerateMatchesCommittedExtensibleGolden`. Нативный round-trip — `generated_person_tests.cpp`, open-type — `open_binding_tests.cpp`, extensible — `generated_extensible_tests.cpp` (`ctest`; headers в `runtime-cpp/generated/`).

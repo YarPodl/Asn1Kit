@@ -158,6 +158,61 @@ END
     }
 
     [Fact]
+    public void GeneratesExtensibleSequenceSetAndChoice()
+    {
+        const string asn = @"
+ExtModule DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+Box ::= SEQUENCE {
+  root INTEGER,
+  ...,
+  [[2: mid BOOLEAN, flag NULL OPTIONAL]],
+  tail OCTET STRING OPTIONAL
+}
+Bag ::= SET {
+  a INTEGER,
+  b BOOLEAN OPTIONAL,
+  ...
+}
+Pick ::= CHOICE { left INTEGER, ... }
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        var source = new CppBackend().Generate(document).Single().Contents;
+
+        Assert.Contains("struct Box", source);
+        Assert.Contains("auto next_extension =", source);
+        Assert.Contains("(void)inner.read_any();", source);
+        Assert.Contains("Incomplete extension group 2", source);
+        Assert.Contains("Duplicate or unordered extension component", source);
+        Assert.Contains("std::optional<bool> mid{}", source);
+        Assert.Contains("std::optional<asn1kit::null_value> flag{}", source);
+
+        Assert.Contains("struct Bag", source);
+        Assert.Contains("enter_set_of", source);
+        Assert.Contains("(void)inner.read_any();", source);
+
+        Assert.Contains("enum class Pick_kind", source);
+        Assert.Contains("unknown", source);
+        Assert.Contains("from_unknown", source);
+        Assert.Contains("std::optional<asn1kit::any> unknown{}", source);
+        Assert.Contains("return from_unknown(r.read_any());", source);
+    }
+
+    [Fact]
+    public void GenerateMatchesCommittedExtensibleGolden()
+    {
+        var document = TestData.LoadIr("compiler/fixtures/ir/cpp-extensible.json");
+        var files = new CppBackend().Generate(document);
+        var file = Assert.Single(files);
+        Assert.Equal("ExtModule.hpp", file.RelativePath);
+
+        var expectedPath = TestData.RepoPath("compiler/fixtures/codegen-cpp/extensible/ExtModule.hpp");
+        var expected = File.ReadAllText(expectedPath).Replace("\r\n", "\n", StringComparison.Ordinal);
+        var actual = file.Contents.Replace("\r\n", "\n", StringComparison.Ordinal);
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
     public void GeneratesChoiceSetOfAndOidCatalog()
     {
         const string asn = @"

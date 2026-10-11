@@ -1,0 +1,137 @@
+{
+  "irVersion": 1,
+  "sourceFiles": [
+    "cpp-extensible.asn"
+  ],
+  "modules": [
+    {
+      "name": "ExtModule",
+      "tagDefault": "automatic",
+      "imports": [],
+      "options": {
+        "csharp": {
+          "namespace": "ExtModule"
+        }
+      },
+      "types": [
+        {
+          "name": "Box",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "root",
+                "type": {
+                  "kind": "integer",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "extensionAddition": true,
+                "extensionGroup": 2,
+                "name": "mid",
+                "type": {
+                  "kind": "boolean",
+                  "tag": {
+                    "class": "context",
+                    "number": 1,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "extensionAddition": true,
+                "extensionGroup": 2,
+                "name": "flag",
+                "type": {
+                  "kind": "null",
+                  "tag": {
+                    "class": "context",
+                    "number": 2,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              },
+              {
+                "extensionAddition": true,
+                "name": "tail",
+                "type": {
+                  "kind": "octetString",
+                  "tag": {
+                    "class": "context",
+                    "number": 3,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              }
+            ],
+            "extensible": true
+          }
+        },
+        {
+          "name": "Bag",
+          "type": {
+            "kind": "set",
+            "components": [
+              {
+                "name": "a",
+                "type": {
+                  "kind": "integer",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "b",
+                "type": {
+                  "kind": "boolean",
+                  "tag": {
+                    "class": "context",
+                    "number": 1,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              }
+            ],
+            "extensible": true
+          }
+        },
+        {
+          "name": "Pick",
+          "type": {
+            "kind": "choice",
+            "components": [
+              {
+                "name": "left",
+                "type": {
+                  "kind": "integer",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": true
+          }
+        }
+      ],
+      "values": []
+    }
+  ]
+}
