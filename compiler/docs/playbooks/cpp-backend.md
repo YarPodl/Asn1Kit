@@ -32,20 +32,25 @@
   - Операции на descriptor: `try_decode` / `set` / `create` (create — только local selector).
   - Каталог — `namespace {table}_{field}_bindings` с `inline const` members (`{ key }`).
   - Policy: unknown/wrong key → `try_decode` = false (raw живёт); match + bad wire → reject.
-  - Вне среза: `AsString`, INTEGER selector, nested selector path (`path.Count > 1`).
+  - Selector: OID и INTEGER; nested path (`path.Count > 1`) через поля SEQUENCE/SET (нужно для Certificate/SIGNED parameters).
+  - Вне среза: `AsString` / DirectoryString ergonomics, SIGNED-шаблон как у C#, Legacy Explicit88 C++ golden.
+- Cross-module: peer `#include "Peer.hpp"`; при циклах зависимостей — amalgam `all.hpp` (все модули, type-order) и `certificate.hpp` (type-closure от `Certificate`, без open-type catalogs) для native Certificate RT.
+- CHOICE: если несколько альтернатив дают один и тот же C++ тип (UTCTime/GeneralizedTime → `utc_date_time`), эмитятся `{Type}_{alt}_box` обёртки в `std::variant`.
 - `OCTET STRING` / `BIT STRING` `CONTAINING` → `asn1kit::contained<T>` (`read_contained` / `write_contained`; content ANY → `known=false`; nested content — `Owner_Content`).
 - Extensible SEQUENCE/SET: skip-unknown через `read_any`, extension additions + groups (`CppBackend.Extensibility.cs`); extensible SET encode — `enter_set_of`. Extensible CHOICE → `…_kind::unknown` + `asn1kit::any`.
-- `retainEncoded` → `asn1kit::value<T>` + `read_with_original_encoding` (encode из `.get()`); `lazy` → `asn1kit::lazy<T>` + `read_lazy` (encode: raw TLV если есть, иначе `.get()`). Только SEQUENCE/SET/OF; lazy побеждает при обоих флагах (`CppBackend.Deferred.cs`).
+- `retainEncoded` → `asn1kit::value<T>` + `read_with_original_encoding` (encode: original TLV если есть, иначе `.get()`); `lazy` → `asn1kit::lazy<T>` + `read_lazy` (encode: raw TLV если есть, иначе `.get()`). Только SEQUENCE/SET/OF; lazy побеждает при обоих флагах (`CppBackend.Deferred.cs`).
+- Structured / collection / choice / typed DEFAULT — `ValueExpression` в `CppBackend.EncodeDecode.cs`.
 
 ## CLI и golden
 
 ```powershell
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate `
   -i compiler/fixtures/ir/example.json --lang cpp `
-  -o compiler/fixtures/codegen-cpp/example
+  -o runtime-cpp/generated/example
 
 # или
 ./scripts/regenerate-cpp-golden.ps1
+./scripts/regenerate-modern-cpp.ps1
 ```
 
-Golden сверяет `CppCodegenTests` (example / extensible / deferred). Нативный round-trip — `generated_person_tests.cpp`, open-type — `open_binding_tests.cpp`, extensible — `generated_extensible_tests.cpp`, deferred — `generated_deferred_tests.cpp` + `value_lazy_tests.cpp` (`ctest`; headers в `runtime-cpp/generated/`).
+Golden и native headers — один SoT: `runtime-cpp/generated/`. Сверяет `CppCodegenTests` (example / extensible / deferred / **modern**). Нативный round-trip — `generated_person_tests.cpp`, open-type — `open_binding_tests.cpp`, extensible — `generated_extensible_tests.cpp`, deferred — `generated_deferred_tests.cpp` + `value_lazy_tests.cpp`, Modern Certificate — `generated_modern_certificate_tests.cpp` (`ctest`).

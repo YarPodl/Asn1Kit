@@ -51,7 +51,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-modern.ps
 | `fixtures/ir/cms-2004.json` | **Golden**: Explicit + Implicit + CMS + оба bindings; namespaces в `options` |
 | `fixtures/ir/dvcs.patch.json` | Product overlay для полного DVCS-графа: namespaces, lazy cert, retainEncoded, ATV valueType; отдельный DVCS IR не коммитится |
 | `fixtures/ir/example.json` | **Ручная**: `options.csharp.*` / `options.cpp.*`; компилятором не пересобирать |
-| `fixtures/codegen-cpp/example/*.hpp` | **Golden C++** из `example.json`; `scripts/regenerate-cpp-golden.ps1` |
+| `../runtime-cpp/generated/**/*.hpp` | **Golden C++** (единственный SoT); `scripts/regenerate-cpp-golden.ps1` / `regenerate-modern-cpp.ps1` |
 | `../runtime-csharp/generated/Asn1Kit.Legacy/*.g.cs` | **Legacy C#** (регрессия): PKIX/CMS/DVCS + `dvcs.patch.json`; руками не править |
 | `../runtime-csharp/generated/Asn1Kit.Modern/*.g.cs` | **Modern C#**: 24 модуля корпуса; руками не править |
 

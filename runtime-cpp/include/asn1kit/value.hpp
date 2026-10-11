@@ -26,7 +26,13 @@ public:
     }
 
     [[nodiscard]] const T& get() const noexcept { return value_; }
-    [[nodiscard]] T& get() noexcept { return value_; }
+
+    /// Non-const access invalidates the retained TLV so a later encode reflects mutations.
+    [[nodiscard]] T& get() noexcept
+    {
+        original_encoding_ = bytes{};
+        return value_;
+    }
 
     [[nodiscard]] const bytes& original_encoding() const noexcept { return original_encoding_; }
     [[nodiscard]] bool has_original_encoding() const noexcept { return !original_encoding_.empty(); }

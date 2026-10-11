@@ -22,6 +22,16 @@ public sealed partial class CppBackend
     private static bool IsNamedInteger(TypeExpr type) =>
         type is IntegerType { NamedValues: { Count: > 0 } };
 
+    private (IrModule Module, IntegerType Type)? TryGetNamedInteger(
+        IrDocument document, IrModule module, TypeExpr type)
+    {
+        if (type is not RefType reference) return null;
+        var found = FindWithModule(document, module, reference);
+        if (found?.Def.Type is IntegerType { NamedValues.Count: > 0 } named)
+            return (found.Value.Module, named);
+        return null;
+    }
+
     private static bool IsCollapsibleAlias(TypeExpr type) =>
         !NeedsNamedType(type) && !IsNamedBitString(type) && !IsEnumerated(type) && !IsNamedInteger(type);
 
@@ -57,7 +67,11 @@ public sealed partial class CppBackend
         }
     }
 
-    private void EnsureBackendSupport(IrDocument document, IrModule module, TypeExpr type)
+    private void EnsureBackendSupport(IrDocument document, IrModule module, TypeExpr type) =>
+        EnsureBackendSupport(document, module, type, new HashSet<string>(StringComparer.Ordinal));
+
+    private void EnsureBackendSupport(
+        IrDocument document, IrModule module, TypeExpr type, HashSet<string> visited)
     {
         RejectUnsupportedOptions(type);
         switch (type)
@@ -65,15 +79,15 @@ public sealed partial class CppBackend
             case AnyType:
                 break;
             case OctetStringType { Containing: { } octetContent }:
-                EnsureBackendSupport(document, module, octetContent);
+                EnsureBackendSupport(document, module, octetContent, visited);
                 break;
             case BitStringType { Containing: { } bitContent }:
-                EnsureBackendSupport(document, module, bitContent);
+                EnsureBackendSupport(document, module, bitContent, visited);
                 break;
             case SequenceType sequence:
                 foreach (var component in sequence.Components)
                 {
-                    EnsureBackendSupport(document, module, component.Type);
+                    EnsureBackendSupport(document, module, component.Type, visited);
                     RejectUnsupportedOptions(component.Options, component.Type);
                 }
 
@@ -81,7 +95,7 @@ public sealed partial class CppBackend
             case SetType set:
                 foreach (var component in set.Components)
                 {
-                    EnsureBackendSupport(document, module, component.Type);
+                    EnsureBackendSupport(document, module, component.Type, visited);
                     RejectUnsupportedOptions(component.Options, component.Type);
                 }
 
@@ -89,21 +103,27 @@ public sealed partial class CppBackend
             case ChoiceType choice:
                 foreach (var component in choice.Components)
                 {
-                    EnsureBackendSupport(document, module, component.Type);
+                    EnsureBackendSupport(document, module, component.Type, visited);
                 }
 
                 break;
             case SequenceOfType sequenceOf:
-                EnsureBackendSupport(document, module, sequenceOf.Element);
+                EnsureBackendSupport(document, module, sequenceOf.Element, visited);
                 break;
             case SetOfType setOf:
-                EnsureBackendSupport(document, module, setOf.Element);
+                EnsureBackendSupport(document, module, setOf.Element, visited);
                 break;
             case RefType reference:
-                var found = Find(document, module, reference);
-                if (found?.Type is { } inner)
+                var key = (reference.Module ?? module.Name) + "::" + reference.Name;
+                if (!visited.Add(key))
                 {
-                    EnsureBackendSupport(document, module, inner);
+                    break;
+                }
+
+                var found = FindWithModule(document, module, reference);
+                if (found is not null)
+                {
+                    EnsureBackendSupport(document, found.Value.Module, found.Value.Def.Type, visited);
                 }
 
                 break;
@@ -169,6 +189,9 @@ public sealed partial class CppBackend
     {
         var integerRepresentation = TryResolveIntegerRepresentation(document, module, type);
         var original = type;
+        // Keep the emitting module for cross-module qualification after alias unwrap
+        // (e.g. OCSP field Extensions → vector<::…::Extension>, not bare Extension).
+        var emittingModule = module;
         var resolvedModule = module;
         type = UnwrapAliases(document, ref resolvedModule, type);
 
@@ -184,21 +207,21 @@ public sealed partial class CppBackend
                 out var contentOwner,
                 out var contentHint);
             return
-                $"asn1kit::contained<{CppType(document, contentModule, contentOwner, contentHint, content, optional: false)}>";
+                $"asn1kit::contained<{CppType(document, emittingModule, contentOwner, contentHint, content, optional: false)}>";
         }
 
         if (type is SequenceOfType or SetOfType)
         {
             ResolveOfItemNaming(
                 document,
-                resolvedModule,
+                emittingModule,
                 original,
                 owner,
                 hint,
                 out var itemOwner,
                 out var itemHint);
             var element = type is SetOfType setOf ? setOf.Element : ((SequenceOfType)type).Element;
-            var itemType = CppType(document, resolvedModule, itemOwner, itemHint, element, optional: false);
+            var itemType = CppType(document, emittingModule, itemOwner, itemHint, element, optional: false);
             return $"std::vector<{itemType}>";
         }
 
@@ -219,6 +242,19 @@ public sealed partial class CppBackend
                 TypeKinds.Any => "asn1kit::any",
                 _ => throw new NotSupportedException(primitive)
             };
+        }
+
+        // Named INTEGER typedefs emit a constants struct, but fields use the wire integer type.
+        if (type is RefType namedIntegerRef)
+        {
+            var found = FindWithModule(document, resolvedModule, namedIntegerRef);
+            if (found?.Def.Type is IntegerType { NamedValues.Count: > 0 } namedInteger)
+            {
+                var representation = TryResolveIntegerRepresentation(
+                        document, found.Value.Module, namedInteger)
+                    ?? IrOptions.IntegerRepresentations.Der;
+                return MapIntegerCppType(representation);
+            }
         }
 
         if (IsEnumeratedRefOrType(document, resolvedModule, type))

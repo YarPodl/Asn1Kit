@@ -23,7 +23,7 @@
 
 C# тесты компилируют сгенерированный код через Roslyn (`RoundTripTests.CompileGenerated`) — для C++ такого нет. Порядок:
 
-1. **Golden-файлы.** Фикстура IR → сгенерированные `.hpp` сравниваются с эталоном в `compiler/fixtures/codegen-cpp/`. Ловит непреднамеренные изменения шаблона.
+1. **Golden-файлы.** Фикстура IR → сгенерированные `.hpp` сравниваются с эталоном в `runtime-cpp/generated/`. Ловит непреднамеренные изменения шаблона.
 2. **Отказы.** Неподдержанный kind — `NotSupportedException` с именем kind (`CppCodegenTests`).
 3. **Кодек C++.** Тесты runtime на байтовых векторах — в `runtime-cpp/tests/` (`ctest`); generated types — `generated_person_tests.cpp`.
 4. **Кросс-проверка.** Тот же DER-вектор, что даёт C# encode Person, декодируется C++ Person (и обратно по возможности).

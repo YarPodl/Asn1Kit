@@ -75,7 +75,11 @@ struct Box {
 
     void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
         auto scope = w.enter_sequence(t);
-        this->retained.get().encode(w, asn1kit::tag::context(0, true));
+        if (this->retained.has_original_encoding()) {
+            w.write_raw(this->retained.original_encoding().span());
+        } else {
+            this->retained.get().encode(w, asn1kit::tag::context(0, true));
+        }
         if (this->deferred.has_encoded()) {
             w.write_raw(this->deferred.encoded().span());
         } else {

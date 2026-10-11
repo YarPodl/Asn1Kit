@@ -1,6 +1,6 @@
 ---
 description: ASN.1, IR, BER/DER и generated fixtures — происхождение и регрессии
-globs: compiler/fixtures/**,runtime-csharp/fixtures/**,runtime-csharp/generated/**
+globs: compiler/fixtures/**,runtime-csharp/fixtures/**,runtime-csharp/generated/**,runtime-cpp/generated/**
 alwaysApply: false
 ---
 
@@ -12,7 +12,7 @@ alwaysApply: false
 - `dvcs.patch.json` — product options overlay (namespaces, lazy, retainEncoded, valueType) для generate `Asn1Kit.Pkix`.
 - `example.json` — ручная фикстура; сохраняй её `options` при точечных правках.
 - `runtime-csharp/generated/**/*.g.cs` — generated C#; вручную не правится.
-- `compiler/fixtures/codegen-cpp/**/*.hpp` и `runtime-cpp/generated/**/*.hpp` — generated C++; вручную не правится (`scripts/regenerate-cpp-golden.ps1`).
+- `runtime-cpp/generated/**/*.hpp` — generated C++ (единственный SoT, как `runtime-csharp/generated`); вручную не правится (`scripts/regenerate-cpp-golden.ps1`, `scripts/regenerate-modern-cpp.ps1`).
 - Формат BER/DER-векторов описан в `runtime-csharp/fixtures/ber-der/README.md`.
 
 ## Workflow

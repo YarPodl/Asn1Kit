@@ -199,10 +199,10 @@ public sealed partial class CppBackend
         }
 
         if (selector.Levels > outerParents.Count) return;
-        if (selector.Path.Count != 1)
+        if (selector.Path.Count == 0)
         {
             throw new NotSupportedException(
-                "C++ open-type Binding supports only a single-component selector path.");
+                "C++ open-type Binding requires a non-empty selector path.");
         }
 
         var parents = outerParents.Reverse().Take(selector.Levels).ToList();
@@ -615,6 +615,7 @@ public sealed partial class CppBackend
         var container = site.Container.TypeName;
         var field = FieldName(site.Field);
         var keyExpr = OpenKeyExpression(document, site);
+        var keyCppType = OpenKeyCppType(document, site);
         var optional = site.Field.Optional;
         var ancestor = site.Selector.Levels > 0;
         var parentParams = string.Concat(
@@ -638,7 +639,7 @@ public sealed partial class CppBackend
 
         sb.AppendLine($"template <typename T>");
         sb.AppendLine($"struct {stem}_binding {{");
-        sb.AppendLine("    asn1kit::oid key{};");
+        sb.AppendLine($"    {keyCppType} key{{}};");
         sb.AppendLine();
         sb.AppendLine(
             $"    [[nodiscard]] bool try_decode(const {container}& src{parentParams}, {valueParam}& out) const {{");
@@ -659,7 +660,7 @@ public sealed partial class CppBackend
             sb.AppendLine("        }");
         }
         else
-            sb.AppendLine($"        src.{OpenKeyFieldName(document, site)} = key;");
+            sb.AppendLine($"        {OpenKeyAssignmentTarget(document, site)} = key;");
         sb.AppendLine($"        src.{field} = {encodeCall}(value);");
         sb.AppendLine("    }");
         if (site.Payload.Kind == OpenPayloadKind.Many)
@@ -705,7 +706,7 @@ public sealed partial class CppBackend
                 member = binding.MemberName + "_" + suffix.ToString(CultureInfo.InvariantCulture);
             var valueType = OpenBindingCppType(
                 document, module, site.Container.TypeName, "Value", binding.Binding.Type);
-            var keyExpr = OpenBindingKeyExpression(document, module, binding.Binding.Key);
+            var keyExpr = OpenBindingKeyExpression(document, module, site, binding.Binding.Key);
             sb.AppendLine($"inline const {stem}_binding<{valueType}> {member}{{");
             sb.AppendLine($"    {keyExpr}}};");
             sb.AppendLine();
@@ -715,41 +716,130 @@ public sealed partial class CppBackend
         sb.AppendLine();
     }
 
-    private string OpenKeyFieldName(IrDocument document, OpenSite site)
-    {
-        var keyComponent = OpenKeyComponent(document, site);
-        return FieldName(keyComponent);
-    }
-
     private string OpenKeyExpression(IrDocument document, OpenSite site)
     {
-        var field = OpenKeyFieldName(document, site);
-        if (site.Selector.Levels == 0) return $"src.{field}";
-        var index = (site.Selector.Levels - 1).ToString(CultureInfo.InvariantCulture);
-        return $"parent{index}.{field}";
+        var root = site.Selector.Levels == 0
+            ? "src"
+            : "parent" + (site.Selector.Levels - 1).ToString(CultureInfo.InvariantCulture);
+        return OpenKeyAccessExpression(document, site, root);
     }
 
-    private IrComponent OpenKeyComponent(IrDocument document, OpenSite site)
+    private string OpenKeyAssignmentTarget(IrDocument document, OpenSite site)
     {
-        if (site.Selector.Path.Count != 1)
+        return OpenKeyAccessExpression(document, site, "src");
+    }
+
+    private string OpenKeyAccessExpression(IrDocument document, OpenSite site, string root)
+    {
+        var keyContainer = site.Selector.Levels == 0
+            ? site.Container
+            : site.Parents[site.Selector.Levels - 1];
+        var expression = root;
+        var container = keyContainer;
+        for (var index = 0; index < site.Selector.Path.Count; index++)
+        {
+            var part = site.Selector.Path[index];
+            if (part is "[]" or "containing")
+            {
+                throw new NotSupportedException(
+                    "C++ open-type Binding selector path cannot contain '" + part + "'.");
+            }
+
+            var field = container.Fields.Single(f => f.Name == part);
+            expression += "." + FieldName(field);
+            if (field.Optional)
+            {
+                expression = "(*" + expression + ")";
+            }
+
+            if (ShouldEmitLazy(document, container.Module, field.Type, field.Options) ||
+                ShouldEmitRetainEncoded(document, container.Module, field.Type, field.Options))
+            {
+                expression += ".get()";
+            }
+
+            if (index == site.Selector.Path.Count - 1)
+            {
+                break;
+            }
+
+            container = OpenKeyStepContainer(document, container, field);
+        }
+
+        return expression;
+    }
+
+    private (TypeExpr Type, IrModule Module, IrComponent Field) OpenKeyType(IrDocument document, OpenSite site)
+    {
+        if (site.Selector.Path.Count == 0)
         {
             throw new NotSupportedException(
-                "C++ open-type Binding supports only a single-component selector path.");
+                "C++ open-type Binding requires a non-empty selector path.");
         }
 
         var keyContainer = site.Selector.Levels == 0
             ? site.Container
             : site.Parents[site.Selector.Levels - 1];
-        var keyComponent = keyContainer.Fields.Single(f => f.Name == site.Selector.Path[0]);
-        var (keyModule, keyType) = ResolveAliasTarget(document, keyContainer.Module, keyComponent.Type);
-        if (keyType is not OidType)
+        var container = keyContainer;
+        IrComponent field = null!;
+        TypeExpr type = null!;
+        var module = container.Module;
+        for (var index = 0; index < site.Selector.Path.Count; index++)
         {
-            throw new NotSupportedException(
-                "C++ open-type Binding supports only OBJECT IDENTIFIER selectors.");
+            var part = site.Selector.Path[index];
+            if (part is "[]" or "containing")
+            {
+                throw new NotSupportedException(
+                    "C++ open-type Binding selector path cannot contain '" + part + "'.");
+            }
+
+            field = container.Fields.Single(f => f.Name == part);
+            (module, type) = ResolveAliasTarget(document, container.Module, field.Type);
+            if (index == site.Selector.Path.Count - 1)
+            {
+                break;
+            }
+
+            container = OpenKeyStepContainer(document, container, field);
         }
 
-        _ = keyModule;
-        return keyComponent;
+        if (type is not OidType and not IntegerType)
+        {
+            throw new NotSupportedException(
+                "C++ open-type Binding supports only OBJECT IDENTIFIER or INTEGER selectors.");
+        }
+
+        return (type, module, field);
+    }
+
+    private OpenContainer OpenKeyStepContainer(
+        IrDocument document, OpenContainer container, IrComponent field)
+    {
+        var (fieldModule, type) = ResolveAliasTarget(document, container.Module, field.Type);
+        var fields = OpenContainerFields(type)
+            ?? throw new NotSupportedException(
+                "Open-type selector must traverse SEQUENCE or SET.");
+        var owner = container.TypeName + "_" + CppNames.SanitizeTypeName(field.Name);
+        if (field.Type is RefType reference)
+        {
+            var found = FindWithModule(document, container.Module, reference);
+            if (found is not null)
+            {
+                var (_, def) = ResolveAliasOfTarget(document, found.Value.Module, found.Value.Def);
+                owner = IrOptions.CppTypeName(def.Options) ?? CppNames.SanitizeTypeName(def.Name);
+            }
+        }
+
+        return new OpenContainer(fieldModule, owner, owner, fields);
+    }
+
+    private string OpenKeyCppType(IrDocument document, OpenSite site)
+    {
+        var (type, module, _) = OpenKeyType(document, site);
+        if (type is OidType) return "asn1kit::oid";
+        var representation = TryResolveIntegerRepresentation(document, module, type)
+            ?? IrOptions.IntegerRepresentations.Der;
+        return MapIntegerCppType(representation);
     }
 
     private static (IrModule Module, TypeExpr Type) ResolveAliasTarget(
@@ -770,8 +860,31 @@ public sealed partial class CppBackend
         return (module, type);
     }
 
-    private string OpenBindingKeyExpression(IrDocument document, IrModule module, string key)
+    private string OpenBindingKeyExpression(
+        IrDocument document, IrModule module, OpenSite site, string key)
     {
+        var (type, keyModule, _) = OpenKeyType(document, site);
+        if (type is IntegerType)
+        {
+            var representation = TryResolveIntegerRepresentation(document, keyModule, type)
+                ?? IrOptions.IntegerRepresentations.Der;
+            return representation switch
+            {
+                IrOptions.IntegerRepresentations.Int32 =>
+                    $"std::int32_t{{{CppNames.EscapeString(key)}}}",
+                IrOptions.IntegerRepresentations.UInt32 =>
+                    $"std::uint32_t{{{CppNames.EscapeString(key)}}}",
+                IrOptions.IntegerRepresentations.Int64 =>
+                    $"std::int64_t{{{CppNames.EscapeString(key)}}}",
+                IrOptions.IntegerRepresentations.UInt64 =>
+                    $"std::uint64_t{{{CppNames.EscapeString(key)}}}",
+                IrOptions.IntegerRepresentations.BigInt or IrOptions.IntegerRepresentations.Der =>
+                    $"asn1kit::integer::from_decimal(\"{CppNames.EscapeString(key)}\")",
+                _ => throw new NotSupportedException(
+                    $"Unknown integer representation '{representation}'.")
+            };
+        }
+
         foreach (var definition in module.Values)
         {
             if (definition.Value is IrOidValue oid &&

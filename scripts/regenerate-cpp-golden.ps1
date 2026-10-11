@@ -1,54 +1,42 @@
-# Regenerates committed C++ codegen golden for example.json.
+# Regenerates committed C++ codegen golden under runtime-cpp/generated/.
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
 
-$out = "compiler/fixtures/codegen-cpp/example"
+$out = "runtime-cpp/generated/example"
 New-Item -ItemType Directory -Force -Path $out | Out-Null
+Get-ChildItem -LiteralPath $out -Filter '*.hpp' -ErrorAction SilentlyContinue | Remove-Item -Force
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate `
   -i compiler/fixtures/ir/example.json `
   --lang cpp `
   -o $out
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-$runtimeOut = "runtime-cpp/generated/example"
-New-Item -ItemType Directory -Force -Path $runtimeOut | Out-Null
-Copy-Item -Force "$out/ExampleModule.hpp" "$runtimeOut/ExampleModule.hpp"
-
-$openIr = "compiler/fixtures/ir/cpp-open-binding.json"
-$openOut = "compiler/fixtures/codegen-cpp/open-binding"
+$openOut = "runtime-cpp/generated/open-binding"
 New-Item -ItemType Directory -Force -Path $openOut | Out-Null
+Get-ChildItem -LiteralPath $openOut -Filter '*.hpp' -ErrorAction SilentlyContinue | Remove-Item -Force
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate `
-  -i $openIr `
+  -i compiler/fixtures/ir/cpp-open-binding.json `
   --lang cpp `
   -o $openOut
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-$openRuntime = "runtime-cpp/generated/open-binding"
-New-Item -ItemType Directory -Force -Path $openRuntime | Out-Null
-Copy-Item -Force "$openOut/M.hpp" "$openRuntime/M.hpp"
 
-$extIr = "compiler/fixtures/ir/cpp-extensible.json"
-$extOut = "compiler/fixtures/codegen-cpp/extensible"
+$extOut = "runtime-cpp/generated/extensible"
 New-Item -ItemType Directory -Force -Path $extOut | Out-Null
+Get-ChildItem -LiteralPath $extOut -Filter '*.hpp' -ErrorAction SilentlyContinue | Remove-Item -Force
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate `
-  -i $extIr `
+  -i compiler/fixtures/ir/cpp-extensible.json `
   --lang cpp `
   -o $extOut
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-$extRuntime = "runtime-cpp/generated/extensible"
-New-Item -ItemType Directory -Force -Path $extRuntime | Out-Null
-Copy-Item -Force "$extOut/ExtModule.hpp" "$extRuntime/ExtModule.hpp"
 
-$defIr = "compiler/fixtures/ir/cpp-deferred.json"
-$defOut = "compiler/fixtures/codegen-cpp/deferred"
+$defOut = "runtime-cpp/generated/deferred"
 New-Item -ItemType Directory -Force -Path $defOut | Out-Null
+Get-ChildItem -LiteralPath $defOut -Filter '*.hpp' -ErrorAction SilentlyContinue | Remove-Item -Force
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate `
-  -i $defIr `
+  -i compiler/fixtures/ir/cpp-deferred.json `
   --lang cpp `
   -o $defOut
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-$defRuntime = "runtime-cpp/generated/deferred"
-New-Item -ItemType Directory -Force -Path $defRuntime | Out-Null
-Copy-Item -Force "$defOut/Deferred.hpp" "$defRuntime/Deferred.hpp"
 
-Write-Host "Updated $out, $runtimeOut, $openOut, $openRuntime, $extOut, $extRuntime, $defOut, $defRuntime"
+Write-Host "Updated $out, $openOut, $extOut, $defOut"

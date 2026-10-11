@@ -49,3 +49,37 @@ endif()
 
 include(GoogleTest)
 gtest_discover_tests(asn1kit_tests)
+
+# Modern PKIX/CMS amalgam is large; keep Certificate round-trip in a separate binary.
+add_executable(asn1kit_modern_tests
+    generated_modern_certificate_tests.cpp
+)
+
+target_link_libraries(asn1kit_modern_tests
+    PRIVATE
+        asn1kit::asn1kit
+        GTest::gtest
+        GTest::gtest_main
+)
+
+target_include_directories(asn1kit_modern_tests
+    PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/../generated/modern"
+)
+
+set(ASN1KIT_PKIX_FIXTURES_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../runtime-csharp/fixtures/pkix"
+    CACHE PATH "Path to runtime-csharp pkix certificate fixtures")
+file(TO_CMAKE_PATH "${ASN1KIT_PKIX_FIXTURES_DIR}" _asn1kit_pkix_fixtures_dir)
+target_compile_definitions(asn1kit_modern_tests
+    PRIVATE
+        "ASN1KIT_PKIX_FIXTURES_DIR=\"${_asn1kit_pkix_fixtures_dir}\""
+)
+
+if(MSVC)
+    target_compile_options(asn1kit_modern_tests PRIVATE /W4 /permissive- /utf-8 /bigobj)
+else()
+    target_compile_options(asn1kit_modern_tests PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+gtest_discover_tests(asn1kit_modern_tests)

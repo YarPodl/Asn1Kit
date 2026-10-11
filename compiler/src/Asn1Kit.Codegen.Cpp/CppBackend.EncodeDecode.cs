@@ -105,6 +105,9 @@ public sealed partial class CppBackend
 
         if (encodeDeferredWrapper && ShouldEmitRetainEncoded(document, module, type, fieldOptions))
         {
+            sb.AppendLine($"{indent}if ({expr}.has_original_encoding()) {{");
+            sb.AppendLine($"{indent}    {writer}.write_raw({expr}.original_encoding().span());");
+            sb.AppendLine($"{indent}}} else {{");
             EmitEncodeValue(
                 sb,
                 document,
@@ -112,12 +115,13 @@ public sealed partial class CppBackend
                 owner,
                 hint,
                 type,
-                indent,
+                indent + "    ",
                 writer,
                 expr + ".get()",
                 forceTag,
                 fieldOptions: null,
                 encodeDeferredWrapper: false);
+            sb.AppendLine($"{indent}}}");
             return;
         }
 
@@ -128,12 +132,12 @@ public sealed partial class CppBackend
         if (type.Tag?.Mode == TagModes.Explicit && forceTag is null)
         {
             sb.AppendLine($"{indent}{{");
-            sb.AppendLine($"{indent}    auto scope = {writer}.enter_explicit({TagFromIr(type.Tag, constructed: true)});");
+            sb.AppendLine($"{indent}    auto explicit_scope = {writer}.enter_explicit({TagFromIr(type.Tag, constructed: true)});");
             var inner = CloneUntagged(type);
             EmitEncodeValue(
                 sb,
                 document,
-                resolvedModule,
+                module,
                 owner,
                 hint,
                 inner,
@@ -149,7 +153,7 @@ public sealed partial class CppBackend
             EmitOfEncode(
                 sb,
                 document,
-                resolvedModule,
+                module,
                 original,
                 owner,
                 hint,
@@ -241,6 +245,13 @@ public sealed partial class CppBackend
         if (IsNamedBitString(type))
         {
             sb.AppendLine($"{indent}{expr}.encode({writer}, {encodeTag});");
+            return;
+        }
+
+        if (TryGetNamedInteger(document, module, type) is { } namedIntegerEncode)
+        {
+            sb.AppendLine(
+                $"{indent}{WriteCall(document, namedIntegerEncode.Module, writer, encodeTag, expr, namedIntegerEncode.Type)};");
             return;
         }
 
@@ -529,7 +540,7 @@ public sealed partial class CppBackend
             EmitDecodeAssign(
                 sb,
                 document,
-                resolvedModule,
+                module,
                 owner,
                 hint,
                 CloneUntagged(type),
@@ -546,7 +557,7 @@ public sealed partial class CppBackend
             EmitOfDecode(
                 sb,
                 document,
-                resolvedModule,
+                module,
                 original,
                 owner,
                 hint,
@@ -640,6 +651,15 @@ public sealed partial class CppBackend
         {
             var name = owner + "_" + CppNames.SanitizeTypeName(hint);
             sb.AppendLine($"{indent}{target} = {name}::decode({reader}, {decodeTag});");
+            return;
+        }
+
+        if (TryGetNamedInteger(document, module, type) is { } namedIntegerDecode)
+        {
+            var integerRepresentation = TryResolveIntegerRepresentation(
+                document, namedIntegerDecode.Module, namedIntegerDecode.Type);
+            sb.AppendLine(
+                $"{indent}{target} = {ReadCall(reader, decodeTag, namedIntegerDecode.Type, integerRepresentation)};");
             return;
         }
 
@@ -787,8 +807,13 @@ public sealed partial class CppBackend
         IrComponent field,
         string valueExpression)
     {
-        var defaultValue = DefaultExpression(document, module, owner, field);
-        return $"{valueExpression} != {defaultValue}";
+        if (field.Default is null)
+        {
+            throw new InvalidOperationException("DEFAULT expression requested without default.");
+        }
+
+        return ValueNotEqualExpression(
+            document, module, owner, field.Name, field.Type, field.Default, valueExpression);
     }
 
     private string DefaultExpression(
@@ -802,31 +827,153 @@ public sealed partial class CppBackend
             throw new InvalidOperationException("DEFAULT expression requested without default.");
         }
 
-        var resolvedModule = module;
-        var type = UnwrapAliases(document, ref resolvedModule, field.Type);
-        if (field.Default is IrIntegerValue enumDefault &&
-            ResolveEnumeratedDefault(document, module, owner, field, type, enumDefault) is { } enumExpr)
+        return ValueExpression(document, module, owner, field.Name, field.Type, field.Default);
+    }
+
+    private string ValueExpression(
+        IrDocument document,
+        IrModule module,
+        string owner,
+        string hint,
+        TypeExpr declared,
+        IrValue value)
+    {
+        var (typeModule, type) = ResolveAliasTarget(document, module, declared);
+        if (value is IrIntegerValue enumDefault &&
+            ResolveEnumeratedDefault(
+                document, module, owner, new IrComponent { Name = hint, Type = declared }, type, enumDefault)
+                is { } enumExpr)
         {
             return enumExpr;
         }
 
-        return (type, field.Default) switch
+        if (value is IrStructuredValue structure && type is SequenceType or SetType)
         {
-            (BooleanType, IrBooleanValue value) => value.Value ? "true" : "false",
+            var components = type is SequenceType seq ? seq.Components : ((SetType)type).Components;
+            // Collapsible open-type aliases (e.g. PBKDF2-PRFsAlgorithmIdentifier) are not emitted;
+            // construct the underlying C++ type that fields actually use.
+            var typeName = CppType(document, module, owner, hint, declared, optional: false);
+            var assigns = structure.Fields.Select(pair =>
+            {
+                var field = components.Single(f => f.Name == pair.Key);
+                var fieldExpr = ValueExpression(
+                    document, typeModule, typeName, field.Name, field.Type, pair.Value);
+                return $"        v.{FieldName(field)} = {fieldExpr};";
+            });
+            return "([&]{ " + typeName + " v{}; " + string.Join(" ", assigns) + " return v; }())";
+        }
+
+        if (value is IrCollectionValue collection && type is SequenceOfType or SetOfType)
+        {
+            var element = type is SequenceOfType of ? of.Element : ((SetOfType)type).Element;
+            ResolveOfItemNaming(document, module, declared, owner, hint, out var itemOwner, out var itemHint);
+            var items = collection.Items.Select(item =>
+                ValueExpression(document, typeModule, itemOwner, itemHint, element, item));
+            return "std::vector<" +
+                   CppType(document, module, itemOwner, itemHint, element, optional: false) +
+                   ">{" + string.Join(", ", items) + "}";
+        }
+
+        if (value is IrChoiceValue choice && type is ChoiceType alternatives)
+        {
+            var field = alternatives.Components.Single(f => f.Name == choice.Alternative);
+            var inner = ValueExpression(
+                document, typeModule, owner, field.Name, field.Type, choice.Value);
+            if (IsSingleAlternativeChoice(type))
+            {
+                return inner;
+            }
+
+            var typeName = CppType(document, module, owner, hint, declared, optional: false);
+            var factory = "from_" + CppNames.SanitizeEnumMember(field.Name);
+            return typeName + "::" + factory + "(" + inner + ")";
+        }
+
+        if (value is IrTypedValue typed && type is AnyType)
+        {
+            var nested = ValueExpression(
+                document, typeModule, owner, hint, typed.Type, typed.Value);
+            // encode_open handles null_value / bytes / generated types (instance encode is not universal).
+            return "asn1kit::encode_open(" + nested + ")";
+        }
+
+        return (type, value) switch
+        {
+            (BooleanType, IrBooleanValue b) => b.Value ? "true" : "false",
             (NullType, IrNullValue) => "asn1kit::null_value::value()",
-            (OidType, IrOidValue value) =>
-                $"asn1kit::oid::parse(\"{CppNames.EscapeString(value.Value)}\")",
-            (StringType, IrStringValue value) => $"std::string(\"{CppNames.EscapeString(value.Value)}\")",
-            (IntegerType, IrIntegerValue value) => IntegerDefaultExpression(
-                document,
-                module,
-                field.Type,
-                value.Value),
-            (BitStringType, IrBitStringValue value) => BitStringDefaultExpression(value),
-            (OctetStringType, IrOctetStringValue value) => OctetStringDefaultExpression(value),
+            (OidType, IrOidValue oid) =>
+                $"asn1kit::oid::parse(\"{CppNames.EscapeString(oid.Value)}\")",
+            (StringType, IrStringValue text) =>
+                $"std::string(\"{CppNames.EscapeString(text.Value)}\")",
+            (IntegerType, IrIntegerValue integer) => IntegerDefaultExpression(
+                document, typeModule, type, integer.Value),
+            (BitStringType, IrBitStringValue bits) => BitStringDefaultExpression(bits),
+            (OctetStringType, IrOctetStringValue octets) => OctetStringDefaultExpression(octets),
             _ => throw new NotSupportedException(
-                $"C++ backend does not support DEFAULT kind '{field.Default.Kind}' for field '{field.Name}'.")
+                $"C++ backend does not support DEFAULT kind '{value.Kind}' for '{hint}'.")
         };
+    }
+
+    private string ValueNotEqualExpression(
+        IrDocument document,
+        IrModule module,
+        string owner,
+        string hint,
+        TypeExpr declared,
+        IrValue expected,
+        string actual)
+    {
+        var (typeModule, type) = ResolveAliasTarget(document, module, declared);
+        if (expected is IrStructuredValue structure && type is SequenceType or SetType)
+        {
+            var components = type is SequenceType seq ? seq.Components : ((SetType)type).Components;
+            var typeName = CppType(document, module, owner, hint, declared, optional: false);
+            var tests = new List<string>();
+            foreach (var field in components)
+            {
+                var access = actual + "." + FieldName(field);
+                if (!structure.Fields.TryGetValue(field.Name, out var present))
+                {
+                    if (field.Optional)
+                        tests.Add("!" + access + ".has_value()");
+                    continue;
+                }
+
+                var fieldActual = field.Optional ? "(*" + access + ")" : access;
+                if (field.Optional)
+                    tests.Add(access + ".has_value()");
+                tests.Add(
+                    "!(" + ValueNotEqualExpression(
+                        document, typeModule, typeName, field.Name, field.Type, present, fieldActual) +
+                    ")");
+            }
+
+            // Invert: not-equal when any field differs → !(all equal)
+            return "!(" + string.Join(" && ", tests.DefaultIfEmpty("true")) + ")";
+        }
+
+        if (expected is IrCollectionValue collection && type is SequenceOfType or SetOfType)
+        {
+            var element = type is SequenceOfType of ? of.Element : ((SetOfType)type).Element;
+            ResolveOfItemNaming(document, module, declared, owner, hint, out var itemOwner, out var itemHint);
+            var parts = new List<string>
+            {
+                actual + ".size() == " +
+                collection.Items.Count.ToString(CultureInfo.InvariantCulture)
+            };
+            for (var index = 0; index < collection.Items.Count; index++)
+            {
+                parts.Add(
+                    "!(" + ValueNotEqualExpression(
+                        document, typeModule, itemOwner, itemHint, element, collection.Items[index],
+                        actual + "[" + index.ToString(CultureInfo.InvariantCulture) + "]") + ")");
+            }
+
+            return "!(" + string.Join(" && ", parts) + ")";
+        }
+
+        var defaultValue = ValueExpression(document, module, owner, hint, declared, expected);
+        return actual + " != " + defaultValue;
     }
 
     private string? ResolveEnumeratedDefault(

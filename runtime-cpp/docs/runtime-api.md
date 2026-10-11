@@ -40,7 +40,7 @@
 | Open type | `encode_open` / `decode_open` — wire из `T` (`open_typed`); `asn_string<form>` / `asn_time<form>` для неоднозначных string/time; адаптеры `decode_contained` / `encode_contained` / `decode_each` / `encode_each` |
 | Time | `utc_date_time` (календарные поля UTC + `time_fraction` до 7 десятичных цифр) |
 
-**Value / Lazy:** `asn1kit::value<T>` (`value.hpp`) — eager decode + `original_encoding()`; `asn1kit::lazy<T>` (`lazy.hpp`) — deferred decode, `has_encoded()` / `write_to`. Reader: `read_with_original_encoding` / `read_lazy`.
+**Value / Lazy:** `asn1kit::value<T>` (`value.hpp`) — eager decode + `original_encoding()`; non-const `get()` сбрасывает retained TLV (encode идёт из текущего значения). `asn1kit::lazy<T>` (`lazy.hpp`) — deferred decode, `has_encoded()` / `write_to`. Reader: `read_with_original_encoding` / `read_lazy`. Generated encode: при `has_original_encoding()` / `has_encoded()` пишет raw TLV.
 
 Вне текущего среза: modern IOC, oracle, `external/` фикстуры. Extensible SEQUENCE/SET/CHOICE эмитит codegen (skip-unknown через `read_any`). Codegen C++ — [cpp-backend.md](../../compiler/docs/playbooks/cpp-backend.md).
 

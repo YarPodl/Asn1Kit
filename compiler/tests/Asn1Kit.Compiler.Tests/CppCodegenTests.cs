@@ -16,7 +16,7 @@ public sealed class CppCodegenTests
         var file = Assert.Single(files);
         Assert.Equal("ExampleModule.hpp", file.RelativePath);
 
-        var expectedPath = TestData.RepoPath("compiler/fixtures/codegen-cpp/example/ExampleModule.hpp");
+        var expectedPath = TestData.RepoPath("runtime-cpp/generated/example/ExampleModule.hpp");
         var expected = File.ReadAllText(expectedPath).Replace("\r\n", "\n", StringComparison.Ordinal);
         var actual = file.Contents.Replace("\r\n", "\n", StringComparison.Ordinal);
         Assert.Equal(expected, actual);
@@ -217,6 +217,39 @@ END
     }
 
     [Fact]
+    public void GeneratesNestedSelectorPathAndIntegerKeyBindings()
+    {
+        const string asn = @"
+M DEFINITIONS ::= BEGIN
+  C ::= CLASS { &id OBJECT IDENTIFIER UNIQUE, &Params, &Value } WITH SYNTAX {
+    PARAMS &Params VALUE &Value IDENTIFIED BY &id }
+  N ::= CLASS { &id INTEGER UNIQUE, &T } WITH SYNTAX { &T IDENTIFIED BY &id }
+  oidItem C ::= { PARAMS NULL VALUE INTEGER (0..100) IDENTIFIED BY {1 2 3} }
+  Oids C ::= {oidItem}
+  intItem N ::= { NULL IDENTIFIED BY 7 }
+  Ints N ::= {intItem}
+  Signed ::= SEQUENCE {
+    toBeSigned NULL,
+    algorithmIdentifier SEQUENCE {
+      algorithm OBJECT IDENTIFIER,
+      parameters C.&Params({Oids}{@algorithmIdentifier.algorithm}) OPTIONAL },
+    signature BIT STRING (CONTAINING C.&Value({Oids}{@algorithmIdentifier.algorithm})) }
+  Attr ::= SEQUENCE {
+    id INTEGER (0..256),
+    value N.&T({Ints}{@id}) }
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        var source = new CppBackend().Generate(document).Single().Contents;
+
+        Assert.Contains("src.algorithmIdentifier.algorithm", source);
+        Assert.Contains("parent0.algorithmIdentifier.algorithm", source);
+        Assert.Contains("std::int32_t key{}", source);
+        Assert.Contains("std::int32_t{7}", source);
+        Assert.Contains("src.id = key;", source);
+    }
+
+    [Fact]
     public void GeneratesLazyAndRetainEncodedWrappers()
     {
         const string asn = @"
@@ -241,6 +274,8 @@ END
         Assert.Contains("asn1kit::lazy<Inner> deferred{}", source);
         Assert.Contains("read_with_original_encoding<Inner>", source);
         Assert.Contains("read_lazy<Inner>", source);
+        Assert.Contains("if (this->retained.has_original_encoding())", source);
+        Assert.Contains("w.write_raw(this->retained.original_encoding().span());", source);
         Assert.Contains("this->retained.get()", source);
         Assert.Contains("if (this->deferred.has_encoded())", source);
         Assert.Contains("w.write_raw(this->deferred.encoded().span());", source);
@@ -255,7 +290,7 @@ END
         var file = Assert.Single(files);
         Assert.Equal("Deferred.hpp", file.RelativePath);
 
-        var expectedPath = TestData.RepoPath("compiler/fixtures/codegen-cpp/deferred/Deferred.hpp");
+        var expectedPath = TestData.RepoPath("runtime-cpp/generated/deferred/Deferred.hpp");
         var expected = File.ReadAllText(expectedPath).Replace("\r\n", "\n", StringComparison.Ordinal);
         var actual = file.Contents.Replace("\r\n", "\n", StringComparison.Ordinal);
         Assert.Equal(expected, actual);
@@ -310,7 +345,7 @@ END
         var file = Assert.Single(files);
         Assert.Equal("ExtModule.hpp", file.RelativePath);
 
-        var expectedPath = TestData.RepoPath("compiler/fixtures/codegen-cpp/extensible/ExtModule.hpp");
+        var expectedPath = TestData.RepoPath("runtime-cpp/generated/extensible/ExtModule.hpp");
         var expected = File.ReadAllText(expectedPath).Replace("\r\n", "\n", StringComparison.Ordinal);
         var actual = file.Contents.Replace("\r\n", "\n", StringComparison.Ordinal);
         Assert.Equal(expected, actual);
@@ -353,11 +388,204 @@ END
     }
 
     [Fact]
+    public void ChoiceWithDuplicateCppPayloadTypesEmitsVariantBoxes()
+    {
+        const string asn = @"
+CppTime DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+Time ::= CHOICE {
+  utcTime UTCTime,
+  generalTime GeneralizedTime
+}
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        document.Modules[0].Options = IrOptions.SetCpp(document.Modules[0].Options, "namespace", "cpp::time");
+        var source = new CppBackend().Generate(document).Single().Contents;
+
+        Assert.Contains("struct Time_utcTime_box", source);
+        Assert.Contains("struct Time_generalTime_box", source);
+        Assert.Contains("std::variant<Time_utcTime_box, Time_generalTime_box>", source);
+        Assert.Contains("std::get<0>(value).value", source);
+        Assert.DoesNotContain(
+            "std::variant<asn1kit::utc_date_time, asn1kit::utc_date_time>",
+            source);
+    }
+
+    [Fact]
     public void CliGenerateLangCppWorks()
     {
         var document = TestData.LoadIr("compiler/fixtures/ir/example.json");
         var files = new CodeGenerator(new ILanguageBackend[] { new CppBackend() })
             .Generate(document, "cpp");
         Assert.Contains("struct Person", files.Single().Contents);
+    }
+
+    [Fact]
+    public void GeneratesPeerIncludesForCrossModuleRefs()
+    {
+        var document = new IrDocument
+        {
+            IrVersion = 1,
+            Modules =
+            {
+                new IrModule
+                {
+                    Name = "A",
+                    Options = IrOptions.SetCpp(null, "namespace", "mod::a"),
+                    Types =
+                    {
+                        new IrTypeDef
+                        {
+                            Name = "Item",
+                            Type = new SequenceType
+                            {
+                                Components =
+                                {
+                                    new IrComponent { Name = "n", Type = new IntegerType() }
+                                }
+                            }
+                        }
+                    }
+                },
+                new IrModule
+                {
+                    Name = "B",
+                    Options = IrOptions.SetCpp(null, "namespace", "mod::b"),
+                    Types =
+                    {
+                        new IrTypeDef
+                        {
+                            Name = "Box",
+                            Type = new SequenceType
+                            {
+                                Components =
+                                {
+                                    new IrComponent
+                                    {
+                                        Name = "item",
+                                        Type = new RefType { Name = "Item", Module = "A" }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        var files = new CppBackend().Generate(document);
+        Assert.Equal(2, files.Count);
+        var b = Assert.Single(files, f => f.RelativePath == "B.hpp");
+        Assert.Contains("#include \"A.hpp\"", b.Contents);
+        Assert.Contains("::mod::a::Item item{}", b.Contents);
+        Assert.DoesNotContain(files, f => f.RelativePath == "all.hpp");
+    }
+
+    [Fact]
+    public void CrossModuleSequenceOfQualifiesElementType()
+    {
+        var document = new IrDocument
+        {
+            Modules =
+            {
+                new IrModule
+                {
+                    Name = "Common",
+                    Options = IrOptions.SetCpp(null, "namespace", "mod::common"),
+                    Types =
+                    {
+                        new IrTypeDef
+                        {
+                            Name = "Extension",
+                            Type = new SequenceType
+                            {
+                                Components =
+                                {
+                                    new IrComponent
+                                    {
+                                        Name = "id",
+                                        Type = new OidType()
+                                    }
+                                }
+                            }
+                        },
+                        new IrTypeDef
+                        {
+                            Name = "Extensions",
+                            Type = new SequenceOfType
+                            {
+                                Element = new RefType { Name = "Extension", Module = "Common" }
+                            }
+                        }
+                    }
+                },
+                new IrModule
+                {
+                    Name = "Ocsp",
+                    Options = IrOptions.SetCpp(null, "namespace", "mod::ocsp"),
+                    Types =
+                    {
+                        new IrTypeDef
+                        {
+                            Name = "Request",
+                            Type = new SequenceType
+                            {
+                                Components =
+                                {
+                                    new IrComponent
+                                    {
+                                        Name = "exts",
+                                        Type = new RefType { Name = "Extensions", Module = "Common" },
+                                        Optional = true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        var ocsp = Assert.Single(new CppBackend().Generate(document), f => f.RelativePath == "Ocsp.hpp");
+        Assert.Contains(
+            "std::optional<std::vector<::mod::common::Extension>> exts{}",
+            ocsp.Contents);
+        Assert.DoesNotContain("std::vector<Extension>", ocsp.Contents);
+    }
+
+    [Fact]
+    public void GenerateMatchesCommittedModernGolden()
+    {
+        var document = TestData.LoadIr("compiler/fixtures/ir/modern-pkix-cms.json");
+        foreach (var module in document.Modules)
+        {
+            var identifier = string.Concat(module.Name.Split('-', '_')
+                .Select(part => char.ToUpperInvariant(part[0]) + part.Substring(1)));
+            module.Options = IrOptions.SetCpp(module.Options, "namespace", "asn1kit::modern::" + identifier);
+        }
+
+        IrOptionsPatch.ApplyFile(
+            document, TestData.RepoPath("compiler/fixtures/ir/modern-pkix-cms.patch.json"));
+
+        var files = new CppBackend().Generate(document)
+            .OrderBy(f => f.RelativePath, StringComparer.Ordinal)
+            .ToList();
+        Assert.Equal(26, files.Count);
+        Assert.Contains(files, f => f.RelativePath == "all.hpp");
+        Assert.Contains(files, f => f.RelativePath == "certificate.hpp");
+        Assert.Contains(files, f => f.RelativePath == "PKIX1Explicit2009.hpp");
+
+        var goldenDir = TestData.RepoPath("runtime-cpp/generated/modern");
+        var expectedNames = Directory.GetFiles(goldenDir, "*.hpp")
+            .Select(static path => Path.GetFileName(path)!)
+            .OrderBy(static n => n, StringComparer.Ordinal)
+            .ToList();
+        Assert.Equal(expectedNames, files.Select(static f => f.RelativePath).ToList());
+
+        foreach (var file in files)
+        {
+            var expectedPath = Path.Combine(goldenDir, file.RelativePath);
+            var expected = File.ReadAllText(expectedPath).Replace("\r\n", "\n", StringComparison.Ordinal);
+            var actual = file.Contents.Replace("\r\n", "\n", StringComparison.Ordinal);
+            Assert.Equal(expected, actual);
+        }
     }
 }
