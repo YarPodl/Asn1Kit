@@ -16,4 +16,8 @@ M DEFINITIONS ::= BEGIN
     mixed AlgorithmIdentifier{Mixed},
     ext Extension{Mixed},
     attr Attribute{Mixed} }
+  Outer ::= SEQUENCE {
+    id OBJECT IDENTIFIER,
+    nested SEQUENCE OF SEQUENCE {
+      value C.&T({Mixed}{@id}) } }
 END

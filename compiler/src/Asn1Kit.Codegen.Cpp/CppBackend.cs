@@ -121,7 +121,7 @@ public sealed partial class CppBackend : ILanguageBackend
             builder.AppendLine();
         }
 
-        foreach (var (name, type) in nested)
+        foreach (var (name, type) in OrderNestedForEmit(document, module, nested))
         {
             EmitType(builder, document, module, name, type);
             builder.AppendLine();
@@ -181,6 +181,62 @@ public sealed partial class CppBackend : ILanguageBackend
         }
 
         sb.AppendLine("};");
+    }
+
+    /// <summary>
+    /// Emit nested named types so OF item structs appear before owners that embed them by value.
+    /// </summary>
+    private List<(string Name, TypeExpr Type)> OrderNestedForEmit(
+        IrDocument document,
+        IrModule module,
+        IReadOnlyList<(string Name, TypeExpr Type)> nested)
+    {
+        var byName = nested.ToDictionary(static item => item.Name, StringComparer.Ordinal);
+        var deps = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+        foreach (var (name, _) in nested)
+            deps[name] = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var (name, type) in nested)
+        {
+            if (OpenContainerFields(type) is not { } fields) continue;
+            foreach (var field in fields)
+            {
+                var fieldType = UnwrapAliases(document, module, field.Type);
+                if (fieldType is RefType reference)
+                {
+                    var found = FindWithModule(document, module, reference);
+                    if (found is null || found.Value.Module != module) continue;
+                    var dep = IrOptions.CppTypeName(found.Value.Def.Options)
+                        ?? CppNames.SanitizeTypeName(found.Value.Def.Name);
+                    if (byName.ContainsKey(dep) && dep != name)
+                        deps[name].Add(dep);
+                    continue;
+                }
+
+                if (fieldType is SequenceOfType or SetOfType)
+                {
+                    // CollectNested(owner) → OfferNested(owner_Field, OF) → owner_Field_Item.
+                    var itemName = name + "_" + CppNames.SanitizeTypeName(field.Name) + "_Item";
+                    if (byName.ContainsKey(itemName))
+                        deps[name].Add(itemName);
+                }
+            }
+        }
+
+        var remaining = new HashSet<string>(byName.Keys, StringComparer.Ordinal);
+        var ordered = new List<(string Name, TypeExpr Type)>();
+        while (remaining.Count > 0)
+        {
+            var next = remaining
+                .Where(n => deps[n].All(d => !remaining.Contains(d)))
+                .OrderBy(static n => n, StringComparer.Ordinal)
+                .FirstOrDefault();
+            next ??= remaining.OrderBy(static n => n, StringComparer.Ordinal).First();
+            remaining.Remove(next);
+            ordered.Add(byName[next]);
+        }
+
+        return ordered;
     }
 
     private void CollectNested(

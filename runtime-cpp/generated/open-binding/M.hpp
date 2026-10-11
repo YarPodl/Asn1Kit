@@ -55,36 +55,6 @@ struct AlgorithmIdentifier {
     }
 };
 
-struct Extension {
-    asn1kit::oid extnID{};
-    asn1kit::contained<asn1kit::any> extnValue{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static Extension decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        Extension value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.extnID = inner.read_oid(asn1kit::tag::object_identifier);
-            value.extnValue = inner.read_contained<asn1kit::any>(asn1kit::tag::octet_string, false, false, 0, [&](asn1kit::reader& inner, auto) {
-                asn1kit::any item{};
-                item = inner.read_any();
-                return item;
-            });
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        w.write_object_identifier(asn1kit::tag::object_identifier, this->extnID);
-        w.write_contained(asn1kit::tag::octet_string, false, this->extnValue, [&](asn1kit::writer& inner, const auto& value) {
-            inner.write_any(value);
-        });
-    }
-};
-
 struct Attribute {
     asn1kit::oid type{};
     std::vector<asn1kit::any> values{};
@@ -115,6 +85,36 @@ struct Attribute {
     }
 };
 
+struct Extension {
+    asn1kit::oid extnID{};
+    asn1kit::contained<asn1kit::any> extnValue{};
+
+    static asn1kit::tag default_tag() {
+        return asn1kit::tag::sequence;
+    }
+
+    static Extension decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+        Extension value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.extnID = inner.read_oid(asn1kit::tag::object_identifier);
+            value.extnValue = inner.read_contained<asn1kit::any>(asn1kit::tag::octet_string, false, false, 0, [&](asn1kit::reader& inner, auto) {
+                asn1kit::any item{};
+                item = inner.read_any();
+                return item;
+            });
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+        auto scope = w.enter_sequence(t);
+        w.write_object_identifier(asn1kit::tag::object_identifier, this->extnID);
+        w.write_contained(asn1kit::tag::octet_string, false, this->extnValue, [&](asn1kit::writer& inner, const auto& value) {
+            inner.write_any(value);
+        });
+    }
+};
+
 struct Holder {
     AlgorithmIdentifier mixed{};
     Extension ext{};
@@ -139,6 +139,57 @@ struct Holder {
         this->mixed.encode(w, asn1kit::tag::sequence);
         this->ext.encode(w, asn1kit::tag::sequence);
         this->attr.encode(w, asn1kit::tag::sequence);
+    }
+};
+
+struct Outer_Nested_Item {
+    asn1kit::any value_{};
+
+    static asn1kit::tag default_tag() {
+        return asn1kit::tag::sequence;
+    }
+
+    static Outer_Nested_Item decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+        Outer_Nested_Item value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.value_ = inner.read_any();
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+        auto scope = w.enter_sequence(t);
+        w.write_any(this->value_);
+    }
+};
+
+struct Outer {
+    asn1kit::oid id{};
+    std::vector<Outer_Nested_Item> nested{};
+
+    static asn1kit::tag default_tag() {
+        return asn1kit::tag::sequence;
+    }
+
+    static Outer decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+        Outer value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.id = inner.read_oid(asn1kit::tag::object_identifier);
+            value.nested = inner.read_sequence_of<Outer_Nested_Item>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
+                Outer_Nested_Item item{};
+                item = Outer_Nested_Item::decode(inner, asn1kit::tag::sequence);
+                return item;
+            });
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+        auto scope = w.enter_sequence(t);
+        w.write_object_identifier(asn1kit::tag::object_identifier, this->id);
+        w.write_sequence_of(asn1kit::tag::sequence, this->nested, [&](asn1kit::writer& inner, const auto& item) {
+            item.encode(inner, asn1kit::tag::sequence);
+        });
     }
 };
 
@@ -184,6 +235,24 @@ struct parameters_binding {
         AlgorithmIdentifier src{};
         set(src, value);
         return src;
+    }
+};
+
+template <typename T>
+struct value_binding {
+    asn1kit::oid key{};
+
+    [[nodiscard]] bool try_decode(const Outer_Nested_Item& src, const Outer& parent0, T& out) const {
+        if (!(parent0.id == key)) return false;
+        out = asn1kit::decode_open<T>(src.value_);
+        return true;
+    }
+
+    void set(Outer_Nested_Item& src, const Outer& parent0, const T& value) const {
+        if (!(parent0.id == key)) {
+            throw asn1kit::exception("Enclosing selector does not match the open-type binding.");
+        }
+        src.value_ = asn1kit::encode_open(value);
     }
 };
 
@@ -234,6 +303,15 @@ inline const parameters_binding<std::int32_t> data_entry{
     asn1kit::oid::parse("1.2.4")};
 
 } // namespace mixed_parameters_bindings
+
+namespace mixed_value_bindings {
+inline const value_binding<asn1kit::null_value> empty_entry{
+    asn1kit::oid::parse("1.2.3")};
+
+inline const value_binding<std::int32_t> data_entry{
+    asn1kit::oid::parse("1.2.4")};
+
+} // namespace mixed_value_bindings
 
 namespace mixed_values_bindings {
 inline const values_binding<asn1kit::null_value> empty_entry{

@@ -102,3 +102,21 @@ TEST(OpenBinding, SetOfSetTryDecodeRoundTrip) {
     EXPECT_TRUE(mixed_values_bindings::empty_entry.try_decode(attr, nulls));
     ASSERT_EQ(nulls.size(), 1u);
 }
+
+TEST(OpenBinding, AncestorSelectorUsesParentKey) {
+    Outer outer{};
+    outer.id = oid::parse("1.2.4");
+    Outer_Nested_Item item{};
+    mixed_value_bindings::data_entry.set(item, outer, std::int32_t{9});
+
+    std::int32_t decoded = 0;
+    EXPECT_TRUE(mixed_value_bindings::data_entry.try_decode(item, outer, decoded));
+    EXPECT_EQ(decoded, 9);
+    EXPECT_EQ(decode_open<std::int32_t>(item.value_), 9);
+
+    Outer wrong{};
+    wrong.id = oid::parse("1.2.3");
+    EXPECT_FALSE(mixed_value_bindings::data_entry.try_decode(item, wrong, decoded));
+    EXPECT_THROW(
+        mixed_value_bindings::data_entry.set(item, wrong, std::int32_t{1}), exception);
+}

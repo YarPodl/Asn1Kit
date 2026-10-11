@@ -22,16 +22,17 @@
 - `string` / `time` / `null` — явные `read_string` / `write_string` / `read_time` / `write_time` / `write_null` / `null_value::decode` (не type-driven примитивы).
 - Опции: `options.cpp.namespace`, `typeName`, `fieldName`, `aliasOf`; общие `generate`, `integer.representation`.
 - `any` → `asn1kit::any` (`read_any` / `write_any`; untagged OPTIONAL — через `eof()`).
-- Open-type Binding (direct / CONTAINING / SEQUENCE·SET OF, local OID selector): `OpenTypeBindings.NormalizeLegacy` → plan/emit в `CppBackend.OpenTypes.cs`.
+- Open-type Binding (direct / CONTAINING / SEQUENCE·SET OF / ancestor, local OID selector): `OpenTypeBindings.NormalizeLegacy` → plan/emit в `CppBackend.OpenTypes.cs`.
   - Descriptor `{stem}_binding<T>` — только `asn1kit::oid key`; encode/decode выводятся из `T`:
     - direct `any` → `encode_open` / `decode_open<T>`;
     - `CONTAINING` → `encode_contained` / `decode_contained<T>`;
     - OF → `encode_each` / `decode_each<T>` (`std::vector<T>` + overload на один `T`).
+  - Ancestor (`selector.levels > 0`): `try_decode`/`set` принимают `const ParentN& parentN`; ключ читается с предка; `set` не меняет ключ (mismatch → exception); `create` не эмитится.
   - String/time в binding — `asn_string<form>` / `asn_time<form>` (форма в типе, не runtime-codec).
-  - Операции на descriptor: `try_decode` / `set` / `create`.
+  - Операции на descriptor: `try_decode` / `set` / `create` (create — только local selector).
   - Каталог — `namespace {table}_{field}_bindings` с `inline const` members (`{ key }`).
   - Policy: unknown/wrong key → `try_decode` = false (raw живёт); match + bad wire → reject.
-  - Вне среза: ancestor selector (`levels > 0`), `AsString`, INTEGER selector.
+  - Вне среза: `AsString`, INTEGER selector, nested selector path (`path.Count > 1`).
 - `OCTET STRING` / `BIT STRING` `CONTAINING` → `asn1kit::contained<T>` (`read_contained` / `write_contained`; content ANY → `known=false`; nested content — `Owner_Content`).
 - Extensible SEQUENCE/SET: skip-unknown через `read_any`, extension additions + groups (`CppBackend.Extensibility.cs`); extensible SET encode — `enter_set_of`. Extensible CHOICE → `…_kind::unknown` + `asn1kit::any`.
 - `retainEncoded` → `asn1kit::value<T>` + `read_with_original_encoding` (encode из `.get()`); `lazy` → `asn1kit::lazy<T>` + `read_lazy` (encode: raw TLV если есть, иначе `.get()`). Только SEQUENCE/SET/OF; lazy побеждает при обоих флагах (`CppBackend.Deferred.cs`).

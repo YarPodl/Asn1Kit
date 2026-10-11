@@ -186,6 +186,37 @@ END
     }
 
     [Fact]
+    public void GeneratesAncestorOpenTypeBindings()
+    {
+        const string asn = @"
+M DEFINITIONS ::= BEGIN
+  C ::= CLASS { &id OBJECT IDENTIFIER UNIQUE, &T } WITH SYNTAX { &T IDENTIFIED BY &id }
+  item C ::= { INTEGER (0..100) IDENTIFIED BY {1 2 3} }
+  Items C ::= {item}
+  Outer ::= SEQUENCE { id OBJECT IDENTIFIER, nested SEQUENCE OF SEQUENCE {
+    value C.&T({Items}{@id}) } }
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        var source = new CppBackend().Generate(document).Single().Contents;
+
+        Assert.Contains("struct Outer_Nested_Item", source);
+        Assert.Contains("struct value_binding", source);
+        Assert.Contains(
+            "bool try_decode(const Outer_Nested_Item& src, const Outer& parent0, T& out) const",
+            source);
+        Assert.Contains("if (!(parent0.id == key)) return false;", source);
+        Assert.Contains(
+            "void set(Outer_Nested_Item& src, const Outer& parent0, const T& value) const",
+            source);
+        Assert.Contains(
+            "Enclosing selector does not match the open-type binding.",
+            source);
+        Assert.DoesNotContain("Outer_Nested_Item create(", source);
+        Assert.Contains("namespace items_value_bindings", source);
+    }
+
+    [Fact]
     public void GeneratesLazyAndRetainEncodedWrappers()
     {
         const string asn = @"

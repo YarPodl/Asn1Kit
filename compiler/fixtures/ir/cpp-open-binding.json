@@ -248,6 +248,74 @@
             ],
             "extensible": false
           }
+        },
+        {
+          "name": "Outer",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "id",
+                "type": {
+                  "kind": "oid"
+                },
+                "optional": false
+              },
+              {
+                "name": "nested",
+                "type": {
+                  "kind": "sequenceOf",
+                  "element": {
+                    "kind": "sequence",
+                    "components": [
+                      {
+                        "name": "value",
+                        "type": {
+                          "kind": "any",
+                          "bindings": [
+                            {
+                              "key": "1.2.3",
+                              "name": "emptyEntry",
+                              "type": {
+                                "kind": "ref",
+                                "name": "NoData",
+                                "module": "M"
+                              }
+                            },
+                            {
+                              "key": "1.2.4",
+                              "name": "dataEntry",
+                              "type": {
+                                "kind": "integer",
+                                "constraint": {
+                                  "value": {
+                                    "min": 0,
+                                    "max": 100
+                                  }
+                                }
+                              }
+                            }
+                          ],
+                          "selector": {
+                            "levels": 1,
+                            "path": [
+                              "id"
+                            ]
+                          },
+                          "table": "Mixed",
+                          "tableExtensible": false
+                        },
+                        "optional": false
+                      }
+                    ],
+                    "extensible": false
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
         }
       ],
       "values": []

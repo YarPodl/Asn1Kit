@@ -27,6 +27,48 @@
 
 namespace ExtModule {
 
+struct Bag {
+    asn1kit::integer a{};
+    std::optional<bool> b{};
+
+    static asn1kit::tag default_tag() {
+        return asn1kit::tag::set;
+    }
+
+    static Bag decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+        Bag value{};
+        r.with_set(t, [&](asn1kit::reader& inner) {
+            bool seen_a = false;
+            while (!inner.eof()) {
+                asn1kit::tag peeked;
+                if (!inner.try_peek_tag(peeked)) {
+                    break;
+                }
+                if (peeked.matches_ignore_constructed(asn1kit::tag::context(0))) {
+                    if (seen_a) throw asn1kit::exception("Duplicate SET component 'a'.");
+                    seen_a = true;
+                    value.a = inner.read_integer_value(asn1kit::tag::context(0));
+                } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1))) {
+                    if (value.b.has_value()) throw asn1kit::exception("Duplicate SET component 'b'.");
+                    value.b = inner.read_boolean(asn1kit::tag::context(1));
+                } else {
+                    (void)inner.read_any();
+                }
+            }
+            if (!seen_a) throw asn1kit::exception("Missing SET component 'a'.");
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+        auto scope = w.enter_set_of(t);
+        w.write_integer(asn1kit::tag::context(0), this->a);
+        if (this->b.has_value()) {
+            w.write_boolean(asn1kit::tag::context(1), (*this->b));
+        }
+    }
+};
+
 struct Box {
     asn1kit::integer root{};
     std::optional<bool> mid{};
@@ -81,48 +123,6 @@ struct Box {
         }
         if (this->tail.has_value()) {
             w.write_octet_string(asn1kit::tag::context(3), (*this->tail).span());
-        }
-    }
-};
-
-struct Bag {
-    asn1kit::integer a{};
-    std::optional<bool> b{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::set;
-    }
-
-    static Bag decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        Bag value{};
-        r.with_set(t, [&](asn1kit::reader& inner) {
-            bool seen_a = false;
-            while (!inner.eof()) {
-                asn1kit::tag peeked;
-                if (!inner.try_peek_tag(peeked)) {
-                    break;
-                }
-                if (peeked.matches_ignore_constructed(asn1kit::tag::context(0))) {
-                    if (seen_a) throw asn1kit::exception("Duplicate SET component 'a'.");
-                    seen_a = true;
-                    value.a = inner.read_integer_value(asn1kit::tag::context(0));
-                } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1))) {
-                    if (value.b.has_value()) throw asn1kit::exception("Duplicate SET component 'b'.");
-                    value.b = inner.read_boolean(asn1kit::tag::context(1));
-                } else {
-                    (void)inner.read_any();
-                }
-            }
-            if (!seen_a) throw asn1kit::exception("Missing SET component 'a'.");
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_set_of(t);
-        w.write_integer(asn1kit::tag::context(0), this->a);
-        if (this->b.has_value()) {
-            w.write_boolean(asn1kit::tag::context(1), (*this->b));
         }
     }
 };
