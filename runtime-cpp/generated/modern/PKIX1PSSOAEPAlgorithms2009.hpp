@@ -25,7 +25,7 @@
 #include <variant>
 #include <vector>
 
-#include "AlgorithmInformation2009.hpp"
+#include "cycle_AlgorithmInformation2009_AlgorithmIdentifier_AttributeCertificateVersion12009_AttributeCertificateInfoV1_and_77_more.hpp"
 
 namespace asn1kit {
 namespace modern {
@@ -151,92 +151,6 @@ struct RSAESOAEPParams {
             {
                 auto explicit_scope = w.enter_explicit(asn1kit::tag::context(2, true));
                 this->pSourceFunc.encode(w, asn1kit::tag::sequence);
-            }
-        }
-    }
-};
-
-struct RSASSAPSSParams {
-    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid::parse("1.3.14.3.2.26");         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }());
-    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier maskGenAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid::parse("1.2.840.113549.1.1.8");         v.parameters = asn1kit::encode_open(([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid::parse("1.3.14.3.2.26");         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }())); return v; }());
-    asn1kit::integer saltLength = asn1kit::integer::from_int64(20ll);
-    asn1kit::integer trailerField = asn1kit::integer::from_int64(1ll);
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static RSASSAPSSParams decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        RSASSAPSSParams value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            if (inner.next_is(asn1kit::tag::context(0, true))) {
-                ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier tmp_hashAlgorithm{};
-                inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
-                    tmp_hashAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(scoped, asn1kit::tag::sequence);
-                });
-                value.hashAlgorithm = std::move(tmp_hashAlgorithm);
-            }
-            else {
-                value.hashAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid::parse("1.3.14.3.2.26");         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }());
-            }
-            if (inner.next_is(asn1kit::tag::context(1, true))) {
-                ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier tmp_maskGenAlgorithm{};
-                inner.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
-                    tmp_maskGenAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(scoped, asn1kit::tag::sequence);
-                });
-                value.maskGenAlgorithm = std::move(tmp_maskGenAlgorithm);
-            }
-            else {
-                value.maskGenAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid::parse("1.2.840.113549.1.1.8");         v.parameters = asn1kit::encode_open(([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid::parse("1.3.14.3.2.26");         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }())); return v; }());
-            }
-            if (inner.next_is(asn1kit::tag::context(2, true))) {
-                asn1kit::integer tmp_saltLength{};
-                inner.with_explicit(asn1kit::tag::context(2, true), [&](asn1kit::reader& scoped) {
-                    tmp_saltLength = scoped.read_integer_value(asn1kit::tag::integer);
-                });
-                value.saltLength = std::move(tmp_saltLength);
-            }
-            else {
-                value.saltLength = asn1kit::integer::from_int64(20ll);
-            }
-            if (inner.next_is(asn1kit::tag::context(3, true))) {
-                asn1kit::integer tmp_trailerField{};
-                inner.with_explicit(asn1kit::tag::context(3, true), [&](asn1kit::reader& scoped) {
-                    tmp_trailerField = scoped.read_integer_value(asn1kit::tag::integer);
-                });
-                value.trailerField = std::move(tmp_trailerField);
-            }
-            else {
-                value.trailerField = asn1kit::integer::from_int64(1ll);
-            }
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        if (!(!(this->hashAlgorithm.algorithm != asn1kit::oid::parse("1.3.14.3.2.26")) && this->hashAlgorithm.parameters.has_value() && !((*this->hashAlgorithm.parameters) != asn1kit::encode_open(asn1kit::null_value::value())))) {
-            {
-                auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
-                this->hashAlgorithm.encode(w, asn1kit::tag::sequence);
-            }
-        }
-        if (!(!(this->maskGenAlgorithm.algorithm != asn1kit::oid::parse("1.2.840.113549.1.1.8")) && this->maskGenAlgorithm.parameters.has_value() && !((*this->maskGenAlgorithm.parameters) != asn1kit::encode_open(([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid::parse("1.3.14.3.2.26");         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }()))))) {
-            {
-                auto explicit_scope = w.enter_explicit(asn1kit::tag::context(1, true));
-                this->maskGenAlgorithm.encode(w, asn1kit::tag::sequence);
-            }
-        }
-        if (this->saltLength != asn1kit::integer::from_int64(20ll)) {
-            {
-                auto explicit_scope = w.enter_explicit(asn1kit::tag::context(2, true));
-                w.write_integer(asn1kit::tag::integer, this->saltLength);
-            }
-        }
-        if (this->trailerField != asn1kit::integer::from_int64(1ll)) {
-            {
-                auto explicit_scope = w.enter_explicit(asn1kit::tag::context(3, true));
-                w.write_integer(asn1kit::tag::integer, this->trailerField);
             }
         }
     }

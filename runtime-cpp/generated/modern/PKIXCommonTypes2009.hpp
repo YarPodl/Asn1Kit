@@ -25,10 +25,10 @@
 #include <variant>
 #include <vector>
 
+#include "cycle_AlgorithmInformation2009_AlgorithmIdentifier_AttributeCertificateVersion12009_AttributeCertificateInfoV1_and_77_more.hpp"
+#include "cycle_CryptographicMessageSyntax2009_Time_EnrollmentMessageSyntax2009_CertificationRequest_and_39_more.hpp"
 #include "CryptographicMessageSyntax2009.hpp"
-#include "EnrollmentMessageSyntax2009.hpp"
 #include "OCSP2009.hpp"
-#include "PKCS10.hpp"
 #include "PKIX1Explicit2009.hpp"
 #include "PKIX1Implicit2009.hpp"
 #include "PKIXAttributeCertificate2009.hpp"
@@ -37,76 +37,6 @@
 namespace asn1kit {
 namespace modern {
 namespace PKIXCommonTypes2009 {
-
-struct AttributeSet {
-    asn1kit::oid type{};
-    std::vector<asn1kit::any> values{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static AttributeSet decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        AttributeSet value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.type = inner.read_oid(asn1kit::tag::object_identifier);
-            value.values = inner.read_set_of<asn1kit::any>(asn1kit::tag::set, [&](asn1kit::reader& inner) {
-                asn1kit::any item{};
-                item = inner.read_any();
-                return item;
-            });
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        w.write_object_identifier(asn1kit::tag::object_identifier, this->type);
-        w.write_set_of(asn1kit::tag::set, this->values, [&](asn1kit::writer& inner, const auto& item) {
-            inner.write_any(item);
-        });
-    }
-};
-
-struct Extension {
-    asn1kit::oid extnID{};
-    bool critical = false;
-    asn1kit::contained<asn1kit::any> extnValue{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static Extension decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        Extension value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.extnID = inner.read_oid(asn1kit::tag::object_identifier);
-            if (inner.next_is(asn1kit::tag::boolean)) {
-                value.critical = inner.read_boolean(asn1kit::tag::boolean);
-            }
-            else {
-                value.critical = false;
-            }
-            value.extnValue = inner.read_contained<asn1kit::any>(asn1kit::tag::octet_string, false, false, 0, [&](asn1kit::reader& inner, auto) {
-                asn1kit::any item{};
-                item = inner.read_any();
-                return item;
-            });
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        w.write_object_identifier(asn1kit::tag::object_identifier, this->extnID);
-        if (this->critical != false) {
-            w.write_boolean(asn1kit::tag::boolean, this->critical);
-        }
-        w.write_contained(asn1kit::tag::octet_string, false, this->extnValue, [&](asn1kit::writer& inner, const auto& value) {
-            inner.write_any(value);
-        });
-    }
-};
 
 struct SecurityCategory {
     asn1kit::oid type{};
@@ -136,30 +66,6 @@ struct SecurityCategory {
             auto explicit_scope = w.enter_explicit(asn1kit::tag::context(1, true));
             w.write_any(this->value_);
         }
-    }
-};
-
-struct SingleAttribute {
-    asn1kit::oid type{};
-    asn1kit::any value_{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static SingleAttribute decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        SingleAttribute value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.type = inner.read_oid(asn1kit::tag::object_identifier);
-            value.value_ = inner.read_any();
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        w.write_object_identifier(asn1kit::tag::object_identifier, this->type);
-        w.write_any(this->value_);
     }
 };
 

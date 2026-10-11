@@ -25,11 +25,9 @@
 #include <variant>
 #include <vector>
 
-#include "AlgorithmInformation2009.hpp"
-#include "CryptographicMessageSyntax2009.hpp"
-#include "PKIXCommonTypes2009.hpp"
-#include "PKIX1Explicit2009.hpp"
+#include "cycle_AlgorithmInformation2009_AlgorithmIdentifier_AttributeCertificateVersion12009_AttributeCertificateInfoV1_and_77_more.hpp"
 #include "PKIX1Implicit2009.hpp"
+#include "PKIXCommonTypes2009.hpp"
 
 namespace asn1kit {
 namespace modern {
@@ -140,6 +138,72 @@ struct ContentReference {
         w.write_object_identifier(asn1kit::tag::object_identifier, this->contentType);
         w.write_octet_string(asn1kit::tag::octet_string, this->signedContentIdentifier.span());
         w.write_octet_string(asn1kit::tag::octet_string, this->originatorSignatureValue.span());
+    }
+};
+
+struct ESSCertID {
+    asn1kit::bytes certHash{};
+    std::optional<IssuerSerial> issuerSerial{};
+
+    static asn1kit::tag default_tag() {
+        return asn1kit::tag::sequence;
+    }
+
+    static ESSCertID decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+        ESSCertID value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.certHash = inner.read_octet_string(asn1kit::tag::octet_string);
+            if (inner.next_is(asn1kit::tag::sequence)) {
+                value.issuerSerial = IssuerSerial::decode(inner, asn1kit::tag::sequence);
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+        auto scope = w.enter_sequence(t);
+        w.write_octet_string(asn1kit::tag::octet_string, this->certHash.span());
+        if (this->issuerSerial.has_value()) {
+            (*this->issuerSerial).encode(w, asn1kit::tag::sequence);
+        }
+    }
+};
+
+struct ESSCertIDv2 {
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid::parse("2.16.840.1.101.3.4.2.1"); return v; }());
+    asn1kit::bytes certHash{};
+    std::optional<IssuerSerial> issuerSerial{};
+
+    static asn1kit::tag default_tag() {
+        return asn1kit::tag::sequence;
+    }
+
+    static ESSCertIDv2 decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+        ESSCertIDv2 value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            if (inner.next_is(asn1kit::tag::sequence)) {
+                value.hashAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner, asn1kit::tag::sequence);
+            }
+            else {
+                value.hashAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid::parse("2.16.840.1.101.3.4.2.1"); return v; }());
+            }
+            value.certHash = inner.read_octet_string(asn1kit::tag::octet_string);
+            if (inner.next_is(asn1kit::tag::sequence)) {
+                value.issuerSerial = IssuerSerial::decode(inner, asn1kit::tag::sequence);
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+        auto scope = w.enter_sequence(t);
+        if (!(!(this->hashAlgorithm.algorithm != asn1kit::oid::parse("2.16.840.1.101.3.4.2.1")) && !this->hashAlgorithm.parameters.has_value())) {
+            this->hashAlgorithm.encode(w, asn1kit::tag::sequence);
+        }
+        w.write_octet_string(asn1kit::tag::octet_string, this->certHash.span());
+        if (this->issuerSerial.has_value()) {
+            (*this->issuerSerial).encode(w, asn1kit::tag::sequence);
+        }
     }
 };
 
@@ -306,102 +370,6 @@ struct EntityIdentifier {
     void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
         (void)t;
         encode(w);
-    }
-};
-
-struct IssuerSerial {
-    std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> issuer{};
-    asn1kit::integer serialNumber{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static IssuerSerial decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        IssuerSerial value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.issuer = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                ::asn1kit::modern::PKIX1Implicit2009::GeneralName item{};
-                item = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
-                return item;
-            });
-            value.serialNumber = inner.read_integer_value(asn1kit::tag::integer);
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        w.write_sequence_of(asn1kit::tag::sequence, this->issuer, [&](asn1kit::writer& inner, const auto& item) {
-            item.encode(inner);
-        });
-        w.write_integer(asn1kit::tag::integer, this->serialNumber);
-    }
-};
-
-struct ESSCertID {
-    asn1kit::bytes certHash{};
-    std::optional<IssuerSerial> issuerSerial{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static ESSCertID decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        ESSCertID value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.certHash = inner.read_octet_string(asn1kit::tag::octet_string);
-            if (inner.next_is(asn1kit::tag::sequence)) {
-                value.issuerSerial = IssuerSerial::decode(inner, asn1kit::tag::sequence);
-            }
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        w.write_octet_string(asn1kit::tag::octet_string, this->certHash.span());
-        if (this->issuerSerial.has_value()) {
-            (*this->issuerSerial).encode(w, asn1kit::tag::sequence);
-        }
-    }
-};
-
-struct ESSCertIDv2 {
-    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid::parse("2.16.840.1.101.3.4.2.1"); return v; }());
-    asn1kit::bytes certHash{};
-    std::optional<IssuerSerial> issuerSerial{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static ESSCertIDv2 decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        ESSCertIDv2 value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            if (inner.next_is(asn1kit::tag::sequence)) {
-                value.hashAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner, asn1kit::tag::sequence);
-            }
-            else {
-                value.hashAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid::parse("2.16.840.1.101.3.4.2.1"); return v; }());
-            }
-            value.certHash = inner.read_octet_string(asn1kit::tag::octet_string);
-            if (inner.next_is(asn1kit::tag::sequence)) {
-                value.issuerSerial = IssuerSerial::decode(inner, asn1kit::tag::sequence);
-            }
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        if (!(!(this->hashAlgorithm.algorithm != asn1kit::oid::parse("2.16.840.1.101.3.4.2.1")) && !this->hashAlgorithm.parameters.has_value())) {
-            this->hashAlgorithm.encode(w, asn1kit::tag::sequence);
-        }
-        w.write_octet_string(asn1kit::tag::octet_string, this->certHash.span());
-        if (this->issuerSerial.has_value()) {
-            (*this->issuerSerial).encode(w, asn1kit::tag::sequence);
-        }
     }
 };
 

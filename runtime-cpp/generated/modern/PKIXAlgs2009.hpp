@@ -25,6 +25,8 @@
 #include <variant>
 #include <vector>
 
+#include "cycle_AlgorithmInformation2009_AlgorithmIdentifier_AttributeCertificateVersion12009_AttributeCertificateInfoV1_and_77_more.hpp"
+
 namespace asn1kit {
 namespace modern {
 namespace PKIXAlgs2009 {
@@ -201,54 +203,6 @@ struct DSAParams {
         w.write_integer(asn1kit::tag::integer, this->p);
         w.write_integer(asn1kit::tag::integer, this->q);
         w.write_integer(asn1kit::tag::integer, this->g);
-    }
-};
-
-struct DSASigValue {
-    asn1kit::integer r{};
-    asn1kit::integer s{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static DSASigValue decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        DSASigValue value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.r = inner.read_integer_value(asn1kit::tag::integer);
-            value.s = inner.read_integer_value(asn1kit::tag::integer);
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        w.write_integer(asn1kit::tag::integer, this->r);
-        w.write_integer(asn1kit::tag::integer, this->s);
-    }
-};
-
-struct ECDSASigValue {
-    asn1kit::integer r{};
-    asn1kit::integer s{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static ECDSASigValue decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        ECDSASigValue value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.r = inner.read_integer_value(asn1kit::tag::integer);
-            value.s = inner.read_integer_value(asn1kit::tag::integer);
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        w.write_integer(asn1kit::tag::integer, this->r);
-        w.write_integer(asn1kit::tag::integer, this->s);
     }
 };
 

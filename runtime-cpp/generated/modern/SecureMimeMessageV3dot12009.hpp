@@ -25,7 +25,7 @@
 #include <variant>
 #include <vector>
 
-#include "CryptographicMessageSyntax2009.hpp"
+#include "cycle_AlgorithmInformation2009_AlgorithmIdentifier_AttributeCertificateVersion12009_AttributeCertificateInfoV1_and_77_more.hpp"
 
 namespace asn1kit {
 namespace modern {

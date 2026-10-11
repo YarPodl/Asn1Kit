@@ -1,5 +1,5 @@
 # Regenerates committed C++ codegen golden for modern-pkix-cms.json
-# (24 modules + all.hpp + certificate.hpp) under runtime-cpp/generated/modern/.
+# (per-module headers + cycle_*.hpp type-SCC amalgams) under runtime-cpp/generated/modern/.
 [CmdletBinding()]
 param()
 

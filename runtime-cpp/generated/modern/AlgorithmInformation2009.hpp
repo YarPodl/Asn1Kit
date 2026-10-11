@@ -25,43 +25,15 @@
 #include <variant>
 #include <vector>
 
+#include "cycle_AlgorithmInformation2009_AlgorithmIdentifier_AttributeCertificateVersion12009_AttributeCertificateInfoV1_and_77_more.hpp"
 #include "CryptographicMessageSyntaxAlgorithms2009.hpp"
 #include "PKIX1PSSOAEPAlgorithms2009.hpp"
 #include "PKIXAlgs2009.hpp"
 #include "PKIXCRMF2009.hpp"
-#include "SecureMimeMessageV3dot12009.hpp"
 
 namespace asn1kit {
 namespace modern {
 namespace AlgorithmInformation2009 {
-
-struct AlgorithmIdentifier {
-    asn1kit::oid algorithm{};
-    std::optional<asn1kit::any> parameters{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static AlgorithmIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        AlgorithmIdentifier value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.algorithm = inner.read_oid(asn1kit::tag::object_identifier);
-            if (!inner.eof()) {
-                value.parameters = inner.read_any();
-            }
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        w.write_object_identifier(asn1kit::tag::object_identifier, this->algorithm);
-        if (this->parameters.has_value()) {
-            w.write_any((*this->parameters));
-        }
-    }
-};
 
 enum class ParamOptions {
     required = 0,

@@ -1,7 +1,7 @@
 // Copyright Asn1Kit contributors
 // SPDX-License-Identifier: Apache-2.0
 
-#include "certificate.hpp"
+#include "PKIX1Explicit2009.hpp"
 
 #include "asn1kit/reader.hpp"
 #include "asn1kit/writer.hpp"

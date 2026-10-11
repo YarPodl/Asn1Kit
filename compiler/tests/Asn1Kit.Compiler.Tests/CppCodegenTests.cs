@@ -477,7 +477,81 @@ END
         var b = Assert.Single(files, f => f.RelativePath == "B.hpp");
         Assert.Contains("#include \"A.hpp\"", b.Contents);
         Assert.Contains("::mod::a::Item item{}", b.Contents);
+        Assert.DoesNotContain(files, f => f.RelativePath.StartsWith("cycle_", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void EmitsCycleAmalgamForCrossModuleTypeCycle()
+    {
+        var document = new IrDocument
+        {
+            IrVersion = 1,
+            Modules =
+            {
+                new IrModule
+                {
+                    Name = "A",
+                    Options = IrOptions.SetCpp(null, "namespace", "mod::a"),
+                    Types =
+                    {
+                        new IrTypeDef
+                        {
+                            Name = "Foo",
+                            Type = new SequenceType
+                            {
+                                Components =
+                                {
+                                    new IrComponent
+                                    {
+                                        Name = "bar",
+                                        Type = new RefType { Name = "Bar", Module = "B" }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                new IrModule
+                {
+                    Name = "B",
+                    Options = IrOptions.SetCpp(null, "namespace", "mod::b"),
+                    Types =
+                    {
+                        new IrTypeDef
+                        {
+                            Name = "Bar",
+                            Type = new SequenceType
+                            {
+                                Components =
+                                {
+                                    new IrComponent
+                                    {
+                                        Name = "foo",
+                                        Type = new RefType { Name = "Foo", Module = "A" },
+                                        Optional = true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        var files = new CppBackend().Generate(document)
+            .OrderBy(f => f.RelativePath, StringComparer.Ordinal)
+            .ToList();
+        var cycle = Assert.Single(files, f => f.RelativePath.StartsWith("cycle_", StringComparison.Ordinal));
+        Assert.Equal("cycle_A_Foo_B_Bar.hpp", cycle.RelativePath);
+        Assert.Contains("struct Foo", cycle.Contents);
+        Assert.Contains("struct Bar", cycle.Contents);
+        Assert.DoesNotContain("#include \"A.hpp\"", cycle.Contents);
+        Assert.DoesNotContain("#include \"B.hpp\"", cycle.Contents);
+        Assert.DoesNotContain("struct Foo", Assert.Single(files, f => f.RelativePath == "A.hpp").Contents);
+        Assert.DoesNotContain("struct Bar", Assert.Single(files, f => f.RelativePath == "B.hpp").Contents);
+        Assert.Contains("#include \"cycle_A_Foo_B_Bar.hpp\"", Assert.Single(files, f => f.RelativePath == "A.hpp").Contents);
+        Assert.Contains("#include \"cycle_A_Foo_B_Bar.hpp\"", Assert.Single(files, f => f.RelativePath == "B.hpp").Contents);
         Assert.DoesNotContain(files, f => f.RelativePath == "all.hpp");
+        Assert.DoesNotContain(files, f => f.RelativePath == "certificate.hpp");
     }
 
     [Fact]
@@ -568,10 +642,10 @@ END
         var files = new CppBackend().Generate(document)
             .OrderBy(f => f.RelativePath, StringComparer.Ordinal)
             .ToList();
-        Assert.Equal(26, files.Count);
-        Assert.Contains(files, f => f.RelativePath == "all.hpp");
-        Assert.Contains(files, f => f.RelativePath == "certificate.hpp");
         Assert.Contains(files, f => f.RelativePath == "PKIX1Explicit2009.hpp");
+        Assert.Contains(files, f => f.RelativePath.StartsWith("cycle_", StringComparison.Ordinal));
+        Assert.DoesNotContain(files, f => f.RelativePath == "all.hpp");
+        Assert.DoesNotContain(files, f => f.RelativePath == "certificate.hpp");
 
         var goldenDir = TestData.RepoPath("runtime-cpp/generated/modern");
         var expectedNames = Directory.GetFiles(goldenDir, "*.hpp")

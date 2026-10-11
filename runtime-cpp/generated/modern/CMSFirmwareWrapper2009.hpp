@@ -25,8 +25,6 @@
 #include <variant>
 #include <vector>
 
-#include "CryptographicMessageSyntax2009.hpp"
-
 namespace asn1kit {
 namespace modern {
 namespace CMSFirmwareWrapper2009 {

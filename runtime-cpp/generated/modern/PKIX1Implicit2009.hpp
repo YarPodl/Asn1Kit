@@ -25,9 +25,7 @@
 #include <variant>
 #include <vector>
 
-#include "PKIXCommonTypes2009.hpp"
-#include "PKIXX400Address2009.hpp"
-#include "PKIX1Explicit2009.hpp"
+#include "cycle_AlgorithmInformation2009_AlgorithmIdentifier_AttributeCertificateVersion12009_AttributeCertificateInfoV1_and_77_more.hpp"
 
 namespace asn1kit {
 namespace modern {
@@ -182,6 +180,30 @@ struct PKIX1Implicit2009Oids {
     }
     static asn1kit::oid IdCeInvalidityDate_oid() {
         return asn1kit::oid::parse(IdCeInvalidityDate);
+    }
+};
+
+struct AccessDescription {
+    asn1kit::oid accessMethod{};
+    GeneralName accessLocation{};
+
+    static asn1kit::tag default_tag() {
+        return asn1kit::tag::sequence;
+    }
+
+    static AccessDescription decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+        AccessDescription value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.accessMethod = inner.read_oid(asn1kit::tag::object_identifier);
+            value.accessLocation = GeneralName::decode(inner);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+        auto scope = w.enter_sequence(t);
+        w.write_object_identifier(asn1kit::tag::object_identifier, this->accessMethod);
+        this->accessLocation.encode(w);
     }
 };
 
@@ -519,382 +541,6 @@ struct DistributionPointName {
     void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
         (void)t;
         encode(w);
-    }
-};
-
-struct EDIPartyName {
-    std::optional<::asn1kit::modern::PKIX1Explicit2009::X520name> nameAssigner{};
-    ::asn1kit::modern::PKIX1Explicit2009::X520name partyName{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static EDIPartyName decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        EDIPartyName value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            if (inner.next_is(asn1kit::tag::context(0, true))) {
-                ::asn1kit::modern::PKIX1Explicit2009::X520name tmp_nameAssigner{};
-                inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
-                    tmp_nameAssigner = ::asn1kit::modern::PKIX1Explicit2009::X520name::decode(scoped);
-                });
-                value.nameAssigner = std::move(tmp_nameAssigner);
-            }
-            ::asn1kit::modern::PKIX1Explicit2009::X520name tmp_partyName{};
-            inner.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
-                tmp_partyName = ::asn1kit::modern::PKIX1Explicit2009::X520name::decode(scoped);
-            });
-            value.partyName = std::move(tmp_partyName);
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        if (this->nameAssigner.has_value()) {
-            {
-                auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
-                (*this->nameAssigner).encode(w);
-            }
-        }
-        {
-            auto explicit_scope = w.enter_explicit(asn1kit::tag::context(1, true));
-            this->partyName.encode(w);
-        }
-    }
-};
-
-enum class GeneralName_kind {
-    otherName,
-    rfc822Name,
-    dNSName,
-    x400Address,
-    directoryName,
-    ediPartyName,
-    uniformResourceIdentifier,
-    iPAddress,
-    registeredID
-};
-
-struct GeneralName_otherName_box {
-    GeneralName_OtherName value{};
-};
-
-struct GeneralName_rfc822Name_box {
-    std::string value{};
-};
-
-struct GeneralName_dNSName_box {
-    std::string value{};
-};
-
-struct GeneralName_x400Address_box {
-    ::asn1kit::modern::PKIXX400Address2009::ORAddress value{};
-};
-
-struct GeneralName_directoryName_box {
-    std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> value{};
-};
-
-struct GeneralName_ediPartyName_box {
-    EDIPartyName value{};
-};
-
-struct GeneralName_uniformResourceIdentifier_box {
-    std::string value{};
-};
-
-struct GeneralName_iPAddress_box {
-    asn1kit::bytes value{};
-};
-
-struct GeneralName_registeredID_box {
-    asn1kit::oid value{};
-};
-
-struct GeneralName {
-    GeneralName_kind kind{};
-    std::variant<GeneralName_otherName_box, GeneralName_rfc822Name_box, GeneralName_dNSName_box, GeneralName_x400Address_box, GeneralName_directoryName_box, GeneralName_ediPartyName_box, GeneralName_uniformResourceIdentifier_box, GeneralName_iPAddress_box, GeneralName_registeredID_box> value{};
-
-    static GeneralName from_otherName(GeneralName_OtherName v) {
-        GeneralName result{};
-        result.kind = GeneralName_kind::otherName;
-        result.value = GeneralName_otherName_box{std::move(v)};
-        return result;
-    }
-
-    static GeneralName from_rfc822Name(std::string v) {
-        GeneralName result{};
-        result.kind = GeneralName_kind::rfc822Name;
-        result.value = GeneralName_rfc822Name_box{std::move(v)};
-        return result;
-    }
-
-    static GeneralName from_dNSName(std::string v) {
-        GeneralName result{};
-        result.kind = GeneralName_kind::dNSName;
-        result.value = GeneralName_dNSName_box{std::move(v)};
-        return result;
-    }
-
-    static GeneralName from_x400Address(::asn1kit::modern::PKIXX400Address2009::ORAddress v) {
-        GeneralName result{};
-        result.kind = GeneralName_kind::x400Address;
-        result.value = GeneralName_x400Address_box{std::move(v)};
-        return result;
-    }
-
-    static GeneralName from_directoryName(std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> v) {
-        GeneralName result{};
-        result.kind = GeneralName_kind::directoryName;
-        result.value = GeneralName_directoryName_box{std::move(v)};
-        return result;
-    }
-
-    static GeneralName from_ediPartyName(EDIPartyName v) {
-        GeneralName result{};
-        result.kind = GeneralName_kind::ediPartyName;
-        result.value = GeneralName_ediPartyName_box{std::move(v)};
-        return result;
-    }
-
-    static GeneralName from_uniformResourceIdentifier(std::string v) {
-        GeneralName result{};
-        result.kind = GeneralName_kind::uniformResourceIdentifier;
-        result.value = GeneralName_uniformResourceIdentifier_box{std::move(v)};
-        return result;
-    }
-
-    static GeneralName from_iPAddress(asn1kit::bytes v) {
-        GeneralName result{};
-        result.kind = GeneralName_kind::iPAddress;
-        result.value = GeneralName_iPAddress_box{std::move(v)};
-        return result;
-    }
-
-    static GeneralName from_registeredID(asn1kit::oid v) {
-        GeneralName result{};
-        result.kind = GeneralName_kind::registeredID;
-        result.value = GeneralName_registeredID_box{std::move(v)};
-        return result;
-    }
-
-    static asn1kit::tag default_tag() {
-        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
-    }
-
-    static GeneralName decode(asn1kit::reader& r) {
-        asn1kit::tag peeked;
-        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
-        if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
-            GeneralName result{};
-            result.kind = GeneralName_kind::otherName;
-            GeneralName_OtherName alt{};
-            alt = GeneralName_OtherName::decode(r, asn1kit::tag::context(0, true));
-            result.value = GeneralName_otherName_box{std::move(alt)};
-            return result;
-        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1))) {
-            GeneralName result{};
-            result.kind = GeneralName_kind::rfc822Name;
-            std::string alt{};
-            alt = r.read_string(asn1kit::tag::context(1), asn1kit::string_form::ia5);
-            result.value = GeneralName_rfc822Name_box{std::move(alt)};
-            return result;
-        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2))) {
-            GeneralName result{};
-            result.kind = GeneralName_kind::dNSName;
-            std::string alt{};
-            alt = r.read_string(asn1kit::tag::context(2), asn1kit::string_form::ia5);
-            result.value = GeneralName_dNSName_box{std::move(alt)};
-            return result;
-        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(3, true))) {
-            GeneralName result{};
-            result.kind = GeneralName_kind::x400Address;
-            ::asn1kit::modern::PKIXX400Address2009::ORAddress alt{};
-            alt = ::asn1kit::modern::PKIXX400Address2009::ORAddress::decode(r, asn1kit::tag::context(3, true));
-            result.value = GeneralName_x400Address_box{std::move(alt)};
-            return result;
-        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(4, true))) {
-            GeneralName result{};
-            result.kind = GeneralName_kind::directoryName;
-            std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> alt{};
-            std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> tmp_directoryName{};
-            r.with_explicit(asn1kit::tag::context(4, true), [&](asn1kit::reader& scoped) {
-                tmp_directoryName = scoped.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                    item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>(asn1kit::tag::set, [&](asn1kit::reader& inner) {
-                        ::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute item{};
-                        item = ::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute::decode(inner, asn1kit::tag::sequence);
-                        return item;
-                    });
-                    return item;
-                });
-            });
-            alt = std::move(tmp_directoryName);
-            result.value = GeneralName_directoryName_box{std::move(alt)};
-            return result;
-        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(5, true))) {
-            GeneralName result{};
-            result.kind = GeneralName_kind::ediPartyName;
-            EDIPartyName alt{};
-            alt = EDIPartyName::decode(r, asn1kit::tag::context(5, true));
-            result.value = GeneralName_ediPartyName_box{std::move(alt)};
-            return result;
-        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(6))) {
-            GeneralName result{};
-            result.kind = GeneralName_kind::uniformResourceIdentifier;
-            std::string alt{};
-            alt = r.read_string(asn1kit::tag::context(6), asn1kit::string_form::ia5);
-            result.value = GeneralName_uniformResourceIdentifier_box{std::move(alt)};
-            return result;
-        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(7))) {
-            GeneralName result{};
-            result.kind = GeneralName_kind::iPAddress;
-            asn1kit::bytes alt{};
-            alt = r.read_octet_string(asn1kit::tag::context(7));
-            result.value = GeneralName_iPAddress_box{std::move(alt)};
-            return result;
-        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(8))) {
-            GeneralName result{};
-            result.kind = GeneralName_kind::registeredID;
-            asn1kit::oid alt{};
-            alt = r.read_oid(asn1kit::tag::context(8));
-            result.value = GeneralName_registeredID_box{std::move(alt)};
-            return result;
-        } else {
-            throw asn1kit::exception("Unknown CHOICE alternative.");
-        }
-    }
-
-    static GeneralName decode(asn1kit::reader& r, const asn1kit::tag& t) {
-        (void)t;
-        return decode(r);
-    }
-
-    void encode(asn1kit::writer& w) const {
-        switch (kind) {
-        case GeneralName_kind::otherName:
-            {
-                const auto& alt = std::get<0>(value).value;
-                alt.encode(w, asn1kit::tag::context(0, true));
-                break;
-            }
-        case GeneralName_kind::rfc822Name:
-            {
-                const auto& alt = std::get<1>(value).value;
-                w.write_string(asn1kit::tag::context(1), alt, asn1kit::string_form::ia5);
-                break;
-            }
-        case GeneralName_kind::dNSName:
-            {
-                const auto& alt = std::get<2>(value).value;
-                w.write_string(asn1kit::tag::context(2), alt, asn1kit::string_form::ia5);
-                break;
-            }
-        case GeneralName_kind::x400Address:
-            {
-                const auto& alt = std::get<3>(value).value;
-                alt.encode(w, asn1kit::tag::context(3, true));
-                break;
-            }
-        case GeneralName_kind::directoryName:
-            {
-                const auto& alt = std::get<4>(value).value;
-                {
-                    auto explicit_scope = w.enter_explicit(asn1kit::tag::context(4, true));
-                    w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
-                        inner.write_set_of(asn1kit::tag::set, item, [&](asn1kit::writer& inner, const auto& item) {
-                            item.encode(inner, asn1kit::tag::sequence);
-                        });
-                    });
-                }
-                break;
-            }
-        case GeneralName_kind::ediPartyName:
-            {
-                const auto& alt = std::get<5>(value).value;
-                alt.encode(w, asn1kit::tag::context(5, true));
-                break;
-            }
-        case GeneralName_kind::uniformResourceIdentifier:
-            {
-                const auto& alt = std::get<6>(value).value;
-                w.write_string(asn1kit::tag::context(6), alt, asn1kit::string_form::ia5);
-                break;
-            }
-        case GeneralName_kind::iPAddress:
-            {
-                const auto& alt = std::get<7>(value).value;
-                w.write_octet_string(asn1kit::tag::context(7), alt.span());
-                break;
-            }
-        case GeneralName_kind::registeredID:
-            {
-                const auto& alt = std::get<8>(value).value;
-                w.write_object_identifier(asn1kit::tag::context(8), alt);
-                break;
-            }
-        }
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
-        (void)t;
-        encode(w);
-    }
-};
-
-struct AccessDescription {
-    asn1kit::oid accessMethod{};
-    GeneralName accessLocation{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static AccessDescription decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        AccessDescription value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.accessMethod = inner.read_oid(asn1kit::tag::object_identifier);
-            value.accessLocation = GeneralName::decode(inner);
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        w.write_object_identifier(asn1kit::tag::object_identifier, this->accessMethod);
-        this->accessLocation.encode(w);
-    }
-};
-
-struct GeneralName_OtherName {
-    asn1kit::oid type_id{};
-    asn1kit::any value_{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static GeneralName_OtherName decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        GeneralName_OtherName value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.type_id = inner.read_oid(asn1kit::tag::object_identifier);
-            asn1kit::any tmp_value_{};
-            inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
-                tmp_value_ = scoped.read_any();
-            });
-            value.value_ = std::move(tmp_value_);
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        w.write_object_identifier(asn1kit::tag::object_identifier, this->type_id);
-        {
-            auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
-            w.write_any(this->value_);
-        }
     }
 };
 

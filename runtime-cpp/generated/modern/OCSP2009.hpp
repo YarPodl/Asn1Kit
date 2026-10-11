@@ -25,9 +25,7 @@
 #include <variant>
 #include <vector>
 
-#include "AlgorithmInformation2009.hpp"
-#include "PKIXCommonTypes2009.hpp"
-#include "PKIX1Explicit2009.hpp"
+#include "cycle_AlgorithmInformation2009_AlgorithmIdentifier_AttributeCertificateVersion12009_AttributeCertificateInfoV1_and_77_more.hpp"
 #include "PKIX1Implicit2009.hpp"
 
 namespace asn1kit {
