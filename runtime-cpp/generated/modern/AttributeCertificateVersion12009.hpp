@@ -78,67 +78,67 @@ struct signature_binding {
 
 namespace signatureAlgorithms_parameters_bindings {
 inline const parameters_binding<asn1kit::null_value> sa_rsa_with_m_d2{
-    asn1kit::oid::parse("1.2.840.113549.1.1.2")};
+    asn1kit::oid_literal<"1.2.840.113549.1.1.2">().get()};
 
 inline const parameters_binding<asn1kit::null_value> sa_rsa_with_m_d5{
-    asn1kit::oid::parse("1.2.840.113549.1.1.4")};
+    asn1kit::oid_literal<"1.2.840.113549.1.1.4">().get()};
 
 inline const parameters_binding<asn1kit::null_value> sa_rsa_with_s_h_a1{
-    asn1kit::oid::parse("1.2.840.113549.1.1.5")};
+    asn1kit::oid_literal<"1.2.840.113549.1.1.5">().get()};
 
 inline const parameters_binding<asn1kit::null_value> sa_dsa_with_s_h_a1{
-    asn1kit::oid::parse("1.2.840.10040.4.3")};
+    asn1kit::oid_literal<"1.2.840.10040.4.3">().get()};
 
 inline const parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a1{
-    asn1kit::oid::parse("1.2.840.10045.4.1")};
+    asn1kit::oid_literal<"1.2.840.10045.4.1">().get()};
 
 inline const parameters_binding<asn1kit::null_value> sa_dsa_with_s_h_a224{
-    asn1kit::oid::parse("2.16.840.1.101.3.4.3.1")};
+    asn1kit::oid_literal<"2.16.840.1.101.3.4.3.1">().get()};
 
 inline const parameters_binding<asn1kit::null_value> sa_dsa_with_s_h_a256{
-    asn1kit::oid::parse("2.16.840.1.101.3.4.3.2")};
+    asn1kit::oid_literal<"2.16.840.1.101.3.4.3.2">().get()};
 
 inline const parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a224{
-    asn1kit::oid::parse("1.2.840.10045.4.3.1")};
+    asn1kit::oid_literal<"1.2.840.10045.4.3.1">().get()};
 
 inline const parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a256{
-    asn1kit::oid::parse("1.2.840.10045.4.3.2")};
+    asn1kit::oid_literal<"1.2.840.10045.4.3.2">().get()};
 
 inline const parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a384{
-    asn1kit::oid::parse("1.2.840.10045.4.3.3")};
+    asn1kit::oid_literal<"1.2.840.10045.4.3.3">().get()};
 
 inline const parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a512{
-    asn1kit::oid::parse("1.2.840.10045.4.3.4")};
+    asn1kit::oid_literal<"1.2.840.10045.4.3.4">().get()};
 
 inline const parameters_binding<::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::RSASSAPSSParams> sa_rsa_s_s_a_p_s_s{
-    asn1kit::oid::parse("1.2.840.113549.1.1.10")};
+    asn1kit::oid_literal<"1.2.840.113549.1.1.10">().get()};
 
 } // namespace signatureAlgorithms_parameters_bindings
 
 namespace signatureAlgorithms_signature_bindings {
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a1{
-    asn1kit::oid::parse("1.2.840.10040.4.3")};
+    asn1kit::oid_literal<"1.2.840.10040.4.3">().get()};
 
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a1{
-    asn1kit::oid::parse("1.2.840.10045.4.1")};
+    asn1kit::oid_literal<"1.2.840.10045.4.1">().get()};
 
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a224{
-    asn1kit::oid::parse("2.16.840.1.101.3.4.3.1")};
+    asn1kit::oid_literal<"2.16.840.1.101.3.4.3.1">().get()};
 
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a256{
-    asn1kit::oid::parse("2.16.840.1.101.3.4.3.2")};
+    asn1kit::oid_literal<"2.16.840.1.101.3.4.3.2">().get()};
 
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a224{
-    asn1kit::oid::parse("1.2.840.10045.4.3.1")};
+    asn1kit::oid_literal<"1.2.840.10045.4.3.1">().get()};
 
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a256{
-    asn1kit::oid::parse("1.2.840.10045.4.3.2")};
+    asn1kit::oid_literal<"1.2.840.10045.4.3.2">().get()};
 
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a384{
-    asn1kit::oid::parse("1.2.840.10045.4.3.3")};
+    asn1kit::oid_literal<"1.2.840.10045.4.3.3">().get()};
 
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a512{
-    asn1kit::oid::parse("1.2.840.10045.4.3.4")};
+    asn1kit::oid_literal<"1.2.840.10045.4.3.4">().get()};
 
 } // namespace signatureAlgorithms_signature_bindings
 

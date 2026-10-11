@@ -30,35 +30,13 @@ namespace modern {
 namespace CMSAesRsaesOaep2009 {
 
 struct CMSAesRsaesOaep2009Oids {
-    static constexpr const char* Aes = "2.16.840.1.101.3.4.1";
-    static constexpr const char* IdAes128CBC = "2.16.840.1.101.3.4.1.2";
-    static constexpr const char* IdAes192CBC = "2.16.840.1.101.3.4.1.22";
-    static constexpr const char* IdAes256CBC = "2.16.840.1.101.3.4.1.42";
-    static constexpr const char* IdAes128Wrap = "2.16.840.1.101.3.4.1.5";
-    static constexpr const char* IdAes192Wrap = "2.16.840.1.101.3.4.1.25";
-    static constexpr const char* IdAes256Wrap = "2.16.840.1.101.3.4.1.45";
-
-    static asn1kit::oid Aes_oid() {
-        return asn1kit::oid::parse(Aes);
-    }
-    static asn1kit::oid IdAes128CBC_oid() {
-        return asn1kit::oid::parse(IdAes128CBC);
-    }
-    static asn1kit::oid IdAes192CBC_oid() {
-        return asn1kit::oid::parse(IdAes192CBC);
-    }
-    static asn1kit::oid IdAes256CBC_oid() {
-        return asn1kit::oid::parse(IdAes256CBC);
-    }
-    static asn1kit::oid IdAes128Wrap_oid() {
-        return asn1kit::oid::parse(IdAes128Wrap);
-    }
-    static asn1kit::oid IdAes192Wrap_oid() {
-        return asn1kit::oid::parse(IdAes192Wrap);
-    }
-    static asn1kit::oid IdAes256Wrap_oid() {
-        return asn1kit::oid::parse(IdAes256Wrap);
-    }
+    static constexpr auto Aes = asn1kit::oid_literal<"2.16.840.1.101.3.4.1">();
+    static constexpr auto IdAes128CBC = asn1kit::oid_literal<"2.16.840.1.101.3.4.1.2">();
+    static constexpr auto IdAes192CBC = asn1kit::oid_literal<"2.16.840.1.101.3.4.1.22">();
+    static constexpr auto IdAes256CBC = asn1kit::oid_literal<"2.16.840.1.101.3.4.1.42">();
+    static constexpr auto IdAes128Wrap = asn1kit::oid_literal<"2.16.840.1.101.3.4.1.5">();
+    static constexpr auto IdAes192Wrap = asn1kit::oid_literal<"2.16.840.1.101.3.4.1.25">();
+    static constexpr auto IdAes256Wrap = asn1kit::oid_literal<"2.16.840.1.101.3.4.1.45">();
 };
 
 } // namespace CMSAesRsaesOaep2009

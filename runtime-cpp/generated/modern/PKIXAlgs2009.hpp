@@ -32,151 +32,42 @@ namespace modern {
 namespace PKIXAlgs2009 {
 
 struct PKIXAlgs2009Oids {
-    static constexpr const char* RsaEncryption = "1.2.840.113549.1.1.1";
-    static constexpr const char* IdDsa = "1.2.840.10040.4.1";
-    static constexpr const char* Dhpublicnumber = "1.2.840.10046.2.1";
-    static constexpr const char* IdKeyExchangeAlgorithm = "2.16.840.1.101.2.1.1.22";
-    static constexpr const char* IdEcPublicKey = "1.2.840.10045.2.1";
-    static constexpr const char* IdEcDH = "1.3.132.1.12";
-    static constexpr const char* IdEcMQV = "1.3.132.1.13";
-    static constexpr const char* Secp192r1 = "1.2.840.10045.3.1.1";
-    static constexpr const char* Sect163k1 = "1.3.132.0.1";
-    static constexpr const char* Sect163r2 = "1.3.132.0.15";
-    static constexpr const char* Secp224r1 = "1.3.132.0.33";
-    static constexpr const char* Sect233k1 = "1.3.132.0.26";
-    static constexpr const char* Sect233r1 = "1.3.132.0.27";
-    static constexpr const char* Secp256r1 = "1.2.840.10045.3.1.7";
-    static constexpr const char* Sect283k1 = "1.3.132.0.16";
-    static constexpr const char* Sect283r1 = "1.3.132.0.17";
-    static constexpr const char* Secp384r1 = "1.3.132.0.34";
-    static constexpr const char* Sect409k1 = "1.3.132.0.36";
-    static constexpr const char* Sect409r1 = "1.3.132.0.37";
-    static constexpr const char* Secp521r1 = "1.3.132.0.35";
-    static constexpr const char* Sect571k1 = "1.3.132.0.38";
-    static constexpr const char* Sect571r1 = "1.3.132.0.39";
-    static constexpr const char* Md2WithRSAEncryption = "1.2.840.113549.1.1.2";
-    static constexpr const char* Md5WithRSAEncryption = "1.2.840.113549.1.1.4";
-    static constexpr const char* Sha1WithRSAEncryption = "1.2.840.113549.1.1.5";
-    static constexpr const char* DsaWithSha1 = "1.2.840.10040.4.3";
-    static constexpr const char* DsaWithSha224 = "2.16.840.1.101.3.4.3.1";
-    static constexpr const char* DsaWithSha256 = "2.16.840.1.101.3.4.3.2";
-    static constexpr const char* EcdsaWithSHA1 = "1.2.840.10045.4.1";
-    static constexpr const char* EcdsaWithSHA224 = "1.2.840.10045.4.3.1";
-    static constexpr const char* EcdsaWithSHA256 = "1.2.840.10045.4.3.2";
-    static constexpr const char* EcdsaWithSHA384 = "1.2.840.10045.4.3.3";
-    static constexpr const char* EcdsaWithSHA512 = "1.2.840.10045.4.3.4";
-    static constexpr const char* IdMd2 = "1.2.840.113549.2.2";
-    static constexpr const char* IdMd5 = "1.2.840.113549.2.5";
-    static constexpr const char* IdSha1 = "1.3.14.3.2.26";
-
-    static asn1kit::oid RsaEncryption_oid() {
-        return asn1kit::oid::parse(RsaEncryption);
-    }
-    static asn1kit::oid IdDsa_oid() {
-        return asn1kit::oid::parse(IdDsa);
-    }
-    static asn1kit::oid Dhpublicnumber_oid() {
-        return asn1kit::oid::parse(Dhpublicnumber);
-    }
-    static asn1kit::oid IdKeyExchangeAlgorithm_oid() {
-        return asn1kit::oid::parse(IdKeyExchangeAlgorithm);
-    }
-    static asn1kit::oid IdEcPublicKey_oid() {
-        return asn1kit::oid::parse(IdEcPublicKey);
-    }
-    static asn1kit::oid IdEcDH_oid() {
-        return asn1kit::oid::parse(IdEcDH);
-    }
-    static asn1kit::oid IdEcMQV_oid() {
-        return asn1kit::oid::parse(IdEcMQV);
-    }
-    static asn1kit::oid Secp192r1_oid() {
-        return asn1kit::oid::parse(Secp192r1);
-    }
-    static asn1kit::oid Sect163k1_oid() {
-        return asn1kit::oid::parse(Sect163k1);
-    }
-    static asn1kit::oid Sect163r2_oid() {
-        return asn1kit::oid::parse(Sect163r2);
-    }
-    static asn1kit::oid Secp224r1_oid() {
-        return asn1kit::oid::parse(Secp224r1);
-    }
-    static asn1kit::oid Sect233k1_oid() {
-        return asn1kit::oid::parse(Sect233k1);
-    }
-    static asn1kit::oid Sect233r1_oid() {
-        return asn1kit::oid::parse(Sect233r1);
-    }
-    static asn1kit::oid Secp256r1_oid() {
-        return asn1kit::oid::parse(Secp256r1);
-    }
-    static asn1kit::oid Sect283k1_oid() {
-        return asn1kit::oid::parse(Sect283k1);
-    }
-    static asn1kit::oid Sect283r1_oid() {
-        return asn1kit::oid::parse(Sect283r1);
-    }
-    static asn1kit::oid Secp384r1_oid() {
-        return asn1kit::oid::parse(Secp384r1);
-    }
-    static asn1kit::oid Sect409k1_oid() {
-        return asn1kit::oid::parse(Sect409k1);
-    }
-    static asn1kit::oid Sect409r1_oid() {
-        return asn1kit::oid::parse(Sect409r1);
-    }
-    static asn1kit::oid Secp521r1_oid() {
-        return asn1kit::oid::parse(Secp521r1);
-    }
-    static asn1kit::oid Sect571k1_oid() {
-        return asn1kit::oid::parse(Sect571k1);
-    }
-    static asn1kit::oid Sect571r1_oid() {
-        return asn1kit::oid::parse(Sect571r1);
-    }
-    static asn1kit::oid Md2WithRSAEncryption_oid() {
-        return asn1kit::oid::parse(Md2WithRSAEncryption);
-    }
-    static asn1kit::oid Md5WithRSAEncryption_oid() {
-        return asn1kit::oid::parse(Md5WithRSAEncryption);
-    }
-    static asn1kit::oid Sha1WithRSAEncryption_oid() {
-        return asn1kit::oid::parse(Sha1WithRSAEncryption);
-    }
-    static asn1kit::oid DsaWithSha1_oid() {
-        return asn1kit::oid::parse(DsaWithSha1);
-    }
-    static asn1kit::oid DsaWithSha224_oid() {
-        return asn1kit::oid::parse(DsaWithSha224);
-    }
-    static asn1kit::oid DsaWithSha256_oid() {
-        return asn1kit::oid::parse(DsaWithSha256);
-    }
-    static asn1kit::oid EcdsaWithSHA1_oid() {
-        return asn1kit::oid::parse(EcdsaWithSHA1);
-    }
-    static asn1kit::oid EcdsaWithSHA224_oid() {
-        return asn1kit::oid::parse(EcdsaWithSHA224);
-    }
-    static asn1kit::oid EcdsaWithSHA256_oid() {
-        return asn1kit::oid::parse(EcdsaWithSHA256);
-    }
-    static asn1kit::oid EcdsaWithSHA384_oid() {
-        return asn1kit::oid::parse(EcdsaWithSHA384);
-    }
-    static asn1kit::oid EcdsaWithSHA512_oid() {
-        return asn1kit::oid::parse(EcdsaWithSHA512);
-    }
-    static asn1kit::oid IdMd2_oid() {
-        return asn1kit::oid::parse(IdMd2);
-    }
-    static asn1kit::oid IdMd5_oid() {
-        return asn1kit::oid::parse(IdMd5);
-    }
-    static asn1kit::oid IdSha1_oid() {
-        return asn1kit::oid::parse(IdSha1);
-    }
+    static constexpr auto RsaEncryption = asn1kit::oid_literal<"1.2.840.113549.1.1.1">();
+    static constexpr auto IdDsa = asn1kit::oid_literal<"1.2.840.10040.4.1">();
+    static constexpr auto Dhpublicnumber = asn1kit::oid_literal<"1.2.840.10046.2.1">();
+    static constexpr auto IdKeyExchangeAlgorithm = asn1kit::oid_literal<"2.16.840.1.101.2.1.1.22">();
+    static constexpr auto IdEcPublicKey = asn1kit::oid_literal<"1.2.840.10045.2.1">();
+    static constexpr auto IdEcDH = asn1kit::oid_literal<"1.3.132.1.12">();
+    static constexpr auto IdEcMQV = asn1kit::oid_literal<"1.3.132.1.13">();
+    static constexpr auto Secp192r1 = asn1kit::oid_literal<"1.2.840.10045.3.1.1">();
+    static constexpr auto Sect163k1 = asn1kit::oid_literal<"1.3.132.0.1">();
+    static constexpr auto Sect163r2 = asn1kit::oid_literal<"1.3.132.0.15">();
+    static constexpr auto Secp224r1 = asn1kit::oid_literal<"1.3.132.0.33">();
+    static constexpr auto Sect233k1 = asn1kit::oid_literal<"1.3.132.0.26">();
+    static constexpr auto Sect233r1 = asn1kit::oid_literal<"1.3.132.0.27">();
+    static constexpr auto Secp256r1 = asn1kit::oid_literal<"1.2.840.10045.3.1.7">();
+    static constexpr auto Sect283k1 = asn1kit::oid_literal<"1.3.132.0.16">();
+    static constexpr auto Sect283r1 = asn1kit::oid_literal<"1.3.132.0.17">();
+    static constexpr auto Secp384r1 = asn1kit::oid_literal<"1.3.132.0.34">();
+    static constexpr auto Sect409k1 = asn1kit::oid_literal<"1.3.132.0.36">();
+    static constexpr auto Sect409r1 = asn1kit::oid_literal<"1.3.132.0.37">();
+    static constexpr auto Secp521r1 = asn1kit::oid_literal<"1.3.132.0.35">();
+    static constexpr auto Sect571k1 = asn1kit::oid_literal<"1.3.132.0.38">();
+    static constexpr auto Sect571r1 = asn1kit::oid_literal<"1.3.132.0.39">();
+    static constexpr auto Md2WithRSAEncryption = asn1kit::oid_literal<"1.2.840.113549.1.1.2">();
+    static constexpr auto Md5WithRSAEncryption = asn1kit::oid_literal<"1.2.840.113549.1.1.4">();
+    static constexpr auto Sha1WithRSAEncryption = asn1kit::oid_literal<"1.2.840.113549.1.1.5">();
+    static constexpr auto DsaWithSha1 = asn1kit::oid_literal<"1.2.840.10040.4.3">();
+    static constexpr auto DsaWithSha224 = asn1kit::oid_literal<"2.16.840.1.101.3.4.3.1">();
+    static constexpr auto DsaWithSha256 = asn1kit::oid_literal<"2.16.840.1.101.3.4.3.2">();
+    static constexpr auto EcdsaWithSHA1 = asn1kit::oid_literal<"1.2.840.10045.4.1">();
+    static constexpr auto EcdsaWithSHA224 = asn1kit::oid_literal<"1.2.840.10045.4.3.1">();
+    static constexpr auto EcdsaWithSHA256 = asn1kit::oid_literal<"1.2.840.10045.4.3.2">();
+    static constexpr auto EcdsaWithSHA384 = asn1kit::oid_literal<"1.2.840.10045.4.3.3">();
+    static constexpr auto EcdsaWithSHA512 = asn1kit::oid_literal<"1.2.840.10045.4.3.4">();
+    static constexpr auto IdMd2 = asn1kit::oid_literal<"1.2.840.113549.2.2">();
+    static constexpr auto IdMd5 = asn1kit::oid_literal<"1.2.840.113549.2.5">();
+    static constexpr auto IdSha1 = asn1kit::oid_literal<"1.3.14.3.2.26">();
 };
 
 struct DSAParams {

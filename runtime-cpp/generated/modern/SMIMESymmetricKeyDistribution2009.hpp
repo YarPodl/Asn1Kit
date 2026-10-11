@@ -33,83 +33,25 @@ namespace modern {
 namespace SMIMESymmetricKeyDistribution2009 {
 
 struct SMIMESymmetricKeyDistribution2009Oids {
-    static constexpr const char* IdSkd = "1.2.840.113549.1.9.16.8";
-    static constexpr const char* IdSkdGlUseKEK = "1.2.840.113549.1.9.16.8.1";
-    static constexpr const char* IdSkdGlDelete = "1.2.840.113549.1.9.16.8.2";
-    static constexpr const char* IdSkdGlAddMember = "1.2.840.113549.1.9.16.8.3";
-    static constexpr const char* IdSkdGlDeleteMember = "1.2.840.113549.1.9.16.8.4";
-    static constexpr const char* IdSkdGlRekey = "1.2.840.113549.1.9.16.8.5";
-    static constexpr const char* IdSkdGlAddOwner = "1.2.840.113549.1.9.16.8.6";
-    static constexpr const char* IdSkdGlRemoveOwner = "1.2.840.113549.1.9.16.8.7";
-    static constexpr const char* IdSkdGlKeyCompromise = "1.2.840.113549.1.9.16.8.8";
-    static constexpr const char* IdSkdGlkRefresh = "1.2.840.113549.1.9.16.8.9";
-    static constexpr const char* IdSkdGlaQueryRequest = "1.2.840.113549.1.9.16.8.11";
-    static constexpr const char* IdSkdGlaQueryResponse = "1.2.840.113549.1.9.16.8.12";
-    static constexpr const char* IdCmcGlaRR = "1.3.6.1.5.5.7.7.99";
-    static constexpr const char* IdCmcGlaSkdAlgRequest = "1.3.6.1.5.5.7.7.99.1";
-    static constexpr const char* IdCmcGlaSkdAlgResponse = "1.3.6.1.5.5.7.7.99.2";
-    static constexpr const char* IdSkdGlProvideCert = "1.2.840.113549.1.9.16.8.13";
-    static constexpr const char* IdSkdGlManageCert = "1.2.840.113549.1.9.16.8.14";
-    static constexpr const char* IdSkdGlKey = "1.2.840.113549.1.9.16.8.15";
-    static constexpr const char* IdCetSkdFailInfo = "1.3.6.1.5.5.7.15.1";
-
-    static asn1kit::oid IdSkd_oid() {
-        return asn1kit::oid::parse(IdSkd);
-    }
-    static asn1kit::oid IdSkdGlUseKEK_oid() {
-        return asn1kit::oid::parse(IdSkdGlUseKEK);
-    }
-    static asn1kit::oid IdSkdGlDelete_oid() {
-        return asn1kit::oid::parse(IdSkdGlDelete);
-    }
-    static asn1kit::oid IdSkdGlAddMember_oid() {
-        return asn1kit::oid::parse(IdSkdGlAddMember);
-    }
-    static asn1kit::oid IdSkdGlDeleteMember_oid() {
-        return asn1kit::oid::parse(IdSkdGlDeleteMember);
-    }
-    static asn1kit::oid IdSkdGlRekey_oid() {
-        return asn1kit::oid::parse(IdSkdGlRekey);
-    }
-    static asn1kit::oid IdSkdGlAddOwner_oid() {
-        return asn1kit::oid::parse(IdSkdGlAddOwner);
-    }
-    static asn1kit::oid IdSkdGlRemoveOwner_oid() {
-        return asn1kit::oid::parse(IdSkdGlRemoveOwner);
-    }
-    static asn1kit::oid IdSkdGlKeyCompromise_oid() {
-        return asn1kit::oid::parse(IdSkdGlKeyCompromise);
-    }
-    static asn1kit::oid IdSkdGlkRefresh_oid() {
-        return asn1kit::oid::parse(IdSkdGlkRefresh);
-    }
-    static asn1kit::oid IdSkdGlaQueryRequest_oid() {
-        return asn1kit::oid::parse(IdSkdGlaQueryRequest);
-    }
-    static asn1kit::oid IdSkdGlaQueryResponse_oid() {
-        return asn1kit::oid::parse(IdSkdGlaQueryResponse);
-    }
-    static asn1kit::oid IdCmcGlaRR_oid() {
-        return asn1kit::oid::parse(IdCmcGlaRR);
-    }
-    static asn1kit::oid IdCmcGlaSkdAlgRequest_oid() {
-        return asn1kit::oid::parse(IdCmcGlaSkdAlgRequest);
-    }
-    static asn1kit::oid IdCmcGlaSkdAlgResponse_oid() {
-        return asn1kit::oid::parse(IdCmcGlaSkdAlgResponse);
-    }
-    static asn1kit::oid IdSkdGlProvideCert_oid() {
-        return asn1kit::oid::parse(IdSkdGlProvideCert);
-    }
-    static asn1kit::oid IdSkdGlManageCert_oid() {
-        return asn1kit::oid::parse(IdSkdGlManageCert);
-    }
-    static asn1kit::oid IdSkdGlKey_oid() {
-        return asn1kit::oid::parse(IdSkdGlKey);
-    }
-    static asn1kit::oid IdCetSkdFailInfo_oid() {
-        return asn1kit::oid::parse(IdCetSkdFailInfo);
-    }
+    static constexpr auto IdSkd = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8">();
+    static constexpr auto IdSkdGlUseKEK = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.1">();
+    static constexpr auto IdSkdGlDelete = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.2">();
+    static constexpr auto IdSkdGlAddMember = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.3">();
+    static constexpr auto IdSkdGlDeleteMember = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.4">();
+    static constexpr auto IdSkdGlRekey = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.5">();
+    static constexpr auto IdSkdGlAddOwner = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.6">();
+    static constexpr auto IdSkdGlRemoveOwner = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.7">();
+    static constexpr auto IdSkdGlKeyCompromise = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.8">();
+    static constexpr auto IdSkdGlkRefresh = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.9">();
+    static constexpr auto IdSkdGlaQueryRequest = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.11">();
+    static constexpr auto IdSkdGlaQueryResponse = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.12">();
+    static constexpr auto IdCmcGlaRR = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.99">();
+    static constexpr auto IdCmcGlaSkdAlgRequest = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.99.1">();
+    static constexpr auto IdCmcGlaSkdAlgResponse = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.99.2">();
+    static constexpr auto IdSkdGlProvideCert = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.13">();
+    static constexpr auto IdSkdGlManageCert = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.14">();
+    static constexpr auto IdSkdGlKey = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.15">();
+    static constexpr auto IdCetSkdFailInfo = asn1kit::oid_literal<"1.3.6.1.5.5.7.15.1">();
 };
 
 struct Certificates {
@@ -370,7 +312,7 @@ struct GLKeyAttributes {
     bool recipientsNotMutuallyAware = true;
     asn1kit::integer duration = asn1kit::integer::from_int64(0ll);
     asn1kit::integer generationCounter = asn1kit::integer::from_int64(2ll);
-    ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability requestedAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability v{};         v.capabilityID = asn1kit::oid::parse("2.16.840.1.101.3.4.1.5"); return v; }());
+    ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability requestedAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability v{};         v.capabilityID = asn1kit::oid_literal<"2.16.840.1.101.3.4.1.5">().get(); return v; }());
 
     static asn1kit::tag default_tag() {
         return asn1kit::tag::sequence;
@@ -407,7 +349,7 @@ struct GLKeyAttributes {
                 value.requestedAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability::decode(inner, asn1kit::tag::context(4, true));
             }
             else {
-                value.requestedAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability v{};         v.capabilityID = asn1kit::oid::parse("2.16.840.1.101.3.4.1.5"); return v; }());
+                value.requestedAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability v{};         v.capabilityID = asn1kit::oid_literal<"2.16.840.1.101.3.4.1.5">().get(); return v; }());
             }
         });
         return value;
@@ -427,7 +369,7 @@ struct GLKeyAttributes {
         if (this->generationCounter != asn1kit::integer::from_int64(2ll)) {
             w.write_integer(asn1kit::tag::context(3), this->generationCounter);
         }
-        if (!(!(this->requestedAlgorithm.capabilityID != asn1kit::oid::parse("2.16.840.1.101.3.4.1.5")) && !this->requestedAlgorithm.parameters.has_value())) {
+        if (!(!(this->requestedAlgorithm.capabilityID != asn1kit::oid_literal<"2.16.840.1.101.3.4.1.5">().get()) && !this->requestedAlgorithm.parameters.has_value())) {
             this->requestedAlgorithm.encode(w, asn1kit::tag::context(4, true));
         }
     }
@@ -780,13 +722,13 @@ struct glaResponseValue_binding {
 
 namespace skdQuerySet_glaRequestValue_bindings {
 inline const glaRequestValue_binding<asn1kit::null_value> skd_alg_request{
-    SMIMESymmetricKeyDistribution2009Oids::IdCmcGlaSkdAlgRequest_oid()};
+    SMIMESymmetricKeyDistribution2009Oids::IdCmcGlaSkdAlgRequest.get()};
 
 } // namespace skdQuerySet_glaRequestValue_bindings
 
 namespace skdResponseSet_glaResponseValue_bindings {
 inline const glaResponseValue_binding<::asn1kit::modern::AlgorithmInformation2009::SMIMECapability> skd_alg_response{
-    SMIMESymmetricKeyDistribution2009Oids::IdCmcGlaSkdAlgResponse_oid()};
+    SMIMESymmetricKeyDistribution2009Oids::IdCmcGlaSkdAlgResponse.get()};
 
 } // namespace skdResponseSet_glaResponseValue_bindings
 

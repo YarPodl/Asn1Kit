@@ -902,7 +902,7 @@ public sealed partial class CppBackend
             (BooleanType, IrBooleanValue b) => b.Value ? "true" : "false",
             (NullType, IrNullValue) => "asn1kit::null_value::value()",
             (OidType, IrOidValue oid) =>
-                $"asn1kit::oid::parse(\"{CppNames.EscapeString(oid.Value)}\")",
+                $"asn1kit::oid_literal<\"{CppNames.EscapeString(oid.Value)}\">().get()",
             (StringType, IrStringValue text) =>
                 $"std::string(\"{CppNames.EscapeString(text.Value)}\")",
             (IntegerType, IrIntegerValue integer) => IntegerDefaultExpression(

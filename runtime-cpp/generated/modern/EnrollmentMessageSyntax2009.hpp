@@ -35,159 +35,44 @@ namespace modern {
 namespace EnrollmentMessageSyntax2009 {
 
 struct EnrollmentMessageSyntax2009Oids {
-    static constexpr const char* IdCmc = "1.3.6.1.5.5.7.7";
-    static constexpr const char* IdCct = "1.3.6.1.5.5.7.12";
-    static constexpr const char* IdCctPKIData = "1.3.6.1.5.5.7.12.2";
-    static constexpr const char* IdCctPKIResponse = "1.3.6.1.5.5.7.12.3";
-    static constexpr const char* IdCmcIdentityProof = "1.3.6.1.5.5.7.7.3";
-    static constexpr const char* IdCmcDataReturn = "1.3.6.1.5.5.7.7.4";
-    static constexpr const char* IdCmcRegInfo = "1.3.6.1.5.5.7.7.18";
-    static constexpr const char* IdCmcResponseInfo = "1.3.6.1.5.5.7.7.19";
-    static constexpr const char* IdCmcQueryPending = "1.3.6.1.5.5.7.7.21";
-    static constexpr const char* IdCmcPopLinkRandom = "1.3.6.1.5.5.7.7.22";
-    static constexpr const char* IdCmcPopLinkWitness = "1.3.6.1.5.5.7.7.23";
-    static constexpr const char* IdCmcIdentification = "1.3.6.1.5.5.7.7.2";
-    static constexpr const char* IdCmcTransactionId = "1.3.6.1.5.5.7.7.5";
-    static constexpr const char* IdCmcSenderNonce = "1.3.6.1.5.5.7.7.6";
-    static constexpr const char* IdCmcRecipientNonce = "1.3.6.1.5.5.7.7.7";
-    static constexpr const char* IdCmcStatusInfo = "1.3.6.1.5.5.7.7.1";
-    static constexpr const char* IdCmcAddExtensions = "1.3.6.1.5.5.7.7.8";
-    static constexpr const char* IdCmcEncryptedPOP = "1.3.6.1.5.5.7.7.9";
-    static constexpr const char* IdCmcDecryptedPOP = "1.3.6.1.5.5.7.7.10";
-    static constexpr const char* IdCmcLraPOPWitness = "1.3.6.1.5.5.7.7.11";
-    static constexpr const char* IdCmcGetCert = "1.3.6.1.5.5.7.7.15";
-    static constexpr const char* IdCmcGetCRL = "1.3.6.1.5.5.7.7.16";
-    static constexpr const char* IdCmcRevokeRequest = "1.3.6.1.5.5.7.7.17";
-    static constexpr const char* IdCmcConfirmCertAcceptance = "1.3.6.1.5.5.7.7.24";
-    static constexpr const char* IdExtensionReq = "1.2.840.113549.1.9.14";
-    static constexpr const char* IdAlgNoSignature = "1.3.6.1.5.5.7.6.2";
-    static constexpr const char* IdAa = "1.2.840.113549.1.9.16.2";
-    static constexpr const char* IdAaCmcUnsignedData = "1.2.840.113549.1.9.16.2.34";
-    static constexpr const char* IdCmcStatusInfoV2 = "1.3.6.1.5.5.7.7.25";
-    static constexpr const char* IdCmcTrustedAnchors = "1.3.6.1.5.5.7.7.26";
-    static constexpr const char* IdCmcAuthData = "1.3.6.1.5.5.7.7.27";
-    static constexpr const char* IdCmcBatchRequests = "1.3.6.1.5.5.7.7.28";
-    static constexpr const char* IdCmcBatchResponses = "1.3.6.1.5.5.7.7.29";
-    static constexpr const char* IdCmcPublishCert = "1.3.6.1.5.5.7.7.30";
-    static constexpr const char* IdCmcModCertTemplate = "1.3.6.1.5.5.7.7.31";
-    static constexpr const char* IdCmcControlProcessed = "1.3.6.1.5.5.7.7.32";
-    static constexpr const char* IdCmcIdentityProofV2 = "1.3.6.1.5.5.7.7.33";
-    static constexpr const char* IdCmcPopLinkWitnessV2 = "1.3.6.1.5.5.7.7.34";
-
-    static asn1kit::oid IdCmc_oid() {
-        return asn1kit::oid::parse(IdCmc);
-    }
-    static asn1kit::oid IdCct_oid() {
-        return asn1kit::oid::parse(IdCct);
-    }
-    static asn1kit::oid IdCctPKIData_oid() {
-        return asn1kit::oid::parse(IdCctPKIData);
-    }
-    static asn1kit::oid IdCctPKIResponse_oid() {
-        return asn1kit::oid::parse(IdCctPKIResponse);
-    }
-    static asn1kit::oid IdCmcIdentityProof_oid() {
-        return asn1kit::oid::parse(IdCmcIdentityProof);
-    }
-    static asn1kit::oid IdCmcDataReturn_oid() {
-        return asn1kit::oid::parse(IdCmcDataReturn);
-    }
-    static asn1kit::oid IdCmcRegInfo_oid() {
-        return asn1kit::oid::parse(IdCmcRegInfo);
-    }
-    static asn1kit::oid IdCmcResponseInfo_oid() {
-        return asn1kit::oid::parse(IdCmcResponseInfo);
-    }
-    static asn1kit::oid IdCmcQueryPending_oid() {
-        return asn1kit::oid::parse(IdCmcQueryPending);
-    }
-    static asn1kit::oid IdCmcPopLinkRandom_oid() {
-        return asn1kit::oid::parse(IdCmcPopLinkRandom);
-    }
-    static asn1kit::oid IdCmcPopLinkWitness_oid() {
-        return asn1kit::oid::parse(IdCmcPopLinkWitness);
-    }
-    static asn1kit::oid IdCmcIdentification_oid() {
-        return asn1kit::oid::parse(IdCmcIdentification);
-    }
-    static asn1kit::oid IdCmcTransactionId_oid() {
-        return asn1kit::oid::parse(IdCmcTransactionId);
-    }
-    static asn1kit::oid IdCmcSenderNonce_oid() {
-        return asn1kit::oid::parse(IdCmcSenderNonce);
-    }
-    static asn1kit::oid IdCmcRecipientNonce_oid() {
-        return asn1kit::oid::parse(IdCmcRecipientNonce);
-    }
-    static asn1kit::oid IdCmcStatusInfo_oid() {
-        return asn1kit::oid::parse(IdCmcStatusInfo);
-    }
-    static asn1kit::oid IdCmcAddExtensions_oid() {
-        return asn1kit::oid::parse(IdCmcAddExtensions);
-    }
-    static asn1kit::oid IdCmcEncryptedPOP_oid() {
-        return asn1kit::oid::parse(IdCmcEncryptedPOP);
-    }
-    static asn1kit::oid IdCmcDecryptedPOP_oid() {
-        return asn1kit::oid::parse(IdCmcDecryptedPOP);
-    }
-    static asn1kit::oid IdCmcLraPOPWitness_oid() {
-        return asn1kit::oid::parse(IdCmcLraPOPWitness);
-    }
-    static asn1kit::oid IdCmcGetCert_oid() {
-        return asn1kit::oid::parse(IdCmcGetCert);
-    }
-    static asn1kit::oid IdCmcGetCRL_oid() {
-        return asn1kit::oid::parse(IdCmcGetCRL);
-    }
-    static asn1kit::oid IdCmcRevokeRequest_oid() {
-        return asn1kit::oid::parse(IdCmcRevokeRequest);
-    }
-    static asn1kit::oid IdCmcConfirmCertAcceptance_oid() {
-        return asn1kit::oid::parse(IdCmcConfirmCertAcceptance);
-    }
-    static asn1kit::oid IdExtensionReq_oid() {
-        return asn1kit::oid::parse(IdExtensionReq);
-    }
-    static asn1kit::oid IdAlgNoSignature_oid() {
-        return asn1kit::oid::parse(IdAlgNoSignature);
-    }
-    static asn1kit::oid IdAa_oid() {
-        return asn1kit::oid::parse(IdAa);
-    }
-    static asn1kit::oid IdAaCmcUnsignedData_oid() {
-        return asn1kit::oid::parse(IdAaCmcUnsignedData);
-    }
-    static asn1kit::oid IdCmcStatusInfoV2_oid() {
-        return asn1kit::oid::parse(IdCmcStatusInfoV2);
-    }
-    static asn1kit::oid IdCmcTrustedAnchors_oid() {
-        return asn1kit::oid::parse(IdCmcTrustedAnchors);
-    }
-    static asn1kit::oid IdCmcAuthData_oid() {
-        return asn1kit::oid::parse(IdCmcAuthData);
-    }
-    static asn1kit::oid IdCmcBatchRequests_oid() {
-        return asn1kit::oid::parse(IdCmcBatchRequests);
-    }
-    static asn1kit::oid IdCmcBatchResponses_oid() {
-        return asn1kit::oid::parse(IdCmcBatchResponses);
-    }
-    static asn1kit::oid IdCmcPublishCert_oid() {
-        return asn1kit::oid::parse(IdCmcPublishCert);
-    }
-    static asn1kit::oid IdCmcModCertTemplate_oid() {
-        return asn1kit::oid::parse(IdCmcModCertTemplate);
-    }
-    static asn1kit::oid IdCmcControlProcessed_oid() {
-        return asn1kit::oid::parse(IdCmcControlProcessed);
-    }
-    static asn1kit::oid IdCmcIdentityProofV2_oid() {
-        return asn1kit::oid::parse(IdCmcIdentityProofV2);
-    }
-    static asn1kit::oid IdCmcPopLinkWitnessV2_oid() {
-        return asn1kit::oid::parse(IdCmcPopLinkWitnessV2);
-    }
+    static constexpr auto IdCmc = asn1kit::oid_literal<"1.3.6.1.5.5.7.7">();
+    static constexpr auto IdCct = asn1kit::oid_literal<"1.3.6.1.5.5.7.12">();
+    static constexpr auto IdCctPKIData = asn1kit::oid_literal<"1.3.6.1.5.5.7.12.2">();
+    static constexpr auto IdCctPKIResponse = asn1kit::oid_literal<"1.3.6.1.5.5.7.12.3">();
+    static constexpr auto IdCmcIdentityProof = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.3">();
+    static constexpr auto IdCmcDataReturn = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.4">();
+    static constexpr auto IdCmcRegInfo = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.18">();
+    static constexpr auto IdCmcResponseInfo = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.19">();
+    static constexpr auto IdCmcQueryPending = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.21">();
+    static constexpr auto IdCmcPopLinkRandom = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.22">();
+    static constexpr auto IdCmcPopLinkWitness = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.23">();
+    static constexpr auto IdCmcIdentification = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.2">();
+    static constexpr auto IdCmcTransactionId = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.5">();
+    static constexpr auto IdCmcSenderNonce = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.6">();
+    static constexpr auto IdCmcRecipientNonce = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.7">();
+    static constexpr auto IdCmcStatusInfo = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.1">();
+    static constexpr auto IdCmcAddExtensions = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.8">();
+    static constexpr auto IdCmcEncryptedPOP = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.9">();
+    static constexpr auto IdCmcDecryptedPOP = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.10">();
+    static constexpr auto IdCmcLraPOPWitness = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.11">();
+    static constexpr auto IdCmcGetCert = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.15">();
+    static constexpr auto IdCmcGetCRL = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.16">();
+    static constexpr auto IdCmcRevokeRequest = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.17">();
+    static constexpr auto IdCmcConfirmCertAcceptance = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.24">();
+    static constexpr auto IdExtensionReq = asn1kit::oid_literal<"1.2.840.113549.1.9.14">();
+    static constexpr auto IdAlgNoSignature = asn1kit::oid_literal<"1.3.6.1.5.5.7.6.2">();
+    static constexpr auto IdAa = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2">();
+    static constexpr auto IdAaCmcUnsignedData = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.34">();
+    static constexpr auto IdCmcStatusInfoV2 = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.25">();
+    static constexpr auto IdCmcTrustedAnchors = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.26">();
+    static constexpr auto IdCmcAuthData = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.27">();
+    static constexpr auto IdCmcBatchRequests = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.28">();
+    static constexpr auto IdCmcBatchResponses = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.29">();
+    static constexpr auto IdCmcPublishCert = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.30">();
+    static constexpr auto IdCmcModCertTemplate = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.31">();
+    static constexpr auto IdCmcControlProcessed = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.32">();
+    static constexpr auto IdCmcIdentityProofV2 = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.33">();
+    static constexpr auto IdCmcPopLinkWitnessV2 = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.34">();
 };
 
 struct AddExtensions {
@@ -1480,94 +1365,94 @@ struct attrValues_binding {
 
 namespace cmc_control_set_attrValues_bindings {
 inline const attrValues_binding<asn1kit::bytes> cmc_identity_proof{
-    EnrollmentMessageSyntax2009Oids::IdCmcIdentityProof_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcIdentityProof.get()};
 
 inline const attrValues_binding<asn1kit::bytes> cmc_data_return{
-    EnrollmentMessageSyntax2009Oids::IdCmcDataReturn_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcDataReturn.get()};
 
 inline const attrValues_binding<asn1kit::bytes> cmc_reg_info{
-    EnrollmentMessageSyntax2009Oids::IdCmcRegInfo_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcRegInfo.get()};
 
 inline const attrValues_binding<asn1kit::bytes> cmc_response_info{
-    EnrollmentMessageSyntax2009Oids::IdCmcResponseInfo_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcResponseInfo.get()};
 
 inline const attrValues_binding<asn1kit::bytes> cmc_query_pending{
-    EnrollmentMessageSyntax2009Oids::IdCmcQueryPending_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcQueryPending.get()};
 
 inline const attrValues_binding<asn1kit::bytes> cmc_pop_link_random{
-    EnrollmentMessageSyntax2009Oids::IdCmcPopLinkRandom_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcPopLinkRandom.get()};
 
 inline const attrValues_binding<asn1kit::bytes> cmc_pop_link_witness{
-    EnrollmentMessageSyntax2009Oids::IdCmcPopLinkWitness_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcPopLinkWitness.get()};
 
 inline const attrValues_binding<asn1kit::asn_string<asn1kit::string_form::utf8>> cmc_identification{
-    EnrollmentMessageSyntax2009Oids::IdCmcIdentification_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcIdentification.get()};
 
 inline const attrValues_binding<asn1kit::integer> cmc_transaction_id{
-    EnrollmentMessageSyntax2009Oids::IdCmcTransactionId_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcTransactionId.get()};
 
 inline const attrValues_binding<asn1kit::bytes> cmc_sender_nonce{
-    EnrollmentMessageSyntax2009Oids::IdCmcSenderNonce_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcSenderNonce.get()};
 
 inline const attrValues_binding<asn1kit::bytes> cmc_recipient_nonce{
-    EnrollmentMessageSyntax2009Oids::IdCmcRecipientNonce_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcRecipientNonce.get()};
 
 inline const attrValues_binding<CMCStatusInfo> cmc_status_info{
-    EnrollmentMessageSyntax2009Oids::IdCmcStatusInfo_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcStatusInfo.get()};
 
 inline const attrValues_binding<AddExtensions> cmc_add_extensions{
-    EnrollmentMessageSyntax2009Oids::IdCmcAddExtensions_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcAddExtensions.get()};
 
 inline const attrValues_binding<EncryptedPOP> cmc_encrypted_p_o_p{
-    EnrollmentMessageSyntax2009Oids::IdCmcEncryptedPOP_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcEncryptedPOP.get()};
 
 inline const attrValues_binding<DecryptedPOP> cmc_decrypted_p_o_p{
-    EnrollmentMessageSyntax2009Oids::IdCmcDecryptedPOP_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcDecryptedPOP.get()};
 
 inline const attrValues_binding<LraPopWitness> cmc_lra_p_o_p_witness{
-    EnrollmentMessageSyntax2009Oids::IdCmcLraPOPWitness_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcLraPOPWitness.get()};
 
 inline const attrValues_binding<GetCert> cmc_get_cert{
-    EnrollmentMessageSyntax2009Oids::IdCmcGetCert_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcGetCert.get()};
 
 inline const attrValues_binding<GetCRL> cmc_get_c_r_l{
-    EnrollmentMessageSyntax2009Oids::IdCmcGetCRL_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcGetCRL.get()};
 
 inline const attrValues_binding<RevokeRequest> cmc_revoke_request{
-    EnrollmentMessageSyntax2009Oids::IdCmcRevokeRequest_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcRevokeRequest.get()};
 
 inline const attrValues_binding<::asn1kit::modern::CryptographicMessageSyntax2009::IssuerAndSerialNumber> cmc_confirm_cert_acceptance{
-    EnrollmentMessageSyntax2009Oids::IdCmcConfirmCertAcceptance_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcConfirmCertAcceptance.get()};
 
 inline const attrValues_binding<CMCStatusInfoV2> cmc_status_info_v2{
-    EnrollmentMessageSyntax2009Oids::IdCmcStatusInfoV2_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcStatusInfoV2.get()};
 
 inline const attrValues_binding<PublishTrustAnchors> cmc_trusted_anchors{
-    EnrollmentMessageSyntax2009Oids::IdCmcTrustedAnchors_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcTrustedAnchors.get()};
 
 inline const attrValues_binding<std::uint32_t> cmc_auth_data{
-    EnrollmentMessageSyntax2009Oids::IdCmcAuthData_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcAuthData.get()};
 
 inline const attrValues_binding<std::vector<std::uint32_t>> cmc_batch_requests{
-    EnrollmentMessageSyntax2009Oids::IdCmcBatchRequests_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcBatchRequests.get()};
 
 inline const attrValues_binding<std::vector<std::uint32_t>> cmc_batch_responses{
-    EnrollmentMessageSyntax2009Oids::IdCmcBatchResponses_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcBatchResponses.get()};
 
 inline const attrValues_binding<CMCPublicationInfo> cmc_publish_cert{
-    EnrollmentMessageSyntax2009Oids::IdCmcPublishCert_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcPublishCert.get()};
 
 inline const attrValues_binding<ModCertTemplate> cmc_mod_cert_template{
-    EnrollmentMessageSyntax2009Oids::IdCmcModCertTemplate_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcModCertTemplate.get()};
 
 inline const attrValues_binding<ControlsProcessed> cmc_control_processed{
-    EnrollmentMessageSyntax2009Oids::IdCmcControlProcessed_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcControlProcessed.get()};
 
 inline const attrValues_binding<IdentityProofV2> cmc_identity_proof_v2{
-    EnrollmentMessageSyntax2009Oids::IdCmcIdentityProofV2_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcIdentityProofV2.get()};
 
 inline const attrValues_binding<PopLinkWitnessV2> cmc_pop_link_witness_v2{
-    EnrollmentMessageSyntax2009Oids::IdCmcPopLinkWitnessV2_oid()};
+    EnrollmentMessageSyntax2009Oids::IdCmcPopLinkWitnessV2.get()};
 
 } // namespace cmc_control_set_attrValues_bindings
 

@@ -33,67 +33,21 @@ namespace modern {
 namespace PKIXCRMF2009 {
 
 struct PKIXCRMF2009Oids {
-    static constexpr const char* IdPkip = "1.3.6.1.5.5.7.5";
-    static constexpr const char* IdSmime = "1.2.840.113549.1.9.16";
-    static constexpr const char* IdCt = "1.2.840.113549.1.9.16.1";
-    static constexpr const char* IdPasswordBasedMac = "1.2.840.113533.7.66.13";
-    static constexpr const char* IdCtEncKeyWithID = "1.2.840.113549.1.9.16.1.21";
-    static constexpr const char* IdRegCtrl = "1.3.6.1.5.5.7.5.1";
-    static constexpr const char* IdRegCtrlRegToken = "1.3.6.1.5.5.7.5.1.1";
-    static constexpr const char* IdRegCtrlAuthenticator = "1.3.6.1.5.5.7.5.1.2";
-    static constexpr const char* IdRegCtrlPkiPublicationInfo = "1.3.6.1.5.5.7.5.1.3";
-    static constexpr const char* IdRegCtrlPkiArchiveOptions = "1.3.6.1.5.5.7.5.1.4";
-    static constexpr const char* IdRegCtrlOldCertID = "1.3.6.1.5.5.7.5.1.5";
-    static constexpr const char* IdRegCtrlProtocolEncrKey = "1.3.6.1.5.5.7.5.1.6";
-    static constexpr const char* IdRegInfo = "1.3.6.1.5.5.7.5.2";
-    static constexpr const char* IdRegInfoUtf8Pairs = "1.3.6.1.5.5.7.5.2.1";
-    static constexpr const char* IdRegInfoCertReq = "1.3.6.1.5.5.7.5.2.2";
-
-    static asn1kit::oid IdPkip_oid() {
-        return asn1kit::oid::parse(IdPkip);
-    }
-    static asn1kit::oid IdSmime_oid() {
-        return asn1kit::oid::parse(IdSmime);
-    }
-    static asn1kit::oid IdCt_oid() {
-        return asn1kit::oid::parse(IdCt);
-    }
-    static asn1kit::oid IdPasswordBasedMac_oid() {
-        return asn1kit::oid::parse(IdPasswordBasedMac);
-    }
-    static asn1kit::oid IdCtEncKeyWithID_oid() {
-        return asn1kit::oid::parse(IdCtEncKeyWithID);
-    }
-    static asn1kit::oid IdRegCtrl_oid() {
-        return asn1kit::oid::parse(IdRegCtrl);
-    }
-    static asn1kit::oid IdRegCtrlRegToken_oid() {
-        return asn1kit::oid::parse(IdRegCtrlRegToken);
-    }
-    static asn1kit::oid IdRegCtrlAuthenticator_oid() {
-        return asn1kit::oid::parse(IdRegCtrlAuthenticator);
-    }
-    static asn1kit::oid IdRegCtrlPkiPublicationInfo_oid() {
-        return asn1kit::oid::parse(IdRegCtrlPkiPublicationInfo);
-    }
-    static asn1kit::oid IdRegCtrlPkiArchiveOptions_oid() {
-        return asn1kit::oid::parse(IdRegCtrlPkiArchiveOptions);
-    }
-    static asn1kit::oid IdRegCtrlOldCertID_oid() {
-        return asn1kit::oid::parse(IdRegCtrlOldCertID);
-    }
-    static asn1kit::oid IdRegCtrlProtocolEncrKey_oid() {
-        return asn1kit::oid::parse(IdRegCtrlProtocolEncrKey);
-    }
-    static asn1kit::oid IdRegInfo_oid() {
-        return asn1kit::oid::parse(IdRegInfo);
-    }
-    static asn1kit::oid IdRegInfoUtf8Pairs_oid() {
-        return asn1kit::oid::parse(IdRegInfoUtf8Pairs);
-    }
-    static asn1kit::oid IdRegInfoCertReq_oid() {
-        return asn1kit::oid::parse(IdRegInfoCertReq);
-    }
+    static constexpr auto IdPkip = asn1kit::oid_literal<"1.3.6.1.5.5.7.5">();
+    static constexpr auto IdSmime = asn1kit::oid_literal<"1.2.840.113549.1.9.16">();
+    static constexpr auto IdCt = asn1kit::oid_literal<"1.2.840.113549.1.9.16.1">();
+    static constexpr auto IdPasswordBasedMac = asn1kit::oid_literal<"1.2.840.113533.7.66.13">();
+    static constexpr auto IdCtEncKeyWithID = asn1kit::oid_literal<"1.2.840.113549.1.9.16.1.21">();
+    static constexpr auto IdRegCtrl = asn1kit::oid_literal<"1.3.6.1.5.5.7.5.1">();
+    static constexpr auto IdRegCtrlRegToken = asn1kit::oid_literal<"1.3.6.1.5.5.7.5.1.1">();
+    static constexpr auto IdRegCtrlAuthenticator = asn1kit::oid_literal<"1.3.6.1.5.5.7.5.1.2">();
+    static constexpr auto IdRegCtrlPkiPublicationInfo = asn1kit::oid_literal<"1.3.6.1.5.5.7.5.1.3">();
+    static constexpr auto IdRegCtrlPkiArchiveOptions = asn1kit::oid_literal<"1.3.6.1.5.5.7.5.1.4">();
+    static constexpr auto IdRegCtrlOldCertID = asn1kit::oid_literal<"1.3.6.1.5.5.7.5.1.5">();
+    static constexpr auto IdRegCtrlProtocolEncrKey = asn1kit::oid_literal<"1.3.6.1.5.5.7.5.1.6">();
+    static constexpr auto IdRegInfo = asn1kit::oid_literal<"1.3.6.1.5.5.7.5.2">();
+    static constexpr auto IdRegInfoUtf8Pairs = asn1kit::oid_literal<"1.3.6.1.5.5.7.5.2.1">();
+    static constexpr auto IdRegInfoCertReq = asn1kit::oid_literal<"1.3.6.1.5.5.7.5.2.2">();
 };
 
 enum class EncKeyWithID_Identifier_kind {

@@ -136,202 +136,202 @@ struct parameters_binding {
 
 namespace algorithmIdentifier_parameters_bindings {
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> mda_sha256{
-    asn1kit::oid::parse("2.16.840.1.101.3.4.2.1")};
+    asn1kit::oid_literal<"2.16.840.1.101.3.4.2.1">().get()};
 
 } // namespace algorithmIdentifier_parameters_bindings
 
 namespace algorithmIdentifier_parameters_algorithmIdentifier_bindings {
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> sa_dsa_with_s_h_a1{
-    asn1kit::oid::parse("1.2.840.10040.4.3")};
+    asn1kit::oid_literal<"1.2.840.10040.4.3">().get()};
 
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> sa_rsa_with_s_h_a1{
-    asn1kit::oid::parse("1.2.840.113549.1.1.5")};
+    asn1kit::oid_literal<"1.2.840.113549.1.1.5">().get()};
 
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> sa_rsa_with_m_d5{
-    asn1kit::oid::parse("1.2.840.113549.1.1.4")};
+    asn1kit::oid_literal<"1.2.840.113549.1.1.4">().get()};
 
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> sa_rsa_with_m_d2{
-    asn1kit::oid::parse("1.2.840.113549.1.1.2")};
+    asn1kit::oid_literal<"1.2.840.113549.1.1.2">().get()};
 
 } // namespace algorithmIdentifier_parameters_algorithmIdentifier_bindings
 
 namespace contentEncryptionAlgorithmSet_parameters_bindings {
 inline const algorithmIdentifier_parameters_binding<asn1kit::bytes> cea_3_d_e_s_cbc{
-    asn1kit::oid::parse("1.2.840.113549.3.7")};
+    asn1kit::oid_literal<"1.2.840.113549.3.7">().get()};
 
 inline const algorithmIdentifier_parameters_binding<::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::RC2CBCParameter> cea_r_c2_cbc{
-    asn1kit::oid::parse("1.2.840.113549.3.2")};
+    asn1kit::oid_literal<"1.2.840.113549.3.2">().get()};
 
 } // namespace contentEncryptionAlgorithmSet_parameters_bindings
 
 namespace hashAlgorithms_parameters_bindings {
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> mda_sha1{
-    asn1kit::oid::parse("1.3.14.3.2.26")};
+    asn1kit::oid_literal<"1.3.14.3.2.26">().get()};
 
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> mda_sha256{
-    asn1kit::oid::parse("2.16.840.1.101.3.4.2.1")};
+    asn1kit::oid_literal<"2.16.840.1.101.3.4.2.1">().get()};
 
 } // namespace hashAlgorithms_parameters_bindings
 
 namespace hashAlgorithms_parameters_algorithmIdentifier_bindings {
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> mda_sha1{
-    asn1kit::oid::parse("1.3.14.3.2.26")};
+    asn1kit::oid_literal<"1.3.14.3.2.26">().get()};
 
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> oid_2_16_840_1_101_3_4_2_4{
-    asn1kit::oid::parse("2.16.840.1.101.3.4.2.4")};
+    asn1kit::oid_literal<"2.16.840.1.101.3.4.2.4">().get()};
 
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> mda_sha256{
-    asn1kit::oid::parse("2.16.840.1.101.3.4.2.1")};
+    asn1kit::oid_literal<"2.16.840.1.101.3.4.2.1">().get()};
 
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> oid_2_16_840_1_101_3_4_2_2{
-    asn1kit::oid::parse("2.16.840.1.101.3.4.2.2")};
+    asn1kit::oid_literal<"2.16.840.1.101.3.4.2.2">().get()};
 
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> oid_2_16_840_1_101_3_4_2_3{
-    asn1kit::oid::parse("2.16.840.1.101.3.4.2.3")};
+    asn1kit::oid_literal<"2.16.840.1.101.3.4.2.3">().get()};
 
 } // namespace hashAlgorithms_parameters_algorithmIdentifier_bindings
 
 namespace keyAgreementAlgorithmSet_parameters_bindings {
 inline const algorithmIdentifier_parameters_binding<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> kaa_esdh{
-    asn1kit::oid::parse("1.2.840.113549.1.9.16.3.5")};
+    asn1kit::oid_literal<"1.2.840.113549.1.9.16.3.5">().get()};
 
 inline const algorithmIdentifier_parameters_binding<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> kaa_ssdh{
-    asn1kit::oid::parse("1.2.840.113549.1.9.16.3.10")};
+    asn1kit::oid_literal<"1.2.840.113549.1.9.16.3.10">().get()};
 
 } // namespace keyAgreementAlgorithmSet_parameters_bindings
 
 namespace keyDevAlgs_parameters_bindings {
 inline const algorithmIdentifier_parameters_binding<::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::PBKDF2Params> kda_p_b_k_d_f2{
-    asn1kit::oid::parse("1.2.840.113549.1.5.12")};
+    asn1kit::oid_literal<"1.2.840.113549.1.5.12">().get()};
 
 } // namespace keyDevAlgs_parameters_bindings
 
 namespace keyTransportAlgorithmSet_parameters_bindings {
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> kt_rsa{
-    asn1kit::oid::parse("1.2.840.113549.1.1.1")};
+    asn1kit::oid_literal<"1.2.840.113549.1.1.1">().get()};
 
 } // namespace keyTransportAlgorithmSet_parameters_bindings
 
 namespace keyWrapAlgs_parameters_bindings {
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> kwa_3_d_e_s_wrap{
-    asn1kit::oid::parse("1.2.840.113549.1.9.16.3.6")};
+    asn1kit::oid_literal<"1.2.840.113549.1.9.16.3.6">().get()};
 
 inline const algorithmIdentifier_parameters_binding<asn1kit::integer> kwa_r_c2_wrap{
-    asn1kit::oid::parse("1.2.840.113549.1.9.16.3.7")};
+    asn1kit::oid_literal<"1.2.840.113549.1.9.16.3.7">().get()};
 
 } // namespace keyWrapAlgs_parameters_bindings
 
 namespace originatorKeySet_parameters_bindings {
 inline const algorithmIdentifier_parameters_binding<::asn1kit::modern::PKIXAlgs2009::DomainParameters> pk_dh{
-    asn1kit::oid::parse("1.2.840.10046.2.1")};
+    asn1kit::oid_literal<"1.2.840.10046.2.1">().get()};
 
 } // namespace originatorKeySet_parameters_bindings
 
 namespace pKCS1MGFAlgorithms_parameters_bindings {
 inline const algorithmIdentifier_parameters_binding<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> hash_algorithm{
-    asn1kit::oid::parse("1.2.840.113549.1.1.8")};
+    asn1kit::oid_literal<"1.2.840.113549.1.1.8">().get()};
 
 } // namespace pKCS1MGFAlgorithms_parameters_bindings
 
 namespace pOPAlgs_parameters_bindings {
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> maca_h_m_a_c_s_h_a1{
-    asn1kit::oid::parse("1.3.6.1.5.5.8.1.2")};
+    asn1kit::oid_literal<"1.3.6.1.5.5.8.1.2">().get()};
 
 } // namespace pOPAlgs_parameters_bindings
 
 namespace pSS_sourceAlgorithms_parameters_bindings {
 inline const algorithmIdentifier_parameters_binding<asn1kit::bytes> encoding_parameters{
-    asn1kit::oid::parse("1.2.840.113549.1.1.9")};
+    asn1kit::oid_literal<"1.2.840.113549.1.1.9">().get()};
 
 } // namespace pSS_sourceAlgorithms_parameters_bindings
 
 namespace password_mACAlgorithms_parameters_bindings {
 inline const algorithmIdentifier_parameters_binding<::asn1kit::modern::PKIXCRMF2009::PBMParameter> p_b_m_parameter{
-    asn1kit::oid::parse("1.2.840.113533.7.66.13")};
+    asn1kit::oid_literal<"1.2.840.113533.7.66.13">().get()};
 
 } // namespace password_mACAlgorithms_parameters_bindings
 
 namespace publicKeyAlgorithms_parameters_bindings {
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> kt_rsa{
-    asn1kit::oid::parse("1.2.840.113549.1.1.1")};
+    asn1kit::oid_literal<"1.2.840.113549.1.1.1">().get()};
 
 inline const algorithmIdentifier_parameters_binding<::asn1kit::modern::PKIXAlgs2009::DSAParams> pk_dsa{
-    asn1kit::oid::parse("1.2.840.10040.4.1")};
+    asn1kit::oid_literal<"1.2.840.10040.4.1">().get()};
 
 inline const algorithmIdentifier_parameters_binding<::asn1kit::modern::PKIXAlgs2009::DomainParameters> pk_dh{
-    asn1kit::oid::parse("1.2.840.10046.2.1")};
+    asn1kit::oid_literal<"1.2.840.10046.2.1">().get()};
 
 inline const algorithmIdentifier_parameters_binding<asn1kit::bytes> pk_kea{
-    asn1kit::oid::parse("2.16.840.1.101.2.1.1.22")};
+    asn1kit::oid_literal<"2.16.840.1.101.2.1.1.22">().get()};
 
 inline const algorithmIdentifier_parameters_binding<asn1kit::oid> pk_ec{
-    asn1kit::oid::parse("1.2.840.10045.2.1")};
+    asn1kit::oid_literal<"1.2.840.10045.2.1">().get()};
 
 inline const algorithmIdentifier_parameters_binding<asn1kit::oid> pk_ec_d_h{
-    asn1kit::oid::parse("1.3.132.1.12")};
+    asn1kit::oid_literal<"1.3.132.1.12">().get()};
 
 inline const algorithmIdentifier_parameters_binding<asn1kit::oid> pk_ec_m_q_v{
-    asn1kit::oid::parse("1.3.132.1.13")};
+    asn1kit::oid_literal<"1.3.132.1.13">().get()};
 
 inline const algorithmIdentifier_parameters_binding<::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::RSASSAPSSParams> pk_rsa_s_s_a_p_s_s{
-    asn1kit::oid::parse("1.2.840.113549.1.1.10")};
+    asn1kit::oid_literal<"1.2.840.113549.1.1.10">().get()};
 
 inline const algorithmIdentifier_parameters_binding<::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::RSAESOAEPParams> pk_rsa_e_s_o_a_e_p{
-    asn1kit::oid::parse("1.2.840.113549.1.1.7")};
+    asn1kit::oid_literal<"1.2.840.113549.1.1.7">().get()};
 
 } // namespace publicKeyAlgorithms_parameters_bindings
 
 namespace sMimeCapsSet_parameters_bindings {
 inline const parameters_binding<asn1kit::integer> cap_r_c2_c_b_c{
-    asn1kit::oid::parse("1.2.840.113549.3.2")};
+    asn1kit::oid_literal<"1.2.840.113549.3.2">().get()};
 
 inline const parameters_binding<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> smime_caps{
-    asn1kit::oid::parse("1.2.840.113549.1.9.16.3.5")};
+    asn1kit::oid_literal<"1.2.840.113549.1.9.16.3.5">().get()};
 
 } // namespace sMimeCapsSet_parameters_bindings
 
 namespace signatureAlgorithms_parameters_bindings {
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> sa_rsa_with_m_d2{
-    asn1kit::oid::parse("1.2.840.113549.1.1.2")};
+    asn1kit::oid_literal<"1.2.840.113549.1.1.2">().get()};
 
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> sa_rsa_with_m_d5{
-    asn1kit::oid::parse("1.2.840.113549.1.1.4")};
+    asn1kit::oid_literal<"1.2.840.113549.1.1.4">().get()};
 
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> sa_rsa_with_s_h_a1{
-    asn1kit::oid::parse("1.2.840.113549.1.1.5")};
+    asn1kit::oid_literal<"1.2.840.113549.1.1.5">().get()};
 
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> sa_dsa_with_s_h_a1{
-    asn1kit::oid::parse("1.2.840.10040.4.3")};
+    asn1kit::oid_literal<"1.2.840.10040.4.3">().get()};
 
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a1{
-    asn1kit::oid::parse("1.2.840.10045.4.1")};
+    asn1kit::oid_literal<"1.2.840.10045.4.1">().get()};
 
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> sa_dsa_with_s_h_a224{
-    asn1kit::oid::parse("2.16.840.1.101.3.4.3.1")};
+    asn1kit::oid_literal<"2.16.840.1.101.3.4.3.1">().get()};
 
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> sa_dsa_with_s_h_a256{
-    asn1kit::oid::parse("2.16.840.1.101.3.4.3.2")};
+    asn1kit::oid_literal<"2.16.840.1.101.3.4.3.2">().get()};
 
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a224{
-    asn1kit::oid::parse("1.2.840.10045.4.3.1")};
+    asn1kit::oid_literal<"1.2.840.10045.4.3.1">().get()};
 
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a256{
-    asn1kit::oid::parse("1.2.840.10045.4.3.2")};
+    asn1kit::oid_literal<"1.2.840.10045.4.3.2">().get()};
 
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a384{
-    asn1kit::oid::parse("1.2.840.10045.4.3.3")};
+    asn1kit::oid_literal<"1.2.840.10045.4.3.3">().get()};
 
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a512{
-    asn1kit::oid::parse("1.2.840.10045.4.3.4")};
+    asn1kit::oid_literal<"1.2.840.10045.4.3.4">().get()};
 
 inline const algorithmIdentifier_parameters_binding<::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::RSASSAPSSParams> pk_rsa_s_s_a_p_s_s{
-    asn1kit::oid::parse("1.2.840.113549.1.1.10")};
+    asn1kit::oid_literal<"1.2.840.113549.1.1.10">().get()};
 
 } // namespace signatureAlgorithms_parameters_bindings
 
 namespace witnessAlgs_parameters_bindings {
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> mda_sha1{
-    asn1kit::oid::parse("1.3.14.3.2.26")};
+    asn1kit::oid_literal<"1.3.14.3.2.26">().get()};
 
 } // namespace witnessAlgs_parameters_bindings
 

@@ -33,63 +33,20 @@ namespace modern {
 namespace PKIXAttributeCertificate2009 {
 
 struct PKIXAttributeCertificate2009Oids {
-    static constexpr const char* IdPeAcAuditIdentity = "1.3.6.1.5.5.7.1.4";
-    static constexpr const char* IdPeAaControls = "1.3.6.1.5.5.7.1.6";
-    static constexpr const char* IdPeAcProxying = "1.3.6.1.5.5.7.1.10";
-    static constexpr const char* IdCeTargetInformation = "2.5.29.55";
-    static constexpr const char* IdCeNoRevAvail = "2.5.29.56";
-    static constexpr const char* IdAca = "1.3.6.1.5.5.7.10";
-    static constexpr const char* IdAcaAuthenticationInfo = "1.3.6.1.5.5.7.10.1";
-    static constexpr const char* IdAcaAccessIdentity = "1.3.6.1.5.5.7.10.2";
-    static constexpr const char* IdAcaChargingIdentity = "1.3.6.1.5.5.7.10.3";
-    static constexpr const char* IdAcaGroup = "1.3.6.1.5.5.7.10.4";
-    static constexpr const char* IdAcaEncAttrs = "1.3.6.1.5.5.7.10.6";
-    static constexpr const char* IdAtRole = "2.5.4.72";
-    static constexpr const char* IdAtClearance = "2.5.4.55";
-    static constexpr const char* IdAtClearanceRfc3281 = "2.5.1.5.55";
-
-    static asn1kit::oid IdPeAcAuditIdentity_oid() {
-        return asn1kit::oid::parse(IdPeAcAuditIdentity);
-    }
-    static asn1kit::oid IdPeAaControls_oid() {
-        return asn1kit::oid::parse(IdPeAaControls);
-    }
-    static asn1kit::oid IdPeAcProxying_oid() {
-        return asn1kit::oid::parse(IdPeAcProxying);
-    }
-    static asn1kit::oid IdCeTargetInformation_oid() {
-        return asn1kit::oid::parse(IdCeTargetInformation);
-    }
-    static asn1kit::oid IdCeNoRevAvail_oid() {
-        return asn1kit::oid::parse(IdCeNoRevAvail);
-    }
-    static asn1kit::oid IdAca_oid() {
-        return asn1kit::oid::parse(IdAca);
-    }
-    static asn1kit::oid IdAcaAuthenticationInfo_oid() {
-        return asn1kit::oid::parse(IdAcaAuthenticationInfo);
-    }
-    static asn1kit::oid IdAcaAccessIdentity_oid() {
-        return asn1kit::oid::parse(IdAcaAccessIdentity);
-    }
-    static asn1kit::oid IdAcaChargingIdentity_oid() {
-        return asn1kit::oid::parse(IdAcaChargingIdentity);
-    }
-    static asn1kit::oid IdAcaGroup_oid() {
-        return asn1kit::oid::parse(IdAcaGroup);
-    }
-    static asn1kit::oid IdAcaEncAttrs_oid() {
-        return asn1kit::oid::parse(IdAcaEncAttrs);
-    }
-    static asn1kit::oid IdAtRole_oid() {
-        return asn1kit::oid::parse(IdAtRole);
-    }
-    static asn1kit::oid IdAtClearance_oid() {
-        return asn1kit::oid::parse(IdAtClearance);
-    }
-    static asn1kit::oid IdAtClearanceRfc3281_oid() {
-        return asn1kit::oid::parse(IdAtClearanceRfc3281);
-    }
+    static constexpr auto IdPeAcAuditIdentity = asn1kit::oid_literal<"1.3.6.1.5.5.7.1.4">();
+    static constexpr auto IdPeAaControls = asn1kit::oid_literal<"1.3.6.1.5.5.7.1.6">();
+    static constexpr auto IdPeAcProxying = asn1kit::oid_literal<"1.3.6.1.5.5.7.1.10">();
+    static constexpr auto IdCeTargetInformation = asn1kit::oid_literal<"2.5.29.55">();
+    static constexpr auto IdCeNoRevAvail = asn1kit::oid_literal<"2.5.29.56">();
+    static constexpr auto IdAca = asn1kit::oid_literal<"1.3.6.1.5.5.7.10">();
+    static constexpr auto IdAcaAuthenticationInfo = asn1kit::oid_literal<"1.3.6.1.5.5.7.10.1">();
+    static constexpr auto IdAcaAccessIdentity = asn1kit::oid_literal<"1.3.6.1.5.5.7.10.2">();
+    static constexpr auto IdAcaChargingIdentity = asn1kit::oid_literal<"1.3.6.1.5.5.7.10.3">();
+    static constexpr auto IdAcaGroup = asn1kit::oid_literal<"1.3.6.1.5.5.7.10.4">();
+    static constexpr auto IdAcaEncAttrs = asn1kit::oid_literal<"1.3.6.1.5.5.7.10.6">();
+    static constexpr auto IdAtRole = asn1kit::oid_literal<"2.5.4.72">();
+    static constexpr auto IdAtClearance = asn1kit::oid_literal<"2.5.4.55">();
+    static constexpr auto IdAtClearanceRfc3281 = asn1kit::oid_literal<"2.5.1.5.55">();
 };
 
 struct AAControls {
@@ -796,67 +753,67 @@ struct signature_binding {
 
 namespace signatureAlgorithms_parameters_bindings {
 inline const parameters_binding<asn1kit::null_value> sa_rsa_with_m_d2{
-    asn1kit::oid::parse("1.2.840.113549.1.1.2")};
+    asn1kit::oid_literal<"1.2.840.113549.1.1.2">().get()};
 
 inline const parameters_binding<asn1kit::null_value> sa_rsa_with_m_d5{
-    asn1kit::oid::parse("1.2.840.113549.1.1.4")};
+    asn1kit::oid_literal<"1.2.840.113549.1.1.4">().get()};
 
 inline const parameters_binding<asn1kit::null_value> sa_rsa_with_s_h_a1{
-    asn1kit::oid::parse("1.2.840.113549.1.1.5")};
+    asn1kit::oid_literal<"1.2.840.113549.1.1.5">().get()};
 
 inline const parameters_binding<asn1kit::null_value> sa_dsa_with_s_h_a1{
-    asn1kit::oid::parse("1.2.840.10040.4.3")};
+    asn1kit::oid_literal<"1.2.840.10040.4.3">().get()};
 
 inline const parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a1{
-    asn1kit::oid::parse("1.2.840.10045.4.1")};
+    asn1kit::oid_literal<"1.2.840.10045.4.1">().get()};
 
 inline const parameters_binding<asn1kit::null_value> sa_dsa_with_s_h_a224{
-    asn1kit::oid::parse("2.16.840.1.101.3.4.3.1")};
+    asn1kit::oid_literal<"2.16.840.1.101.3.4.3.1">().get()};
 
 inline const parameters_binding<asn1kit::null_value> sa_dsa_with_s_h_a256{
-    asn1kit::oid::parse("2.16.840.1.101.3.4.3.2")};
+    asn1kit::oid_literal<"2.16.840.1.101.3.4.3.2">().get()};
 
 inline const parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a224{
-    asn1kit::oid::parse("1.2.840.10045.4.3.1")};
+    asn1kit::oid_literal<"1.2.840.10045.4.3.1">().get()};
 
 inline const parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a256{
-    asn1kit::oid::parse("1.2.840.10045.4.3.2")};
+    asn1kit::oid_literal<"1.2.840.10045.4.3.2">().get()};
 
 inline const parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a384{
-    asn1kit::oid::parse("1.2.840.10045.4.3.3")};
+    asn1kit::oid_literal<"1.2.840.10045.4.3.3">().get()};
 
 inline const parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a512{
-    asn1kit::oid::parse("1.2.840.10045.4.3.4")};
+    asn1kit::oid_literal<"1.2.840.10045.4.3.4">().get()};
 
 inline const parameters_binding<::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::RSASSAPSSParams> sa_rsa_s_s_a_p_s_s{
-    asn1kit::oid::parse("1.2.840.113549.1.1.10")};
+    asn1kit::oid_literal<"1.2.840.113549.1.1.10">().get()};
 
 } // namespace signatureAlgorithms_parameters_bindings
 
 namespace signatureAlgorithms_signature_bindings {
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a1{
-    asn1kit::oid::parse("1.2.840.10040.4.3")};
+    asn1kit::oid_literal<"1.2.840.10040.4.3">().get()};
 
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a1{
-    asn1kit::oid::parse("1.2.840.10045.4.1")};
+    asn1kit::oid_literal<"1.2.840.10045.4.1">().get()};
 
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a224{
-    asn1kit::oid::parse("2.16.840.1.101.3.4.3.1")};
+    asn1kit::oid_literal<"2.16.840.1.101.3.4.3.1">().get()};
 
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a256{
-    asn1kit::oid::parse("2.16.840.1.101.3.4.3.2")};
+    asn1kit::oid_literal<"2.16.840.1.101.3.4.3.2">().get()};
 
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a224{
-    asn1kit::oid::parse("1.2.840.10045.4.3.1")};
+    asn1kit::oid_literal<"1.2.840.10045.4.3.1">().get()};
 
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a256{
-    asn1kit::oid::parse("1.2.840.10045.4.3.2")};
+    asn1kit::oid_literal<"1.2.840.10045.4.3.2">().get()};
 
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a384{
-    asn1kit::oid::parse("1.2.840.10045.4.3.3")};
+    asn1kit::oid_literal<"1.2.840.10045.4.3.3">().get()};
 
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a512{
-    asn1kit::oid::parse("1.2.840.10045.4.3.4")};
+    asn1kit::oid_literal<"1.2.840.10045.4.3.4">().get()};
 
 } // namespace signatureAlgorithms_signature_bindings
 

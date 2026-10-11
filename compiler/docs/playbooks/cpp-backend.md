@@ -11,7 +11,7 @@
 1. Снять запрет в `EnsureBackendSupport` вместе с реализацией.
 2. Маппинг `CppType` / encode / decode (`WriteCall` / `ReadCall` или `encode`/`decode` именованного типа).
 3. Nested-типы — через `CollectNested` / `OfferNested`.
-4. Тест: golden и/или emit-assert + при затронутом кодеке — `ctest` в `runtime-cpp/`.
+4. Тест: golden и/или emit-assert; итоговый .NET-прогон — весь `CppCodegenTests`. При изменении C++ runtime/generated также `ctest` в `runtime-cpp/`.
 5. Строка в [docs/status.md](../../../docs/status.md).
 
 ## Сгенерированный контракт
@@ -40,8 +40,17 @@
 - Extensible SEQUENCE/SET: skip-unknown через `read_any`, extension additions + groups (`CppBackend.Extensibility.cs`); extensible SET encode — `enter_set_of`. Extensible CHOICE → `…_kind::unknown` + `asn1kit::any`.
 - `retainEncoded` → `asn1kit::value<T>` + `read_with_original_encoding` (encode: original TLV если есть, иначе `.get()`); `lazy` → `asn1kit::lazy<T>` + `read_lazy` (encode: raw TLV если есть, иначе `.get()`). Только SEQUENCE/SET/OF; lazy побеждает при обоих флагах (`CppBackend.Deferred.cs`).
 - Structured / collection / choice / typed DEFAULT — `ValueExpression` в `CppBackend.EncodeDecode.cs`.
+- OID-каталоги: одна `static constexpr auto Name = asn1kit::oid_literal<"…">();`. Текст доступен через `Name.text()`, DER-содержимое — через `Name.contents` / `Name.span()`, runtime `oid` — через `Name.get()` без аллокаций. DER-содержимое вычисляет runtime через `consteval`. DEFAULT и ключи open type также используют литералы вместо динамического разбора строк; ссылки на каталог используют `.get()`.
 
 ## CLI и golden
+
+Для изолированных изменений C++-генератора (включая его тесты) достаточно:
+
+```powershell
+dotnet test compiler/tests/Asn1Kit.Compiler.Tests/Asn1Kit.Compiler.Tests.csproj --filter "FullyQualifiedName~Asn1Kit.Tests.CppCodegenTests"
+```
+
+Полный solution не запускай, если общие слои compiler/IR/codegen/CLI не изменены. Если затронуты C++ runtime/generated, дополнительно собери C++ и выполни `ctest` актуального preset. Регенерация должна завершиться до сборки и тестов, читающих golden.
 
 ```powershell
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate `

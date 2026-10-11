@@ -288,37 +288,37 @@ struct values_binding {
 
 namespace mixed_extnValue_bindings {
 inline const extnValue_binding<asn1kit::null_value> empty_entry{
-    asn1kit::oid::parse("1.2.3")};
+    asn1kit::oid_literal<"1.2.3">().get()};
 
 inline const extnValue_binding<std::int32_t> data_entry{
-    asn1kit::oid::parse("1.2.4")};
+    asn1kit::oid_literal<"1.2.4">().get()};
 
 } // namespace mixed_extnValue_bindings
 
 namespace mixed_parameters_bindings {
 inline const parameters_binding<asn1kit::null_value> empty_entry{
-    asn1kit::oid::parse("1.2.3")};
+    asn1kit::oid_literal<"1.2.3">().get()};
 
 inline const parameters_binding<std::int32_t> data_entry{
-    asn1kit::oid::parse("1.2.4")};
+    asn1kit::oid_literal<"1.2.4">().get()};
 
 } // namespace mixed_parameters_bindings
 
 namespace mixed_value_bindings {
 inline const value_binding<asn1kit::null_value> empty_entry{
-    asn1kit::oid::parse("1.2.3")};
+    asn1kit::oid_literal<"1.2.3">().get()};
 
 inline const value_binding<std::int32_t> data_entry{
-    asn1kit::oid::parse("1.2.4")};
+    asn1kit::oid_literal<"1.2.4">().get()};
 
 } // namespace mixed_value_bindings
 
 namespace mixed_values_bindings {
 inline const values_binding<asn1kit::null_value> empty_entry{
-    asn1kit::oid::parse("1.2.3")};
+    asn1kit::oid_literal<"1.2.3">().get()};
 
 inline const values_binding<std::int32_t> data_entry{
-    asn1kit::oid::parse("1.2.4")};
+    asn1kit::oid_literal<"1.2.4">().get()};
 
 } // namespace mixed_values_bindings
 

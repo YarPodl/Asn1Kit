@@ -42,15 +42,7 @@ public sealed partial class CppBackend : ILanguageBackend
         foreach (var (name, dotted) in values)
         {
             sb.AppendLine(
-                $"    static constexpr const char* {name} = \"{CppNames.EscapeString(dotted)}\";");
-        }
-
-        sb.AppendLine();
-        foreach (var (name, _) in values)
-        {
-            sb.AppendLine($"    static asn1kit::oid {name}_oid() {{");
-            sb.AppendLine($"        return asn1kit::oid::parse({name});");
-            sb.AppendLine("    }");
+                $"    static constexpr auto {name} = asn1kit::oid_literal<\"{CppNames.EscapeString(dotted)}\">();");
         }
 
         sb.AppendLine("};");

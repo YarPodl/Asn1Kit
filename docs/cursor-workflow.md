@@ -40,14 +40,17 @@
 
 ## Проверка результата
 
-Гони только затронутое дерево:
+Выбирай набор по затронутому компоненту ([правила](../.cursor/rules/reliability-and-testing.mdc)):
 
 ```powershell
-# compiler / runtime-csharp
+# Только C++-генератор и его тесты
+dotnet test compiler/tests/Asn1Kit.Compiler.Tests/Asn1Kit.Compiler.Tests.csproj --filter "FullyQualifiedName~Asn1Kit.Tests.CppCodegenTests"
+
+# Общие слои compiler/IR/codegen/CLI или остальные .NET-компоненты
 dotnet test Asn1Kit.sln
 
 # runtime-cpp (из runtime-cpp/, актуальный preset)
 ctest --preset fetch-default
 ```
 
-Общие BER/DER-фикстуры (`runtime-csharp/fixtures/ber-der/`) — оба прогона. Точечный фильтр не заменяет полный набор дерева.
+Общие BER/DER-фикстуры (`runtime-csharp/fixtures/ber-der/`) — полный .NET-прогон и `ctest`. C++-генератор вместе с C++ runtime/generated — только `CppCodegenTests` и `ctest`. Фильтр всего компонента достаточен для итоговой проверки; фильтр одного теста — нет.

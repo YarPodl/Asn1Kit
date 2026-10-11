@@ -32,50 +32,22 @@ namespace modern {
 namespace CryptographicMessageSyntaxAlgorithms2009 {
 
 struct CryptographicMessageSyntaxAlgorithms2009Oids {
-    static constexpr const char* IdAlgESDH = "1.2.840.113549.1.9.16.3.5";
-    static constexpr const char* IdAlgSSDH = "1.2.840.113549.1.9.16.3.10";
-    static constexpr const char* IdAlgCMS3DESwrap = "1.2.840.113549.1.9.16.3.6";
-    static constexpr const char* IdAlgCMSRC2wrap = "1.2.840.113549.1.9.16.3.7";
-    static constexpr const char* DesEde3Cbc = "1.2.840.113549.3.7";
-    static constexpr const char* Rc2Cbc = "1.2.840.113549.3.2";
-    static constexpr const char* HMACSHA1 = "1.3.6.1.5.5.8.1.2";
-    static constexpr const char* IdPBKDF2 = "1.2.840.113549.1.5.12";
-    static constexpr const char* DhPublicNumber = "1.2.840.10046.2.1";
-
-    static asn1kit::oid IdAlgESDH_oid() {
-        return asn1kit::oid::parse(IdAlgESDH);
-    }
-    static asn1kit::oid IdAlgSSDH_oid() {
-        return asn1kit::oid::parse(IdAlgSSDH);
-    }
-    static asn1kit::oid IdAlgCMS3DESwrap_oid() {
-        return asn1kit::oid::parse(IdAlgCMS3DESwrap);
-    }
-    static asn1kit::oid IdAlgCMSRC2wrap_oid() {
-        return asn1kit::oid::parse(IdAlgCMSRC2wrap);
-    }
-    static asn1kit::oid DesEde3Cbc_oid() {
-        return asn1kit::oid::parse(DesEde3Cbc);
-    }
-    static asn1kit::oid Rc2Cbc_oid() {
-        return asn1kit::oid::parse(Rc2Cbc);
-    }
-    static asn1kit::oid HMACSHA1_oid() {
-        return asn1kit::oid::parse(HMACSHA1);
-    }
-    static asn1kit::oid IdPBKDF2_oid() {
-        return asn1kit::oid::parse(IdPBKDF2);
-    }
-    static asn1kit::oid DhPublicNumber_oid() {
-        return asn1kit::oid::parse(DhPublicNumber);
-    }
+    static constexpr auto IdAlgESDH = asn1kit::oid_literal<"1.2.840.113549.1.9.16.3.5">();
+    static constexpr auto IdAlgSSDH = asn1kit::oid_literal<"1.2.840.113549.1.9.16.3.10">();
+    static constexpr auto IdAlgCMS3DESwrap = asn1kit::oid_literal<"1.2.840.113549.1.9.16.3.6">();
+    static constexpr auto IdAlgCMSRC2wrap = asn1kit::oid_literal<"1.2.840.113549.1.9.16.3.7">();
+    static constexpr auto DesEde3Cbc = asn1kit::oid_literal<"1.2.840.113549.3.7">();
+    static constexpr auto Rc2Cbc = asn1kit::oid_literal<"1.2.840.113549.3.2">();
+    static constexpr auto HMACSHA1 = asn1kit::oid_literal<"1.3.6.1.5.5.8.1.2">();
+    static constexpr auto IdPBKDF2 = asn1kit::oid_literal<"1.2.840.113549.1.5.12">();
+    static constexpr auto DhPublicNumber = asn1kit::oid_literal<"1.2.840.10046.2.1">();
 };
 
 struct PBKDF2Params {
     PBKDF2Params_Salt salt{};
     asn1kit::integer iterationCount{};
     std::optional<asn1kit::integer> keyLength{};
-    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier prf = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid::parse("1.3.6.1.5.5.8.1.2");         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }());
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier prf = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"1.3.6.1.5.5.8.1.2">().get();         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }());
 
     static asn1kit::tag default_tag() {
         return asn1kit::tag::sequence;
@@ -93,7 +65,7 @@ struct PBKDF2Params {
                 value.prf = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner, asn1kit::tag::sequence);
             }
             else {
-                value.prf = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid::parse("1.3.6.1.5.5.8.1.2");         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }());
+                value.prf = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"1.3.6.1.5.5.8.1.2">().get();         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }());
             }
         });
         return value;
@@ -106,7 +78,7 @@ struct PBKDF2Params {
         if (this->keyLength.has_value()) {
             w.write_integer(asn1kit::tag::integer, (*this->keyLength));
         }
-        if (!(!(this->prf.algorithm != asn1kit::oid::parse("1.3.6.1.5.5.8.1.2")) && this->prf.parameters.has_value() && !((*this->prf.parameters) != asn1kit::encode_open(asn1kit::null_value::value())))) {
+        if (!(!(this->prf.algorithm != asn1kit::oid_literal<"1.3.6.1.5.5.8.1.2">().get()) && this->prf.parameters.has_value() && !((*this->prf.parameters) != asn1kit::encode_open(asn1kit::null_value::value())))) {
             this->prf.encode(w, asn1kit::tag::sequence);
         }
     }

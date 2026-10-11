@@ -33,43 +33,15 @@ namespace modern {
 namespace OCSP2009 {
 
 struct OCSP2009Oids {
-    static constexpr const char* IdKpOCSPSigning = "1.3.6.1.5.5.7.3.9";
-    static constexpr const char* IdPkixOcsp = "1.3.6.1.5.5.7.48.1";
-    static constexpr const char* IdPkixOcspBasic = "1.3.6.1.5.5.7.48.1.1";
-    static constexpr const char* IdPkixOcspNonce = "1.3.6.1.5.5.7.48.1.2";
-    static constexpr const char* IdPkixOcspCrl = "1.3.6.1.5.5.7.48.1.3";
-    static constexpr const char* IdPkixOcspResponse = "1.3.6.1.5.5.7.48.1.4";
-    static constexpr const char* IdPkixOcspNocheck = "1.3.6.1.5.5.7.48.1.5";
-    static constexpr const char* IdPkixOcspArchiveCutoff = "1.3.6.1.5.5.7.48.1.6";
-    static constexpr const char* IdPkixOcspServiceLocator = "1.3.6.1.5.5.7.48.1.7";
-
-    static asn1kit::oid IdKpOCSPSigning_oid() {
-        return asn1kit::oid::parse(IdKpOCSPSigning);
-    }
-    static asn1kit::oid IdPkixOcsp_oid() {
-        return asn1kit::oid::parse(IdPkixOcsp);
-    }
-    static asn1kit::oid IdPkixOcspBasic_oid() {
-        return asn1kit::oid::parse(IdPkixOcspBasic);
-    }
-    static asn1kit::oid IdPkixOcspNonce_oid() {
-        return asn1kit::oid::parse(IdPkixOcspNonce);
-    }
-    static asn1kit::oid IdPkixOcspCrl_oid() {
-        return asn1kit::oid::parse(IdPkixOcspCrl);
-    }
-    static asn1kit::oid IdPkixOcspResponse_oid() {
-        return asn1kit::oid::parse(IdPkixOcspResponse);
-    }
-    static asn1kit::oid IdPkixOcspNocheck_oid() {
-        return asn1kit::oid::parse(IdPkixOcspNocheck);
-    }
-    static asn1kit::oid IdPkixOcspArchiveCutoff_oid() {
-        return asn1kit::oid::parse(IdPkixOcspArchiveCutoff);
-    }
-    static asn1kit::oid IdPkixOcspServiceLocator_oid() {
-        return asn1kit::oid::parse(IdPkixOcspServiceLocator);
-    }
+    static constexpr auto IdKpOCSPSigning = asn1kit::oid_literal<"1.3.6.1.5.5.7.3.9">();
+    static constexpr auto IdPkixOcsp = asn1kit::oid_literal<"1.3.6.1.5.5.7.48.1">();
+    static constexpr auto IdPkixOcspBasic = asn1kit::oid_literal<"1.3.6.1.5.5.7.48.1.1">();
+    static constexpr auto IdPkixOcspNonce = asn1kit::oid_literal<"1.3.6.1.5.5.7.48.1.2">();
+    static constexpr auto IdPkixOcspCrl = asn1kit::oid_literal<"1.3.6.1.5.5.7.48.1.3">();
+    static constexpr auto IdPkixOcspResponse = asn1kit::oid_literal<"1.3.6.1.5.5.7.48.1.4">();
+    static constexpr auto IdPkixOcspNocheck = asn1kit::oid_literal<"1.3.6.1.5.5.7.48.1.5">();
+    static constexpr auto IdPkixOcspArchiveCutoff = asn1kit::oid_literal<"1.3.6.1.5.5.7.48.1.6">();
+    static constexpr auto IdPkixOcspServiceLocator = asn1kit::oid_literal<"1.3.6.1.5.5.7.48.1.7">();
 };
 
 struct CertID {
@@ -946,7 +918,7 @@ struct response_binding {
 
 namespace responseSet_response_bindings {
 inline const response_binding<BasicOCSPResponse> basic_response{
-    OCSP2009Oids::IdPkixOcspBasic_oid()};
+    OCSP2009Oids::IdPkixOcspBasic.get()};
 
 } // namespace responseSet_response_bindings
 

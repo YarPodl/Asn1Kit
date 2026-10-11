@@ -33,51 +33,17 @@ namespace modern {
 namespace CryptographicMessageSyntax2009 {
 
 struct CryptographicMessageSyntax2009Oids {
-    static constexpr const char* IdCtContentInfo = "1.2.840.113549.1.9.16.1.6";
-    static constexpr const char* IdData = "1.2.840.113549.1.7.1";
-    static constexpr const char* IdSignedData = "1.2.840.113549.1.7.2";
-    static constexpr const char* IdEnvelopedData = "1.2.840.113549.1.7.3";
-    static constexpr const char* IdDigestedData = "1.2.840.113549.1.7.5";
-    static constexpr const char* IdEncryptedData = "1.2.840.113549.1.7.6";
-    static constexpr const char* IdCtAuthData = "1.2.840.113549.1.9.16.1.2";
-    static constexpr const char* IdContentType = "1.2.840.113549.1.9.3";
-    static constexpr const char* IdMessageDigest = "1.2.840.113549.1.9.4";
-    static constexpr const char* IdSigningTime = "1.2.840.113549.1.9.5";
-    static constexpr const char* IdCountersignature = "1.2.840.113549.1.9.6";
-
-    static asn1kit::oid IdCtContentInfo_oid() {
-        return asn1kit::oid::parse(IdCtContentInfo);
-    }
-    static asn1kit::oid IdData_oid() {
-        return asn1kit::oid::parse(IdData);
-    }
-    static asn1kit::oid IdSignedData_oid() {
-        return asn1kit::oid::parse(IdSignedData);
-    }
-    static asn1kit::oid IdEnvelopedData_oid() {
-        return asn1kit::oid::parse(IdEnvelopedData);
-    }
-    static asn1kit::oid IdDigestedData_oid() {
-        return asn1kit::oid::parse(IdDigestedData);
-    }
-    static asn1kit::oid IdEncryptedData_oid() {
-        return asn1kit::oid::parse(IdEncryptedData);
-    }
-    static asn1kit::oid IdCtAuthData_oid() {
-        return asn1kit::oid::parse(IdCtAuthData);
-    }
-    static asn1kit::oid IdContentType_oid() {
-        return asn1kit::oid::parse(IdContentType);
-    }
-    static asn1kit::oid IdMessageDigest_oid() {
-        return asn1kit::oid::parse(IdMessageDigest);
-    }
-    static asn1kit::oid IdSigningTime_oid() {
-        return asn1kit::oid::parse(IdSigningTime);
-    }
-    static asn1kit::oid IdCountersignature_oid() {
-        return asn1kit::oid::parse(IdCountersignature);
-    }
+    static constexpr auto IdCtContentInfo = asn1kit::oid_literal<"1.2.840.113549.1.9.16.1.6">();
+    static constexpr auto IdData = asn1kit::oid_literal<"1.2.840.113549.1.7.1">();
+    static constexpr auto IdSignedData = asn1kit::oid_literal<"1.2.840.113549.1.7.2">();
+    static constexpr auto IdEnvelopedData = asn1kit::oid_literal<"1.2.840.113549.1.7.3">();
+    static constexpr auto IdDigestedData = asn1kit::oid_literal<"1.2.840.113549.1.7.5">();
+    static constexpr auto IdEncryptedData = asn1kit::oid_literal<"1.2.840.113549.1.7.6">();
+    static constexpr auto IdCtAuthData = asn1kit::oid_literal<"1.2.840.113549.1.9.16.1.2">();
+    static constexpr auto IdContentType = asn1kit::oid_literal<"1.2.840.113549.1.9.3">();
+    static constexpr auto IdMessageDigest = asn1kit::oid_literal<"1.2.840.113549.1.9.4">();
+    static constexpr auto IdSigningTime = asn1kit::oid_literal<"1.2.840.113549.1.9.5">();
+    static constexpr auto IdCountersignature = asn1kit::oid_literal<"1.2.840.113549.1.9.6">();
 };
 
 struct CMSVersion {
@@ -274,67 +240,67 @@ struct eContent_binding {
 
 namespace authAttributeSet_bindings {
 inline const attrValues_binding<asn1kit::oid> content_type{
-    CryptographicMessageSyntax2009Oids::IdContentType_oid()};
+    CryptographicMessageSyntax2009Oids::IdContentType.get()};
 
 inline const attrValues_binding<asn1kit::bytes> message_digest{
-    CryptographicMessageSyntax2009Oids::IdMessageDigest_oid()};
+    CryptographicMessageSyntax2009Oids::IdMessageDigest.get()};
 
 inline const attrValues_binding<Time> signing_time{
-    CryptographicMessageSyntax2009Oids::IdSigningTime_oid()};
+    CryptographicMessageSyntax2009Oids::IdSigningTime.get()};
 
 } // namespace authAttributeSet_bindings
 
 namespace contentSet_content_bindings {
 inline const content_binding<SignedData> ct_signed_data{
-    CryptographicMessageSyntax2009Oids::IdSignedData_oid()};
+    CryptographicMessageSyntax2009Oids::IdSignedData.get()};
 
 inline const content_binding<EncryptedData> ct_encrypted_data{
-    CryptographicMessageSyntax2009Oids::IdEncryptedData_oid()};
+    CryptographicMessageSyntax2009Oids::IdEncryptedData.get()};
 
 inline const content_binding<EnvelopedData> ct_enveloped_data{
-    CryptographicMessageSyntax2009Oids::IdEnvelopedData_oid()};
+    CryptographicMessageSyntax2009Oids::IdEnvelopedData.get()};
 
 inline const content_binding<AuthenticatedData> ct_authenticated_data{
-    CryptographicMessageSyntax2009Oids::IdCtAuthData_oid()};
+    CryptographicMessageSyntax2009Oids::IdCtAuthData.get()};
 
 inline const content_binding<DigestedData> ct_digested_data{
-    CryptographicMessageSyntax2009Oids::IdDigestedData_oid()};
+    CryptographicMessageSyntax2009Oids::IdDigestedData.get()};
 
 } // namespace contentSet_content_bindings
 
 namespace contentSet_eContent_bindings {
 inline const eContent_binding<SignedData> ct_signed_data{
-    CryptographicMessageSyntax2009Oids::IdSignedData_oid()};
+    CryptographicMessageSyntax2009Oids::IdSignedData.get()};
 
 inline const eContent_binding<EncryptedData> ct_encrypted_data{
-    CryptographicMessageSyntax2009Oids::IdEncryptedData_oid()};
+    CryptographicMessageSyntax2009Oids::IdEncryptedData.get()};
 
 inline const eContent_binding<EnvelopedData> ct_enveloped_data{
-    CryptographicMessageSyntax2009Oids::IdEnvelopedData_oid()};
+    CryptographicMessageSyntax2009Oids::IdEnvelopedData.get()};
 
 inline const eContent_binding<AuthenticatedData> ct_authenticated_data{
-    CryptographicMessageSyntax2009Oids::IdCtAuthData_oid()};
+    CryptographicMessageSyntax2009Oids::IdCtAuthData.get()};
 
 inline const eContent_binding<DigestedData> ct_digested_data{
-    CryptographicMessageSyntax2009Oids::IdDigestedData_oid()};
+    CryptographicMessageSyntax2009Oids::IdDigestedData.get()};
 
 } // namespace contentSet_eContent_bindings
 
 namespace signedAttributesSet_bindings {
 inline const attrValues_binding<Time> signing_time{
-    CryptographicMessageSyntax2009Oids::IdSigningTime_oid()};
+    CryptographicMessageSyntax2009Oids::IdSigningTime.get()};
 
 inline const attrValues_binding<asn1kit::bytes> message_digest{
-    CryptographicMessageSyntax2009Oids::IdMessageDigest_oid()};
+    CryptographicMessageSyntax2009Oids::IdMessageDigest.get()};
 
 inline const attrValues_binding<asn1kit::oid> content_type{
-    CryptographicMessageSyntax2009Oids::IdContentType_oid()};
+    CryptographicMessageSyntax2009Oids::IdContentType.get()};
 
 } // namespace signedAttributesSet_bindings
 
 namespace unsignedAttributes_bindings {
 inline const attrValues_binding<SignerInfo> countersignature{
-    CryptographicMessageSyntax2009Oids::IdCountersignature_oid()};
+    CryptographicMessageSyntax2009Oids::IdCountersignature.get()};
 
 } // namespace unsignedAttributes_bindings
 

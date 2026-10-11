@@ -33,15 +33,8 @@ namespace modern {
 namespace PKIXCMP2009 {
 
 struct PKIXCMP2009Oids {
-    static constexpr const char* IdPasswordBasedMac = "1.2.840.113533.7.66.13";
-    static constexpr const char* IdDHBasedMac = "1.2.840.113533.7.66.30";
-
-    static asn1kit::oid IdPasswordBasedMac_oid() {
-        return asn1kit::oid::parse(IdPasswordBasedMac);
-    }
-    static asn1kit::oid IdDHBasedMac_oid() {
-        return asn1kit::oid::parse(IdDHBasedMac);
-    }
+    static constexpr auto IdPasswordBasedMac = asn1kit::oid_literal<"1.2.840.113533.7.66.13">();
+    static constexpr auto IdDHBasedMac = asn1kit::oid_literal<"1.2.840.113533.7.66.30">();
 };
 
 struct DHBMParameter {

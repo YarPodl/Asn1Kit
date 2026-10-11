@@ -34,51 +34,17 @@ namespace modern {
 namespace ExtendedSecurityServices2009 {
 
 struct ExtendedSecurityServices2009Oids {
-    static constexpr const char* IdAaReceiptRequest = "1.2.840.113549.1.9.16.2.1";
-    static constexpr const char* IdAaContentIdentifier = "1.2.840.113549.1.9.16.2.7";
-    static constexpr const char* IdCtReceipt = "1.2.840.113549.1.9.16.1.1";
-    static constexpr const char* IdAaContentHint = "1.2.840.113549.1.9.16.2.4";
-    static constexpr const char* IdAaMsgSigDigest = "1.2.840.113549.1.9.16.2.5";
-    static constexpr const char* IdAaContentReference = "1.2.840.113549.1.9.16.2.10";
-    static constexpr const char* IdAaSecurityLabel = "1.2.840.113549.1.9.16.2.2";
-    static constexpr const char* IdAaEquivalentLabels = "1.2.840.113549.1.9.16.2.9";
-    static constexpr const char* IdAaMlExpandHistory = "1.2.840.113549.1.9.16.2.3";
-    static constexpr const char* IdAaSigningCertificate = "1.2.840.113549.1.9.16.2.12";
-    static constexpr const char* IdAaSigningCertificateV2 = "1.2.840.113549.1.9.16.2.47";
-
-    static asn1kit::oid IdAaReceiptRequest_oid() {
-        return asn1kit::oid::parse(IdAaReceiptRequest);
-    }
-    static asn1kit::oid IdAaContentIdentifier_oid() {
-        return asn1kit::oid::parse(IdAaContentIdentifier);
-    }
-    static asn1kit::oid IdCtReceipt_oid() {
-        return asn1kit::oid::parse(IdCtReceipt);
-    }
-    static asn1kit::oid IdAaContentHint_oid() {
-        return asn1kit::oid::parse(IdAaContentHint);
-    }
-    static asn1kit::oid IdAaMsgSigDigest_oid() {
-        return asn1kit::oid::parse(IdAaMsgSigDigest);
-    }
-    static asn1kit::oid IdAaContentReference_oid() {
-        return asn1kit::oid::parse(IdAaContentReference);
-    }
-    static asn1kit::oid IdAaSecurityLabel_oid() {
-        return asn1kit::oid::parse(IdAaSecurityLabel);
-    }
-    static asn1kit::oid IdAaEquivalentLabels_oid() {
-        return asn1kit::oid::parse(IdAaEquivalentLabels);
-    }
-    static asn1kit::oid IdAaMlExpandHistory_oid() {
-        return asn1kit::oid::parse(IdAaMlExpandHistory);
-    }
-    static asn1kit::oid IdAaSigningCertificate_oid() {
-        return asn1kit::oid::parse(IdAaSigningCertificate);
-    }
-    static asn1kit::oid IdAaSigningCertificateV2_oid() {
-        return asn1kit::oid::parse(IdAaSigningCertificateV2);
-    }
+    static constexpr auto IdAaReceiptRequest = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.1">();
+    static constexpr auto IdAaContentIdentifier = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.7">();
+    static constexpr auto IdCtReceipt = asn1kit::oid_literal<"1.2.840.113549.1.9.16.1.1">();
+    static constexpr auto IdAaContentHint = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.4">();
+    static constexpr auto IdAaMsgSigDigest = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.5">();
+    static constexpr auto IdAaContentReference = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.10">();
+    static constexpr auto IdAaSecurityLabel = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.2">();
+    static constexpr auto IdAaEquivalentLabels = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.9">();
+    static constexpr auto IdAaMlExpandHistory = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.3">();
+    static constexpr auto IdAaSigningCertificate = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.12">();
+    static constexpr auto IdAaSigningCertificateV2 = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.47">();
 };
 
 struct AllOrFirstTier {
@@ -170,7 +136,7 @@ struct ESSCertID {
 };
 
 struct ESSCertIDv2 {
-    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid::parse("2.16.840.1.101.3.4.2.1"); return v; }());
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"2.16.840.1.101.3.4.2.1">().get(); return v; }());
     asn1kit::bytes certHash{};
     std::optional<IssuerSerial> issuerSerial{};
 
@@ -185,7 +151,7 @@ struct ESSCertIDv2 {
                 value.hashAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner, asn1kit::tag::sequence);
             }
             else {
-                value.hashAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid::parse("2.16.840.1.101.3.4.2.1"); return v; }());
+                value.hashAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"2.16.840.1.101.3.4.2.1">().get(); return v; }());
             }
             value.certHash = inner.read_octet_string(asn1kit::tag::octet_string);
             if (inner.next_is(asn1kit::tag::sequence)) {
@@ -197,7 +163,7 @@ struct ESSCertIDv2 {
 
     void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
         auto scope = w.enter_sequence(t);
-        if (!(!(this->hashAlgorithm.algorithm != asn1kit::oid::parse("2.16.840.1.101.3.4.2.1")) && !this->hashAlgorithm.parameters.has_value())) {
+        if (!(!(this->hashAlgorithm.algorithm != asn1kit::oid_literal<"2.16.840.1.101.3.4.2.1">().get()) && !this->hashAlgorithm.parameters.has_value())) {
             this->hashAlgorithm.encode(w, asn1kit::tag::sequence);
         }
         w.write_octet_string(asn1kit::tag::octet_string, this->certHash.span());

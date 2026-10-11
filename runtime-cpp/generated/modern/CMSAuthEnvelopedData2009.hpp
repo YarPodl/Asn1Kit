@@ -32,11 +32,7 @@ namespace modern {
 namespace CMSAuthEnvelopedData2009 {
 
 struct CMSAuthEnvelopedData2009Oids {
-    static constexpr const char* IdCtAuthEnvelopedData = "1.2.840.113549.1.9.16.1.23";
-
-    static asn1kit::oid IdCtAuthEnvelopedData_oid() {
-        return asn1kit::oid::parse(IdCtAuthEnvelopedData);
-    }
+    static constexpr auto IdCtAuthEnvelopedData = asn1kit::oid_literal<"1.2.840.113549.1.9.16.1.23">();
 };
 
 struct AuthEnvelopedData {

@@ -32,31 +32,12 @@ namespace modern {
 namespace SecureMimeMessageV3dot12009 {
 
 struct SecureMimeMessageV3dot12009Oids {
-    static constexpr const char* IdAa = "1.2.840.113549.1.9.16.2";
-    static constexpr const char* SmimeCapabilities = "1.2.840.113549.1.9.15";
-    static constexpr const char* IdAaEncrypKeyPref = "1.2.840.113549.1.9.16.2.11";
-    static constexpr const char* IdSmime = "1.2.840.113549.1.9.16";
-    static constexpr const char* IdCap = "1.2.840.113549.1.9.16.11";
-    static constexpr const char* IdCapPreferBinaryInside = "1.2.840.113549.1.9.16.11.1";
-
-    static asn1kit::oid IdAa_oid() {
-        return asn1kit::oid::parse(IdAa);
-    }
-    static asn1kit::oid SmimeCapabilities_oid() {
-        return asn1kit::oid::parse(SmimeCapabilities);
-    }
-    static asn1kit::oid IdAaEncrypKeyPref_oid() {
-        return asn1kit::oid::parse(IdAaEncrypKeyPref);
-    }
-    static asn1kit::oid IdSmime_oid() {
-        return asn1kit::oid::parse(IdSmime);
-    }
-    static asn1kit::oid IdCap_oid() {
-        return asn1kit::oid::parse(IdCap);
-    }
-    static asn1kit::oid IdCapPreferBinaryInside_oid() {
-        return asn1kit::oid::parse(IdCapPreferBinaryInside);
-    }
+    static constexpr auto IdAa = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2">();
+    static constexpr auto SmimeCapabilities = asn1kit::oid_literal<"1.2.840.113549.1.9.15">();
+    static constexpr auto IdAaEncrypKeyPref = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.11">();
+    static constexpr auto IdSmime = asn1kit::oid_literal<"1.2.840.113549.1.9.16">();
+    static constexpr auto IdCap = asn1kit::oid_literal<"1.2.840.113549.1.9.16.11">();
+    static constexpr auto IdCapPreferBinaryInside = asn1kit::oid_literal<"1.2.840.113549.1.9.16.11.1">();
 };
 
 enum class SMIMEEncryptionKeyPreference_kind {

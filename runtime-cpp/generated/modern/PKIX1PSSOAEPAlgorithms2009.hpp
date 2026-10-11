@@ -32,65 +32,25 @@ namespace modern {
 namespace PKIX1PSSOAEPAlgorithms2009 {
 
 struct PKIX1PSSOAEPAlgorithms2009Oids {
-    static constexpr const char* Sha224WithRSAEncryption = "1.2.840.113549.1.1.14";
-    static constexpr const char* Sha256WithRSAEncryption = "1.2.840.113549.1.1.11";
-    static constexpr const char* Sha384WithRSAEncryption = "1.2.840.113549.1.1.12";
-    static constexpr const char* Sha512WithRSAEncryption = "1.2.840.113549.1.1.13";
-    static constexpr const char* Pkcs1 = "1.2.840.113549.1.1";
-    static constexpr const char* IdRSAESOAEP = "1.2.840.113549.1.1.7";
-    static constexpr const char* IdMgf1 = "1.2.840.113549.1.1.8";
-    static constexpr const char* IdPSpecified = "1.2.840.113549.1.1.9";
-    static constexpr const char* IdRSASSAPSS = "1.2.840.113549.1.1.10";
-    static constexpr const char* IdSha224 = "2.16.840.1.101.3.4.2.4";
-    static constexpr const char* IdSha256 = "2.16.840.1.101.3.4.2.1";
-    static constexpr const char* IdSha384 = "2.16.840.1.101.3.4.2.2";
-    static constexpr const char* IdSha512 = "2.16.840.1.101.3.4.2.3";
-
-    static asn1kit::oid Sha224WithRSAEncryption_oid() {
-        return asn1kit::oid::parse(Sha224WithRSAEncryption);
-    }
-    static asn1kit::oid Sha256WithRSAEncryption_oid() {
-        return asn1kit::oid::parse(Sha256WithRSAEncryption);
-    }
-    static asn1kit::oid Sha384WithRSAEncryption_oid() {
-        return asn1kit::oid::parse(Sha384WithRSAEncryption);
-    }
-    static asn1kit::oid Sha512WithRSAEncryption_oid() {
-        return asn1kit::oid::parse(Sha512WithRSAEncryption);
-    }
-    static asn1kit::oid Pkcs1_oid() {
-        return asn1kit::oid::parse(Pkcs1);
-    }
-    static asn1kit::oid IdRSAESOAEP_oid() {
-        return asn1kit::oid::parse(IdRSAESOAEP);
-    }
-    static asn1kit::oid IdMgf1_oid() {
-        return asn1kit::oid::parse(IdMgf1);
-    }
-    static asn1kit::oid IdPSpecified_oid() {
-        return asn1kit::oid::parse(IdPSpecified);
-    }
-    static asn1kit::oid IdRSASSAPSS_oid() {
-        return asn1kit::oid::parse(IdRSASSAPSS);
-    }
-    static asn1kit::oid IdSha224_oid() {
-        return asn1kit::oid::parse(IdSha224);
-    }
-    static asn1kit::oid IdSha256_oid() {
-        return asn1kit::oid::parse(IdSha256);
-    }
-    static asn1kit::oid IdSha384_oid() {
-        return asn1kit::oid::parse(IdSha384);
-    }
-    static asn1kit::oid IdSha512_oid() {
-        return asn1kit::oid::parse(IdSha512);
-    }
+    static constexpr auto Sha224WithRSAEncryption = asn1kit::oid_literal<"1.2.840.113549.1.1.14">();
+    static constexpr auto Sha256WithRSAEncryption = asn1kit::oid_literal<"1.2.840.113549.1.1.11">();
+    static constexpr auto Sha384WithRSAEncryption = asn1kit::oid_literal<"1.2.840.113549.1.1.12">();
+    static constexpr auto Sha512WithRSAEncryption = asn1kit::oid_literal<"1.2.840.113549.1.1.13">();
+    static constexpr auto Pkcs1 = asn1kit::oid_literal<"1.2.840.113549.1.1">();
+    static constexpr auto IdRSAESOAEP = asn1kit::oid_literal<"1.2.840.113549.1.1.7">();
+    static constexpr auto IdMgf1 = asn1kit::oid_literal<"1.2.840.113549.1.1.8">();
+    static constexpr auto IdPSpecified = asn1kit::oid_literal<"1.2.840.113549.1.1.9">();
+    static constexpr auto IdRSASSAPSS = asn1kit::oid_literal<"1.2.840.113549.1.1.10">();
+    static constexpr auto IdSha224 = asn1kit::oid_literal<"2.16.840.1.101.3.4.2.4">();
+    static constexpr auto IdSha256 = asn1kit::oid_literal<"2.16.840.1.101.3.4.2.1">();
+    static constexpr auto IdSha384 = asn1kit::oid_literal<"2.16.840.1.101.3.4.2.2">();
+    static constexpr auto IdSha512 = asn1kit::oid_literal<"2.16.840.1.101.3.4.2.3">();
 };
 
 struct RSAESOAEPParams {
-    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashFunc = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid::parse("1.3.14.3.2.26");         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }());
-    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier maskGenFunc = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid::parse("1.2.840.113549.1.1.8");         v.parameters = asn1kit::encode_open(([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid::parse("1.3.14.3.2.26");         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }())); return v; }());
-    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier pSourceFunc = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid::parse("1.2.840.113549.1.1.9");         v.parameters = asn1kit::encode_open(asn1kit::bytes::copy_from(std::vector<std::uint8_t>{})); return v; }());
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashFunc = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"1.3.14.3.2.26">().get();         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }());
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier maskGenFunc = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"1.2.840.113549.1.1.8">().get();         v.parameters = asn1kit::encode_open(([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"1.3.14.3.2.26">().get();         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }())); return v; }());
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier pSourceFunc = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"1.2.840.113549.1.1.9">().get();         v.parameters = asn1kit::encode_open(asn1kit::bytes::copy_from(std::vector<std::uint8_t>{})); return v; }());
 
     static asn1kit::tag default_tag() {
         return asn1kit::tag::sequence;
@@ -107,7 +67,7 @@ struct RSAESOAEPParams {
                 value.hashFunc = std::move(tmp_hashFunc);
             }
             else {
-                value.hashFunc = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid::parse("1.3.14.3.2.26");         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }());
+                value.hashFunc = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"1.3.14.3.2.26">().get();         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }());
             }
             if (inner.next_is(asn1kit::tag::context(1, true))) {
                 ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier tmp_maskGenFunc{};
@@ -117,7 +77,7 @@ struct RSAESOAEPParams {
                 value.maskGenFunc = std::move(tmp_maskGenFunc);
             }
             else {
-                value.maskGenFunc = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid::parse("1.2.840.113549.1.1.8");         v.parameters = asn1kit::encode_open(([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid::parse("1.3.14.3.2.26");         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }())); return v; }());
+                value.maskGenFunc = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"1.2.840.113549.1.1.8">().get();         v.parameters = asn1kit::encode_open(([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"1.3.14.3.2.26">().get();         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }())); return v; }());
             }
             if (inner.next_is(asn1kit::tag::context(2, true))) {
                 ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier tmp_pSourceFunc{};
@@ -127,7 +87,7 @@ struct RSAESOAEPParams {
                 value.pSourceFunc = std::move(tmp_pSourceFunc);
             }
             else {
-                value.pSourceFunc = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid::parse("1.2.840.113549.1.1.9");         v.parameters = asn1kit::encode_open(asn1kit::bytes::copy_from(std::vector<std::uint8_t>{})); return v; }());
+                value.pSourceFunc = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"1.2.840.113549.1.1.9">().get();         v.parameters = asn1kit::encode_open(asn1kit::bytes::copy_from(std::vector<std::uint8_t>{})); return v; }());
             }
         });
         return value;
@@ -135,19 +95,19 @@ struct RSAESOAEPParams {
 
     void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
         auto scope = w.enter_sequence(t);
-        if (!(!(this->hashFunc.algorithm != asn1kit::oid::parse("1.3.14.3.2.26")) && this->hashFunc.parameters.has_value() && !((*this->hashFunc.parameters) != asn1kit::encode_open(asn1kit::null_value::value())))) {
+        if (!(!(this->hashFunc.algorithm != asn1kit::oid_literal<"1.3.14.3.2.26">().get()) && this->hashFunc.parameters.has_value() && !((*this->hashFunc.parameters) != asn1kit::encode_open(asn1kit::null_value::value())))) {
             {
                 auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
                 this->hashFunc.encode(w, asn1kit::tag::sequence);
             }
         }
-        if (!(!(this->maskGenFunc.algorithm != asn1kit::oid::parse("1.2.840.113549.1.1.8")) && this->maskGenFunc.parameters.has_value() && !((*this->maskGenFunc.parameters) != asn1kit::encode_open(([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid::parse("1.3.14.3.2.26");         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }()))))) {
+        if (!(!(this->maskGenFunc.algorithm != asn1kit::oid_literal<"1.2.840.113549.1.1.8">().get()) && this->maskGenFunc.parameters.has_value() && !((*this->maskGenFunc.parameters) != asn1kit::encode_open(([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"1.3.14.3.2.26">().get();         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }()))))) {
             {
                 auto explicit_scope = w.enter_explicit(asn1kit::tag::context(1, true));
                 this->maskGenFunc.encode(w, asn1kit::tag::sequence);
             }
         }
-        if (!(!(this->pSourceFunc.algorithm != asn1kit::oid::parse("1.2.840.113549.1.1.9")) && this->pSourceFunc.parameters.has_value() && !((*this->pSourceFunc.parameters) != asn1kit::encode_open(asn1kit::bytes::copy_from(std::vector<std::uint8_t>{}))))) {
+        if (!(!(this->pSourceFunc.algorithm != asn1kit::oid_literal<"1.2.840.113549.1.1.9">().get()) && this->pSourceFunc.parameters.has_value() && !((*this->pSourceFunc.parameters) != asn1kit::encode_open(asn1kit::bytes::copy_from(std::vector<std::uint8_t>{}))))) {
             {
                 auto explicit_scope = w.enter_explicit(asn1kit::tag::context(2, true));
                 this->pSourceFunc.encode(w, asn1kit::tag::sequence);

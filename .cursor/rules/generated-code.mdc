@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Генератор и generated-код
 
-Следуй [playbook C# backend](../../compiler/docs/playbooks/csharp-backend.md).
+Для C# следуй [playbook C# backend](../../compiler/docs/playbooks/csharp-backend.md), для C++ — [playbook C++ backend](../../compiler/docs/playbooks/cpp-backend.md). Набор проверок выбирай по [reliability-and-testing.mdc](reliability-and-testing.mdc).
 
 - `*.g.cs` не правь вручную; меняй генератор или IR и запускай скрипт из `scripts/`.
 - Уважай `generate: false` и все поддержанные `options.csharp.*`.
@@ -18,4 +18,4 @@ alwaysApply: false
 - Компилируй generated C# через существующий Roslyn test и выполняй encode/decode.
 - Проверяй канонические DER-байты, BER-векторы и явный отказ сломанного входа.
 - Golden PKIX/CMS/DVCS: `scripts/regenerate-csharp-golden.ps1`.
-- Просматривай generated diff перед полным `dotnet test Asn1Kit.sln`.
+- Просматривай generated diff перед итоговой проверкой затронутого компонента. Для изолированных изменений C++-генератора — `CppCodegenTests`; при изменении C++ runtime/generated также `ctest`. Полный `dotnet test Asn1Kit.sln` для них не требуется.

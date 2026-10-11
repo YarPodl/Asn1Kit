@@ -4,9 +4,11 @@
 #pragma once
 
 #include "asn1kit/bytes.hpp"
+#include "asn1kit/detail/oid_encoding.hpp"
 #include "asn1kit/exception.hpp"
 #include "asn1kit/tag.hpp"
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <span>
@@ -35,8 +37,13 @@ public:
 
     [[nodiscard]] std::string to_string() const;
 
-    [[nodiscard]] static std::size_t get_encode_contents_max_length(std::string_view dotted);
-    [[nodiscard]] static std::size_t encode_contents(std::string_view dotted, std::span<std::uint8_t> destination);
+    [[nodiscard]] static constexpr std::size_t get_encode_contents_max_length(std::string_view dotted) {
+        return detail::get_encode_contents_max_length(dotted);
+    }
+    [[nodiscard]] static constexpr std::size_t encode_contents(
+        std::string_view dotted, std::span<std::uint8_t> destination) {
+        return detail::encode_contents(dotted, destination);
+    }
     [[nodiscard]] static std::vector<std::uint8_t> encode_contents(std::string_view dotted);
 
     [[nodiscard]] static int read_arc(
@@ -57,5 +64,50 @@ private:
 
     bytes contents_{};
 };
+
+namespace detail {
+
+template <std::size_t N>
+struct oid_text {
+    char value[N]{};
+
+    constexpr oid_text(const char (&text)[N]) {
+        for (std::size_t i = 0; i < N; ++i) value[i] = text[i];
+    }
+
+    [[nodiscard]] constexpr std::string_view view() const { return {value, N - 1}; }
+};
+
+template <oid_text Text>
+consteval auto encode_oid_literal() {
+    constexpr auto encoded = [] {
+        std::array<std::uint8_t, oid::get_encode_contents_max_length(Text.view())> buffer{};
+        const auto size = oid::encode_contents(Text.view(), buffer);
+        return std::pair{buffer, size};
+    }();
+    std::array<std::uint8_t, encoded.second> result{};
+    for (std::size_t i = 0; i < result.size(); ++i) result[i] = encoded.first[i];
+    return result;
+}
+
+} // namespace detail
+
+/// Compile-time DER contents with static storage; calling yields a non-owning oid.
+template <detail::oid_text Text>
+struct oid_constant {
+    static constexpr auto contents = detail::encode_oid_literal<Text>();
+
+    [[nodiscard]] constexpr const char* text() const noexcept { return Text.value; }
+    [[nodiscard]] constexpr std::span<const std::uint8_t> span() const noexcept { return contents; }
+    [[nodiscard]] oid get() const { return oid::from_contents(bytes::borrow(contents)); }
+    [[nodiscard]] oid operator()() const { return get(); }
+};
+
+template <detail::oid_text Text>
+[[nodiscard]] consteval auto oid_literal() {
+    // Instantiate the encoder here so invalid literals fail even if never used.
+    static_assert(oid_constant<Text>::contents.size() > 0);
+    return oid_constant<Text>{};
+}
 
 } // namespace asn1kit

@@ -33,19 +33,9 @@ namespace modern {
 namespace ERS {
 
 struct ERSOids {
-    static constexpr const char* IdAaErInternal = "1.2.840.113549.1.9.16.2.49";
-    static constexpr const char* IdAaErExternal = "1.2.840.113549.1.9.16.2.50";
-    static constexpr const char* Ltans = "1.3.6.1.5.5.11";
-
-    static asn1kit::oid IdAaErInternal_oid() {
-        return asn1kit::oid::parse(IdAaErInternal);
-    }
-    static asn1kit::oid IdAaErExternal_oid() {
-        return asn1kit::oid::parse(IdAaErExternal);
-    }
-    static asn1kit::oid Ltans_oid() {
-        return asn1kit::oid::parse(Ltans);
-    }
+    static constexpr auto IdAaErInternal = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.49">();
+    static constexpr auto IdAaErExternal = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.50">();
+    static constexpr auto Ltans = asn1kit::oid_literal<"1.3.6.1.5.5.11">();
 };
 
 struct ArchiveTimeStamp {

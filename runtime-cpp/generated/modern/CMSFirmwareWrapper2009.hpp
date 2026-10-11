@@ -30,55 +30,18 @@ namespace modern {
 namespace CMSFirmwareWrapper2009 {
 
 struct CMSFirmwareWrapper2009Oids {
-    static constexpr const char* IdCtFirmwarePackage = "1.2.840.113549.1.9.16.1.16";
-    static constexpr const char* IdAaFirmwarePackageID = "1.2.840.113549.1.9.16.2.35";
-    static constexpr const char* IdAaTargetHardwareIDs = "1.2.840.113549.1.9.16.2.36";
-    static constexpr const char* IdAaDecryptKeyID = "1.2.840.113549.1.9.16.2.37";
-    static constexpr const char* IdAaImplCryptoAlgs = "1.2.840.113549.1.9.16.2.38";
-    static constexpr const char* IdAaImplCompressAlgs = "1.2.840.113549.1.9.16.2.43";
-    static constexpr const char* IdAaCommunityIdentifiers = "1.2.840.113549.1.9.16.2.40";
-    static constexpr const char* IdAaFirmwarePackageInfo = "1.2.840.113549.1.9.16.2.42";
-    static constexpr const char* IdAaWrappedFirmwareKey = "1.2.840.113549.1.9.16.2.39";
-    static constexpr const char* IdCtFirmwareLoadReceipt = "1.2.840.113549.1.9.16.1.17";
-    static constexpr const char* IdCtFirmwareLoadError = "1.2.840.113549.1.9.16.1.18";
-    static constexpr const char* IdOnHardwareModuleName = "1.3.6.1.5.5.7.8.4";
-
-    static asn1kit::oid IdCtFirmwarePackage_oid() {
-        return asn1kit::oid::parse(IdCtFirmwarePackage);
-    }
-    static asn1kit::oid IdAaFirmwarePackageID_oid() {
-        return asn1kit::oid::parse(IdAaFirmwarePackageID);
-    }
-    static asn1kit::oid IdAaTargetHardwareIDs_oid() {
-        return asn1kit::oid::parse(IdAaTargetHardwareIDs);
-    }
-    static asn1kit::oid IdAaDecryptKeyID_oid() {
-        return asn1kit::oid::parse(IdAaDecryptKeyID);
-    }
-    static asn1kit::oid IdAaImplCryptoAlgs_oid() {
-        return asn1kit::oid::parse(IdAaImplCryptoAlgs);
-    }
-    static asn1kit::oid IdAaImplCompressAlgs_oid() {
-        return asn1kit::oid::parse(IdAaImplCompressAlgs);
-    }
-    static asn1kit::oid IdAaCommunityIdentifiers_oid() {
-        return asn1kit::oid::parse(IdAaCommunityIdentifiers);
-    }
-    static asn1kit::oid IdAaFirmwarePackageInfo_oid() {
-        return asn1kit::oid::parse(IdAaFirmwarePackageInfo);
-    }
-    static asn1kit::oid IdAaWrappedFirmwareKey_oid() {
-        return asn1kit::oid::parse(IdAaWrappedFirmwareKey);
-    }
-    static asn1kit::oid IdCtFirmwareLoadReceipt_oid() {
-        return asn1kit::oid::parse(IdCtFirmwareLoadReceipt);
-    }
-    static asn1kit::oid IdCtFirmwareLoadError_oid() {
-        return asn1kit::oid::parse(IdCtFirmwareLoadError);
-    }
-    static asn1kit::oid IdOnHardwareModuleName_oid() {
-        return asn1kit::oid::parse(IdOnHardwareModuleName);
-    }
+    static constexpr auto IdCtFirmwarePackage = asn1kit::oid_literal<"1.2.840.113549.1.9.16.1.16">();
+    static constexpr auto IdAaFirmwarePackageID = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.35">();
+    static constexpr auto IdAaTargetHardwareIDs = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.36">();
+    static constexpr auto IdAaDecryptKeyID = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.37">();
+    static constexpr auto IdAaImplCryptoAlgs = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.38">();
+    static constexpr auto IdAaImplCompressAlgs = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.43">();
+    static constexpr auto IdAaCommunityIdentifiers = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.40">();
+    static constexpr auto IdAaFirmwarePackageInfo = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.42">();
+    static constexpr auto IdAaWrappedFirmwareKey = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.39">();
+    static constexpr auto IdCtFirmwareLoadReceipt = asn1kit::oid_literal<"1.2.840.113549.1.9.16.1.17">();
+    static constexpr auto IdCtFirmwareLoadError = asn1kit::oid_literal<"1.2.840.113549.1.9.16.1.18">();
+    static constexpr auto IdOnHardwareModuleName = asn1kit::oid_literal<"1.3.6.1.5.5.7.8.4">();
 };
 
 enum class CommunityIdentifier_kind {

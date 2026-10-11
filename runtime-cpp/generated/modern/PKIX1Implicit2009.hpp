@@ -32,155 +32,43 @@ namespace modern {
 namespace PKIX1Implicit2009 {
 
 struct PKIX1Implicit2009Oids {
-    static constexpr const char* IdCe = "2.5.29";
-    static constexpr const char* IdCeAuthorityKeyIdentifier = "2.5.29.35";
-    static constexpr const char* IdCeSubjectKeyIdentifier = "2.5.29.14";
-    static constexpr const char* IdCeKeyUsage = "2.5.29.15";
-    static constexpr const char* IdCePrivateKeyUsagePeriod = "2.5.29.16";
-    static constexpr const char* IdCeCertificatePolicies = "2.5.29.32";
-    static constexpr const char* IdCePolicyMappings = "2.5.29.33";
-    static constexpr const char* IdCeSubjectAltName = "2.5.29.17";
-    static constexpr const char* IdCeIssuerAltName = "2.5.29.18";
-    static constexpr const char* IdCeSubjectDirectoryAttributes = "2.5.29.9";
-    static constexpr const char* IdCeBasicConstraints = "2.5.29.19";
-    static constexpr const char* IdCeNameConstraints = "2.5.29.30";
-    static constexpr const char* IdCePolicyConstraints = "2.5.29.36";
-    static constexpr const char* IdCeCRLDistributionPoints = "2.5.29.31";
-    static constexpr const char* IdCeExtKeyUsage = "2.5.29.37";
-    static constexpr const char* AnyExtendedKeyUsage = "2.5.29.37.0";
-    static constexpr const char* IdKpServerAuth = "1.3.6.1.5.5.7.3.1";
-    static constexpr const char* IdKpClientAuth = "1.3.6.1.5.5.7.3.2";
-    static constexpr const char* IdKpCodeSigning = "1.3.6.1.5.5.7.3.3";
-    static constexpr const char* IdKpEmailProtection = "1.3.6.1.5.5.7.3.4";
-    static constexpr const char* IdKpTimeStamping = "1.3.6.1.5.5.7.3.8";
-    static constexpr const char* IdKpOCSPSigning = "1.3.6.1.5.5.7.3.9";
-    static constexpr const char* IdCeInhibitAnyPolicy = "2.5.29.54";
-    static constexpr const char* IdCeFreshestCRL = "2.5.29.46";
-    static constexpr const char* IdPeAuthorityInfoAccess = "1.3.6.1.5.5.7.1.1";
-    static constexpr const char* IdPeSubjectInfoAccess = "1.3.6.1.5.5.7.1.11";
-    static constexpr const char* IdCeCRLNumber = "2.5.29.20";
-    static constexpr const char* IdCeIssuingDistributionPoint = "2.5.29.28";
-    static constexpr const char* IdCeDeltaCRLIndicator = "2.5.29.27";
-    static constexpr const char* IdCeCRLReasons = "2.5.29.21";
-    static constexpr const char* IdCeCertificateIssuer = "2.5.29.29";
-    static constexpr const char* IdCeHoldInstructionCode = "2.5.29.23";
-    static constexpr const char* HoldInstruction = "2.2.840.10040.2";
-    static constexpr const char* IdHoldinstructionNone = "2.2.840.10040.2.1";
-    static constexpr const char* IdHoldinstructionCallissuer = "2.2.840.10040.2.2";
-    static constexpr const char* IdHoldinstructionReject = "2.2.840.10040.2.3";
-    static constexpr const char* IdCeInvalidityDate = "2.5.29.24";
-
-    static asn1kit::oid IdCe_oid() {
-        return asn1kit::oid::parse(IdCe);
-    }
-    static asn1kit::oid IdCeAuthorityKeyIdentifier_oid() {
-        return asn1kit::oid::parse(IdCeAuthorityKeyIdentifier);
-    }
-    static asn1kit::oid IdCeSubjectKeyIdentifier_oid() {
-        return asn1kit::oid::parse(IdCeSubjectKeyIdentifier);
-    }
-    static asn1kit::oid IdCeKeyUsage_oid() {
-        return asn1kit::oid::parse(IdCeKeyUsage);
-    }
-    static asn1kit::oid IdCePrivateKeyUsagePeriod_oid() {
-        return asn1kit::oid::parse(IdCePrivateKeyUsagePeriod);
-    }
-    static asn1kit::oid IdCeCertificatePolicies_oid() {
-        return asn1kit::oid::parse(IdCeCertificatePolicies);
-    }
-    static asn1kit::oid IdCePolicyMappings_oid() {
-        return asn1kit::oid::parse(IdCePolicyMappings);
-    }
-    static asn1kit::oid IdCeSubjectAltName_oid() {
-        return asn1kit::oid::parse(IdCeSubjectAltName);
-    }
-    static asn1kit::oid IdCeIssuerAltName_oid() {
-        return asn1kit::oid::parse(IdCeIssuerAltName);
-    }
-    static asn1kit::oid IdCeSubjectDirectoryAttributes_oid() {
-        return asn1kit::oid::parse(IdCeSubjectDirectoryAttributes);
-    }
-    static asn1kit::oid IdCeBasicConstraints_oid() {
-        return asn1kit::oid::parse(IdCeBasicConstraints);
-    }
-    static asn1kit::oid IdCeNameConstraints_oid() {
-        return asn1kit::oid::parse(IdCeNameConstraints);
-    }
-    static asn1kit::oid IdCePolicyConstraints_oid() {
-        return asn1kit::oid::parse(IdCePolicyConstraints);
-    }
-    static asn1kit::oid IdCeCRLDistributionPoints_oid() {
-        return asn1kit::oid::parse(IdCeCRLDistributionPoints);
-    }
-    static asn1kit::oid IdCeExtKeyUsage_oid() {
-        return asn1kit::oid::parse(IdCeExtKeyUsage);
-    }
-    static asn1kit::oid AnyExtendedKeyUsage_oid() {
-        return asn1kit::oid::parse(AnyExtendedKeyUsage);
-    }
-    static asn1kit::oid IdKpServerAuth_oid() {
-        return asn1kit::oid::parse(IdKpServerAuth);
-    }
-    static asn1kit::oid IdKpClientAuth_oid() {
-        return asn1kit::oid::parse(IdKpClientAuth);
-    }
-    static asn1kit::oid IdKpCodeSigning_oid() {
-        return asn1kit::oid::parse(IdKpCodeSigning);
-    }
-    static asn1kit::oid IdKpEmailProtection_oid() {
-        return asn1kit::oid::parse(IdKpEmailProtection);
-    }
-    static asn1kit::oid IdKpTimeStamping_oid() {
-        return asn1kit::oid::parse(IdKpTimeStamping);
-    }
-    static asn1kit::oid IdKpOCSPSigning_oid() {
-        return asn1kit::oid::parse(IdKpOCSPSigning);
-    }
-    static asn1kit::oid IdCeInhibitAnyPolicy_oid() {
-        return asn1kit::oid::parse(IdCeInhibitAnyPolicy);
-    }
-    static asn1kit::oid IdCeFreshestCRL_oid() {
-        return asn1kit::oid::parse(IdCeFreshestCRL);
-    }
-    static asn1kit::oid IdPeAuthorityInfoAccess_oid() {
-        return asn1kit::oid::parse(IdPeAuthorityInfoAccess);
-    }
-    static asn1kit::oid IdPeSubjectInfoAccess_oid() {
-        return asn1kit::oid::parse(IdPeSubjectInfoAccess);
-    }
-    static asn1kit::oid IdCeCRLNumber_oid() {
-        return asn1kit::oid::parse(IdCeCRLNumber);
-    }
-    static asn1kit::oid IdCeIssuingDistributionPoint_oid() {
-        return asn1kit::oid::parse(IdCeIssuingDistributionPoint);
-    }
-    static asn1kit::oid IdCeDeltaCRLIndicator_oid() {
-        return asn1kit::oid::parse(IdCeDeltaCRLIndicator);
-    }
-    static asn1kit::oid IdCeCRLReasons_oid() {
-        return asn1kit::oid::parse(IdCeCRLReasons);
-    }
-    static asn1kit::oid IdCeCertificateIssuer_oid() {
-        return asn1kit::oid::parse(IdCeCertificateIssuer);
-    }
-    static asn1kit::oid IdCeHoldInstructionCode_oid() {
-        return asn1kit::oid::parse(IdCeHoldInstructionCode);
-    }
-    static asn1kit::oid HoldInstruction_oid() {
-        return asn1kit::oid::parse(HoldInstruction);
-    }
-    static asn1kit::oid IdHoldinstructionNone_oid() {
-        return asn1kit::oid::parse(IdHoldinstructionNone);
-    }
-    static asn1kit::oid IdHoldinstructionCallissuer_oid() {
-        return asn1kit::oid::parse(IdHoldinstructionCallissuer);
-    }
-    static asn1kit::oid IdHoldinstructionReject_oid() {
-        return asn1kit::oid::parse(IdHoldinstructionReject);
-    }
-    static asn1kit::oid IdCeInvalidityDate_oid() {
-        return asn1kit::oid::parse(IdCeInvalidityDate);
-    }
+    static constexpr auto IdCe = asn1kit::oid_literal<"2.5.29">();
+    static constexpr auto IdCeAuthorityKeyIdentifier = asn1kit::oid_literal<"2.5.29.35">();
+    static constexpr auto IdCeSubjectKeyIdentifier = asn1kit::oid_literal<"2.5.29.14">();
+    static constexpr auto IdCeKeyUsage = asn1kit::oid_literal<"2.5.29.15">();
+    static constexpr auto IdCePrivateKeyUsagePeriod = asn1kit::oid_literal<"2.5.29.16">();
+    static constexpr auto IdCeCertificatePolicies = asn1kit::oid_literal<"2.5.29.32">();
+    static constexpr auto IdCePolicyMappings = asn1kit::oid_literal<"2.5.29.33">();
+    static constexpr auto IdCeSubjectAltName = asn1kit::oid_literal<"2.5.29.17">();
+    static constexpr auto IdCeIssuerAltName = asn1kit::oid_literal<"2.5.29.18">();
+    static constexpr auto IdCeSubjectDirectoryAttributes = asn1kit::oid_literal<"2.5.29.9">();
+    static constexpr auto IdCeBasicConstraints = asn1kit::oid_literal<"2.5.29.19">();
+    static constexpr auto IdCeNameConstraints = asn1kit::oid_literal<"2.5.29.30">();
+    static constexpr auto IdCePolicyConstraints = asn1kit::oid_literal<"2.5.29.36">();
+    static constexpr auto IdCeCRLDistributionPoints = asn1kit::oid_literal<"2.5.29.31">();
+    static constexpr auto IdCeExtKeyUsage = asn1kit::oid_literal<"2.5.29.37">();
+    static constexpr auto AnyExtendedKeyUsage = asn1kit::oid_literal<"2.5.29.37.0">();
+    static constexpr auto IdKpServerAuth = asn1kit::oid_literal<"1.3.6.1.5.5.7.3.1">();
+    static constexpr auto IdKpClientAuth = asn1kit::oid_literal<"1.3.6.1.5.5.7.3.2">();
+    static constexpr auto IdKpCodeSigning = asn1kit::oid_literal<"1.3.6.1.5.5.7.3.3">();
+    static constexpr auto IdKpEmailProtection = asn1kit::oid_literal<"1.3.6.1.5.5.7.3.4">();
+    static constexpr auto IdKpTimeStamping = asn1kit::oid_literal<"1.3.6.1.5.5.7.3.8">();
+    static constexpr auto IdKpOCSPSigning = asn1kit::oid_literal<"1.3.6.1.5.5.7.3.9">();
+    static constexpr auto IdCeInhibitAnyPolicy = asn1kit::oid_literal<"2.5.29.54">();
+    static constexpr auto IdCeFreshestCRL = asn1kit::oid_literal<"2.5.29.46">();
+    static constexpr auto IdPeAuthorityInfoAccess = asn1kit::oid_literal<"1.3.6.1.5.5.7.1.1">();
+    static constexpr auto IdPeSubjectInfoAccess = asn1kit::oid_literal<"1.3.6.1.5.5.7.1.11">();
+    static constexpr auto IdCeCRLNumber = asn1kit::oid_literal<"2.5.29.20">();
+    static constexpr auto IdCeIssuingDistributionPoint = asn1kit::oid_literal<"2.5.29.28">();
+    static constexpr auto IdCeDeltaCRLIndicator = asn1kit::oid_literal<"2.5.29.27">();
+    static constexpr auto IdCeCRLReasons = asn1kit::oid_literal<"2.5.29.21">();
+    static constexpr auto IdCeCertificateIssuer = asn1kit::oid_literal<"2.5.29.29">();
+    static constexpr auto IdCeHoldInstructionCode = asn1kit::oid_literal<"2.5.29.23">();
+    static constexpr auto HoldInstruction = asn1kit::oid_literal<"2.2.840.10040.2">();
+    static constexpr auto IdHoldinstructionNone = asn1kit::oid_literal<"2.2.840.10040.2.1">();
+    static constexpr auto IdHoldinstructionCallissuer = asn1kit::oid_literal<"2.2.840.10040.2.2">();
+    static constexpr auto IdHoldinstructionReject = asn1kit::oid_literal<"2.2.840.10040.2.3">();
+    static constexpr auto IdCeInvalidityDate = asn1kit::oid_literal<"2.5.29.24">();
 };
 
 struct AccessDescription {
@@ -1166,10 +1054,10 @@ struct qualifier_binding {
 
 namespace policyQualifierId_qualifier_bindings {
 inline const qualifier_binding<asn1kit::asn_string<asn1kit::string_form::ia5>> pqid_cps{
-    asn1kit::oid::parse("1.3.6.1.5.5.7.2.1")};
+    asn1kit::oid_literal<"1.3.6.1.5.5.7.2.1">().get()};
 
 inline const qualifier_binding<UserNotice> pqid_unotice{
-    asn1kit::oid::parse("1.3.6.1.5.5.7.2.2")};
+    asn1kit::oid_literal<"1.3.6.1.5.5.7.2.2">().get()};
 
 } // namespace policyQualifierId_qualifier_bindings
 

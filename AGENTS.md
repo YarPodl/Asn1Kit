@@ -34,7 +34,7 @@ Frontmatter `.mdc` предназначен для Cursor и не заменяе
 - C++ runtime: C++20, CMake ≥ 3.21, Ninja; проверки — `ctest` в `runtime-cpp/`.
 - Оболочка — PowerShell на Windows; в командах используй пути с `/`.
 - Репозиторий локальный, без remote и CI.
-- После изменения кода запускай прогон **затронутых** деревьев (см. [`.cursor/rules/reliability-and-testing.mdc`](.cursor/rules/reliability-and-testing.mdc)): .NET → `dotnet test Asn1Kit.sln`, C++ → `ctest`; точечный фильтр не заменяет полный прогон затронутого набора.
+- После изменения кода выбирай набор по **затронутому компоненту**, а не по языку реализации (см. [`.cursor/rules/reliability-and-testing.mdc`](.cursor/rules/reliability-and-testing.mdc)). Для изолированных изменений `Asn1Kit.Codegen.Cpp` достаточно полного набора `CppCodegenTests` через `--filter`; изменения C++ runtime/generated дополнительно требуют `ctest`. Полный `dotnet test Asn1Kit.sln` для такой задачи не нужен.
 - Golden и `*.g.cs` не правь вручную: регенерируй каноническими командами из профильного README или playbook.
 
 ## Глобальные инварианты

@@ -891,11 +891,11 @@ public sealed partial class CppBackend
                 string.Equals(oid.Value, key, StringComparison.Ordinal) &&
                 IrOptions.ShouldGenerate(definition.Options))
             {
-                return $"{OidCatalogName(module)}::{CppNames.SanitizeTypeName(definition.Name)}_oid()";
+                return $"{OidCatalogName(module)}::{CppNames.SanitizeTypeName(definition.Name)}.get()";
             }
         }
 
-        return $"asn1kit::oid::parse(\"{CppNames.EscapeString(key)}\")";
+        return $"asn1kit::oid_literal<\"{CppNames.EscapeString(key)}\">().get()";
     }
 
     private static TypeExpr QualifyOpenTypeReferences(

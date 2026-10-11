@@ -119,6 +119,7 @@ END
     {
         const string asn = @"
 M DEFINITIONS ::= BEGIN
+  id-empty OBJECT IDENTIFIER ::= {1 2 3}
   C ::= CLASS { &id OBJECT IDENTIFIER UNIQUE, &T } WITH SYNTAX { &T IDENTIFIED BY &id }
   NoData ::= NULL
   emptyEntry C ::= { NoData IDENTIFIED BY {1 2 3} }
@@ -136,6 +137,8 @@ END
         Assert.Contains("struct AlgorithmIdentifier", source);
         Assert.Contains("struct parameters_binding", source);
         Assert.Contains("asn1kit::oid key{}", source);
+        Assert.Contains("MOids::IdEmpty.get()", source);
+        Assert.DoesNotContain("IdEmpty_oid", source);
         Assert.DoesNotContain("open_codec", source);
         Assert.DoesNotContain("asn1kit::codecs::", source);
         Assert.Contains("bool try_decode(const AlgorithmIdentifier& src, T& out) const", source);
@@ -375,6 +378,9 @@ END
 
         Assert.Contains("struct CppDemoOids", source);
         Assert.Contains("IdDemo", source);
+        Assert.Contains("static constexpr auto IdDemo = asn1kit::oid_literal<\"1.2.3.4\">();", source);
+        Assert.DoesNotContain("IdDemo_oid", source);
+        Assert.DoesNotContain("asn1kit::oid::parse", source);
         Assert.Contains("enum class Color", source);
         Assert.Contains("struct Flags", source);
         Assert.Contains("FlagsFlags", source);
@@ -385,6 +391,19 @@ END
         Assert.Contains("encode_Color", source);
         Assert.Contains("Color::red", source);
         Assert.Contains("asn1kit::tag::context(", source);
+    }
+
+    [Fact]
+    public void GeneratesCompileTimeOidDefault()
+    {
+        const string asn = @"
+M DEFINITIONS ::= BEGIN
+Value ::= SEQUENCE { algorithm OBJECT IDENTIFIER DEFAULT { 2 999 128 } }
+END
+";
+        var source = new CppBackend().Generate(new Asn1Compiler().CompileText(asn)).Single().Contents;
+        Assert.Contains("asn1kit::oid_literal<\"2.999.128\">().get()", source);
+        Assert.DoesNotContain("asn1kit::oid::parse", source);
     }
 
     [Fact]

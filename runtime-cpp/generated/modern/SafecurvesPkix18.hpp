@@ -30,27 +30,11 @@ namespace modern {
 namespace SafecurvesPkix18 {
 
 struct SafecurvesPkix18Oids {
-    static constexpr const char* IdEdwardsCurveAlgs = "1.3.101";
-    static constexpr const char* IdX25519 = "1.3.101.110";
-    static constexpr const char* IdX448 = "1.3.101.111";
-    static constexpr const char* IdEd25519 = "1.3.101.112";
-    static constexpr const char* IdEd448 = "1.3.101.113";
-
-    static asn1kit::oid IdEdwardsCurveAlgs_oid() {
-        return asn1kit::oid::parse(IdEdwardsCurveAlgs);
-    }
-    static asn1kit::oid IdX25519_oid() {
-        return asn1kit::oid::parse(IdX25519);
-    }
-    static asn1kit::oid IdX448_oid() {
-        return asn1kit::oid::parse(IdX448);
-    }
-    static asn1kit::oid IdEd25519_oid() {
-        return asn1kit::oid::parse(IdEd25519);
-    }
-    static asn1kit::oid IdEd448_oid() {
-        return asn1kit::oid::parse(IdEd448);
-    }
+    static constexpr auto IdEdwardsCurveAlgs = asn1kit::oid_literal<"1.3.101">();
+    static constexpr auto IdX25519 = asn1kit::oid_literal<"1.3.101.110">();
+    static constexpr auto IdX448 = asn1kit::oid_literal<"1.3.101.111">();
+    static constexpr auto IdEd25519 = asn1kit::oid_literal<"1.3.101.112">();
+    static constexpr auto IdEd448 = asn1kit::oid_literal<"1.3.101.113">();
 };
 
 } // namespace SafecurvesPkix18
