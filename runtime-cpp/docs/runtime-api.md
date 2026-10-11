@@ -42,7 +42,7 @@
 
 **Value / Lazy:** `asn1kit::value<T>` (`value.hpp`) — eager decode + `original_encoding()`; `asn1kit::lazy<T>` (`lazy.hpp`) — deferred decode, `has_encoded()` / `write_to`. Reader: `read_with_original_encoding` / `read_lazy`.
 
-Вне текущего среза: полный open-type Binding (codegen: contained/SET OF/ancestor), modern IOC, oracle, `external/` фикстуры. Extensible SEQUENCE/SET/CHOICE эмитит codegen (skip-unknown через `read_any`). Codegen C++ — [cpp-backend.md](../../compiler/docs/playbooks/cpp-backend.md).
+Вне текущего среза: open-type Binding ancestor selector, modern IOC, oracle, `external/` фикстуры. Extensible SEQUENCE/SET/CHOICE эмитит codegen (skip-unknown через `read_any`). Codegen C++ — [cpp-backend.md](../../compiler/docs/playbooks/cpp-backend.md).
 
 ## Constructed scopes
 

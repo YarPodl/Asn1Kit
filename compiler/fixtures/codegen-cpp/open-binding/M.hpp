@@ -55,8 +55,70 @@ struct AlgorithmIdentifier {
     }
 };
 
+struct Extension {
+    asn1kit::oid extnID{};
+    asn1kit::contained<asn1kit::any> extnValue{};
+
+    static asn1kit::tag default_tag() {
+        return asn1kit::tag::sequence;
+    }
+
+    static Extension decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+        Extension value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.extnID = inner.read_oid(asn1kit::tag::object_identifier);
+            value.extnValue = inner.read_contained<asn1kit::any>(asn1kit::tag::octet_string, false, false, 0, [&](asn1kit::reader& inner, auto) {
+                asn1kit::any item{};
+                item = inner.read_any();
+                return item;
+            });
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+        auto scope = w.enter_sequence(t);
+        w.write_object_identifier(asn1kit::tag::object_identifier, this->extnID);
+        w.write_contained(asn1kit::tag::octet_string, false, this->extnValue, [&](asn1kit::writer& inner, const auto& value) {
+            inner.write_any(value);
+        });
+    }
+};
+
+struct Attribute {
+    asn1kit::oid type{};
+    std::vector<asn1kit::any> values{};
+
+    static asn1kit::tag default_tag() {
+        return asn1kit::tag::sequence;
+    }
+
+    static Attribute decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+        Attribute value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.type = inner.read_oid(asn1kit::tag::object_identifier);
+            value.values = inner.read_set_of<asn1kit::any>(asn1kit::tag::set, [&](asn1kit::reader& inner) {
+                asn1kit::any item{};
+                item = inner.read_any();
+                return item;
+            });
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+        auto scope = w.enter_sequence(t);
+        w.write_object_identifier(asn1kit::tag::object_identifier, this->type);
+        w.write_set_of(asn1kit::tag::set, this->values, [&](asn1kit::writer& inner, const auto& item) {
+            inner.write_any(item);
+        });
+    }
+};
+
 struct Holder {
     AlgorithmIdentifier mixed{};
+    Extension ext{};
+    Attribute attr{};
 
     static asn1kit::tag default_tag() {
         return asn1kit::tag::sequence;
@@ -66,6 +128,8 @@ struct Holder {
         Holder value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.mixed = AlgorithmIdentifier::decode(inner, asn1kit::tag::sequence);
+            value.ext = Extension::decode(inner, asn1kit::tag::sequence);
+            value.attr = Attribute::decode(inner, asn1kit::tag::sequence);
         });
         return value;
     }
@@ -73,6 +137,30 @@ struct Holder {
     void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
         auto scope = w.enter_sequence(t);
         this->mixed.encode(w, asn1kit::tag::sequence);
+        this->ext.encode(w, asn1kit::tag::sequence);
+        this->attr.encode(w, asn1kit::tag::sequence);
+    }
+};
+
+template <typename T>
+struct extnValue_binding {
+    asn1kit::oid key{};
+
+    [[nodiscard]] bool try_decode(const Extension& src, T& out) const {
+        if (!(src.extnID == key)) return false;
+        out = asn1kit::decode_contained<T>(src.extnValue);
+        return true;
+    }
+
+    void set(Extension& src, const T& value) const {
+        src.extnID = key;
+        src.extnValue = asn1kit::encode_contained(value);
+    }
+
+    [[nodiscard]] Extension create(const T& value) const {
+        Extension src{};
+        set(src, value);
+        return src;
     }
 };
 
@@ -99,6 +187,45 @@ struct parameters_binding {
     }
 };
 
+template <typename T>
+struct values_binding {
+    asn1kit::oid key{};
+
+    [[nodiscard]] bool try_decode(const Attribute& src, std::vector<T>& out) const {
+        if (!(src.type == key)) return false;
+        out = asn1kit::decode_each<T>(src.values);
+        return true;
+    }
+
+    void set(Attribute& src, const std::vector<T>& value) const {
+        src.type = key;
+        src.values = asn1kit::encode_each(value);
+    }
+
+    void set(Attribute& src, const T& value) const {
+        set(src, std::vector<T>{value});
+    }
+
+    [[nodiscard]] Attribute create(const std::vector<T>& value) const {
+        Attribute src{};
+        set(src, value);
+        return src;
+    }
+
+    [[nodiscard]] Attribute create(const T& value) const {
+        return create(std::vector<T>{value});
+    }
+};
+
+namespace mixed_extnValue_bindings {
+inline const extnValue_binding<asn1kit::null_value> empty_entry{
+    asn1kit::oid::parse("1.2.3")};
+
+inline const extnValue_binding<std::int32_t> data_entry{
+    asn1kit::oid::parse("1.2.4")};
+
+} // namespace mixed_extnValue_bindings
+
 namespace mixed_parameters_bindings {
 inline const parameters_binding<asn1kit::null_value> empty_entry{
     asn1kit::oid::parse("1.2.3")};
@@ -107,6 +234,15 @@ inline const parameters_binding<std::int32_t> data_entry{
     asn1kit::oid::parse("1.2.4")};
 
 } // namespace mixed_parameters_bindings
+
+namespace mixed_values_bindings {
+inline const values_binding<asn1kit::null_value> empty_entry{
+    asn1kit::oid::parse("1.2.3")};
+
+inline const values_binding<std::int32_t> data_entry{
+    asn1kit::oid::parse("1.2.4")};
+
+} // namespace mixed_values_bindings
 
 } // namespace M
 #endif // ASN1KIT_GENERATED_M_HPP

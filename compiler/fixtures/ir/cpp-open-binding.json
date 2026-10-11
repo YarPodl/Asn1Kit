@@ -83,6 +83,137 @@
           }
         },
         {
+          "name": "Extension",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "extnID",
+                "type": {
+                  "kind": "oid",
+                  "constraint": {
+                    "unsupported": " table({ S })"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "extnValue",
+                "type": {
+                  "kind": "octetString",
+                  "containing": {
+                    "kind": "any",
+                    "bindings": [
+                      {
+                        "key": "1.2.3",
+                        "name": "emptyEntry",
+                        "type": {
+                          "kind": "ref",
+                          "name": "NoData",
+                          "module": "M"
+                        }
+                      },
+                      {
+                        "key": "1.2.4",
+                        "name": "dataEntry",
+                        "type": {
+                          "kind": "integer",
+                          "constraint": {
+                            "value": {
+                              "min": 0,
+                              "max": 100
+                            }
+                          }
+                        }
+                      }
+                    ],
+                    "selector": {
+                      "levels": 0,
+                      "path": [
+                        "extnID"
+                      ]
+                    },
+                    "table": "Mixed",
+                    "tableExtensible": false
+                  },
+                  "constraint": {}
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          },
+          "specialization": {
+            "module": "M",
+            "name": "Extension"
+          }
+        },
+        {
+          "name": "Attribute",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "type",
+                "type": {
+                  "kind": "oid",
+                  "constraint": {
+                    "unsupported": " table({ S })"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "values",
+                "type": {
+                  "kind": "setOf",
+                  "element": {
+                    "kind": "any",
+                    "bindings": [
+                      {
+                        "key": "1.2.3",
+                        "name": "emptyEntry",
+                        "type": {
+                          "kind": "ref",
+                          "name": "NoData",
+                          "module": "M"
+                        }
+                      },
+                      {
+                        "key": "1.2.4",
+                        "name": "dataEntry",
+                        "type": {
+                          "kind": "integer",
+                          "constraint": {
+                            "value": {
+                              "min": 0,
+                              "max": 100
+                            }
+                          }
+                        }
+                      }
+                    ],
+                    "selector": {
+                      "levels": 0,
+                      "path": [
+                        "type"
+                      ]
+                    },
+                    "table": "Mixed",
+                    "tableExtensible": false
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          },
+          "specialization": {
+            "module": "M",
+            "name": "Attribute"
+          }
+        },
+        {
           "name": "Holder",
           "type": {
             "kind": "sequence",
@@ -92,6 +223,24 @@
                 "type": {
                   "kind": "ref",
                   "name": "AlgorithmIdentifier",
+                  "module": "M"
+                },
+                "optional": false
+              },
+              {
+                "name": "ext",
+                "type": {
+                  "kind": "ref",
+                  "name": "Extension",
+                  "module": "M"
+                },
+                "optional": false
+              },
+              {
+                "name": "attr",
+                "type": {
+                  "kind": "ref",
+                  "name": "Attribute",
                   "module": "M"
                 },
                 "optional": false

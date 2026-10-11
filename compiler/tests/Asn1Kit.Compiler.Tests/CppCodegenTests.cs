@@ -149,6 +149,43 @@ END
     }
 
     [Fact]
+    public void GeneratesContainedAndSetOfOpenTypeBindings()
+    {
+        const string asn = @"
+M DEFINITIONS ::= BEGIN
+  C ::= CLASS { &id OBJECT IDENTIFIER UNIQUE, &T } WITH SYNTAX { &T IDENTIFIED BY &id }
+  NoData ::= NULL
+  emptyEntry C ::= { NoData IDENTIFIED BY {1 2 3} }
+  dataEntry C ::= { INTEGER (0..100) IDENTIFIED BY {1 2 4} }
+  Mixed C ::= {emptyEntry | dataEntry}
+  Extension{C:S} ::= SEQUENCE {
+    extnID C.&id({S}),
+    extnValue OCTET STRING (CONTAINING C.&T({S}{@extnID})) }
+  Attribute{C:S} ::= SEQUENCE {
+    type C.&id({S}),
+    values SET OF C.&T({S}{@type}) }
+  Holder ::= SEQUENCE { ext Extension{Mixed}, attr Attribute{Mixed} }
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        var source = new CppBackend().Generate(document).Single().Contents;
+
+        Assert.Contains("asn1kit::contained<asn1kit::any> extnValue{}", source);
+        Assert.Contains("std::vector<asn1kit::any> values{}", source);
+        Assert.Contains("struct extnValue_binding", source);
+        Assert.Contains("struct values_binding", source);
+        Assert.Contains("out = asn1kit::decode_contained<T>(", source);
+        Assert.Contains("src.extnValue = asn1kit::encode_contained(value);", source);
+        Assert.Contains(
+            "bool try_decode(const Attribute& src, std::vector<T>& out) const",
+            source);
+        Assert.Contains("out = asn1kit::decode_each<T>(", source);
+        Assert.Contains("src.values = asn1kit::encode_each(value);", source);
+        Assert.Contains("namespace mixed_extnValue_bindings", source);
+        Assert.Contains("namespace mixed_values_bindings", source);
+    }
+
+    [Fact]
     public void GeneratesLazyAndRetainEncodedWrappers()
     {
         const string asn = @"

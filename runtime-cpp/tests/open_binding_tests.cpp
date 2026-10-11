@@ -13,6 +13,7 @@
 #include <gtest/gtest.h>
 
 #include <cstdint>
+#include <vector>
 
 using namespace asn1kit;
 using namespace M;
@@ -64,4 +65,40 @@ TEST(OpenBinding, KnownKeyWireMismatchRejects) {
     null_value n{};
     EXPECT_THROW(
         (void)mixed_parameters_bindings::empty_entry.try_decode(info, n), exception);
+}
+
+TEST(OpenBinding, ContainedSetTryDecodeRoundTrip) {
+    auto ext = mixed_extnValue_bindings::data_entry.create(std::int32_t{7});
+    EXPECT_EQ(ext.extnID, oid::parse("1.2.4"));
+
+    std::int32_t decoded = 0;
+    EXPECT_TRUE(mixed_extnValue_bindings::data_entry.try_decode(ext, decoded));
+    EXPECT_EQ(decoded, 7);
+
+    null_value ignored{};
+    EXPECT_FALSE(mixed_extnValue_bindings::empty_entry.try_decode(ext, ignored));
+
+    writer w(encoding::der);
+    ext.encode(w);
+    reader r(bytes::from_vector(w.encode()), encoding::der);
+    const auto round_trip = Extension::decode(r);
+    EXPECT_TRUE(mixed_extnValue_bindings::data_entry.try_decode(round_trip, decoded));
+    EXPECT_EQ(decoded, 7);
+}
+
+TEST(OpenBinding, SetOfSetTryDecodeRoundTrip) {
+    auto attr = mixed_values_bindings::data_entry.create(
+        std::vector<std::int32_t>{1, 2});
+    EXPECT_EQ(attr.type, oid::parse("1.2.4"));
+    ASSERT_EQ(attr.values.size(), 2u);
+
+    std::vector<std::int32_t> decoded;
+    EXPECT_TRUE(mixed_values_bindings::data_entry.try_decode(attr, decoded));
+    EXPECT_EQ(decoded, (std::vector<std::int32_t>{1, 2}));
+
+    mixed_values_bindings::empty_entry.set(attr, null_value::value());
+    EXPECT_EQ(attr.type, oid::parse("1.2.3"));
+    std::vector<null_value> nulls;
+    EXPECT_TRUE(mixed_values_bindings::empty_entry.try_decode(attr, nulls));
+    ASSERT_EQ(nulls.size(), 1u);
 }

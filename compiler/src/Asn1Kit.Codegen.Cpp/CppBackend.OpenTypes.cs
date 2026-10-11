@@ -11,7 +11,14 @@ public sealed partial class CppBackend
     private sealed record OpenContainer(IrModule Module, string Owner, string TypeName,
         IReadOnlyList<IrComponent> Fields);
 
-    private sealed record OpenPayload(TypeExpr Type, bool DirectAny);
+    private enum OpenPayloadKind
+    {
+        Direct,
+        Contained,
+        Many
+    }
+
+    private sealed record OpenPayload(TypeExpr Type, OpenPayloadKind Kind);
 
     private sealed record OpenSite(
         OpenContainer Container,
@@ -146,9 +153,8 @@ public sealed partial class CppBackend
         }
 
         var payload = BuildOpenPayload(document, module, field.Type);
-        if (!payload.DirectAny) return;
         AddSite(document, module, container, field, payload, selector, definitionAny.Bindings!,
-            definitionAny.Table, new[] { field.Name }, module, plan, shared, names);
+            definitionAny.Table, new[] { field.Name }, module, plan, shared);
     }
 
     private void ResolveUse(
@@ -190,6 +196,26 @@ public sealed partial class CppBackend
                 continue;
             }
 
+            if (pathIndex < use.Path.Count && use.Path[pathIndex] == "[]")
+            {
+                if (expression is not (SequenceOfType or SetOfType)) return;
+                pathIndex++;
+                expression = expression is SetOfType setOf ? setOf.Element : ((SequenceOfType)expression).Element;
+                if (openField is not null)
+                    payload = new OpenPayload(openField.Type, OpenPayloadKind.Many);
+                continue;
+            }
+
+            if (pathIndex < use.Path.Count && use.Path[pathIndex] == "containing")
+            {
+                if (ContainedType(expression) is not { } content) return;
+                pathIndex++;
+                expression = content;
+                if (openField is not null)
+                    payload = new OpenPayload(openField.Type, OpenPayloadKind.Contained);
+                continue;
+            }
+
             if (OpenContainerFields(expression) is { } fields)
             {
                 if (pathIndex >= use.Path.Count) return;
@@ -198,25 +224,24 @@ public sealed partial class CppBackend
                     : namingOwner + "_" + CppNames.SanitizeTypeName(hint);
                 container = new OpenContainer(module, owner, owner, fields);
                 var part = use.Path[pathIndex++];
+                if (part is "[]" or "containing") return;
                 openField = fields.Single(f => f.Name == part);
                 payload = BuildOpenPayload(document, module, openField.Type);
                 expression = openField.Type;
                 namingOwner = owner;
                 hint = openField.Name;
-                if (OpenElement(document, module, expression) is AnyType)
-                    continue;
                 continue;
             }
 
             if (expression is SequenceOfType or SetOfType)
             {
-                // MVP: skip OF open-type payloads.
+                // Path must explicitly step with "[]".
                 return;
             }
 
             if (ContainedType(expression) is not null)
             {
-                // MVP: skip CONTAINING open-type payloads.
+                // Path must explicitly step with "containing".
                 return;
             }
 
@@ -227,9 +252,8 @@ public sealed partial class CppBackend
                 return;
             }
 
-            if (!payload.DirectAny) return;
             AddSite(document, target.Module, container, openField, payload, selector, use.Bindings,
-                use.Table, use.Path, contextModule, plan, shared, names);
+                use.Table, use.Path, contextModule, plan, shared);
             return;
         }
     }
@@ -246,8 +270,7 @@ public sealed partial class CppBackend
         IReadOnlyList<string> path,
         IrModule bindingModule,
         OpenPlan plan,
-        Dictionary<string, OpenBinding> shared,
-        HashSet<string> names)
+        Dictionary<string, OpenBinding> shared)
     {
         if (container.Module != emittingModule) return;
         var site = new OpenSite(container, openField, payload, selector, table, path.ToList(), new List<OpenBinding>());
@@ -265,11 +288,8 @@ public sealed partial class CppBackend
                 JsonSerializer.Serialize(selector, IrSerializer.JsonOptions);
             if (!shared.TryGetValue(identity, out var wrapper))
             {
-                var member = OpenBindingMemberName(binding);
-                var reserved = member;
-                for (var suffix = 2; !names.Add(reserved); suffix++)
-                    reserved = member + "_" + suffix.ToString(CultureInfo.InvariantCulture);
-                wrapper = new OpenBinding(reserved, qualified, site);
+                // Member names are unique within a catalog namespace (EmitOpenCatalog), not globally.
+                wrapper = new OpenBinding(OpenBindingMemberName(binding), qualified, site);
                 shared.Add(identity, wrapper);
                 plan.Bindings.Add(wrapper);
             }
@@ -431,18 +451,27 @@ public sealed partial class CppBackend
     {
         var type = UnwrapAliases(document, module, original);
         if (type is SequenceOfType or SetOfType)
-            return new OpenPayload(original, DirectAny: false);
+            return new OpenPayload(original, OpenPayloadKind.Many);
         if (ContainedType(type) is not null)
-            return new OpenPayload(original, DirectAny: false);
-        if (OpenElement(document, module, original) is AnyType)
-            return new OpenPayload(original, DirectAny: true);
-        return new OpenPayload(original, DirectAny: false);
+            return new OpenPayload(original, OpenPayloadKind.Contained);
+        return new OpenPayload(original, OpenPayloadKind.Direct);
     }
 
     private TypeExpr? OpenElement(IrDocument document, IrModule module, TypeExpr type)
     {
         type = UnwrapAliases(document, module, type);
-        return type is AnyType any ? any : null;
+        while (true)
+        {
+            TypeExpr? inner = type switch
+            {
+                SequenceOfType of => of.Element,
+                SetOfType setOf => setOf.Element,
+                _ => ContainedType(type)
+            };
+            if (inner is null)
+                return type is AnyType any ? any : null;
+            type = UnwrapAliases(document, module, inner);
+        }
     }
 
     /// <summary>
@@ -519,29 +548,60 @@ public sealed partial class CppBackend
         var keyField = OpenKeyFieldName(document, site);
         var optional = site.Field.Optional;
 
+        var valueParam = site.Payload.Kind == OpenPayloadKind.Many ? "std::vector<T>" : "T";
+        var decodeCall = site.Payload.Kind switch
+        {
+            OpenPayloadKind.Contained => "asn1kit::decode_contained<T>",
+            OpenPayloadKind.Many => "asn1kit::decode_each<T>",
+            _ => "asn1kit::decode_open<T>"
+        };
+        var encodeCall = site.Payload.Kind switch
+        {
+            OpenPayloadKind.Contained => "asn1kit::encode_contained",
+            OpenPayloadKind.Many => "asn1kit::encode_each",
+            _ => "asn1kit::encode_open"
+        };
+
         sb.AppendLine($"template <typename T>");
         sb.AppendLine($"struct {stem}_binding {{");
         sb.AppendLine("    asn1kit::oid key{};");
         sb.AppendLine();
-        sb.AppendLine($"    [[nodiscard]] bool try_decode(const {container}& src, T& out) const {{");
+        sb.AppendLine(
+            $"    [[nodiscard]] bool try_decode(const {container}& src, {valueParam}& out) const {{");
         if (optional)
             sb.AppendLine($"        if (!src.{field}.has_value()) return false;");
         sb.AppendLine($"        if (!(src.{keyField} == key)) return false;");
         var raw = optional ? $"*src.{field}" : $"src.{field}";
-        sb.AppendLine($"        out = asn1kit::decode_open<T>({raw});");
+        sb.AppendLine($"        out = {decodeCall}({raw});");
         sb.AppendLine("        return true;");
         sb.AppendLine("    }");
         sb.AppendLine();
-        sb.AppendLine($"    void set({container}& src, const T& value) const {{");
+        sb.AppendLine($"    void set({container}& src, const {valueParam}& value) const {{");
         sb.AppendLine($"        src.{keyField} = key;");
-        sb.AppendLine($"        src.{field} = asn1kit::encode_open(value);");
+        sb.AppendLine($"        src.{field} = {encodeCall}(value);");
         sb.AppendLine("    }");
+        if (site.Payload.Kind == OpenPayloadKind.Many)
+        {
+            sb.AppendLine();
+            sb.AppendLine($"    void set({container}& src, const T& value) const {{");
+            sb.AppendLine("        set(src, std::vector<T>{value});");
+            sb.AppendLine("    }");
+        }
+
         sb.AppendLine();
-        sb.AppendLine($"    [[nodiscard]] {container} create(const T& value) const {{");
+        sb.AppendLine($"    [[nodiscard]] {container} create(const {valueParam}& value) const {{");
         sb.AppendLine($"        {container} src{{}};");
         sb.AppendLine("        set(src, value);");
         sb.AppendLine("        return src;");
         sb.AppendLine("    }");
+        if (site.Payload.Kind == OpenPayloadKind.Many)
+        {
+            sb.AppendLine();
+            sb.AppendLine($"    [[nodiscard]] {container} create(const T& value) const {{");
+            sb.AppendLine("        return create(std::vector<T>{value});");
+            sb.AppendLine("    }");
+        }
+
         sb.AppendLine("};");
         sb.AppendLine();
     }
