@@ -9,7 +9,7 @@
 | Проект | Роль |
 | --- | --- |
 | `src/Asn1Kit.Runtime` | Теги, writer/reader, примитивы |
-| `generated/Asn1Kit.Modern` | Modern PKIX/CMS (24 модуля) |
+| `generated/Asn1Kit.Modern` | Modern PKIX/CMS + GOST RFC 9215 (26 модулей) |
 | `generated/Asn1Kit.Legacy` | Legacy ASN.1:1988 PKIX/CMS/DVCS (регрессия) |
 | `tests/Asn1Kit.Runtime.Tests` | Матрица hex, oracle BCL, внешние векторы |
 | `tests/Asn1Kit.Legacy.Tests` | Encode/decode Cert/CRL/CMS/DVCS + Demo |

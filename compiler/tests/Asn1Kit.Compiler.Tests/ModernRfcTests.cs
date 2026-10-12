@@ -3,6 +3,7 @@ using Asn1Kit.Codegen.CSharp;
 using Asn1Kit.Compiler;
 using Asn1Kit.Ir;
 using Asn1Kit.Runtime;
+using Asn1Kit.Modern.GostR34102012PKISyntax;
 using ModernCertificate = Asn1Kit.Modern.PKIX1Explicit2009.Certificate;
 using ModernCertificateList = Asn1Kit.Modern.PKIX1Explicit2009.CertificateList;
 using ModernAttributeCertificate = Asn1Kit.Modern.PKIXAttributeCertificate2009.AttributeCertificate;
@@ -41,7 +42,7 @@ public sealed class ModernRfcTests
     [Fact]
     public void WholeRfcCorpusMatchesIrAndGeneratedGoldenSources()
     {
-        Assert.Equal(24, Corpus.Value.Modules.Count);
+        Assert.Equal(26, Corpus.Value.Modules.Count);
         Assert.DoesNotContain(Corpus.Value.Modules.SelectMany(m => m.Types),
             t => System.Text.RegularExpressions.Regex.IsMatch(t.Name, "-[0-9A-F]{16}$"));
         var algorithmModule = Corpus.Value.Modules.Single(m => m.Name == "AlgorithmInformation-2009");
@@ -82,6 +83,57 @@ public sealed class ModernRfcTests
         var bytes = File.ReadAllBytes(TestData.RepoPath("runtime-csharp/fixtures/pkix/" + file));
         var type = ResolveType("PKIX1Explicit-2009", "Certificate");
         Assert.Equal(bytes, RoundTrip(type, bytes));
+    }
+
+    [Fact]
+    public void GostR34102012OidCatalogMatchesRfc9215()
+    {
+        Assert.Equal("1.2.643.7.1", GostR34102012PKISyntaxOids.IdTc26String);
+        Assert.Equal("1.2.643.7.1.1.1.1", GostR34102012PKISyntaxOids.IdTc26Gost341012256String);
+        Assert.Equal("1.2.643.7.1.1.2.2", GostR34102012PKISyntaxOids.IdTc26Gost341112256String);
+        Assert.Equal("1.2.643.7.1.1.3.2", GostR34102012PKISyntaxOids.IdTc26SignwithdigestGost341012256String);
+        Assert.Equal("1.2.643.7.1.2.1.1.1", GostR34102012PKISyntaxOids.IdTc26Gost34102012256ParamSetAString);
+        Assert.Equal("1.2.643.100.111", Asn1Kit.Modern.RuStrongCertsSyntax.RuStrongCertsSyntaxOids.IdSubjectSignToolString);
+    }
+
+    [Theory]
+    [InlineData("300B06092A8503070102010101", "1.2.643.7.1.2.1.1.1", null)]
+    [InlineData("301306072A85030202230006082A85030701010202", "1.2.643.2.2.35.0", "1.2.643.7.1.1.2.2")]
+    public void GostR34102012PublicKeyParametersRoundTrip(string hex, string publicKeyParamSet, string? digestParamSet)
+    {
+        var bytes = Convert.FromHexString(hex);
+        Assert.Equal(bytes, RoundTrip(typeof(GostR34102012PublicKeyParameters), bytes));
+        var value = GostR34102012PublicKeyParameters.Decode(new Asn1Reader(bytes, Asn1Encoding.Der));
+        Assert.Equal(publicKeyParamSet, value.PublicKeyParamSet.ToString());
+        Assert.Equal(digestParamSet, value.DigestParamSet?.ToString());
+    }
+
+    [Fact]
+    public void Rfc9215GostCertificateReadsSignatureAndSpkiParameters()
+    {
+        var bytes = File.ReadAllBytes(TestData.RepoPath("runtime-csharp/fixtures/pkix/rfc9215-d2-tc26-256-a.crt"));
+        Assert.Equal(bytes, RoundTrip(typeof(ModernCertificate), bytes));
+        var certificate = ModernCertificate.Decode(new Asn1Reader(bytes, Asn1Encoding.Der));
+        Assert.Equal(
+            GostR34102012PKISyntaxOids.IdTc26SignwithdigestGost341012256String,
+            certificate.AlgorithmIdentifier.Algorithm.ToString());
+        Assert.Null(certificate.AlgorithmIdentifier.Parameters);
+        var spki = certificate.ToBeSigned.SubjectPublicKeyInfo.Value;
+        Assert.Equal(
+            GostR34102012PKISyntaxOids.IdTc26Gost341012256String,
+            spki.Algorithm.Algorithm.ToString());
+        Assert.NotNull(spki.Algorithm.Parameters);
+        var parameters = spki.Algorithm.Parameters!.Value.DecodeValue(
+            GostR34102012PublicKeyParameters.Decode, Asn1Encoding.Der);
+        Assert.Equal(
+            GostR34102012PKISyntaxOids.IdTc26Gost34102012256ParamSetAString,
+            parameters.PublicKeyParamSet.ToString());
+        Assert.Null(parameters.DigestParamSet);
+        // BIT STRING encapsulates OCTET STRING SIZE(64): tag+length+64 octets.
+        Assert.Equal(0, spki.SubjectPublicKey.UnusedBits);
+        Assert.Equal(66, spki.SubjectPublicKey.Memory.Length);
+        Assert.Equal(0x04, spki.SubjectPublicKey.Span[0]);
+        Assert.Equal(0x40, spki.SubjectPublicKey.Span[1]);
     }
 
     [Theory]

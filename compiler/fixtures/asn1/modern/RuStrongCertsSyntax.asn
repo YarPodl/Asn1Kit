@@ -1,0 +1,99 @@
+-- Extracted from RFC 9215; ASN.1 syntax retained.
+-- Copyright (c) The IETF Trust and the persons identified as authors.
+-- See LICENSE.txt for the Simplified BSD license.
+
+   RuStrongCertsSyntax
+       { iso(1) member-body(2) ru(643) rosstandart(7)
+         tc26(1) modules(0) ruStrongCertsSyntax(6) }
+
+   DEFINITIONS ::=
+   BEGIN
+   -- EXPORTS All --
+
+       id-ca OBJECT IDENTIFIER ::=
+           { iso(1) member-body(2) ru(643) ca(3) }
+
+       id-fss OBJECT IDENTIFIER ::=
+           { iso(1) member-body(2) ru(643) fss(100) }
+
+       id-fns OBJECT IDENTIFIER ::=
+           { id-ca fns(131) }
+
+       -- The main state registration number of juridical entities.
+       OGRN ::= NumericString(SIZE (13))
+
+       id-OGRN OBJECT IDENTIFIER ::=
+            { id-fss ogrn(1) }
+
+       --  The individual insurance account number.
+       SNILS ::= NumericString(SIZE (11))
+
+       id-SNILS OBJECT IDENTIFIER ::=
+            { id-fss snils(3) }
+
+       -- The main state registration number of
+       -- individual entrepreneurs (sole traders).
+       OGRNIP ::= NumericString(SIZE (15))
+
+       id-OGRNIP OBJECT IDENTIFIER ::=
+            { id-fss ogrnip(5) }
+
+       id-class OBJECT IDENTIFIER ::=
+            { id-fss class(113) }
+
+       id-class-kc1 OBJECT IDENTIFIER ::=
+            { id-class kc1(1) }
+
+       id-class-kc2 OBJECT IDENTIFIER ::=
+            { id-class kc2(2) }
+
+       id-class-kc3 OBJECT IDENTIFIER ::=
+            { id-class kc3(3) }
+
+       id-class-kb1 OBJECT IDENTIFIER ::=
+            { id-class kb1(4) }
+
+       id-class-kb2 OBJECT IDENTIFIER ::=
+            { id-class kb2(5) }
+
+       id-class-ka OBJECT IDENTIFIER ::=
+            { id-class ka(6) }
+
+       -- The individual taxpayer number (ITN).
+       INN ::= NumericString(SIZE (12))
+
+       id-INN OBJECT IDENTIFIER ::=
+            { id-fns ids(1) inn(1) }
+
+       -- The organization taxpayer number (OTN).
+       INNLE ::= NumericString(SIZE (10))
+
+       id-INNLE OBJECT IDENTIFIER ::=
+            { id-fss innle(4) }
+
+       -- The token or software type used by the certificate owner.
+       SubjectSignTool ::= UTF8String(SIZE(1..200))
+
+       id-SubjectSignTool OBJECT IDENTIFIER ::=
+            { id-fss subjectSignTool(111) }
+
+       -- The tools used to generate key pairs and tools used by
+       -- the CA to sign certificates.
+       IssuerSignTool ::= SEQUENCE {
+            signTool     UTF8String(SIZE(1..200)),
+            cATool       UTF8String(SIZE(1..200)),
+            signToolCert UTF8String(SIZE(1..100)),
+            cAToolCert   UTF8String(SIZE(1..100)) }
+
+       id-IssuerSignTool OBJECT IDENTIFIER ::=
+            { id-fss issuerSignTool(112) }
+
+       -- The method of identifying the owner, when it applies/receives
+       -- the certificate in the CA.
+       IdentificationKind ::= INTEGER { personal(0), remote-cert(1),
+            remote-passport(2), remote-system(3) }
+
+       id-IdentificationKind OBJECT IDENTIFIER ::=
+            { id-fss identificationKind(114) }
+
+   END -- RuStrongCertsSyntax

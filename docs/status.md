@@ -38,7 +38,7 @@
 
 ## Современные PKIX/CMS
 
-Корпус Modern — **24 модуля** RFC 5911/5912/6268/8410 ([modern/README.md](../compiler/fixtures/asn1/modern/README.md) → IR [modern-pkix-cms.json](../compiler/fixtures/ir/modern-pkix-cms.json) → сборка [Asn1Kit.Modern](../runtime-csharp/generated/Asn1Kit.Modern/README.md)). Legacy PKIX/CMS/DVCS — [Asn1Kit.Legacy](../runtime-csharp/generated/Asn1Kit.Legacy/) (регрессия; другие module identifiers).
+Корпус Modern — **26 модулей** RFC 5911/5912/6268/8410 и [RFC 9215](https://www.rfc-editor.org/rfc/rfc9215) (`GostR3410-2012-PKISyntax`, `RuStrongCertsSyntax`) ([modern/README.md](../compiler/fixtures/asn1/modern/README.md) → IR [modern-pkix-cms.json](../compiler/fixtures/ir/modern-pkix-cms.json) → сборка [Asn1Kit.Modern](../runtime-csharp/generated/Asn1Kit.Modern/README.md)). Legacy PKIX/CMS/DVCS — [Asn1Kit.Legacy](../runtime-csharp/generated/Asn1Kit.Legacy/) (регрессия; другие module identifiers).
 
 **Поддержано:** `CLASS` / objects/sets / `WITH SYNTAX`; параметризованные типы со свёрткой одинаковых IOC-таблиц в `ref.openTypes`; governors и UNIQUE для OID/INTEGER; component relation selectors (в т.ч. через OF/SET); `CONTAINING`; составные DEFAULT; границы расширений / `[[n: …]]`; стандартный `INSTANCE OF TYPE-IDENTIFIER`; `IMPORTS` по имени или точному module OID (без эвристик).
 
@@ -67,7 +67,7 @@
 
 ## Продуктовые артефакты
 
-- **Modern:** [Asn1Kit.Modern](../runtime-csharp/generated/Asn1Kit.Modern/) — 24 модуля (CMS-2009 + PKIX/OCSP/PKCS10/CMP/…); regenerate `scripts/regenerate-modern.ps1`.
+- **Modern:** [Asn1Kit.Modern](../runtime-csharp/generated/Asn1Kit.Modern/) — 26 модулей (CMS-2009 + PKIX/OCSP/PKCS10/CMP/… + GOST RFC 9215); regenerate `scripts/regenerate-modern.ps1`.
 - **Demo CMS (C#):** [Asn1Kit.Cms.Demo](../runtime-csharp/examples/Asn1Kit.Cms.Demo/) — default Modern; `--legacy` для regression-стека.
 - **Demo CMS (C++):** [runtime-cpp/examples/cms_demo](../runtime-cpp/examples/cms_demo/) — Modern generated API (`verify` / `print-cert` / `print-cms` / `sign`, educational stub).
 - **Legacy (регрессия):** [Asn1Kit.Legacy](../runtime-csharp/generated/Asn1Kit.Legacy/) — ASN.1:1988 PKIX/CMS/DVCS (`Asn1Kit.Legacy.*`); options — [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json).
@@ -81,10 +81,11 @@
 2. Curated **TSP** (RFC 3161) с `IMPORTS` на modern CMS-2009.
 3. Curated **DVCS** с `IMPORTS` на modern (вместо legacy-графа).
 4. При необходимости — дальнейший trim Modern / дополнительные protocol-пакеты.
-5. Пул массивов (constructed BER concat, DER SET OF sort)
-6. Второй oracle — BouncyCastle (не gate `dotnet test`)
-7. **DER: reject constructed OCTET / BIT STRING / string** (или soft-флаг в `Asn1ReaderOptions`, default как сейчас accept; выровнять код с формулировкой § Runtime «BER: constructed…»). Фикстуры + runtime-api soft-inventory
-8. **Лимиты hostile BER**: ограничить глубину рекурсивного indefinite scan и общий размер materialized constructed values
+5. **GOST этап 2:** минимальный CPALGS-срез [RFC 4357](https://www.rfc-editor.org/rfc/rfc4357) (`Cryptographic-Gost-Useful-Definitions`, `GostR3410-2001-PKISyntax`, `GostR3411-94-DigestSyntax`, `Gost28147-89-EncryptionSyntax`) и [RFC 4490](https://www.rfc-editor.org/rfc/rfc4490) `GostR3410-EncryptionSyntax` с `SubjectPublicKeyInfo` из `PKIX1Explicit-2009`; без полных `*-ParamSetSyntax`. CMS EnvelopedData для R 34.12 (Kuznyechik/Magma) — вне IETF ASN.1.
+6. Пул массивов (constructed BER concat, DER SET OF sort)
+7. Второй oracle — BouncyCastle (не gate `dotnet test`)
+8. **DER: reject constructed OCTET / BIT STRING / string** (или soft-флаг в `Asn1ReaderOptions`, default как сейчас accept; выровнять код с формулировкой § Runtime «BER: constructed…»). Фикстуры + runtime-api soft-inventory
+9. **Лимиты hostile BER**: ограничить глубину рекурсивного indefinite scan и общий размер materialized constructed values
 
 ### Крупные
 

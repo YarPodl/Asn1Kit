@@ -1,0 +1,121 @@
+-- Extracted from RFC 9215; ASN.1 syntax retained.
+-- Copyright (c) The IETF Trust and the persons identified as authors.
+-- See LICENSE.txt for the Simplified BSD license.
+
+   GostR3410-2012-PKISyntax
+       { iso(1) member-body(2) ru(643) rosstandart(7)
+         tc26(1) modules(0) gostR3410-2012-PKISyntax(2) }
+
+   DEFINITIONS ::=
+   BEGIN
+   -- EXPORTS All --
+
+       -- ASN.1 TC 26 root
+       id-tc26 OBJECT IDENTIFIER ::=
+           { iso(1) member-body(2) ru(643) rosstandart(7) tc26(1) }
+
+       -- Signature algorithm
+       id-tc26-sign OBJECT IDENTIFIER ::=
+       { id-tc26 algorithms(1) sign(1) }
+
+       -- Hash algorithm
+       id-tc26-digest OBJECT IDENTIFIER ::=
+       { id-tc26 algorithms(1) digest(2) }
+
+       -- Public key identifiers
+       id-tc26-sign-constants OBJECT IDENTIFIER ::=
+       { id-tc26 constants(2) sign(1) }
+
+       -- Public key algorithm GOST R 34.10-2012 / 256-bit identifiers
+       id-tc26-gost-3410-2012-256-constants OBJECT IDENTIFIER ::=
+       { id-tc26-sign-constants gost-3410-2012-256(1) }
+
+       -- Public key algorithm GOST R 34.10-2012 / 512-bit identifiers
+       id-tc26-gost-3410-2012-512-constants OBJECT IDENTIFIER ::=
+       { id-tc26-sign-constants gost-3410-2012-512(2) }
+
+       -- GOST R 34.10-2012 / 256-bit signature algorithm
+       id-tc26-gost3410-12-256 OBJECT IDENTIFIER ::=
+       { id-tc26-sign gost3410-12-256(1) }
+
+       -- GOST R 34.10-2012 / 512-bit signature algorithm
+       id-tc26-gost3410-12-512 OBJECT IDENTIFIER ::=
+       { id-tc26-sign gost3410-12-512(2) }
+
+       -- GOST R 34.11-2012 / 256-bit hash algorithm
+       id-tc26-gost3411-12-256 OBJECT IDENTIFIER ::=
+       { id-tc26-digest gost3411-12-256(2)}
+
+       -- GOST R 34.11-2012 / 512-bit hash algorithm
+       id-tc26-gost3411-12-512 OBJECT IDENTIFIER ::=
+       { id-tc26-digest gost3411-12-512(3)}
+
+       -- GOST R 34.10-2012 / GOST R 34.11-2012 sign/hash algorithm
+       id-tc26-signwithdigest OBJECT IDENTIFIER ::=
+       { id-tc26 algorithms(1) signwithdigest(3) }
+
+       -- Signature & hash algorithm GOST R 34.10-2012 / 256 bits
+       -- with GOST R 34.11-2012
+       id-tc26-signwithdigest-gost3410-12-256 OBJECT IDENTIFIER ::=
+       { id-tc26-signwithdigest gost3410-12-256(2) }
+
+       -- Signature & hash algorithm GOST R 34.10-2012 / 512 bits
+       -- with GOST R 34.11-2012
+       id-tc26-signwithdigest-gost3410-12-512 OBJECT IDENTIFIER ::=
+       { id-tc26-signwithdigest gost3410-12-512(3) }
+
+       -- GOST R 34.10-2012 / 256-bit signature algorithm
+       -- parameters identifier: "Set A"
+       id-tc26-gost-3410-2012-256-paramSetA OBJECT IDENTIFIER ::=
+       { id-tc26-gost-3410-2012-256-constants paramSetA(1) }
+
+       -- GOST R 34.10-2012 / 256-bit signature algorithm
+       -- parameters identifier: "Set B"
+       id-tc26-gost-3410-2012-256-paramSetB OBJECT IDENTIFIER ::=
+       { id-tc26-gost-3410-2012-256-constants paramSetB(2) }
+
+       -- GOST R 34.10-2012 / 256-bit signature algorithm
+       -- parameters identifier: "Set C"
+       id-tc26-gost-3410-2012-256-paramSetC OBJECT IDENTIFIER ::=
+       { id-tc26-gost-3410-2012-256-constants paramSetC(3) }
+
+       -- GOST R 34.10-2012 / 256-bit signature algorithm
+       -- parameters identifier: "Set D"
+       id-tc26-gost-3410-2012-256-paramSetD OBJECT IDENTIFIER ::=
+       { id-tc26-gost-3410-2012-256-constants paramSetD(4) }
+
+       -- GOST R 34.10-2012 / 512-bit signature algorithm
+       -- parameters identifier: "Test set"
+       id-tc26-gost-3410-2012-512-paramSetTest OBJECT IDENTIFIER ::=
+       { id-tc26-gost-3410-2012-512-constants paramSetTest(0) }
+
+       -- GOST R 34.10-2012 / 512-bit signature algorithm
+       -- parameters identifier: "Set A"
+       id-tc26-gost-3410-2012-512-paramSetA OBJECT IDENTIFIER ::=
+       { id-tc26-gost-3410-2012-512-constants paramSetA(1) }
+
+       -- GOST R 34.10-2012 / 512-bit signature algorithm
+       -- parameters identifier: "Set B"
+       id-tc26-gost-3410-2012-512-paramSetB OBJECT IDENTIFIER ::=
+       { id-tc26-gost-3410-2012-512-constants paramSetB(2) }
+
+       -- GOST R 34.10-2012 / 512-bit signature algorithm
+       -- parameters identifier: "Set C"
+       id-tc26-gost-3410-2012-512-paramSetC OBJECT IDENTIFIER ::=
+       { id-tc26-gost-3410-2012-512-constants paramSetC(3) }
+
+       -- Public key GOST R 34.10-2012 / 256 bits
+       GostR3410-2012-256-PublicKey ::= OCTET STRING (SIZE (64))
+       -- Public key GOST R 34.10-2012 / 512 bits
+       GostR3410-2012-512-PublicKey ::= OCTET STRING (SIZE (128))
+       -- Public key GOST R 34.10-2012
+       GostR3410-2012-PublicKey ::= OCTET STRING -- SIZE (64 | 128)
+
+       -- Public key parameters GOST R 34.10-2012
+       GostR3410-2012-PublicKeyParameters ::=
+           SEQUENCE {
+               publicKeyParamSet OBJECT IDENTIFIER,
+               digestParamSet OBJECT IDENTIFIER OPTIONAL
+               }
+
+   END -- GostR3410-2012-PKISyntax
