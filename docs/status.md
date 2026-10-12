@@ -54,7 +54,7 @@
 
 **C++ runtime** ([runtime-cpp/](../runtime-cpp/)): примитивы BER/DER **да** (boolean/null/integer/enumerated/octet/oid/bitstring/string/time/`any`/`contained`/`encode_open`/`asn_string` + soft-profile + `asn1kit::bytes`); публичные SEQUENCE/SET/OF/EXPLICIT `enter_*` / `with_*` **да**; те же layer-1 фикстуры.
 
-**C++ codegen** ([Asn1Kit.Codegen.Cpp](../compiler/src/Asn1Kit.Codegen.Cpp/)): MVP **да** (`--lang cpp`, golden SoT `runtime-cpp/generated/`, Person + open-binding + extensible + deferred round-trip). Bare `any` → `asn1kit::any`; `CONTAINING` → `asn1kit::contained<T>`; open-type Binding (direct / CONTAINING / OF / ancestor; OID и INTEGER selector; nested selector path); peer `#include` по deps; нетривиальные SCC именованных типов → `cycle_….hpp` (амальгама + trivial closure); CHOICE → `kind` + `variant` уникальных C++-типов; единственный тип payload → обычное поле `value`; `lazy` / `retainEncoded` (encode сохраняет original TLV). **Modern C++ golden** — 24 модуля + `cycle_*.hpp` в `runtime-cpp/generated/modern/` (`scripts/regenerate-modern-cpp.ps1`); native Certificate DER round-trip — `generated_modern_certificate_tests` (`TrustAnchorRootCertificate.crt`, `ValidCertificatePathTest1EE.crt`). Legacy Explicit88 C++ golden — вне среза (регрессия только на C#). Вне среза C++: `AsString` / DirectoryString ergonomics, SIGNED-шаблон, полный CMS ContentInfo demo.
+**C++ codegen** ([Asn1Kit.Codegen.Cpp](../compiler/src/Asn1Kit.Codegen.Cpp/)): MVP **да** (`--lang cpp`, golden SoT `runtime-cpp/generated/`, Person + open-binding + extensible + deferred round-trip). Bare `any` → `asn1kit::any`; `CONTAINING` → `asn1kit::contained<T>`; open-type Binding (direct / CONTAINING / OF / ancestor; OID и INTEGER selector; nested selector path); peer `#include` по deps; нетривиальные SCC именованных типов → `cycle_….hpp` (амальгама + trivial closure); CHOICE → `kind` + `variant` уникальных C++-типов; единственный тип payload → обычное поле `value`; `lazy` / `retainEncoded` (encode сохраняет original TLV). Общая `options.aliasOf` объединяет X.520 CHOICE в `DirectoryString` с `kind` и `std::string value`. **Modern C++ golden** — 24 модуля + `cycle_*.hpp` в `runtime-cpp/generated/modern/` (`scripts/regenerate-modern-cpp.ps1`); native Certificate DER round-trip — `generated_modern_certificate_tests` (`TrustAnchorRootCertificate.crt`, `ValidCertificatePathTest1EE.crt`). Legacy Explicit88 C++ golden — вне среза (регрессия только на C#). Вне среза C++: `AsString`, SIGNED-шаблон, полный CMS ContentInfo demo.
 
 **Запись** — канонический DER. **Чтение** — soft-profile ([decisions.md](decisions.md); полный инвентарь — [runtime-api.md](../runtime-csharp/docs/runtime-api.md)):
 
@@ -87,5 +87,5 @@
 
 ### Крупные
 
-1. C++ codegen: паритет ergonomics с C# (`AsString` / DirectoryString, SIGNED-шаблон) и полный CMS ContentInfo demo на C++ — [cpp-backend.md](../compiler/docs/playbooks/cpp-backend.md)
+1. C++ codegen: паритет ergonomics с C# (`AsString`, SIGNED-шаблон) и полный CMS ContentInfo demo на C++ — [cpp-backend.md](../compiler/docs/playbooks/cpp-backend.md)
 2. Инструменты PKI поверх сгенерированного

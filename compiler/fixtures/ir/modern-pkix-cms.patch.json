@@ -26,17 +26,16 @@
     "PKIX1Explicit-2009.X520name": {
       "csharp": {
         "typeName": "DirectoryString"
+      },
+      "cpp": {
+        "typeName": "DirectoryString"
       }
     },
     "PKIX1Explicit-2009.X520CommonName": {
-      "csharp": {
-        "aliasOf": "X520name"
-      }
+      "aliasOf": "X520name"
     },
     "PKIX1Explicit-2009.X520LocalityName": {
-      "csharp": {
-        "aliasOf": "X520name"
-      }
+      "aliasOf": "X520name"
     }
   }
 }

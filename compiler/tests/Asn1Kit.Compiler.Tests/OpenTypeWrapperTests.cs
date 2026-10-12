@@ -803,8 +803,10 @@ public sealed class OpenTypeBindingTests
         ", source: source));
     }
 
-    [Fact]
-    public void AliasOfUnifiesChoiceTypedefsOntoTypeNameTarget()
+    [Theory]
+    [InlineData("aliasOf")]
+    [InlineData("csharp.aliasOf")]
+    public void AliasOfUnifiesChoiceTypedefsOntoTypeNameTarget(string aliasPath)
     {
         const string source = @"M DEFINITIONS ::= BEGIN
           Big ::= CHOICE { utf8 UTF8String, printable PrintableString }
@@ -815,7 +817,7 @@ public sealed class OpenTypeBindingTests
         document.Modules[0].Types.Single(t => t.Name == "Big").Options =
             IrOptions.SetCSharp(null, "typeName", "DirectoryString");
         document.Modules[0].Types.Single(t => t.Name == "Small").Options =
-            IrOptions.SetCSharp(null, "aliasOf", "Big");
+            IrOptions.Set(null, aliasPath, System.Text.Json.Nodes.JsonValue.Create("Big")!);
         var generated = Assert.Single(new CSharpBackend().Generate(document)).Contents;
         Assert.Contains("public sealed class DirectoryString", generated);
         Assert.Contains("DirectoryStringKind", generated);
@@ -836,7 +838,7 @@ public sealed class OpenTypeBindingTests
             document.Modules[0].Types.Single(t => t.Name == "Big").Options =
                 IrOptions.SetCSharp(null, "typeName", "DirectoryString");
             document.Modules[0].Types.Single(t => t.Name == "Small").Options =
-                IrOptions.SetCSharp(null, "aliasOf", "Big");
+                IrOptions.Set(null, aliasPath, System.Text.Json.Nodes.JsonValue.Create("Big")!);
         }, source));
     }
 

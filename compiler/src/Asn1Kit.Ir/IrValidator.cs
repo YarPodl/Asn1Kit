@@ -75,7 +75,8 @@ public static class IrValidator
                 throw new IrException($"Invalid specialization origin on '{module.Name}.{type.Name}'.");
 
             ValidateExpr(document, module, type.Type, type.Name, ownerComponents: null);
-            ValidateCSharpAliasOf(document, module, type);
+            ValidateAliasOf(document, module, type, "csharp");
+            ValidateAliasOf(document, module, type, "cpp");
         }
 
         var valueNames = new HashSet<string>(StringComparer.Ordinal);
@@ -554,24 +555,24 @@ public static class IrValidator
         return null;
     }
 
-    private static void ValidateCSharpAliasOf(IrDocument document, IrModule module, IrTypeDef type)
+    private static void ValidateAliasOf(IrDocument document, IrModule module, IrTypeDef type, string language)
     {
-        var aliasOf = IrOptions.CSharpAliasOf(type.Options);
+        string? ReadAlias(IrModule owner, IrTypeDef definition)
+        {
+            try { return IrOptions.AliasOf(definition.Options, language); }
+            catch (IrException ex) { throw new IrException($"Type '{owner.Name}.{definition.Name}': {ex.Message}"); }
+        }
+
+        var aliasOf = ReadAlias(module, type);
         if (aliasOf is null)
         {
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(aliasOf))
+        if ((language == "csharp" ? IrOptions.CSharpTypeName(type.Options) : IrOptions.CppTypeName(type.Options)) is not null)
         {
             throw new IrException(
-                $"Type '{module.Name}.{type.Name}' has empty options.csharp.aliasOf.");
-        }
-
-        if (IrOptions.CSharpTypeName(type.Options) is not null)
-        {
-            throw new IrException(
-                $"Type '{module.Name}.{type.Name}' cannot combine options.csharp.aliasOf with options.csharp.typeName.");
+                $"Type '{module.Name}.{type.Name}' cannot combine aliasOf with options.{language}.typeName.");
         }
 
         var visited = new HashSet<string>(StringComparer.Ordinal) { module.Name + "::" + type.Name };
@@ -583,7 +584,7 @@ public static class IrValidator
             if (found is null)
             {
                 throw new IrException(
-                    $"Type '{module.Name}.{type.Name}' options.csharp.aliasOf '{aliasOf}' does not resolve.");
+                    $"Type '{module.Name}.{type.Name}' aliasOf '{aliasOf}' does not resolve.");
             }
 
             var (definingModule, def) = found.Value;
@@ -591,25 +592,19 @@ public static class IrValidator
             if (!visited.Add(key))
             {
                 throw new IrException(
-                    $"Type '{module.Name}.{type.Name}' options.csharp.aliasOf forms a cycle at '{def.Name}'.");
+                    $"Type '{module.Name}.{type.Name}' aliasOf forms a cycle at '{def.Name}'.");
             }
 
             if (!IrOptions.ShouldGenerate(def.Options))
             {
                 throw new IrException(
-                    $"Type '{module.Name}.{type.Name}' options.csharp.aliasOf '{def.Name}' has generate: false.");
+                    $"Type '{module.Name}.{type.Name}' aliasOf '{def.Name}' has generate: false.");
             }
 
-            var next = IrOptions.CSharpAliasOf(def.Options);
+            var next = ReadAlias(definingModule, def);
             if (next is null)
             {
                 return;
-            }
-
-            if (string.IsNullOrWhiteSpace(next))
-            {
-                throw new IrException(
-                    $"Type '{definingModule.Name}.{def.Name}' has empty options.csharp.aliasOf.");
             }
 
             currentModule = definingModule;

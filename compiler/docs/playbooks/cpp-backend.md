@@ -20,7 +20,7 @@
 - Именованные SEQUENCE/SET/CHOICE: `struct` с `default_tag()`, `decode(reader&, tag)`, `encode(writer&, tag) const` — concepts `asn1_decodable` / `asn1_encodable`.
 - OPTIONAL → `std::optional<T>`; OF → `std::vector<T>`; CHOICE → `enum class …_kind` + `std::variant` уникальных C++-типов; при единственном типе — обычное поле `value`.
 - `string` / `time` / `null` — явные `read_string` / `write_string` / `read_time` / `write_time` / `write_null` / `null_value::decode` (не type-driven примитивы).
-- Опции: `options.cpp.namespace`, `typeName`, `fieldName`, `aliasOf`; общие `generate`, `integer.representation`.
+- Опции: `options.cpp.namespace`, `typeName`, `fieldName`; общие `aliasOf`, `generate`, `integer.representation`.
 - `any` → `asn1kit::any` (`read_any` / `write_any`; untagged OPTIONAL — через `eof()`).
 - Open-type Binding (direct / CONTAINING / SEQUENCE·SET OF / ancestor, local OID selector): `OpenTypeBindings.NormalizeLegacy` → plan/emit в `CppBackend.OpenTypes.cs`.
   - Descriptor `{stem}_binding<T>` — только `asn1kit::oid key`; encode/decode выводятся из `T`:
@@ -33,7 +33,7 @@
   - Каталог — `namespace {table}_{field}_bindings` с `inline const` members (`{ key }`).
   - Policy: unknown/wrong key → `try_decode` = false (raw живёт); match + bad wire → reject.
   - Selector: OID и INTEGER; nested path (`path.Count > 1`) через поля SEQUENCE/SET (нужно для Certificate/SIGNED parameters).
-  - Вне среза: `AsString` / DirectoryString ergonomics, SIGNED-шаблон как у C#, Legacy Explicit88 C++ golden.
+  - Вне среза: `AsString`, SIGNED-шаблон как у C#, Legacy Explicit88 C++ golden.
 - Cross-module: peer `#include "Peer.hpp"` по фактическим deps оставшихся в модуле типов. Нетривиальные SCC графа именованных типов → `cycle_….hpp` (амальгама SCC + транзитивные trivial deps; без OID/open-type catalogs); модульный header реэкспортирует cycle-файлы своих типов.
 - CHOICE: одинаковые C++-типы используют один слот `std::variant` (порядок первого появления); если тип единственный, `value` имеет этот тип без `variant`. `kind` сохраняет ASN.1-ветку, её тег и правила кодирования; обёртки `…_box` не генерируются.
 - `OCTET STRING` / `BIT STRING` `CONTAINING` → `asn1kit::contained<T>` (`read_contained` / `write_contained`; content ANY → `known=false`; nested content — `Owner_Content`).

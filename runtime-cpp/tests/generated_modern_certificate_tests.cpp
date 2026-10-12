@@ -21,10 +21,29 @@ using Certificate = asn1kit::modern::PKIX1Explicit2009::Certificate;
 using PkixOids = asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids;
 using Time = asn1kit::modern::PKIX1Explicit2009::Time;
 using TimeKind = asn1kit::modern::PKIX1Explicit2009::Time_kind;
+using DirectoryString = asn1kit::modern::PKIX1Explicit2009::DirectoryString;
 using GeneralName = asn1kit::modern::PKIX1Implicit2009::GeneralName;
 using GeneralNameKind = asn1kit::modern::PKIX1Implicit2009::GeneralName_kind;
 
 static_assert(std::is_same_v<decltype(Time::value), asn1kit::utc_date_time>);
+static_assert(std::is_same_v<decltype(DirectoryString::value), std::string>);
+
+TEST(GeneratedModernCertificateTests, DirectoryStringPreservesStringForm) {
+    const std::vector<std::vector<std::uint8_t>> vectors{
+        {0x0c, 1, 'A'}, {0x13, 1, 'A'}, {0x1e, 2, 0, 'A'}};
+    for (const auto& bytes : vectors) {
+        reader r(bytes, encoding::der);
+        const auto value = DirectoryString::decode(r);
+        EXPECT_TRUE(r.eof());
+        EXPECT_EQ(value.value, "A");
+        writer w(encoding::der);
+        value.encode(w);
+        EXPECT_EQ(w.encode(), bytes);
+    }
+    const std::vector<std::uint8_t> invalid{0x02, 1, 1};
+    reader r(invalid, encoding::der);
+    EXPECT_THROW(DirectoryString::decode(r), asn1kit::exception);
+}
 
 static_assert(std::string_view(PkixOids::IdPkix.text()) == "1.3.6.1.5.5.7");
 static_assert(PkixOids::IdPkix.contents == std::array<std::uint8_t, 6>{0x2b, 6, 1, 5, 5, 7});

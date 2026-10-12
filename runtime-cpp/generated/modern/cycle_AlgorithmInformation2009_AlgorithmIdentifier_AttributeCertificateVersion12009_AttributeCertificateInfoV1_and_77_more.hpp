@@ -2100,6 +2100,146 @@ struct Certificate_AlgorithmIdentifier {
     }
 };
 
+enum class DirectoryString_kind {
+    teletexString,
+    printableString,
+    bmpString,
+    universalString,
+    uTF8String
+};
+
+struct DirectoryString {
+    DirectoryString_kind kind{};
+    std::string value{};
+
+    static DirectoryString from_teletexString(std::string v) {
+        DirectoryString result{};
+        result.kind = DirectoryString_kind::teletexString;
+        result.value = std::move(v);
+        return result;
+    }
+
+    static DirectoryString from_printableString(std::string v) {
+        DirectoryString result{};
+        result.kind = DirectoryString_kind::printableString;
+        result.value = std::move(v);
+        return result;
+    }
+
+    static DirectoryString from_bmpString(std::string v) {
+        DirectoryString result{};
+        result.kind = DirectoryString_kind::bmpString;
+        result.value = std::move(v);
+        return result;
+    }
+
+    static DirectoryString from_universalString(std::string v) {
+        DirectoryString result{};
+        result.kind = DirectoryString_kind::universalString;
+        result.value = std::move(v);
+        return result;
+    }
+
+    static DirectoryString from_uTF8String(std::string v) {
+        DirectoryString result{};
+        result.kind = DirectoryString_kind::uTF8String;
+        result.value = std::move(v);
+        return result;
+    }
+
+    static asn1kit::tag default_tag() {
+        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
+    }
+
+    static DirectoryString decode(asn1kit::reader& r) {
+        asn1kit::tag peeked;
+        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
+        if (peeked.matches_ignore_constructed(asn1kit::tag::teletex_string)) {
+            DirectoryString result{};
+            result.kind = DirectoryString_kind::teletexString;
+            std::string alt{};
+            alt = r.read_string(asn1kit::tag::teletex_string, asn1kit::string_form::teletex);
+            result.value = std::move(alt);
+            return result;
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::printable_string)) {
+            DirectoryString result{};
+            result.kind = DirectoryString_kind::printableString;
+            std::string alt{};
+            alt = r.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
+            result.value = std::move(alt);
+            return result;
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::bmp_string)) {
+            DirectoryString result{};
+            result.kind = DirectoryString_kind::bmpString;
+            std::string alt{};
+            alt = r.read_string(asn1kit::tag::bmp_string, asn1kit::string_form::bmp);
+            result.value = std::move(alt);
+            return result;
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::universal_string)) {
+            DirectoryString result{};
+            result.kind = DirectoryString_kind::universalString;
+            std::string alt{};
+            alt = r.read_string(asn1kit::tag::universal_string, asn1kit::string_form::universal);
+            result.value = std::move(alt);
+            return result;
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::utf8_string)) {
+            DirectoryString result{};
+            result.kind = DirectoryString_kind::uTF8String;
+            std::string alt{};
+            alt = r.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
+            result.value = std::move(alt);
+            return result;
+        } else {
+            throw asn1kit::exception("Unknown CHOICE alternative.");
+        }
+    }
+
+    static DirectoryString decode(asn1kit::reader& r, const asn1kit::tag& t) {
+        (void)t;
+        return decode(r);
+    }
+
+    void encode(asn1kit::writer& w) const {
+        switch (kind) {
+        case DirectoryString_kind::teletexString:
+            {
+                const auto& alt = value;
+                w.write_string(asn1kit::tag::teletex_string, alt, asn1kit::string_form::teletex);
+                break;
+            }
+        case DirectoryString_kind::printableString:
+            {
+                const auto& alt = value;
+                w.write_string(asn1kit::tag::printable_string, alt, asn1kit::string_form::printable);
+                break;
+            }
+        case DirectoryString_kind::bmpString:
+            {
+                const auto& alt = value;
+                w.write_string(asn1kit::tag::bmp_string, alt, asn1kit::string_form::bmp);
+                break;
+            }
+        case DirectoryString_kind::universalString:
+            {
+                const auto& alt = value;
+                w.write_string(asn1kit::tag::universal_string, alt, asn1kit::string_form::universal);
+                break;
+            }
+        case DirectoryString_kind::uTF8String:
+            {
+                const auto& alt = value;
+                w.write_string(asn1kit::tag::utf8_string, alt, asn1kit::string_form::utf8);
+                break;
+            }
+        }
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
+        (void)t;
+        encode(w);
+    }
+};
+
 struct SubjectPublicKeyInfo {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithm{};
     asn1kit::bit_string subjectPublicKey{};
@@ -2520,146 +2660,6 @@ struct TBSCertificate {
     }
 };
 
-enum class X520name_kind {
-    teletexString,
-    printableString,
-    bmpString,
-    universalString,
-    uTF8String
-};
-
-struct X520name {
-    X520name_kind kind{};
-    std::string value{};
-
-    static X520name from_teletexString(std::string v) {
-        X520name result{};
-        result.kind = X520name_kind::teletexString;
-        result.value = std::move(v);
-        return result;
-    }
-
-    static X520name from_printableString(std::string v) {
-        X520name result{};
-        result.kind = X520name_kind::printableString;
-        result.value = std::move(v);
-        return result;
-    }
-
-    static X520name from_bmpString(std::string v) {
-        X520name result{};
-        result.kind = X520name_kind::bmpString;
-        result.value = std::move(v);
-        return result;
-    }
-
-    static X520name from_universalString(std::string v) {
-        X520name result{};
-        result.kind = X520name_kind::universalString;
-        result.value = std::move(v);
-        return result;
-    }
-
-    static X520name from_uTF8String(std::string v) {
-        X520name result{};
-        result.kind = X520name_kind::uTF8String;
-        result.value = std::move(v);
-        return result;
-    }
-
-    static asn1kit::tag default_tag() {
-        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
-    }
-
-    static X520name decode(asn1kit::reader& r) {
-        asn1kit::tag peeked;
-        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
-        if (peeked.matches_ignore_constructed(asn1kit::tag::teletex_string)) {
-            X520name result{};
-            result.kind = X520name_kind::teletexString;
-            std::string alt{};
-            alt = r.read_string(asn1kit::tag::teletex_string, asn1kit::string_form::teletex);
-            result.value = std::move(alt);
-            return result;
-        } else if (peeked.matches_ignore_constructed(asn1kit::tag::printable_string)) {
-            X520name result{};
-            result.kind = X520name_kind::printableString;
-            std::string alt{};
-            alt = r.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
-            result.value = std::move(alt);
-            return result;
-        } else if (peeked.matches_ignore_constructed(asn1kit::tag::bmp_string)) {
-            X520name result{};
-            result.kind = X520name_kind::bmpString;
-            std::string alt{};
-            alt = r.read_string(asn1kit::tag::bmp_string, asn1kit::string_form::bmp);
-            result.value = std::move(alt);
-            return result;
-        } else if (peeked.matches_ignore_constructed(asn1kit::tag::universal_string)) {
-            X520name result{};
-            result.kind = X520name_kind::universalString;
-            std::string alt{};
-            alt = r.read_string(asn1kit::tag::universal_string, asn1kit::string_form::universal);
-            result.value = std::move(alt);
-            return result;
-        } else if (peeked.matches_ignore_constructed(asn1kit::tag::utf8_string)) {
-            X520name result{};
-            result.kind = X520name_kind::uTF8String;
-            std::string alt{};
-            alt = r.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
-            result.value = std::move(alt);
-            return result;
-        } else {
-            throw asn1kit::exception("Unknown CHOICE alternative.");
-        }
-    }
-
-    static X520name decode(asn1kit::reader& r, const asn1kit::tag& t) {
-        (void)t;
-        return decode(r);
-    }
-
-    void encode(asn1kit::writer& w) const {
-        switch (kind) {
-        case X520name_kind::teletexString:
-            {
-                const auto& alt = value;
-                w.write_string(asn1kit::tag::teletex_string, alt, asn1kit::string_form::teletex);
-                break;
-            }
-        case X520name_kind::printableString:
-            {
-                const auto& alt = value;
-                w.write_string(asn1kit::tag::printable_string, alt, asn1kit::string_form::printable);
-                break;
-            }
-        case X520name_kind::bmpString:
-            {
-                const auto& alt = value;
-                w.write_string(asn1kit::tag::bmp_string, alt, asn1kit::string_form::bmp);
-                break;
-            }
-        case X520name_kind::universalString:
-            {
-                const auto& alt = value;
-                w.write_string(asn1kit::tag::universal_string, alt, asn1kit::string_form::universal);
-                break;
-            }
-        case X520name_kind::uTF8String:
-            {
-                const auto& alt = value;
-                w.write_string(asn1kit::tag::utf8_string, alt, asn1kit::string_form::utf8);
-                break;
-            }
-        }
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
-        (void)t;
-        encode(w);
-    }
-};
-
 } // namespace PKIX1Explicit2009
 } // namespace modern
 } // namespace asn1kit
@@ -2669,8 +2669,8 @@ namespace modern {
 namespace PKIX1Implicit2009 {
 
 struct EDIPartyName {
-    std::optional<::asn1kit::modern::PKIX1Explicit2009::X520name> nameAssigner{};
-    ::asn1kit::modern::PKIX1Explicit2009::X520name partyName{};
+    std::optional<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> nameAssigner{};
+    ::asn1kit::modern::PKIX1Explicit2009::DirectoryString partyName{};
 
     static asn1kit::tag default_tag() {
         return asn1kit::tag::sequence;
@@ -2680,15 +2680,15 @@ struct EDIPartyName {
         EDIPartyName value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             if (inner.next_is(asn1kit::tag::context(0, true))) {
-                ::asn1kit::modern::PKIX1Explicit2009::X520name tmp_nameAssigner{};
+                ::asn1kit::modern::PKIX1Explicit2009::DirectoryString tmp_nameAssigner{};
                 inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
-                    tmp_nameAssigner = ::asn1kit::modern::PKIX1Explicit2009::X520name::decode(scoped);
+                    tmp_nameAssigner = ::asn1kit::modern::PKIX1Explicit2009::DirectoryString::decode(scoped);
                 });
                 value.nameAssigner = std::move(tmp_nameAssigner);
             }
-            ::asn1kit::modern::PKIX1Explicit2009::X520name tmp_partyName{};
+            ::asn1kit::modern::PKIX1Explicit2009::DirectoryString tmp_partyName{};
             inner.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
-                tmp_partyName = ::asn1kit::modern::PKIX1Explicit2009::X520name::decode(scoped);
+                tmp_partyName = ::asn1kit::modern::PKIX1Explicit2009::DirectoryString::decode(scoped);
             });
             value.partyName = std::move(tmp_partyName);
         });

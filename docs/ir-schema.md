@@ -125,7 +125,7 @@ CLASS, WITH SYNTAX, information objects/sets и формальные парам�
 | --- | --- | --- |
 | `options.csharp.namespace` | модуль | Namespace |
 | `options.csharp.typeName` | тип | Имя класса |
-| `options.csharp.aliasOf` | тип | ASN.1-имя typedef: ссылки резолвятся в цель (как `ref`); не сочетается с `typeName` |
+| `options.aliasOf` | тип | Общая для C# и C++ цель: ASN.1-имя typedef, разрешаемое как `ref`. Отдельный тип не генерируется; исходный RHS и constraints остаются в IR. Не сочетается с `csharp.typeName` или `cpp.typeName` на алиасе. |
 | `options.csharp.propertyName` | поле | Имя свойства |
 | `options.generate` | тип | `false` — не генерировать |
 | `options.integer.representation` | тип / модуль | Представление INTEGER: `int32` \| `uint32` \| `int64` \| `uint64` \| `bigint` \| `der`. На типе перекрывает модуль. Если не задано, C# backend выводит: при `namedValues` → `int32` (или `int64` при метке вне `int`); иначе из полного `constraint.value`; иначе `der`. |
@@ -133,6 +133,8 @@ CLASS, WITH SYNTAX, information objects/sets и формальные парам�
 | `options.lazy` | поле / тип / модуль | `true` — отложенный разбор SEQUENCE/SET и SEQUENCE OF/SET OF (C#: `Asn1Lazy<T>` / `Asn1Lazy<T[]>`). Разрешение: component → TypeExpr → typedef → module; default `false`. |
 | `options.retainEncoded` | поле / тип / модуль | `true` — eager-разбор SEQUENCE/SET/OF с сохранением исходного полного TLV для хеширования или проверки подписи (C#: `Asn1Value<T>` / `Asn1Value<T[]>`). Encode всегда строится из текущего `Value`. Игнорируется, если `lazy` уже включён. Та же цепочка разрешения, что у `lazy`; default `false`. Для `SIGNED<T>` на поле `toBeSigned` сохраняется свойство `ToBeSigned: T` и добавляется `ToBeSignedOriginalEncoding`; остальные поля — `Asn1Value<T>`. |
 | `options.csharp.valueType` | typedef SEQUENCE/SET | `true` — эмит `struct` вместо `sealed class`. |
+
+Для совместимости IR v1 поддерживаются `options.csharp.aliasOf` и `options.cpp.aliasOf`, действующие только на соответствующий бэкенд. При наличии общей опции значения должны совпадать. Единая валидация проверяет непустую строку, разрешение цели, отсутствие циклов и `generate: false` у цели. Новые настройки используют `options.aliasOf`.
 
 Sidecar open-type bindings (CLI `--bindings`, API `OpenTypeBindings`) адресует поле как
 `Module.Type.field`. Для прямого `ANY DEFINED BY` значение остаётся массивом bindings. Если поле

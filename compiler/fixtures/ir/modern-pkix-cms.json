@@ -12050,6 +12050,9 @@
           "options": {
             "csharp": {
               "typeName": "DirectoryString"
+            },
+            "cpp": {
+              "typeName": "DirectoryString"
             }
           },
           "specialization": {
@@ -12136,9 +12139,7 @@
             "extensible": false
           },
           "options": {
-            "csharp": {
-              "aliasOf": "X520name"
-            }
+            "aliasOf": "X520name"
           },
           "specialization": {
             "module": "PKIX1Explicit-2009",
@@ -12224,9 +12225,7 @@
             "extensible": false
           },
           "options": {
-            "csharp": {
-              "aliasOf": "X520name"
-            }
+            "aliasOf": "X520name"
           },
           "specialization": {
             "module": "PKIX1Explicit-2009",

@@ -28,11 +28,31 @@ public static class IrOptions
         GetCSharp(options, "typeName");
 
     /// <summary>
-    /// When set on a typedef, C# codegen does not emit a class for it and resolves references
+    /// When set on a typedef, codegen does not emit a type for it and resolves references
     /// to the named ASN.1 typedef (same module / import resolution as <c>ref</c>).
     /// </summary>
-    public static string? CSharpAliasOf(JsonObject? options) =>
-        GetCSharp(options, "aliasOf");
+    public static string? AliasOf(JsonObject? options) =>
+        ReadAliasOf(options, "options.aliasOf");
+
+    // Compatibility with IR v1 language-specific options.
+    public static string? CSharpAliasOf(JsonObject? options) => AliasOf(options, "csharp");
+
+    public static string? AliasOf(JsonObject? options, string language)
+    {
+        var common = AliasOf(options);
+        var legacy = ReadAliasOf(options?[language] as JsonObject, $"options.{language}.aliasOf");
+        if (common is not null && legacy is not null && common != legacy)
+            throw new IrException($"Conflicting options.aliasOf and options.{language}.aliasOf.");
+        return common ?? legacy;
+    }
+
+    private static string? ReadAliasOf(JsonObject? options, string path)
+    {
+        if (options is null || !options.TryGetPropertyValue("aliasOf", out var node)) return null;
+        if (node is JsonValue value && value.TryGetValue<string>(out var text) &&
+            !string.IsNullOrWhiteSpace(text)) return text;
+        throw new IrException($"{path} must be a non-empty ASN.1 type name.");
+    }
 
     public static string? CSharpPropertyName(JsonObject? options) =>
         GetCSharp(options, "propertyName");
@@ -47,8 +67,7 @@ public static class IrOptions
     /// When set on a typedef, C++ codegen does not emit a type for it and resolves references
     /// to the named ASN.1 typedef (same module / import resolution as <c>ref</c>).
     /// </summary>
-    public static string? CppAliasOf(JsonObject? options) =>
-        GetCpp(options, "aliasOf");
+    public static string? CppAliasOf(JsonObject? options) => AliasOf(options, "cpp");
 
     public static string? CppFieldName(JsonObject? options) =>
         GetCpp(options, "fieldName");

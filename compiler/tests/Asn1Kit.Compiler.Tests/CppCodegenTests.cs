@@ -9,6 +9,43 @@ namespace Asn1Kit.Tests;
 public sealed class CppCodegenTests
 {
     [Fact]
+    public void CommonAliasKeepsCrossModuleQualification()
+    {
+        var document = new Asn1Compiler().CompileTexts(new (string Text, string? FileName)[]
+        {
+            (@"Names DEFINITIONS ::= BEGIN
+            A ::= CHOICE { utf8 UTF8String, printable PrintableString }
+            B ::= CHOICE { utf8 UTF8String, printable PrintableString }
+            END", "names.asn"),
+            (@"Consumer DEFINITIONS ::= BEGIN
+            IMPORTS B FROM Names;
+            Holder ::= SEQUENCE { text B }
+            END", "consumer.asn")
+        });
+        document.Modules[0].Types[1].Options = new System.Text.Json.Nodes.JsonObject { ["aliasOf"] = "A" };
+        var source = new CppBackend().Generate(document).Single(f => f.RelativePath == "Consumer.hpp").Contents;
+        Assert.Contains("::Names::A text{};", source);
+    }
+
+    [Fact]
+    public void CommonAliasUnifiesChoiceTypes()
+    {
+        var document = new Asn1Compiler().CompileText(@"M DEFINITIONS ::= BEGIN
+            A ::= CHOICE { utf8 UTF8String, printable PrintableString }
+            B ::= CHOICE { utf8 UTF8String, printable PrintableString }
+            Holder ::= SEQUENCE { first A, second B }
+            END");
+        document.Modules[0].Types[0].Options = IrOptions.Set(null, "cpp.typeName", System.Text.Json.Nodes.JsonValue.Create("DirectoryString")!);
+        document.Modules[0].Types[1].Options = new System.Text.Json.Nodes.JsonObject { ["aliasOf"] = "A" };
+        var source = Assert.Single(new CppBackend().Generate(document)).Contents;
+        Assert.Contains("struct DirectoryString {", source);
+        Assert.DoesNotContain("struct B {", source);
+        Assert.Contains("DirectoryString first{};", source);
+        Assert.Contains("DirectoryString second{};", source);
+        Assert.Contains("std::string value{};", source);
+    }
+
+    [Fact]
     public void GenerateMatchesCommittedExampleGolden()
     {
         var document = TestData.LoadIr("compiler/fixtures/ir/example.json");

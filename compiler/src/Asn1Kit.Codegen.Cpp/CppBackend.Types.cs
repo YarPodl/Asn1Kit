@@ -538,7 +538,8 @@ public sealed partial class CppBackend
                         Tag = type.Tag,
                         Options = type.Options
                     };
-                    module = targetModule;
+                    // The reference already identifies its module. Keep the caller's
+                    // context so named targets are qualified relative to the use site.
                     continue;
                 }
 
@@ -840,7 +841,7 @@ public sealed partial class CppBackend
             if (!visited.Add(key))
             {
                 throw new NotSupportedException(
-                    $"Circular options.cpp.aliasOf at '{current.Name}'.");
+                    $"Circular options.aliasOf at '{current.Name}'.");
             }
 
             var aliasOf = IrOptions.CppAliasOf(current.Options);
@@ -852,14 +853,14 @@ public sealed partial class CppBackend
             if (string.IsNullOrWhiteSpace(aliasOf))
             {
                 throw new NotSupportedException(
-                    $"Type '{currentModule.Name}.{current.Name}' has empty options.cpp.aliasOf.");
+                    $"Type '{currentModule.Name}.{current.Name}' has empty options.aliasOf.");
             }
 
             var found = FindWithModule(document, currentModule, new RefType { Name = aliasOf });
             if (found is null)
             {
                 throw new NotSupportedException(
-                    $"Type '{currentModule.Name}.{current.Name}' options.cpp.aliasOf '{aliasOf}' does not resolve.");
+                    $"Type '{currentModule.Name}.{current.Name}' options.aliasOf '{aliasOf}' does not resolve.");
             }
 
             currentModule = found.Value.Module;

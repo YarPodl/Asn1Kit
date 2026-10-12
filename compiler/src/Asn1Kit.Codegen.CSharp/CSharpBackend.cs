@@ -3169,7 +3169,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
     /// <summary>
     /// Collapse typedef aliases and single-alternative CHOICE to the underlying type used in generated C#.
     /// Stops at multi-alternative CHOICE / SEQUENCE / SET, named BIT STRING, and ENUMERATED (those keep a type).
-    /// Follows <c>options.csharp.aliasOf</c> as an explicit C# alias without rewriting IR RHS.
+    /// Follows <c>options.aliasOf</c> as an explicit codegen alias without rewriting IR RHS.
     /// </summary>
     private TypeExpr UnwrapAliases(IrDocument document, IrModule module, TypeExpr type) =>
         UnwrapAliases(document, ref module, type);
@@ -3368,7 +3368,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
     }
 
     /// <summary>
-    /// Follow <c>options.csharp.aliasOf</c> to the emit target typedef (cycle already rejected by IrValidator).
+    /// Follow <c>options.aliasOf</c> to the emit target typedef (cycle already rejected by IrValidator).
     /// </summary>
     private static (IrModule Module, IrTypeDef Def) ResolveAliasOfTarget(
         IrDocument document,
@@ -3384,7 +3384,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
             if (!visited.Add(key))
             {
                 throw new NotSupportedException(
-                    $"Circular options.csharp.aliasOf at '{current.Name}'.");
+                    $"Circular options.aliasOf at '{current.Name}'.");
             }
 
             var aliasOf = IrOptions.CSharpAliasOf(current.Options);
@@ -3396,14 +3396,14 @@ public sealed partial class CSharpBackend : ILanguageBackend
             if (string.IsNullOrWhiteSpace(aliasOf))
             {
                 throw new NotSupportedException(
-                    $"Type '{currentModule.Name}.{current.Name}' has empty options.csharp.aliasOf.");
+                    $"Type '{currentModule.Name}.{current.Name}' has empty options.aliasOf.");
             }
 
             var found = FindWithModule(document, currentModule, new RefType { Name = aliasOf });
             if (found is null)
             {
                 throw new NotSupportedException(
-                    $"Type '{currentModule.Name}.{current.Name}' options.csharp.aliasOf '{aliasOf}' does not resolve.");
+                    $"Type '{currentModule.Name}.{current.Name}' options.aliasOf '{aliasOf}' does not resolve.");
             }
 
             currentModule = found.Value.Module;

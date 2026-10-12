@@ -29,7 +29,6 @@
 #include "cycle_CryptographicMessageSyntax2009_Time_EnrollmentMessageSyntax2009_CertificationRequest_and_39_more.hpp"
 #include "CryptographicMessageSyntax2009.hpp"
 #include "OCSP2009.hpp"
-#include "PKIX1Explicit2009.hpp"
 #include "PKIX1Implicit2009.hpp"
 #include "PKIXAttributeCertificate2009.hpp"
 #include "PKIXCRMF2009.hpp"
@@ -366,37 +365,37 @@ inline const value_binding<CertRequest> reg_info_cert_req{
 } // namespace regInfoSet_value_bindings
 
 namespace supportedAttributes_bindings {
-inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::X520name> name{
+inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> name{
     asn1kit::oid_literal<"2.5.4.41">().get()};
 
-inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::X520name> surname{
+inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> surname{
     asn1kit::oid_literal<"2.5.4.4">().get()};
 
-inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::X520name> given_name{
+inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> given_name{
     asn1kit::oid_literal<"2.5.4.42">().get()};
 
-inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::X520name> initials{
+inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> initials{
     asn1kit::oid_literal<"2.5.4.43">().get()};
 
-inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::X520name> generation_qualifier{
+inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> generation_qualifier{
     asn1kit::oid_literal<"2.5.4.44">().get()};
 
-inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::X520CommonName> x520_common_name{
+inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_common_name{
     asn1kit::oid_literal<"2.5.4.3">().get()};
 
-inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::X520LocalityName> x520_locality_name{
+inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_locality_name{
     asn1kit::oid_literal<"2.5.4.7">().get()};
 
-inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::X520LocalityName> x520_state_or_province_name{
+inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_state_or_province_name{
     asn1kit::oid_literal<"2.5.4.8">().get()};
 
-inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::X520CommonName> x520_organization_name{
+inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_organization_name{
     asn1kit::oid_literal<"2.5.4.10">().get()};
 
-inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::X520CommonName> x520_organizational_unit_name{
+inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_organizational_unit_name{
     asn1kit::oid_literal<"2.5.4.11">().get()};
 
-inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::X520CommonName> x520_title{
+inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_title{
     asn1kit::oid_literal<"2.5.4.12">().get()};
 
 inline const values_binding<asn1kit::asn_string<asn1kit::string_form::printable>> x520dn_qualifier{
@@ -408,7 +407,7 @@ inline const values_binding<asn1kit::asn_string<asn1kit::string_form::printable>
 inline const values_binding<asn1kit::asn_string<asn1kit::string_form::printable>> x520_serial_number{
     asn1kit::oid_literal<"2.5.4.5">().get()};
 
-inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::X520LocalityName> x520_pseudonym{
+inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_pseudonym{
     asn1kit::oid_literal<"2.5.4.65">().get()};
 
 inline const values_binding<asn1kit::asn_string<asn1kit::string_form::ia5>> domain_component{
@@ -420,37 +419,37 @@ inline const values_binding<asn1kit::asn_string<asn1kit::string_form::ia5>> emai
 } // namespace supportedAttributes_bindings
 
 namespace supportedAttributes_value_bindings {
-inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::X520name> name{
+inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> name{
     asn1kit::oid_literal<"2.5.4.41">().get()};
 
-inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::X520name> surname{
+inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> surname{
     asn1kit::oid_literal<"2.5.4.4">().get()};
 
-inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::X520name> given_name{
+inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> given_name{
     asn1kit::oid_literal<"2.5.4.42">().get()};
 
-inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::X520name> initials{
+inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> initials{
     asn1kit::oid_literal<"2.5.4.43">().get()};
 
-inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::X520name> generation_qualifier{
+inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> generation_qualifier{
     asn1kit::oid_literal<"2.5.4.44">().get()};
 
-inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::X520CommonName> x520_common_name{
+inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_common_name{
     asn1kit::oid_literal<"2.5.4.3">().get()};
 
-inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::X520LocalityName> x520_locality_name{
+inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_locality_name{
     asn1kit::oid_literal<"2.5.4.7">().get()};
 
-inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::X520LocalityName> x520_state_or_province_name{
+inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_state_or_province_name{
     asn1kit::oid_literal<"2.5.4.8">().get()};
 
-inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::X520CommonName> x520_organization_name{
+inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_organization_name{
     asn1kit::oid_literal<"2.5.4.10">().get()};
 
-inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::X520CommonName> x520_organizational_unit_name{
+inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_organizational_unit_name{
     asn1kit::oid_literal<"2.5.4.11">().get()};
 
-inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::X520CommonName> x520_title{
+inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_title{
     asn1kit::oid_literal<"2.5.4.12">().get()};
 
 inline const value_binding<asn1kit::asn_string<asn1kit::string_form::printable>> x520dn_qualifier{
@@ -462,7 +461,7 @@ inline const value_binding<asn1kit::asn_string<asn1kit::string_form::printable>>
 inline const value_binding<asn1kit::asn_string<asn1kit::string_form::printable>> x520_serial_number{
     asn1kit::oid_literal<"2.5.4.5">().get()};
 
-inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::X520LocalityName> x520_pseudonym{
+inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_pseudonym{
     asn1kit::oid_literal<"2.5.4.65">().get()};
 
 inline const value_binding<asn1kit::asn_string<asn1kit::string_form::ia5>> domain_component{
