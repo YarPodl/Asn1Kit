@@ -26,9 +26,6 @@
 #include <variant>
 #include <vector>
 
-#include "AlgorithmInformation2009.types.hpp"
-#include "PKIXCommonTypes2009.types.hpp"
-
 namespace asn1kit {
 namespace modern {
 namespace PKIX1Explicit2009 {
@@ -262,6 +259,16 @@ struct DirectoryString {
     }
 };
 
+} // namespace PKIX1Explicit2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "AlgorithmInformation2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace PKIX1Explicit2009 {
+
 struct SubjectPublicKeyInfo {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithm{};
     asn1kit::bit_string subjectPublicKey{};
@@ -362,6 +369,16 @@ struct Time {
         encode(w);
     }
 };
+
+} // namespace PKIX1Explicit2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKIXCommonTypes2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace PKIX1Explicit2009 {
 
 struct TBSCertList_RevokedCertificates_Item {
     asn1kit::integer userCertificate{};

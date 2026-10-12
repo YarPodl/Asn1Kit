@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(ASN1KIT_BUILD_TESTS "Build asn1kit unit tests" ON)
+option(ASN1KIT_BUILD_EXAMPLES "Build asn1kit example programs" ON)
 option(ASN1KIT_FETCH_TEST_DEPS
     "Fetch gtest and nlohmann_json via FetchContent instead of find_package (no Conan)"
     OFF)
@@ -75,4 +76,9 @@ if(ASN1KIT_BUILD_TESTS)
         find_package(nlohmann_json REQUIRED)
     endif()
     add_subdirectory(tests)
+endif()
+
+if(ASN1KIT_BUILD_EXAMPLES)
+    enable_testing()
+    add_subdirectory(examples)
 endif()

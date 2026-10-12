@@ -25,11 +25,6 @@
 #include <variant>
 #include <vector>
 
-#include "AlgorithmInformation2009.types.hpp"
-#include "CryptographicMessageSyntax2009.types.hpp"
-#include "PKIX1Implicit2009.types.hpp"
-#include "PKIXCommonTypes2009.types.hpp"
-
 namespace asn1kit {
 namespace modern {
 namespace ExtendedSecurityServices2009 {
@@ -185,6 +180,16 @@ struct ESSPrivacyMark {
     }
 };
 
+} // namespace ExtendedSecurityServices2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKIXCommonTypes2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace ExtendedSecurityServices2009 {
+
 struct ESSSecurityLabel {
     asn1kit::oid security_policy_identifier{};
     std::optional<std::int32_t> security_classification{};
@@ -251,82 +256,15 @@ struct ESSVersion {
     static constexpr std::int32_t V1 = 1;
 };
 
-enum class EntityIdentifier_kind {
-    issuerAndSerialNumber,
-    subjectKeyIdentifier
-};
+} // namespace ExtendedSecurityServices2009
+} // namespace modern
+} // namespace asn1kit
 
-struct EntityIdentifier {
-    EntityIdentifier_kind kind{};
-    std::variant<::asn1kit::modern::CryptographicMessageSyntax2009::IssuerAndSerialNumber, asn1kit::bytes> value{};
+#include "PKIX1Implicit2009.types.hpp"
 
-    static EntityIdentifier from_issuerAndSerialNumber(::asn1kit::modern::CryptographicMessageSyntax2009::IssuerAndSerialNumber v) {
-        EntityIdentifier result{};
-        result.kind = EntityIdentifier_kind::issuerAndSerialNumber;
-        result.value.emplace<0>(std::move(v));
-        return result;
-    }
-
-    static EntityIdentifier from_subjectKeyIdentifier(asn1kit::bytes v) {
-        EntityIdentifier result{};
-        result.kind = EntityIdentifier_kind::subjectKeyIdentifier;
-        result.value.emplace<1>(std::move(v));
-        return result;
-    }
-
-    static asn1kit::tag default_tag() {
-        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
-    }
-
-    static EntityIdentifier decode(asn1kit::reader& r) {
-        asn1kit::tag peeked;
-        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
-        if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
-            EntityIdentifier result{};
-            result.kind = EntityIdentifier_kind::issuerAndSerialNumber;
-            ::asn1kit::modern::CryptographicMessageSyntax2009::IssuerAndSerialNumber alt{};
-            alt = ::asn1kit::modern::CryptographicMessageSyntax2009::IssuerAndSerialNumber::decode(r, asn1kit::tag::sequence);
-            result.value.emplace<0>(std::move(alt));
-            return result;
-        } else if (peeked.matches_ignore_constructed(asn1kit::tag::octet_string)) {
-            EntityIdentifier result{};
-            result.kind = EntityIdentifier_kind::subjectKeyIdentifier;
-            asn1kit::bytes alt{};
-            alt = r.read_octet_string(asn1kit::tag::octet_string);
-            result.value.emplace<1>(std::move(alt));
-            return result;
-        } else {
-            throw asn1kit::exception("Unknown CHOICE alternative.");
-        }
-    }
-
-    static EntityIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t) {
-        (void)t;
-        return decode(r);
-    }
-
-    void encode(asn1kit::writer& w) const {
-        switch (kind) {
-        case EntityIdentifier_kind::issuerAndSerialNumber:
-            {
-                const auto& alt = std::get<0>(value);
-                alt.encode(w, asn1kit::tag::sequence);
-                break;
-            }
-        case EntityIdentifier_kind::subjectKeyIdentifier:
-            {
-                const auto& alt = std::get<1>(value);
-                w.write_octet_string(asn1kit::tag::octet_string, alt.span());
-                break;
-            }
-        }
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
-        (void)t;
-        encode(w);
-    }
-};
+namespace asn1kit {
+namespace modern {
+namespace ExtendedSecurityServices2009 {
 
 struct IssuerSerial {
     std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> issuer{};
@@ -385,6 +323,16 @@ struct ESSCertID {
         }
     }
 };
+
+} // namespace ExtendedSecurityServices2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "AlgorithmInformation2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace ExtendedSecurityServices2009 {
 
 struct ESSCertIDv2 {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"2.16.840.1.101.3.4.2.1">().get(); return v; }());
@@ -543,40 +491,6 @@ struct MLReceiptPolicy {
     void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
         (void)t;
         encode(w);
-    }
-};
-
-struct MLData {
-    EntityIdentifier mailListIdentifier{};
-    asn1kit::utc_date_time expansionTime{};
-    std::optional<MLReceiptPolicy> mlReceiptPolicy{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static MLData decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        MLData value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.mailListIdentifier = EntityIdentifier::decode(inner);
-            value.expansionTime = inner.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
-            {
-                asn1kit::tag peeked_opt;
-                if (inner.try_peek_tag(peeked_opt) && (peeked_opt.matches_ignore_constructed(asn1kit::tag::context(0)) || peeked_opt.matches_ignore_constructed(asn1kit::tag::context(1, true)) || peeked_opt.matches_ignore_constructed(asn1kit::tag::context(2, true)))) {
-                    value.mlReceiptPolicy = MLReceiptPolicy::decode(inner);
-                }
-            }
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        this->mailListIdentifier.encode(w);
-        w.write_time(asn1kit::tag::generalized_time, this->expansionTime, asn1kit::time_form::generalized, 3);
-        if (this->mlReceiptPolicy.has_value()) {
-            (*this->mlReceiptPolicy).encode(w);
-        }
     }
 };
 
@@ -823,6 +737,127 @@ struct SigningCertificateV2 {
             w.write_sequence_of(asn1kit::tag::sequence, (*this->policies), [&](asn1kit::writer& inner, const auto& item) {
                 item.encode(inner, asn1kit::tag::sequence);
             });
+        }
+    }
+};
+
+} // namespace ExtendedSecurityServices2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "CryptographicMessageSyntax2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace ExtendedSecurityServices2009 {
+
+enum class EntityIdentifier_kind {
+    issuerAndSerialNumber,
+    subjectKeyIdentifier
+};
+
+struct EntityIdentifier {
+    EntityIdentifier_kind kind{};
+    std::variant<::asn1kit::modern::CryptographicMessageSyntax2009::IssuerAndSerialNumber, asn1kit::bytes> value{};
+
+    static EntityIdentifier from_issuerAndSerialNumber(::asn1kit::modern::CryptographicMessageSyntax2009::IssuerAndSerialNumber v) {
+        EntityIdentifier result{};
+        result.kind = EntityIdentifier_kind::issuerAndSerialNumber;
+        result.value.emplace<0>(std::move(v));
+        return result;
+    }
+
+    static EntityIdentifier from_subjectKeyIdentifier(asn1kit::bytes v) {
+        EntityIdentifier result{};
+        result.kind = EntityIdentifier_kind::subjectKeyIdentifier;
+        result.value.emplace<1>(std::move(v));
+        return result;
+    }
+
+    static asn1kit::tag default_tag() {
+        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
+    }
+
+    static EntityIdentifier decode(asn1kit::reader& r) {
+        asn1kit::tag peeked;
+        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
+        if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
+            EntityIdentifier result{};
+            result.kind = EntityIdentifier_kind::issuerAndSerialNumber;
+            ::asn1kit::modern::CryptographicMessageSyntax2009::IssuerAndSerialNumber alt{};
+            alt = ::asn1kit::modern::CryptographicMessageSyntax2009::IssuerAndSerialNumber::decode(r, asn1kit::tag::sequence);
+            result.value.emplace<0>(std::move(alt));
+            return result;
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::octet_string)) {
+            EntityIdentifier result{};
+            result.kind = EntityIdentifier_kind::subjectKeyIdentifier;
+            asn1kit::bytes alt{};
+            alt = r.read_octet_string(asn1kit::tag::octet_string);
+            result.value.emplace<1>(std::move(alt));
+            return result;
+        } else {
+            throw asn1kit::exception("Unknown CHOICE alternative.");
+        }
+    }
+
+    static EntityIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t) {
+        (void)t;
+        return decode(r);
+    }
+
+    void encode(asn1kit::writer& w) const {
+        switch (kind) {
+        case EntityIdentifier_kind::issuerAndSerialNumber:
+            {
+                const auto& alt = std::get<0>(value);
+                alt.encode(w, asn1kit::tag::sequence);
+                break;
+            }
+        case EntityIdentifier_kind::subjectKeyIdentifier:
+            {
+                const auto& alt = std::get<1>(value);
+                w.write_octet_string(asn1kit::tag::octet_string, alt.span());
+                break;
+            }
+        }
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
+        (void)t;
+        encode(w);
+    }
+};
+
+struct MLData {
+    EntityIdentifier mailListIdentifier{};
+    asn1kit::utc_date_time expansionTime{};
+    std::optional<MLReceiptPolicy> mlReceiptPolicy{};
+
+    static asn1kit::tag default_tag() {
+        return asn1kit::tag::sequence;
+    }
+
+    static MLData decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+        MLData value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.mailListIdentifier = EntityIdentifier::decode(inner);
+            value.expansionTime = inner.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
+            {
+                asn1kit::tag peeked_opt;
+                if (inner.try_peek_tag(peeked_opt) && (peeked_opt.matches_ignore_constructed(asn1kit::tag::context(0)) || peeked_opt.matches_ignore_constructed(asn1kit::tag::context(1, true)) || peeked_opt.matches_ignore_constructed(asn1kit::tag::context(2, true)))) {
+                    value.mlReceiptPolicy = MLReceiptPolicy::decode(inner);
+                }
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+        auto scope = w.enter_sequence(t);
+        this->mailListIdentifier.encode(w);
+        w.write_time(asn1kit::tag::generalized_time, this->expansionTime, asn1kit::time_form::generalized, 3);
+        if (this->mlReceiptPolicy.has_value()) {
+            (*this->mlReceiptPolicy).encode(w);
         }
     }
 };

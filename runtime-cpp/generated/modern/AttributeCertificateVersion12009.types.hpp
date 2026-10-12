@@ -26,12 +26,6 @@
 #include <variant>
 #include <vector>
 
-#include "AlgorithmInformation2009.types.hpp"
-#include "ExtendedSecurityServices2009.hpp"
-#include "PKIX1Implicit2009.types.hpp"
-#include "PKIXAttributeCertificate2009.types.hpp"
-#include "PKIXCommonTypes2009.types.hpp"
-
 namespace asn1kit {
 namespace modern {
 namespace AttributeCertificateVersion12009 {
@@ -39,6 +33,45 @@ namespace AttributeCertificateVersion12009 {
 struct AttCertVersionV1 {
     static constexpr std::int32_t V1 = 0;
 };
+
+struct AttributeCertificateV1_AlgorithmIdentifier {
+    asn1kit::oid algorithm{};
+    std::optional<asn1kit::any> parameters{};
+
+    static asn1kit::tag default_tag() {
+        return asn1kit::tag::sequence;
+    }
+
+    static AttributeCertificateV1_AlgorithmIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+        AttributeCertificateV1_AlgorithmIdentifier value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.algorithm = inner.read_oid(asn1kit::tag::object_identifier);
+            if (!inner.eof()) {
+                value.parameters = inner.read_any();
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+        auto scope = w.enter_sequence(t);
+        w.write_object_identifier(asn1kit::tag::object_identifier, this->algorithm);
+        if (this->parameters.has_value()) {
+            w.write_any((*this->parameters));
+        }
+    }
+};
+
+} // namespace AttributeCertificateVersion12009
+} // namespace modern
+} // namespace asn1kit
+
+#include "ExtendedSecurityServices2009.hpp"
+#include "PKIX1Implicit2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace AttributeCertificateVersion12009 {
 
 enum class AttributeCertificateInfoV1_Subject_kind {
     baseCertificateID,
@@ -137,6 +170,18 @@ struct AttributeCertificateInfoV1_Subject {
     }
 };
 
+} // namespace AttributeCertificateVersion12009
+} // namespace modern
+} // namespace asn1kit
+
+#include "AlgorithmInformation2009.types.hpp"
+#include "PKIXAttributeCertificate2009.types.hpp"
+#include "PKIXCommonTypes2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace AttributeCertificateVersion12009 {
+
 struct AttributeCertificateInfoV1 {
     std::int32_t version = 0;
     AttributeCertificateInfoV1_Subject subject{};
@@ -211,34 +256,6 @@ struct AttributeCertificateInfoV1 {
             w.write_sequence_of(asn1kit::tag::sequence, (*this->extensions), [&](asn1kit::writer& inner, const auto& item) {
                 item.encode(inner, asn1kit::tag::sequence);
             });
-        }
-    }
-};
-
-struct AttributeCertificateV1_AlgorithmIdentifier {
-    asn1kit::oid algorithm{};
-    std::optional<asn1kit::any> parameters{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static AttributeCertificateV1_AlgorithmIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        AttributeCertificateV1_AlgorithmIdentifier value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.algorithm = inner.read_oid(asn1kit::tag::object_identifier);
-            if (!inner.eof()) {
-                value.parameters = inner.read_any();
-            }
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        w.write_object_identifier(asn1kit::tag::object_identifier, this->algorithm);
-        if (this->parameters.has_value()) {
-            w.write_any((*this->parameters));
         }
     }
 };

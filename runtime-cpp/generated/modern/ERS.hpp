@@ -25,10 +25,6 @@
 #include <variant>
 #include <vector>
 
-#include "AlgorithmInformation2009.types.hpp"
-#include "CryptographicMessageSyntax2009.types.hpp"
-#include "PKIXCommonTypes2009.types.hpp"
-
 namespace asn1kit {
 namespace modern {
 namespace ERS {
@@ -38,6 +34,18 @@ struct ERSOids {
     static constexpr auto IdAaErExternal = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.50">();
     static constexpr auto Ltans = asn1kit::oid_literal<"1.3.6.1.5.5.11">();
 };
+
+} // namespace ERS
+} // namespace modern
+} // namespace asn1kit
+
+#include "AlgorithmInformation2009.types.hpp"
+#include "CryptographicMessageSyntax2009.types.hpp"
+#include "PKIXCommonTypes2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace ERS {
 
 struct ArchiveTimeStamp {
     std::optional<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> digestAlgorithm{};

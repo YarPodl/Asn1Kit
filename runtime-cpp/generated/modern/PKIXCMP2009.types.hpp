@@ -26,12 +26,6 @@
 #include <variant>
 #include <vector>
 
-#include "AlgorithmInformation2009.types.hpp"
-#include "PKIX1Explicit2009.types.hpp"
-#include "PKIX1Implicit2009.types.hpp"
-#include "PKIXCRMF2009.hpp"
-#include "PKIXCommonTypes2009.types.hpp"
-
 namespace asn1kit {
 namespace modern {
 namespace PKIXCMP2009 {
@@ -40,6 +34,16 @@ struct PKIXCMP2009Oids {
     static constexpr auto IdPasswordBasedMac = asn1kit::oid_literal<"1.2.840.113533.7.66.13">();
     static constexpr auto IdDHBasedMac = asn1kit::oid_literal<"1.2.840.113533.7.66.30">();
 };
+
+} // namespace PKIXCMP2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKIX1Explicit2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace PKIXCMP2009 {
 
 enum class CMPCertificate_kind {
     x509v3PKCert,
@@ -136,6 +140,16 @@ struct CAKeyUpdAnnContent {
         this->newWithNew.encode(w);
     }
 };
+
+} // namespace PKIXCMP2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKIXCRMF2009.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace PKIXCMP2009 {
 
 enum class CertOrEncCert_kind {
     certificate,
@@ -276,6 +290,16 @@ struct CertifiedKeyPair {
         }
     }
 };
+
+} // namespace PKIXCMP2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "AlgorithmInformation2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace PKIXCMP2009 {
 
 struct Challenge {
     std::optional<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> owf{};
@@ -473,6 +497,22 @@ inline constexpr PKIFailureInfoFlags operator|(PKIFailureInfoFlags a, PKIFailure
 struct PKIFailureInfo {
     asn1kit::bit_string value{};
 
+    PKIFailureInfo() = default;
+    PKIFailureInfo(asn1kit::bit_string bits) : value(std::move(bits)) {}
+
+    friend bool operator==(const PKIFailureInfo& a, const PKIFailureInfo& b) noexcept {
+        return a.value == b.value;
+    }
+    friend bool operator!=(const PKIFailureInfo& a, const PKIFailureInfo& b) noexcept {
+        return !(a == b);
+    }
+    friend bool operator==(const PKIFailureInfo& a, const asn1kit::bit_string& b) noexcept {
+        return a.value == b;
+    }
+    friend bool operator!=(const PKIFailureInfo& a, const asn1kit::bit_string& b) noexcept {
+        return !(a == b);
+    }
+
     static bool bit_is_set(const asn1kit::bit_string& bits, int index) {
         if (index < 0 || static_cast<std::size_t>(index) >= bits.bit_length()) return false;
         const auto byte = bits.span()[static_cast<std::size_t>(index) / 8];
@@ -616,6 +656,16 @@ struct PKIHeader_Pvno {
     static constexpr std::int32_t Cmp1999 = 1;
     static constexpr std::int32_t Cmp2000 = 2;
 };
+
+} // namespace PKIXCMP2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKIX1Implicit2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace PKIXCMP2009 {
 
 struct PKIHeader {
     std::int32_t pvno{};
@@ -1122,6 +1172,16 @@ struct PollReqContent_Item {
         w.write_integer(asn1kit::tag::integer, this->certReqId);
     }
 };
+
+} // namespace PKIXCMP2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKIXCommonTypes2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace PKIXCMP2009 {
 
 struct RevAnnContent {
     std::int32_t status{};

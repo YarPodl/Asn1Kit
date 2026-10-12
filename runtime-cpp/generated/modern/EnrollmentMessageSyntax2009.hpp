@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "EnrollmentMessageSyntax2009.types.hpp"
+
 #include "CryptographicMessageSyntax2009.types.hpp"
 
 namespace asn1kit {

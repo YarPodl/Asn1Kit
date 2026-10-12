@@ -26,12 +26,6 @@
 #include <variant>
 #include <vector>
 
-#include "AlgorithmInformation2009.types.hpp"
-#include "AttributeCertificateVersion12009.types.hpp"
-#include "PKIX1Explicit2009.types.hpp"
-#include "PKIXAttributeCertificate2009.types.hpp"
-#include "PKIXCommonTypes2009.types.hpp"
-
 namespace asn1kit {
 namespace modern {
 namespace CryptographicMessageSyntax2009 {
@@ -161,6 +155,16 @@ struct EncapsulatedContentInfo {
     }
 };
 
+} // namespace CryptographicMessageSyntax2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "AlgorithmInformation2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace CryptographicMessageSyntax2009 {
+
 struct DigestedData {
     std::int32_t version{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier digestAlgorithm{};
@@ -276,6 +280,16 @@ struct EncryptedData {
         }
     }
 };
+
+} // namespace CryptographicMessageSyntax2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKIX1Explicit2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace CryptographicMessageSyntax2009 {
 
 struct ExtendedCertificateInfo {
     std::int32_t version{};
@@ -413,6 +427,16 @@ struct ExtendedCertificateOrCertificate {
         encode(w);
     }
 };
+
+} // namespace CryptographicMessageSyntax2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKIXCommonTypes2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace CryptographicMessageSyntax2009 {
 
 struct IssuerAndSerialNumber {
     asn1kit::value<std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>> issuer{};
@@ -601,159 +625,6 @@ struct OtherCertificateFormat {
         auto scope = w.enter_sequence(t);
         w.write_object_identifier(asn1kit::tag::object_identifier, this->otherCertFormat);
         w.write_any(this->otherCert);
-    }
-};
-
-enum class CertificateChoices_kind {
-    certificate,
-    extendedCertificate,
-    v1AttrCert,
-    v2AttrCert,
-    other,
-    unknown
-};
-
-struct CertificateChoices {
-    CertificateChoices_kind kind{};
-    std::variant<::asn1kit::modern::PKIX1Explicit2009::Certificate, ExtendedCertificate, ::asn1kit::modern::AttributeCertificateVersion12009::AttributeCertificateV1, ::asn1kit::modern::PKIXAttributeCertificate2009::AttributeCertificate, OtherCertificateFormat> value{};
-    std::optional<asn1kit::any> unknown{};
-
-    static CertificateChoices from_certificate(::asn1kit::modern::PKIX1Explicit2009::Certificate v) {
-        CertificateChoices result{};
-        result.kind = CertificateChoices_kind::certificate;
-        result.value.emplace<0>(std::move(v));
-        return result;
-    }
-
-    static CertificateChoices from_extendedCertificate(ExtendedCertificate v) {
-        CertificateChoices result{};
-        result.kind = CertificateChoices_kind::extendedCertificate;
-        result.value.emplace<1>(std::move(v));
-        return result;
-    }
-
-    static CertificateChoices from_v1AttrCert(::asn1kit::modern::AttributeCertificateVersion12009::AttributeCertificateV1 v) {
-        CertificateChoices result{};
-        result.kind = CertificateChoices_kind::v1AttrCert;
-        result.value.emplace<2>(std::move(v));
-        return result;
-    }
-
-    static CertificateChoices from_v2AttrCert(::asn1kit::modern::PKIXAttributeCertificate2009::AttributeCertificate v) {
-        CertificateChoices result{};
-        result.kind = CertificateChoices_kind::v2AttrCert;
-        result.value.emplace<3>(std::move(v));
-        return result;
-    }
-
-    static CertificateChoices from_other(OtherCertificateFormat v) {
-        CertificateChoices result{};
-        result.kind = CertificateChoices_kind::other;
-        result.value.emplace<4>(std::move(v));
-        return result;
-    }
-
-    static CertificateChoices from_unknown(asn1kit::any v) {
-        CertificateChoices result{};
-        result.kind = CertificateChoices_kind::unknown;
-        result.unknown = std::move(v);
-        return result;
-    }
-
-    static asn1kit::tag default_tag() {
-        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
-    }
-
-    static CertificateChoices decode(asn1kit::reader& r) {
-        asn1kit::tag peeked;
-        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
-        if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
-            CertificateChoices result{};
-            result.kind = CertificateChoices_kind::certificate;
-            ::asn1kit::modern::PKIX1Explicit2009::Certificate alt{};
-            alt = ::asn1kit::modern::PKIX1Explicit2009::Certificate::decode(r, asn1kit::tag::sequence);
-            result.value.emplace<0>(std::move(alt));
-            return result;
-        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
-            CertificateChoices result{};
-            result.kind = CertificateChoices_kind::extendedCertificate;
-            ExtendedCertificate alt{};
-            alt = ExtendedCertificate::decode(r, asn1kit::tag::context(0, true));
-            result.value.emplace<1>(std::move(alt));
-            return result;
-        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
-            CertificateChoices result{};
-            result.kind = CertificateChoices_kind::v1AttrCert;
-            ::asn1kit::modern::AttributeCertificateVersion12009::AttributeCertificateV1 alt{};
-            alt = ::asn1kit::modern::AttributeCertificateVersion12009::AttributeCertificateV1::decode(r, asn1kit::tag::context(1, true));
-            result.value.emplace<2>(std::move(alt));
-            return result;
-        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2, true))) {
-            CertificateChoices result{};
-            result.kind = CertificateChoices_kind::v2AttrCert;
-            ::asn1kit::modern::PKIXAttributeCertificate2009::AttributeCertificate alt{};
-            alt = ::asn1kit::modern::PKIXAttributeCertificate2009::AttributeCertificate::decode(r, asn1kit::tag::context(2, true));
-            result.value.emplace<3>(std::move(alt));
-            return result;
-        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(3, true))) {
-            CertificateChoices result{};
-            result.kind = CertificateChoices_kind::other;
-            OtherCertificateFormat alt{};
-            alt = OtherCertificateFormat::decode(r, asn1kit::tag::context(3, true));
-            result.value.emplace<4>(std::move(alt));
-            return result;
-        } else {
-            return from_unknown(r.read_any());
-        }
-    }
-
-    static CertificateChoices decode(asn1kit::reader& r, const asn1kit::tag& t) {
-        (void)t;
-        return decode(r);
-    }
-
-    void encode(asn1kit::writer& w) const {
-        switch (kind) {
-        case CertificateChoices_kind::certificate:
-            {
-                const auto& alt = std::get<0>(value);
-                alt.encode(w, asn1kit::tag::sequence);
-                break;
-            }
-        case CertificateChoices_kind::extendedCertificate:
-            {
-                const auto& alt = std::get<1>(value);
-                alt.encode(w, asn1kit::tag::context(0, true));
-                break;
-            }
-        case CertificateChoices_kind::v1AttrCert:
-            {
-                const auto& alt = std::get<2>(value);
-                alt.encode(w, asn1kit::tag::context(1, true));
-                break;
-            }
-        case CertificateChoices_kind::v2AttrCert:
-            {
-                const auto& alt = std::get<3>(value);
-                alt.encode(w, asn1kit::tag::context(2, true));
-                break;
-            }
-        case CertificateChoices_kind::other:
-            {
-                const auto& alt = std::get<4>(value);
-                alt.encode(w, asn1kit::tag::context(3, true));
-                break;
-            }
-        case CertificateChoices_kind::unknown:
-            if (!unknown.has_value()) throw asn1kit::exception("Missing unknown CHOICE value.");
-            w.write_any(*unknown);
-            break;
-        }
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
-        (void)t;
-        encode(w);
     }
 };
 
@@ -1484,6 +1355,404 @@ struct RevocationInfoChoice {
     }
 };
 
+enum class SignerIdentifier_kind {
+    issuerAndSerialNumber,
+    subjectKeyIdentifier,
+    unknown
+};
+
+struct SignerIdentifier {
+    SignerIdentifier_kind kind{};
+    std::variant<IssuerAndSerialNumber, asn1kit::bytes> value{};
+    std::optional<asn1kit::any> unknown{};
+
+    static SignerIdentifier from_issuerAndSerialNumber(IssuerAndSerialNumber v) {
+        SignerIdentifier result{};
+        result.kind = SignerIdentifier_kind::issuerAndSerialNumber;
+        result.value.emplace<0>(std::move(v));
+        return result;
+    }
+
+    static SignerIdentifier from_subjectKeyIdentifier(asn1kit::bytes v) {
+        SignerIdentifier result{};
+        result.kind = SignerIdentifier_kind::subjectKeyIdentifier;
+        result.value.emplace<1>(std::move(v));
+        return result;
+    }
+
+    static SignerIdentifier from_unknown(asn1kit::any v) {
+        SignerIdentifier result{};
+        result.kind = SignerIdentifier_kind::unknown;
+        result.unknown = std::move(v);
+        return result;
+    }
+
+    static asn1kit::tag default_tag() {
+        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
+    }
+
+    static SignerIdentifier decode(asn1kit::reader& r) {
+        asn1kit::tag peeked;
+        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
+        if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
+            SignerIdentifier result{};
+            result.kind = SignerIdentifier_kind::issuerAndSerialNumber;
+            IssuerAndSerialNumber alt{};
+            alt = IssuerAndSerialNumber::decode(r, asn1kit::tag::sequence);
+            result.value.emplace<0>(std::move(alt));
+            return result;
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0))) {
+            SignerIdentifier result{};
+            result.kind = SignerIdentifier_kind::subjectKeyIdentifier;
+            asn1kit::bytes alt{};
+            alt = r.read_octet_string(asn1kit::tag::context(0));
+            result.value.emplace<1>(std::move(alt));
+            return result;
+        } else {
+            return from_unknown(r.read_any());
+        }
+    }
+
+    static SignerIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t) {
+        (void)t;
+        return decode(r);
+    }
+
+    void encode(asn1kit::writer& w) const {
+        switch (kind) {
+        case SignerIdentifier_kind::issuerAndSerialNumber:
+            {
+                const auto& alt = std::get<0>(value);
+                alt.encode(w, asn1kit::tag::sequence);
+                break;
+            }
+        case SignerIdentifier_kind::subjectKeyIdentifier:
+            {
+                const auto& alt = std::get<1>(value);
+                w.write_octet_string(asn1kit::tag::context(0), alt.span());
+                break;
+            }
+        case SignerIdentifier_kind::unknown:
+            if (!unknown.has_value()) throw asn1kit::exception("Missing unknown CHOICE value.");
+            w.write_any(*unknown);
+            break;
+        }
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
+        (void)t;
+        encode(w);
+    }
+};
+
+struct SignerInfo {
+    std::int32_t version{};
+    SignerIdentifier sid{};
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier digestAlgorithm{};
+    std::optional<asn1kit::value<std::vector<Attribute>>> signedAttrs{};
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signatureAlgorithm{};
+    asn1kit::bytes signature{};
+    std::optional<std::vector<Attribute>> unsignedAttrs{};
+
+    static asn1kit::tag default_tag() {
+        return asn1kit::tag::sequence;
+    }
+
+    static SignerInfo decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+        SignerInfo value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.version = inner.read_int32(asn1kit::tag::integer);
+            value.sid = SignerIdentifier::decode(inner);
+            value.digestAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner, asn1kit::tag::sequence);
+            if (inner.next_is(asn1kit::tag::context(0, true))) {
+                value.signedAttrs = inner.read_with_original_encoding<std::vector<Attribute>>([&](asn1kit::reader& deferred) {
+                    std::vector<Attribute> item{};
+                    item = deferred.read_set_of<Attribute>(asn1kit::tag::context(0, true), [&](asn1kit::reader& inner) {
+                        Attribute item{};
+                        item = Attribute::decode(inner, asn1kit::tag::sequence);
+                        return item;
+                    });
+                    return item;
+                });
+            }
+            value.signatureAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner, asn1kit::tag::sequence);
+            value.signature = inner.read_octet_string(asn1kit::tag::octet_string);
+            if (inner.next_is(asn1kit::tag::context(1, true))) {
+                value.unsignedAttrs = inner.read_set_of<Attribute>(asn1kit::tag::context(1, true), [&](asn1kit::reader& inner) {
+                    Attribute item{};
+                    item = Attribute::decode(inner, asn1kit::tag::sequence);
+                    return item;
+                });
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+        auto scope = w.enter_sequence(t);
+        w.write_integer(asn1kit::tag::integer, this->version);
+        this->sid.encode(w);
+        this->digestAlgorithm.encode(w, asn1kit::tag::sequence);
+        if (this->signedAttrs.has_value()) {
+            if ((*this->signedAttrs).has_original_encoding()) {
+                w.write_raw((*this->signedAttrs).original_encoding().span());
+            } else {
+                w.write_set_of(asn1kit::tag::context(0, true), (*this->signedAttrs).get(), [&](asn1kit::writer& inner, const auto& item) {
+                    item.encode(inner, asn1kit::tag::sequence);
+                });
+            }
+        }
+        this->signatureAlgorithm.encode(w, asn1kit::tag::sequence);
+        w.write_octet_string(asn1kit::tag::octet_string, this->signature.span());
+        if (this->unsignedAttrs.has_value()) {
+            w.write_set_of(asn1kit::tag::context(1, true), (*this->unsignedAttrs), [&](asn1kit::writer& inner, const auto& item) {
+                item.encode(inner, asn1kit::tag::sequence);
+            });
+        }
+    }
+};
+
+enum class Time_kind {
+    utcTime,
+    generalTime
+};
+
+struct Time {
+    Time_kind kind{};
+    asn1kit::utc_date_time value{};
+
+    static Time from_utcTime(asn1kit::utc_date_time v) {
+        Time result{};
+        result.kind = Time_kind::utcTime;
+        result.value = std::move(v);
+        return result;
+    }
+
+    static Time from_generalTime(asn1kit::utc_date_time v) {
+        Time result{};
+        result.kind = Time_kind::generalTime;
+        result.value = std::move(v);
+        return result;
+    }
+
+    static asn1kit::tag default_tag() {
+        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
+    }
+
+    static Time decode(asn1kit::reader& r) {
+        asn1kit::tag peeked;
+        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
+        if (peeked.matches_ignore_constructed(asn1kit::tag::utc_time)) {
+            Time result{};
+            result.kind = Time_kind::utcTime;
+            asn1kit::utc_date_time alt{};
+            alt = r.read_time(asn1kit::tag::utc_time, asn1kit::time_form::utc);
+            result.value = std::move(alt);
+            return result;
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::generalized_time)) {
+            Time result{};
+            result.kind = Time_kind::generalTime;
+            asn1kit::utc_date_time alt{};
+            alt = r.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
+            result.value = std::move(alt);
+            return result;
+        } else {
+            throw asn1kit::exception("Unknown CHOICE alternative.");
+        }
+    }
+
+    static Time decode(asn1kit::reader& r, const asn1kit::tag& t) {
+        (void)t;
+        return decode(r);
+    }
+
+    void encode(asn1kit::writer& w) const {
+        switch (kind) {
+        case Time_kind::utcTime:
+            {
+                const auto& alt = value;
+                w.write_time(asn1kit::tag::utc_time, alt, asn1kit::time_form::utc);
+                break;
+            }
+        case Time_kind::generalTime:
+            {
+                const auto& alt = value;
+                w.write_time(asn1kit::tag::generalized_time, alt, asn1kit::time_form::generalized, 3);
+                break;
+            }
+        }
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
+        (void)t;
+        encode(w);
+    }
+};
+
+} // namespace CryptographicMessageSyntax2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "AttributeCertificateVersion12009.types.hpp"
+#include "PKIXAttributeCertificate2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace CryptographicMessageSyntax2009 {
+
+enum class CertificateChoices_kind {
+    certificate,
+    extendedCertificate,
+    v1AttrCert,
+    v2AttrCert,
+    other,
+    unknown
+};
+
+struct CertificateChoices {
+    CertificateChoices_kind kind{};
+    std::variant<::asn1kit::modern::PKIX1Explicit2009::Certificate, ExtendedCertificate, ::asn1kit::modern::AttributeCertificateVersion12009::AttributeCertificateV1, ::asn1kit::modern::PKIXAttributeCertificate2009::AttributeCertificate, OtherCertificateFormat> value{};
+    std::optional<asn1kit::any> unknown{};
+
+    static CertificateChoices from_certificate(::asn1kit::modern::PKIX1Explicit2009::Certificate v) {
+        CertificateChoices result{};
+        result.kind = CertificateChoices_kind::certificate;
+        result.value.emplace<0>(std::move(v));
+        return result;
+    }
+
+    static CertificateChoices from_extendedCertificate(ExtendedCertificate v) {
+        CertificateChoices result{};
+        result.kind = CertificateChoices_kind::extendedCertificate;
+        result.value.emplace<1>(std::move(v));
+        return result;
+    }
+
+    static CertificateChoices from_v1AttrCert(::asn1kit::modern::AttributeCertificateVersion12009::AttributeCertificateV1 v) {
+        CertificateChoices result{};
+        result.kind = CertificateChoices_kind::v1AttrCert;
+        result.value.emplace<2>(std::move(v));
+        return result;
+    }
+
+    static CertificateChoices from_v2AttrCert(::asn1kit::modern::PKIXAttributeCertificate2009::AttributeCertificate v) {
+        CertificateChoices result{};
+        result.kind = CertificateChoices_kind::v2AttrCert;
+        result.value.emplace<3>(std::move(v));
+        return result;
+    }
+
+    static CertificateChoices from_other(OtherCertificateFormat v) {
+        CertificateChoices result{};
+        result.kind = CertificateChoices_kind::other;
+        result.value.emplace<4>(std::move(v));
+        return result;
+    }
+
+    static CertificateChoices from_unknown(asn1kit::any v) {
+        CertificateChoices result{};
+        result.kind = CertificateChoices_kind::unknown;
+        result.unknown = std::move(v);
+        return result;
+    }
+
+    static asn1kit::tag default_tag() {
+        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
+    }
+
+    static CertificateChoices decode(asn1kit::reader& r) {
+        asn1kit::tag peeked;
+        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
+        if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
+            CertificateChoices result{};
+            result.kind = CertificateChoices_kind::certificate;
+            ::asn1kit::modern::PKIX1Explicit2009::Certificate alt{};
+            alt = ::asn1kit::modern::PKIX1Explicit2009::Certificate::decode(r, asn1kit::tag::sequence);
+            result.value.emplace<0>(std::move(alt));
+            return result;
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
+            CertificateChoices result{};
+            result.kind = CertificateChoices_kind::extendedCertificate;
+            ExtendedCertificate alt{};
+            alt = ExtendedCertificate::decode(r, asn1kit::tag::context(0, true));
+            result.value.emplace<1>(std::move(alt));
+            return result;
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
+            CertificateChoices result{};
+            result.kind = CertificateChoices_kind::v1AttrCert;
+            ::asn1kit::modern::AttributeCertificateVersion12009::AttributeCertificateV1 alt{};
+            alt = ::asn1kit::modern::AttributeCertificateVersion12009::AttributeCertificateV1::decode(r, asn1kit::tag::context(1, true));
+            result.value.emplace<2>(std::move(alt));
+            return result;
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2, true))) {
+            CertificateChoices result{};
+            result.kind = CertificateChoices_kind::v2AttrCert;
+            ::asn1kit::modern::PKIXAttributeCertificate2009::AttributeCertificate alt{};
+            alt = ::asn1kit::modern::PKIXAttributeCertificate2009::AttributeCertificate::decode(r, asn1kit::tag::context(2, true));
+            result.value.emplace<3>(std::move(alt));
+            return result;
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(3, true))) {
+            CertificateChoices result{};
+            result.kind = CertificateChoices_kind::other;
+            OtherCertificateFormat alt{};
+            alt = OtherCertificateFormat::decode(r, asn1kit::tag::context(3, true));
+            result.value.emplace<4>(std::move(alt));
+            return result;
+        } else {
+            return from_unknown(r.read_any());
+        }
+    }
+
+    static CertificateChoices decode(asn1kit::reader& r, const asn1kit::tag& t) {
+        (void)t;
+        return decode(r);
+    }
+
+    void encode(asn1kit::writer& w) const {
+        switch (kind) {
+        case CertificateChoices_kind::certificate:
+            {
+                const auto& alt = std::get<0>(value);
+                alt.encode(w, asn1kit::tag::sequence);
+                break;
+            }
+        case CertificateChoices_kind::extendedCertificate:
+            {
+                const auto& alt = std::get<1>(value);
+                alt.encode(w, asn1kit::tag::context(0, true));
+                break;
+            }
+        case CertificateChoices_kind::v1AttrCert:
+            {
+                const auto& alt = std::get<2>(value);
+                alt.encode(w, asn1kit::tag::context(1, true));
+                break;
+            }
+        case CertificateChoices_kind::v2AttrCert:
+            {
+                const auto& alt = std::get<3>(value);
+                alt.encode(w, asn1kit::tag::context(2, true));
+                break;
+            }
+        case CertificateChoices_kind::other:
+            {
+                const auto& alt = std::get<4>(value);
+                alt.encode(w, asn1kit::tag::context(3, true));
+                break;
+            }
+        case CertificateChoices_kind::unknown:
+            if (!unknown.has_value()) throw asn1kit::exception("Missing unknown CHOICE value.");
+            w.write_any(*unknown);
+            break;
+        }
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
+        (void)t;
+        encode(w);
+    }
+};
+
 struct OriginatorInfo {
     std::optional<std::vector<CertificateChoices>> certs{};
     std::optional<std::vector<RevocationInfoChoice>> crls{};
@@ -1670,163 +1939,6 @@ struct EnvelopedData {
     }
 };
 
-enum class SignerIdentifier_kind {
-    issuerAndSerialNumber,
-    subjectKeyIdentifier,
-    unknown
-};
-
-struct SignerIdentifier {
-    SignerIdentifier_kind kind{};
-    std::variant<IssuerAndSerialNumber, asn1kit::bytes> value{};
-    std::optional<asn1kit::any> unknown{};
-
-    static SignerIdentifier from_issuerAndSerialNumber(IssuerAndSerialNumber v) {
-        SignerIdentifier result{};
-        result.kind = SignerIdentifier_kind::issuerAndSerialNumber;
-        result.value.emplace<0>(std::move(v));
-        return result;
-    }
-
-    static SignerIdentifier from_subjectKeyIdentifier(asn1kit::bytes v) {
-        SignerIdentifier result{};
-        result.kind = SignerIdentifier_kind::subjectKeyIdentifier;
-        result.value.emplace<1>(std::move(v));
-        return result;
-    }
-
-    static SignerIdentifier from_unknown(asn1kit::any v) {
-        SignerIdentifier result{};
-        result.kind = SignerIdentifier_kind::unknown;
-        result.unknown = std::move(v);
-        return result;
-    }
-
-    static asn1kit::tag default_tag() {
-        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
-    }
-
-    static SignerIdentifier decode(asn1kit::reader& r) {
-        asn1kit::tag peeked;
-        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
-        if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
-            SignerIdentifier result{};
-            result.kind = SignerIdentifier_kind::issuerAndSerialNumber;
-            IssuerAndSerialNumber alt{};
-            alt = IssuerAndSerialNumber::decode(r, asn1kit::tag::sequence);
-            result.value.emplace<0>(std::move(alt));
-            return result;
-        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0))) {
-            SignerIdentifier result{};
-            result.kind = SignerIdentifier_kind::subjectKeyIdentifier;
-            asn1kit::bytes alt{};
-            alt = r.read_octet_string(asn1kit::tag::context(0));
-            result.value.emplace<1>(std::move(alt));
-            return result;
-        } else {
-            return from_unknown(r.read_any());
-        }
-    }
-
-    static SignerIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t) {
-        (void)t;
-        return decode(r);
-    }
-
-    void encode(asn1kit::writer& w) const {
-        switch (kind) {
-        case SignerIdentifier_kind::issuerAndSerialNumber:
-            {
-                const auto& alt = std::get<0>(value);
-                alt.encode(w, asn1kit::tag::sequence);
-                break;
-            }
-        case SignerIdentifier_kind::subjectKeyIdentifier:
-            {
-                const auto& alt = std::get<1>(value);
-                w.write_octet_string(asn1kit::tag::context(0), alt.span());
-                break;
-            }
-        case SignerIdentifier_kind::unknown:
-            if (!unknown.has_value()) throw asn1kit::exception("Missing unknown CHOICE value.");
-            w.write_any(*unknown);
-            break;
-        }
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
-        (void)t;
-        encode(w);
-    }
-};
-
-struct SignerInfo {
-    std::int32_t version{};
-    SignerIdentifier sid{};
-    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier digestAlgorithm{};
-    std::optional<asn1kit::value<std::vector<Attribute>>> signedAttrs{};
-    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signatureAlgorithm{};
-    asn1kit::bytes signature{};
-    std::optional<std::vector<Attribute>> unsignedAttrs{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static SignerInfo decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        SignerInfo value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.version = inner.read_int32(asn1kit::tag::integer);
-            value.sid = SignerIdentifier::decode(inner);
-            value.digestAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner, asn1kit::tag::sequence);
-            if (inner.next_is(asn1kit::tag::context(0, true))) {
-                value.signedAttrs = inner.read_with_original_encoding<std::vector<Attribute>>([&](asn1kit::reader& deferred) {
-                    std::vector<Attribute> item{};
-                    item = deferred.read_set_of<Attribute>(asn1kit::tag::context(0, true), [&](asn1kit::reader& inner) {
-                        Attribute item{};
-                        item = Attribute::decode(inner, asn1kit::tag::sequence);
-                        return item;
-                    });
-                    return item;
-                });
-            }
-            value.signatureAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner, asn1kit::tag::sequence);
-            value.signature = inner.read_octet_string(asn1kit::tag::octet_string);
-            if (inner.next_is(asn1kit::tag::context(1, true))) {
-                value.unsignedAttrs = inner.read_set_of<Attribute>(asn1kit::tag::context(1, true), [&](asn1kit::reader& inner) {
-                    Attribute item{};
-                    item = Attribute::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
-            }
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        w.write_integer(asn1kit::tag::integer, this->version);
-        this->sid.encode(w);
-        this->digestAlgorithm.encode(w, asn1kit::tag::sequence);
-        if (this->signedAttrs.has_value()) {
-            if ((*this->signedAttrs).has_original_encoding()) {
-                w.write_raw((*this->signedAttrs).original_encoding().span());
-            } else {
-                w.write_set_of(asn1kit::tag::context(0, true), (*this->signedAttrs).get(), [&](asn1kit::writer& inner, const auto& item) {
-                    item.encode(inner, asn1kit::tag::sequence);
-                });
-            }
-        }
-        this->signatureAlgorithm.encode(w, asn1kit::tag::sequence);
-        w.write_octet_string(asn1kit::tag::octet_string, this->signature.span());
-        if (this->unsignedAttrs.has_value()) {
-            w.write_set_of(asn1kit::tag::context(1, true), (*this->unsignedAttrs), [&](asn1kit::writer& inner, const auto& item) {
-                item.encode(inner, asn1kit::tag::sequence);
-            });
-        }
-    }
-};
-
 struct SignedData {
     std::int32_t version{};
     std::vector<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> digestAlgorithms{};
@@ -1892,83 +2004,6 @@ struct SignedData {
         w.write_set_of(asn1kit::tag::set, this->signerInfos, [&](asn1kit::writer& inner, const auto& item) {
             item.encode(inner, asn1kit::tag::sequence);
         });
-    }
-};
-
-enum class Time_kind {
-    utcTime,
-    generalTime
-};
-
-struct Time {
-    Time_kind kind{};
-    asn1kit::utc_date_time value{};
-
-    static Time from_utcTime(asn1kit::utc_date_time v) {
-        Time result{};
-        result.kind = Time_kind::utcTime;
-        result.value = std::move(v);
-        return result;
-    }
-
-    static Time from_generalTime(asn1kit::utc_date_time v) {
-        Time result{};
-        result.kind = Time_kind::generalTime;
-        result.value = std::move(v);
-        return result;
-    }
-
-    static asn1kit::tag default_tag() {
-        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
-    }
-
-    static Time decode(asn1kit::reader& r) {
-        asn1kit::tag peeked;
-        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
-        if (peeked.matches_ignore_constructed(asn1kit::tag::utc_time)) {
-            Time result{};
-            result.kind = Time_kind::utcTime;
-            asn1kit::utc_date_time alt{};
-            alt = r.read_time(asn1kit::tag::utc_time, asn1kit::time_form::utc);
-            result.value = std::move(alt);
-            return result;
-        } else if (peeked.matches_ignore_constructed(asn1kit::tag::generalized_time)) {
-            Time result{};
-            result.kind = Time_kind::generalTime;
-            asn1kit::utc_date_time alt{};
-            alt = r.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
-            result.value = std::move(alt);
-            return result;
-        } else {
-            throw asn1kit::exception("Unknown CHOICE alternative.");
-        }
-    }
-
-    static Time decode(asn1kit::reader& r, const asn1kit::tag& t) {
-        (void)t;
-        return decode(r);
-    }
-
-    void encode(asn1kit::writer& w) const {
-        switch (kind) {
-        case Time_kind::utcTime:
-            {
-                const auto& alt = value;
-                w.write_time(asn1kit::tag::utc_time, alt, asn1kit::time_form::utc);
-                break;
-            }
-        case Time_kind::generalTime:
-            {
-                const auto& alt = value;
-                w.write_time(asn1kit::tag::generalized_time, alt, asn1kit::time_form::generalized, 3);
-                break;
-            }
-        }
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
-        (void)t;
-        encode(w);
     }
 };
 

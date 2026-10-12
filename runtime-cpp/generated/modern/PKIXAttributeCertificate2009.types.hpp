@@ -26,10 +26,6 @@
 #include <variant>
 #include <vector>
 
-#include "AlgorithmInformation2009.types.hpp"
-#include "PKIX1Implicit2009.types.hpp"
-#include "PKIXCommonTypes2009.types.hpp"
-
 namespace asn1kit {
 namespace modern {
 namespace PKIXAttributeCertificate2009 {
@@ -111,6 +107,17 @@ struct AAControls {
         }
     }
 };
+
+} // namespace PKIXAttributeCertificate2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKIX1Implicit2009.types.hpp"
+#include "PKIXCommonTypes2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace PKIXAttributeCertificate2009 {
 
 struct ACClearAttrs {
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName acIssuer{};
@@ -217,6 +224,22 @@ inline constexpr ClassListFlags operator|(ClassListFlags a, ClassListFlags b) {
 
 struct ClassList {
     asn1kit::bit_string value{};
+
+    ClassList() = default;
+    ClassList(asn1kit::bit_string bits) : value(std::move(bits)) {}
+
+    friend bool operator==(const ClassList& a, const ClassList& b) noexcept {
+        return a.value == b.value;
+    }
+    friend bool operator!=(const ClassList& a, const ClassList& b) noexcept {
+        return !(a == b);
+    }
+    friend bool operator==(const ClassList& a, const asn1kit::bit_string& b) noexcept {
+        return a.value == b;
+    }
+    friend bool operator!=(const ClassList& a, const asn1kit::bit_string& b) noexcept {
+        return !(a == b);
+    }
 
     static bool bit_is_set(const asn1kit::bit_string& bits, int index) {
         if (index < 0 || static_cast<std::size_t>(index) >= bits.bit_length()) return false;
@@ -510,6 +533,16 @@ inline ObjectDigestInfo_DigestedObjectType decode_ObjectDigestInfo_DigestedObjec
     if (number == 2) return ObjectDigestInfo_DigestedObjectType::otherObjectTypes;
     throw asn1kit::exception("Unknown ENUMERATED value.");
 }
+
+} // namespace PKIXAttributeCertificate2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "AlgorithmInformation2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace PKIXAttributeCertificate2009 {
 
 struct ObjectDigestInfo {
     ObjectDigestInfo_DigestedObjectType digestedObjectType{};

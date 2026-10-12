@@ -71,10 +71,13 @@ ctest --preset conan-default
 | Опция | По умолчанию | Смысл |
 | --- | --- | --- |
 | `ASN1KIT_BUILD_TESTS` | `ON` | Сборка gtest-таргета |
+| `ASN1KIT_BUILD_EXAMPLES` | `ON` | Сборка примеров (`examples/cms_demo`) |
 | `ASN1KIT_FETCH_TEST_DEPS` | `OFF` | FetchContent вместо `find_package` (пресет `fetch-default`) |
 | `ASN1KIT_BER_DER_FIXTURES_DIR` | `../runtime-csharp/fixtures/ber-der` | Каталог JSON-фикстур |
 
-Без тестов: `-DASN1KIT_BUILD_TESTS=OFF`.
+Без тестов: `-DASN1KIT_BUILD_TESTS=OFF`. Без примеров: `-DASN1KIT_BUILD_EXAMPLES=OFF`.
+
+CMS demo (Modern generated): [examples/cms_demo](examples/cms_demo/).
 
 ## API
 

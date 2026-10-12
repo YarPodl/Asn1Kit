@@ -26,12 +26,6 @@
 #include <variant>
 #include <vector>
 
-#include "AlgorithmInformation2009.types.hpp"
-#include "CryptographicMessageSyntax2009.types.hpp"
-#include "PKIX1Explicit2009.types.hpp"
-#include "PKIX1Implicit2009.types.hpp"
-#include "PKIXAttributeCertificate2009.types.hpp"
-
 namespace asn1kit {
 namespace modern {
 namespace SMIMESymmetricKeyDistribution2009 {
@@ -57,6 +51,18 @@ struct SMIMESymmetricKeyDistribution2009Oids {
     static constexpr auto IdSkdGlKey = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.15">();
     static constexpr auto IdCetSkdFailInfo = asn1kit::oid_literal<"1.3.6.1.5.5.7.15.1">();
 };
+
+} // namespace SMIMESymmetricKeyDistribution2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "CryptographicMessageSyntax2009.types.hpp"
+#include "PKIX1Explicit2009.types.hpp"
+#include "PKIXAttributeCertificate2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace SMIMESymmetricKeyDistribution2009 {
 
 struct Certificates {
     std::optional<::asn1kit::modern::PKIX1Explicit2009::Certificate> pKC{};
@@ -191,6 +197,16 @@ struct GLAdministration {
     static constexpr std::int32_t Closed = 2;
 };
 
+} // namespace SMIMESymmetricKeyDistribution2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKIX1Implicit2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace SMIMESymmetricKeyDistribution2009 {
+
 struct GLDeleteMember {
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName glName{};
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName glMemberToDelete{};
@@ -268,6 +284,16 @@ struct GLKRefresh {
         });
     }
 };
+
+} // namespace SMIMESymmetricKeyDistribution2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "AlgorithmInformation2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace SMIMESymmetricKeyDistribution2009 {
 
 struct GLKey {
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName glName{};

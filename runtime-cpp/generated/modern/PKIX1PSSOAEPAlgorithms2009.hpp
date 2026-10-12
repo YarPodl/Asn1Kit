@@ -25,8 +25,6 @@
 #include <variant>
 #include <vector>
 
-#include "AlgorithmInformation2009.types.hpp"
-
 namespace asn1kit {
 namespace modern {
 namespace PKIX1PSSOAEPAlgorithms2009 {
@@ -46,6 +44,16 @@ struct PKIX1PSSOAEPAlgorithms2009Oids {
     static constexpr auto IdSha384 = asn1kit::oid_literal<"2.16.840.1.101.3.4.2.2">();
     static constexpr auto IdSha512 = asn1kit::oid_literal<"2.16.840.1.101.3.4.2.3">();
 };
+
+} // namespace PKIX1PSSOAEPAlgorithms2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "AlgorithmInformation2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace PKIX1PSSOAEPAlgorithms2009 {
 
 struct RSAESOAEPParams {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashFunc = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"1.3.14.3.2.26">().get();         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }());

@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "PKIXCommonTypes2009.types.hpp"
+
 #include "CryptographicMessageSyntax2009.types.hpp"
 #include "OCSP2009.types.hpp"
 #include "PKCS10.hpp"

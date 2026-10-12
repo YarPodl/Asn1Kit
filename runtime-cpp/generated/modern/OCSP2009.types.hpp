@@ -26,11 +26,6 @@
 #include <variant>
 #include <vector>
 
-#include "AlgorithmInformation2009.types.hpp"
-#include "PKIX1Explicit2009.types.hpp"
-#include "PKIX1Implicit2009.types.hpp"
-#include "PKIXCommonTypes2009.types.hpp"
-
 namespace asn1kit {
 namespace modern {
 namespace OCSP2009 {
@@ -46,6 +41,16 @@ struct OCSP2009Oids {
     static constexpr auto IdPkixOcspArchiveCutoff = asn1kit::oid_literal<"1.3.6.1.5.5.7.48.1.6">();
     static constexpr auto IdPkixOcspServiceLocator = asn1kit::oid_literal<"1.3.6.1.5.5.7.48.1.7">();
 };
+
+} // namespace OCSP2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "AlgorithmInformation2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace OCSP2009 {
 
 struct CertID {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm{};
@@ -161,6 +166,16 @@ inline OCSPResponseStatus decode_OCSPResponseStatus(asn1kit::reader& r, const as
     if (number == 6) return OCSPResponseStatus::unauthorized;
     throw asn1kit::exception("Unknown ENUMERATED value.");
 }
+
+} // namespace OCSP2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKIXCommonTypes2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace OCSP2009 {
 
 struct Request {
     CertID reqCert{};
@@ -371,6 +386,16 @@ struct OCSPResponse {
     }
 };
 
+} // namespace OCSP2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKIX1Implicit2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace OCSP2009 {
+
 struct RevokedInfo {
     asn1kit::utc_date_time revocationTime{};
     std::optional<::asn1kit::modern::PKIX1Implicit2009::CRLReason> revocationReason{};
@@ -545,6 +570,16 @@ struct ServiceLocator {
         });
     }
 };
+
+} // namespace OCSP2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKIX1Explicit2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace OCSP2009 {
 
 struct Signature {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signatureAlgorithm{};

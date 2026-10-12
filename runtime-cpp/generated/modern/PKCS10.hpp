@@ -25,9 +25,6 @@
 #include <variant>
 #include <vector>
 
-#include "AlgorithmInformation2009.types.hpp"
-#include "PKIXCommonTypes2009.types.hpp"
-
 namespace asn1kit {
 namespace modern {
 namespace PKCS10 {
@@ -66,6 +63,16 @@ struct CertificationRequestInfo_Version {
     static constexpr std::int32_t V1 = 0;
 };
 
+} // namespace PKCS10
+} // namespace modern
+} // namespace asn1kit
+
+#include "AlgorithmInformation2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace PKCS10 {
+
 struct SubjectPublicKeyInfo {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithm{};
     asn1kit::bit_string subjectPublicKey{};
@@ -89,6 +96,16 @@ struct SubjectPublicKeyInfo {
         w.write_bit_string(asn1kit::tag::bit_string, this->subjectPublicKey);
     }
 };
+
+} // namespace PKCS10
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKIXCommonTypes2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace PKCS10 {
 
 struct CertificationRequestInfo {
     std::int32_t version{};

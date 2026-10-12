@@ -25,8 +25,6 @@
 #include <variant>
 #include <vector>
 
-#include "AlgorithmInformation2009.types.hpp"
-
 namespace asn1kit {
 namespace modern {
 namespace CryptographicMessageSyntaxAlgorithms2009 {
@@ -42,6 +40,16 @@ struct CryptographicMessageSyntaxAlgorithms2009Oids {
     static constexpr auto IdPBKDF2 = asn1kit::oid_literal<"1.2.840.113549.1.5.12">();
     static constexpr auto DhPublicNumber = asn1kit::oid_literal<"1.2.840.10046.2.1">();
 };
+
+} // namespace CryptographicMessageSyntaxAlgorithms2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "AlgorithmInformation2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace CryptographicMessageSyntaxAlgorithms2009 {
 
 enum class PBKDF2Params_Salt_kind {
     specified,

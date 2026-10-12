@@ -428,6 +428,150 @@ END
         Assert.Contains("encode_Color", source);
         Assert.Contains("Color::red", source);
         Assert.Contains("asn1kit::tag::context(", source);
+        Assert.Contains("Flags(asn1kit::bit_string bits)", source);
+        Assert.Contains("friend bool operator==(const Flags& a, const asn1kit::bit_string& b)", source);
+    }
+
+    [Fact]
+    public void NamedBitStringDefaultAssignsViaConvertingConstructor()
+    {
+        const string asn = @"
+M DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+Flags ::= BIT STRING { a(0), b(1) }
+Holder ::= SEQUENCE { flags Flags DEFAULT {a} }
+END
+";
+        var source = Assert.Single(new CppBackend().Generate(new Asn1Compiler().CompileText(asn))).Contents;
+        Assert.Contains("Flags flags = asn1kit::bit_string::copy_from(", source);
+        Assert.Contains("if (this->flags != asn1kit::bit_string::copy_from(", source);
+        Assert.Contains("Flags(asn1kit::bit_string bits) : value(std::move(bits))", source);
+    }
+
+    [Fact]
+    public void DefersPeerIncludesUntilFirstDependentType()
+    {
+        // Include-only triangle (no type-level SCC): A→B→C and C→A via another type.
+        var document = new IrDocument
+        {
+            IrVersion = 1,
+            Modules =
+            {
+                new IrModule
+                {
+                    Name = "A",
+                    Options = IrOptions.SetCpp(null, "namespace", "mod::a"),
+                    Types =
+                    {
+                        new IrTypeDef
+                        {
+                            Name = "Issuer",
+                            Type = new SequenceType
+                            {
+                                Components =
+                                {
+                                    new IrComponent { Name = "n", Type = new IntegerType() }
+                                }
+                            }
+                        },
+                        new IrTypeDef
+                        {
+                            Name = "Choices",
+                            Type = new SequenceType
+                            {
+                                Components =
+                                {
+                                    new IrComponent
+                                    {
+                                        Name = "attr",
+                                        Type = new RefType { Name = "Attr", Module = "B" }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                new IrModule
+                {
+                    Name = "B",
+                    Options = IrOptions.SetCpp(null, "namespace", "mod::b"),
+                    Types =
+                    {
+                        new IrTypeDef
+                        {
+                            Name = "Attr",
+                            Type = new SequenceType
+                            {
+                                Components =
+                                {
+                                    new IrComponent
+                                    {
+                                        Name = "serial",
+                                        Type = new RefType { Name = "Serial", Module = "C" }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                new IrModule
+                {
+                    Name = "C",
+                    Options = IrOptions.SetCpp(null, "namespace", "mod::c"),
+                    Types =
+                    {
+                        new IrTypeDef
+                        {
+                            Name = "Serial",
+                            Type = new SequenceType
+                            {
+                                Components =
+                                {
+                                    new IrComponent { Name = "n", Type = new IntegerType() }
+                                }
+                            }
+                        },
+                        new IrTypeDef
+                        {
+                            Name = "Entity",
+                            Type = new ChoiceType
+                            {
+                                Components =
+                                {
+                                    new IrComponent
+                                    {
+                                        Name = "issuer",
+                                        Type = new RefType { Name = "Issuer", Module = "A" }
+                                    },
+                                    new IrComponent
+                                    {
+                                        Name = "other",
+                                        Type = new OctetStringType()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        var files = new CppBackend().Generate(document);
+        Assert.DoesNotContain(files, f => f.RelativePath.StartsWith("cycle_", StringComparison.Ordinal));
+        var a = Assert.Single(files, f => f.RelativePath == "A.hpp").Contents;
+        var issuerAt = a.IndexOf("struct Issuer", StringComparison.Ordinal);
+        var includeBAt = a.IndexOf("#include \"B.hpp\"", StringComparison.Ordinal);
+        var choicesAt = a.IndexOf("struct Choices", StringComparison.Ordinal);
+        Assert.True(issuerAt >= 0 && includeBAt >= 0 && choicesAt >= 0);
+        Assert.True(
+            issuerAt < includeBAt,
+            "Non-reentrant local types (Issuer) must complete before including reentrant peer B.");
+        Assert.True(includeBAt < choicesAt, "B include must precede Choices which depends on B.Attr.");
+        Assert.True(issuerAt < choicesAt, "Issuer must be emitted before Choices (reentrant-peer deferral).");
+        // Empty namespace block before includes is forbidden; close-after-content then include is OK.
+        Assert.DoesNotContain(
+            "namespace a {\n\n} // namespace a",
+            a.Replace("\r\n", "\n", StringComparison.Ordinal),
+            StringComparison.Ordinal);
     }
 
     [Fact]

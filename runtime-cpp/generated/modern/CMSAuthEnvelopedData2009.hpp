@@ -25,8 +25,6 @@
 #include <variant>
 #include <vector>
 
-#include "CryptographicMessageSyntax2009.types.hpp"
-
 namespace asn1kit {
 namespace modern {
 namespace CMSAuthEnvelopedData2009 {
@@ -34,6 +32,16 @@ namespace CMSAuthEnvelopedData2009 {
 struct CMSAuthEnvelopedData2009Oids {
     static constexpr auto IdCtAuthEnvelopedData = asn1kit::oid_literal<"1.2.840.113549.1.9.16.1.23">();
 };
+
+} // namespace CMSAuthEnvelopedData2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "CryptographicMessageSyntax2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace CMSAuthEnvelopedData2009 {
 
 struct AuthEnvelopedData {
     std::int32_t version{};

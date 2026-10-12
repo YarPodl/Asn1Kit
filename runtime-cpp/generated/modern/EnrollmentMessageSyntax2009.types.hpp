@@ -26,12 +26,6 @@
 #include <variant>
 #include <vector>
 
-#include "AlgorithmInformation2009.types.hpp"
-#include "CryptographicMessageSyntax2009.types.hpp"
-#include "PKIX1Implicit2009.types.hpp"
-#include "PKIXCRMF2009.hpp"
-#include "PKIXCommonTypes2009.types.hpp"
-
 namespace asn1kit {
 namespace modern {
 namespace EnrollmentMessageSyntax2009 {
@@ -76,6 +70,16 @@ struct EnrollmentMessageSyntax2009Oids {
     static constexpr auto IdCmcIdentityProofV2 = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.33">();
     static constexpr auto IdCmcPopLinkWitnessV2 = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.34">();
 };
+
+} // namespace EnrollmentMessageSyntax2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKIXCommonTypes2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace EnrollmentMessageSyntax2009 {
 
 struct AddExtensions {
     std::uint32_t pkiDataReference{};
@@ -215,6 +219,17 @@ struct CMCFailInfo {
     static constexpr std::int32_t TryLater = 12;
     static constexpr std::int32_t AuthDataFail = 13;
 };
+
+} // namespace EnrollmentMessageSyntax2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "AlgorithmInformation2009.types.hpp"
+#include "PKIXCRMF2009.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace EnrollmentMessageSyntax2009 {
 
 struct CMCPublicationInfo {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlg{};
@@ -468,6 +483,16 @@ struct DecryptedPOP {
         w.write_octet_string(asn1kit::tag::octet_string, this->thePOP.span());
     }
 };
+
+} // namespace EnrollmentMessageSyntax2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKIX1Implicit2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace EnrollmentMessageSyntax2009 {
 
 struct GetCRL {
     std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> issuerName{};
@@ -1152,6 +1177,16 @@ struct TaggedCertificationRequest {
         this->certificationRequest.encode(w, asn1kit::tag::sequence);
     }
 };
+
+} // namespace EnrollmentMessageSyntax2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "CryptographicMessageSyntax2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace EnrollmentMessageSyntax2009 {
 
 struct TaggedContentInfo {
     std::uint32_t bodyPartID{};

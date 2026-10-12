@@ -26,10 +26,6 @@
 #include <variant>
 #include <vector>
 
-#include "PKIX1Explicit2009.types.hpp"
-#include "PKIXCommonTypes2009.types.hpp"
-#include "PKIXX400Address2009.types.hpp"
-
 namespace asn1kit {
 namespace modern {
 namespace PKIX1Implicit2009 {
@@ -261,6 +257,16 @@ struct DisplayText {
     }
 };
 
+} // namespace PKIX1Implicit2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKIX1Explicit2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace PKIX1Implicit2009 {
+
 struct EDIPartyName {
     std::optional<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> nameAssigner{};
     ::asn1kit::modern::PKIX1Explicit2009::DirectoryString partyName{};
@@ -333,6 +339,17 @@ struct GeneralName_OtherName {
         }
     }
 };
+
+} // namespace PKIX1Implicit2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKIXCommonTypes2009.types.hpp"
+#include "PKIXX400Address2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace PKIX1Implicit2009 {
 
 enum class GeneralName_kind {
     otherName,
@@ -793,6 +810,22 @@ inline constexpr KeyUsageFlags operator|(KeyUsageFlags a, KeyUsageFlags b) {
 struct KeyUsage {
     asn1kit::bit_string value{};
 
+    KeyUsage() = default;
+    KeyUsage(asn1kit::bit_string bits) : value(std::move(bits)) {}
+
+    friend bool operator==(const KeyUsage& a, const KeyUsage& b) noexcept {
+        return a.value == b.value;
+    }
+    friend bool operator!=(const KeyUsage& a, const KeyUsage& b) noexcept {
+        return !(a == b);
+    }
+    friend bool operator==(const KeyUsage& a, const asn1kit::bit_string& b) noexcept {
+        return a.value == b;
+    }
+    friend bool operator!=(const KeyUsage& a, const asn1kit::bit_string& b) noexcept {
+        return !(a == b);
+    }
+
     static bool bit_is_set(const asn1kit::bit_string& bits, int index) {
         if (index < 0 || static_cast<std::size_t>(index) >= bits.bit_length()) return false;
         const auto byte = bits.span()[static_cast<std::size_t>(index) / 8];
@@ -1099,6 +1132,22 @@ inline constexpr ReasonFlagsFlags operator|(ReasonFlagsFlags a, ReasonFlagsFlags
 
 struct ReasonFlags {
     asn1kit::bit_string value{};
+
+    ReasonFlags() = default;
+    ReasonFlags(asn1kit::bit_string bits) : value(std::move(bits)) {}
+
+    friend bool operator==(const ReasonFlags& a, const ReasonFlags& b) noexcept {
+        return a.value == b.value;
+    }
+    friend bool operator!=(const ReasonFlags& a, const ReasonFlags& b) noexcept {
+        return !(a == b);
+    }
+    friend bool operator==(const ReasonFlags& a, const asn1kit::bit_string& b) noexcept {
+        return a.value == b;
+    }
+    friend bool operator!=(const ReasonFlags& a, const asn1kit::bit_string& b) noexcept {
+        return !(a == b);
+    }
 
     static bool bit_is_set(const asn1kit::bit_string& bits, int index) {
         if (index < 0 || static_cast<std::size_t>(index) >= bits.bit_length()) return false;

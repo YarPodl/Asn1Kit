@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "SMIMESymmetricKeyDistribution2009.types.hpp"
+
 #include "AlgorithmInformation2009.types.hpp"
 
 namespace asn1kit {

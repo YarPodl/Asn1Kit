@@ -54,7 +54,7 @@
 
 **C++ runtime** ([runtime-cpp/](../runtime-cpp/)): примитивы BER/DER **да** (boolean/null/integer/enumerated/octet/oid/bitstring/string/time/`any`/`contained`/`encode_open`/`asn_string` + soft-profile + `asn1kit::bytes`); публичные SEQUENCE/SET/OF/EXPLICIT `enter_*` / `with_*` **да**; те же layer-1 фикстуры.
 
-**C++ codegen** ([Asn1Kit.Codegen.Cpp](../compiler/src/Asn1Kit.Codegen.Cpp/)): MVP **да** (`--lang cpp`, golden SoT `runtime-cpp/generated/`, Person + open-binding + extensible + deferred round-trip). Bare `any` → `asn1kit::any`; `CONTAINING` → `asn1kit::contained<T>`; open-type Binding (direct / CONTAINING / OF / ancestor; OID и INTEGER selector; nested selector path); peer `#include` по layout-deps (без рёбер от open-type bindings); нетривиальные SCC → `cycle_….hpp` только с членами SCC; `Module.types.hpp` (типы + OID) только если модулю нужен facade, иначе один `Module.hpp`; CHOICE → `kind` + `variant` уникальных C++-типов; единственный тип payload → обычное поле `value`; `lazy` / `retainEncoded` (encode сохраняет original TLV). Общая `options.aliasOf` объединяет X.520 CHOICE в `DirectoryString` с `kind` и `std::string value`. **Modern C++ golden** — модули + `*.types.hpp` + `cycle_*.hpp` в `runtime-cpp/generated/modern/` (`scripts/regenerate-modern-cpp.ps1`); native Certificate DER round-trip — `generated_modern_certificate_tests` (`TrustAnchorRootCertificate.crt`, `ValidCertificatePathTest1EE.crt`). Legacy Explicit88 C++ golden — вне среза (регрессия только на C#). Вне среза C++: `AsString`, SIGNED-шаблон, полный CMS ContentInfo demo.
+**C++ codegen** ([Asn1Kit.Codegen.Cpp](../compiler/src/Asn1Kit.Codegen.Cpp/)): MVP **да** (`--lang cpp`, golden SoT `runtime-cpp/generated/`, Person + open-binding + extensible + deferred round-trip). Bare `any` → `asn1kit::any`; `CONTAINING` → `asn1kit::contained<T>`; open-type Binding (direct / CONTAINING / OF / ancestor; OID и INTEGER selector; nested selector path); peer `#include` по layout-deps (без рёбер от open-type bindings); нетривиальные SCC → `cycle_….hpp` только с членами SCC; `Module.types.hpp` (типы + OID) только если модулю нужен facade, иначе один `Module.hpp`; CHOICE → `kind` + `variant` уникальных C++-типов; единственный тип payload → обычное поле `value`; `lazy` / `retainEncoded` (encode сохраняет original TLV). Общая `options.aliasOf` объединяет X.520 CHOICE в `DirectoryString` с `kind` и `std::string value`. **Modern C++ golden** — модули + `*.types.hpp` + `cycle_*.hpp` в `runtime-cpp/generated/modern/` (`scripts/regenerate-modern-cpp.ps1`); native Certificate DER round-trip — `generated_modern_certificate_tests` (`TrustAnchorRootCertificate.crt`, `ValidCertificatePathTest1EE.crt`). Legacy Explicit88 C++ golden — вне среза (регрессия только на C#). **CMS ContentInfo demo** — [runtime-cpp/examples/cms_demo](../runtime-cpp/examples/cms_demo/) (`asn1kit_cms_demo`, educational stub). Вне среза C++: `AsString`, SIGNED-шаблон.
 
 **Запись** — канонический DER. **Чтение** — soft-profile ([decisions.md](decisions.md); полный инвентарь — [runtime-api.md](../runtime-csharp/docs/runtime-api.md)):
 
@@ -68,7 +68,8 @@
 ## Продуктовые артефакты
 
 - **Modern:** [Asn1Kit.Modern](../runtime-csharp/generated/Asn1Kit.Modern/) — 24 модуля (CMS-2009 + PKIX/OCSP/PKCS10/CMP/…); regenerate `scripts/regenerate-modern.ps1`.
-- **Demo CMS:** [Asn1Kit.Cms.Demo](../runtime-csharp/examples/Asn1Kit.Cms.Demo/) — default Modern; `--legacy` для regression-стека.
+- **Demo CMS (C#):** [Asn1Kit.Cms.Demo](../runtime-csharp/examples/Asn1Kit.Cms.Demo/) — default Modern; `--legacy` для regression-стека.
+- **Demo CMS (C++):** [runtime-cpp/examples/cms_demo](../runtime-cpp/examples/cms_demo/) — Modern generated API (`verify` / `print-cert` / `print-cms` / `sign`, educational stub).
 - **Legacy (регрессия):** [Asn1Kit.Legacy](../runtime-csharp/generated/Asn1Kit.Legacy/) — ASN.1:1988 PKIX/CMS/DVCS (`Asn1Kit.Legacy.*`); options — [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json).
 - Бенчмарки (не gate): [Asn1Kit.Legacy.Benchmarks](../runtime-csharp/benchmarks/Asn1Kit.Legacy.Benchmarks/).
 
@@ -87,5 +88,5 @@
 
 ### Крупные
 
-1. C++ codegen: паритет ergonomics с C# (`AsString`, SIGNED-шаблон) и полный CMS ContentInfo demo на C++ — [cpp-backend.md](../compiler/docs/playbooks/cpp-backend.md)
+1. C++ codegen: паритет ergonomics с C# (`AsString`, SIGNED-шаблон) — [cpp-backend.md](../compiler/docs/playbooks/cpp-backend.md)
 2. Инструменты PKI поверх сгенерированного

@@ -89,6 +89,9 @@ public sealed partial class CppBackend
             }
         }
 
+        var peerModulesByModule = BuildPeerModulesByModule(
+            document, plans, typesInAmalgams, postTypes, typeToCycleFile, keyOf);
+
         var files = new List<GeneratedFile>(plans.Count * 2 + amalgams.Count);
 
         for (var i = 0; i < amalgams.Count; i++)
@@ -116,7 +119,10 @@ public sealed partial class CppBackend
                 var includes = CollectFacadeIncludes(
                     document, plan, localNested, typeToCycleFile, typesInAmalgams, postTypes,
                     modulesWithTypesFile, keyOf, peerTypesFiles: false);
-                files.Add(EmitModuleFile(document, plan, localNested, includes, emitOids: true));
+                files.Add(EmitModuleFile(
+                    document, plan, localNested, includes, emitOids: true,
+                    typeToCycleFile, typesInAmalgams, postTypes, modulesWithTypesFile, keyOf,
+                    peerTypesFiles: false, peerModulesByModule));
                 continue;
             }
 
@@ -132,10 +138,9 @@ public sealed partial class CppBackend
 
             if (emitTypesFile)
             {
-                var typesIncludes = CollectTypesFileIncludes(
+                files.Add(EmitTypesFile(
                     document, plan, coreNested, typesInAmalgams, postTypes, modulesWithTypesFile,
-                    keyOf);
-                files.Add(EmitTypesFile(document, plan, coreNested, typesIncludes));
+                    keyOf, peerModulesByModule));
             }
 
             if (emitTypesFile || ModuleNeedsFacade(plan, typeToCycleFile, postTypes))
@@ -145,7 +150,9 @@ public sealed partial class CppBackend
                     document, plan, facadeNested, typeToCycleFile, typesInAmalgams, postTypes,
                     modulesWithTypesFile, keyOf, peerTypesFiles: true);
                 files.Add(EmitModuleFile(
-                    document, plan, facadeNested, facadeIncludes, emitOids: !emitTypesFile));
+                    document, plan, facadeNested, facadeIncludes, emitOids: !emitTypesFile,
+                    typeToCycleFile, typesInAmalgams, postTypes, modulesWithTypesFile, keyOf,
+                    peerTypesFiles: true, peerModulesByModule));
             }
             else
             {
@@ -153,7 +160,10 @@ public sealed partial class CppBackend
                 var includes = CollectFacadeIncludes(
                     document, plan, coreNested, typeToCycleFile, typesInAmalgams, postTypes,
                     modulesWithTypesFile, keyOf, peerTypesFiles: true);
-                files.Add(EmitModuleFile(document, plan, coreNested, includes, emitOids: true));
+                files.Add(EmitModuleFile(
+                    document, plan, coreNested, includes, emitOids: true,
+                    typeToCycleFile, typesInAmalgams, postTypes, modulesWithTypesFile, keyOf,
+                    peerTypesFiles: true, peerModulesByModule));
             }
         }
 
@@ -394,23 +404,33 @@ public sealed partial class CppBackend
             .ToList();
     }
 
-    private List<string> CollectTypesFileIncludes(
+    /// <summary>
+    /// Peer module names required by a single core type in Module.types.hpp.
+    /// Throws if the type layout-depends on cycle/post (invariant of the types split).
+    /// </summary>
+    private HashSet<string> CollectTypesFilePeerModulesForType(
         IrDocument document,
-        ModulePlan plan,
-        IReadOnlyList<(string Name, TypeExpr Type)> coreNested,
+        IrModule module,
+        string typeName,
+        TypeExpr type,
         HashSet<(string Module, string Name)> typesInAmalgams,
         HashSet<(string Module, string Name)> postTypes,
-        HashSet<string> modulesWithTypesFile,
         Dictionary<(string Module, string Name), int> keyOf)
     {
-        var moduleIncludes = new HashSet<string>(StringComparer.Ordinal);
-        var module = plan.Module;
-
-        void ConsiderKey((string Module, string Name) key)
+        var peers = new HashSet<string>(StringComparer.Ordinal);
+        var deps = new HashSet<int>();
+        CollectNamedTypeDeps(document, module, type, typeName, keyOf, deps);
+        foreach (var pair in keyOf)
         {
+            if (!deps.Contains(pair.Value))
+            {
+                continue;
+            }
+
+            var key = pair.Key;
             if (string.Equals(key.Module, module.Name, StringComparison.Ordinal))
             {
-                return;
+                continue;
             }
 
             if (typesInAmalgams.Contains(key) || postTypes.Contains(key))
@@ -419,28 +439,310 @@ public sealed partial class CppBackend
                     $"Core type in module '{module.Name}' depends on cycle/post type '{key.Module}.{key.Name}'.");
             }
 
-            moduleIncludes.Add(
-                modulesWithTypesFile.Contains(key.Module)
-                    ? TypesFileName(key.Module)
-                    : CppNames.SanitizeTypeName(key.Module) + ".hpp");
+            peers.Add(key.Module);
         }
 
-        foreach (var (name, type) in coreNested)
+        return peers;
+    }
+
+    /// <summary>
+    /// Peer module names required by one type when emitting a Module.hpp body (facade or unsplit).
+    /// Cycle-amalgam deps are excluded (those headers stay eager at file top).
+    /// </summary>
+    private HashSet<string> CollectFacadePeerModulesForType(
+        IrDocument document,
+        IrModule module,
+        string typeName,
+        TypeExpr type,
+        Dictionary<(string Module, string Name), string> typeToCycleFile,
+        HashSet<(string Module, string Name)> typesInAmalgams,
+        HashSet<(string Module, string Name)> postTypes,
+        Dictionary<(string Module, string Name), int> keyOf)
+    {
+        var peers = new HashSet<string>(StringComparer.Ordinal);
+        var deps = new HashSet<int>();
+        CollectNamedTypeDeps(document, module, type, typeName, keyOf, deps);
+        foreach (var pair in keyOf)
         {
-            var deps = new HashSet<int>();
-            CollectNamedTypeDeps(document, module, type, name, keyOf, deps);
-            foreach (var pair in keyOf)
+            if (!deps.Contains(pair.Value))
             {
-                if (deps.Contains(pair.Value))
-                {
-                    ConsiderKey(pair.Key);
-                }
+                continue;
+            }
+
+            var key = pair.Key;
+            if (string.Equals(key.Module, module.Name, StringComparison.Ordinal) &&
+                !typesInAmalgams.Contains(key) &&
+                !postTypes.Contains(key))
+            {
+                continue;
+            }
+
+            if (typeToCycleFile.ContainsKey(key))
+            {
+                continue;
+            }
+
+            if (string.Equals(key.Module, module.Name, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            peers.Add(key.Module);
+        }
+
+        return peers;
+    }
+
+    private static string PeerHeaderForTypesFile(
+        string peerModule,
+        HashSet<string> modulesWithTypesFile) =>
+        modulesWithTypesFile.Contains(peerModule)
+            ? TypesFileName(peerModule)
+            : CppNames.SanitizeTypeName(peerModule) + ".hpp";
+
+    /// <summary>
+    /// Peer headers required by one type when emitting a Module.hpp body (facade or unsplit).
+    /// </summary>
+    private HashSet<string> CollectFacadePeerIncludesForType(
+        IrDocument document,
+        IrModule module,
+        string typeName,
+        TypeExpr type,
+        Dictionary<(string Module, string Name), string> typeToCycleFile,
+        HashSet<(string Module, string Name)> typesInAmalgams,
+        HashSet<(string Module, string Name)> postTypes,
+        HashSet<string> modulesWithTypesFile,
+        Dictionary<(string Module, string Name), int> keyOf,
+        bool peerTypesFiles)
+    {
+        var moduleIncludes = new HashSet<string>(StringComparer.Ordinal);
+        var deps = new HashSet<int>();
+        CollectNamedTypeDeps(document, module, type, typeName, keyOf, deps);
+        foreach (var pair in keyOf)
+        {
+            if (!deps.Contains(pair.Value))
+            {
+                continue;
+            }
+
+            var key = pair.Key;
+            if (string.Equals(key.Module, module.Name, StringComparison.Ordinal) &&
+                !typesInAmalgams.Contains(key) &&
+                !postTypes.Contains(key))
+            {
+                continue;
+            }
+
+            if (typeToCycleFile.ContainsKey(key))
+            {
+                continue;
+            }
+
+            if (string.Equals(key.Module, module.Name, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (!peerTypesFiles || postTypes.Contains(key) ||
+                !modulesWithTypesFile.Contains(key.Module))
+            {
+                moduleIncludes.Add(CppNames.SanitizeTypeName(key.Module) + ".hpp");
+                continue;
+            }
+
+            moduleIncludes.Add(TypesFileName(key.Module));
+        }
+
+        return moduleIncludes;
+    }
+
+    /// <summary>
+    /// True when following peer-module includes from <paramref name="peer"/> reaches
+    /// <paramref name="self"/> (include-only triangle such as CMS→AttrCert→ESS→CMS).
+    /// </summary>
+    private static bool PeerModuleReenters(
+        string self,
+        string peer,
+        IReadOnlyDictionary<string, HashSet<string>> peerModulesByModule)
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var stack = new Stack<string>();
+        stack.Push(peer);
+        while (stack.Count > 0)
+        {
+            var current = stack.Pop();
+            if (!seen.Add(current))
+            {
+                continue;
+            }
+
+            if (string.Equals(current, self, StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            if (!peerModulesByModule.TryGetValue(current, out var next))
+            {
+                continue;
+            }
+
+            foreach (var moduleName in next)
+            {
+                stack.Push(moduleName);
             }
         }
 
-        return moduleIncludes
+        return false;
+    }
+
+    private List<(string Name, TypeExpr Type)> OrderNestedPreferringNonReentrantPeers(
+        IrDocument document,
+        IrModule module,
+        IReadOnlyList<(string Name, TypeExpr Type)> nested,
+        Func<string, TypeExpr, HashSet<string>> peerModulesForType,
+        IReadOnlyDictionary<string, HashSet<string>> peerModulesByModule,
+        Dictionary<(string Module, string Name), int> keyOf)
+    {
+        var ordered = OrderNestedForEmit(document, module, nested);
+        var deferred = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var item in ordered)
+        {
+            var peers = peerModulesForType(item.Name, item.Type);
+            if (peers.Any(peer => PeerModuleReenters(module.Name, peer, peerModulesByModule)))
+            {
+                deferred.Add(item.Name);
+            }
+        }
+
+        // Keep in-module topo: anything that layout-depends on a deferred type is deferred too
+        // (e.g. OriginatorInfo → CertificateChoices → AttrCert).
+        var localDeps = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+        foreach (var item in ordered)
+        {
+            var deps = new HashSet<int>();
+            CollectNamedTypeDeps(document, module, item.Type, item.Name, keyOf, deps);
+            var names = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var pair in keyOf)
+            {
+                if (deps.Contains(pair.Value) &&
+                    string.Equals(pair.Key.Module, module.Name, StringComparison.Ordinal))
+                {
+                    names.Add(pair.Key.Name);
+                }
+            }
+
+            localDeps[item.Name] = names;
+        }
+
+        bool changed;
+        do
+        {
+            changed = false;
+            foreach (var item in ordered)
+            {
+                if (deferred.Contains(item.Name))
+                {
+                    continue;
+                }
+
+                if (localDeps[item.Name].Any(deferred.Contains))
+                {
+                    deferred.Add(item.Name);
+                    changed = true;
+                }
+            }
+        }
+        while (changed);
+
+        return ordered.Where(item => !deferred.Contains(item.Name))
+            .Concat(ordered.Where(item => deferred.Contains(item.Name)))
+            .ToList();
+    }
+
+    private Dictionary<string, HashSet<string>> BuildPeerModulesByModule(
+        IrDocument document,
+        IReadOnlyList<ModulePlan> plans,
+        HashSet<(string Module, string Name)> typesInAmalgams,
+        HashSet<(string Module, string Name)> postTypes,
+        Dictionary<(string Module, string Name), string> typeToCycleFile,
+        Dictionary<(string Module, string Name), int> keyOf)
+    {
+        var result = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+        foreach (var plan in plans)
+        {
+            var peers = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var (name, type) in plan.Nested)
+            {
+                if (typesInAmalgams.Contains((plan.Module.Name, name)))
+                {
+                    continue;
+                }
+
+                peers.UnionWith(CollectFacadePeerModulesForType(
+                    document, plan.Module, name, type, typeToCycleFile, typesInAmalgams, postTypes,
+                    keyOf));
+            }
+
+            result[plan.Module.Name] = peers;
+        }
+
+        return result;
+    }
+
+    private static bool IsEagerFacadeInclude(string include, string moduleName)
+    {
+        if (include.StartsWith("cycle_", StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        return string.Equals(include, TypesFileName(moduleName), StringComparison.Ordinal);
+    }
+
+    private static void EnsureNamespaceOpen(StringBuilder builder, string ns, ref bool namespaceOpen)
+    {
+        if (namespaceOpen)
+        {
+            return;
+        }
+
+        builder.Append(CppNames.NamespaceOpen(ns));
+        builder.AppendLine();
+        namespaceOpen = true;
+    }
+
+    /// <summary>
+    /// Emits peer includes at file scope. Closes an open namespace first when it already
+    /// has content; never opens an empty namespace just to close it again.
+    /// Leaves <paramref name="namespaceOpen"/> false after emitting includes.
+    /// </summary>
+    private static void EmitDeferredPeerIncludes(
+        StringBuilder builder,
+        string ns,
+        ref bool namespaceOpen,
+        IEnumerable<string> includes)
+    {
+        var ordered = includes
             .OrderBy(static n => n, StringComparer.Ordinal)
             .ToList();
+        if (ordered.Count == 0)
+        {
+            return;
+        }
+
+        if (namespaceOpen)
+        {
+            builder.Append(CppNames.NamespaceClose(ns));
+            builder.AppendLine();
+            namespaceOpen = false;
+        }
+
+        foreach (var include in ordered)
+        {
+            builder.AppendLine($"#include \"{include}\"");
+        }
+
+        builder.AppendLine();
     }
 
     private List<string> CollectFacadeIncludes(
@@ -612,7 +914,11 @@ public sealed partial class CppBackend
         IrDocument document,
         ModulePlan plan,
         IReadOnlyList<(string Name, TypeExpr Type)> nested,
-        IReadOnlyList<string> includes)
+        HashSet<(string Module, string Name)> typesInAmalgams,
+        HashSet<(string Module, string Name)> postTypes,
+        HashSet<string> modulesWithTypesFile,
+        Dictionary<(string Module, string Name), int> keyOf,
+        IReadOnlyDictionary<string, HashSet<string>> peerModulesByModule)
     {
         var module = plan.Module;
         var ns = ModuleNamespace(module);
@@ -624,31 +930,43 @@ public sealed partial class CppBackend
         builder.AppendLine($"#define {guard}");
         builder.AppendLine();
         EmitRuntimeIncludes(builder);
-        foreach (var include in includes)
-        {
-            builder.AppendLine($"#include \"{include}\"");
-        }
-
-        if (includes.Count > 0)
-        {
-            builder.AppendLine();
-        }
-
-        builder.Append(CppNames.NamespaceOpen(ns));
-        builder.AppendLine();
+        // Peer includes are deferred until the first owning type so include-only
+        // triangles (CMS.types → AttrCert → ESS → CMS.types) see local types first.
+        var namespaceOpen = false;
         if (plan.Oids.Count > 0)
         {
+            EnsureNamespaceOpen(builder, ns, ref namespaceOpen);
             EmitOidCatalog(builder, OidCatalogName(module), plan.Oids);
             builder.AppendLine();
         }
 
-        foreach (var (name, type) in OrderNestedForEmit(document, module, nested))
+        var emitOrder = OrderNestedPreferringNonReentrantPeers(
+            document,
+            module,
+            nested,
+            (name, type) => CollectTypesFilePeerModulesForType(
+                document, module, name, type, typesInAmalgams, postTypes, keyOf),
+            peerModulesByModule,
+            keyOf);
+
+        var emittedIncludes = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var (name, type) in emitOrder)
         {
+            var peerModules = CollectTypesFilePeerModulesForType(
+                document, module, name, type, typesInAmalgams, postTypes, keyOf);
+            var headers = peerModules
+                .Select(peer => PeerHeaderForTypesFile(peer, modulesWithTypesFile));
+            EmitDeferredPeerIncludes(builder, ns, ref namespaceOpen, headers.Where(emittedIncludes.Add));
+            EnsureNamespaceOpen(builder, ns, ref namespaceOpen);
             EmitType(builder, document, module, name, type);
             builder.AppendLine();
         }
 
-        builder.Append(CppNames.NamespaceClose(ns));
+        if (namespaceOpen)
+        {
+            builder.Append(CppNames.NamespaceClose(ns));
+        }
+
         builder.AppendLine($"#endif // {guard}");
         return new GeneratedFile(TypesFileName(module.Name), builder.ToString());
     }
@@ -658,7 +976,14 @@ public sealed partial class CppBackend
         ModulePlan plan,
         IReadOnlyList<(string Name, TypeExpr Type)> nested,
         IReadOnlyList<string> includes,
-        bool emitOids)
+        bool emitOids,
+        Dictionary<(string Module, string Name), string> typeToCycleFile,
+        HashSet<(string Module, string Name)> typesInAmalgams,
+        HashSet<(string Module, string Name)> postTypes,
+        HashSet<string> modulesWithTypesFile,
+        Dictionary<(string Module, string Name), int> keyOf,
+        bool peerTypesFiles,
+        IReadOnlyDictionary<string, HashSet<string>> peerModulesByModule)
     {
         var module = plan.Module;
         var ns = ModuleNamespace(module);
@@ -669,20 +994,67 @@ public sealed partial class CppBackend
         builder.AppendLine($"#define {guard}");
         builder.AppendLine();
         EmitRuntimeIncludes(builder);
-        foreach (var include in includes)
+
+        var eager = includes
+            .Where(include => IsEagerFacadeInclude(include, module.Name))
+            .OrderBy(static n => n, StringComparer.Ordinal)
+            .ToList();
+        foreach (var include in eager)
         {
             builder.AppendLine($"#include \"{include}\"");
         }
 
-        if (includes.Count > 0)
+        if (eager.Count > 0)
         {
             builder.AppendLine();
         }
 
-        builder.Append(CppNames.NamespaceOpen(ns));
-        builder.AppendLine();
-        EmitModuleBody(builder, document, plan, nested, emitOids);
-        builder.Append(CppNames.NamespaceClose(ns));
+        var namespaceOpen = false;
+        if (emitOids && plan.Oids.Count > 0)
+        {
+            EnsureNamespaceOpen(builder, ns, ref namespaceOpen);
+            EmitOidCatalog(builder, OidCatalogName(module), plan.Oids);
+            builder.AppendLine();
+        }
+
+        var emitOrder = OrderNestedPreferringNonReentrantPeers(
+            document,
+            module,
+            nested,
+            (name, type) => CollectFacadePeerModulesForType(
+                document, module, name, type, typeToCycleFile, typesInAmalgams, postTypes, keyOf),
+            peerModulesByModule,
+            keyOf);
+
+        var emittedIncludes = new HashSet<string>(eager, StringComparer.Ordinal);
+        foreach (var (name, type) in emitOrder)
+        {
+            var headers = CollectFacadePeerIncludesForType(
+                document, module, name, type, typeToCycleFile, typesInAmalgams, postTypes,
+                modulesWithTypesFile, keyOf, peerTypesFiles);
+            EmitDeferredPeerIncludes(builder, ns, ref namespaceOpen, headers.Where(emittedIncludes.Add));
+            EnsureNamespaceOpen(builder, ns, ref namespaceOpen);
+            EmitType(builder, document, module, name, type);
+            builder.AppendLine();
+        }
+
+        // Open-type bindings may need peers not referenced by nested types.
+        var remainingPeers = includes
+            .Where(include => !IsEagerFacadeInclude(include, module.Name) && emittedIncludes.Add(include))
+            .ToList();
+        EmitDeferredPeerIncludes(builder, ns, ref namespaceOpen, remainingPeers);
+
+        if (plan.Open.Sites.Count > 0)
+        {
+            EnsureNamespaceOpen(builder, ns, ref namespaceOpen);
+            EmitOpenTypes(builder, document, module, plan.Open);
+        }
+
+        if (namespaceOpen)
+        {
+            builder.Append(CppNames.NamespaceClose(ns));
+        }
+
         builder.AppendLine($"#endif // {guard}");
         return new GeneratedFile(CppNames.SanitizeTypeName(module.Name) + ".hpp", builder.ToString());
     }

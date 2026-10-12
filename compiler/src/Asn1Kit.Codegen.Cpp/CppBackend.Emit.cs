@@ -499,6 +499,28 @@ public sealed partial class CppBackend
         sb.AppendLine($"struct {typeName} {{");
         sb.AppendLine("    asn1kit::bit_string value{};");
         sb.AppendLine();
+        // Converting ctor + comparisons so SEQUENCE DEFAULT `= bit_string::copy_from(...)`
+        // and encode omit-if-default `!= copy_from(...)` type-check (C# wraps named BIT STRING).
+        sb.AppendLine($"    {typeName}() = default;");
+        sb.AppendLine($"    {typeName}(asn1kit::bit_string bits) : value(std::move(bits)) {{}}");
+        sb.AppendLine();
+        sb.AppendLine(
+            $"    friend bool operator==(const {typeName}& a, const {typeName}& b) noexcept {{");
+        sb.AppendLine("        return a.value == b.value;");
+        sb.AppendLine("    }");
+        sb.AppendLine(
+            $"    friend bool operator!=(const {typeName}& a, const {typeName}& b) noexcept {{");
+        sb.AppendLine("        return !(a == b);");
+        sb.AppendLine("    }");
+        sb.AppendLine(
+            $"    friend bool operator==(const {typeName}& a, const asn1kit::bit_string& b) noexcept {{");
+        sb.AppendLine("        return a.value == b;");
+        sb.AppendLine("    }");
+        sb.AppendLine(
+            $"    friend bool operator!=(const {typeName}& a, const asn1kit::bit_string& b) noexcept {{");
+        sb.AppendLine("        return !(a == b);");
+        sb.AppendLine("    }");
+        sb.AppendLine();
         sb.AppendLine("    static bool bit_is_set(const asn1kit::bit_string& bits, int index) {");
         sb.AppendLine("        if (index < 0 || static_cast<std::size_t>(index) >= bits.bit_length()) return false;");
         sb.AppendLine("        const auto byte = bits.span()[static_cast<std::size_t>(index) / 8];");

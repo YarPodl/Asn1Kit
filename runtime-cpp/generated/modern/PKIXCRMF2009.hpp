@@ -25,12 +25,6 @@
 #include <variant>
 #include <vector>
 
-#include "AlgorithmInformation2009.types.hpp"
-#include "CryptographicMessageSyntax2009.types.hpp"
-#include "PKCS10.hpp"
-#include "PKIX1Implicit2009.types.hpp"
-#include "PKIXCommonTypes2009.types.hpp"
-
 namespace asn1kit {
 namespace modern {
 namespace PKIXCRMF2009 {
@@ -52,6 +46,16 @@ struct PKIXCRMF2009Oids {
     static constexpr auto IdRegInfoUtf8Pairs = asn1kit::oid_literal<"1.3.6.1.5.5.7.5.2.1">();
     static constexpr auto IdRegInfoCertReq = asn1kit::oid_literal<"1.3.6.1.5.5.7.5.2.2">();
 };
+
+} // namespace PKIXCRMF2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKIX1Implicit2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace PKIXCRMF2009 {
 
 struct CertId {
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName issuer{};
@@ -154,6 +158,16 @@ struct EncKeyWithID_Identifier {
     }
 };
 
+} // namespace PKIXCRMF2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "AlgorithmInformation2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace PKIXCRMF2009 {
+
 struct EncryptedValue {
     std::optional<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> intendedAlg{};
     std::optional<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> symmAlg{};
@@ -209,6 +223,16 @@ struct EncryptedValue {
         w.write_bit_string(asn1kit::tag::bit_string, this->encValue);
     }
 };
+
+} // namespace PKIXCRMF2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "CryptographicMessageSyntax2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace PKIXCRMF2009 {
 
 enum class EncryptedKey_kind {
     encryptedValue,
@@ -332,6 +356,17 @@ struct OptionalValidity {
         }
     }
 };
+
+} // namespace PKIXCRMF2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKCS10.hpp"
+#include "PKIXCommonTypes2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace PKIXCRMF2009 {
 
 struct CertTemplate {
     std::optional<std::int32_t> version{};
