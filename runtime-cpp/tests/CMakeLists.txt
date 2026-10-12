@@ -17,6 +17,7 @@ add_executable(asn1kit_tests
     open_binding_tests.cpp
     value_lazy_tests.cpp
     generated_deferred_tests.cpp
+    utc_date_time_tests.cpp
 )
 
 target_link_libraries(asn1kit_tests
