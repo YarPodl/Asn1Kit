@@ -134,7 +134,7 @@ enum class Pick_kind {
 
 struct Pick {
     Pick_kind kind{};
-    std::variant<asn1kit::integer> value{};
+    asn1kit::integer value{};
     std::optional<asn1kit::any> unknown{};
 
     static Pick from_left(asn1kit::integer v) {
@@ -179,7 +179,7 @@ struct Pick {
         switch (kind) {
         case Pick_kind::left:
             {
-                const auto& alt = std::get<0>(value);
+                const auto& alt = value;
                 w.write_integer(asn1kit::tag::context(0), alt);
                 break;
             }

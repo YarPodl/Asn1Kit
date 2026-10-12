@@ -96,14 +96,14 @@ struct PBKDF2Params_Salt {
     static PBKDF2Params_Salt from_specified(asn1kit::bytes v) {
         PBKDF2Params_Salt result{};
         result.kind = PBKDF2Params_Salt_kind::specified;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static PBKDF2Params_Salt from_otherSource(::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v) {
         PBKDF2Params_Salt result{};
         result.kind = PBKDF2Params_Salt_kind::otherSource;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
@@ -119,14 +119,14 @@ struct PBKDF2Params_Salt {
             result.kind = PBKDF2Params_Salt_kind::specified;
             asn1kit::bytes alt{};
             alt = r.read_octet_string(asn1kit::tag::octet_string);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
             PBKDF2Params_Salt result{};
             result.kind = PBKDF2Params_Salt_kind::otherSource;
             ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier alt{};
             alt = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(r, asn1kit::tag::sequence);
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");

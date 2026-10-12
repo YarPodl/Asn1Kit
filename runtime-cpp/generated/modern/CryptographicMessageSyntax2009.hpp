@@ -98,14 +98,14 @@ struct ExtendedCertificateOrCertificate {
     static ExtendedCertificateOrCertificate from_certificate(::asn1kit::modern::PKIX1Explicit2009::Certificate v) {
         ExtendedCertificateOrCertificate result{};
         result.kind = ExtendedCertificateOrCertificate_kind::certificate;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static ExtendedCertificateOrCertificate from_extendedCertificate(ExtendedCertificate v) {
         ExtendedCertificateOrCertificate result{};
         result.kind = ExtendedCertificateOrCertificate_kind::extendedCertificate;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
@@ -121,14 +121,14 @@ struct ExtendedCertificateOrCertificate {
             result.kind = ExtendedCertificateOrCertificate_kind::certificate;
             ::asn1kit::modern::PKIX1Explicit2009::Certificate alt{};
             alt = ::asn1kit::modern::PKIX1Explicit2009::Certificate::decode(r, asn1kit::tag::sequence);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
             ExtendedCertificateOrCertificate result{};
             result.kind = ExtendedCertificateOrCertificate_kind::extendedCertificate;
             ExtendedCertificate alt{};
             alt = ExtendedCertificate::decode(r, asn1kit::tag::context(0, true));
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");

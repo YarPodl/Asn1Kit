@@ -220,12 +220,10 @@ public sealed partial class CppBackend
         var payloadTypes = alts
             .Select(a => CppType(document, module, typeName, a.Name, a.Type, optional: false))
             .ToList();
-        // std::variant forbids duplicate alternatives; wrap colliding C++ types (e.g. Time).
-        var duplicatePayload = payloadTypes
-            .GroupBy(static t => t, StringComparer.Ordinal)
-            .Any(static g => g.Count() > 1);
-        var boxNames = kinds.Select(k => $"{typeName}_{k}_box").ToList();
-        var variantTypes = duplicatePayload ? boxNames : payloadTypes;
+        // The kind selects the ASN.1 alternative; storage only distinguishes C++ types.
+        var variantTypes = payloadTypes.Distinct(StringComparer.Ordinal).ToList();
+        var variantIndices = payloadTypes.Select(t => variantTypes.IndexOf(t)).ToList();
+        var singlePayload = variantTypes.Count == 1;
 
         sb.AppendLine($"enum class {typeName}_kind {{");
         for (var i = 0; i < kinds.Count; i++)
@@ -242,20 +240,10 @@ public sealed partial class CppBackend
         sb.AppendLine("};");
         sb.AppendLine();
 
-        if (duplicatePayload)
-        {
-            for (var i = 0; i < alts.Count; i++)
-            {
-                sb.AppendLine($"struct {boxNames[i]} {{");
-                sb.AppendLine($"    {payloadTypes[i]} value{{}};");
-                sb.AppendLine("};");
-                sb.AppendLine();
-            }
-        }
-
         sb.AppendLine($"struct {typeName} {{");
         sb.AppendLine($"    {typeName}_kind kind{{}};");
-        sb.AppendLine($"    std::variant<{string.Join(", ", variantTypes)}> value{{}};");
+        var storageType = singlePayload ? variantTypes[0] : $"std::variant<{string.Join(", ", variantTypes)}>";
+        sb.AppendLine($"    {storageType} value{{}};");
         if (type.Extensible)
         {
             sb.AppendLine("    std::optional<asn1kit::any> unknown{};");
@@ -269,13 +257,13 @@ public sealed partial class CppBackend
             sb.AppendLine($"    static {typeName} {factory}({payloadTypes[i]} v) {{");
             sb.AppendLine($"        {typeName} result{{}};");
             sb.AppendLine($"        result.kind = {typeName}_kind::{kinds[i]};");
-            if (duplicatePayload)
+            if (singlePayload)
             {
-                sb.AppendLine($"        result.value = {boxNames[i]}{{std::move(v)}};");
+                sb.AppendLine("        result.value = std::move(v);");
             }
             else
             {
-                sb.AppendLine("        result.value = std::move(v);");
+                sb.AppendLine($"        result.value.emplace<{variantIndices[i]}>(std::move(v));");
             }
 
             sb.AppendLine("        return result;");
@@ -328,13 +316,13 @@ public sealed partial class CppBackend
                 "            ",
                 "r",
                 "alt");
-            if (duplicatePayload)
+            if (singlePayload)
             {
-                sb.AppendLine($"            result.value = {boxNames[i]}{{std::move(alt)}};");
+                sb.AppendLine("            result.value = std::move(alt);");
             }
             else
             {
-                sb.AppendLine("            result.value = std::move(alt);");
+                sb.AppendLine($"            result.value.emplace<{variantIndices[i]}>(std::move(alt));");
             }
 
             sb.AppendLine("            return result;");
@@ -389,13 +377,13 @@ public sealed partial class CppBackend
             var alt = alts[i];
             sb.AppendLine($"        case {typeName}_kind::{kinds[i]}:");
             sb.AppendLine("            {");
-            if (duplicatePayload)
+            if (singlePayload)
             {
-                sb.AppendLine($"                const auto& alt = std::get<{i}>(value).value;");
+                sb.AppendLine("                const auto& alt = value;");
             }
             else
             {
-                sb.AppendLine($"                const auto& alt = std::get<{i}>(value);");
+                sb.AppendLine($"                const auto& alt = std::get<{variantIndices[i]}>(value);");
             }
 
             EmitEncodeValue(

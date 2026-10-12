@@ -594,14 +594,14 @@ struct KeyAgreeRecipientIdentifier {
     static KeyAgreeRecipientIdentifier from_issuerAndSerialNumber(IssuerAndSerialNumber v) {
         KeyAgreeRecipientIdentifier result{};
         result.kind = KeyAgreeRecipientIdentifier_kind::issuerAndSerialNumber;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static KeyAgreeRecipientIdentifier from_rKeyId(RecipientKeyIdentifier v) {
         KeyAgreeRecipientIdentifier result{};
         result.kind = KeyAgreeRecipientIdentifier_kind::rKeyId;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
@@ -617,14 +617,14 @@ struct KeyAgreeRecipientIdentifier {
             result.kind = KeyAgreeRecipientIdentifier_kind::issuerAndSerialNumber;
             IssuerAndSerialNumber alt{};
             alt = IssuerAndSerialNumber::decode(r, asn1kit::tag::sequence);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
             KeyAgreeRecipientIdentifier result{};
             result.kind = KeyAgreeRecipientIdentifier_kind::rKeyId;
             RecipientKeyIdentifier alt{};
             alt = RecipientKeyIdentifier::decode(r, asn1kit::tag::context(0, true));
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -672,21 +672,21 @@ struct OriginatorIdentifierOrKey {
     static OriginatorIdentifierOrKey from_issuerAndSerialNumber(IssuerAndSerialNumber v) {
         OriginatorIdentifierOrKey result{};
         result.kind = OriginatorIdentifierOrKey_kind::issuerAndSerialNumber;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static OriginatorIdentifierOrKey from_subjectKeyIdentifier(asn1kit::bytes v) {
         OriginatorIdentifierOrKey result{};
         result.kind = OriginatorIdentifierOrKey_kind::subjectKeyIdentifier;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
     static OriginatorIdentifierOrKey from_originatorKey(OriginatorPublicKey v) {
         OriginatorIdentifierOrKey result{};
         result.kind = OriginatorIdentifierOrKey_kind::originatorKey;
-        result.value = std::move(v);
+        result.value.emplace<2>(std::move(v));
         return result;
     }
 
@@ -702,21 +702,21 @@ struct OriginatorIdentifierOrKey {
             result.kind = OriginatorIdentifierOrKey_kind::issuerAndSerialNumber;
             IssuerAndSerialNumber alt{};
             alt = IssuerAndSerialNumber::decode(r, asn1kit::tag::sequence);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0))) {
             OriginatorIdentifierOrKey result{};
             result.kind = OriginatorIdentifierOrKey_kind::subjectKeyIdentifier;
             asn1kit::bytes alt{};
             alt = r.read_octet_string(asn1kit::tag::context(0));
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
             OriginatorIdentifierOrKey result{};
             result.kind = OriginatorIdentifierOrKey_kind::originatorKey;
             OriginatorPublicKey alt{};
             alt = OriginatorPublicKey::decode(r, asn1kit::tag::context(1, true));
-            result.value = std::move(alt);
+            result.value.emplace<2>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -852,14 +852,14 @@ struct RecipientIdentifier {
     static RecipientIdentifier from_issuerAndSerialNumber(IssuerAndSerialNumber v) {
         RecipientIdentifier result{};
         result.kind = RecipientIdentifier_kind::issuerAndSerialNumber;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static RecipientIdentifier from_subjectKeyIdentifier(asn1kit::bytes v) {
         RecipientIdentifier result{};
         result.kind = RecipientIdentifier_kind::subjectKeyIdentifier;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
@@ -882,14 +882,14 @@ struct RecipientIdentifier {
             result.kind = RecipientIdentifier_kind::issuerAndSerialNumber;
             IssuerAndSerialNumber alt{};
             alt = IssuerAndSerialNumber::decode(r, asn1kit::tag::sequence);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0))) {
             RecipientIdentifier result{};
             result.kind = RecipientIdentifier_kind::subjectKeyIdentifier;
             asn1kit::bytes alt{};
             alt = r.read_octet_string(asn1kit::tag::context(0));
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else {
             return from_unknown(r.read_any());
@@ -975,35 +975,35 @@ struct RecipientInfo {
     static RecipientInfo from_ktri(KeyTransRecipientInfo v) {
         RecipientInfo result{};
         result.kind = RecipientInfo_kind::ktri;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static RecipientInfo from_kari(KeyAgreeRecipientInfo v) {
         RecipientInfo result{};
         result.kind = RecipientInfo_kind::kari;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
     static RecipientInfo from_kekri(KEKRecipientInfo v) {
         RecipientInfo result{};
         result.kind = RecipientInfo_kind::kekri;
-        result.value = std::move(v);
+        result.value.emplace<2>(std::move(v));
         return result;
     }
 
     static RecipientInfo from_pwri(PasswordRecipientInfo v) {
         RecipientInfo result{};
         result.kind = RecipientInfo_kind::pwri;
-        result.value = std::move(v);
+        result.value.emplace<3>(std::move(v));
         return result;
     }
 
     static RecipientInfo from_ori(OtherRecipientInfo v) {
         RecipientInfo result{};
         result.kind = RecipientInfo_kind::ori;
-        result.value = std::move(v);
+        result.value.emplace<4>(std::move(v));
         return result;
     }
 
@@ -1026,35 +1026,35 @@ struct RecipientInfo {
             result.kind = RecipientInfo_kind::ktri;
             KeyTransRecipientInfo alt{};
             alt = KeyTransRecipientInfo::decode(r, asn1kit::tag::sequence);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
             RecipientInfo result{};
             result.kind = RecipientInfo_kind::kari;
             KeyAgreeRecipientInfo alt{};
             alt = KeyAgreeRecipientInfo::decode(r, asn1kit::tag::context(1, true));
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2, true))) {
             RecipientInfo result{};
             result.kind = RecipientInfo_kind::kekri;
             KEKRecipientInfo alt{};
             alt = KEKRecipientInfo::decode(r, asn1kit::tag::context(2, true));
-            result.value = std::move(alt);
+            result.value.emplace<2>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(3, true))) {
             RecipientInfo result{};
             result.kind = RecipientInfo_kind::pwri;
             PasswordRecipientInfo alt{};
             alt = PasswordRecipientInfo::decode(r, asn1kit::tag::context(3, true));
-            result.value = std::move(alt);
+            result.value.emplace<3>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(4, true))) {
             RecipientInfo result{};
             result.kind = RecipientInfo_kind::ori;
             OtherRecipientInfo alt{};
             alt = OtherRecipientInfo::decode(r, asn1kit::tag::context(4, true));
-            result.value = std::move(alt);
+            result.value.emplace<4>(std::move(alt));
             return result;
         } else {
             return from_unknown(r.read_any());
@@ -1125,14 +1125,14 @@ struct SignerIdentifier {
     static SignerIdentifier from_issuerAndSerialNumber(IssuerAndSerialNumber v) {
         SignerIdentifier result{};
         result.kind = SignerIdentifier_kind::issuerAndSerialNumber;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static SignerIdentifier from_subjectKeyIdentifier(asn1kit::bytes v) {
         SignerIdentifier result{};
         result.kind = SignerIdentifier_kind::subjectKeyIdentifier;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
@@ -1155,14 +1155,14 @@ struct SignerIdentifier {
             result.kind = SignerIdentifier_kind::issuerAndSerialNumber;
             IssuerAndSerialNumber alt{};
             alt = IssuerAndSerialNumber::decode(r, asn1kit::tag::sequence);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0))) {
             SignerIdentifier result{};
             result.kind = SignerIdentifier_kind::subjectKeyIdentifier;
             asn1kit::bytes alt{};
             alt = r.read_octet_string(asn1kit::tag::context(0));
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else {
             return from_unknown(r.read_any());
@@ -1281,29 +1281,21 @@ enum class AdministrationDomainName_kind {
     printable
 };
 
-struct AdministrationDomainName_numeric_box {
-    std::string value{};
-};
-
-struct AdministrationDomainName_printable_box {
-    std::string value{};
-};
-
 struct AdministrationDomainName {
     AdministrationDomainName_kind kind{};
-    std::variant<AdministrationDomainName_numeric_box, AdministrationDomainName_printable_box> value{};
+    std::string value{};
 
     static AdministrationDomainName from_numeric(std::string v) {
         AdministrationDomainName result{};
         result.kind = AdministrationDomainName_kind::numeric;
-        result.value = AdministrationDomainName_numeric_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
     static AdministrationDomainName from_printable(std::string v) {
         AdministrationDomainName result{};
         result.kind = AdministrationDomainName_kind::printable;
-        result.value = AdministrationDomainName_printable_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
@@ -1319,14 +1311,14 @@ struct AdministrationDomainName {
             result.kind = AdministrationDomainName_kind::numeric;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::numeric_string, asn1kit::string_form::numeric);
-            result.value = AdministrationDomainName_numeric_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::printable_string)) {
             AdministrationDomainName result{};
             result.kind = AdministrationDomainName_kind::printable;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
-            result.value = AdministrationDomainName_printable_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -1345,13 +1337,13 @@ struct AdministrationDomainName {
         switch (kind) {
         case AdministrationDomainName_kind::numeric:
             {
-                const auto& alt = std::get<0>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::numeric_string, alt, asn1kit::string_form::numeric);
                 break;
             }
         case AdministrationDomainName_kind::printable:
             {
-                const auto& alt = std::get<1>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::printable_string, alt, asn1kit::string_form::printable);
                 break;
             }
@@ -1393,29 +1385,21 @@ enum class CountryName_kind {
     iso_3166_alpha2_code
 };
 
-struct CountryName_x121_dcc_code_box {
-    std::string value{};
-};
-
-struct CountryName_iso_3166_alpha2_code_box {
-    std::string value{};
-};
-
 struct CountryName {
     CountryName_kind kind{};
-    std::variant<CountryName_x121_dcc_code_box, CountryName_iso_3166_alpha2_code_box> value{};
+    std::string value{};
 
     static CountryName from_x121_dcc_code(std::string v) {
         CountryName result{};
         result.kind = CountryName_kind::x121_dcc_code;
-        result.value = CountryName_x121_dcc_code_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
     static CountryName from_iso_3166_alpha2_code(std::string v) {
         CountryName result{};
         result.kind = CountryName_kind::iso_3166_alpha2_code;
-        result.value = CountryName_iso_3166_alpha2_code_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
@@ -1431,14 +1415,14 @@ struct CountryName {
             result.kind = CountryName_kind::x121_dcc_code;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::numeric_string, asn1kit::string_form::numeric);
-            result.value = CountryName_x121_dcc_code_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::printable_string)) {
             CountryName result{};
             result.kind = CountryName_kind::iso_3166_alpha2_code;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
-            result.value = CountryName_iso_3166_alpha2_code_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -1457,13 +1441,13 @@ struct CountryName {
         switch (kind) {
         case CountryName_kind::x121_dcc_code:
             {
-                const auto& alt = std::get<0>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::numeric_string, alt, asn1kit::string_form::numeric);
                 break;
             }
         case CountryName_kind::iso_3166_alpha2_code:
             {
-                const auto& alt = std::get<1>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::printable_string, alt, asn1kit::string_form::printable);
                 break;
             }
@@ -1654,29 +1638,21 @@ enum class PrivateDomainName_kind {
     printable
 };
 
-struct PrivateDomainName_numeric_box {
-    std::string value{};
-};
-
-struct PrivateDomainName_printable_box {
-    std::string value{};
-};
-
 struct PrivateDomainName {
     PrivateDomainName_kind kind{};
-    std::variant<PrivateDomainName_numeric_box, PrivateDomainName_printable_box> value{};
+    std::string value{};
 
     static PrivateDomainName from_numeric(std::string v) {
         PrivateDomainName result{};
         result.kind = PrivateDomainName_kind::numeric;
-        result.value = PrivateDomainName_numeric_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
     static PrivateDomainName from_printable(std::string v) {
         PrivateDomainName result{};
         result.kind = PrivateDomainName_kind::printable;
-        result.value = PrivateDomainName_printable_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
@@ -1692,14 +1668,14 @@ struct PrivateDomainName {
             result.kind = PrivateDomainName_kind::numeric;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::numeric_string, asn1kit::string_form::numeric);
-            result.value = PrivateDomainName_numeric_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::printable_string)) {
             PrivateDomainName result{};
             result.kind = PrivateDomainName_kind::printable;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
-            result.value = PrivateDomainName_printable_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -1715,13 +1691,13 @@ struct PrivateDomainName {
         switch (kind) {
         case PrivateDomainName_kind::numeric:
             {
-                const auto& alt = std::get<0>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::numeric_string, alt, asn1kit::string_form::numeric);
                 break;
             }
         case PrivateDomainName_kind::printable:
             {
-                const auto& alt = std::get<1>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::printable_string, alt, asn1kit::string_form::printable);
                 break;
             }
@@ -2153,29 +2129,21 @@ enum class Time_kind {
     generalTime
 };
 
-struct Time_utcTime_box {
-    asn1kit::utc_date_time value{};
-};
-
-struct Time_generalTime_box {
-    asn1kit::utc_date_time value{};
-};
-
 struct Time {
     Time_kind kind{};
-    std::variant<Time_utcTime_box, Time_generalTime_box> value{};
+    asn1kit::utc_date_time value{};
 
     static Time from_utcTime(asn1kit::utc_date_time v) {
         Time result{};
         result.kind = Time_kind::utcTime;
-        result.value = Time_utcTime_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
     static Time from_generalTime(asn1kit::utc_date_time v) {
         Time result{};
         result.kind = Time_kind::generalTime;
-        result.value = Time_generalTime_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
@@ -2191,14 +2159,14 @@ struct Time {
             result.kind = Time_kind::utcTime;
             asn1kit::utc_date_time alt{};
             alt = r.read_time(asn1kit::tag::utc_time, asn1kit::time_form::utc);
-            result.value = Time_utcTime_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::generalized_time)) {
             Time result{};
             result.kind = Time_kind::generalTime;
             asn1kit::utc_date_time alt{};
             alt = r.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
-            result.value = Time_generalTime_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -2214,13 +2182,13 @@ struct Time {
         switch (kind) {
         case Time_kind::utcTime:
             {
-                const auto& alt = std::get<0>(value).value;
+                const auto& alt = value;
                 w.write_time(asn1kit::tag::utc_time, alt, asn1kit::time_form::utc);
                 break;
             }
         case Time_kind::generalTime:
             {
-                const auto& alt = std::get<1>(value).value;
+                const auto& alt = value;
                 w.write_time(asn1kit::tag::generalized_time, alt, asn1kit::time_form::generalized, 3);
                 break;
             }
@@ -2560,62 +2528,42 @@ enum class X520name_kind {
     uTF8String
 };
 
-struct X520name_teletexString_box {
-    std::string value{};
-};
-
-struct X520name_printableString_box {
-    std::string value{};
-};
-
-struct X520name_bmpString_box {
-    std::string value{};
-};
-
-struct X520name_universalString_box {
-    std::string value{};
-};
-
-struct X520name_uTF8String_box {
-    std::string value{};
-};
-
 struct X520name {
     X520name_kind kind{};
-    std::variant<X520name_teletexString_box, X520name_printableString_box, X520name_bmpString_box, X520name_universalString_box, X520name_uTF8String_box> value{};
+    std::string value{};
 
     static X520name from_teletexString(std::string v) {
         X520name result{};
         result.kind = X520name_kind::teletexString;
-        result.value = X520name_teletexString_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
     static X520name from_printableString(std::string v) {
         X520name result{};
         result.kind = X520name_kind::printableString;
-        result.value = X520name_printableString_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
     static X520name from_bmpString(std::string v) {
         X520name result{};
         result.kind = X520name_kind::bmpString;
-        result.value = X520name_bmpString_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
     static X520name from_universalString(std::string v) {
         X520name result{};
         result.kind = X520name_kind::universalString;
-        result.value = X520name_universalString_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
     static X520name from_uTF8String(std::string v) {
         X520name result{};
         result.kind = X520name_kind::uTF8String;
-        result.value = X520name_uTF8String_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
@@ -2631,35 +2579,35 @@ struct X520name {
             result.kind = X520name_kind::teletexString;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::teletex_string, asn1kit::string_form::teletex);
-            result.value = X520name_teletexString_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::printable_string)) {
             X520name result{};
             result.kind = X520name_kind::printableString;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
-            result.value = X520name_printableString_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::bmp_string)) {
             X520name result{};
             result.kind = X520name_kind::bmpString;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::bmp_string, asn1kit::string_form::bmp);
-            result.value = X520name_bmpString_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::universal_string)) {
             X520name result{};
             result.kind = X520name_kind::universalString;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::universal_string, asn1kit::string_form::universal);
-            result.value = X520name_universalString_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::utf8_string)) {
             X520name result{};
             result.kind = X520name_kind::uTF8String;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
-            result.value = X520name_uTF8String_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -2675,31 +2623,31 @@ struct X520name {
         switch (kind) {
         case X520name_kind::teletexString:
             {
-                const auto& alt = std::get<0>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::teletex_string, alt, asn1kit::string_form::teletex);
                 break;
             }
         case X520name_kind::printableString:
             {
-                const auto& alt = std::get<1>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::printable_string, alt, asn1kit::string_form::printable);
                 break;
             }
         case X520name_kind::bmpString:
             {
-                const auto& alt = std::get<2>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::bmp_string, alt, asn1kit::string_form::bmp);
                 break;
             }
         case X520name_kind::universalString:
             {
-                const auto& alt = std::get<3>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::universal_string, alt, asn1kit::string_form::universal);
                 break;
             }
         case X520name_kind::uTF8String:
             {
-                const auto& alt = std::get<4>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::utf8_string, alt, asn1kit::string_form::utf8);
                 break;
             }
@@ -2805,106 +2753,70 @@ enum class GeneralName_kind {
     registeredID
 };
 
-struct GeneralName_otherName_box {
-    GeneralName_OtherName value{};
-};
-
-struct GeneralName_rfc822Name_box {
-    std::string value{};
-};
-
-struct GeneralName_dNSName_box {
-    std::string value{};
-};
-
-struct GeneralName_x400Address_box {
-    ::asn1kit::modern::PKIXX400Address2009::ORAddress value{};
-};
-
-struct GeneralName_directoryName_box {
-    std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> value{};
-};
-
-struct GeneralName_ediPartyName_box {
-    EDIPartyName value{};
-};
-
-struct GeneralName_uniformResourceIdentifier_box {
-    std::string value{};
-};
-
-struct GeneralName_iPAddress_box {
-    asn1kit::bytes value{};
-};
-
-struct GeneralName_registeredID_box {
-    asn1kit::oid value{};
-};
-
 struct GeneralName {
     GeneralName_kind kind{};
-    std::variant<GeneralName_otherName_box, GeneralName_rfc822Name_box, GeneralName_dNSName_box, GeneralName_x400Address_box, GeneralName_directoryName_box, GeneralName_ediPartyName_box, GeneralName_uniformResourceIdentifier_box, GeneralName_iPAddress_box, GeneralName_registeredID_box> value{};
+    std::variant<GeneralName_OtherName, std::string, ::asn1kit::modern::PKIXX400Address2009::ORAddress, std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>, EDIPartyName, asn1kit::bytes, asn1kit::oid> value{};
 
     static GeneralName from_otherName(GeneralName_OtherName v) {
         GeneralName result{};
         result.kind = GeneralName_kind::otherName;
-        result.value = GeneralName_otherName_box{std::move(v)};
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static GeneralName from_rfc822Name(std::string v) {
         GeneralName result{};
         result.kind = GeneralName_kind::rfc822Name;
-        result.value = GeneralName_rfc822Name_box{std::move(v)};
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
     static GeneralName from_dNSName(std::string v) {
         GeneralName result{};
         result.kind = GeneralName_kind::dNSName;
-        result.value = GeneralName_dNSName_box{std::move(v)};
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
     static GeneralName from_x400Address(::asn1kit::modern::PKIXX400Address2009::ORAddress v) {
         GeneralName result{};
         result.kind = GeneralName_kind::x400Address;
-        result.value = GeneralName_x400Address_box{std::move(v)};
+        result.value.emplace<2>(std::move(v));
         return result;
     }
 
     static GeneralName from_directoryName(std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> v) {
         GeneralName result{};
         result.kind = GeneralName_kind::directoryName;
-        result.value = GeneralName_directoryName_box{std::move(v)};
+        result.value.emplace<3>(std::move(v));
         return result;
     }
 
     static GeneralName from_ediPartyName(EDIPartyName v) {
         GeneralName result{};
         result.kind = GeneralName_kind::ediPartyName;
-        result.value = GeneralName_ediPartyName_box{std::move(v)};
+        result.value.emplace<4>(std::move(v));
         return result;
     }
 
     static GeneralName from_uniformResourceIdentifier(std::string v) {
         GeneralName result{};
         result.kind = GeneralName_kind::uniformResourceIdentifier;
-        result.value = GeneralName_uniformResourceIdentifier_box{std::move(v)};
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
     static GeneralName from_iPAddress(asn1kit::bytes v) {
         GeneralName result{};
         result.kind = GeneralName_kind::iPAddress;
-        result.value = GeneralName_iPAddress_box{std::move(v)};
+        result.value.emplace<5>(std::move(v));
         return result;
     }
 
     static GeneralName from_registeredID(asn1kit::oid v) {
         GeneralName result{};
         result.kind = GeneralName_kind::registeredID;
-        result.value = GeneralName_registeredID_box{std::move(v)};
+        result.value.emplace<6>(std::move(v));
         return result;
     }
 
@@ -2920,28 +2832,28 @@ struct GeneralName {
             result.kind = GeneralName_kind::otherName;
             GeneralName_OtherName alt{};
             alt = GeneralName_OtherName::decode(r, asn1kit::tag::context(0, true));
-            result.value = GeneralName_otherName_box{std::move(alt)};
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1))) {
             GeneralName result{};
             result.kind = GeneralName_kind::rfc822Name;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::context(1), asn1kit::string_form::ia5);
-            result.value = GeneralName_rfc822Name_box{std::move(alt)};
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2))) {
             GeneralName result{};
             result.kind = GeneralName_kind::dNSName;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::context(2), asn1kit::string_form::ia5);
-            result.value = GeneralName_dNSName_box{std::move(alt)};
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(3, true))) {
             GeneralName result{};
             result.kind = GeneralName_kind::x400Address;
             ::asn1kit::modern::PKIXX400Address2009::ORAddress alt{};
             alt = ::asn1kit::modern::PKIXX400Address2009::ORAddress::decode(r, asn1kit::tag::context(3, true));
-            result.value = GeneralName_x400Address_box{std::move(alt)};
+            result.value.emplace<2>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(4, true))) {
             GeneralName result{};
@@ -2960,35 +2872,35 @@ struct GeneralName {
                 });
             });
             alt = std::move(tmp_directoryName);
-            result.value = GeneralName_directoryName_box{std::move(alt)};
+            result.value.emplace<3>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(5, true))) {
             GeneralName result{};
             result.kind = GeneralName_kind::ediPartyName;
             EDIPartyName alt{};
             alt = EDIPartyName::decode(r, asn1kit::tag::context(5, true));
-            result.value = GeneralName_ediPartyName_box{std::move(alt)};
+            result.value.emplace<4>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(6))) {
             GeneralName result{};
             result.kind = GeneralName_kind::uniformResourceIdentifier;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::context(6), asn1kit::string_form::ia5);
-            result.value = GeneralName_uniformResourceIdentifier_box{std::move(alt)};
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(7))) {
             GeneralName result{};
             result.kind = GeneralName_kind::iPAddress;
             asn1kit::bytes alt{};
             alt = r.read_octet_string(asn1kit::tag::context(7));
-            result.value = GeneralName_iPAddress_box{std::move(alt)};
+            result.value.emplace<5>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(8))) {
             GeneralName result{};
             result.kind = GeneralName_kind::registeredID;
             asn1kit::oid alt{};
             alt = r.read_oid(asn1kit::tag::context(8));
-            result.value = GeneralName_registeredID_box{std::move(alt)};
+            result.value.emplace<6>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -3004,31 +2916,31 @@ struct GeneralName {
         switch (kind) {
         case GeneralName_kind::otherName:
             {
-                const auto& alt = std::get<0>(value).value;
+                const auto& alt = std::get<0>(value);
                 alt.encode(w, asn1kit::tag::context(0, true));
                 break;
             }
         case GeneralName_kind::rfc822Name:
             {
-                const auto& alt = std::get<1>(value).value;
+                const auto& alt = std::get<1>(value);
                 w.write_string(asn1kit::tag::context(1), alt, asn1kit::string_form::ia5);
                 break;
             }
         case GeneralName_kind::dNSName:
             {
-                const auto& alt = std::get<2>(value).value;
+                const auto& alt = std::get<1>(value);
                 w.write_string(asn1kit::tag::context(2), alt, asn1kit::string_form::ia5);
                 break;
             }
         case GeneralName_kind::x400Address:
             {
-                const auto& alt = std::get<3>(value).value;
+                const auto& alt = std::get<2>(value);
                 alt.encode(w, asn1kit::tag::context(3, true));
                 break;
             }
         case GeneralName_kind::directoryName:
             {
-                const auto& alt = std::get<4>(value).value;
+                const auto& alt = std::get<3>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(4, true));
                     w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
@@ -3041,25 +2953,25 @@ struct GeneralName {
             }
         case GeneralName_kind::ediPartyName:
             {
-                const auto& alt = std::get<5>(value).value;
+                const auto& alt = std::get<4>(value);
                 alt.encode(w, asn1kit::tag::context(5, true));
                 break;
             }
         case GeneralName_kind::uniformResourceIdentifier:
             {
-                const auto& alt = std::get<6>(value).value;
+                const auto& alt = std::get<1>(value);
                 w.write_string(asn1kit::tag::context(6), alt, asn1kit::string_form::ia5);
                 break;
             }
         case GeneralName_kind::iPAddress:
             {
-                const auto& alt = std::get<7>(value).value;
+                const auto& alt = std::get<5>(value);
                 w.write_octet_string(asn1kit::tag::context(7), alt.span());
                 break;
             }
         case GeneralName_kind::registeredID:
             {
-                const auto& alt = std::get<8>(value).value;
+                const auto& alt = std::get<6>(value);
                 w.write_object_identifier(asn1kit::tag::context(8), alt);
                 break;
             }
@@ -3130,14 +3042,14 @@ struct AttributeCertificateInfoV1_Subject {
     static AttributeCertificateInfoV1_Subject from_baseCertificateID(::asn1kit::modern::ExtendedSecurityServices2009::IssuerSerial v) {
         AttributeCertificateInfoV1_Subject result{};
         result.kind = AttributeCertificateInfoV1_Subject_kind::baseCertificateID;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static AttributeCertificateInfoV1_Subject from_subjectName(std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> v) {
         AttributeCertificateInfoV1_Subject result{};
         result.kind = AttributeCertificateInfoV1_Subject_kind::subjectName;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
@@ -3157,7 +3069,7 @@ struct AttributeCertificateInfoV1_Subject {
                 tmp_baseCertificateID = ::asn1kit::modern::ExtendedSecurityServices2009::IssuerSerial::decode(scoped, asn1kit::tag::sequence);
             });
             alt = std::move(tmp_baseCertificateID);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
             AttributeCertificateInfoV1_Subject result{};
@@ -3172,7 +3084,7 @@ struct AttributeCertificateInfoV1_Subject {
                 });
             });
             alt = std::move(tmp_subjectName);
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -3451,14 +3363,14 @@ struct RevocationInfoChoice {
     static RevocationInfoChoice from_crl(::asn1kit::modern::PKIX1Explicit2009::CertificateList v) {
         RevocationInfoChoice result{};
         result.kind = RevocationInfoChoice_kind::crl;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static RevocationInfoChoice from_other(OtherRevocationInfoFormat v) {
         RevocationInfoChoice result{};
         result.kind = RevocationInfoChoice_kind::other;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
@@ -3481,14 +3393,14 @@ struct RevocationInfoChoice {
             result.kind = RevocationInfoChoice_kind::crl;
             ::asn1kit::modern::PKIX1Explicit2009::CertificateList alt{};
             alt = ::asn1kit::modern::PKIX1Explicit2009::CertificateList::decode(r, asn1kit::tag::sequence);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
             RevocationInfoChoice result{};
             result.kind = RevocationInfoChoice_kind::other;
             OtherRevocationInfoFormat alt{};
             alt = OtherRevocationInfoFormat::decode(r, asn1kit::tag::context(1, true));
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else {
             return from_unknown(r.read_any());
@@ -3906,14 +3818,14 @@ struct AttCertIssuer {
     static AttCertIssuer from_v1Form(std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> v) {
         AttCertIssuer result{};
         result.kind = AttCertIssuer_kind::v1Form;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static AttCertIssuer from_v2Form(V2Form v) {
         AttCertIssuer result{};
         result.kind = AttCertIssuer_kind::v2Form;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
@@ -3933,14 +3845,14 @@ struct AttCertIssuer {
                 item = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
                 return item;
             });
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
             AttCertIssuer result{};
             result.kind = AttCertIssuer_kind::v2Form;
             V2Form alt{};
             alt = V2Form::decode(r, asn1kit::tag::context(0, true));
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -4100,35 +4012,35 @@ struct CertificateChoices {
     static CertificateChoices from_certificate(::asn1kit::modern::PKIX1Explicit2009::Certificate v) {
         CertificateChoices result{};
         result.kind = CertificateChoices_kind::certificate;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static CertificateChoices from_extendedCertificate(ExtendedCertificate v) {
         CertificateChoices result{};
         result.kind = CertificateChoices_kind::extendedCertificate;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
     static CertificateChoices from_v1AttrCert(::asn1kit::modern::AttributeCertificateVersion12009::AttributeCertificateV1 v) {
         CertificateChoices result{};
         result.kind = CertificateChoices_kind::v1AttrCert;
-        result.value = std::move(v);
+        result.value.emplace<2>(std::move(v));
         return result;
     }
 
     static CertificateChoices from_v2AttrCert(::asn1kit::modern::PKIXAttributeCertificate2009::AttributeCertificate v) {
         CertificateChoices result{};
         result.kind = CertificateChoices_kind::v2AttrCert;
-        result.value = std::move(v);
+        result.value.emplace<3>(std::move(v));
         return result;
     }
 
     static CertificateChoices from_other(OtherCertificateFormat v) {
         CertificateChoices result{};
         result.kind = CertificateChoices_kind::other;
-        result.value = std::move(v);
+        result.value.emplace<4>(std::move(v));
         return result;
     }
 
@@ -4151,35 +4063,35 @@ struct CertificateChoices {
             result.kind = CertificateChoices_kind::certificate;
             ::asn1kit::modern::PKIX1Explicit2009::Certificate alt{};
             alt = ::asn1kit::modern::PKIX1Explicit2009::Certificate::decode(r, asn1kit::tag::sequence);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
             CertificateChoices result{};
             result.kind = CertificateChoices_kind::extendedCertificate;
             ExtendedCertificate alt{};
             alt = ExtendedCertificate::decode(r, asn1kit::tag::context(0, true));
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
             CertificateChoices result{};
             result.kind = CertificateChoices_kind::v1AttrCert;
             ::asn1kit::modern::AttributeCertificateVersion12009::AttributeCertificateV1 alt{};
             alt = ::asn1kit::modern::AttributeCertificateVersion12009::AttributeCertificateV1::decode(r, asn1kit::tag::context(1, true));
-            result.value = std::move(alt);
+            result.value.emplace<2>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2, true))) {
             CertificateChoices result{};
             result.kind = CertificateChoices_kind::v2AttrCert;
             ::asn1kit::modern::PKIXAttributeCertificate2009::AttributeCertificate alt{};
             alt = ::asn1kit::modern::PKIXAttributeCertificate2009::AttributeCertificate::decode(r, asn1kit::tag::context(2, true));
-            result.value = std::move(alt);
+            result.value.emplace<3>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(3, true))) {
             CertificateChoices result{};
             result.kind = CertificateChoices_kind::other;
             OtherCertificateFormat alt{};
             alt = OtherCertificateFormat::decode(r, asn1kit::tag::context(3, true));
-            result.value = std::move(alt);
+            result.value.emplace<4>(std::move(alt));
             return result;
         } else {
             return from_unknown(r.read_any());

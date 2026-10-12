@@ -407,7 +407,7 @@ END
     }
 
     [Fact]
-    public void ChoiceWithDuplicateCppPayloadTypesEmitsVariantBoxes()
+    public void ChoiceWithOneCppPayloadTypeEmitsDirectValue()
     {
         const string asn = @"
 CppTime DEFINITIONS AUTOMATIC TAGS ::= BEGIN
@@ -421,13 +421,38 @@ END
         document.Modules[0].Options = IrOptions.SetCpp(document.Modules[0].Options, "namespace", "cpp::time");
         var source = new CppBackend().Generate(document).Single().Contents;
 
-        Assert.Contains("struct Time_utcTime_box", source);
-        Assert.Contains("struct Time_generalTime_box", source);
-        Assert.Contains("std::variant<Time_utcTime_box, Time_generalTime_box>", source);
-        Assert.Contains("std::get<0>(value).value", source);
-        Assert.DoesNotContain(
-            "std::variant<asn1kit::utc_date_time, asn1kit::utc_date_time>",
-            source);
+        Assert.Contains("Time_kind kind{};", source);
+        Assert.Contains("asn1kit::utc_date_time value{};", source);
+        Assert.Contains("const auto& alt = value;", source);
+        Assert.Contains("result.value = std::move(v);", source);
+        Assert.Contains("result.value = std::move(alt);", source);
+        Assert.Contains("time_form::utc", source);
+        Assert.Contains("time_form::generalized", source);
+        Assert.DoesNotContain("_box", source);
+        Assert.DoesNotContain("std::variant<", source);
+        Assert.DoesNotContain("std::get<", source);
+    }
+
+    [Fact]
+    public void ChoiceWithMixedPayloadTypesSharesVariantSlots()
+    {
+        const string asn = @"
+M DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+Text ::= UTF8String
+Pick ::= CHOICE { first Text, flag BOOLEAN, second IA5String, data OCTET STRING, ... }
+END
+";
+        var source = new CppBackend().Generate(new Asn1Compiler().CompileText(asn)).Single().Contents;
+        Assert.Contains("std::variant<std::string, bool, asn1kit::bytes> value{};", source);
+        Assert.DoesNotContain("_box", source);
+        Assert.Contains("result.kind = Pick_kind::second;\n        result.value.emplace<0>(std::move(v));",
+            source.Replace("\r\n", "\n", StringComparison.Ordinal));
+        Assert.Contains("case Pick_kind::second:\n            {\n                const auto& alt = std::get<0>(value);",
+            source.Replace("\r\n", "\n", StringComparison.Ordinal));
+        Assert.Contains("result.value.emplace<2>(std::move(alt));", source);
+        Assert.Contains("const auto& alt = std::get<2>(value);", source);
+        Assert.DoesNotContain("std::get<3>", source);
+        Assert.Contains("return from_unknown(r.read_any());", source);
     }
 
     [Fact]

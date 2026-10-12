@@ -126,14 +126,14 @@ struct BodyPartReference {
     static BodyPartReference from_bodyPartID(std::uint32_t v) {
         BodyPartReference result{};
         result.kind = BodyPartReference_kind::bodyPartID;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static BodyPartReference from_bodyPartPath(std::vector<std::uint32_t> v) {
         BodyPartReference result{};
         result.kind = BodyPartReference_kind::bodyPartPath;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
@@ -149,7 +149,7 @@ struct BodyPartReference {
             result.kind = BodyPartReference_kind::bodyPartID;
             std::uint32_t alt{};
             alt = r.read_uint32(asn1kit::tag::integer);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
             BodyPartReference result{};
@@ -160,7 +160,7 @@ struct BodyPartReference {
                 item = inner.read_uint32(asn1kit::tag::integer);
                 return item;
             });
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -364,21 +364,21 @@ struct CMCStatusInfoV2_OtherInfo {
     static CMCStatusInfoV2_OtherInfo from_failInfo(std::int32_t v) {
         CMCStatusInfoV2_OtherInfo result{};
         result.kind = CMCStatusInfoV2_OtherInfo_kind::failInfo;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static CMCStatusInfoV2_OtherInfo from_pendInfo(PendInfo v) {
         CMCStatusInfoV2_OtherInfo result{};
         result.kind = CMCStatusInfoV2_OtherInfo_kind::pendInfo;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
     static CMCStatusInfoV2_OtherInfo from_extendedFailInfo(CMCStatusInfoV2_OtherInfo_ExtendedFailInfo v) {
         CMCStatusInfoV2_OtherInfo result{};
         result.kind = CMCStatusInfoV2_OtherInfo_kind::extendedFailInfo;
-        result.value = std::move(v);
+        result.value.emplace<2>(std::move(v));
         return result;
     }
 
@@ -394,21 +394,21 @@ struct CMCStatusInfoV2_OtherInfo {
             result.kind = CMCStatusInfoV2_OtherInfo_kind::failInfo;
             std::int32_t alt{};
             alt = r.read_int32(asn1kit::tag::integer);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
             CMCStatusInfoV2_OtherInfo result{};
             result.kind = CMCStatusInfoV2_OtherInfo_kind::pendInfo;
             PendInfo alt{};
             alt = PendInfo::decode(r, asn1kit::tag::sequence);
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
             CMCStatusInfoV2_OtherInfo result{};
             result.kind = CMCStatusInfoV2_OtherInfo_kind::extendedFailInfo;
             CMCStatusInfoV2_OtherInfo_ExtendedFailInfo alt{};
             alt = CMCStatusInfoV2_OtherInfo_ExtendedFailInfo::decode(r, asn1kit::tag::context(1, true));
-            result.value = std::move(alt);
+            result.value.emplace<2>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -485,14 +485,14 @@ struct CMCStatusInfo_OtherInfo {
     static CMCStatusInfo_OtherInfo from_failInfo(std::int32_t v) {
         CMCStatusInfo_OtherInfo result{};
         result.kind = CMCStatusInfo_OtherInfo_kind::failInfo;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static CMCStatusInfo_OtherInfo from_pendInfo(PendInfo v) {
         CMCStatusInfo_OtherInfo result{};
         result.kind = CMCStatusInfo_OtherInfo_kind::pendInfo;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
@@ -508,14 +508,14 @@ struct CMCStatusInfo_OtherInfo {
             result.kind = CMCStatusInfo_OtherInfo_kind::failInfo;
             std::int32_t alt{};
             alt = r.read_int32(asn1kit::tag::integer);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
             CMCStatusInfo_OtherInfo result{};
             result.kind = CMCStatusInfo_OtherInfo_kind::pendInfo;
             PendInfo alt{};
             alt = PendInfo::decode(r, asn1kit::tag::sequence);
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -1188,21 +1188,21 @@ struct TaggedRequest {
     static TaggedRequest from_tcr(TaggedCertificationRequest v) {
         TaggedRequest result{};
         result.kind = TaggedRequest_kind::tcr;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static TaggedRequest from_crm(::asn1kit::modern::PKIXCRMF2009::CertReqMsg v) {
         TaggedRequest result{};
         result.kind = TaggedRequest_kind::crm;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
     static TaggedRequest from_orm(TaggedRequest_Orm v) {
         TaggedRequest result{};
         result.kind = TaggedRequest_kind::orm;
-        result.value = std::move(v);
+        result.value.emplace<2>(std::move(v));
         return result;
     }
 
@@ -1218,21 +1218,21 @@ struct TaggedRequest {
             result.kind = TaggedRequest_kind::tcr;
             TaggedCertificationRequest alt{};
             alt = TaggedCertificationRequest::decode(r, asn1kit::tag::context(0, true));
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
             TaggedRequest result{};
             result.kind = TaggedRequest_kind::crm;
             ::asn1kit::modern::PKIXCRMF2009::CertReqMsg alt{};
             alt = ::asn1kit::modern::PKIXCRMF2009::CertReqMsg::decode(r, asn1kit::tag::context(1, true));
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2, true))) {
             TaggedRequest result{};
             result.kind = TaggedRequest_kind::orm;
             TaggedRequest_Orm alt{};
             alt = TaggedRequest_Orm::decode(r, asn1kit::tag::context(2, true));
-            result.value = std::move(alt);
+            result.value.emplace<2>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");

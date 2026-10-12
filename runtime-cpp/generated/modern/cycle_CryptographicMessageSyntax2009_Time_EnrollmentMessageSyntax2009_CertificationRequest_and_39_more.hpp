@@ -37,29 +37,21 @@ enum class Time_kind {
     generalTime
 };
 
-struct Time_utcTime_box {
-    asn1kit::utc_date_time value{};
-};
-
-struct Time_generalTime_box {
-    asn1kit::utc_date_time value{};
-};
-
 struct Time {
     Time_kind kind{};
-    std::variant<Time_utcTime_box, Time_generalTime_box> value{};
+    asn1kit::utc_date_time value{};
 
     static Time from_utcTime(asn1kit::utc_date_time v) {
         Time result{};
         result.kind = Time_kind::utcTime;
-        result.value = Time_utcTime_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
     static Time from_generalTime(asn1kit::utc_date_time v) {
         Time result{};
         result.kind = Time_kind::generalTime;
-        result.value = Time_generalTime_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
@@ -75,14 +67,14 @@ struct Time {
             result.kind = Time_kind::utcTime;
             asn1kit::utc_date_time alt{};
             alt = r.read_time(asn1kit::tag::utc_time, asn1kit::time_form::utc);
-            result.value = Time_utcTime_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::generalized_time)) {
             Time result{};
             result.kind = Time_kind::generalTime;
             asn1kit::utc_date_time alt{};
             alt = r.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
-            result.value = Time_generalTime_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -98,13 +90,13 @@ struct Time {
         switch (kind) {
         case Time_kind::utcTime:
             {
-                const auto& alt = std::get<0>(value).value;
+                const auto& alt = value;
                 w.write_time(asn1kit::tag::utc_time, alt, asn1kit::time_form::utc);
                 break;
             }
         case Time_kind::generalTime:
             {
-                const auto& alt = std::get<1>(value).value;
+                const auto& alt = value;
                 w.write_time(asn1kit::tag::generalized_time, alt, asn1kit::time_form::generalized, 3);
                 break;
             }
@@ -279,7 +271,7 @@ enum class CMPCertificate_kind {
 
 struct CMPCertificate {
     CMPCertificate_kind kind{};
-    std::variant<::asn1kit::modern::PKIX1Explicit2009::Certificate> value{};
+    ::asn1kit::modern::PKIX1Explicit2009::Certificate value{};
     std::optional<asn1kit::any> unknown{};
 
     static CMPCertificate from_x509v3PKCert(::asn1kit::modern::PKIX1Explicit2009::Certificate v) {
@@ -324,7 +316,7 @@ struct CMPCertificate {
         switch (kind) {
         case CMPCertificate_kind::x509v3PKCert:
             {
-                const auto& alt = std::get<0>(value);
+                const auto& alt = value;
                 alt.encode(w, asn1kit::tag::sequence);
                 break;
             }
@@ -1117,14 +1109,14 @@ struct CertOrEncCert {
     static CertOrEncCert from_certificate(CMPCertificate v) {
         CertOrEncCert result{};
         result.kind = CertOrEncCert_kind::certificate;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static CertOrEncCert from_encryptedCert(::asn1kit::modern::PKIXCRMF2009::EncryptedValue v) {
         CertOrEncCert result{};
         result.kind = CertOrEncCert_kind::encryptedCert;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
@@ -1144,7 +1136,7 @@ struct CertOrEncCert {
                 tmp_certificate = CMPCertificate::decode(scoped);
             });
             alt = std::move(tmp_certificate);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
             CertOrEncCert result{};
@@ -1155,7 +1147,7 @@ struct CertOrEncCert {
                 tmp_encryptedCert = ::asn1kit::modern::PKIXCRMF2009::EncryptedValue::decode(scoped, asn1kit::tag::sequence);
             });
             alt = std::move(tmp_encryptedCert);
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -1506,62 +1498,42 @@ enum class POPOPrivKey_kind {
     encryptedKey
 };
 
-struct POPOPrivKey_thisMessage_box {
-    asn1kit::bit_string value{};
-};
-
-struct POPOPrivKey_subsequentMessage_box {
-    std::int32_t value{};
-};
-
-struct POPOPrivKey_dhMAC_box {
-    asn1kit::bit_string value{};
-};
-
-struct POPOPrivKey_agreeMAC_box {
-    PKMACValue value{};
-};
-
-struct POPOPrivKey_encryptedKey_box {
-    ::asn1kit::modern::CryptographicMessageSyntax2009::EnvelopedData value{};
-};
-
 struct POPOPrivKey {
     POPOPrivKey_kind kind{};
-    std::variant<POPOPrivKey_thisMessage_box, POPOPrivKey_subsequentMessage_box, POPOPrivKey_dhMAC_box, POPOPrivKey_agreeMAC_box, POPOPrivKey_encryptedKey_box> value{};
+    std::variant<asn1kit::bit_string, std::int32_t, PKMACValue, ::asn1kit::modern::CryptographicMessageSyntax2009::EnvelopedData> value{};
 
     static POPOPrivKey from_thisMessage(asn1kit::bit_string v) {
         POPOPrivKey result{};
         result.kind = POPOPrivKey_kind::thisMessage;
-        result.value = POPOPrivKey_thisMessage_box{std::move(v)};
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static POPOPrivKey from_subsequentMessage(std::int32_t v) {
         POPOPrivKey result{};
         result.kind = POPOPrivKey_kind::subsequentMessage;
-        result.value = POPOPrivKey_subsequentMessage_box{std::move(v)};
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
     static POPOPrivKey from_dhMAC(asn1kit::bit_string v) {
         POPOPrivKey result{};
         result.kind = POPOPrivKey_kind::dhMAC;
-        result.value = POPOPrivKey_dhMAC_box{std::move(v)};
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static POPOPrivKey from_agreeMAC(PKMACValue v) {
         POPOPrivKey result{};
         result.kind = POPOPrivKey_kind::agreeMAC;
-        result.value = POPOPrivKey_agreeMAC_box{std::move(v)};
+        result.value.emplace<2>(std::move(v));
         return result;
     }
 
     static POPOPrivKey from_encryptedKey(::asn1kit::modern::CryptographicMessageSyntax2009::EnvelopedData v) {
         POPOPrivKey result{};
         result.kind = POPOPrivKey_kind::encryptedKey;
-        result.value = POPOPrivKey_encryptedKey_box{std::move(v)};
+        result.value.emplace<3>(std::move(v));
         return result;
     }
 
@@ -1577,35 +1549,35 @@ struct POPOPrivKey {
             result.kind = POPOPrivKey_kind::thisMessage;
             asn1kit::bit_string alt{};
             alt = r.read_bit_string(asn1kit::tag::context(0));
-            result.value = POPOPrivKey_thisMessage_box{std::move(alt)};
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1))) {
             POPOPrivKey result{};
             result.kind = POPOPrivKey_kind::subsequentMessage;
             std::int32_t alt{};
             alt = r.read_int32(asn1kit::tag::context(1));
-            result.value = POPOPrivKey_subsequentMessage_box{std::move(alt)};
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2))) {
             POPOPrivKey result{};
             result.kind = POPOPrivKey_kind::dhMAC;
             asn1kit::bit_string alt{};
             alt = r.read_bit_string(asn1kit::tag::context(2));
-            result.value = POPOPrivKey_dhMAC_box{std::move(alt)};
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(3, true))) {
             POPOPrivKey result{};
             result.kind = POPOPrivKey_kind::agreeMAC;
             PKMACValue alt{};
             alt = PKMACValue::decode(r, asn1kit::tag::context(3, true));
-            result.value = POPOPrivKey_agreeMAC_box{std::move(alt)};
+            result.value.emplace<2>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(4, true))) {
             POPOPrivKey result{};
             result.kind = POPOPrivKey_kind::encryptedKey;
             ::asn1kit::modern::CryptographicMessageSyntax2009::EnvelopedData alt{};
             alt = ::asn1kit::modern::CryptographicMessageSyntax2009::EnvelopedData::decode(r, asn1kit::tag::context(4, true));
-            result.value = POPOPrivKey_encryptedKey_box{std::move(alt)};
+            result.value.emplace<3>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -1621,31 +1593,31 @@ struct POPOPrivKey {
         switch (kind) {
         case POPOPrivKey_kind::thisMessage:
             {
-                const auto& alt = std::get<0>(value).value;
+                const auto& alt = std::get<0>(value);
                 w.write_bit_string(asn1kit::tag::context(0), alt);
                 break;
             }
         case POPOPrivKey_kind::subsequentMessage:
             {
-                const auto& alt = std::get<1>(value).value;
+                const auto& alt = std::get<1>(value);
                 w.write_integer(asn1kit::tag::context(1), alt);
                 break;
             }
         case POPOPrivKey_kind::dhMAC:
             {
-                const auto& alt = std::get<2>(value).value;
+                const auto& alt = std::get<0>(value);
                 w.write_bit_string(asn1kit::tag::context(2), alt);
                 break;
             }
         case POPOPrivKey_kind::agreeMAC:
             {
-                const auto& alt = std::get<3>(value).value;
+                const auto& alt = std::get<2>(value);
                 alt.encode(w, asn1kit::tag::context(3, true));
                 break;
             }
         case POPOPrivKey_kind::encryptedKey:
             {
-                const auto& alt = std::get<4>(value).value;
+                const auto& alt = std::get<3>(value);
                 alt.encode(w, asn1kit::tag::context(4, true));
                 break;
             }
@@ -1670,14 +1642,14 @@ struct POPOSigningKeyInput_AuthInfo {
     static POPOSigningKeyInput_AuthInfo from_sender(::asn1kit::modern::PKIX1Implicit2009::GeneralName v) {
         POPOSigningKeyInput_AuthInfo result{};
         result.kind = POPOSigningKeyInput_AuthInfo_kind::sender;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static POPOSigningKeyInput_AuthInfo from_publicKeyMAC(PKMACValue v) {
         POPOSigningKeyInput_AuthInfo result{};
         result.kind = POPOSigningKeyInput_AuthInfo_kind::publicKeyMAC;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
@@ -1697,14 +1669,14 @@ struct POPOSigningKeyInput_AuthInfo {
                 tmp_sender = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(scoped);
             });
             alt = std::move(tmp_sender);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
             POPOSigningKeyInput_AuthInfo result{};
             result.kind = POPOSigningKeyInput_AuthInfo_kind::publicKeyMAC;
             PKMACValue alt{};
             alt = PKMACValue::decode(r, asn1kit::tag::sequence);
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -1804,51 +1776,35 @@ enum class ProofOfPossession_kind {
     keyAgreement
 };
 
-struct ProofOfPossession_raVerified_box {
-    asn1kit::null_value value{};
-};
-
-struct ProofOfPossession_signature_box {
-    POPOSigningKey value{};
-};
-
-struct ProofOfPossession_keyEncipherment_box {
-    POPOPrivKey value{};
-};
-
-struct ProofOfPossession_keyAgreement_box {
-    POPOPrivKey value{};
-};
-
 struct ProofOfPossession {
     ProofOfPossession_kind kind{};
-    std::variant<ProofOfPossession_raVerified_box, ProofOfPossession_signature_box, ProofOfPossession_keyEncipherment_box, ProofOfPossession_keyAgreement_box> value{};
+    std::variant<asn1kit::null_value, POPOSigningKey, POPOPrivKey> value{};
 
     static ProofOfPossession from_raVerified(asn1kit::null_value v) {
         ProofOfPossession result{};
         result.kind = ProofOfPossession_kind::raVerified;
-        result.value = ProofOfPossession_raVerified_box{std::move(v)};
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static ProofOfPossession from_signature(POPOSigningKey v) {
         ProofOfPossession result{};
         result.kind = ProofOfPossession_kind::signature;
-        result.value = ProofOfPossession_signature_box{std::move(v)};
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
     static ProofOfPossession from_keyEncipherment(POPOPrivKey v) {
         ProofOfPossession result{};
         result.kind = ProofOfPossession_kind::keyEncipherment;
-        result.value = ProofOfPossession_keyEncipherment_box{std::move(v)};
+        result.value.emplace<2>(std::move(v));
         return result;
     }
 
     static ProofOfPossession from_keyAgreement(POPOPrivKey v) {
         ProofOfPossession result{};
         result.kind = ProofOfPossession_kind::keyAgreement;
-        result.value = ProofOfPossession_keyAgreement_box{std::move(v)};
+        result.value.emplace<2>(std::move(v));
         return result;
     }
 
@@ -1864,14 +1820,14 @@ struct ProofOfPossession {
             result.kind = ProofOfPossession_kind::raVerified;
             asn1kit::null_value alt{};
             alt = asn1kit::null_value::decode(r, asn1kit::tag::context(0));
-            result.value = ProofOfPossession_raVerified_box{std::move(alt)};
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
             ProofOfPossession result{};
             result.kind = ProofOfPossession_kind::signature;
             POPOSigningKey alt{};
             alt = POPOSigningKey::decode(r, asn1kit::tag::context(1, true));
-            result.value = ProofOfPossession_signature_box{std::move(alt)};
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2, true))) {
             ProofOfPossession result{};
@@ -1882,7 +1838,7 @@ struct ProofOfPossession {
                 tmp_keyEncipherment = POPOPrivKey::decode(scoped);
             });
             alt = std::move(tmp_keyEncipherment);
-            result.value = ProofOfPossession_keyEncipherment_box{std::move(alt)};
+            result.value.emplace<2>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(3, true))) {
             ProofOfPossession result{};
@@ -1893,7 +1849,7 @@ struct ProofOfPossession {
                 tmp_keyAgreement = POPOPrivKey::decode(scoped);
             });
             alt = std::move(tmp_keyAgreement);
-            result.value = ProofOfPossession_keyAgreement_box{std::move(alt)};
+            result.value.emplace<2>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -1909,19 +1865,19 @@ struct ProofOfPossession {
         switch (kind) {
         case ProofOfPossession_kind::raVerified:
             {
-                const auto& alt = std::get<0>(value).value;
+                const auto& alt = std::get<0>(value);
                 w.write_null(asn1kit::tag::context(0));
                 break;
             }
         case ProofOfPossession_kind::signature:
             {
-                const auto& alt = std::get<1>(value).value;
+                const auto& alt = std::get<1>(value);
                 alt.encode(w, asn1kit::tag::context(1, true));
                 break;
             }
         case ProofOfPossession_kind::keyEncipherment:
             {
-                const auto& alt = std::get<2>(value).value;
+                const auto& alt = std::get<2>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(2, true));
                     alt.encode(w);
@@ -1930,7 +1886,7 @@ struct ProofOfPossession {
             }
         case ProofOfPossession_kind::keyAgreement:
             {
-                const auto& alt = std::get<3>(value).value;
+                const auto& alt = std::get<2>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(3, true));
                     alt.encode(w);
@@ -2309,304 +2265,196 @@ enum class PKIBody_kind {
     pollRep
 };
 
-struct PKIBody_ir_box {
-    std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> value{};
-};
-
-struct PKIBody_ip_box {
-    CertRepMessage value{};
-};
-
-struct PKIBody_cr_box {
-    std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> value{};
-};
-
-struct PKIBody_cp_box {
-    CertRepMessage value{};
-};
-
-struct PKIBody_p10cr_box {
-    ::asn1kit::modern::EnrollmentMessageSyntax2009::CertificationRequest value{};
-};
-
-struct PKIBody_popdecc_box {
-    std::vector<Challenge> value{};
-};
-
-struct PKIBody_popdecr_box {
-    std::vector<asn1kit::integer> value{};
-};
-
-struct PKIBody_kur_box {
-    std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> value{};
-};
-
-struct PKIBody_kup_box {
-    CertRepMessage value{};
-};
-
-struct PKIBody_krr_box {
-    std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> value{};
-};
-
-struct PKIBody_krp_box {
-    KeyRecRepContent value{};
-};
-
-struct PKIBody_rr_box {
-    std::vector<RevDetails> value{};
-};
-
-struct PKIBody_rp_box {
-    RevRepContent value{};
-};
-
-struct PKIBody_ccr_box {
-    std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> value{};
-};
-
-struct PKIBody_ccp_box {
-    CertRepMessage value{};
-};
-
-struct PKIBody_ckuann_box {
-    CAKeyUpdAnnContent value{};
-};
-
-struct PKIBody_cann_box {
-    CMPCertificate value{};
-};
-
-struct PKIBody_rann_box {
-    RevAnnContent value{};
-};
-
-struct PKIBody_crlann_box {
-    std::vector<::asn1kit::modern::PKIX1Explicit2009::CertificateList> value{};
-};
-
-struct PKIBody_pkiconf_box {
-    asn1kit::null_value value{};
-};
-
-struct PKIBody_nested_box {
-    std::vector<PKIMessage> value{};
-};
-
-struct PKIBody_genm_box {
-    std::vector<InfoTypeAndValue> value{};
-};
-
-struct PKIBody_genp_box {
-    std::vector<InfoTypeAndValue> value{};
-};
-
-struct PKIBody_error_box {
-    ErrorMsgContent value{};
-};
-
-struct PKIBody_certConf_box {
-    std::vector<CertStatus> value{};
-};
-
-struct PKIBody_pollReq_box {
-    std::vector<PollReqContent_Item> value{};
-};
-
-struct PKIBody_pollRep_box {
-    std::vector<PollRepContent_Item> value{};
-};
-
 struct PKIBody {
     PKIBody_kind kind{};
-    std::variant<PKIBody_ir_box, PKIBody_ip_box, PKIBody_cr_box, PKIBody_cp_box, PKIBody_p10cr_box, PKIBody_popdecc_box, PKIBody_popdecr_box, PKIBody_kur_box, PKIBody_kup_box, PKIBody_krr_box, PKIBody_krp_box, PKIBody_rr_box, PKIBody_rp_box, PKIBody_ccr_box, PKIBody_ccp_box, PKIBody_ckuann_box, PKIBody_cann_box, PKIBody_rann_box, PKIBody_crlann_box, PKIBody_pkiconf_box, PKIBody_nested_box, PKIBody_genm_box, PKIBody_genp_box, PKIBody_error_box, PKIBody_certConf_box, PKIBody_pollReq_box, PKIBody_pollRep_box> value{};
+    std::variant<std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg>, CertRepMessage, ::asn1kit::modern::EnrollmentMessageSyntax2009::CertificationRequest, std::vector<Challenge>, std::vector<asn1kit::integer>, KeyRecRepContent, std::vector<RevDetails>, RevRepContent, CAKeyUpdAnnContent, CMPCertificate, RevAnnContent, std::vector<::asn1kit::modern::PKIX1Explicit2009::CertificateList>, asn1kit::null_value, std::vector<PKIMessage>, std::vector<InfoTypeAndValue>, ErrorMsgContent, std::vector<CertStatus>, std::vector<PollReqContent_Item>, std::vector<PollRepContent_Item>> value{};
 
     static PKIBody from_ir(std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::ir;
-        result.value = PKIBody_ir_box{std::move(v)};
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static PKIBody from_ip(CertRepMessage v) {
         PKIBody result{};
         result.kind = PKIBody_kind::ip;
-        result.value = PKIBody_ip_box{std::move(v)};
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
     static PKIBody from_cr(std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::cr;
-        result.value = PKIBody_cr_box{std::move(v)};
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static PKIBody from_cp(CertRepMessage v) {
         PKIBody result{};
         result.kind = PKIBody_kind::cp;
-        result.value = PKIBody_cp_box{std::move(v)};
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
     static PKIBody from_p10cr(::asn1kit::modern::EnrollmentMessageSyntax2009::CertificationRequest v) {
         PKIBody result{};
         result.kind = PKIBody_kind::p10cr;
-        result.value = PKIBody_p10cr_box{std::move(v)};
+        result.value.emplace<2>(std::move(v));
         return result;
     }
 
     static PKIBody from_popdecc(std::vector<Challenge> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::popdecc;
-        result.value = PKIBody_popdecc_box{std::move(v)};
+        result.value.emplace<3>(std::move(v));
         return result;
     }
 
     static PKIBody from_popdecr(std::vector<asn1kit::integer> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::popdecr;
-        result.value = PKIBody_popdecr_box{std::move(v)};
+        result.value.emplace<4>(std::move(v));
         return result;
     }
 
     static PKIBody from_kur(std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::kur;
-        result.value = PKIBody_kur_box{std::move(v)};
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static PKIBody from_kup(CertRepMessage v) {
         PKIBody result{};
         result.kind = PKIBody_kind::kup;
-        result.value = PKIBody_kup_box{std::move(v)};
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
     static PKIBody from_krr(std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::krr;
-        result.value = PKIBody_krr_box{std::move(v)};
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static PKIBody from_krp(KeyRecRepContent v) {
         PKIBody result{};
         result.kind = PKIBody_kind::krp;
-        result.value = PKIBody_krp_box{std::move(v)};
+        result.value.emplace<5>(std::move(v));
         return result;
     }
 
     static PKIBody from_rr(std::vector<RevDetails> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::rr;
-        result.value = PKIBody_rr_box{std::move(v)};
+        result.value.emplace<6>(std::move(v));
         return result;
     }
 
     static PKIBody from_rp(RevRepContent v) {
         PKIBody result{};
         result.kind = PKIBody_kind::rp;
-        result.value = PKIBody_rp_box{std::move(v)};
+        result.value.emplace<7>(std::move(v));
         return result;
     }
 
     static PKIBody from_ccr(std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::ccr;
-        result.value = PKIBody_ccr_box{std::move(v)};
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static PKIBody from_ccp(CertRepMessage v) {
         PKIBody result{};
         result.kind = PKIBody_kind::ccp;
-        result.value = PKIBody_ccp_box{std::move(v)};
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
     static PKIBody from_ckuann(CAKeyUpdAnnContent v) {
         PKIBody result{};
         result.kind = PKIBody_kind::ckuann;
-        result.value = PKIBody_ckuann_box{std::move(v)};
+        result.value.emplace<8>(std::move(v));
         return result;
     }
 
     static PKIBody from_cann(CMPCertificate v) {
         PKIBody result{};
         result.kind = PKIBody_kind::cann;
-        result.value = PKIBody_cann_box{std::move(v)};
+        result.value.emplace<9>(std::move(v));
         return result;
     }
 
     static PKIBody from_rann(RevAnnContent v) {
         PKIBody result{};
         result.kind = PKIBody_kind::rann;
-        result.value = PKIBody_rann_box{std::move(v)};
+        result.value.emplace<10>(std::move(v));
         return result;
     }
 
     static PKIBody from_crlann(std::vector<::asn1kit::modern::PKIX1Explicit2009::CertificateList> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::crlann;
-        result.value = PKIBody_crlann_box{std::move(v)};
+        result.value.emplace<11>(std::move(v));
         return result;
     }
 
     static PKIBody from_pkiconf(asn1kit::null_value v) {
         PKIBody result{};
         result.kind = PKIBody_kind::pkiconf;
-        result.value = PKIBody_pkiconf_box{std::move(v)};
+        result.value.emplace<12>(std::move(v));
         return result;
     }
 
     static PKIBody from_nested(std::vector<PKIMessage> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::nested;
-        result.value = PKIBody_nested_box{std::move(v)};
+        result.value.emplace<13>(std::move(v));
         return result;
     }
 
     static PKIBody from_genm(std::vector<InfoTypeAndValue> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::genm;
-        result.value = PKIBody_genm_box{std::move(v)};
+        result.value.emplace<14>(std::move(v));
         return result;
     }
 
     static PKIBody from_genp(std::vector<InfoTypeAndValue> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::genp;
-        result.value = PKIBody_genp_box{std::move(v)};
+        result.value.emplace<14>(std::move(v));
         return result;
     }
 
     static PKIBody from_error(ErrorMsgContent v) {
         PKIBody result{};
         result.kind = PKIBody_kind::error;
-        result.value = PKIBody_error_box{std::move(v)};
+        result.value.emplace<15>(std::move(v));
         return result;
     }
 
     static PKIBody from_certConf(std::vector<CertStatus> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::certConf;
-        result.value = PKIBody_certConf_box{std::move(v)};
+        result.value.emplace<16>(std::move(v));
         return result;
     }
 
     static PKIBody from_pollReq(std::vector<PollReqContent_Item> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::pollReq;
-        result.value = PKIBody_pollReq_box{std::move(v)};
+        result.value.emplace<17>(std::move(v));
         return result;
     }
 
     static PKIBody from_pollRep(std::vector<PollRepContent_Item> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::pollRep;
-        result.value = PKIBody_pollRep_box{std::move(v)};
+        result.value.emplace<18>(std::move(v));
         return result;
     }
 
@@ -2630,7 +2478,7 @@ struct PKIBody {
                 });
             });
             alt = std::move(tmp_ir);
-            result.value = PKIBody_ir_box{std::move(alt)};
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
             PKIBody result{};
@@ -2641,7 +2489,7 @@ struct PKIBody {
                 tmp_ip = CertRepMessage::decode(scoped, asn1kit::tag::sequence);
             });
             alt = std::move(tmp_ip);
-            result.value = PKIBody_ip_box{std::move(alt)};
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2, true))) {
             PKIBody result{};
@@ -2656,7 +2504,7 @@ struct PKIBody {
                 });
             });
             alt = std::move(tmp_cr);
-            result.value = PKIBody_cr_box{std::move(alt)};
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(3, true))) {
             PKIBody result{};
@@ -2667,7 +2515,7 @@ struct PKIBody {
                 tmp_cp = CertRepMessage::decode(scoped, asn1kit::tag::sequence);
             });
             alt = std::move(tmp_cp);
-            result.value = PKIBody_cp_box{std::move(alt)};
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(4, true))) {
             PKIBody result{};
@@ -2678,7 +2526,7 @@ struct PKIBody {
                 tmp_p10cr = ::asn1kit::modern::EnrollmentMessageSyntax2009::CertificationRequest::decode(scoped, asn1kit::tag::sequence);
             });
             alt = std::move(tmp_p10cr);
-            result.value = PKIBody_p10cr_box{std::move(alt)};
+            result.value.emplace<2>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(5, true))) {
             PKIBody result{};
@@ -2693,7 +2541,7 @@ struct PKIBody {
                 });
             });
             alt = std::move(tmp_popdecc);
-            result.value = PKIBody_popdecc_box{std::move(alt)};
+            result.value.emplace<3>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(6, true))) {
             PKIBody result{};
@@ -2708,7 +2556,7 @@ struct PKIBody {
                 });
             });
             alt = std::move(tmp_popdecr);
-            result.value = PKIBody_popdecr_box{std::move(alt)};
+            result.value.emplace<4>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(7, true))) {
             PKIBody result{};
@@ -2723,7 +2571,7 @@ struct PKIBody {
                 });
             });
             alt = std::move(tmp_kur);
-            result.value = PKIBody_kur_box{std::move(alt)};
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(8, true))) {
             PKIBody result{};
@@ -2734,7 +2582,7 @@ struct PKIBody {
                 tmp_kup = CertRepMessage::decode(scoped, asn1kit::tag::sequence);
             });
             alt = std::move(tmp_kup);
-            result.value = PKIBody_kup_box{std::move(alt)};
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(9, true))) {
             PKIBody result{};
@@ -2749,7 +2597,7 @@ struct PKIBody {
                 });
             });
             alt = std::move(tmp_krr);
-            result.value = PKIBody_krr_box{std::move(alt)};
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(10, true))) {
             PKIBody result{};
@@ -2760,7 +2608,7 @@ struct PKIBody {
                 tmp_krp = KeyRecRepContent::decode(scoped, asn1kit::tag::sequence);
             });
             alt = std::move(tmp_krp);
-            result.value = PKIBody_krp_box{std::move(alt)};
+            result.value.emplace<5>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(11, true))) {
             PKIBody result{};
@@ -2775,7 +2623,7 @@ struct PKIBody {
                 });
             });
             alt = std::move(tmp_rr);
-            result.value = PKIBody_rr_box{std::move(alt)};
+            result.value.emplace<6>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(12, true))) {
             PKIBody result{};
@@ -2786,7 +2634,7 @@ struct PKIBody {
                 tmp_rp = RevRepContent::decode(scoped, asn1kit::tag::sequence);
             });
             alt = std::move(tmp_rp);
-            result.value = PKIBody_rp_box{std::move(alt)};
+            result.value.emplace<7>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(13, true))) {
             PKIBody result{};
@@ -2801,7 +2649,7 @@ struct PKIBody {
                 });
             });
             alt = std::move(tmp_ccr);
-            result.value = PKIBody_ccr_box{std::move(alt)};
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(14, true))) {
             PKIBody result{};
@@ -2812,7 +2660,7 @@ struct PKIBody {
                 tmp_ccp = CertRepMessage::decode(scoped, asn1kit::tag::sequence);
             });
             alt = std::move(tmp_ccp);
-            result.value = PKIBody_ccp_box{std::move(alt)};
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(15, true))) {
             PKIBody result{};
@@ -2823,7 +2671,7 @@ struct PKIBody {
                 tmp_ckuann = CAKeyUpdAnnContent::decode(scoped, asn1kit::tag::sequence);
             });
             alt = std::move(tmp_ckuann);
-            result.value = PKIBody_ckuann_box{std::move(alt)};
+            result.value.emplace<8>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(16, true))) {
             PKIBody result{};
@@ -2834,7 +2682,7 @@ struct PKIBody {
                 tmp_cann = CMPCertificate::decode(scoped);
             });
             alt = std::move(tmp_cann);
-            result.value = PKIBody_cann_box{std::move(alt)};
+            result.value.emplace<9>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(17, true))) {
             PKIBody result{};
@@ -2845,7 +2693,7 @@ struct PKIBody {
                 tmp_rann = RevAnnContent::decode(scoped, asn1kit::tag::sequence);
             });
             alt = std::move(tmp_rann);
-            result.value = PKIBody_rann_box{std::move(alt)};
+            result.value.emplace<10>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(18, true))) {
             PKIBody result{};
@@ -2860,7 +2708,7 @@ struct PKIBody {
                 });
             });
             alt = std::move(tmp_crlann);
-            result.value = PKIBody_crlann_box{std::move(alt)};
+            result.value.emplace<11>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(19, true))) {
             PKIBody result{};
@@ -2871,7 +2719,7 @@ struct PKIBody {
                 tmp_pkiconf = asn1kit::null_value::decode(scoped, asn1kit::tag::null);
             });
             alt = std::move(tmp_pkiconf);
-            result.value = PKIBody_pkiconf_box{std::move(alt)};
+            result.value.emplace<12>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(20, true))) {
             PKIBody result{};
@@ -2886,7 +2734,7 @@ struct PKIBody {
                 });
             });
             alt = std::move(tmp_nested);
-            result.value = PKIBody_nested_box{std::move(alt)};
+            result.value.emplace<13>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(21, true))) {
             PKIBody result{};
@@ -2901,7 +2749,7 @@ struct PKIBody {
                 });
             });
             alt = std::move(tmp_genm);
-            result.value = PKIBody_genm_box{std::move(alt)};
+            result.value.emplace<14>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(22, true))) {
             PKIBody result{};
@@ -2916,7 +2764,7 @@ struct PKIBody {
                 });
             });
             alt = std::move(tmp_genp);
-            result.value = PKIBody_genp_box{std::move(alt)};
+            result.value.emplace<14>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(23, true))) {
             PKIBody result{};
@@ -2927,7 +2775,7 @@ struct PKIBody {
                 tmp_error = ErrorMsgContent::decode(scoped, asn1kit::tag::sequence);
             });
             alt = std::move(tmp_error);
-            result.value = PKIBody_error_box{std::move(alt)};
+            result.value.emplace<15>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(24, true))) {
             PKIBody result{};
@@ -2942,7 +2790,7 @@ struct PKIBody {
                 });
             });
             alt = std::move(tmp_certConf);
-            result.value = PKIBody_certConf_box{std::move(alt)};
+            result.value.emplace<16>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(25, true))) {
             PKIBody result{};
@@ -2957,7 +2805,7 @@ struct PKIBody {
                 });
             });
             alt = std::move(tmp_pollReq);
-            result.value = PKIBody_pollReq_box{std::move(alt)};
+            result.value.emplace<17>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(26, true))) {
             PKIBody result{};
@@ -2972,7 +2820,7 @@ struct PKIBody {
                 });
             });
             alt = std::move(tmp_pollRep);
-            result.value = PKIBody_pollRep_box{std::move(alt)};
+            result.value.emplace<18>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -2988,7 +2836,7 @@ struct PKIBody {
         switch (kind) {
         case PKIBody_kind::ir:
             {
-                const auto& alt = std::get<0>(value).value;
+                const auto& alt = std::get<0>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
                     w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
@@ -2999,7 +2847,7 @@ struct PKIBody {
             }
         case PKIBody_kind::ip:
             {
-                const auto& alt = std::get<1>(value).value;
+                const auto& alt = std::get<1>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(1, true));
                     alt.encode(w, asn1kit::tag::sequence);
@@ -3008,7 +2856,7 @@ struct PKIBody {
             }
         case PKIBody_kind::cr:
             {
-                const auto& alt = std::get<2>(value).value;
+                const auto& alt = std::get<0>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(2, true));
                     w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
@@ -3019,7 +2867,7 @@ struct PKIBody {
             }
         case PKIBody_kind::cp:
             {
-                const auto& alt = std::get<3>(value).value;
+                const auto& alt = std::get<1>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(3, true));
                     alt.encode(w, asn1kit::tag::sequence);
@@ -3028,7 +2876,7 @@ struct PKIBody {
             }
         case PKIBody_kind::p10cr:
             {
-                const auto& alt = std::get<4>(value).value;
+                const auto& alt = std::get<2>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(4, true));
                     alt.encode(w, asn1kit::tag::sequence);
@@ -3037,7 +2885,7 @@ struct PKIBody {
             }
         case PKIBody_kind::popdecc:
             {
-                const auto& alt = std::get<5>(value).value;
+                const auto& alt = std::get<3>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(5, true));
                     w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
@@ -3048,7 +2896,7 @@ struct PKIBody {
             }
         case PKIBody_kind::popdecr:
             {
-                const auto& alt = std::get<6>(value).value;
+                const auto& alt = std::get<4>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(6, true));
                     w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
@@ -3059,7 +2907,7 @@ struct PKIBody {
             }
         case PKIBody_kind::kur:
             {
-                const auto& alt = std::get<7>(value).value;
+                const auto& alt = std::get<0>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(7, true));
                     w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
@@ -3070,7 +2918,7 @@ struct PKIBody {
             }
         case PKIBody_kind::kup:
             {
-                const auto& alt = std::get<8>(value).value;
+                const auto& alt = std::get<1>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(8, true));
                     alt.encode(w, asn1kit::tag::sequence);
@@ -3079,7 +2927,7 @@ struct PKIBody {
             }
         case PKIBody_kind::krr:
             {
-                const auto& alt = std::get<9>(value).value;
+                const auto& alt = std::get<0>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(9, true));
                     w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
@@ -3090,7 +2938,7 @@ struct PKIBody {
             }
         case PKIBody_kind::krp:
             {
-                const auto& alt = std::get<10>(value).value;
+                const auto& alt = std::get<5>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(10, true));
                     alt.encode(w, asn1kit::tag::sequence);
@@ -3099,7 +2947,7 @@ struct PKIBody {
             }
         case PKIBody_kind::rr:
             {
-                const auto& alt = std::get<11>(value).value;
+                const auto& alt = std::get<6>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(11, true));
                     w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
@@ -3110,7 +2958,7 @@ struct PKIBody {
             }
         case PKIBody_kind::rp:
             {
-                const auto& alt = std::get<12>(value).value;
+                const auto& alt = std::get<7>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(12, true));
                     alt.encode(w, asn1kit::tag::sequence);
@@ -3119,7 +2967,7 @@ struct PKIBody {
             }
         case PKIBody_kind::ccr:
             {
-                const auto& alt = std::get<13>(value).value;
+                const auto& alt = std::get<0>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(13, true));
                     w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
@@ -3130,7 +2978,7 @@ struct PKIBody {
             }
         case PKIBody_kind::ccp:
             {
-                const auto& alt = std::get<14>(value).value;
+                const auto& alt = std::get<1>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(14, true));
                     alt.encode(w, asn1kit::tag::sequence);
@@ -3139,7 +2987,7 @@ struct PKIBody {
             }
         case PKIBody_kind::ckuann:
             {
-                const auto& alt = std::get<15>(value).value;
+                const auto& alt = std::get<8>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(15, true));
                     alt.encode(w, asn1kit::tag::sequence);
@@ -3148,7 +2996,7 @@ struct PKIBody {
             }
         case PKIBody_kind::cann:
             {
-                const auto& alt = std::get<16>(value).value;
+                const auto& alt = std::get<9>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(16, true));
                     alt.encode(w);
@@ -3157,7 +3005,7 @@ struct PKIBody {
             }
         case PKIBody_kind::rann:
             {
-                const auto& alt = std::get<17>(value).value;
+                const auto& alt = std::get<10>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(17, true));
                     alt.encode(w, asn1kit::tag::sequence);
@@ -3166,7 +3014,7 @@ struct PKIBody {
             }
         case PKIBody_kind::crlann:
             {
-                const auto& alt = std::get<18>(value).value;
+                const auto& alt = std::get<11>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(18, true));
                     w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
@@ -3177,7 +3025,7 @@ struct PKIBody {
             }
         case PKIBody_kind::pkiconf:
             {
-                const auto& alt = std::get<19>(value).value;
+                const auto& alt = std::get<12>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(19, true));
                     w.write_null(asn1kit::tag::null);
@@ -3186,7 +3034,7 @@ struct PKIBody {
             }
         case PKIBody_kind::nested:
             {
-                const auto& alt = std::get<20>(value).value;
+                const auto& alt = std::get<13>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(20, true));
                     w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
@@ -3197,7 +3045,7 @@ struct PKIBody {
             }
         case PKIBody_kind::genm:
             {
-                const auto& alt = std::get<21>(value).value;
+                const auto& alt = std::get<14>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(21, true));
                     w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
@@ -3208,7 +3056,7 @@ struct PKIBody {
             }
         case PKIBody_kind::genp:
             {
-                const auto& alt = std::get<22>(value).value;
+                const auto& alt = std::get<14>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(22, true));
                     w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
@@ -3219,7 +3067,7 @@ struct PKIBody {
             }
         case PKIBody_kind::error:
             {
-                const auto& alt = std::get<23>(value).value;
+                const auto& alt = std::get<15>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(23, true));
                     alt.encode(w, asn1kit::tag::sequence);
@@ -3228,7 +3076,7 @@ struct PKIBody {
             }
         case PKIBody_kind::certConf:
             {
-                const auto& alt = std::get<24>(value).value;
+                const auto& alt = std::get<16>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(24, true));
                     w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
@@ -3239,7 +3087,7 @@ struct PKIBody {
             }
         case PKIBody_kind::pollReq:
             {
-                const auto& alt = std::get<25>(value).value;
+                const auto& alt = std::get<17>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(25, true));
                     w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
@@ -3250,7 +3098,7 @@ struct PKIBody {
             }
         case PKIBody_kind::pollRep:
             {
-                const auto& alt = std::get<26>(value).value;
+                const auto& alt = std::get<18>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(26, true));
                     w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {

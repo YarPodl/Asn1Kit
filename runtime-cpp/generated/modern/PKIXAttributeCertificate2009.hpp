@@ -320,21 +320,21 @@ struct IetfAttrSyntax_Values_Item {
     static IetfAttrSyntax_Values_Item from_octets(asn1kit::bytes v) {
         IetfAttrSyntax_Values_Item result{};
         result.kind = IetfAttrSyntax_Values_Item_kind::octets;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static IetfAttrSyntax_Values_Item from_oid(asn1kit::oid v) {
         IetfAttrSyntax_Values_Item result{};
         result.kind = IetfAttrSyntax_Values_Item_kind::oid;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
     static IetfAttrSyntax_Values_Item from_string(std::string v) {
         IetfAttrSyntax_Values_Item result{};
         result.kind = IetfAttrSyntax_Values_Item_kind::string;
-        result.value = std::move(v);
+        result.value.emplace<2>(std::move(v));
         return result;
     }
 
@@ -350,21 +350,21 @@ struct IetfAttrSyntax_Values_Item {
             result.kind = IetfAttrSyntax_Values_Item_kind::octets;
             asn1kit::bytes alt{};
             alt = r.read_octet_string(asn1kit::tag::octet_string);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::object_identifier)) {
             IetfAttrSyntax_Values_Item result{};
             result.kind = IetfAttrSyntax_Values_Item_kind::oid;
             asn1kit::oid alt{};
             alt = r.read_oid(asn1kit::tag::object_identifier);
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::utf8_string)) {
             IetfAttrSyntax_Values_Item result{};
             result.kind = IetfAttrSyntax_Values_Item_kind::string;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
-            result.value = std::move(alt);
+            result.value.emplace<2>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -554,40 +554,28 @@ enum class Target_kind {
     targetCert
 };
 
-struct Target_targetName_box {
-    ::asn1kit::modern::PKIX1Implicit2009::GeneralName value{};
-};
-
-struct Target_targetGroup_box {
-    ::asn1kit::modern::PKIX1Implicit2009::GeneralName value{};
-};
-
-struct Target_targetCert_box {
-    TargetCert value{};
-};
-
 struct Target {
     Target_kind kind{};
-    std::variant<Target_targetName_box, Target_targetGroup_box, Target_targetCert_box> value{};
+    std::variant<::asn1kit::modern::PKIX1Implicit2009::GeneralName, TargetCert> value{};
 
     static Target from_targetName(::asn1kit::modern::PKIX1Implicit2009::GeneralName v) {
         Target result{};
         result.kind = Target_kind::targetName;
-        result.value = Target_targetName_box{std::move(v)};
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static Target from_targetGroup(::asn1kit::modern::PKIX1Implicit2009::GeneralName v) {
         Target result{};
         result.kind = Target_kind::targetGroup;
-        result.value = Target_targetGroup_box{std::move(v)};
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static Target from_targetCert(TargetCert v) {
         Target result{};
         result.kind = Target_kind::targetCert;
-        result.value = Target_targetCert_box{std::move(v)};
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
@@ -607,7 +595,7 @@ struct Target {
                 tmp_targetName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(scoped);
             });
             alt = std::move(tmp_targetName);
-            result.value = Target_targetName_box{std::move(alt)};
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
             Target result{};
@@ -618,14 +606,14 @@ struct Target {
                 tmp_targetGroup = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(scoped);
             });
             alt = std::move(tmp_targetGroup);
-            result.value = Target_targetGroup_box{std::move(alt)};
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2, true))) {
             Target result{};
             result.kind = Target_kind::targetCert;
             TargetCert alt{};
             alt = TargetCert::decode(r, asn1kit::tag::context(2, true));
-            result.value = Target_targetCert_box{std::move(alt)};
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -641,7 +629,7 @@ struct Target {
         switch (kind) {
         case Target_kind::targetName:
             {
-                const auto& alt = std::get<0>(value).value;
+                const auto& alt = std::get<0>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
                     alt.encode(w);
@@ -650,7 +638,7 @@ struct Target {
             }
         case Target_kind::targetGroup:
             {
-                const auto& alt = std::get<1>(value).value;
+                const auto& alt = std::get<0>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(1, true));
                     alt.encode(w);
@@ -659,7 +647,7 @@ struct Target {
             }
         case Target_kind::targetCert:
             {
-                const auto& alt = std::get<2>(value).value;
+                const auto& alt = std::get<1>(value);
                 alt.encode(w, asn1kit::tag::context(2, true));
                 break;
             }

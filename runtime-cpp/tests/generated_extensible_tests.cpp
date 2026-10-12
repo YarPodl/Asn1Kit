@@ -139,5 +139,5 @@ TEST(GeneratedExtensibleTests, ChoiceKnownAlternative) {
     reader r(der, encoding::der);
     const auto decoded = Pick::decode(r);
     EXPECT_EQ(decoded.kind, Pick_kind::left);
-    EXPECT_EQ(std::get<0>(decoded.value), integer::from_int32(5));
+    EXPECT_EQ(decoded.value, integer::from_int32(5));
 }

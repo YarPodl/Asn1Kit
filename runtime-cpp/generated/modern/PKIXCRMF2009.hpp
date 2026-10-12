@@ -62,14 +62,14 @@ struct EncKeyWithID_Identifier {
     static EncKeyWithID_Identifier from_string(std::string v) {
         EncKeyWithID_Identifier result{};
         result.kind = EncKeyWithID_Identifier_kind::string;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static EncKeyWithID_Identifier from_generalName(::asn1kit::modern::PKIX1Implicit2009::GeneralName v) {
         EncKeyWithID_Identifier result{};
         result.kind = EncKeyWithID_Identifier_kind::generalName;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
@@ -85,14 +85,14 @@ struct EncKeyWithID_Identifier {
             result.kind = EncKeyWithID_Identifier_kind::string;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if ((peeked.matches_ignore_constructed(asn1kit::tag::context(0, true)) || peeked.matches_ignore_constructed(asn1kit::tag::context(1)) || peeked.matches_ignore_constructed(asn1kit::tag::context(2)) || peeked.matches_ignore_constructed(asn1kit::tag::context(3, true)) || peeked.matches_ignore_constructed(asn1kit::tag::context(4, true)) || peeked.matches_ignore_constructed(asn1kit::tag::context(5, true)) || peeked.matches_ignore_constructed(asn1kit::tag::context(6)) || peeked.matches_ignore_constructed(asn1kit::tag::context(7)) || peeked.matches_ignore_constructed(asn1kit::tag::context(8)))) {
             EncKeyWithID_Identifier result{};
             result.kind = EncKeyWithID_Identifier_kind::generalName;
             ::asn1kit::modern::PKIX1Implicit2009::GeneralName alt{};
             alt = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(r);
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -139,14 +139,14 @@ struct EncryptedKey {
     static EncryptedKey from_encryptedValue(EncryptedValue v) {
         EncryptedKey result{};
         result.kind = EncryptedKey_kind::encryptedValue;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static EncryptedKey from_envelopedData(::asn1kit::modern::CryptographicMessageSyntax2009::EnvelopedData v) {
         EncryptedKey result{};
         result.kind = EncryptedKey_kind::envelopedData;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
@@ -162,14 +162,14 @@ struct EncryptedKey {
             result.kind = EncryptedKey_kind::encryptedValue;
             EncryptedValue alt{};
             alt = EncryptedValue::decode(r, asn1kit::tag::sequence);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
             EncryptedKey result{};
             result.kind = EncryptedKey_kind::envelopedData;
             ::asn1kit::modern::CryptographicMessageSyntax2009::EnvelopedData alt{};
             alt = ::asn1kit::modern::CryptographicMessageSyntax2009::EnvelopedData::decode(r, asn1kit::tag::context(0, true));
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -247,21 +247,21 @@ struct PKIArchiveOptions {
     static PKIArchiveOptions from_encryptedPrivKey(EncryptedKey v) {
         PKIArchiveOptions result{};
         result.kind = PKIArchiveOptions_kind::encryptedPrivKey;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static PKIArchiveOptions from_keyGenParameters(asn1kit::bytes v) {
         PKIArchiveOptions result{};
         result.kind = PKIArchiveOptions_kind::keyGenParameters;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
     static PKIArchiveOptions from_archiveRemGenPrivKey(bool v) {
         PKIArchiveOptions result{};
         result.kind = PKIArchiveOptions_kind::archiveRemGenPrivKey;
-        result.value = std::move(v);
+        result.value.emplace<2>(std::move(v));
         return result;
     }
 
@@ -281,21 +281,21 @@ struct PKIArchiveOptions {
                 tmp_encryptedPrivKey = EncryptedKey::decode(scoped);
             });
             alt = std::move(tmp_encryptedPrivKey);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1))) {
             PKIArchiveOptions result{};
             result.kind = PKIArchiveOptions_kind::keyGenParameters;
             asn1kit::bytes alt{};
             alt = r.read_octet_string(asn1kit::tag::context(1));
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2))) {
             PKIArchiveOptions result{};
             result.kind = PKIArchiveOptions_kind::archiveRemGenPrivKey;
             bool alt{};
             alt = r.read_boolean(asn1kit::tag::context(2));
-            result.value = std::move(alt);
+            result.value.emplace<2>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");

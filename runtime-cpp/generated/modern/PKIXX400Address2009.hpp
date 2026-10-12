@@ -43,14 +43,14 @@ struct ExtensionAttribute_EaExtendedNetworkAddress {
     static ExtensionAttribute_EaExtendedNetworkAddress from_e163_4_address(ExtensionAttribute_EaExtendedNetworkAddress_E1634Address v) {
         ExtensionAttribute_EaExtendedNetworkAddress result{};
         result.kind = ExtensionAttribute_EaExtendedNetworkAddress_kind::e163_4_address;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static ExtensionAttribute_EaExtendedNetworkAddress from_psap_address(PresentationAddress v) {
         ExtensionAttribute_EaExtendedNetworkAddress result{};
         result.kind = ExtensionAttribute_EaExtendedNetworkAddress_kind::psap_address;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
@@ -66,14 +66,14 @@ struct ExtensionAttribute_EaExtendedNetworkAddress {
             result.kind = ExtensionAttribute_EaExtendedNetworkAddress_kind::e163_4_address;
             ExtensionAttribute_EaExtendedNetworkAddress_E1634Address alt{};
             alt = ExtensionAttribute_EaExtendedNetworkAddress_E1634Address::decode(r, asn1kit::tag::sequence);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
             ExtensionAttribute_EaExtendedNetworkAddress result{};
             result.kind = ExtensionAttribute_EaExtendedNetworkAddress_kind::psap_address;
             PresentationAddress alt{};
             alt = PresentationAddress::decode(r, asn1kit::tag::context(0, true));
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -141,29 +141,21 @@ enum class ExtensionAttribute_EaPhysicalDeliveryCountryName_kind {
     iso_3166_alpha2_code
 };
 
-struct ExtensionAttribute_EaPhysicalDeliveryCountryName_x121_dcc_code_box {
-    std::string value{};
-};
-
-struct ExtensionAttribute_EaPhysicalDeliveryCountryName_iso_3166_alpha2_code_box {
-    std::string value{};
-};
-
 struct ExtensionAttribute_EaPhysicalDeliveryCountryName {
     ExtensionAttribute_EaPhysicalDeliveryCountryName_kind kind{};
-    std::variant<ExtensionAttribute_EaPhysicalDeliveryCountryName_x121_dcc_code_box, ExtensionAttribute_EaPhysicalDeliveryCountryName_iso_3166_alpha2_code_box> value{};
+    std::string value{};
 
     static ExtensionAttribute_EaPhysicalDeliveryCountryName from_x121_dcc_code(std::string v) {
         ExtensionAttribute_EaPhysicalDeliveryCountryName result{};
         result.kind = ExtensionAttribute_EaPhysicalDeliveryCountryName_kind::x121_dcc_code;
-        result.value = ExtensionAttribute_EaPhysicalDeliveryCountryName_x121_dcc_code_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
     static ExtensionAttribute_EaPhysicalDeliveryCountryName from_iso_3166_alpha2_code(std::string v) {
         ExtensionAttribute_EaPhysicalDeliveryCountryName result{};
         result.kind = ExtensionAttribute_EaPhysicalDeliveryCountryName_kind::iso_3166_alpha2_code;
-        result.value = ExtensionAttribute_EaPhysicalDeliveryCountryName_iso_3166_alpha2_code_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
@@ -179,14 +171,14 @@ struct ExtensionAttribute_EaPhysicalDeliveryCountryName {
             result.kind = ExtensionAttribute_EaPhysicalDeliveryCountryName_kind::x121_dcc_code;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::numeric_string, asn1kit::string_form::numeric);
-            result.value = ExtensionAttribute_EaPhysicalDeliveryCountryName_x121_dcc_code_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::printable_string)) {
             ExtensionAttribute_EaPhysicalDeliveryCountryName result{};
             result.kind = ExtensionAttribute_EaPhysicalDeliveryCountryName_kind::iso_3166_alpha2_code;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
-            result.value = ExtensionAttribute_EaPhysicalDeliveryCountryName_iso_3166_alpha2_code_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -202,13 +194,13 @@ struct ExtensionAttribute_EaPhysicalDeliveryCountryName {
         switch (kind) {
         case ExtensionAttribute_EaPhysicalDeliveryCountryName_kind::x121_dcc_code:
             {
-                const auto& alt = std::get<0>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::numeric_string, alt, asn1kit::string_form::numeric);
                 break;
             }
         case ExtensionAttribute_EaPhysicalDeliveryCountryName_kind::iso_3166_alpha2_code:
             {
-                const auto& alt = std::get<1>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::printable_string, alt, asn1kit::string_form::printable);
                 break;
             }
@@ -226,29 +218,21 @@ enum class ExtensionAttribute_EaPostalCode_kind {
     printable_code
 };
 
-struct ExtensionAttribute_EaPostalCode_numeric_code_box {
-    std::string value{};
-};
-
-struct ExtensionAttribute_EaPostalCode_printable_code_box {
-    std::string value{};
-};
-
 struct ExtensionAttribute_EaPostalCode {
     ExtensionAttribute_EaPostalCode_kind kind{};
-    std::variant<ExtensionAttribute_EaPostalCode_numeric_code_box, ExtensionAttribute_EaPostalCode_printable_code_box> value{};
+    std::string value{};
 
     static ExtensionAttribute_EaPostalCode from_numeric_code(std::string v) {
         ExtensionAttribute_EaPostalCode result{};
         result.kind = ExtensionAttribute_EaPostalCode_kind::numeric_code;
-        result.value = ExtensionAttribute_EaPostalCode_numeric_code_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
     static ExtensionAttribute_EaPostalCode from_printable_code(std::string v) {
         ExtensionAttribute_EaPostalCode result{};
         result.kind = ExtensionAttribute_EaPostalCode_kind::printable_code;
-        result.value = ExtensionAttribute_EaPostalCode_printable_code_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
@@ -264,14 +248,14 @@ struct ExtensionAttribute_EaPostalCode {
             result.kind = ExtensionAttribute_EaPostalCode_kind::numeric_code;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::numeric_string, asn1kit::string_form::numeric);
-            result.value = ExtensionAttribute_EaPostalCode_numeric_code_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::printable_string)) {
             ExtensionAttribute_EaPostalCode result{};
             result.kind = ExtensionAttribute_EaPostalCode_kind::printable_code;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
-            result.value = ExtensionAttribute_EaPostalCode_printable_code_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -287,13 +271,13 @@ struct ExtensionAttribute_EaPostalCode {
         switch (kind) {
         case ExtensionAttribute_EaPostalCode_kind::numeric_code:
             {
-                const auto& alt = std::get<0>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::numeric_string, alt, asn1kit::string_form::numeric);
                 break;
             }
         case ExtensionAttribute_EaPostalCode_kind::printable_code:
             {
-                const auto& alt = std::get<1>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::printable_string, alt, asn1kit::string_form::printable);
                 break;
             }

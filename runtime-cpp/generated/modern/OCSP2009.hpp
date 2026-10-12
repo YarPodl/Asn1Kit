@@ -80,40 +80,28 @@ enum class CertStatus_kind {
     unknown
 };
 
-struct CertStatus_good_box {
-    asn1kit::null_value value{};
-};
-
-struct CertStatus_revoked_box {
-    RevokedInfo value{};
-};
-
-struct CertStatus_unknown_box {
-    asn1kit::null_value value{};
-};
-
 struct CertStatus {
     CertStatus_kind kind{};
-    std::variant<CertStatus_good_box, CertStatus_revoked_box, CertStatus_unknown_box> value{};
+    std::variant<asn1kit::null_value, RevokedInfo> value{};
 
     static CertStatus from_good(asn1kit::null_value v) {
         CertStatus result{};
         result.kind = CertStatus_kind::good;
-        result.value = CertStatus_good_box{std::move(v)};
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static CertStatus from_revoked(RevokedInfo v) {
         CertStatus result{};
         result.kind = CertStatus_kind::revoked;
-        result.value = CertStatus_revoked_box{std::move(v)};
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
     static CertStatus from_unknown(asn1kit::null_value v) {
         CertStatus result{};
         result.kind = CertStatus_kind::unknown;
-        result.value = CertStatus_unknown_box{std::move(v)};
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
@@ -129,21 +117,21 @@ struct CertStatus {
             result.kind = CertStatus_kind::good;
             asn1kit::null_value alt{};
             alt = asn1kit::null_value::decode(r, asn1kit::tag::context(0));
-            result.value = CertStatus_good_box{std::move(alt)};
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
             CertStatus result{};
             result.kind = CertStatus_kind::revoked;
             RevokedInfo alt{};
             alt = RevokedInfo::decode(r, asn1kit::tag::context(1, true));
-            result.value = CertStatus_revoked_box{std::move(alt)};
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2))) {
             CertStatus result{};
             result.kind = CertStatus_kind::unknown;
             asn1kit::null_value alt{};
             alt = asn1kit::null_value::decode(r, asn1kit::tag::context(2));
-            result.value = CertStatus_unknown_box{std::move(alt)};
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -159,19 +147,19 @@ struct CertStatus {
         switch (kind) {
         case CertStatus_kind::good:
             {
-                const auto& alt = std::get<0>(value).value;
+                const auto& alt = std::get<0>(value);
                 w.write_null(asn1kit::tag::context(0));
                 break;
             }
         case CertStatus_kind::revoked:
             {
-                const auto& alt = std::get<1>(value).value;
+                const auto& alt = std::get<1>(value);
                 alt.encode(w, asn1kit::tag::context(1, true));
                 break;
             }
         case CertStatus_kind::unknown:
             {
-                const auto& alt = std::get<2>(value).value;
+                const auto& alt = std::get<0>(value);
                 w.write_null(asn1kit::tag::context(2));
                 break;
             }
@@ -322,14 +310,14 @@ struct ResponderID {
     static ResponderID from_byName(std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> v) {
         ResponderID result{};
         result.kind = ResponderID_kind::byName;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static ResponderID from_byKey(asn1kit::bytes v) {
         ResponderID result{};
         result.kind = ResponderID_kind::byKey;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
@@ -357,7 +345,7 @@ struct ResponderID {
                 });
             });
             alt = std::move(tmp_byName);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2, true))) {
             ResponderID result{};
@@ -368,7 +356,7 @@ struct ResponderID {
                 tmp_byKey = scoped.read_octet_string(asn1kit::tag::octet_string);
             });
             alt = std::move(tmp_byKey);
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");

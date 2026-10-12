@@ -78,62 +78,42 @@ enum class X520CommonName_kind {
     uTF8String
 };
 
-struct X520CommonName_teletexString_box {
-    std::string value{};
-};
-
-struct X520CommonName_printableString_box {
-    std::string value{};
-};
-
-struct X520CommonName_bmpString_box {
-    std::string value{};
-};
-
-struct X520CommonName_universalString_box {
-    std::string value{};
-};
-
-struct X520CommonName_uTF8String_box {
-    std::string value{};
-};
-
 struct X520CommonName {
     X520CommonName_kind kind{};
-    std::variant<X520CommonName_teletexString_box, X520CommonName_printableString_box, X520CommonName_bmpString_box, X520CommonName_universalString_box, X520CommonName_uTF8String_box> value{};
+    std::string value{};
 
     static X520CommonName from_teletexString(std::string v) {
         X520CommonName result{};
         result.kind = X520CommonName_kind::teletexString;
-        result.value = X520CommonName_teletexString_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
     static X520CommonName from_printableString(std::string v) {
         X520CommonName result{};
         result.kind = X520CommonName_kind::printableString;
-        result.value = X520CommonName_printableString_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
     static X520CommonName from_bmpString(std::string v) {
         X520CommonName result{};
         result.kind = X520CommonName_kind::bmpString;
-        result.value = X520CommonName_bmpString_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
     static X520CommonName from_universalString(std::string v) {
         X520CommonName result{};
         result.kind = X520CommonName_kind::universalString;
-        result.value = X520CommonName_universalString_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
     static X520CommonName from_uTF8String(std::string v) {
         X520CommonName result{};
         result.kind = X520CommonName_kind::uTF8String;
-        result.value = X520CommonName_uTF8String_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
@@ -149,35 +129,35 @@ struct X520CommonName {
             result.kind = X520CommonName_kind::teletexString;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::teletex_string, asn1kit::string_form::teletex);
-            result.value = X520CommonName_teletexString_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::printable_string)) {
             X520CommonName result{};
             result.kind = X520CommonName_kind::printableString;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
-            result.value = X520CommonName_printableString_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::bmp_string)) {
             X520CommonName result{};
             result.kind = X520CommonName_kind::bmpString;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::bmp_string, asn1kit::string_form::bmp);
-            result.value = X520CommonName_bmpString_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::universal_string)) {
             X520CommonName result{};
             result.kind = X520CommonName_kind::universalString;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::universal_string, asn1kit::string_form::universal);
-            result.value = X520CommonName_universalString_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::utf8_string)) {
             X520CommonName result{};
             result.kind = X520CommonName_kind::uTF8String;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
-            result.value = X520CommonName_uTF8String_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -193,31 +173,31 @@ struct X520CommonName {
         switch (kind) {
         case X520CommonName_kind::teletexString:
             {
-                const auto& alt = std::get<0>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::teletex_string, alt, asn1kit::string_form::teletex);
                 break;
             }
         case X520CommonName_kind::printableString:
             {
-                const auto& alt = std::get<1>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::printable_string, alt, asn1kit::string_form::printable);
                 break;
             }
         case X520CommonName_kind::bmpString:
             {
-                const auto& alt = std::get<2>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::bmp_string, alt, asn1kit::string_form::bmp);
                 break;
             }
         case X520CommonName_kind::universalString:
             {
-                const auto& alt = std::get<3>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::universal_string, alt, asn1kit::string_form::universal);
                 break;
             }
         case X520CommonName_kind::uTF8String:
             {
-                const auto& alt = std::get<4>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::utf8_string, alt, asn1kit::string_form::utf8);
                 break;
             }
@@ -238,62 +218,42 @@ enum class X520LocalityName_kind {
     uTF8String
 };
 
-struct X520LocalityName_teletexString_box {
-    std::string value{};
-};
-
-struct X520LocalityName_printableString_box {
-    std::string value{};
-};
-
-struct X520LocalityName_bmpString_box {
-    std::string value{};
-};
-
-struct X520LocalityName_universalString_box {
-    std::string value{};
-};
-
-struct X520LocalityName_uTF8String_box {
-    std::string value{};
-};
-
 struct X520LocalityName {
     X520LocalityName_kind kind{};
-    std::variant<X520LocalityName_teletexString_box, X520LocalityName_printableString_box, X520LocalityName_bmpString_box, X520LocalityName_universalString_box, X520LocalityName_uTF8String_box> value{};
+    std::string value{};
 
     static X520LocalityName from_teletexString(std::string v) {
         X520LocalityName result{};
         result.kind = X520LocalityName_kind::teletexString;
-        result.value = X520LocalityName_teletexString_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
     static X520LocalityName from_printableString(std::string v) {
         X520LocalityName result{};
         result.kind = X520LocalityName_kind::printableString;
-        result.value = X520LocalityName_printableString_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
     static X520LocalityName from_bmpString(std::string v) {
         X520LocalityName result{};
         result.kind = X520LocalityName_kind::bmpString;
-        result.value = X520LocalityName_bmpString_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
     static X520LocalityName from_universalString(std::string v) {
         X520LocalityName result{};
         result.kind = X520LocalityName_kind::universalString;
-        result.value = X520LocalityName_universalString_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
     static X520LocalityName from_uTF8String(std::string v) {
         X520LocalityName result{};
         result.kind = X520LocalityName_kind::uTF8String;
-        result.value = X520LocalityName_uTF8String_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
@@ -309,35 +269,35 @@ struct X520LocalityName {
             result.kind = X520LocalityName_kind::teletexString;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::teletex_string, asn1kit::string_form::teletex);
-            result.value = X520LocalityName_teletexString_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::printable_string)) {
             X520LocalityName result{};
             result.kind = X520LocalityName_kind::printableString;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
-            result.value = X520LocalityName_printableString_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::bmp_string)) {
             X520LocalityName result{};
             result.kind = X520LocalityName_kind::bmpString;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::bmp_string, asn1kit::string_form::bmp);
-            result.value = X520LocalityName_bmpString_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::universal_string)) {
             X520LocalityName result{};
             result.kind = X520LocalityName_kind::universalString;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::universal_string, asn1kit::string_form::universal);
-            result.value = X520LocalityName_universalString_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::utf8_string)) {
             X520LocalityName result{};
             result.kind = X520LocalityName_kind::uTF8String;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
-            result.value = X520LocalityName_uTF8String_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -353,31 +313,31 @@ struct X520LocalityName {
         switch (kind) {
         case X520LocalityName_kind::teletexString:
             {
-                const auto& alt = std::get<0>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::teletex_string, alt, asn1kit::string_form::teletex);
                 break;
             }
         case X520LocalityName_kind::printableString:
             {
-                const auto& alt = std::get<1>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::printable_string, alt, asn1kit::string_form::printable);
                 break;
             }
         case X520LocalityName_kind::bmpString:
             {
-                const auto& alt = std::get<2>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::bmp_string, alt, asn1kit::string_form::bmp);
                 break;
             }
         case X520LocalityName_kind::universalString:
             {
-                const auto& alt = std::get<3>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::universal_string, alt, asn1kit::string_form::universal);
                 break;
             }
         case X520LocalityName_kind::uTF8String:
             {
-                const auto& alt = std::get<4>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::utf8_string, alt, asn1kit::string_form::utf8);
                 break;
             }

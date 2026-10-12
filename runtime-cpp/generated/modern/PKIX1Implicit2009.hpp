@@ -215,51 +215,35 @@ enum class DisplayText_kind {
     utf8String
 };
 
-struct DisplayText_ia5String_box {
-    std::string value{};
-};
-
-struct DisplayText_visibleString_box {
-    std::string value{};
-};
-
-struct DisplayText_bmpString_box {
-    std::string value{};
-};
-
-struct DisplayText_utf8String_box {
-    std::string value{};
-};
-
 struct DisplayText {
     DisplayText_kind kind{};
-    std::variant<DisplayText_ia5String_box, DisplayText_visibleString_box, DisplayText_bmpString_box, DisplayText_utf8String_box> value{};
+    std::string value{};
 
     static DisplayText from_ia5String(std::string v) {
         DisplayText result{};
         result.kind = DisplayText_kind::ia5String;
-        result.value = DisplayText_ia5String_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
     static DisplayText from_visibleString(std::string v) {
         DisplayText result{};
         result.kind = DisplayText_kind::visibleString;
-        result.value = DisplayText_visibleString_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
     static DisplayText from_bmpString(std::string v) {
         DisplayText result{};
         result.kind = DisplayText_kind::bmpString;
-        result.value = DisplayText_bmpString_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
     static DisplayText from_utf8String(std::string v) {
         DisplayText result{};
         result.kind = DisplayText_kind::utf8String;
-        result.value = DisplayText_utf8String_box{std::move(v)};
+        result.value = std::move(v);
         return result;
     }
 
@@ -275,28 +259,28 @@ struct DisplayText {
             result.kind = DisplayText_kind::ia5String;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::ia5_string, asn1kit::string_form::ia5);
-            result.value = DisplayText_ia5String_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::visible_string)) {
             DisplayText result{};
             result.kind = DisplayText_kind::visibleString;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::visible_string, asn1kit::string_form::visible);
-            result.value = DisplayText_visibleString_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::bmp_string)) {
             DisplayText result{};
             result.kind = DisplayText_kind::bmpString;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::bmp_string, asn1kit::string_form::bmp);
-            result.value = DisplayText_bmpString_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::utf8_string)) {
             DisplayText result{};
             result.kind = DisplayText_kind::utf8String;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
-            result.value = DisplayText_utf8String_box{std::move(alt)};
+            result.value = std::move(alt);
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -312,25 +296,25 @@ struct DisplayText {
         switch (kind) {
         case DisplayText_kind::ia5String:
             {
-                const auto& alt = std::get<0>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::ia5_string, alt, asn1kit::string_form::ia5);
                 break;
             }
         case DisplayText_kind::visibleString:
             {
-                const auto& alt = std::get<1>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::visible_string, alt, asn1kit::string_form::visible);
                 break;
             }
         case DisplayText_kind::bmpString:
             {
-                const auto& alt = std::get<2>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::bmp_string, alt, asn1kit::string_form::bmp);
                 break;
             }
         case DisplayText_kind::utf8String:
             {
-                const auto& alt = std::get<3>(value).value;
+                const auto& alt = value;
                 w.write_string(asn1kit::tag::utf8_string, alt, asn1kit::string_form::utf8);
                 break;
             }
@@ -355,14 +339,14 @@ struct DistributionPointName {
     static DistributionPointName from_fullName(std::vector<GeneralName> v) {
         DistributionPointName result{};
         result.kind = DistributionPointName_kind::fullName;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static DistributionPointName from_nameRelativeToCRLIssuer(std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> v) {
         DistributionPointName result{};
         result.kind = DistributionPointName_kind::nameRelativeToCRLIssuer;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
@@ -382,7 +366,7 @@ struct DistributionPointName {
                 item = GeneralName::decode(inner);
                 return item;
             });
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
             DistributionPointName result{};
@@ -393,7 +377,7 @@ struct DistributionPointName {
                 item = ::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute::decode(inner, asn1kit::tag::sequence);
                 return item;
             });
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");

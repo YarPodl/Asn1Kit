@@ -56,14 +56,14 @@ struct CommunityIdentifier {
     static CommunityIdentifier from_communityOID(asn1kit::oid v) {
         CommunityIdentifier result{};
         result.kind = CommunityIdentifier_kind::communityOID;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static CommunityIdentifier from_hwModuleList(HardwareModules v) {
         CommunityIdentifier result{};
         result.kind = CommunityIdentifier_kind::hwModuleList;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
@@ -79,14 +79,14 @@ struct CommunityIdentifier {
             result.kind = CommunityIdentifier_kind::communityOID;
             asn1kit::oid alt{};
             alt = r.read_oid(asn1kit::tag::object_identifier);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
             CommunityIdentifier result{};
             result.kind = CommunityIdentifier_kind::hwModuleList;
             HardwareModules alt{};
             alt = HardwareModules::decode(r, asn1kit::tag::sequence);
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -321,21 +321,21 @@ struct HardwareSerialEntry {
     static HardwareSerialEntry from_all(asn1kit::null_value v) {
         HardwareSerialEntry result{};
         result.kind = HardwareSerialEntry_kind::all;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static HardwareSerialEntry from_single(asn1kit::bytes v) {
         HardwareSerialEntry result{};
         result.kind = HardwareSerialEntry_kind::single;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
     static HardwareSerialEntry from_block(HardwareSerialEntry_Block v) {
         HardwareSerialEntry result{};
         result.kind = HardwareSerialEntry_kind::block;
-        result.value = std::move(v);
+        result.value.emplace<2>(std::move(v));
         return result;
     }
 
@@ -351,21 +351,21 @@ struct HardwareSerialEntry {
             result.kind = HardwareSerialEntry_kind::all;
             asn1kit::null_value alt{};
             alt = asn1kit::null_value::decode(r, asn1kit::tag::null);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::octet_string)) {
             HardwareSerialEntry result{};
             result.kind = HardwareSerialEntry_kind::single;
             asn1kit::bytes alt{};
             alt = r.read_octet_string(asn1kit::tag::octet_string);
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
             HardwareSerialEntry result{};
             result.kind = HardwareSerialEntry_kind::block;
             HardwareSerialEntry_Block alt{};
             alt = HardwareSerialEntry_Block::decode(r, asn1kit::tag::sequence);
-            result.value = std::move(alt);
+            result.value.emplace<2>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -442,14 +442,14 @@ struct PreferredOrLegacyPackageIdentifier {
     static PreferredOrLegacyPackageIdentifier from_preferred(PreferredPackageIdentifier v) {
         PreferredOrLegacyPackageIdentifier result{};
         result.kind = PreferredOrLegacyPackageIdentifier_kind::preferred;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static PreferredOrLegacyPackageIdentifier from_legacy(asn1kit::bytes v) {
         PreferredOrLegacyPackageIdentifier result{};
         result.kind = PreferredOrLegacyPackageIdentifier_kind::legacy;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
@@ -465,14 +465,14 @@ struct PreferredOrLegacyPackageIdentifier {
             result.kind = PreferredOrLegacyPackageIdentifier_kind::preferred;
             PreferredPackageIdentifier alt{};
             alt = PreferredPackageIdentifier::decode(r, asn1kit::tag::sequence);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::octet_string)) {
             PreferredOrLegacyPackageIdentifier result{};
             result.kind = PreferredOrLegacyPackageIdentifier_kind::legacy;
             asn1kit::bytes alt{};
             alt = r.read_octet_string(asn1kit::tag::octet_string);
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
@@ -665,14 +665,14 @@ struct PreferredOrLegacyStalePackageIdentifier {
     static PreferredOrLegacyStalePackageIdentifier from_preferredStaleVerNum(asn1kit::integer v) {
         PreferredOrLegacyStalePackageIdentifier result{};
         result.kind = PreferredOrLegacyStalePackageIdentifier_kind::preferredStaleVerNum;
-        result.value = std::move(v);
+        result.value.emplace<0>(std::move(v));
         return result;
     }
 
     static PreferredOrLegacyStalePackageIdentifier from_legacyStaleVersion(asn1kit::bytes v) {
         PreferredOrLegacyStalePackageIdentifier result{};
         result.kind = PreferredOrLegacyStalePackageIdentifier_kind::legacyStaleVersion;
-        result.value = std::move(v);
+        result.value.emplace<1>(std::move(v));
         return result;
     }
 
@@ -688,14 +688,14 @@ struct PreferredOrLegacyStalePackageIdentifier {
             result.kind = PreferredOrLegacyStalePackageIdentifier_kind::preferredStaleVerNum;
             asn1kit::integer alt{};
             alt = r.read_integer_value(asn1kit::tag::integer);
-            result.value = std::move(alt);
+            result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::octet_string)) {
             PreferredOrLegacyStalePackageIdentifier result{};
             result.kind = PreferredOrLegacyStalePackageIdentifier_kind::legacyStaleVersion;
             asn1kit::bytes alt{};
             alt = r.read_octet_string(asn1kit::tag::octet_string);
-            result.value = std::move(alt);
+            result.value.emplace<1>(std::move(alt));
             return result;
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
