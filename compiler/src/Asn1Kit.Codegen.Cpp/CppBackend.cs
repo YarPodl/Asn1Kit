@@ -49,56 +49,47 @@ public sealed partial class CppBackend : ILanguageBackend
     }
 
     /// <summary>
-    /// Emit nested named types so OF item structs appear before owners that embed them by value.
+    /// Emit nested named types in layout-dep order (CHOICE/OF nested structs before owners).
     /// </summary>
     private List<(string Name, TypeExpr Type)> OrderNestedForEmit(
         IrDocument document,
         IrModule module,
         IReadOnlyList<(string Name, TypeExpr Type)> nested)
     {
-        var byName = nested.ToDictionary(static item => item.Name, StringComparer.Ordinal);
-        var deps = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
-        foreach (var (name, _) in nested)
-            deps[name] = new HashSet<string>(StringComparer.Ordinal);
-
-        foreach (var (name, type) in nested)
+        var items = nested.ToList();
+        var keyOf = new Dictionary<(string Module, string Name), int>();
+        for (var index = 0; index < items.Count; index++)
         {
-            if (OpenContainerFields(type) is not { } fields) continue;
-            foreach (var field in fields)
-            {
-                var fieldType = UnwrapAliases(document, module, field.Type);
-                if (fieldType is RefType reference)
-                {
-                    var found = FindWithModule(document, module, reference);
-                    if (found is null || found.Value.Module != module) continue;
-                    var dep = IrOptions.CppTypeName(found.Value.Def.Options)
-                        ?? CppNames.SanitizeTypeName(found.Value.Def.Name);
-                    if (byName.ContainsKey(dep) && dep != name)
-                        deps[name].Add(dep);
-                    continue;
-                }
-
-                if (fieldType is SequenceOfType or SetOfType)
-                {
-                    // CollectNested(owner) → OfferNested(owner_Field, OF) → owner_Field_Item.
-                    var itemName = name + "_" + CppNames.SanitizeTypeName(field.Name) + "_Item";
-                    if (byName.ContainsKey(itemName))
-                        deps[name].Add(itemName);
-                }
-            }
+            keyOf[(module.Name, items[index].Name)] = index;
         }
 
-        var remaining = new HashSet<string>(byName.Keys, StringComparer.Ordinal);
+        var deps = items.Select(_ => new HashSet<int>()).ToArray();
+        for (var index = 0; index < items.Count; index++)
+        {
+            CollectNamedTypeDeps(
+                document, module, items[index].Type, items[index].Name, keyOf, deps[index]);
+        }
+
+        var remaining = new HashSet<int>(Enumerable.Range(0, items.Count));
         var ordered = new List<(string Name, TypeExpr Type)>();
         while (remaining.Count > 0)
         {
             var next = remaining
-                .Where(n => deps[n].All(d => !remaining.Contains(d)))
-                .OrderBy(static n => n, StringComparer.Ordinal)
-                .FirstOrDefault();
-            next ??= remaining.OrderBy(static n => n, StringComparer.Ordinal).First();
+                .Where(i => deps[i].All(d => !remaining.Contains(d)))
+                .OrderBy(i => items[i].Name, StringComparer.Ordinal)
+                .DefaultIfEmpty(-1)
+                .First();
+            if (next < 0)
+            {
+                next = remaining
+                    .OrderByDescending(i => remaining.Count(j => deps[j].Contains(i)))
+                    .ThenBy(i => deps[i].Count(d => remaining.Contains(d)))
+                    .ThenBy(i => items[i].Name, StringComparer.Ordinal)
+                    .First();
+            }
+
             remaining.Remove(next);
-            ordered.Add(byName[next]);
+            ordered.Add(items[next]);
         }
 
         return ordered;

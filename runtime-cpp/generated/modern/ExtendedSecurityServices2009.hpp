@@ -25,9 +25,10 @@
 #include <variant>
 #include <vector>
 
-#include "cycle_AlgorithmInformation2009_AlgorithmIdentifier_AttributeCertificateVersion12009_AttributeCertificateInfoV1_and_77_more.hpp"
-#include "PKIX1Implicit2009.hpp"
-#include "PKIXCommonTypes2009.hpp"
+#include "AlgorithmInformation2009.types.hpp"
+#include "CryptographicMessageSyntax2009.types.hpp"
+#include "PKIX1Implicit2009.types.hpp"
+#include "PKIXCommonTypes2009.types.hpp"
 
 namespace asn1kit {
 namespace modern {
@@ -107,72 +108,6 @@ struct ContentReference {
     }
 };
 
-struct ESSCertID {
-    asn1kit::bytes certHash{};
-    std::optional<IssuerSerial> issuerSerial{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static ESSCertID decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        ESSCertID value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.certHash = inner.read_octet_string(asn1kit::tag::octet_string);
-            if (inner.next_is(asn1kit::tag::sequence)) {
-                value.issuerSerial = IssuerSerial::decode(inner, asn1kit::tag::sequence);
-            }
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        w.write_octet_string(asn1kit::tag::octet_string, this->certHash.span());
-        if (this->issuerSerial.has_value()) {
-            (*this->issuerSerial).encode(w, asn1kit::tag::sequence);
-        }
-    }
-};
-
-struct ESSCertIDv2 {
-    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"2.16.840.1.101.3.4.2.1">().get(); return v; }());
-    asn1kit::bytes certHash{};
-    std::optional<IssuerSerial> issuerSerial{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static ESSCertIDv2 decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        ESSCertIDv2 value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            if (inner.next_is(asn1kit::tag::sequence)) {
-                value.hashAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner, asn1kit::tag::sequence);
-            }
-            else {
-                value.hashAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"2.16.840.1.101.3.4.2.1">().get(); return v; }());
-            }
-            value.certHash = inner.read_octet_string(asn1kit::tag::octet_string);
-            if (inner.next_is(asn1kit::tag::sequence)) {
-                value.issuerSerial = IssuerSerial::decode(inner, asn1kit::tag::sequence);
-            }
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        if (!(!(this->hashAlgorithm.algorithm != asn1kit::oid_literal<"2.16.840.1.101.3.4.2.1">().get()) && !this->hashAlgorithm.parameters.has_value())) {
-            this->hashAlgorithm.encode(w, asn1kit::tag::sequence);
-        }
-        w.write_octet_string(asn1kit::tag::octet_string, this->certHash.span());
-        if (this->issuerSerial.has_value()) {
-            (*this->issuerSerial).encode(w, asn1kit::tag::sequence);
-        }
-    }
-};
-
 enum class ESSPrivacyMark_kind {
     pString,
     utf8String
@@ -247,6 +182,68 @@ struct ESSPrivacyMark {
     void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
         (void)t;
         encode(w);
+    }
+};
+
+struct ESSSecurityLabel {
+    asn1kit::oid security_policy_identifier{};
+    std::optional<std::int32_t> security_classification{};
+    std::optional<ESSPrivacyMark> privacy_mark{};
+    std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SecurityCategory>> security_categories{};
+
+    static asn1kit::tag default_tag() {
+        return asn1kit::tag::set;
+    }
+
+    static ESSSecurityLabel decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+        ESSSecurityLabel value{};
+        r.with_set(t, [&](asn1kit::reader& inner) {
+            bool seen_security_policy_identifier = false;
+            while (!inner.eof()) {
+                asn1kit::tag peeked;
+                if (!inner.try_peek_tag(peeked)) {
+                    break;
+                }
+                if (peeked.matches_ignore_constructed(asn1kit::tag::object_identifier)) {
+                    if (seen_security_policy_identifier) throw asn1kit::exception("Duplicate SET component 'security-policy-identifier'.");
+                    seen_security_policy_identifier = true;
+                    value.security_policy_identifier = inner.read_oid(asn1kit::tag::object_identifier);
+                } else if (peeked.matches_ignore_constructed(asn1kit::tag::integer)) {
+                    if (value.security_classification.has_value()) throw asn1kit::exception("Duplicate SET component 'security-classification'.");
+                    value.security_classification = inner.read_int32(asn1kit::tag::integer);
+                } else if ((peeked.matches_ignore_constructed(asn1kit::tag::printable_string) || peeked.matches_ignore_constructed(asn1kit::tag::utf8_string))) {
+                    if (value.privacy_mark.has_value()) throw asn1kit::exception("Duplicate SET component 'privacy-mark'.");
+                    value.privacy_mark = ESSPrivacyMark::decode(inner);
+                } else if (peeked.matches_ignore_constructed(asn1kit::tag::set)) {
+                    if (value.security_categories.has_value()) throw asn1kit::exception("Duplicate SET component 'security-categories'.");
+                    value.security_categories = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SecurityCategory>(asn1kit::tag::set, [&](asn1kit::reader& inner) {
+                        ::asn1kit::modern::PKIXCommonTypes2009::SecurityCategory item{};
+                        item = ::asn1kit::modern::PKIXCommonTypes2009::SecurityCategory::decode(inner, asn1kit::tag::sequence);
+                        return item;
+                    });
+                } else {
+                    throw asn1kit::exception("Unknown SET component.");
+                }
+            }
+            if (!seen_security_policy_identifier) throw asn1kit::exception("Missing SET component 'security-policy-identifier'.");
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+        auto scope = w.enter_set(t);
+        if (this->security_classification.has_value()) {
+            w.write_integer(asn1kit::tag::integer, (*this->security_classification));
+        }
+        w.write_object_identifier(asn1kit::tag::object_identifier, this->security_policy_identifier);
+        if (this->privacy_mark.has_value()) {
+            (*this->privacy_mark).encode(w);
+        }
+        if (this->security_categories.has_value()) {
+            w.write_set_of(asn1kit::tag::set, (*this->security_categories), [&](asn1kit::writer& inner, const auto& item) {
+                item.encode(inner, asn1kit::tag::sequence);
+            });
+        }
     }
 };
 
@@ -328,6 +325,102 @@ struct EntityIdentifier {
     void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
         (void)t;
         encode(w);
+    }
+};
+
+struct IssuerSerial {
+    std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> issuer{};
+    asn1kit::integer serialNumber{};
+
+    static asn1kit::tag default_tag() {
+        return asn1kit::tag::sequence;
+    }
+
+    static IssuerSerial decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+        IssuerSerial value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.issuer = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
+                ::asn1kit::modern::PKIX1Implicit2009::GeneralName item{};
+                item = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
+                return item;
+            });
+            value.serialNumber = inner.read_integer_value(asn1kit::tag::integer);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+        auto scope = w.enter_sequence(t);
+        w.write_sequence_of(asn1kit::tag::sequence, this->issuer, [&](asn1kit::writer& inner, const auto& item) {
+            item.encode(inner);
+        });
+        w.write_integer(asn1kit::tag::integer, this->serialNumber);
+    }
+};
+
+struct ESSCertID {
+    asn1kit::bytes certHash{};
+    std::optional<IssuerSerial> issuerSerial{};
+
+    static asn1kit::tag default_tag() {
+        return asn1kit::tag::sequence;
+    }
+
+    static ESSCertID decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+        ESSCertID value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.certHash = inner.read_octet_string(asn1kit::tag::octet_string);
+            if (inner.next_is(asn1kit::tag::sequence)) {
+                value.issuerSerial = IssuerSerial::decode(inner, asn1kit::tag::sequence);
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+        auto scope = w.enter_sequence(t);
+        w.write_octet_string(asn1kit::tag::octet_string, this->certHash.span());
+        if (this->issuerSerial.has_value()) {
+            (*this->issuerSerial).encode(w, asn1kit::tag::sequence);
+        }
+    }
+};
+
+struct ESSCertIDv2 {
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"2.16.840.1.101.3.4.2.1">().get(); return v; }());
+    asn1kit::bytes certHash{};
+    std::optional<IssuerSerial> issuerSerial{};
+
+    static asn1kit::tag default_tag() {
+        return asn1kit::tag::sequence;
+    }
+
+    static ESSCertIDv2 decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+        ESSCertIDv2 value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            if (inner.next_is(asn1kit::tag::sequence)) {
+                value.hashAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner, asn1kit::tag::sequence);
+            }
+            else {
+                value.hashAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"2.16.840.1.101.3.4.2.1">().get(); return v; }());
+            }
+            value.certHash = inner.read_octet_string(asn1kit::tag::octet_string);
+            if (inner.next_is(asn1kit::tag::sequence)) {
+                value.issuerSerial = IssuerSerial::decode(inner, asn1kit::tag::sequence);
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+        auto scope = w.enter_sequence(t);
+        if (!(!(this->hashAlgorithm.algorithm != asn1kit::oid_literal<"2.16.840.1.101.3.4.2.1">().get()) && !this->hashAlgorithm.parameters.has_value())) {
+            this->hashAlgorithm.encode(w, asn1kit::tag::sequence);
+        }
+        w.write_octet_string(asn1kit::tag::octet_string, this->certHash.span());
+        if (this->issuerSerial.has_value()) {
+            (*this->issuerSerial).encode(w, asn1kit::tag::sequence);
+        }
     }
 };
 
@@ -652,68 +745,6 @@ struct SecurityClassification {
     static constexpr std::int32_t Confidential = 3;
     static constexpr std::int32_t Secret = 4;
     static constexpr std::int32_t TopSecret = 5;
-};
-
-struct ESSSecurityLabel {
-    asn1kit::oid security_policy_identifier{};
-    std::optional<std::int32_t> security_classification{};
-    std::optional<ESSPrivacyMark> privacy_mark{};
-    std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SecurityCategory>> security_categories{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::set;
-    }
-
-    static ESSSecurityLabel decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        ESSSecurityLabel value{};
-        r.with_set(t, [&](asn1kit::reader& inner) {
-            bool seen_security_policy_identifier = false;
-            while (!inner.eof()) {
-                asn1kit::tag peeked;
-                if (!inner.try_peek_tag(peeked)) {
-                    break;
-                }
-                if (peeked.matches_ignore_constructed(asn1kit::tag::object_identifier)) {
-                    if (seen_security_policy_identifier) throw asn1kit::exception("Duplicate SET component 'security-policy-identifier'.");
-                    seen_security_policy_identifier = true;
-                    value.security_policy_identifier = inner.read_oid(asn1kit::tag::object_identifier);
-                } else if (peeked.matches_ignore_constructed(asn1kit::tag::integer)) {
-                    if (value.security_classification.has_value()) throw asn1kit::exception("Duplicate SET component 'security-classification'.");
-                    value.security_classification = inner.read_int32(asn1kit::tag::integer);
-                } else if ((peeked.matches_ignore_constructed(asn1kit::tag::printable_string) || peeked.matches_ignore_constructed(asn1kit::tag::utf8_string))) {
-                    if (value.privacy_mark.has_value()) throw asn1kit::exception("Duplicate SET component 'privacy-mark'.");
-                    value.privacy_mark = ESSPrivacyMark::decode(inner);
-                } else if (peeked.matches_ignore_constructed(asn1kit::tag::set)) {
-                    if (value.security_categories.has_value()) throw asn1kit::exception("Duplicate SET component 'security-categories'.");
-                    value.security_categories = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SecurityCategory>(asn1kit::tag::set, [&](asn1kit::reader& inner) {
-                        ::asn1kit::modern::PKIXCommonTypes2009::SecurityCategory item{};
-                        item = ::asn1kit::modern::PKIXCommonTypes2009::SecurityCategory::decode(inner, asn1kit::tag::sequence);
-                        return item;
-                    });
-                } else {
-                    throw asn1kit::exception("Unknown SET component.");
-                }
-            }
-            if (!seen_security_policy_identifier) throw asn1kit::exception("Missing SET component 'security-policy-identifier'.");
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_set(t);
-        if (this->security_classification.has_value()) {
-            w.write_integer(asn1kit::tag::integer, (*this->security_classification));
-        }
-        w.write_object_identifier(asn1kit::tag::object_identifier, this->security_policy_identifier);
-        if (this->privacy_mark.has_value()) {
-            (*this->privacy_mark).encode(w);
-        }
-        if (this->security_categories.has_value()) {
-            w.write_set_of(asn1kit::tag::set, (*this->security_categories), [&](asn1kit::writer& inner, const auto& item) {
-                item.encode(inner, asn1kit::tag::sequence);
-            });
-        }
-    }
 };
 
 struct SigningCertificate {

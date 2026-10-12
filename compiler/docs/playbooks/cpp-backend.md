@@ -34,7 +34,7 @@
   - Policy: unknown/wrong key → `try_decode` = false (raw живёт); match + bad wire → reject.
   - Selector: OID и INTEGER; nested path (`path.Count > 1`) через поля SEQUENCE/SET (нужно для Certificate/SIGNED parameters).
   - Вне среза: `AsString`, SIGNED-шаблон как у C#, Legacy Explicit88 C++ golden.
-- Cross-module: peer `#include "Peer.hpp"` по фактическим deps оставшихся в модуле типов. Нетривиальные SCC графа именованных типов → `cycle_….hpp` (амальгама SCC + транзитивные trivial deps; без OID/open-type catalogs); модульный header реэкспортирует cycle-файлы своих типов.
+- Cross-module: peer `#include "Peer.hpp"` по фактическим layout-deps (open-type `AnyType.Bindings` в граф deps не входят). Нетривиальные SCC → `cycle_….hpp` только с членами SCC. `Module.types.hpp` — только если модулю нужен facade (owned cycle / post-типы / open-type catalogs) и есть нециклические типы: тогда в `*.types.hpp` уходят типы + OID-каталог; `Module.hpp` — facade (re-export types/cycle + open). Если facade не нужен — один `Module.hpp` (типы + OID). Без cycle в документе — один `Module.hpp` как раньше.
 - CHOICE: одинаковые C++-типы используют один слот `std::variant` (порядок первого появления); если тип единственный, `value` имеет этот тип без `variant`. `kind` сохраняет ASN.1-ветку, её тег и правила кодирования; обёртки `…_box` не генерируются.
 - `OCTET STRING` / `BIT STRING` `CONTAINING` → `asn1kit::contained<T>` (`read_contained` / `write_contained`; content ANY → `known=false`; nested content — `Owner_Content`).
 - Extensible SEQUENCE/SET: skip-unknown через `read_any`, extension additions + groups (`CppBackend.Extensibility.cs`); extensible SET encode — `enter_set_of`. Extensible CHOICE → `…_kind::unknown` + `asn1kit::any`.

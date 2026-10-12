@@ -25,7 +25,7 @@
 #include <variant>
 #include <vector>
 
-#include "cycle_AlgorithmInformation2009_AlgorithmIdentifier_AttributeCertificateVersion12009_AttributeCertificateInfoV1_and_77_more.hpp"
+#include "AlgorithmInformation2009.types.hpp"
 
 namespace asn1kit {
 namespace modern {
@@ -41,47 +41,6 @@ struct CryptographicMessageSyntaxAlgorithms2009Oids {
     static constexpr auto HMACSHA1 = asn1kit::oid_literal<"1.3.6.1.5.5.8.1.2">();
     static constexpr auto IdPBKDF2 = asn1kit::oid_literal<"1.2.840.113549.1.5.12">();
     static constexpr auto DhPublicNumber = asn1kit::oid_literal<"1.2.840.10046.2.1">();
-};
-
-struct PBKDF2Params {
-    PBKDF2Params_Salt salt{};
-    asn1kit::integer iterationCount{};
-    std::optional<asn1kit::integer> keyLength{};
-    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier prf = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"1.3.6.1.5.5.8.1.2">().get();         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }());
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static PBKDF2Params decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        PBKDF2Params value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.salt = PBKDF2Params_Salt::decode(inner);
-            value.iterationCount = inner.read_integer_value(asn1kit::tag::integer);
-            if (inner.next_is(asn1kit::tag::integer)) {
-                value.keyLength = inner.read_integer_value(asn1kit::tag::integer);
-            }
-            if (inner.next_is(asn1kit::tag::sequence)) {
-                value.prf = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner, asn1kit::tag::sequence);
-            }
-            else {
-                value.prf = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"1.3.6.1.5.5.8.1.2">().get();         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }());
-            }
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        this->salt.encode(w);
-        w.write_integer(asn1kit::tag::integer, this->iterationCount);
-        if (this->keyLength.has_value()) {
-            w.write_integer(asn1kit::tag::integer, (*this->keyLength));
-        }
-        if (!(!(this->prf.algorithm != asn1kit::oid_literal<"1.3.6.1.5.5.8.1.2">().get()) && this->prf.parameters.has_value() && !((*this->prf.parameters) != asn1kit::encode_open(asn1kit::null_value::value())))) {
-            this->prf.encode(w, asn1kit::tag::sequence);
-        }
-    }
 };
 
 enum class PBKDF2Params_Salt_kind {
@@ -158,6 +117,47 @@ struct PBKDF2Params_Salt {
     void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
         (void)t;
         encode(w);
+    }
+};
+
+struct PBKDF2Params {
+    PBKDF2Params_Salt salt{};
+    asn1kit::integer iterationCount{};
+    std::optional<asn1kit::integer> keyLength{};
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier prf = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"1.3.6.1.5.5.8.1.2">().get();         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }());
+
+    static asn1kit::tag default_tag() {
+        return asn1kit::tag::sequence;
+    }
+
+    static PBKDF2Params decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+        PBKDF2Params value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.salt = PBKDF2Params_Salt::decode(inner);
+            value.iterationCount = inner.read_integer_value(asn1kit::tag::integer);
+            if (inner.next_is(asn1kit::tag::integer)) {
+                value.keyLength = inner.read_integer_value(asn1kit::tag::integer);
+            }
+            if (inner.next_is(asn1kit::tag::sequence)) {
+                value.prf = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner, asn1kit::tag::sequence);
+            }
+            else {
+                value.prf = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"1.3.6.1.5.5.8.1.2">().get();         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }());
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+        auto scope = w.enter_sequence(t);
+        this->salt.encode(w);
+        w.write_integer(asn1kit::tag::integer, this->iterationCount);
+        if (this->keyLength.has_value()) {
+            w.write_integer(asn1kit::tag::integer, (*this->keyLength));
+        }
+        if (!(!(this->prf.algorithm != asn1kit::oid_literal<"1.3.6.1.5.5.8.1.2">().get()) && this->prf.parameters.has_value() && !((*this->prf.parameters) != asn1kit::encode_open(asn1kit::null_value::value())))) {
+            this->prf.encode(w, asn1kit::tag::sequence);
+        }
     }
 };
 

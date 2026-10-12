@@ -42,32 +42,19 @@ public sealed partial class CppBackend
         }
 
         var sccs = ComputeTypeSccs(adj);
-        var nontrivial = sccs
+        var amalgams = sccs
             .Where(component => IsNontrivialScc(component, adj))
             .Select(component => component
                 .Select(i => (Module: items[i].Module.Name, Name: items[i].Name))
                 .OrderBy(static t => t.Module, StringComparer.Ordinal)
                 .ThenBy(static t => t.Name, StringComparer.Ordinal)
-                .ToList())
-            .OrderBy(static members => string.Join('\0', members.Select(m => m.Module + '\u0001' + m.Name)),
+                .ToHashSet())
+            .OrderBy(static members => string.Join('\0',
+                    members.OrderBy(static t => t.Module, StringComparer.Ordinal)
+                        .ThenBy(static t => t.Name, StringComparer.Ordinal)
+                        .Select(m => m.Module + '\u0001' + m.Name)),
                 StringComparer.Ordinal)
             .ToList();
-
-        var assignedToAmalgam = new HashSet<(string Module, string Name)>(
-            nontrivial.SelectMany(static members => members));
-        var amalgams = new List<HashSet<(string Module, string Name)>>(nontrivial.Count);
-        foreach (var scc in nontrivial)
-        {
-            // Pull transitive trivial deps into the amalgam so cycle headers never
-            // #include module headers (avoids cycle→module→…→cycle include loops).
-            var amalgam = ExpandAmalgamClosure(scc, assignedToAmalgam, items, keyOf, adj);
-            foreach (var key in amalgam)
-            {
-                assignedToAmalgam.Add(key);
-            }
-
-            amalgams.Add(amalgam);
-        }
 
         var cycleNames = AssignCycleFileNames(amalgams);
         var typeToCycleFile = new Dictionary<(string Module, string Name), string>();
@@ -80,13 +67,35 @@ public sealed partial class CppBackend
         }
 
         var typesInAmalgams = new HashSet<(string Module, string Name)>(typeToCycleFile.Keys);
-        var files = new List<GeneratedFile>(plans.Count + amalgams.Count);
+        // Split Module.types.hpp only when cycle amalgams exist AND this module needs a
+        // facade (owned cycle / post types / open-type catalogs). Otherwise keep a single
+        // Module.hpp (types + OID together) so OID-only facades are not duplicated.
+        var useTypesSplit = amalgams.Count > 0;
+        var postTypes = useTypesSplit
+            ? ComputePostTypes(items, adj, typesInAmalgams)
+            : new HashSet<(string Module, string Name)>();
+        var modulesWithTypesFile = new HashSet<string>(StringComparer.Ordinal);
+        if (useTypesSplit)
+        {
+            foreach (var plan in plans)
+            {
+                var hasCore = plan.Nested.Any(t =>
+                    !typesInAmalgams.Contains((plan.Module.Name, t.Name)) &&
+                    !postTypes.Contains((plan.Module.Name, t.Name)));
+                if (hasCore && ModuleNeedsFacade(plan, typeToCycleFile, postTypes))
+                {
+                    modulesWithTypesFile.Add(plan.Module.Name);
+                }
+            }
+        }
+
+        var files = new List<GeneratedFile>(plans.Count * 2 + amalgams.Count);
 
         for (var i = 0; i < amalgams.Count; i++)
         {
             var amalgam = amalgams[i];
             var includes = CollectAmalgamIncludes(
-                amalgam, cycleNames[i], typeToCycleFile, items, keyOf, adj);
+                amalgam, cycleNames[i], typeToCycleFile, modulesWithTypesFile, items, keyOf, adj);
             files.Add(EmitAmalgamatedFile(
                 document,
                 plans,
@@ -99,15 +108,139 @@ public sealed partial class CppBackend
 
         foreach (var plan in plans)
         {
-            var localNested = plan.Nested
-                .Where(t => !typesInAmalgams.Contains((plan.Module.Name, t.Name)))
+            if (!useTypesSplit)
+            {
+                var localNested = plan.Nested
+                    .Where(t => !typesInAmalgams.Contains((plan.Module.Name, t.Name)))
+                    .ToList();
+                var includes = CollectFacadeIncludes(
+                    document, plan, localNested, typeToCycleFile, typesInAmalgams, postTypes,
+                    modulesWithTypesFile, keyOf, peerTypesFiles: false);
+                files.Add(EmitModuleFile(document, plan, localNested, includes, emitOids: true));
+                continue;
+            }
+
+            var coreNested = plan.Nested
+                .Where(t =>
+                    !typesInAmalgams.Contains((plan.Module.Name, t.Name)) &&
+                    !postTypes.Contains((plan.Module.Name, t.Name)))
                 .ToList();
-            var includes = CollectModuleIncludes(
-                document, plan, localNested, typeToCycleFile, typesInAmalgams, keyOf);
-            files.Add(EmitModuleFile(document, plan, localNested, includes));
+            var postNested = plan.Nested
+                .Where(t => postTypes.Contains((plan.Module.Name, t.Name)))
+                .ToList();
+            var emitTypesFile = modulesWithTypesFile.Contains(plan.Module.Name);
+
+            if (emitTypesFile)
+            {
+                var typesIncludes = CollectTypesFileIncludes(
+                    document, plan, coreNested, typesInAmalgams, postTypes, modulesWithTypesFile,
+                    keyOf);
+                files.Add(EmitTypesFile(document, plan, coreNested, typesIncludes));
+            }
+
+            if (emitTypesFile || ModuleNeedsFacade(plan, typeToCycleFile, postTypes))
+            {
+                var facadeNested = emitTypesFile ? postNested : coreNested.Concat(postNested).ToList();
+                var facadeIncludes = CollectFacadeIncludes(
+                    document, plan, facadeNested, typeToCycleFile, typesInAmalgams, postTypes,
+                    modulesWithTypesFile, keyOf, peerTypesFiles: true);
+                files.Add(EmitModuleFile(
+                    document, plan, facadeNested, facadeIncludes, emitOids: !emitTypesFile));
+            }
+            else
+            {
+                // No facade content: single Module.hpp with core types + OID catalog.
+                var includes = CollectFacadeIncludes(
+                    document, plan, coreNested, typeToCycleFile, typesInAmalgams, postTypes,
+                    modulesWithTypesFile, keyOf, peerTypesFiles: true);
+                files.Add(EmitModuleFile(document, plan, coreNested, includes, emitOids: true));
+            }
         }
 
         return files;
+    }
+
+    private static bool ModuleNeedsFacade(
+        ModulePlan plan,
+        Dictionary<(string Module, string Name), string> typeToCycleFile,
+        HashSet<(string Module, string Name)> postTypes)
+    {
+        foreach (var (name, _) in plan.Nested)
+        {
+            if (typeToCycleFile.ContainsKey((plan.Module.Name, name)))
+            {
+                return true;
+            }
+
+            if (postTypes.Contains((plan.Module.Name, name)))
+            {
+                return true;
+            }
+        }
+
+        return plan.Open.Sites.Count > 0 || plan.Open.Bindings.Count > 0;
+    }
+
+    private static string TypesFileName(string moduleName) =>
+        CppNames.SanitizeTypeName(moduleName) + ".types.hpp";
+
+    /// <summary>
+    /// Non-SCC types that layout-depend on an SCC type (directly or transitively).
+    /// Emitted in the module facade after cycle includes, not in Module.types.hpp.
+    /// </summary>
+    private static HashSet<(string Module, string Name)> ComputePostTypes(
+        IReadOnlyList<(IrModule Module, string Name, TypeExpr Type)> items,
+        HashSet<int>[] adj,
+        HashSet<(string Module, string Name)> typesInAmalgams)
+    {
+        var n = items.Count;
+        var state = new byte[n];
+        var reaches = new bool[n];
+
+        void Dfs(int i)
+        {
+            if (state[i] != 0)
+            {
+                return;
+            }
+
+            state[i] = 1;
+            var key = (Module: items[i].Module.Name, Name: items[i].Name);
+            if (typesInAmalgams.Contains(key))
+            {
+                reaches[i] = true;
+                state[i] = 2;
+                return;
+            }
+
+            foreach (var dep in adj[i])
+            {
+                Dfs(dep);
+                if (reaches[dep])
+                {
+                    reaches[i] = true;
+                }
+            }
+
+            state[i] = 2;
+        }
+
+        for (var i = 0; i < n; i++)
+        {
+            Dfs(i);
+        }
+
+        var post = new HashSet<(string Module, string Name)>();
+        for (var i = 0; i < n; i++)
+        {
+            var key = (Module: items[i].Module.Name, Name: items[i].Name);
+            if (!typesInAmalgams.Contains(key) && reaches[i])
+            {
+                post.Add(key);
+            }
+        }
+
+        return post;
     }
 
     private static bool IsNontrivialScc(List<int> component, HashSet<int>[] adj) =>
@@ -174,51 +307,6 @@ public sealed partial class CppBackend
         return result;
     }
 
-    /// <summary>
-    /// Transitive closure of trivial deps for an SCC. Types already in another
-    /// amalgam stay there (referenced via that cycle header). Resulting cycle
-    /// headers only include other cycle headers, never module headers.
-    /// </summary>
-    private static HashSet<(string Module, string Name)> ExpandAmalgamClosure(
-        IReadOnlyList<(string Module, string Name)> scc,
-        HashSet<(string Module, string Name)> assignedToOtherOrSelf,
-        IReadOnlyList<(IrModule Module, string Name, TypeExpr Type)> items,
-        Dictionary<(string Module, string Name), int> keyOf,
-        HashSet<int>[] adj)
-    {
-        var amalgam = new HashSet<(string Module, string Name)>(scc);
-        var queue = new Queue<(string Module, string Name)>(scc);
-        while (queue.Count > 0)
-        {
-            var key = queue.Dequeue();
-            if (!keyOf.TryGetValue(key, out var index))
-            {
-                continue;
-            }
-
-            foreach (var dep in adj[index])
-            {
-                var depKey = (Module: items[dep].Module.Name, Name: items[dep].Name);
-                if (amalgam.Contains(depKey))
-                {
-                    continue;
-                }
-
-                if (assignedToOtherOrSelf.Contains(depKey) && !scc.Contains(depKey))
-                {
-                    continue;
-                }
-
-                if (amalgam.Add(depKey))
-                {
-                    queue.Enqueue(depKey);
-                }
-            }
-        }
-
-        return amalgam;
-    }
-
     private static List<string> AssignCycleFileNames(
         IReadOnlyList<HashSet<(string Module, string Name)>> amalgams)
     {
@@ -264,10 +352,12 @@ public sealed partial class CppBackend
         HashSet<(string Module, string Name)> amalgam,
         string selfFile,
         Dictionary<(string Module, string Name), string> typeToCycleFile,
+        HashSet<string> modulesWithTypesFile,
         IReadOnlyList<(IrModule Module, string Name, TypeExpr Type)> items,
         Dictionary<(string Module, string Name), int> keyOf,
         HashSet<int>[] adj)
     {
+        var peerIncludes = new HashSet<string>(StringComparer.Ordinal);
         var cycleIncludes = new HashSet<string>(StringComparer.Ordinal);
         foreach (var key in amalgam)
         {
@@ -288,26 +378,91 @@ public sealed partial class CppBackend
                     !string.Equals(cycleFile, selfFile, StringComparison.Ordinal))
                 {
                     cycleIncludes.Add(cycleFile);
+                    continue;
+                }
+
+                peerIncludes.Add(
+                    modulesWithTypesFile.Contains(depKey.Module)
+                        ? TypesFileName(depKey.Module)
+                        : CppNames.SanitizeTypeName(depKey.Module) + ".hpp");
+            }
+        }
+
+        return peerIncludes
+            .OrderBy(static n => n, StringComparer.Ordinal)
+            .Concat(cycleIncludes.OrderBy(static n => n, StringComparer.Ordinal))
+            .ToList();
+    }
+
+    private List<string> CollectTypesFileIncludes(
+        IrDocument document,
+        ModulePlan plan,
+        IReadOnlyList<(string Name, TypeExpr Type)> coreNested,
+        HashSet<(string Module, string Name)> typesInAmalgams,
+        HashSet<(string Module, string Name)> postTypes,
+        HashSet<string> modulesWithTypesFile,
+        Dictionary<(string Module, string Name), int> keyOf)
+    {
+        var moduleIncludes = new HashSet<string>(StringComparer.Ordinal);
+        var module = plan.Module;
+
+        void ConsiderKey((string Module, string Name) key)
+        {
+            if (string.Equals(key.Module, module.Name, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            if (typesInAmalgams.Contains(key) || postTypes.Contains(key))
+            {
+                throw new InvalidOperationException(
+                    $"Core type in module '{module.Name}' depends on cycle/post type '{key.Module}.{key.Name}'.");
+            }
+
+            moduleIncludes.Add(
+                modulesWithTypesFile.Contains(key.Module)
+                    ? TypesFileName(key.Module)
+                    : CppNames.SanitizeTypeName(key.Module) + ".hpp");
+        }
+
+        foreach (var (name, type) in coreNested)
+        {
+            var deps = new HashSet<int>();
+            CollectNamedTypeDeps(document, module, type, name, keyOf, deps);
+            foreach (var pair in keyOf)
+            {
+                if (deps.Contains(pair.Value))
+                {
+                    ConsiderKey(pair.Key);
                 }
             }
         }
 
-        return cycleIncludes
+        return moduleIncludes
             .OrderBy(static n => n, StringComparer.Ordinal)
             .ToList();
     }
 
-    private List<string> CollectModuleIncludes(
+    private List<string> CollectFacadeIncludes(
         IrDocument document,
         ModulePlan plan,
-        IReadOnlyList<(string Name, TypeExpr Type)> localNested,
+        IReadOnlyList<(string Name, TypeExpr Type)> postNested,
         Dictionary<(string Module, string Name), string> typeToCycleFile,
         HashSet<(string Module, string Name)> typesInAmalgams,
-        Dictionary<(string Module, string Name), int> keyOf)
+        HashSet<(string Module, string Name)> postTypes,
+        HashSet<string> modulesWithTypesFile,
+        Dictionary<(string Module, string Name), int> keyOf,
+        bool peerTypesFiles)
     {
+        var typesIncludes = new HashSet<string>(StringComparer.Ordinal);
         var cycleIncludes = new HashSet<string>(StringComparer.Ordinal);
         var moduleIncludes = new HashSet<string>(StringComparer.Ordinal);
         var module = plan.Module;
+
+        if (modulesWithTypesFile.Contains(module.Name))
+        {
+            typesIncludes.Add(TypesFileName(module.Name));
+        }
 
         // Re-export cycle amalgams that absorbed this module's types so
         // `#include "Module.hpp"` still reaches them.
@@ -322,7 +477,8 @@ public sealed partial class CppBackend
         void ConsiderKey((string Module, string Name) key)
         {
             if (string.Equals(key.Module, module.Name, StringComparison.Ordinal) &&
-                !typesInAmalgams.Contains(key))
+                !typesInAmalgams.Contains(key) &&
+                !postTypes.Contains(key))
             {
                 return;
             }
@@ -333,25 +489,30 @@ public sealed partial class CppBackend
                 return;
             }
 
-            if (!string.Equals(key.Module, module.Name, StringComparison.Ordinal))
+            if (string.Equals(key.Module, module.Name, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            if (!peerTypesFiles || postTypes.Contains(key) ||
+                !modulesWithTypesFile.Contains(key.Module))
             {
                 moduleIncludes.Add(CppNames.SanitizeTypeName(key.Module) + ".hpp");
+                return;
             }
+
+            moduleIncludes.Add(TypesFileName(key.Module));
         }
 
-        foreach (var (name, type) in localNested)
+        foreach (var (name, type) in postNested)
         {
             var deps = new HashSet<int>();
             CollectNamedTypeDeps(document, module, type, name, keyOf, deps);
-            foreach (var dep in deps)
+            foreach (var pair in keyOf)
             {
-                foreach (var pair in keyOf)
+                if (deps.Contains(pair.Value))
                 {
-                    if (pair.Value == dep)
-                    {
-                        ConsiderKey(pair.Key);
-                        break;
-                    }
+                    ConsiderKey(pair.Key);
                 }
             }
         }
@@ -369,8 +530,9 @@ public sealed partial class CppBackend
             }
         }
 
-        return cycleIncludes
+        return typesIncludes
             .OrderBy(static n => n, StringComparer.Ordinal)
+            .Concat(cycleIncludes.OrderBy(static n => n, StringComparer.Ordinal))
             .Concat(moduleIncludes.OrderBy(static n => n, StringComparer.Ordinal))
             .ToList();
     }
@@ -446,11 +608,57 @@ public sealed partial class CppBackend
         return new ModulePlan(module, nested, openPlan, oidValues, emitted);
     }
 
-    private GeneratedFile EmitModuleFile(
+    private GeneratedFile EmitTypesFile(
         IrDocument document,
         ModulePlan plan,
         IReadOnlyList<(string Name, TypeExpr Type)> nested,
         IReadOnlyList<string> includes)
+    {
+        var module = plan.Module;
+        var ns = ModuleNamespace(module);
+        var builder = new StringBuilder();
+        var guard = CppNames.IncludeGuard(module.Name + "_types");
+        builder.AppendLine("// <auto-generated />");
+        builder.AppendLine("// Non-cycle named types + OID catalog (safe for cycle_*.hpp to include).");
+        builder.AppendLine($"#ifndef {guard}");
+        builder.AppendLine($"#define {guard}");
+        builder.AppendLine();
+        EmitRuntimeIncludes(builder);
+        foreach (var include in includes)
+        {
+            builder.AppendLine($"#include \"{include}\"");
+        }
+
+        if (includes.Count > 0)
+        {
+            builder.AppendLine();
+        }
+
+        builder.Append(CppNames.NamespaceOpen(ns));
+        builder.AppendLine();
+        if (plan.Oids.Count > 0)
+        {
+            EmitOidCatalog(builder, OidCatalogName(module), plan.Oids);
+            builder.AppendLine();
+        }
+
+        foreach (var (name, type) in OrderNestedForEmit(document, module, nested))
+        {
+            EmitType(builder, document, module, name, type);
+            builder.AppendLine();
+        }
+
+        builder.Append(CppNames.NamespaceClose(ns));
+        builder.AppendLine($"#endif // {guard}");
+        return new GeneratedFile(TypesFileName(module.Name), builder.ToString());
+    }
+
+    private GeneratedFile EmitModuleFile(
+        IrDocument document,
+        ModulePlan plan,
+        IReadOnlyList<(string Name, TypeExpr Type)> nested,
+        IReadOnlyList<string> includes,
+        bool emitOids)
     {
         var module = plan.Module;
         var ns = ModuleNamespace(module);
@@ -473,7 +681,7 @@ public sealed partial class CppBackend
 
         builder.Append(CppNames.NamespaceOpen(ns));
         builder.AppendLine();
-        EmitModuleBody(builder, document, plan, nested);
+        EmitModuleBody(builder, document, plan, nested, emitOids);
         builder.Append(CppNames.NamespaceClose(ns));
         builder.AppendLine($"#endif // {guard}");
         return new GeneratedFile(CppNames.SanitizeTypeName(module.Name) + ".hpp", builder.ToString());
@@ -591,10 +799,11 @@ public sealed partial class CppBackend
         StringBuilder builder,
         IrDocument document,
         ModulePlan plan,
-        IReadOnlyList<(string Name, TypeExpr Type)> nested)
+        IReadOnlyList<(string Name, TypeExpr Type)> nested,
+        bool emitOids)
     {
         var module = plan.Module;
-        if (plan.Oids.Count > 0)
+        if (emitOids && plan.Oids.Count > 0)
         {
             EmitOidCatalog(builder, OidCatalogName(module), plan.Oids);
             builder.AppendLine();
@@ -776,10 +985,8 @@ public sealed partial class CppBackend
                     AddNested(nestedOwner, "Content", content);
                     Walk(content, context, nestedOwner + "_Content");
                     break;
-                case AnyType { Bindings: { } bindings }:
-                    foreach (var binding in bindings)
-                        Walk(binding.Type, context, nestedOwner);
-                    break;
+                // Open-type AnyType.Bindings are not layout deps (payload stays any /
+                // contained<any>); binding descriptors are included via OpenPlan.
             }
         }
 

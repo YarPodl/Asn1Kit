@@ -627,12 +627,293 @@ END
         Assert.Contains("struct Bar", cycle.Contents);
         Assert.DoesNotContain("#include \"A.hpp\"", cycle.Contents);
         Assert.DoesNotContain("#include \"B.hpp\"", cycle.Contents);
+        Assert.DoesNotContain("#include \"A.types.hpp\"", cycle.Contents);
+        Assert.DoesNotContain("#include \"B.types.hpp\"", cycle.Contents);
+        Assert.DoesNotContain(files, f => f.RelativePath == "A.types.hpp");
+        Assert.DoesNotContain(files, f => f.RelativePath == "B.types.hpp");
         Assert.DoesNotContain("struct Foo", Assert.Single(files, f => f.RelativePath == "A.hpp").Contents);
         Assert.DoesNotContain("struct Bar", Assert.Single(files, f => f.RelativePath == "B.hpp").Contents);
         Assert.Contains("#include \"cycle_A_Foo_B_Bar.hpp\"", Assert.Single(files, f => f.RelativePath == "A.hpp").Contents);
         Assert.Contains("#include \"cycle_A_Foo_B_Bar.hpp\"", Assert.Single(files, f => f.RelativePath == "B.hpp").Contents);
         Assert.DoesNotContain(files, f => f.RelativePath == "all.hpp");
         Assert.DoesNotContain(files, f => f.RelativePath == "certificate.hpp");
+    }
+
+    [Fact]
+    public void OpenTypeBindingsDoNotCreateLayoutCycles()
+    {
+        var document = new IrDocument
+        {
+            IrVersion = 1,
+            Modules =
+            {
+                new IrModule
+                {
+                    Name = "Cms",
+                    Options = IrOptions.SetCpp(null, "namespace", "mod::cms"),
+                    Types =
+                    {
+                        new IrTypeDef
+                        {
+                            Name = "EncapsulatedContentInfo",
+                            Type = new SequenceType
+                            {
+                                Components =
+                                {
+                                    new IrComponent { Name = "eContentType", Type = new OidType() },
+                                    new IrComponent
+                                    {
+                                        Name = "eContent",
+                                        Optional = true,
+                                        Type = new OctetStringType
+                                        {
+                                            Containing = new AnyType
+                                            {
+                                                Selector = new IrOpenTypeSelector
+                                                {
+                                                    Levels = 0,
+                                                    Path = { "eContentType" }
+                                                },
+                                                Bindings = new List<IrOpenTypeBinding>
+                                                {
+                                                    new IrOpenTypeBinding
+                                                    {
+                                                        Key = "1.2.840.113549.1.7.2",
+                                                        Name = "ct-SignedData",
+                                                        Type = new RefType
+                                                        {
+                                                            Name = "SignedData",
+                                                            Module = "Cms"
+                                                        }
+                                                    }
+                                                },
+                                                Table = "ContentSet",
+                                                TableExtensible = true
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        new IrTypeDef
+                        {
+                            Name = "SignedData",
+                            Type = new SequenceType
+                            {
+                                Components =
+                                {
+                                    new IrComponent
+                                    {
+                                        Name = "encapContentInfo",
+                                        Type = new RefType
+                                        {
+                                            Name = "EncapsulatedContentInfo",
+                                            Module = "Cms"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        var files = new CppBackend().Generate(document);
+        Assert.DoesNotContain(files, f => f.RelativePath.StartsWith("cycle_", StringComparison.Ordinal));
+        Assert.DoesNotContain(files, f => f.RelativePath.EndsWith(".types.hpp", StringComparison.Ordinal));
+        var cms = Assert.Single(files, f => f.RelativePath == "Cms.hpp");
+        Assert.Contains("struct EncapsulatedContentInfo", cms.Contents);
+        Assert.Contains("struct SignedData", cms.Contents);
+        Assert.Contains("std::optional<asn1kit::contained<asn1kit::any>> eContent{}", cms.Contents);
+    }
+
+    [Fact]
+    public void CycleAmalgamIncludesTypesFileForLeafDepsOnly()
+    {
+        var document = new IrDocument
+        {
+            IrVersion = 1,
+            Modules =
+            {
+                new IrModule
+                {
+                    Name = "C",
+                    Options = IrOptions.SetCpp(null, "namespace", "mod::c"),
+                    Types =
+                    {
+                        new IrTypeDef
+                        {
+                            Name = "Leaf",
+                            Type = new SequenceType
+                            {
+                                Components =
+                                {
+                                    new IrComponent { Name = "n", Type = new IntegerType() }
+                                }
+                            }
+                        }
+                    }
+                },
+                new IrModule
+                {
+                    Name = "A",
+                    Options = IrOptions.SetCpp(null, "namespace", "mod::a"),
+                    Types =
+                    {
+                        new IrTypeDef
+                        {
+                            Name = "Foo",
+                            Type = new SequenceType
+                            {
+                                Components =
+                                {
+                                    new IrComponent
+                                    {
+                                        Name = "bar",
+                                        Type = new RefType { Name = "Bar", Module = "B" }
+                                    },
+                                    new IrComponent
+                                    {
+                                        Name = "leaf",
+                                        Type = new RefType { Name = "Leaf", Module = "C" }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                new IrModule
+                {
+                    Name = "B",
+                    Options = IrOptions.SetCpp(null, "namespace", "mod::b"),
+                    Types =
+                    {
+                        new IrTypeDef
+                        {
+                            Name = "Bar",
+                            Type = new SequenceType
+                            {
+                                Components =
+                                {
+                                    new IrComponent
+                                    {
+                                        Name = "foo",
+                                        Type = new RefType { Name = "Foo", Module = "A" },
+                                        Optional = true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        var files = new CppBackend().Generate(document)
+            .OrderBy(f => f.RelativePath, StringComparer.Ordinal)
+            .ToList();
+        var cycle = Assert.Single(files, f => f.RelativePath.StartsWith("cycle_", StringComparison.Ordinal));
+        Assert.Equal("cycle_A_Foo_B_Bar.hpp", cycle.RelativePath);
+        // Leaf module has no facade content → single C.hpp (no C.types.hpp).
+        Assert.Contains("#include \"C.hpp\"", cycle.Contents);
+        Assert.DoesNotContain("#include \"C.types.hpp\"", cycle.Contents);
+        Assert.DoesNotContain("struct Leaf", cycle.Contents);
+        var leaf = Assert.Single(files, f => f.RelativePath == "C.hpp");
+        Assert.Contains("struct Leaf", leaf.Contents);
+        Assert.DoesNotContain(files, f => f.RelativePath.EndsWith(".types.hpp", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void OidCatalogLivesInTypesFileWhenModuleHasFacade()
+    {
+        var document = new IrDocument
+        {
+            IrVersion = 1,
+            Modules =
+            {
+                new IrModule
+                {
+                    Name = "A",
+                    Options = IrOptions.SetCpp(null, "namespace", "mod::a"),
+                    Values =
+                    {
+                        new IrValueDef
+                        {
+                            Name = "id-leaf",
+                            Type = new OidType(),
+                            Value = new IrOidValue { Value = "1.2.3" }
+                        }
+                    },
+                    Types =
+                    {
+                        new IrTypeDef
+                        {
+                            Name = "Foo",
+                            Type = new SequenceType
+                            {
+                                Components =
+                                {
+                                    new IrComponent
+                                    {
+                                        Name = "bar",
+                                        Type = new RefType { Name = "Bar", Module = "B" }
+                                    },
+                                    new IrComponent
+                                    {
+                                        Name = "n",
+                                        Type = new IntegerType()
+                                    }
+                                }
+                            }
+                        },
+                        new IrTypeDef
+                        {
+                            Name = "Helper",
+                            Type = new SequenceType
+                            {
+                                Components =
+                                {
+                                    new IrComponent { Name = "n", Type = new IntegerType() }
+                                }
+                            }
+                        }
+                    }
+                },
+                new IrModule
+                {
+                    Name = "B",
+                    Options = IrOptions.SetCpp(null, "namespace", "mod::b"),
+                    Types =
+                    {
+                        new IrTypeDef
+                        {
+                            Name = "Bar",
+                            Type = new SequenceType
+                            {
+                                Components =
+                                {
+                                    new IrComponent
+                                    {
+                                        Name = "foo",
+                                        Type = new RefType { Name = "Foo", Module = "A" },
+                                        Optional = true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        var files = new CppBackend().Generate(document);
+        // Foo is in cycle; Helper is core + module needs facade → A.types.hpp holds Helper + OIDs.
+        var types = Assert.Single(files, f => f.RelativePath == "A.types.hpp");
+        Assert.Contains("struct Helper", types.Contents);
+        Assert.Contains("struct AOids", types.Contents);
+        Assert.Contains("IdLeaf", types.Contents);
+        var facade = Assert.Single(files, f => f.RelativePath == "A.hpp");
+        Assert.Contains("#include \"A.types.hpp\"", facade.Contents);
+        Assert.DoesNotContain("struct AOids", facade.Contents);
+        Assert.DoesNotContain("struct Helper", facade.Contents);
     }
 
     [Fact]

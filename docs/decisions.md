@@ -164,6 +164,12 @@
 
 **Последствие.** Добавляется реализация `ILanguageBackend` в `compiler/` и отдельный C++ runtime в `runtime-cpp/` с теми же правилами BER/DER. Изменения в `Asn1Kit.Compiler` ради C++ — признак утечки слоёв.
 
+## C++ codegen — cycle headers только для SCC, deps через Module.types.hpp
+
+**Причина.** Амальгама «SCC + транзитивный конус deps» и рёбра от `AnyType.Bindings` раздували `cycle_*.hpp` (десятки листьев вроде `AlgorithmIdentifier`). Open-type payload не нужен для complete type в C++ (остаётся `any` / descriptors).
+
+**Последствие.** Граф deps — только layout. `cycle_*.hpp` содержит только членов нетривиального SCC и `#include`-ит `Module.types.hpp` / `Module.hpp` / другие cycle по DAG конденсации, но не facade с cycle-includes. `Module.types.hpp` (нециклические типы + OID) создаётся только когда модулю нужен facade (owned cycle / post / open-type); иначе всё в одном `Module.hpp`. Facade не дублирует OID, если они уже в `*.types.hpp`.
+
 ## C++ runtime — C++20, `bytes` = span + keep-alive, Conan только для тестов
 
 **Причина.** Нужен нативный runtime с тем же soft-profile и hex-матрицей, без runtime-зависимостей и без копирования фикстур. `std::span` сам по себе не удерживает backing store.

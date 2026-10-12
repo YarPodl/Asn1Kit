@@ -25,8 +25,9 @@
 #include <variant>
 #include <vector>
 
-#include "cycle_AlgorithmInformation2009_AlgorithmIdentifier_AttributeCertificateVersion12009_AttributeCertificateInfoV1_and_77_more.hpp"
-#include "CryptographicMessageSyntax2009.hpp"
+#include "AlgorithmInformation2009.types.hpp"
+#include "CryptographicMessageSyntax2009.types.hpp"
+#include "PKIXCommonTypes2009.types.hpp"
 
 namespace asn1kit {
 namespace modern {
@@ -122,6 +123,10 @@ struct EncryptionInfo {
     }
 };
 
+struct EvidenceRecord_Version {
+    static constexpr std::int32_t V1 = 1;
+};
+
 struct EvidenceRecord {
     std::int32_t version{};
     std::vector<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> digestAlgorithms{};
@@ -185,10 +190,6 @@ struct EvidenceRecord {
             });
         });
     }
-};
-
-struct EvidenceRecord_Version {
-    static constexpr std::int32_t V1 = 1;
 };
 
 } // namespace ERS

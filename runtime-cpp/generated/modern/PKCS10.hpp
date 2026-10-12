@@ -25,8 +25,8 @@
 #include <variant>
 #include <vector>
 
-#include "cycle_AlgorithmInformation2009_AlgorithmIdentifier_AttributeCertificateVersion12009_AttributeCertificateInfoV1_and_77_more.hpp"
-#include "cycle_CryptographicMessageSyntax2009_Time_EnrollmentMessageSyntax2009_CertificationRequest_and_39_more.hpp"
+#include "AlgorithmInformation2009.types.hpp"
+#include "PKIXCommonTypes2009.types.hpp"
 
 namespace asn1kit {
 namespace modern {
@@ -59,6 +59,34 @@ struct Attribute {
         w.write_set_of(asn1kit::tag::set, this->values, [&](asn1kit::writer& inner, const auto& item) {
             inner.write_any(item);
         });
+    }
+};
+
+struct CertificationRequestInfo_Version {
+    static constexpr std::int32_t V1 = 0;
+};
+
+struct SubjectPublicKeyInfo {
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithm{};
+    asn1kit::bit_string subjectPublicKey{};
+
+    static asn1kit::tag default_tag() {
+        return asn1kit::tag::sequence;
+    }
+
+    static SubjectPublicKeyInfo decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+        SubjectPublicKeyInfo value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.algorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner, asn1kit::tag::sequence);
+            value.subjectPublicKey = inner.read_bit_string(asn1kit::tag::bit_string);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+        auto scope = w.enter_sequence(t);
+        this->algorithm.encode(w, asn1kit::tag::sequence);
+        w.write_bit_string(asn1kit::tag::bit_string, this->subjectPublicKey);
     }
 };
 
@@ -135,10 +163,6 @@ struct CertificationRequest {
         this->signatureAlgorithm.encode(w, asn1kit::tag::sequence);
         w.write_bit_string(asn1kit::tag::bit_string, this->signature);
     }
-};
-
-struct CertificationRequestInfo_Version {
-    static constexpr std::int32_t V1 = 0;
 };
 
 } // namespace PKCS10

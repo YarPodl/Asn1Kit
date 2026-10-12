@@ -25,50 +25,13 @@
 #include <variant>
 #include <vector>
 
-#include "cycle_AlgorithmInformation2009_AlgorithmIdentifier_AttributeCertificateVersion12009_AttributeCertificateInfoV1_and_77_more.hpp"
+#include "PKIX1Explicit2009.types.hpp"
+#include "PKIX1PSSOAEPAlgorithms2009.hpp"
+#include "PKIXAlgs2009.hpp"
 
 namespace asn1kit {
 namespace modern {
 namespace PKIX1Explicit2009 {
-
-struct PKIX1Explicit2009Oids {
-    static constexpr auto IdPkix = asn1kit::oid_literal<"1.3.6.1.5.5.7">();
-    static constexpr auto IdPe = asn1kit::oid_literal<"1.3.6.1.5.5.7.1">();
-    static constexpr auto IdQt = asn1kit::oid_literal<"1.3.6.1.5.5.7.2">();
-    static constexpr auto IdKp = asn1kit::oid_literal<"1.3.6.1.5.5.7.3">();
-    static constexpr auto IdAd = asn1kit::oid_literal<"1.3.6.1.5.5.7.48">();
-    static constexpr auto IdQtCps = asn1kit::oid_literal<"1.3.6.1.5.5.7.2.1">();
-    static constexpr auto IdQtUnotice = asn1kit::oid_literal<"1.3.6.1.5.5.7.2.2">();
-    static constexpr auto IdAdOcsp = asn1kit::oid_literal<"1.3.6.1.5.5.7.48.1">();
-    static constexpr auto IdAdCaIssuers = asn1kit::oid_literal<"1.3.6.1.5.5.7.48.2">();
-    static constexpr auto IdAdTimeStamping = asn1kit::oid_literal<"1.3.6.1.5.5.7.48.3">();
-    static constexpr auto IdAdCaRepository = asn1kit::oid_literal<"1.3.6.1.5.5.7.48.5">();
-    static constexpr auto IdAt = asn1kit::oid_literal<"2.5.4">();
-    static constexpr auto IdAtName = asn1kit::oid_literal<"2.5.4.41">();
-    static constexpr auto IdAtSurname = asn1kit::oid_literal<"2.5.4.4">();
-    static constexpr auto IdAtGivenName = asn1kit::oid_literal<"2.5.4.42">();
-    static constexpr auto IdAtInitials = asn1kit::oid_literal<"2.5.4.43">();
-    static constexpr auto IdAtGenerationQualifier = asn1kit::oid_literal<"2.5.4.44">();
-    static constexpr auto IdAtCommonName = asn1kit::oid_literal<"2.5.4.3">();
-    static constexpr auto IdAtLocalityName = asn1kit::oid_literal<"2.5.4.7">();
-    static constexpr auto IdAtStateOrProvinceName = asn1kit::oid_literal<"2.5.4.8">();
-    static constexpr auto IdAtOrganizationName = asn1kit::oid_literal<"2.5.4.10">();
-    static constexpr auto IdAtOrganizationalUnitName = asn1kit::oid_literal<"2.5.4.11">();
-    static constexpr auto IdAtTitle = asn1kit::oid_literal<"2.5.4.12">();
-    static constexpr auto IdAtDnQualifier = asn1kit::oid_literal<"2.5.4.46">();
-    static constexpr auto IdAtCountryName = asn1kit::oid_literal<"2.5.4.6">();
-    static constexpr auto IdAtSerialNumber = asn1kit::oid_literal<"2.5.4.5">();
-    static constexpr auto IdAtPseudonym = asn1kit::oid_literal<"2.5.4.65">();
-    static constexpr auto IdDomainComponent = asn1kit::oid_literal<"0.9.2342.19200300.100.1.25">();
-    static constexpr auto Pkcs9 = asn1kit::oid_literal<"1.2.840.113549.1.9">();
-    static constexpr auto IdEmailAddress = asn1kit::oid_literal<"1.2.840.113549.1.9.1">();
-};
-
-struct Version {
-    static constexpr std::int32_t V1 = 0;
-    static constexpr std::int32_t V2 = 1;
-    static constexpr std::int32_t V3 = 2;
-};
 
 template <typename T>
 struct certificateList_AlgorithmIdentifier_parameters_binding {

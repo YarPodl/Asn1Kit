@@ -25,15 +25,13 @@
 #include <variant>
 #include <vector>
 
-#include "cycle_AlgorithmInformation2009_AlgorithmIdentifier_AttributeCertificateVersion12009_AttributeCertificateInfoV1_and_77_more.hpp"
+#include "AttributeCertificateVersion12009.types.hpp"
+#include "PKIX1PSSOAEPAlgorithms2009.hpp"
+#include "PKIXAlgs2009.hpp"
 
 namespace asn1kit {
 namespace modern {
 namespace AttributeCertificateVersion12009 {
-
-struct AttCertVersionV1 {
-    static constexpr std::int32_t V1 = 0;
-};
 
 template <typename T>
 struct parameters_binding {

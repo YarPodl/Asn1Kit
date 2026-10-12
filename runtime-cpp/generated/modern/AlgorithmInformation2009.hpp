@@ -25,7 +25,7 @@
 #include <variant>
 #include <vector>
 
-#include "cycle_AlgorithmInformation2009_AlgorithmIdentifier_AttributeCertificateVersion12009_AttributeCertificateInfoV1_and_77_more.hpp"
+#include "AlgorithmInformation2009.types.hpp"
 #include "CryptographicMessageSyntaxAlgorithms2009.hpp"
 #include "PKIX1PSSOAEPAlgorithms2009.hpp"
 #include "PKIXAlgs2009.hpp"
@@ -34,59 +34,6 @@
 namespace asn1kit {
 namespace modern {
 namespace AlgorithmInformation2009 {
-
-enum class ParamOptions {
-    required = 0,
-    preferredPresent = 1,
-    preferredAbsent = 2,
-    absent = 3,
-    inheritable = 4,
-    optional = 5
-};
-
-inline void encode_ParamOptions(asn1kit::writer& w, ParamOptions value, const asn1kit::tag& t = asn1kit::tag::enumerated) {
-    w.write_enumerated_decimal(t, std::to_string(static_cast<std::int32_t>(value)));
-}
-
-inline ParamOptions decode_ParamOptions(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::enumerated) {
-    const auto text = r.read_enumerated_decimal(t);
-    const auto number = std::stoll(text);
-    if (number == 0) return ParamOptions::required;
-    if (number == 1) return ParamOptions::preferredPresent;
-    if (number == 2) return ParamOptions::preferredAbsent;
-    if (number == 3) return ParamOptions::absent;
-    if (number == 4) return ParamOptions::inheritable;
-    if (number == 5) return ParamOptions::optional;
-    throw asn1kit::exception("Unknown ENUMERATED value.");
-}
-
-struct SMIMECapability {
-    asn1kit::oid capabilityID{};
-    std::optional<asn1kit::any> parameters{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static SMIMECapability decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        SMIMECapability value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.capabilityID = inner.read_oid(asn1kit::tag::object_identifier);
-            if (!inner.eof()) {
-                value.parameters = inner.read_any();
-            }
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        w.write_object_identifier(asn1kit::tag::object_identifier, this->capabilityID);
-        if (this->parameters.has_value()) {
-            w.write_any((*this->parameters));
-        }
-    }
-};
 
 template <typename T>
 struct algorithmIdentifier_parameters_binding {

@@ -25,48 +25,18 @@
 #include <variant>
 #include <vector>
 
-#include "cycle_AlgorithmInformation2009_AlgorithmIdentifier_AttributeCertificateVersion12009_AttributeCertificateInfoV1_and_77_more.hpp"
-#include "cycle_CryptographicMessageSyntax2009_Time_EnrollmentMessageSyntax2009_CertificationRequest_and_39_more.hpp"
-#include "CryptographicMessageSyntax2009.hpp"
-#include "OCSP2009.hpp"
-#include "PKIX1Implicit2009.hpp"
-#include "PKIXAttributeCertificate2009.hpp"
+#include "PKIXCommonTypes2009.types.hpp"
+#include "CryptographicMessageSyntax2009.types.hpp"
+#include "OCSP2009.types.hpp"
+#include "PKCS10.hpp"
+#include "PKIX1Explicit2009.types.hpp"
+#include "PKIX1Implicit2009.types.hpp"
+#include "PKIXAttributeCertificate2009.types.hpp"
 #include "PKIXCRMF2009.hpp"
 
 namespace asn1kit {
 namespace modern {
 namespace PKIXCommonTypes2009 {
-
-struct SecurityCategory {
-    asn1kit::oid type{};
-    asn1kit::any value_{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static SecurityCategory decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        SecurityCategory value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.type = inner.read_oid(asn1kit::tag::context(0));
-            asn1kit::any tmp_value_{};
-            inner.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
-                tmp_value_ = scoped.read_any();
-            });
-            value.value_ = std::move(tmp_value_);
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        w.write_object_identifier(asn1kit::tag::context(0), this->type);
-        {
-            auto explicit_scope = w.enter_explicit(asn1kit::tag::context(1, true));
-            w.write_any(this->value_);
-        }
-    }
-};
 
 template <typename T>
 struct extnValue_binding {

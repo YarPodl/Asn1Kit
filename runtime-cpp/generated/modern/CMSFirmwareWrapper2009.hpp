@@ -44,127 +44,12 @@ struct CMSFirmwareWrapper2009Oids {
     static constexpr auto IdOnHardwareModuleName = asn1kit::oid_literal<"1.3.6.1.5.5.7.8.4">();
 };
 
-enum class CommunityIdentifier_kind {
-    communityOID,
-    hwModuleList
-};
-
-struct CommunityIdentifier {
-    CommunityIdentifier_kind kind{};
-    std::variant<asn1kit::oid, HardwareModules> value{};
-
-    static CommunityIdentifier from_communityOID(asn1kit::oid v) {
-        CommunityIdentifier result{};
-        result.kind = CommunityIdentifier_kind::communityOID;
-        result.value.emplace<0>(std::move(v));
-        return result;
-    }
-
-    static CommunityIdentifier from_hwModuleList(HardwareModules v) {
-        CommunityIdentifier result{};
-        result.kind = CommunityIdentifier_kind::hwModuleList;
-        result.value.emplace<1>(std::move(v));
-        return result;
-    }
-
-    static asn1kit::tag default_tag() {
-        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
-    }
-
-    static CommunityIdentifier decode(asn1kit::reader& r) {
-        asn1kit::tag peeked;
-        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
-        if (peeked.matches_ignore_constructed(asn1kit::tag::object_identifier)) {
-            CommunityIdentifier result{};
-            result.kind = CommunityIdentifier_kind::communityOID;
-            asn1kit::oid alt{};
-            alt = r.read_oid(asn1kit::tag::object_identifier);
-            result.value.emplace<0>(std::move(alt));
-            return result;
-        } else if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
-            CommunityIdentifier result{};
-            result.kind = CommunityIdentifier_kind::hwModuleList;
-            HardwareModules alt{};
-            alt = HardwareModules::decode(r, asn1kit::tag::sequence);
-            result.value.emplace<1>(std::move(alt));
-            return result;
-        } else {
-            throw asn1kit::exception("Unknown CHOICE alternative.");
-        }
-    }
-
-    static CommunityIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t) {
-        (void)t;
-        return decode(r);
-    }
-
-    void encode(asn1kit::writer& w) const {
-        switch (kind) {
-        case CommunityIdentifier_kind::communityOID:
-            {
-                const auto& alt = std::get<0>(value);
-                w.write_object_identifier(asn1kit::tag::object_identifier, alt);
-                break;
-            }
-        case CommunityIdentifier_kind::hwModuleList:
-            {
-                const auto& alt = std::get<1>(value);
-                alt.encode(w, asn1kit::tag::sequence);
-                break;
-            }
-        }
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
-        (void)t;
-        encode(w);
-    }
-};
-
 struct FWErrorVersion {
     static constexpr std::int32_t V1 = 1;
 };
 
 struct FWReceiptVersion {
     static constexpr std::int32_t V1 = 1;
-};
-
-struct FirmwarePackageInfo {
-    std::optional<asn1kit::integer> fwPkgType{};
-    std::optional<std::vector<PreferredOrLegacyPackageIdentifier>> dependencies{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static FirmwarePackageInfo decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        FirmwarePackageInfo value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            if (inner.next_is(asn1kit::tag::integer)) {
-                value.fwPkgType = inner.read_integer_value(asn1kit::tag::integer);
-            }
-            if (inner.next_is(asn1kit::tag::sequence)) {
-                value.dependencies = inner.read_sequence_of<PreferredOrLegacyPackageIdentifier>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    PreferredOrLegacyPackageIdentifier item{};
-                    item = PreferredOrLegacyPackageIdentifier::decode(inner);
-                    return item;
-                });
-            }
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        if (this->fwPkgType.has_value()) {
-            w.write_integer(asn1kit::tag::integer, (*this->fwPkgType));
-        }
-        if (this->dependencies.has_value()) {
-            w.write_sequence_of(asn1kit::tag::sequence, (*this->dependencies), [&](asn1kit::writer& inner, const auto& item) {
-                item.encode(inner);
-            });
-        }
-    }
 };
 
 enum class FirmwarePackageLoadErrorCode {
@@ -278,33 +163,27 @@ struct HardwareModuleName {
     }
 };
 
-struct HardwareModules {
-    asn1kit::oid hwType{};
-    std::vector<HardwareSerialEntry> hwSerialEntries{};
+struct HardwareSerialEntry_Block {
+    asn1kit::bytes low{};
+    asn1kit::bytes high{};
 
     static asn1kit::tag default_tag() {
         return asn1kit::tag::sequence;
     }
 
-    static HardwareModules decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        HardwareModules value{};
+    static HardwareSerialEntry_Block decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+        HardwareSerialEntry_Block value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.hwType = inner.read_oid(asn1kit::tag::object_identifier);
-            value.hwSerialEntries = inner.read_sequence_of<HardwareSerialEntry>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                HardwareSerialEntry item{};
-                item = HardwareSerialEntry::decode(inner);
-                return item;
-            });
+            value.low = inner.read_octet_string(asn1kit::tag::octet_string);
+            value.high = inner.read_octet_string(asn1kit::tag::octet_string);
         });
         return value;
     }
 
     void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
         auto scope = w.enter_sequence(t);
-        w.write_object_identifier(asn1kit::tag::object_identifier, this->hwType);
-        w.write_sequence_of(asn1kit::tag::sequence, this->hwSerialEntries, [&](asn1kit::writer& inner, const auto& item) {
-            item.encode(inner);
-        });
+        w.write_octet_string(asn1kit::tag::octet_string, this->low.span());
+        w.write_octet_string(asn1kit::tag::octet_string, this->high.span());
     }
 };
 
@@ -406,27 +285,211 @@ struct HardwareSerialEntry {
     }
 };
 
-struct HardwareSerialEntry_Block {
-    asn1kit::bytes low{};
-    asn1kit::bytes high{};
+struct HardwareModules {
+    asn1kit::oid hwType{};
+    std::vector<HardwareSerialEntry> hwSerialEntries{};
 
     static asn1kit::tag default_tag() {
         return asn1kit::tag::sequence;
     }
 
-    static HardwareSerialEntry_Block decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        HardwareSerialEntry_Block value{};
+    static HardwareModules decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+        HardwareModules value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.low = inner.read_octet_string(asn1kit::tag::octet_string);
-            value.high = inner.read_octet_string(asn1kit::tag::octet_string);
+            value.hwType = inner.read_oid(asn1kit::tag::object_identifier);
+            value.hwSerialEntries = inner.read_sequence_of<HardwareSerialEntry>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
+                HardwareSerialEntry item{};
+                item = HardwareSerialEntry::decode(inner);
+                return item;
+            });
         });
         return value;
     }
 
     void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
         auto scope = w.enter_sequence(t);
-        w.write_octet_string(asn1kit::tag::octet_string, this->low.span());
-        w.write_octet_string(asn1kit::tag::octet_string, this->high.span());
+        w.write_object_identifier(asn1kit::tag::object_identifier, this->hwType);
+        w.write_sequence_of(asn1kit::tag::sequence, this->hwSerialEntries, [&](asn1kit::writer& inner, const auto& item) {
+            item.encode(inner);
+        });
+    }
+};
+
+enum class CommunityIdentifier_kind {
+    communityOID,
+    hwModuleList
+};
+
+struct CommunityIdentifier {
+    CommunityIdentifier_kind kind{};
+    std::variant<asn1kit::oid, HardwareModules> value{};
+
+    static CommunityIdentifier from_communityOID(asn1kit::oid v) {
+        CommunityIdentifier result{};
+        result.kind = CommunityIdentifier_kind::communityOID;
+        result.value.emplace<0>(std::move(v));
+        return result;
+    }
+
+    static CommunityIdentifier from_hwModuleList(HardwareModules v) {
+        CommunityIdentifier result{};
+        result.kind = CommunityIdentifier_kind::hwModuleList;
+        result.value.emplace<1>(std::move(v));
+        return result;
+    }
+
+    static asn1kit::tag default_tag() {
+        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
+    }
+
+    static CommunityIdentifier decode(asn1kit::reader& r) {
+        asn1kit::tag peeked;
+        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
+        if (peeked.matches_ignore_constructed(asn1kit::tag::object_identifier)) {
+            CommunityIdentifier result{};
+            result.kind = CommunityIdentifier_kind::communityOID;
+            asn1kit::oid alt{};
+            alt = r.read_oid(asn1kit::tag::object_identifier);
+            result.value.emplace<0>(std::move(alt));
+            return result;
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
+            CommunityIdentifier result{};
+            result.kind = CommunityIdentifier_kind::hwModuleList;
+            HardwareModules alt{};
+            alt = HardwareModules::decode(r, asn1kit::tag::sequence);
+            result.value.emplace<1>(std::move(alt));
+            return result;
+        } else {
+            throw asn1kit::exception("Unknown CHOICE alternative.");
+        }
+    }
+
+    static CommunityIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t) {
+        (void)t;
+        return decode(r);
+    }
+
+    void encode(asn1kit::writer& w) const {
+        switch (kind) {
+        case CommunityIdentifier_kind::communityOID:
+            {
+                const auto& alt = std::get<0>(value);
+                w.write_object_identifier(asn1kit::tag::object_identifier, alt);
+                break;
+            }
+        case CommunityIdentifier_kind::hwModuleList:
+            {
+                const auto& alt = std::get<1>(value);
+                alt.encode(w, asn1kit::tag::sequence);
+                break;
+            }
+        }
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
+        (void)t;
+        encode(w);
+    }
+};
+
+enum class PreferredOrLegacyStalePackageIdentifier_kind {
+    preferredStaleVerNum,
+    legacyStaleVersion
+};
+
+struct PreferredOrLegacyStalePackageIdentifier {
+    PreferredOrLegacyStalePackageIdentifier_kind kind{};
+    std::variant<asn1kit::integer, asn1kit::bytes> value{};
+
+    static PreferredOrLegacyStalePackageIdentifier from_preferredStaleVerNum(asn1kit::integer v) {
+        PreferredOrLegacyStalePackageIdentifier result{};
+        result.kind = PreferredOrLegacyStalePackageIdentifier_kind::preferredStaleVerNum;
+        result.value.emplace<0>(std::move(v));
+        return result;
+    }
+
+    static PreferredOrLegacyStalePackageIdentifier from_legacyStaleVersion(asn1kit::bytes v) {
+        PreferredOrLegacyStalePackageIdentifier result{};
+        result.kind = PreferredOrLegacyStalePackageIdentifier_kind::legacyStaleVersion;
+        result.value.emplace<1>(std::move(v));
+        return result;
+    }
+
+    static asn1kit::tag default_tag() {
+        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
+    }
+
+    static PreferredOrLegacyStalePackageIdentifier decode(asn1kit::reader& r) {
+        asn1kit::tag peeked;
+        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
+        if (peeked.matches_ignore_constructed(asn1kit::tag::integer)) {
+            PreferredOrLegacyStalePackageIdentifier result{};
+            result.kind = PreferredOrLegacyStalePackageIdentifier_kind::preferredStaleVerNum;
+            asn1kit::integer alt{};
+            alt = r.read_integer_value(asn1kit::tag::integer);
+            result.value.emplace<0>(std::move(alt));
+            return result;
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::octet_string)) {
+            PreferredOrLegacyStalePackageIdentifier result{};
+            result.kind = PreferredOrLegacyStalePackageIdentifier_kind::legacyStaleVersion;
+            asn1kit::bytes alt{};
+            alt = r.read_octet_string(asn1kit::tag::octet_string);
+            result.value.emplace<1>(std::move(alt));
+            return result;
+        } else {
+            throw asn1kit::exception("Unknown CHOICE alternative.");
+        }
+    }
+
+    static PreferredOrLegacyStalePackageIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t) {
+        (void)t;
+        return decode(r);
+    }
+
+    void encode(asn1kit::writer& w) const {
+        switch (kind) {
+        case PreferredOrLegacyStalePackageIdentifier_kind::preferredStaleVerNum:
+            {
+                const auto& alt = std::get<0>(value);
+                w.write_integer(asn1kit::tag::integer, alt);
+                break;
+            }
+        case PreferredOrLegacyStalePackageIdentifier_kind::legacyStaleVersion:
+            {
+                const auto& alt = std::get<1>(value);
+                w.write_octet_string(asn1kit::tag::octet_string, alt.span());
+                break;
+            }
+        }
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
+        (void)t;
+        encode(w);
+    }
+};
+
+struct PreferredPackageIdentifier {
+    asn1kit::oid fwPkgID{};
+    asn1kit::integer verNum{};
+
+    static asn1kit::tag default_tag() {
+        return asn1kit::tag::sequence;
+    }
+
+    static PreferredPackageIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+        PreferredPackageIdentifier value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.fwPkgID = inner.read_oid(asn1kit::tag::object_identifier);
+            value.verNum = inner.read_integer_value(asn1kit::tag::integer);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+        auto scope = w.enter_sequence(t);
+        w.write_object_identifier(asn1kit::tag::object_identifier, this->fwPkgID);
+        w.write_integer(asn1kit::tag::integer, this->verNum);
     }
 };
 
@@ -532,6 +595,75 @@ struct CurrentFWConfig {
             w.write_integer(asn1kit::tag::integer, (*this->fwPkgType));
         }
         this->fwPkgName.encode(w);
+    }
+};
+
+struct FirmwarePackageIdentifier {
+    PreferredOrLegacyPackageIdentifier name{};
+    std::optional<PreferredOrLegacyStalePackageIdentifier> stale{};
+
+    static asn1kit::tag default_tag() {
+        return asn1kit::tag::sequence;
+    }
+
+    static FirmwarePackageIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+        FirmwarePackageIdentifier value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.name = PreferredOrLegacyPackageIdentifier::decode(inner);
+            {
+                asn1kit::tag peeked_opt;
+                if (inner.try_peek_tag(peeked_opt) && (peeked_opt.matches_ignore_constructed(asn1kit::tag::integer) || peeked_opt.matches_ignore_constructed(asn1kit::tag::octet_string))) {
+                    value.stale = PreferredOrLegacyStalePackageIdentifier::decode(inner);
+                }
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+        auto scope = w.enter_sequence(t);
+        this->name.encode(w);
+        if (this->stale.has_value()) {
+            (*this->stale).encode(w);
+        }
+    }
+};
+
+struct FirmwarePackageInfo {
+    std::optional<asn1kit::integer> fwPkgType{};
+    std::optional<std::vector<PreferredOrLegacyPackageIdentifier>> dependencies{};
+
+    static asn1kit::tag default_tag() {
+        return asn1kit::tag::sequence;
+    }
+
+    static FirmwarePackageInfo decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+        FirmwarePackageInfo value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            if (inner.next_is(asn1kit::tag::integer)) {
+                value.fwPkgType = inner.read_integer_value(asn1kit::tag::integer);
+            }
+            if (inner.next_is(asn1kit::tag::sequence)) {
+                value.dependencies = inner.read_sequence_of<PreferredOrLegacyPackageIdentifier>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
+                    PreferredOrLegacyPackageIdentifier item{};
+                    item = PreferredOrLegacyPackageIdentifier::decode(inner);
+                    return item;
+                });
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+        auto scope = w.enter_sequence(t);
+        if (this->fwPkgType.has_value()) {
+            w.write_integer(asn1kit::tag::integer, (*this->fwPkgType));
+        }
+        if (this->dependencies.has_value()) {
+            w.write_sequence_of(asn1kit::tag::sequence, (*this->dependencies), [&](asn1kit::writer& inner, const auto& item) {
+                item.encode(inner);
+            });
+        }
     }
 };
 
@@ -650,138 +782,6 @@ struct FirmwarePackageLoadReceipt {
         if (this->decryptKeyID.has_value()) {
             w.write_octet_string(asn1kit::tag::context(1), (*this->decryptKeyID).span());
         }
-    }
-};
-
-enum class PreferredOrLegacyStalePackageIdentifier_kind {
-    preferredStaleVerNum,
-    legacyStaleVersion
-};
-
-struct PreferredOrLegacyStalePackageIdentifier {
-    PreferredOrLegacyStalePackageIdentifier_kind kind{};
-    std::variant<asn1kit::integer, asn1kit::bytes> value{};
-
-    static PreferredOrLegacyStalePackageIdentifier from_preferredStaleVerNum(asn1kit::integer v) {
-        PreferredOrLegacyStalePackageIdentifier result{};
-        result.kind = PreferredOrLegacyStalePackageIdentifier_kind::preferredStaleVerNum;
-        result.value.emplace<0>(std::move(v));
-        return result;
-    }
-
-    static PreferredOrLegacyStalePackageIdentifier from_legacyStaleVersion(asn1kit::bytes v) {
-        PreferredOrLegacyStalePackageIdentifier result{};
-        result.kind = PreferredOrLegacyStalePackageIdentifier_kind::legacyStaleVersion;
-        result.value.emplace<1>(std::move(v));
-        return result;
-    }
-
-    static asn1kit::tag default_tag() {
-        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
-    }
-
-    static PreferredOrLegacyStalePackageIdentifier decode(asn1kit::reader& r) {
-        asn1kit::tag peeked;
-        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
-        if (peeked.matches_ignore_constructed(asn1kit::tag::integer)) {
-            PreferredOrLegacyStalePackageIdentifier result{};
-            result.kind = PreferredOrLegacyStalePackageIdentifier_kind::preferredStaleVerNum;
-            asn1kit::integer alt{};
-            alt = r.read_integer_value(asn1kit::tag::integer);
-            result.value.emplace<0>(std::move(alt));
-            return result;
-        } else if (peeked.matches_ignore_constructed(asn1kit::tag::octet_string)) {
-            PreferredOrLegacyStalePackageIdentifier result{};
-            result.kind = PreferredOrLegacyStalePackageIdentifier_kind::legacyStaleVersion;
-            asn1kit::bytes alt{};
-            alt = r.read_octet_string(asn1kit::tag::octet_string);
-            result.value.emplace<1>(std::move(alt));
-            return result;
-        } else {
-            throw asn1kit::exception("Unknown CHOICE alternative.");
-        }
-    }
-
-    static PreferredOrLegacyStalePackageIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t) {
-        (void)t;
-        return decode(r);
-    }
-
-    void encode(asn1kit::writer& w) const {
-        switch (kind) {
-        case PreferredOrLegacyStalePackageIdentifier_kind::preferredStaleVerNum:
-            {
-                const auto& alt = std::get<0>(value);
-                w.write_integer(asn1kit::tag::integer, alt);
-                break;
-            }
-        case PreferredOrLegacyStalePackageIdentifier_kind::legacyStaleVersion:
-            {
-                const auto& alt = std::get<1>(value);
-                w.write_octet_string(asn1kit::tag::octet_string, alt.span());
-                break;
-            }
-        }
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
-        (void)t;
-        encode(w);
-    }
-};
-
-struct FirmwarePackageIdentifier {
-    PreferredOrLegacyPackageIdentifier name{};
-    std::optional<PreferredOrLegacyStalePackageIdentifier> stale{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static FirmwarePackageIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        FirmwarePackageIdentifier value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.name = PreferredOrLegacyPackageIdentifier::decode(inner);
-            {
-                asn1kit::tag peeked_opt;
-                if (inner.try_peek_tag(peeked_opt) && (peeked_opt.matches_ignore_constructed(asn1kit::tag::integer) || peeked_opt.matches_ignore_constructed(asn1kit::tag::octet_string))) {
-                    value.stale = PreferredOrLegacyStalePackageIdentifier::decode(inner);
-                }
-            }
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        this->name.encode(w);
-        if (this->stale.has_value()) {
-            (*this->stale).encode(w);
-        }
-    }
-};
-
-struct PreferredPackageIdentifier {
-    asn1kit::oid fwPkgID{};
-    asn1kit::integer verNum{};
-
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
-    }
-
-    static PreferredPackageIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
-        PreferredPackageIdentifier value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.fwPkgID = inner.read_oid(asn1kit::tag::object_identifier);
-            value.verNum = inner.read_integer_value(asn1kit::tag::integer);
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
-        auto scope = w.enter_sequence(t);
-        w.write_object_identifier(asn1kit::tag::object_identifier, this->fwPkgID);
-        w.write_integer(asn1kit::tag::integer, this->verNum);
     }
 };
 
