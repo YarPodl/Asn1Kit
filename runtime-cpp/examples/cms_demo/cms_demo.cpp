@@ -9,6 +9,7 @@
 
 #include "asn1kit/bytes.hpp"
 #include "asn1kit/codec.hpp"
+#include "asn1kit/encode_decode.hpp"
 #include "asn1kit/exception.hpp"
 #include "asn1kit/reader.hpp"
 #include "asn1kit/writer.hpp"
@@ -113,15 +114,6 @@ using PkixOids = Pkix::PKIX1Explicit2009Oids;
         }
     }
     return out.str();
-}
-
-[[nodiscard]] Cms::ContentInfo decode_content_info(std::span<const std::uint8_t> encoded) {
-    asn1kit::reader r(encoded, asn1kit::encoding::der);
-    auto info = Cms::ContentInfo::decode(r);
-    if (!r.eof()) {
-        throw std::runtime_error("Trailing octets after ContentInfo.");
-    }
-    return info;
 }
 
 [[nodiscard]] Cms::SignedData decode_signed_data(const Cms::ContentInfo& info) {
@@ -242,19 +234,10 @@ using PkixOids = Pkix::PKIX1Explicit2009Oids;
     return !signature.empty();
 }
 
-[[nodiscard]] Pkix::Certificate decode_certificate(std::span<const std::uint8_t> encoded) {
-    asn1kit::reader r(encoded, asn1kit::encoding::der);
-    auto certificate = Pkix::Certificate::decode(r);
-    if (!r.eof()) {
-        throw std::runtime_error("Trailing octets after Certificate.");
-    }
-    return certificate;
-}
-
 } // namespace
 
 std::vector<SignerResult> verify_attached(std::span<const std::uint8_t> encoded) {
-    const auto content_info = decode_content_info(encoded);
+    const auto content_info = asn1kit::decode<Cms::ContentInfo>(encoded, asn1kit::encoding::der);
     const auto signed_data = decode_signed_data(content_info);
     const auto content = require_econtent(signed_data);
     if (signed_data.signerInfos.empty()) {
@@ -304,7 +287,7 @@ std::vector<SignerResult> verify_attached(std::span<const std::uint8_t> encoded)
 }
 
 void print_certificate(std::span<const std::uint8_t> encoded, std::ostream& out) {
-    const auto certificate = decode_certificate(encoded);
+    const auto certificate = asn1kit::decode<Pkix::Certificate>(encoded, asn1kit::encoding::der);
     const auto& tbs = certificate.toBeSigned.get();
     out << "Certificate:\n";
     out << "  version: " << tbs.version << "\n";
@@ -318,7 +301,7 @@ void print_certificate(std::span<const std::uint8_t> encoded, std::ostream& out)
 }
 
 void print_cms(std::span<const std::uint8_t> encoded, std::ostream& out) {
-    const auto content_info = decode_content_info(encoded);
+    const auto content_info = asn1kit::decode<Cms::ContentInfo>(encoded, asn1kit::encoding::der);
     out << "CMS_ContentInfo:\n";
     out << "  contentType: " << content_info.contentType.to_string() << "\n";
 
@@ -375,7 +358,7 @@ void print_cms(std::span<const std::uint8_t> encoded, std::ostream& out) {
 std::vector<std::uint8_t> build_attached_signed_data(
     std::span<const std::uint8_t> content,
     std::span<const std::uint8_t> certificate_der) {
-    const auto certificate = decode_certificate(certificate_der);
+    const auto certificate = asn1kit::decode<Pkix::Certificate>(certificate_der, asn1kit::encoding::der);
     const auto& tbs = certificate.toBeSigned.get();
 
     const auto digest_vec = sha256(content);
@@ -413,9 +396,7 @@ std::vector<std::uint8_t> build_attached_signed_data(
     signed_data.signerInfos = {std::move(signer)};
 
     const auto content_info = Cms::contentSet_content_bindings::ct_signed_data.create(signed_data);
-    asn1kit::writer w(asn1kit::encoding::der);
-    content_info.encode(w);
-    return w.encode();
+    return asn1kit::encode(content_info, asn1kit::encoding::der);
 }
 
 } // namespace asn1kit::cms_demo

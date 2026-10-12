@@ -42,6 +42,7 @@
 | Reader OF (callback) | `for_each_sequence_of` / `for_each_set_of`; `read_sequence_of` / `read_set_of` + invocable |
 | Reader type-driven | `read<T>` / `read_from_explicit<T>` / `read_sequence_of<T>` / `read_set_of<T>` / `read_sequence_of_from_explicit<T>` — без лямбд (T = generated или примитив) |
 | Writer type-driven | `write` / `write_to_explicit` / `write_sequence_of` / `write_set_of` / `write_sequence_of_to_explicit` — без лямбд |
+| Ergonomic encode/decode (`encode_decode.hpp`) | `encode(value, enc)` (значение → `std::vector<uint8_t>`); `try_encode(destination, value[, bytes_written], enc)` — запись в вызывающий буфер, `false` при нехватке места; `decode` (TLV → значение, строгий EOF, trailing → `asn1kit::exception`); `decode_prefix` игнорирует хвост. Перегрузки: `std::span<const uint8_t>`, `std::vector<uint8_t>`, `bytes` |
 | Value types | `integer`, `bit_string`, `oid`, `null_value`, `utc_date_time`, `any`, `contained<T>` |
 | ANY | `any` — полный TLV (`tag` + `encoded` + `contents`); `read_any` / `write_any` (+ IMPLICIT retag); `from_tag_and_contents` / `from_value` / `decode_value` |
 | Contained | `contained<T>` — OCTET/BIT STRING CONTAINING; `read_contained` / `write_contained` (typed primitive frame / opaque octets; known BIT STRING octet-aligned) |
