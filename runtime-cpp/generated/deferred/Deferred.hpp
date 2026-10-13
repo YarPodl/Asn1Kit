@@ -30,11 +30,11 @@ namespace Deferred {
 struct Inner {
     asn1kit::integer n{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static Inner decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static Inner decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         Inner value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.n = inner.read_integer_value(asn1kit::tag::context(0));
@@ -42,7 +42,7 @@ struct Inner {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_integer(asn1kit::tag::context(0), this->n);
     }
@@ -52,11 +52,11 @@ struct Box {
     asn1kit::value<Inner> retained{};
     asn1kit::lazy<Inner> deferred{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static Box decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static Box decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         Box value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.retained = inner.read_with_original_encoding<Inner>([&](asn1kit::reader& deferred) {
@@ -73,7 +73,7 @@ struct Box {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         if (this->retained.has_original_encoding()) {
             w.write_raw(this->retained.original_encoding().span());

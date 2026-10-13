@@ -79,8 +79,8 @@ struct SMIMEEncryptionKeyPreference {
         return result;
     }
 
-    static asn1kit::tag default_tag() {
-        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
+    static bool match_tag(const asn1kit::tag& t) {
+        return (t.matches_ignore_constructed(asn1kit::tag::context(0, true)) || t.matches_ignore_constructed(asn1kit::tag::context(1, true)) || t.matches_ignore_constructed(asn1kit::tag::context(2)));
     }
 
     static SMIMEEncryptionKeyPreference decode(asn1kit::reader& r) {

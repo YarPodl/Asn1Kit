@@ -63,11 +63,11 @@ struct IssuerSignTool {
     std::string signToolCert{};
     std::string cAToolCert{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static IssuerSignTool decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static IssuerSignTool decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         IssuerSignTool value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.signTool = inner.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
@@ -78,7 +78,7 @@ struct IssuerSignTool {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_string(asn1kit::tag::utf8_string, this->signTool, asn1kit::string_form::utf8);
         w.write_string(asn1kit::tag::utf8_string, this->cATool, asn1kit::string_form::utf8);

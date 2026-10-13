@@ -34,11 +34,11 @@ struct AlgorithmIdentifier {
     asn1kit::oid algorithm{};
     std::optional<asn1kit::any> parameters{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static AlgorithmIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static AlgorithmIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         AlgorithmIdentifier value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.algorithm = inner.read_oid(asn1kit::tag::object_identifier);
@@ -49,7 +49,7 @@ struct AlgorithmIdentifier {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_object_identifier(asn1kit::tag::object_identifier, this->algorithm);
         if (this->parameters.has_value()) {
@@ -87,11 +87,11 @@ struct SMIMECapability {
     asn1kit::oid capabilityID{};
     std::optional<asn1kit::any> parameters{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static SMIMECapability decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static SMIMECapability decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         SMIMECapability value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.capabilityID = inner.read_oid(asn1kit::tag::object_identifier);
@@ -102,7 +102,7 @@ struct SMIMECapability {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_object_identifier(asn1kit::tag::object_identifier, this->capabilityID);
         if (this->parameters.has_value()) {

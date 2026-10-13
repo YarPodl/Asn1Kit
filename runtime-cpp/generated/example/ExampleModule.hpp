@@ -33,11 +33,11 @@ struct Person {
     asn1kit::bytes name{};
     std::optional<asn1kit::bytes> nick{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static Person decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static Person decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         Person value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.id = inner.read_integer_value(asn1kit::tag::context(0));
@@ -49,7 +49,7 @@ struct Person {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_integer(asn1kit::tag::context(0), this->id);
         w.write_octet_string(asn1kit::tag::context(1), this->name.span());

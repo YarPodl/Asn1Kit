@@ -3,7 +3,9 @@
 
 #include "PKIX1Explicit2009.hpp"
 #include "PKIX1Implicit2009.hpp"
+#include "PKIXX400Address2009.types.hpp"
 
+#include "asn1kit/encode_decode.hpp"
 #include "asn1kit/reader.hpp"
 #include "asn1kit/writer.hpp"
 
@@ -25,9 +27,26 @@ using TimeKind = asn1kit::modern::PKIX1Explicit2009::Time_kind;
 using DirectoryString = asn1kit::modern::PKIX1Explicit2009::DirectoryString;
 using GeneralName = asn1kit::modern::PKIX1Implicit2009::GeneralName;
 using GeneralNameKind = asn1kit::modern::PKIX1Implicit2009::GeneralName_kind;
+using CountryName = asn1kit::modern::PKIXX400Address2009::CountryName;
+using CountryNameKind = asn1kit::modern::PKIXX400Address2009::CountryName_kind;
 
 static_assert(std::is_same_v<decltype(Time::value), asn1kit::utc_date_time>);
 static_assert(std::is_same_v<decltype(DirectoryString::value), std::string>);
+
+TEST(GeneratedModernCertificateTests, TaggedChoiceCountryNameUsesApplicationWrapper) {
+    // CountryName ::= [APPLICATION 1] EXPLICIT CHOICE { numeric NumericString, ... }
+    const auto value = CountryName::from_x121_dcc_code("123");
+    const auto encoded = asn1kit::encode(value);
+    EXPECT_EQ(encoded, (std::vector<std::uint8_t>{0x61, 0x05, 0x12, 0x03, '1', '2', '3'}));
+
+    const auto decoded = asn1kit::decode<CountryName>(encoded);
+    EXPECT_EQ(decoded.kind, CountryNameKind::x121_dcc_code);
+    EXPECT_EQ(decoded.value, "123");
+
+    reader r(encoded, encoding::der);
+    EXPECT_TRUE(r.next_matches<CountryName>());
+    EXPECT_FALSE(r.next_is(asn1kit::tag::sequence));
+}
 
 TEST(GeneratedModernCertificateTests, DirectoryStringPreservesStringForm) {
     const std::vector<std::vector<std::uint8_t>> vectors{

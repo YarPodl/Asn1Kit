@@ -36,7 +36,7 @@
 | Soft-read | `reader_options` — `default_profile`, `strict`, `allow_non_minimal_length`, `allow_overlong_oid_base128` |
 | Writer primitives | `write_boolean`, `write_integer` (i32/u32/i64/u64/`integer`), `write_integer_decimal`, `write_enumerated_decimal`, `write_octet_string`, `write_null`, `write_object_identifier`, `write_bit_string`, `write_string`, `write_time`, `write_raw`, `encode` / `try_encode` / `reset` |
 | Writer scopes | `enter_sequence` / `enter_set` / `enter_sequence_of` / `enter_set_of` / `enter_explicit` → `writer_scope`; `write_sequence_of` / `write_set_of` (template + range + invocable) |
-| Reader primitives | соответствующие `read_*`, `try_peek_tag`, `next_is`, `eof`, `throw_if_not_empty` |
+| Reader primitives | соответствующие `read_*`, `try_peek_tag`, `next_is`, `next_matches<T>`, `eof`, `throw_if_not_empty` |
 | Reader scopes (низкий) | `enter_sequence` / `enter_set` / `enter_explicit` / `enter_encoded(bytes)` → `reader_scope` |
 | Reader scopes (рекомендуемый) | `with_sequence` / `with_set` / `with_explicit` / `with_encoded` — enter → callback → `throw_if_not_empty` на success → pop |
 | Reader OF (callback) | `for_each_sequence_of` / `for_each_set_of`; `read_sequence_of` / `read_set_of` + invocable |
@@ -59,8 +59,9 @@
 - Writer: `end()` бросает `std::logic_error` при LIFO / double-end; destructor `noexcept` финализирует frame и при misuse вызывает `std::terminate`. При открытом scope запрещены `encode` / `try_encode` / `reset` (`std::logic_error`).
 - Reader: push/pop окна на одном объекте; double-end идемпотентен; LIFO-нарушение в `end()` → `std::logic_error`. Destructor scope **не** проверяет empty.
 - `with_*`: на успешном return callback’а — `throw_if_not_empty`; при исключении из callback — только pop (исходная ошибка не заменяется). Нужен для составных тел/`DEFAULT`/`OPTIONAL` peek-логики.
-- `next_is(tag)` — `try_peek_tag` + `matches_ignore_constructed` (для OPTIONAL/DEFAULT).
-- Type-driven (`concepts.hpp` + `detail/typed_value.hpp`): generated-типы (`default_tag` / `decode` / `encode`) и примитивы (`bool`, fixed integers, `integer`, `bytes`, `oid`, `bit_string`). Codegen: `if (r.next_is(t)) x = r.read_from_explicit<std::int32_t>(t);`, `r.read_sequence_of<Ext>()`, `w.write_to_explicit(t, value)`.
+- `next_is(tag)` — `try_peek_tag` + `matches_ignore_constructed` (примитивы / явный тег поля).
+- `next_matches<T>()` — `try_peek_tag` + `T::match_tag` (OPTIONAL/DEFAULT именованных SEQUENCE/SET/CHOICE).
+- Type-driven (`concepts.hpp` + `detail/typed_value.hpp`): generated-типы (`match_tag`; SEQUENCE/SET — `decode`/`encode` с default natural tag; CHOICE — отдельные натуральный и tagged overload’ы) и примитивы (`bool`, fixed integers, `integer`, `bytes`, `oid`, `bit_string`). Untagged CHOICE входит в `asn1_decodable`/`asn1_encodable` без единого wire-тега. Codegen: `if (r.next_matches<T>()) …`, `r.read_sequence_of<T>()`, `w.write_to_explicit(t, value)`.
 - `enter_set_of` / `write_set_of`: DER сортирует TLV contents лексикографически; BER сохраняет порядок. Обычный `enter_set` порядок полей не меняет.
 - `enter_*` помечены `[[nodiscard]]`.
 

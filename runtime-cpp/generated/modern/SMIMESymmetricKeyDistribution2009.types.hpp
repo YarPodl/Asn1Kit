@@ -69,48 +69,36 @@ struct Certificates {
     std::optional<std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::AttributeCertificate>> aC{};
     std::optional<std::vector<::asn1kit::modern::CryptographicMessageSyntax2009::CertificateChoices>> certPath{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static Certificates decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static Certificates decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         Certificates value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             if (inner.next_is(asn1kit::tag::context(0, true))) {
                 value.pKC = ::asn1kit::modern::PKIX1Explicit2009::Certificate::decode(inner, asn1kit::tag::context(0, true));
             }
             if (inner.next_is(asn1kit::tag::context(1, true))) {
-                value.aC = inner.read_sequence_of<::asn1kit::modern::PKIXAttributeCertificate2009::AttributeCertificate>(asn1kit::tag::context(1, true), [&](asn1kit::reader& inner) {
-                    ::asn1kit::modern::PKIXAttributeCertificate2009::AttributeCertificate item{};
-                    item = ::asn1kit::modern::PKIXAttributeCertificate2009::AttributeCertificate::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
+                value.aC = inner.read_sequence_of<::asn1kit::modern::PKIXAttributeCertificate2009::AttributeCertificate>(asn1kit::tag::context(1, true));
             }
             if (inner.next_is(asn1kit::tag::context(2, true))) {
-                value.certPath = inner.read_set_of<::asn1kit::modern::CryptographicMessageSyntax2009::CertificateChoices>(asn1kit::tag::context(2, true), [&](asn1kit::reader& inner) {
-                    ::asn1kit::modern::CryptographicMessageSyntax2009::CertificateChoices item{};
-                    item = ::asn1kit::modern::CryptographicMessageSyntax2009::CertificateChoices::decode(inner);
-                    return item;
-                });
+                value.certPath = inner.read_set_of<::asn1kit::modern::CryptographicMessageSyntax2009::CertificateChoices>(asn1kit::tag::context(2, true));
             }
         });
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         if (this->pKC.has_value()) {
             (*this->pKC).encode(w, asn1kit::tag::context(0, true));
         }
         if (this->aC.has_value()) {
-            w.write_sequence_of(asn1kit::tag::context(1, true), (*this->aC), [&](asn1kit::writer& inner, const auto& item) {
-                item.encode(inner, asn1kit::tag::sequence);
-            });
+            w.write_sequence_of(asn1kit::tag::context(1, true), (*this->aC));
         }
         if (this->certPath.has_value()) {
-            w.write_set_of(asn1kit::tag::context(2, true), (*this->certPath), [&](asn1kit::writer& inner, const auto& item) {
-                item.encode(inner);
-            });
+            w.write_set_of(asn1kit::tag::context(2, true), (*this->certPath));
         }
     }
 };
@@ -119,11 +107,11 @@ struct Date {
     asn1kit::utc_date_time start{};
     std::optional<asn1kit::utc_date_time> end{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static Date decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static Date decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         Date value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.start = inner.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
@@ -134,7 +122,7 @@ struct Date {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_time(asn1kit::tag::generalized_time, this->start, asn1kit::time_form::generalized, 3);
         if (this->end.has_value()) {
@@ -147,11 +135,11 @@ struct GLAQueryRequest {
     asn1kit::oid glaRequestType{};
     asn1kit::any glaRequestValue{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static GLAQueryRequest decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static GLAQueryRequest decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         GLAQueryRequest value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.glaRequestType = inner.read_oid(asn1kit::tag::object_identifier);
@@ -160,7 +148,7 @@ struct GLAQueryRequest {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_object_identifier(asn1kit::tag::object_identifier, this->glaRequestType);
         w.write_any(this->glaRequestValue);
@@ -171,11 +159,11 @@ struct GLAQueryResponse {
     asn1kit::oid glaResponseType{};
     asn1kit::any glaResponseValue{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static GLAQueryResponse decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static GLAQueryResponse decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         GLAQueryResponse value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.glaResponseType = inner.read_oid(asn1kit::tag::object_identifier);
@@ -184,7 +172,7 @@ struct GLAQueryResponse {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_object_identifier(asn1kit::tag::object_identifier, this->glaResponseType);
         w.write_any(this->glaResponseValue);
@@ -211,11 +199,11 @@ struct GLDeleteMember {
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName glName{};
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName glMemberToDelete{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static GLDeleteMember decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static GLDeleteMember decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         GLDeleteMember value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.glName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
@@ -224,7 +212,7 @@ struct GLDeleteMember {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         this->glName.encode(w);
         this->glMemberToDelete.encode(w);
@@ -235,11 +223,11 @@ struct GLInfo {
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName glName{};
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName glAddress{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static GLInfo decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static GLInfo decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         GLInfo value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.glName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
@@ -248,7 +236,7 @@ struct GLInfo {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         this->glName.encode(w);
         this->glAddress.encode(w);
@@ -259,29 +247,23 @@ struct GLKRefresh {
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName glName{};
     std::vector<Date> dates{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static GLKRefresh decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static GLKRefresh decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         GLKRefresh value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.glName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
-            value.dates = inner.read_sequence_of<Date>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                Date item{};
-                item = Date::decode(inner, asn1kit::tag::sequence);
-                return item;
-            });
+            value.dates = inner.read_sequence_of<Date>(asn1kit::tag::sequence);
         });
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         this->glName.encode(w);
-        w.write_sequence_of(asn1kit::tag::sequence, this->dates, [&](asn1kit::writer& inner, const auto& item) {
-            item.encode(inner, asn1kit::tag::sequence);
-        });
+        w.write_sequence_of(asn1kit::tag::sequence, this->dates);
     }
 };
 
@@ -303,35 +285,29 @@ struct GLKey {
     asn1kit::utc_date_time glkNotBefore{};
     asn1kit::utc_date_time glkNotAfter{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static GLKey decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static GLKey decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         GLKey value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.glName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
-            value.glIdentifier = ::asn1kit::modern::CryptographicMessageSyntax2009::KEKIdentifier::decode(inner, asn1kit::tag::sequence);
-            value.glkWrapped = inner.read_set_of<::asn1kit::modern::CryptographicMessageSyntax2009::RecipientInfo>(asn1kit::tag::set, [&](asn1kit::reader& inner) {
-                ::asn1kit::modern::CryptographicMessageSyntax2009::RecipientInfo item{};
-                item = ::asn1kit::modern::CryptographicMessageSyntax2009::RecipientInfo::decode(inner);
-                return item;
-            });
-            value.glkAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability::decode(inner, asn1kit::tag::sequence);
+            value.glIdentifier = ::asn1kit::modern::CryptographicMessageSyntax2009::KEKIdentifier::decode(inner);
+            value.glkWrapped = inner.read_set_of<::asn1kit::modern::CryptographicMessageSyntax2009::RecipientInfo>(asn1kit::tag::set);
+            value.glkAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability::decode(inner);
             value.glkNotBefore = inner.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
             value.glkNotAfter = inner.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
         });
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         this->glName.encode(w);
-        this->glIdentifier.encode(w, asn1kit::tag::sequence);
-        w.write_set_of(asn1kit::tag::set, this->glkWrapped, [&](asn1kit::writer& inner, const auto& item) {
-            item.encode(inner);
-        });
-        this->glkAlgorithm.encode(w, asn1kit::tag::sequence);
+        this->glIdentifier.encode(w);
+        w.write_set_of(asn1kit::tag::set, this->glkWrapped);
+        this->glkAlgorithm.encode(w);
         w.write_time(asn1kit::tag::generalized_time, this->glkNotBefore, asn1kit::time_form::generalized, 3);
         w.write_time(asn1kit::tag::generalized_time, this->glkNotAfter, asn1kit::time_form::generalized, 3);
     }
@@ -344,11 +320,11 @@ struct GLKeyAttributes {
     asn1kit::integer generationCounter = asn1kit::integer::from_int64(2ll);
     ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability requestedAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability v{};         v.capabilityID = asn1kit::oid_literal<"2.16.840.1.101.3.4.1.5">().get(); return v; }());
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static GLKeyAttributes decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static GLKeyAttributes decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         GLKeyAttributes value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             if (inner.next_is(asn1kit::tag::context(0))) {
@@ -385,7 +361,7 @@ struct GLKeyAttributes {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         if (this->rekeyControlledByGLO != false) {
             w.write_boolean(asn1kit::tag::context(0), this->rekeyControlledByGLO);
@@ -410,35 +386,32 @@ struct GLMember {
     std::optional<::asn1kit::modern::PKIX1Implicit2009::GeneralName> glMemberAddress{};
     std::optional<Certificates> certificates{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static GLMember decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static GLMember decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         GLMember value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.glMemberName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
-            {
-                asn1kit::tag peeked_opt;
-                if (inner.try_peek_tag(peeked_opt) && (peeked_opt.matches_ignore_constructed(asn1kit::tag::context(0, true)) || peeked_opt.matches_ignore_constructed(asn1kit::tag::context(1)) || peeked_opt.matches_ignore_constructed(asn1kit::tag::context(2)) || peeked_opt.matches_ignore_constructed(asn1kit::tag::context(3, true)) || peeked_opt.matches_ignore_constructed(asn1kit::tag::context(4, true)) || peeked_opt.matches_ignore_constructed(asn1kit::tag::context(5, true)) || peeked_opt.matches_ignore_constructed(asn1kit::tag::context(6)) || peeked_opt.matches_ignore_constructed(asn1kit::tag::context(7)) || peeked_opt.matches_ignore_constructed(asn1kit::tag::context(8)))) {
-                    value.glMemberAddress = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
-                }
+            if (inner.next_matches<::asn1kit::modern::PKIX1Implicit2009::GeneralName>()) {
+                value.glMemberAddress = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
             }
-            if (inner.next_is(asn1kit::tag::sequence)) {
-                value.certificates = Certificates::decode(inner, asn1kit::tag::sequence);
+            if (inner.next_matches<Certificates>()) {
+                value.certificates = Certificates::decode(inner);
             }
         });
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         this->glMemberName.encode(w);
         if (this->glMemberAddress.has_value()) {
             (*this->glMemberAddress).encode(w);
         }
         if (this->certificates.has_value()) {
-            (*this->certificates).encode(w, asn1kit::tag::sequence);
+            (*this->certificates).encode(w);
         }
     }
 };
@@ -447,23 +420,23 @@ struct GLAddMember {
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName glName{};
     GLMember glMember{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static GLAddMember decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static GLAddMember decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         GLAddMember value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.glName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
-            value.glMember = GLMember::decode(inner, asn1kit::tag::sequence);
+            value.glMember = GLMember::decode(inner);
         });
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         this->glName.encode(w);
-        this->glMember.encode(w, asn1kit::tag::sequence);
+        this->glMember.encode(w);
     }
 };
 
@@ -471,23 +444,23 @@ struct GLManageCert {
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName glName{};
     GLMember glMember{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static GLManageCert decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static GLManageCert decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         GLManageCert value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.glName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
-            value.glMember = GLMember::decode(inner, asn1kit::tag::sequence);
+            value.glMember = GLMember::decode(inner);
         });
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         this->glName.encode(w);
-        this->glMember.encode(w, asn1kit::tag::sequence);
+        this->glMember.encode(w);
     }
 };
 
@@ -498,11 +471,11 @@ struct GLNewKeyAttributes {
     std::optional<asn1kit::integer> generationCounter{};
     std::optional<::asn1kit::modern::AlgorithmInformation2009::SMIMECapability> requestedAlgorithm{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static GLNewKeyAttributes decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static GLNewKeyAttributes decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         GLNewKeyAttributes value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             if (inner.next_is(asn1kit::tag::context(0))) {
@@ -524,7 +497,7 @@ struct GLNewKeyAttributes {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         if (this->rekeyControlledByGLO.has_value()) {
             w.write_boolean(asn1kit::tag::context(0), (*this->rekeyControlledByGLO));
@@ -549,28 +522,28 @@ struct GLOwnerInfo {
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName glOwnerAddress{};
     std::optional<Certificates> certificates{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static GLOwnerInfo decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static GLOwnerInfo decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         GLOwnerInfo value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.glOwnerName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
             value.glOwnerAddress = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
-            if (inner.next_is(asn1kit::tag::sequence)) {
-                value.certificates = Certificates::decode(inner, asn1kit::tag::sequence);
+            if (inner.next_matches<Certificates>()) {
+                value.certificates = Certificates::decode(inner);
             }
         });
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         this->glOwnerName.encode(w);
         this->glOwnerAddress.encode(w);
         if (this->certificates.has_value()) {
-            (*this->certificates).encode(w, asn1kit::tag::sequence);
+            (*this->certificates).encode(w);
         }
     }
 };
@@ -579,23 +552,23 @@ struct GLOwnerAdministration {
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName glName{};
     GLOwnerInfo glOwnerInfo{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static GLOwnerAdministration decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static GLOwnerAdministration decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         GLOwnerAdministration value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.glName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
-            value.glOwnerInfo = GLOwnerInfo::decode(inner, asn1kit::tag::sequence);
+            value.glOwnerInfo = GLOwnerInfo::decode(inner);
         });
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         this->glName.encode(w);
-        this->glOwnerInfo.encode(w, asn1kit::tag::sequence);
+        this->glOwnerInfo.encode(w);
     }
 };
 
@@ -605,19 +578,19 @@ struct GLRekey {
     std::optional<GLNewKeyAttributes> glNewKeyAttributes{};
     std::optional<bool> glRekeyAllGLKeys{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static GLRekey decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static GLRekey decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         GLRekey value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.glName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
             if (inner.next_is(asn1kit::tag::integer)) {
                 value.glAdministration = inner.read_int32(asn1kit::tag::integer);
             }
-            if (inner.next_is(asn1kit::tag::sequence)) {
-                value.glNewKeyAttributes = GLNewKeyAttributes::decode(inner, asn1kit::tag::sequence);
+            if (inner.next_matches<GLNewKeyAttributes>()) {
+                value.glNewKeyAttributes = GLNewKeyAttributes::decode(inner);
             }
             if (inner.next_is(asn1kit::tag::boolean)) {
                 value.glRekeyAllGLKeys = inner.read_boolean(asn1kit::tag::boolean);
@@ -626,14 +599,14 @@ struct GLRekey {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         this->glName.encode(w);
         if (this->glAdministration.has_value()) {
             w.write_integer(asn1kit::tag::integer, (*this->glAdministration));
         }
         if (this->glNewKeyAttributes.has_value()) {
-            (*this->glNewKeyAttributes).encode(w, asn1kit::tag::sequence);
+            (*this->glNewKeyAttributes).encode(w);
         }
         if (this->glRekeyAllGLKeys.has_value()) {
             w.write_boolean(asn1kit::tag::boolean, (*this->glRekeyAllGLKeys));
@@ -647,43 +620,37 @@ struct GLUseKEK {
     std::int32_t glAdministration = 1;
     std::optional<GLKeyAttributes> glKeyAttributes{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static GLUseKEK decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static GLUseKEK decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         GLUseKEK value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.glInfo = GLInfo::decode(inner, asn1kit::tag::sequence);
-            value.glOwnerInfo = inner.read_sequence_of<GLOwnerInfo>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                GLOwnerInfo item{};
-                item = GLOwnerInfo::decode(inner, asn1kit::tag::sequence);
-                return item;
-            });
+            value.glInfo = GLInfo::decode(inner);
+            value.glOwnerInfo = inner.read_sequence_of<GLOwnerInfo>(asn1kit::tag::sequence);
             if (inner.next_is(asn1kit::tag::integer)) {
                 value.glAdministration = inner.read_int32(asn1kit::tag::integer);
             }
             else {
                 value.glAdministration = 1;
             }
-            if (inner.next_is(asn1kit::tag::sequence)) {
-                value.glKeyAttributes = GLKeyAttributes::decode(inner, asn1kit::tag::sequence);
+            if (inner.next_matches<GLKeyAttributes>()) {
+                value.glKeyAttributes = GLKeyAttributes::decode(inner);
             }
         });
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
-        this->glInfo.encode(w, asn1kit::tag::sequence);
-        w.write_sequence_of(asn1kit::tag::sequence, this->glOwnerInfo, [&](asn1kit::writer& inner, const auto& item) {
-            item.encode(inner, asn1kit::tag::sequence);
-        });
+        this->glInfo.encode(w);
+        w.write_sequence_of(asn1kit::tag::sequence, this->glOwnerInfo);
         if (this->glAdministration != 1) {
             w.write_integer(asn1kit::tag::integer, this->glAdministration);
         }
         if (this->glKeyAttributes.has_value()) {
-            (*this->glKeyAttributes).encode(w, asn1kit::tag::sequence);
+            (*this->glKeyAttributes).encode(w);
         }
     }
 };

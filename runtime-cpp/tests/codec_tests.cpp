@@ -26,8 +26,12 @@ TEST(OpenTyped, NullRoundTrip) {
 }
 
 struct skip_value {
-    static tag default_tag() { return tag::integer; }
+    static bool match_tag(const tag& t) {
+        return t.matches_ignore_constructed(tag::integer);
+    }
+    static skip_value decode(reader&) { return {}; }
     static skip_value decode(reader&, const tag&) { return {}; }
+    void encode(writer&) const {}
     void encode(writer&, const tag&) const {}
 };
 

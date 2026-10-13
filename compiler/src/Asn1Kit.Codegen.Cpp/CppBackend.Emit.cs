@@ -54,12 +54,15 @@ public sealed partial class CppBackend
         }
 
         sb.AppendLine();
-        sb.AppendLine("    static asn1kit::tag default_tag() {");
-        sb.AppendLine($"        return {UniversalTag(document, module, type)};");
+        var naturalTag = UniversalTag(document, module, type);
+        sb.AppendLine("    static bool match_tag(const asn1kit::tag& t) {");
+        sb.AppendLine($"        return t.matches_ignore_constructed({naturalTag});");
         sb.AppendLine("    }");
         sb.AppendLine();
+        // Single overload with default tag satisfies asn1_decodable / asn1_encodable
+        // (decode(r) / encode(w) and tagged override). CHOICE keeps two overloads.
         sb.AppendLine(
-            $"    static {typeName} decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {{");
+            $"    static {typeName} decode(asn1kit::reader& r, const asn1kit::tag& t = {naturalTag}) {{");
         sb.AppendLine($"        {typeName} value{{}};");
         if (isSet)
         {
@@ -86,7 +89,7 @@ public sealed partial class CppBackend
         sb.AppendLine("    }");
         sb.AppendLine();
         sb.AppendLine(
-            "    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {");
+            $"    void encode(asn1kit::writer& w, const asn1kit::tag& t = {naturalTag}) const {{");
         var enter = isSet
             ? (extensible ? "enter_set_of" : "enter_set")
             : "enter_sequence";
@@ -282,19 +285,106 @@ public sealed partial class CppBackend
             sb.AppendLine();
         }
 
-        sb.AppendLine("    static asn1kit::tag default_tag() {");
+        sb.AppendLine("    static bool match_tag(const asn1kit::tag& t) {");
         if (type.Tag is not null)
         {
-            sb.AppendLine($"        return {TagFromIr(type.Tag, constructed: true)};");
+            sb.AppendLine(
+                $"        return t.matches_ignore_constructed({TagFromIr(type.Tag, constructed: true)});");
+        }
+        else if (alts.Count == 0)
+        {
+            sb.AppendLine("        (void)t;");
+            sb.AppendLine("        return false;");
         }
         else
         {
-            sb.AppendLine("        throw asn1kit::exception(\"Untagged CHOICE has no default_tag.\");");
+            var parts = alts.Select(a => PeekMatchExpr(document, module, a.Type, "t")).ToList();
+            sb.AppendLine(
+                parts.Count == 1
+                    ? $"        return {parts[0]};"
+                    : $"        return ({string.Join(" || ", parts)});");
         }
 
         sb.AppendLine("    }");
         sb.AppendLine();
-        sb.AppendLine($"    static {typeName} decode(asn1kit::reader& r) {{");
+
+        // Tagged CHOICE needs decode_content/encode_content so with_explicit does not
+        // re-enter natural decode (which would peel the wrapper twice). Untagged CHOICE
+        // puts alternatives directly in decode(r) / encode(w).
+        if (type.Tag is not null)
+        {
+            var wrapperTag = TagFromIr(type.Tag, constructed: true);
+            sb.AppendLine($"    static {typeName} decode_content(asn1kit::reader& r) {{");
+            EmitChoiceDecodeAlternatives(
+                sb, document, module, typeName, type, alts, kinds, payloadTypes, variantIndices, singlePayload);
+            sb.AppendLine("    }");
+            sb.AppendLine();
+            sb.AppendLine($"    static {typeName} decode(asn1kit::reader& r) {{");
+            sb.AppendLine($"        return decode(r, {wrapperTag});");
+            sb.AppendLine("    }");
+            sb.AppendLine();
+            sb.AppendLine(
+                $"    static {typeName} decode(asn1kit::reader& r, const asn1kit::tag& t) {{");
+            sb.AppendLine($"        {typeName} value{{}};");
+            sb.AppendLine("        r.with_explicit(t, [&](asn1kit::reader& inner) {");
+            sb.AppendLine("            value = decode_content(inner);");
+            sb.AppendLine("        });");
+            sb.AppendLine("        return value;");
+            sb.AppendLine("    }");
+            sb.AppendLine();
+            sb.AppendLine("    void encode_content(asn1kit::writer& w) const {");
+            EmitChoiceEncodeAlternatives(
+                sb, document, module, typeName, type, alts, kinds, variantIndices, singlePayload);
+            sb.AppendLine("    }");
+            sb.AppendLine();
+            sb.AppendLine("    void encode(asn1kit::writer& w) const {");
+            sb.AppendLine($"        encode(w, {wrapperTag});");
+            sb.AppendLine("    }");
+            sb.AppendLine();
+            sb.AppendLine("    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {");
+            sb.AppendLine("        auto scope = w.enter_explicit(t);");
+            sb.AppendLine("        encode_content(w);");
+            sb.AppendLine("    }");
+        }
+        else
+        {
+            sb.AppendLine($"    static {typeName} decode(asn1kit::reader& r) {{");
+            EmitChoiceDecodeAlternatives(
+                sb, document, module, typeName, type, alts, kinds, payloadTypes, variantIndices, singlePayload);
+            sb.AppendLine("    }");
+            sb.AppendLine();
+            sb.AppendLine(
+                $"    static {typeName} decode(asn1kit::reader& r, const asn1kit::tag& t) {{");
+            sb.AppendLine("        (void)t;");
+            sb.AppendLine("        return decode(r);");
+            sb.AppendLine("    }");
+            sb.AppendLine();
+            sb.AppendLine("    void encode(asn1kit::writer& w) const {");
+            EmitChoiceEncodeAlternatives(
+                sb, document, module, typeName, type, alts, kinds, variantIndices, singlePayload);
+            sb.AppendLine("    }");
+            sb.AppendLine();
+            sb.AppendLine("    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {");
+            sb.AppendLine("        (void)t;");
+            sb.AppendLine("        encode(w);");
+            sb.AppendLine("    }");
+        }
+
+        sb.AppendLine("};");
+    }
+
+    private void EmitChoiceDecodeAlternatives(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string typeName,
+        ChoiceType type,
+        IReadOnlyList<IrComponent> alts,
+        IReadOnlyList<string> kinds,
+        IReadOnlyList<string> payloadTypes,
+        IReadOnlyList<int> variantIndices,
+        bool singlePayload)
+    {
         sb.AppendLine("        asn1kit::tag peeked;");
         sb.AppendLine(
             "        if (!r.try_peek_tag(peeked)) throw asn1kit::exception(\"Expected CHOICE alternative.\");");
@@ -340,37 +430,19 @@ public sealed partial class CppBackend
             sb.AppendLine("            throw asn1kit::exception(\"Unknown CHOICE alternative.\");");
             sb.AppendLine("        }");
         }
+    }
 
-        sb.AppendLine("    }");
-        sb.AppendLine();
-        sb.AppendLine(
-            $"    static {typeName} decode(asn1kit::reader& r, const asn1kit::tag& t) {{");
-        if (type.Tag is not null && type.Tag.Mode == TagModes.Explicit)
-        {
-            sb.AppendLine($"        {typeName} value{{}};");
-            sb.AppendLine("        r.with_explicit(t, [&](asn1kit::reader& inner) {");
-            sb.AppendLine("            value = decode(inner);");
-            sb.AppendLine("        });");
-            sb.AppendLine("        return value;");
-        }
-        else if (type.Tag is not null)
-        {
-            // IMPLICIT CHOICE: decode alternatives under outer tag is unusual; treat as explicit wrapper.
-            sb.AppendLine($"        {typeName} value{{}};");
-            sb.AppendLine("        r.with_explicit(t, [&](asn1kit::reader& inner) {");
-            sb.AppendLine("            value = decode(inner);");
-            sb.AppendLine("        });");
-            sb.AppendLine("        return value;");
-        }
-        else
-        {
-            sb.AppendLine("        (void)t;");
-            sb.AppendLine("        return decode(r);");
-        }
-
-        sb.AppendLine("    }");
-        sb.AppendLine();
-        sb.AppendLine("    void encode(asn1kit::writer& w) const {");
+    private void EmitChoiceEncodeAlternatives(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string typeName,
+        ChoiceType type,
+        IReadOnlyList<IrComponent> alts,
+        IReadOnlyList<string> kinds,
+        IReadOnlyList<int> variantIndices,
+        bool singlePayload)
+    {
         sb.AppendLine("        switch (kind) {");
         for (var i = 0; i < alts.Count; i++)
         {
@@ -410,22 +482,6 @@ public sealed partial class CppBackend
         }
 
         sb.AppendLine("        }");
-        sb.AppendLine("    }");
-        sb.AppendLine();
-        sb.AppendLine("    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {");
-        if (type.Tag is not null)
-        {
-            sb.AppendLine("        auto scope = w.enter_explicit(t);");
-            sb.AppendLine("        encode(w);");
-        }
-        else
-        {
-            sb.AppendLine("        (void)t;");
-            sb.AppendLine("        encode(w);");
-        }
-
-        sb.AppendLine("    }");
-        sb.AppendLine("};");
     }
 
     private void EmitEnumerated(StringBuilder sb, string typeName, EnumeratedType type)
@@ -559,17 +615,19 @@ public sealed partial class CppBackend
         sb.AppendLine("        return result;");
         sb.AppendLine("    }");
         sb.AppendLine();
-        sb.AppendLine("    static asn1kit::tag default_tag() { return asn1kit::tag::bit_string; }");
+        sb.AppendLine("    static bool match_tag(const asn1kit::tag& t) {");
+        sb.AppendLine("        return t.matches_ignore_constructed(asn1kit::tag::bit_string);");
+        sb.AppendLine("    }");
         sb.AppendLine();
         sb.AppendLine(
-            $"    static {typeName} decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {{");
+            $"    static {typeName} decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::bit_string) {{");
         sb.AppendLine($"        {typeName} result{{}};");
         sb.AppendLine("        result.value = r.read_bit_string(t);");
         sb.AppendLine("        return result;");
         sb.AppendLine("    }");
         sb.AppendLine();
         sb.AppendLine(
-            "    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {");
+            "    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::bit_string) const {");
         sb.AppendLine("        w.write_bit_string(t, value);");
         sb.AppendLine("    }");
         sb.AppendLine("};");

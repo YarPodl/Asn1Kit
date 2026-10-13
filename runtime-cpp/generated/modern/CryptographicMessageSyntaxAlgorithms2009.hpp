@@ -74,8 +74,8 @@ struct PBKDF2Params_Salt {
         return result;
     }
 
-    static asn1kit::tag default_tag() {
-        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
+    static bool match_tag(const asn1kit::tag& t) {
+        return (t.matches_ignore_constructed(asn1kit::tag::octet_string) || t.matches_ignore_constructed(asn1kit::tag::sequence));
     }
 
     static PBKDF2Params_Salt decode(asn1kit::reader& r) {
@@ -92,7 +92,7 @@ struct PBKDF2Params_Salt {
             PBKDF2Params_Salt result{};
             result.kind = PBKDF2Params_Salt_kind::otherSource;
             ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier alt{};
-            alt = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(r, asn1kit::tag::sequence);
+            alt = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(r);
             result.value.emplace<1>(std::move(alt));
             return result;
         } else {
@@ -116,7 +116,7 @@ struct PBKDF2Params_Salt {
         case PBKDF2Params_Salt_kind::otherSource:
             {
                 const auto& alt = std::get<1>(value);
-                alt.encode(w, asn1kit::tag::sequence);
+                alt.encode(w);
                 break;
             }
         }
@@ -134,11 +134,11 @@ struct PBKDF2Params {
     std::optional<asn1kit::integer> keyLength{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier prf = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"1.3.6.1.5.5.8.1.2">().get();         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }());
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static PBKDF2Params decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static PBKDF2Params decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         PBKDF2Params value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.salt = PBKDF2Params_Salt::decode(inner);
@@ -146,8 +146,8 @@ struct PBKDF2Params {
             if (inner.next_is(asn1kit::tag::integer)) {
                 value.keyLength = inner.read_integer_value(asn1kit::tag::integer);
             }
-            if (inner.next_is(asn1kit::tag::sequence)) {
-                value.prf = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner, asn1kit::tag::sequence);
+            if (inner.next_matches<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier>()) {
+                value.prf = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
             }
             else {
                 value.prf = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"1.3.6.1.5.5.8.1.2">().get();         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }());
@@ -156,7 +156,7 @@ struct PBKDF2Params {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         this->salt.encode(w);
         w.write_integer(asn1kit::tag::integer, this->iterationCount);
@@ -164,7 +164,7 @@ struct PBKDF2Params {
             w.write_integer(asn1kit::tag::integer, (*this->keyLength));
         }
         if (!(!(this->prf.algorithm != asn1kit::oid_literal<"1.3.6.1.5.5.8.1.2">().get()) && this->prf.parameters.has_value() && !((*this->prf.parameters) != asn1kit::encode_open(asn1kit::null_value::value())))) {
-            this->prf.encode(w, asn1kit::tag::sequence);
+            this->prf.encode(w);
         }
     }
 };
@@ -173,11 +173,11 @@ struct RC2CBCParameter {
     std::int32_t rc2ParameterVersion{};
     asn1kit::bytes iv{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static RC2CBCParameter decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static RC2CBCParameter decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         RC2CBCParameter value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.rc2ParameterVersion = inner.read_int32(asn1kit::tag::integer);
@@ -186,7 +186,7 @@ struct RC2CBCParameter {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_integer(asn1kit::tag::integer, this->rc2ParameterVersion);
         w.write_octet_string(asn1kit::tag::octet_string, this->iv.span());

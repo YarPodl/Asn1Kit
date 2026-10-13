@@ -53,57 +53,45 @@ struct ArchiveTimeStamp {
     std::optional<std::vector<std::vector<asn1kit::bytes>>> reducedHashtree{};
     ::asn1kit::modern::CryptographicMessageSyntax2009::ContentInfo timeStamp{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static ArchiveTimeStamp decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static ArchiveTimeStamp decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         ArchiveTimeStamp value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             if (inner.next_is(asn1kit::tag::context(0, true))) {
                 value.digestAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner, asn1kit::tag::context(0, true));
             }
             if (inner.next_is(asn1kit::tag::context(1, true))) {
-                value.attributes = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet>(asn1kit::tag::context(1, true), [&](asn1kit::reader& inner) {
-                    ::asn1kit::modern::PKIXCommonTypes2009::AttributeSet item{};
-                    item = ::asn1kit::modern::PKIXCommonTypes2009::AttributeSet::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
+                value.attributes = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet>(asn1kit::tag::context(1, true));
             }
             if (inner.next_is(asn1kit::tag::context(2, true))) {
                 value.reducedHashtree = inner.read_sequence_of<std::vector<asn1kit::bytes>>(asn1kit::tag::context(2, true), [&](asn1kit::reader& inner) {
                     std::vector<asn1kit::bytes> item{};
-                    item = inner.read_sequence_of<asn1kit::bytes>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                        asn1kit::bytes item{};
-                        item = inner.read_octet_string(asn1kit::tag::octet_string);
-                        return item;
-                    });
+                    item = inner.read_sequence_of<asn1kit::bytes>(asn1kit::tag::sequence);
                     return item;
                 });
             }
-            value.timeStamp = ::asn1kit::modern::CryptographicMessageSyntax2009::ContentInfo::decode(inner, asn1kit::tag::sequence);
+            value.timeStamp = ::asn1kit::modern::CryptographicMessageSyntax2009::ContentInfo::decode(inner);
         });
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         if (this->digestAlgorithm.has_value()) {
             (*this->digestAlgorithm).encode(w, asn1kit::tag::context(0, true));
         }
         if (this->attributes.has_value()) {
-            w.write_set_of(asn1kit::tag::context(1, true), (*this->attributes), [&](asn1kit::writer& inner, const auto& item) {
-                item.encode(inner, asn1kit::tag::sequence);
-            });
+            w.write_set_of(asn1kit::tag::context(1, true), (*this->attributes));
         }
         if (this->reducedHashtree.has_value()) {
             w.write_sequence_of(asn1kit::tag::context(2, true), (*this->reducedHashtree), [&](asn1kit::writer& inner, const auto& item) {
-                inner.write_sequence_of(asn1kit::tag::sequence, item, [&](asn1kit::writer& inner, const auto& item) {
-                    inner.write_octet_string(asn1kit::tag::octet_string, item.span());
-                });
+                inner.write_sequence_of(asn1kit::tag::sequence, item);
             });
         }
-        this->timeStamp.encode(w, asn1kit::tag::sequence);
+        this->timeStamp.encode(w);
     }
 };
 
@@ -111,11 +99,11 @@ struct EncryptionInfo {
     asn1kit::oid encryptionInfoType{};
     asn1kit::any encryptionInfoValue{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static EncryptionInfo decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static EncryptionInfo decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         EncryptionInfo value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.encryptionInfoType = inner.read_oid(asn1kit::tag::object_identifier);
@@ -124,7 +112,7 @@ struct EncryptionInfo {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_object_identifier(asn1kit::tag::object_identifier, this->encryptionInfoType);
         w.write_any(this->encryptionInfoValue);
@@ -142,60 +130,42 @@ struct EvidenceRecord {
     std::optional<EncryptionInfo> encryptionInfo{};
     std::vector<std::vector<ArchiveTimeStamp>> archiveTimeStampSequence{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static EvidenceRecord decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static EvidenceRecord decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         EvidenceRecord value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.version = inner.read_int32(asn1kit::tag::integer);
-            value.digestAlgorithms = inner.read_sequence_of<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier item{};
-                item = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner, asn1kit::tag::sequence);
-                return item;
-            });
+            value.digestAlgorithms = inner.read_sequence_of<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier>(asn1kit::tag::sequence);
             if (inner.next_is(asn1kit::tag::context(0, true))) {
-                value.cryptoInfos = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet>(asn1kit::tag::context(0, true), [&](asn1kit::reader& inner) {
-                    ::asn1kit::modern::PKIXCommonTypes2009::AttributeSet item{};
-                    item = ::asn1kit::modern::PKIXCommonTypes2009::AttributeSet::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
+                value.cryptoInfos = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet>(asn1kit::tag::context(0, true));
             }
             if (inner.next_is(asn1kit::tag::context(1, true))) {
                 value.encryptionInfo = EncryptionInfo::decode(inner, asn1kit::tag::context(1, true));
             }
             value.archiveTimeStampSequence = inner.read_sequence_of<std::vector<ArchiveTimeStamp>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
                 std::vector<ArchiveTimeStamp> item{};
-                item = inner.read_sequence_of<ArchiveTimeStamp>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    ArchiveTimeStamp item{};
-                    item = ArchiveTimeStamp::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
+                item = inner.read_sequence_of<ArchiveTimeStamp>(asn1kit::tag::sequence);
                 return item;
             });
         });
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_integer(asn1kit::tag::integer, this->version);
-        w.write_sequence_of(asn1kit::tag::sequence, this->digestAlgorithms, [&](asn1kit::writer& inner, const auto& item) {
-            item.encode(inner, asn1kit::tag::sequence);
-        });
+        w.write_sequence_of(asn1kit::tag::sequence, this->digestAlgorithms);
         if (this->cryptoInfos.has_value()) {
-            w.write_sequence_of(asn1kit::tag::context(0, true), (*this->cryptoInfos), [&](asn1kit::writer& inner, const auto& item) {
-                item.encode(inner, asn1kit::tag::sequence);
-            });
+            w.write_sequence_of(asn1kit::tag::context(0, true), (*this->cryptoInfos));
         }
         if (this->encryptionInfo.has_value()) {
             (*this->encryptionInfo).encode(w, asn1kit::tag::context(1, true));
         }
         w.write_sequence_of(asn1kit::tag::sequence, this->archiveTimeStampSequence, [&](asn1kit::writer& inner, const auto& item) {
-            inner.write_sequence_of(asn1kit::tag::sequence, item, [&](asn1kit::writer& inner, const auto& item) {
-                item.encode(inner, asn1kit::tag::sequence);
-            });
+            inner.write_sequence_of(asn1kit::tag::sequence, item);
         });
     }
 };

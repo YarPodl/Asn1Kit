@@ -38,11 +38,11 @@ struct AttributeCertificateV1_AlgorithmIdentifier {
     asn1kit::oid algorithm{};
     std::optional<asn1kit::any> parameters{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static AttributeCertificateV1_AlgorithmIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static AttributeCertificateV1_AlgorithmIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         AttributeCertificateV1_AlgorithmIdentifier value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.algorithm = inner.read_oid(asn1kit::tag::object_identifier);
@@ -53,7 +53,7 @@ struct AttributeCertificateV1_AlgorithmIdentifier {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_object_identifier(asn1kit::tag::object_identifier, this->algorithm);
         if (this->parameters.has_value()) {
@@ -96,8 +96,8 @@ struct AttributeCertificateInfoV1_Subject {
         return result;
     }
 
-    static asn1kit::tag default_tag() {
-        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
+    static bool match_tag(const asn1kit::tag& t) {
+        return (t.matches_ignore_constructed(asn1kit::tag::context(0, true)) || t.matches_ignore_constructed(asn1kit::tag::context(1, true)));
     }
 
     static AttributeCertificateInfoV1_Subject decode(asn1kit::reader& r) {
@@ -109,7 +109,7 @@ struct AttributeCertificateInfoV1_Subject {
             ::asn1kit::modern::ExtendedSecurityServices2009::IssuerSerial alt{};
             ::asn1kit::modern::ExtendedSecurityServices2009::IssuerSerial tmp_baseCertificateID{};
             r.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
-                tmp_baseCertificateID = ::asn1kit::modern::ExtendedSecurityServices2009::IssuerSerial::decode(scoped, asn1kit::tag::sequence);
+                tmp_baseCertificateID = ::asn1kit::modern::ExtendedSecurityServices2009::IssuerSerial::decode(scoped);
             });
             alt = std::move(tmp_baseCertificateID);
             result.value.emplace<0>(std::move(alt));
@@ -120,11 +120,7 @@ struct AttributeCertificateInfoV1_Subject {
             std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> alt{};
             std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> tmp_subjectName{};
             r.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
-                tmp_subjectName = scoped.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    ::asn1kit::modern::PKIX1Implicit2009::GeneralName item{};
-                    item = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
-                    return item;
-                });
+                tmp_subjectName = scoped.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>(asn1kit::tag::sequence);
             });
             alt = std::move(tmp_subjectName);
             result.value.emplace<1>(std::move(alt));
@@ -146,7 +142,7 @@ struct AttributeCertificateInfoV1_Subject {
                 const auto& alt = std::get<0>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
-                    alt.encode(w, asn1kit::tag::sequence);
+                    alt.encode(w);
                 }
                 break;
             }
@@ -155,9 +151,7 @@ struct AttributeCertificateInfoV1_Subject {
                 const auto& alt = std::get<1>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(1, true));
-                    w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
-                        item.encode(inner);
-                    });
+                    w.write_sequence_of(asn1kit::tag::sequence, alt);
                 }
                 break;
             }
@@ -193,11 +187,11 @@ struct AttributeCertificateInfoV1 {
     std::optional<asn1kit::bit_string> issuerUniqueID{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> extensions{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static AttributeCertificateInfoV1 decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static AttributeCertificateInfoV1 decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         AttributeCertificateInfoV1 value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             if (inner.next_is(asn1kit::tag::integer)) {
@@ -207,55 +201,37 @@ struct AttributeCertificateInfoV1 {
                 value.version = 0;
             }
             value.subject = AttributeCertificateInfoV1_Subject::decode(inner);
-            value.issuer = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                ::asn1kit::modern::PKIX1Implicit2009::GeneralName item{};
-                item = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
-                return item;
-            });
-            value.signature = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner, asn1kit::tag::sequence);
+            value.issuer = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>(asn1kit::tag::sequence);
+            value.signature = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
             value.serialNumber = inner.read_integer_value(asn1kit::tag::integer);
-            value.attCertValidityPeriod = ::asn1kit::modern::PKIXAttributeCertificate2009::AttCertValidityPeriod::decode(inner, asn1kit::tag::sequence);
-            value.attributes = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                ::asn1kit::modern::PKIXCommonTypes2009::AttributeSet item{};
-                item = ::asn1kit::modern::PKIXCommonTypes2009::AttributeSet::decode(inner, asn1kit::tag::sequence);
-                return item;
-            });
+            value.attCertValidityPeriod = ::asn1kit::modern::PKIXAttributeCertificate2009::AttCertValidityPeriod::decode(inner);
+            value.attributes = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet>(asn1kit::tag::sequence);
             if (inner.next_is(asn1kit::tag::bit_string)) {
                 value.issuerUniqueID = inner.read_bit_string(asn1kit::tag::bit_string);
             }
             if (inner.next_is(asn1kit::tag::sequence)) {
-                value.extensions = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    ::asn1kit::modern::PKIXCommonTypes2009::Extension item{};
-                    item = ::asn1kit::modern::PKIXCommonTypes2009::Extension::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
+                value.extensions = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>(asn1kit::tag::sequence);
             }
         });
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         if (this->version != 0) {
             w.write_integer(asn1kit::tag::integer, this->version);
         }
         this->subject.encode(w);
-        w.write_sequence_of(asn1kit::tag::sequence, this->issuer, [&](asn1kit::writer& inner, const auto& item) {
-            item.encode(inner);
-        });
-        this->signature.encode(w, asn1kit::tag::sequence);
+        w.write_sequence_of(asn1kit::tag::sequence, this->issuer);
+        this->signature.encode(w);
         w.write_integer(asn1kit::tag::integer, this->serialNumber);
-        this->attCertValidityPeriod.encode(w, asn1kit::tag::sequence);
-        w.write_sequence_of(asn1kit::tag::sequence, this->attributes, [&](asn1kit::writer& inner, const auto& item) {
-            item.encode(inner, asn1kit::tag::sequence);
-        });
+        this->attCertValidityPeriod.encode(w);
+        w.write_sequence_of(asn1kit::tag::sequence, this->attributes);
         if (this->issuerUniqueID.has_value()) {
             w.write_bit_string(asn1kit::tag::bit_string, (*this->issuerUniqueID));
         }
         if (this->extensions.has_value()) {
-            w.write_sequence_of(asn1kit::tag::sequence, (*this->extensions), [&](asn1kit::writer& inner, const auto& item) {
-                item.encode(inner, asn1kit::tag::sequence);
-            });
+            w.write_sequence_of(asn1kit::tag::sequence, (*this->extensions));
         }
     }
 };
@@ -265,15 +241,15 @@ struct AttributeCertificateV1 {
     AttributeCertificateV1_AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::contained<asn1kit::any> signature{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static AttributeCertificateV1 decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static AttributeCertificateV1 decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         AttributeCertificateV1 value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.toBeSigned = AttributeCertificateInfoV1::decode(inner, asn1kit::tag::sequence);
-            value.algorithmIdentifier = AttributeCertificateV1_AlgorithmIdentifier::decode(inner, asn1kit::tag::sequence);
+            value.toBeSigned = AttributeCertificateInfoV1::decode(inner);
+            value.algorithmIdentifier = AttributeCertificateV1_AlgorithmIdentifier::decode(inner);
             value.signature = inner.read_contained<asn1kit::any>(asn1kit::tag::bit_string, true, false, 0, [&](asn1kit::reader& inner, auto) {
                 asn1kit::any item{};
                 item = inner.read_any();
@@ -283,10 +259,10 @@ struct AttributeCertificateV1 {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
-        this->toBeSigned.encode(w, asn1kit::tag::sequence);
-        this->algorithmIdentifier.encode(w, asn1kit::tag::sequence);
+        this->toBeSigned.encode(w);
+        this->algorithmIdentifier.encode(w);
         w.write_contained(asn1kit::tag::bit_string, true, this->signature, [&](asn1kit::writer& inner, const auto& value) {
             inner.write_any(value);
         });

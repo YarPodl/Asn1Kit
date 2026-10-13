@@ -70,6 +70,13 @@ public:
     /// True when the next tag matches `expected` (constructed flag ignored).
     [[nodiscard]] bool next_is(const tag& expected) const;
 
+    /// True when the next tag matches a generated type via `T::match_tag`.
+    template <asn1_decodable T>
+    [[nodiscard]] bool next_matches() const {
+        tag peeked;
+        return try_peek_tag(peeked) && T::match_tag(peeked);
+    }
+
     [[nodiscard]] bool read_boolean(const tag& expected = tag::boolean);
     [[nodiscard]] integer read_integer_value(const tag& expected = tag::integer);
     [[nodiscard]] std::int32_t read_int32(const tag& expected = tag::integer);
@@ -231,7 +238,11 @@ public:
 
     template <detail::typed_readable T>
     [[nodiscard]] T read() {
-        return read_typed<T>(detail::default_tag_for<T>());
+        if constexpr (asn1_decodable<T>) {
+            return T::decode(*this);
+        } else {
+            return read_typed<T>(detail::default_tag_for<T>());
+        }
     }
 
     /// EXPLICIT wrapper → typed value (generated type or primitive, e.g. `std::int32_t`).
@@ -242,23 +253,19 @@ public:
         return value;
     }
 
-    /// SEQUENCE OF / SET OF without a per-item lambda; item tag is `T::default_tag()`.
-    template <asn1_decodable T>
+    /// SEQUENCE OF / SET OF without a per-item lambda; items use natural `read<T>()`.
+    template <detail::typed_readable T>
     [[nodiscard]] std::vector<T> read_sequence_of(const tag& expected = tag::sequence) {
-        return read_sequence_of<T>(expected, [](reader& r) {
-            return T::decode(r, T::default_tag());
-        });
+        return read_sequence_of<T>(expected, [](reader& r) { return r.read<T>(); });
     }
 
-    template <asn1_decodable T>
+    template <detail::typed_readable T>
     [[nodiscard]] std::vector<T> read_set_of(const tag& expected = tag::set) {
-        return read_set_of<T>(expected, [](reader& r) {
-            return T::decode(r, T::default_tag());
-        });
+        return read_set_of<T>(expected, [](reader& r) { return r.read<T>(); });
     }
 
     /// `[n] EXPLICIT SEQUENCE OF T` without lambdas.
-    template <asn1_decodable T>
+    template <detail::typed_readable T>
     [[nodiscard]] std::vector<T> read_sequence_of_from_explicit(const tag& wrapper) {
         std::vector<T> value;
         with_explicit(wrapper, [&](reader& r) { value = r.read_sequence_of<T>(); });
@@ -266,7 +273,7 @@ public:
     }
 
     /// `[n] EXPLICIT SET OF T` without lambdas.
-    template <asn1_decodable T>
+    template <detail::typed_readable T>
     [[nodiscard]] std::vector<T> read_set_of_from_explicit(const tag& wrapper) {
         std::vector<T> value;
         with_explicit(wrapper, [&](reader& r) { value = r.read_set_of<T>(); });

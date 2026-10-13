@@ -21,9 +21,13 @@ namespace {
 struct Inner {
     integer n{};
 
-    static tag default_tag() { return tag::sequence; }
+    static bool match_tag(const tag& t) {
+        return t.matches_ignore_constructed(tag::sequence);
+    }
 
-    static Inner decode(reader& r, const tag& t = default_tag()) {
+    static Inner decode(reader& r) { return decode(r, tag::sequence); }
+
+    static Inner decode(reader& r, const tag& t) {
         Inner value{};
         r.with_sequence(t, [&](reader& inner) {
             value.n = inner.read_integer_value(tag::integer);
@@ -31,7 +35,9 @@ struct Inner {
         return value;
     }
 
-    void encode(writer& w, const tag& t = default_tag()) const {
+    void encode(writer& w) const { encode(w, tag::sequence); }
+
+    void encode(writer& w, const tag& t) const {
         auto scope = w.enter_sequence(t);
         w.write_integer(tag::integer, n);
     }

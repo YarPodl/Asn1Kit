@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "asn1kit/bytes.hpp"
+#include "asn1kit/encode_decode.hpp"
 #include "asn1kit/reader.hpp"
 #include "asn1kit/writer.hpp"
 
@@ -325,11 +326,17 @@ namespace {
 struct int_box {
     std::int32_t value{0};
 
-    static tag default_tag() { return tag::integer; }
+    static bool match_tag(const tag& t) {
+        return t.matches_ignore_constructed(tag::integer);
+    }
+
+    static int_box decode(reader& r) { return decode(r, tag::integer); }
 
     static int_box decode(reader& r, const tag& t) {
         return int_box{r.read_int32(t)};
     }
+
+    void encode(writer& w) const { encode(w, tag::integer); }
 
     void encode(writer& w, const tag& t) const {
         w.write_integer(t, value);
@@ -344,7 +351,11 @@ struct pair_box {
     int_box a{};
     int_box b{};
 
-    static tag default_tag() { return tag::sequence; }
+    static bool match_tag(const tag& t) {
+        return t.matches_ignore_constructed(tag::sequence);
+    }
+
+    static pair_box decode(reader& r) { return decode(r, tag::sequence); }
 
     static pair_box decode(reader& r, const tag& t) {
         pair_box value{};
@@ -355,6 +366,8 @@ struct pair_box {
         return value;
     }
 
+    void encode(writer& w) const { encode(w, tag::sequence); }
+
     void encode(writer& w, const tag& t) const {
         auto scope = w.enter_sequence(t);
         w.write(a);
@@ -363,6 +376,49 @@ struct pair_box {
 
     friend bool operator==(const pair_box& x, const pair_box& y) noexcept {
         return x.a == y.a && x.b == y.b;
+    }
+};
+
+/// Untagged CHOICE stand-in: INTEGER or BOOLEAN alternatives.
+struct choice_box {
+    enum class kind { integer_alt, boolean_alt };
+    kind which{kind::integer_alt};
+    std::int32_t n{0};
+    bool b{false};
+
+    static bool match_tag(const tag& t) {
+        return t.matches_ignore_constructed(tag::integer)
+            || t.matches_ignore_constructed(tag::boolean);
+    }
+
+    static choice_box decode(reader& r) {
+        tag peeked;
+        if (!r.try_peek_tag(peeked)) {
+            throw exception("Expected CHOICE alternative.");
+        }
+        if (peeked.matches_ignore_constructed(tag::integer)) {
+            return choice_box{kind::integer_alt, r.read_int32(), false};
+        }
+        if (peeked.matches_ignore_constructed(tag::boolean)) {
+            return choice_box{kind::boolean_alt, 0, r.read_boolean()};
+        }
+        throw exception("Unknown CHOICE alternative.");
+    }
+
+    static choice_box decode(reader& r, const tag&) { return decode(r); }
+
+    void encode(writer& w) const {
+        if (which == kind::integer_alt) {
+            w.write_integer(tag::integer, n);
+        } else {
+            w.write_boolean(tag::boolean, b);
+        }
+    }
+
+    void encode(writer& w, const tag&) const { encode(w); }
+
+    friend bool operator==(const choice_box& a, const choice_box& b) noexcept {
+        return a.which == b.which && a.n == b.n && a.b == b.b;
     }
 };
 
@@ -393,6 +449,32 @@ TEST(ConstructedScopeTests, TypeDriven_ReadWriteWithoutLambdas) {
     EXPECT_EQ(explicit_of[0].value, 2);
     EXPECT_EQ(explicit_of[1].value, 1);
     EXPECT_TRUE(r.eof());
+}
+
+TEST(ConstructedScopeTests, TypeDriven_UntaggedChoiceAndNextMatches) {
+    const std::vector<choice_box> items{
+        {choice_box::kind::integer_alt, 5, false},
+        {choice_box::kind::boolean_alt, 0, true},
+    };
+    writer w(encoding::der);
+    w.write_sequence_of(tag::sequence, items);
+    w.write(choice_box{choice_box::kind::integer_alt, 9, false});
+
+    const auto encoded = w.encode();
+    reader r(encoded, encoding::der);
+
+    const auto of_items = r.read_sequence_of<choice_box>();
+    ASSERT_EQ(of_items.size(), 2u);
+    EXPECT_EQ(of_items[0], (choice_box{choice_box::kind::integer_alt, 5, false}));
+    EXPECT_EQ(of_items[1], (choice_box{choice_box::kind::boolean_alt, 0, true}));
+
+    EXPECT_TRUE(r.next_matches<choice_box>());
+    EXPECT_FALSE(r.next_matches<pair_box>());
+    EXPECT_EQ(r.read<choice_box>(), (choice_box{choice_box::kind::integer_alt, 9, false}));
+    EXPECT_TRUE(r.eof());
+
+    const auto round_trip = asn1kit::encode(items[1]);
+    EXPECT_EQ(asn1kit::decode<choice_box>(round_trip), items[1]);
 }
 
 TEST(ConstructedScopeTests, NextIs_And_ReadFromExplicit_Primitive) {

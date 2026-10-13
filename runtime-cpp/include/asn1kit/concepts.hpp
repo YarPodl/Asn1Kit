@@ -13,17 +13,18 @@ namespace asn1kit {
 class reader;
 class writer;
 
-/// Generated / structured ASN.1 type with static decode + default_tag.
+/// Generated / structured ASN.1 type with tag matching and natural/override decode.
 template <typename T>
 concept asn1_decodable = requires(reader& r, const tag& t) {
-    { T::default_tag() } -> std::convertible_to<tag>;
+    { T::match_tag(t) } -> std::convertible_to<bool>;
+    { T::decode(r) } -> std::convertible_to<T>;
     { T::decode(r, t) } -> std::convertible_to<T>;
 };
 
-/// Generated / structured ASN.1 type with instance encode + default_tag.
+/// Generated / structured ASN.1 type with natural and override encode.
 template <typename T>
 concept asn1_encodable = requires(const T& value, writer& w, const tag& t) {
-    { T::default_tag() } -> std::convertible_to<tag>;
+    { value.encode(w) } -> std::same_as<void>;
     { value.encode(w, t) } -> std::same_as<void>;
 };
 

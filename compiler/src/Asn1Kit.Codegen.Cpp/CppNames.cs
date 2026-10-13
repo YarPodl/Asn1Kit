@@ -18,7 +18,7 @@ internal static class CppNames
         "static_assert", "static_cast", "struct", "switch", "template", "this", "thread_local",
         "throw", "true", "try", "typedef", "typeid", "typename", "union", "unsigned", "using",
         "virtual", "void", "volatile", "wchar_t", "while", "xor", "xor_eq",
-        "encode", "decode", "default_tag", "kind", "value"
+        "encode", "decode", "decode_content", "encode_content", "match_tag", "kind", "value"
     };
 
     public static string SanitizeTypeName(string name)

@@ -57,11 +57,11 @@ struct GostR34102012PublicKeyParameters {
     asn1kit::oid publicKeyParamSet{};
     std::optional<asn1kit::oid> digestParamSet{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static GostR34102012PublicKeyParameters decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static GostR34102012PublicKeyParameters decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         GostR34102012PublicKeyParameters value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.publicKeyParamSet = inner.read_oid(asn1kit::tag::object_identifier);
@@ -72,7 +72,7 @@ struct GostR34102012PublicKeyParameters {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_object_identifier(asn1kit::tag::object_identifier, this->publicKeyParamSet);
         if (this->digestParamSet.has_value()) {

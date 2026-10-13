@@ -36,22 +36,22 @@ struct ProtectedPart {
     PKIHeader header{};
     PKIBody body{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static ProtectedPart decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static ProtectedPart decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         ProtectedPart value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.header = PKIHeader::decode(inner, asn1kit::tag::sequence);
+            value.header = PKIHeader::decode(inner);
             value.body = PKIBody::decode(inner);
         });
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
-        this->header.encode(w, asn1kit::tag::sequence);
+        this->header.encode(w);
         this->body.encode(w);
     }
 };

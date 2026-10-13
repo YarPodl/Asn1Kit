@@ -34,7 +34,7 @@ template <asn1_decodable T>
 [[nodiscard]] T decode_impl(
     std::span<const std::uint8_t> data, encoding enc, bool require_complete) {
     reader r(data, enc);
-    T value = T::decode(r, T::default_tag());
+    T value = T::decode(r);
     if (require_complete) {
         r.throw_if_not_empty();
     }
@@ -48,7 +48,7 @@ template <asn1_decodable T>
 template <asn1_encodable T>
 [[nodiscard]] std::vector<std::uint8_t> encode(const T& value, encoding enc = encoding::der) {
     writer w(enc);
-    value.encode(w, T::default_tag());
+    value.encode(w);
     return w.encode();
 }
 
@@ -62,7 +62,7 @@ template <asn1_encodable T>
     std::size_t& bytes_written,
     encoding enc = encoding::der) {
     writer w(enc);
-    value.encode(w, T::default_tag());
+    value.encode(w);
     return w.try_encode(destination, bytes_written);
 }
 

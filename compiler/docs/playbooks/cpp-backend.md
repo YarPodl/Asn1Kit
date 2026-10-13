@@ -17,8 +17,8 @@
 ## Сгенерированный контракт
 
 - Один `.hpp` на IR-модуль, header-only.
-- Именованные SEQUENCE/SET/CHOICE: `struct` с `default_tag()`, `decode(reader&, tag)`, `encode(writer&, tag) const` — concepts `asn1_decodable` / `asn1_encodable`.
-- OPTIONAL → `std::optional<T>`; OF → `std::vector<T>`; CHOICE → `enum class …_kind` + `std::variant` уникальных C++-типов; при единственном типе — обычное поле `value`.
+- Именованные SEQUENCE/SET/named BIT STRING: `struct` с `match_tag(tag)` и одним `decode(reader&, tag = natural)` / `encode(writer&, tag = natural) const` — concepts `asn1_decodable` / `asn1_encodable` (вызов без тега идёт через default). Untagged CHOICE: альтернативы в `decode(r)` / `encode(w)`, overload с тегом игнорирует `t`. Tagged CHOICE (`[APPLICATION n] CHOICE`): `decode_content` / `encode_content` + обёртка в натуральном `decode`/`encode`, чтобы `with_explicit` не снимал тег дважды.
+- OPTIONAL → `std::optional<T>` (`next_matches<T>()` для именованных типов без собственного тега поля, иначе `next_is`); OF → `std::vector<T>` (type-driven `read_*_of` / `write_*_of` без лямбды, когда элемент — typed generated/примитив без per-element tag); CHOICE → `enum class …_kind` + `std::variant` уникальных C++-типов; при единственном типе — обычное поле `value`.
 - `string` / `time` / `null` — явные `read_string` / `write_string` / `read_time` / `write_time` / `write_null` / `null_value::decode` (не type-driven примитивы).
 - Опции: `options.cpp.namespace`, `typeName`, `fieldName`; общие `aliasOf`, `generate`, `integer.representation`.
 - `any` → `asn1kit::any` (`read_any` / `write_any`; untagged OPTIONAL — через `eof()`).

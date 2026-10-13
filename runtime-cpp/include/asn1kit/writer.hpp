@@ -125,7 +125,11 @@ public:
 
     template <detail::typed_writable T>
     void write(const T& value) {
-        write_typed(value, detail::default_tag_for<T>());
+        if constexpr (asn1_encodable<T>) {
+            value.encode(*this);
+        } else {
+            write_typed(value, detail::default_tag_for<T>());
+        }
     }
 
     /// EXPLICIT wrapper around a typed value (generated type or primitive).
@@ -137,24 +141,24 @@ public:
 
     /// SEQUENCE OF / SET OF without a per-item lambda.
     template <std::ranges::input_range R>
-        requires asn1_encodable<std::ranges::range_value_t<R>>
+        requires detail::typed_writable<std::ranges::range_value_t<R>>
     void write_sequence_of(const tag& t, R&& items) {
         using element = std::ranges::range_value_t<R>;
         write_sequence_of(t, std::forward<R>(items), [](writer& w, const element& item) {
-            item.encode(w, element::default_tag());
+            w.write(item);
         });
     }
 
     template <std::ranges::input_range R>
-        requires asn1_encodable<std::ranges::range_value_t<R>>
+        requires detail::typed_writable<std::ranges::range_value_t<R>>
     void write_set_of(const tag& t, R&& items) {
         using element = std::ranges::range_value_t<R>;
         write_set_of(t, std::forward<R>(items), [](writer& w, const element& item) {
-            item.encode(w, element::default_tag());
+            w.write(item);
         });
     }
 
-    template <asn1_encodable T>
+    template <detail::typed_writable T>
     void write_sequence_of_to_explicit(const tag& wrapper, std::span<const T> items) {
         [[maybe_unused]] auto scope = enter_explicit(wrapper);
         write_sequence_of(tag::sequence, items);

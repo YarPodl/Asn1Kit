@@ -73,11 +73,11 @@ struct DSAParams {
     asn1kit::integer q{};
     asn1kit::integer g{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static DSAParams decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static DSAParams decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         DSAParams value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.p = inner.read_integer_value(asn1kit::tag::integer);
@@ -87,7 +87,7 @@ struct DSAParams {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_integer(asn1kit::tag::integer, this->p);
         w.write_integer(asn1kit::tag::integer, this->q);
@@ -99,11 +99,11 @@ struct DSASigValue {
     asn1kit::integer r{};
     asn1kit::integer s{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static DSASigValue decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static DSASigValue decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         DSASigValue value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.r = inner.read_integer_value(asn1kit::tag::integer);
@@ -112,7 +112,7 @@ struct DSASigValue {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_integer(asn1kit::tag::integer, this->r);
         w.write_integer(asn1kit::tag::integer, this->s);
@@ -123,11 +123,11 @@ struct ECDSASigValue {
     asn1kit::integer r{};
     asn1kit::integer s{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static ECDSASigValue decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static ECDSASigValue decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         ECDSASigValue value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.r = inner.read_integer_value(asn1kit::tag::integer);
@@ -136,7 +136,7 @@ struct ECDSASigValue {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_integer(asn1kit::tag::integer, this->r);
         w.write_integer(asn1kit::tag::integer, this->s);
@@ -147,11 +147,11 @@ struct RSAPublicKey {
     asn1kit::integer modulus{};
     asn1kit::integer publicExponent{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static RSAPublicKey decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static RSAPublicKey decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         RSAPublicKey value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.modulus = inner.read_integer_value(asn1kit::tag::integer);
@@ -160,7 +160,7 @@ struct RSAPublicKey {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_integer(asn1kit::tag::integer, this->modulus);
         w.write_integer(asn1kit::tag::integer, this->publicExponent);
@@ -171,11 +171,11 @@ struct ValidationParams {
     asn1kit::bit_string seed{};
     asn1kit::integer pgenCounter{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static ValidationParams decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static ValidationParams decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         ValidationParams value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.seed = inner.read_bit_string(asn1kit::tag::bit_string);
@@ -184,7 +184,7 @@ struct ValidationParams {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_bit_string(asn1kit::tag::bit_string, this->seed);
         w.write_integer(asn1kit::tag::integer, this->pgenCounter);
@@ -198,11 +198,11 @@ struct DomainParameters {
     std::optional<asn1kit::integer> j{};
     std::optional<ValidationParams> validationParams{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static DomainParameters decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static DomainParameters decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         DomainParameters value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.p = inner.read_integer_value(asn1kit::tag::integer);
@@ -211,14 +211,14 @@ struct DomainParameters {
             if (inner.next_is(asn1kit::tag::integer)) {
                 value.j = inner.read_integer_value(asn1kit::tag::integer);
             }
-            if (inner.next_is(asn1kit::tag::sequence)) {
-                value.validationParams = ValidationParams::decode(inner, asn1kit::tag::sequence);
+            if (inner.next_matches<ValidationParams>()) {
+                value.validationParams = ValidationParams::decode(inner);
             }
         });
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_integer(asn1kit::tag::integer, this->p);
         w.write_integer(asn1kit::tag::integer, this->g);
@@ -227,7 +227,7 @@ struct DomainParameters {
             w.write_integer(asn1kit::tag::integer, (*this->j));
         }
         if (this->validationParams.has_value()) {
-            (*this->validationParams).encode(w, asn1kit::tag::sequence);
+            (*this->validationParams).encode(w);
         }
     }
 };

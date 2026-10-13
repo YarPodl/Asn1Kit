@@ -58,14 +58,14 @@ struct CertID {
     asn1kit::bytes issuerKeyHash{};
     asn1kit::integer serialNumber{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static CertID decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static CertID decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         CertID value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.hashAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner, asn1kit::tag::sequence);
+            value.hashAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
             value.issuerNameHash = inner.read_octet_string(asn1kit::tag::octet_string);
             value.issuerKeyHash = inner.read_octet_string(asn1kit::tag::octet_string);
             value.serialNumber = inner.read_integer_value(asn1kit::tag::integer);
@@ -73,9 +73,9 @@ struct CertID {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
-        this->hashAlgorithm.encode(w, asn1kit::tag::sequence);
+        this->hashAlgorithm.encode(w);
         w.write_octet_string(asn1kit::tag::octet_string, this->issuerNameHash.span());
         w.write_octet_string(asn1kit::tag::octet_string, this->issuerKeyHash.span());
         w.write_integer(asn1kit::tag::integer, this->serialNumber);
@@ -87,11 +87,11 @@ struct CrlID {
     std::optional<asn1kit::integer> crlNum{};
     std::optional<asn1kit::utc_date_time> crlTime{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static CrlID decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static CrlID decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         CrlID value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             if (inner.next_is(asn1kit::tag::context(0, true))) {
@@ -119,7 +119,7 @@ struct CrlID {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         if (this->crlUrl.has_value()) {
             {
@@ -181,22 +181,18 @@ struct Request {
     CertID reqCert{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> singleRequestExtensions{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static Request decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static Request decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         Request value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.reqCert = CertID::decode(inner, asn1kit::tag::sequence);
+            value.reqCert = CertID::decode(inner);
             if (inner.next_is(asn1kit::tag::context(0, true))) {
                 std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension> tmp_singleRequestExtensions{};
                 inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
-                    tmp_singleRequestExtensions = scoped.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                        ::asn1kit::modern::PKIXCommonTypes2009::Extension item{};
-                        item = ::asn1kit::modern::PKIXCommonTypes2009::Extension::decode(inner, asn1kit::tag::sequence);
-                        return item;
-                    });
+                    tmp_singleRequestExtensions = scoped.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>(asn1kit::tag::sequence);
                 });
                 value.singleRequestExtensions = std::move(tmp_singleRequestExtensions);
             }
@@ -204,15 +200,13 @@ struct Request {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
-        this->reqCert.encode(w, asn1kit::tag::sequence);
+        this->reqCert.encode(w);
         if (this->singleRequestExtensions.has_value()) {
             {
                 auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
-                w.write_sequence_of(asn1kit::tag::sequence, (*this->singleRequestExtensions), [&](asn1kit::writer& inner, const auto& item) {
-                    item.encode(inner, asn1kit::tag::sequence);
-                });
+                w.write_sequence_of(asn1kit::tag::sequence, (*this->singleRequestExtensions));
             }
         }
     }
@@ -241,8 +235,8 @@ struct ResponderID {
         return result;
     }
 
-    static asn1kit::tag default_tag() {
-        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
+    static bool match_tag(const asn1kit::tag& t) {
+        return (t.matches_ignore_constructed(asn1kit::tag::context(1, true)) || t.matches_ignore_constructed(asn1kit::tag::context(2, true)));
     }
 
     static ResponderID decode(asn1kit::reader& r) {
@@ -256,11 +250,7 @@ struct ResponderID {
             r.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
                 tmp_byName = scoped.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
                     std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                    item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>(asn1kit::tag::set, [&](asn1kit::reader& inner) {
-                        ::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute item{};
-                        item = ::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute::decode(inner, asn1kit::tag::sequence);
-                        return item;
-                    });
+                    item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>(asn1kit::tag::set);
                     return item;
                 });
             });
@@ -296,9 +286,7 @@ struct ResponderID {
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(1, true));
                     w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
-                        inner.write_set_of(asn1kit::tag::set, item, [&](asn1kit::writer& inner, const auto& item) {
-                            item.encode(inner, asn1kit::tag::sequence);
-                        });
+                        inner.write_set_of(asn1kit::tag::set, item);
                     });
                 }
                 break;
@@ -325,11 +313,11 @@ struct ResponseBytes {
     asn1kit::oid responseType{};
     asn1kit::contained<asn1kit::any> response{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static ResponseBytes decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static ResponseBytes decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         ResponseBytes value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.responseType = inner.read_oid(asn1kit::tag::object_identifier);
@@ -342,7 +330,7 @@ struct ResponseBytes {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_object_identifier(asn1kit::tag::object_identifier, this->responseType);
         w.write_contained(asn1kit::tag::octet_string, false, this->response, [&](asn1kit::writer& inner, const auto& value) {
@@ -355,18 +343,18 @@ struct OCSPResponse {
     OCSPResponseStatus responseStatus{};
     std::optional<ResponseBytes> responseBytes{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static OCSPResponse decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static OCSPResponse decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         OCSPResponse value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.responseStatus = decode_OCSPResponseStatus(inner, asn1kit::tag::enumerated);
             if (inner.next_is(asn1kit::tag::context(0, true))) {
                 ResponseBytes tmp_responseBytes{};
                 inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
-                    tmp_responseBytes = ResponseBytes::decode(scoped, asn1kit::tag::sequence);
+                    tmp_responseBytes = ResponseBytes::decode(scoped);
                 });
                 value.responseBytes = std::move(tmp_responseBytes);
             }
@@ -374,13 +362,13 @@ struct OCSPResponse {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         encode_OCSPResponseStatus(w, this->responseStatus, asn1kit::tag::enumerated);
         if (this->responseBytes.has_value()) {
             {
                 auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
-                (*this->responseBytes).encode(w, asn1kit::tag::sequence);
+                (*this->responseBytes).encode(w);
             }
         }
     }
@@ -400,11 +388,11 @@ struct RevokedInfo {
     asn1kit::utc_date_time revocationTime{};
     std::optional<::asn1kit::modern::PKIX1Implicit2009::CRLReason> revocationReason{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static RevokedInfo decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static RevokedInfo decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         RevokedInfo value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.revocationTime = inner.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
@@ -419,7 +407,7 @@ struct RevokedInfo {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_time(asn1kit::tag::generalized_time, this->revocationTime, asn1kit::time_form::generalized, 3);
         if (this->revocationReason.has_value()) {
@@ -462,8 +450,8 @@ struct CertStatus {
         return result;
     }
 
-    static asn1kit::tag default_tag() {
-        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
+    static bool match_tag(const asn1kit::tag& t) {
+        return (t.matches_ignore_constructed(asn1kit::tag::context(0)) || t.matches_ignore_constructed(asn1kit::tag::context(1, true)) || t.matches_ignore_constructed(asn1kit::tag::context(2)));
     }
 
     static CertStatus decode(asn1kit::reader& r) {
@@ -533,41 +521,29 @@ struct ServiceLocator {
     std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> issuer{};
     std::vector<::asn1kit::modern::PKIX1Implicit2009::AccessDescription> locator{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static ServiceLocator decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static ServiceLocator decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         ServiceLocator value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.issuer = inner.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
                 std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>(asn1kit::tag::set, [&](asn1kit::reader& inner) {
-                    ::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute item{};
-                    item = ::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
+                item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>(asn1kit::tag::set);
                 return item;
             });
-            value.locator = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::AccessDescription>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                ::asn1kit::modern::PKIX1Implicit2009::AccessDescription item{};
-                item = ::asn1kit::modern::PKIX1Implicit2009::AccessDescription::decode(inner, asn1kit::tag::sequence);
-                return item;
-            });
+            value.locator = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::AccessDescription>(asn1kit::tag::sequence);
         });
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_sequence_of(asn1kit::tag::sequence, this->issuer, [&](asn1kit::writer& inner, const auto& item) {
-            inner.write_set_of(asn1kit::tag::set, item, [&](asn1kit::writer& inner, const auto& item) {
-                item.encode(inner, asn1kit::tag::sequence);
-            });
+            inner.write_set_of(asn1kit::tag::set, item);
         });
-        w.write_sequence_of(asn1kit::tag::sequence, this->locator, [&](asn1kit::writer& inner, const auto& item) {
-            item.encode(inner, asn1kit::tag::sequence);
-        });
+        w.write_sequence_of(asn1kit::tag::sequence, this->locator);
     }
 };
 
@@ -586,23 +562,19 @@ struct Signature {
     asn1kit::bit_string signature{};
     std::optional<std::vector<::asn1kit::modern::PKIX1Explicit2009::Certificate>> certs{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static Signature decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static Signature decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         Signature value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.signatureAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner, asn1kit::tag::sequence);
+            value.signatureAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
             value.signature = inner.read_bit_string(asn1kit::tag::bit_string);
             if (inner.next_is(asn1kit::tag::context(0, true))) {
                 std::vector<::asn1kit::modern::PKIX1Explicit2009::Certificate> tmp_certs{};
                 inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
-                    tmp_certs = scoped.read_sequence_of<::asn1kit::modern::PKIX1Explicit2009::Certificate>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                        ::asn1kit::modern::PKIX1Explicit2009::Certificate item{};
-                        item = ::asn1kit::modern::PKIX1Explicit2009::Certificate::decode(inner, asn1kit::tag::sequence);
-                        return item;
-                    });
+                    tmp_certs = scoped.read_sequence_of<::asn1kit::modern::PKIX1Explicit2009::Certificate>(asn1kit::tag::sequence);
                 });
                 value.certs = std::move(tmp_certs);
             }
@@ -610,16 +582,14 @@ struct Signature {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
-        this->signatureAlgorithm.encode(w, asn1kit::tag::sequence);
+        this->signatureAlgorithm.encode(w);
         w.write_bit_string(asn1kit::tag::bit_string, this->signature);
         if (this->certs.has_value()) {
             {
                 auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
-                w.write_sequence_of(asn1kit::tag::sequence, (*this->certs), [&](asn1kit::writer& inner, const auto& item) {
-                    item.encode(inner, asn1kit::tag::sequence);
-                });
+                w.write_sequence_of(asn1kit::tag::sequence, (*this->certs));
             }
         }
     }
@@ -632,14 +602,14 @@ struct SingleResponse {
     std::optional<asn1kit::utc_date_time> nextUpdate{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> singleExtensions{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static SingleResponse decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static SingleResponse decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         SingleResponse value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.certID = CertID::decode(inner, asn1kit::tag::sequence);
+            value.certID = CertID::decode(inner);
             value.certStatus = CertStatus::decode(inner);
             value.thisUpdate = inner.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
             if (inner.next_is(asn1kit::tag::context(0, true))) {
@@ -652,11 +622,7 @@ struct SingleResponse {
             if (inner.next_is(asn1kit::tag::context(1, true))) {
                 std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension> tmp_singleExtensions{};
                 inner.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
-                    tmp_singleExtensions = scoped.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                        ::asn1kit::modern::PKIXCommonTypes2009::Extension item{};
-                        item = ::asn1kit::modern::PKIXCommonTypes2009::Extension::decode(inner, asn1kit::tag::sequence);
-                        return item;
-                    });
+                    tmp_singleExtensions = scoped.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>(asn1kit::tag::sequence);
                 });
                 value.singleExtensions = std::move(tmp_singleExtensions);
             }
@@ -664,9 +630,9 @@ struct SingleResponse {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
-        this->certID.encode(w, asn1kit::tag::sequence);
+        this->certID.encode(w);
         this->certStatus.encode(w);
         w.write_time(asn1kit::tag::generalized_time, this->thisUpdate, asn1kit::time_form::generalized, 3);
         if (this->nextUpdate.has_value()) {
@@ -678,9 +644,7 @@ struct SingleResponse {
         if (this->singleExtensions.has_value()) {
             {
                 auto explicit_scope = w.enter_explicit(asn1kit::tag::context(1, true));
-                w.write_sequence_of(asn1kit::tag::sequence, (*this->singleExtensions), [&](asn1kit::writer& inner, const auto& item) {
-                    item.encode(inner, asn1kit::tag::sequence);
-                });
+                w.write_sequence_of(asn1kit::tag::sequence, (*this->singleExtensions));
             }
         }
     }
@@ -693,11 +657,11 @@ struct ResponseData {
     std::vector<SingleResponse> responses{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> responseExtensions{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static ResponseData decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static ResponseData decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         ResponseData value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             if (inner.next_is(asn1kit::tag::context(0, true))) {
@@ -712,19 +676,11 @@ struct ResponseData {
             }
             value.responderID = ResponderID::decode(inner);
             value.producedAt = inner.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
-            value.responses = inner.read_sequence_of<SingleResponse>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                SingleResponse item{};
-                item = SingleResponse::decode(inner, asn1kit::tag::sequence);
-                return item;
-            });
+            value.responses = inner.read_sequence_of<SingleResponse>(asn1kit::tag::sequence);
             if (inner.next_is(asn1kit::tag::context(1, true))) {
                 std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension> tmp_responseExtensions{};
                 inner.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
-                    tmp_responseExtensions = scoped.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                        ::asn1kit::modern::PKIXCommonTypes2009::Extension item{};
-                        item = ::asn1kit::modern::PKIXCommonTypes2009::Extension::decode(inner, asn1kit::tag::sequence);
-                        return item;
-                    });
+                    tmp_responseExtensions = scoped.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>(asn1kit::tag::sequence);
                 });
                 value.responseExtensions = std::move(tmp_responseExtensions);
             }
@@ -732,7 +688,7 @@ struct ResponseData {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         if (this->version != 0) {
             {
@@ -742,15 +698,11 @@ struct ResponseData {
         }
         this->responderID.encode(w);
         w.write_time(asn1kit::tag::generalized_time, this->producedAt, asn1kit::time_form::generalized, 3);
-        w.write_sequence_of(asn1kit::tag::sequence, this->responses, [&](asn1kit::writer& inner, const auto& item) {
-            item.encode(inner, asn1kit::tag::sequence);
-        });
+        w.write_sequence_of(asn1kit::tag::sequence, this->responses);
         if (this->responseExtensions.has_value()) {
             {
                 auto explicit_scope = w.enter_explicit(asn1kit::tag::context(1, true));
-                w.write_sequence_of(asn1kit::tag::sequence, (*this->responseExtensions), [&](asn1kit::writer& inner, const auto& item) {
-                    item.encode(inner, asn1kit::tag::sequence);
-                });
+                w.write_sequence_of(asn1kit::tag::sequence, (*this->responseExtensions));
             }
         }
     }
@@ -762,24 +714,20 @@ struct BasicOCSPResponse {
     asn1kit::bit_string signature{};
     std::optional<std::vector<::asn1kit::modern::PKIX1Explicit2009::Certificate>> certs{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static BasicOCSPResponse decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static BasicOCSPResponse decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         BasicOCSPResponse value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.tbsResponseData = ResponseData::decode(inner, asn1kit::tag::sequence);
-            value.signatureAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner, asn1kit::tag::sequence);
+            value.tbsResponseData = ResponseData::decode(inner);
+            value.signatureAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
             value.signature = inner.read_bit_string(asn1kit::tag::bit_string);
             if (inner.next_is(asn1kit::tag::context(0, true))) {
                 std::vector<::asn1kit::modern::PKIX1Explicit2009::Certificate> tmp_certs{};
                 inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
-                    tmp_certs = scoped.read_sequence_of<::asn1kit::modern::PKIX1Explicit2009::Certificate>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                        ::asn1kit::modern::PKIX1Explicit2009::Certificate item{};
-                        item = ::asn1kit::modern::PKIX1Explicit2009::Certificate::decode(inner, asn1kit::tag::sequence);
-                        return item;
-                    });
+                    tmp_certs = scoped.read_sequence_of<::asn1kit::modern::PKIX1Explicit2009::Certificate>(asn1kit::tag::sequence);
                 });
                 value.certs = std::move(tmp_certs);
             }
@@ -787,17 +735,15 @@ struct BasicOCSPResponse {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
-        this->tbsResponseData.encode(w, asn1kit::tag::sequence);
-        this->signatureAlgorithm.encode(w, asn1kit::tag::sequence);
+        this->tbsResponseData.encode(w);
+        this->signatureAlgorithm.encode(w);
         w.write_bit_string(asn1kit::tag::bit_string, this->signature);
         if (this->certs.has_value()) {
             {
                 auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
-                w.write_sequence_of(asn1kit::tag::sequence, (*this->certs), [&](asn1kit::writer& inner, const auto& item) {
-                    item.encode(inner, asn1kit::tag::sequence);
-                });
+                w.write_sequence_of(asn1kit::tag::sequence, (*this->certs));
             }
         }
     }
@@ -809,11 +755,11 @@ struct TBSRequest {
     std::vector<Request> requestList{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> requestExtensions{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static TBSRequest decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static TBSRequest decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         TBSRequest value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             if (inner.next_is(asn1kit::tag::context(0, true))) {
@@ -833,19 +779,11 @@ struct TBSRequest {
                 });
                 value.requestorName = std::move(tmp_requestorName);
             }
-            value.requestList = inner.read_sequence_of<Request>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                Request item{};
-                item = Request::decode(inner, asn1kit::tag::sequence);
-                return item;
-            });
+            value.requestList = inner.read_sequence_of<Request>(asn1kit::tag::sequence);
             if (inner.next_is(asn1kit::tag::context(2, true))) {
                 std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension> tmp_requestExtensions{};
                 inner.with_explicit(asn1kit::tag::context(2, true), [&](asn1kit::reader& scoped) {
-                    tmp_requestExtensions = scoped.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                        ::asn1kit::modern::PKIXCommonTypes2009::Extension item{};
-                        item = ::asn1kit::modern::PKIXCommonTypes2009::Extension::decode(inner, asn1kit::tag::sequence);
-                        return item;
-                    });
+                    tmp_requestExtensions = scoped.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>(asn1kit::tag::sequence);
                 });
                 value.requestExtensions = std::move(tmp_requestExtensions);
             }
@@ -853,7 +791,7 @@ struct TBSRequest {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         if (this->version != 0) {
             {
@@ -867,15 +805,11 @@ struct TBSRequest {
                 (*this->requestorName).encode(w);
             }
         }
-        w.write_sequence_of(asn1kit::tag::sequence, this->requestList, [&](asn1kit::writer& inner, const auto& item) {
-            item.encode(inner, asn1kit::tag::sequence);
-        });
+        w.write_sequence_of(asn1kit::tag::sequence, this->requestList);
         if (this->requestExtensions.has_value()) {
             {
                 auto explicit_scope = w.enter_explicit(asn1kit::tag::context(2, true));
-                w.write_sequence_of(asn1kit::tag::sequence, (*this->requestExtensions), [&](asn1kit::writer& inner, const auto& item) {
-                    item.encode(inner, asn1kit::tag::sequence);
-                });
+                w.write_sequence_of(asn1kit::tag::sequence, (*this->requestExtensions));
             }
         }
     }
@@ -885,18 +819,18 @@ struct OCSPRequest {
     TBSRequest tbsRequest{};
     std::optional<Signature> optionalSignature{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static OCSPRequest decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static OCSPRequest decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         OCSPRequest value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.tbsRequest = TBSRequest::decode(inner, asn1kit::tag::sequence);
+            value.tbsRequest = TBSRequest::decode(inner);
             if (inner.next_is(asn1kit::tag::context(0, true))) {
                 Signature tmp_optionalSignature{};
                 inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
-                    tmp_optionalSignature = Signature::decode(scoped, asn1kit::tag::sequence);
+                    tmp_optionalSignature = Signature::decode(scoped);
                 });
                 value.optionalSignature = std::move(tmp_optionalSignature);
             }
@@ -904,13 +838,13 @@ struct OCSPRequest {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
-        this->tbsRequest.encode(w, asn1kit::tag::sequence);
+        this->tbsRequest.encode(w);
         if (this->optionalSignature.has_value()) {
             {
                 auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
-                (*this->optionalSignature).encode(w, asn1kit::tag::sequence);
+                (*this->optionalSignature).encode(w);
             }
         }
     }

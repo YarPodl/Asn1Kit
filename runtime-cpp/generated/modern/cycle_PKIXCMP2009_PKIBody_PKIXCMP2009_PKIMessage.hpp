@@ -258,8 +258,8 @@ struct PKIBody {
         return result;
     }
 
-    static asn1kit::tag default_tag() {
-        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
+    static bool match_tag(const asn1kit::tag& t) {
+        return (t.matches_ignore_constructed(asn1kit::tag::context(0, true)) || t.matches_ignore_constructed(asn1kit::tag::context(1, true)) || t.matches_ignore_constructed(asn1kit::tag::context(2, true)) || t.matches_ignore_constructed(asn1kit::tag::context(3, true)) || t.matches_ignore_constructed(asn1kit::tag::context(4, true)) || t.matches_ignore_constructed(asn1kit::tag::context(5, true)) || t.matches_ignore_constructed(asn1kit::tag::context(6, true)) || t.matches_ignore_constructed(asn1kit::tag::context(7, true)) || t.matches_ignore_constructed(asn1kit::tag::context(8, true)) || t.matches_ignore_constructed(asn1kit::tag::context(9, true)) || t.matches_ignore_constructed(asn1kit::tag::context(10, true)) || t.matches_ignore_constructed(asn1kit::tag::context(11, true)) || t.matches_ignore_constructed(asn1kit::tag::context(12, true)) || t.matches_ignore_constructed(asn1kit::tag::context(13, true)) || t.matches_ignore_constructed(asn1kit::tag::context(14, true)) || t.matches_ignore_constructed(asn1kit::tag::context(15, true)) || t.matches_ignore_constructed(asn1kit::tag::context(16, true)) || t.matches_ignore_constructed(asn1kit::tag::context(17, true)) || t.matches_ignore_constructed(asn1kit::tag::context(18, true)) || t.matches_ignore_constructed(asn1kit::tag::context(19, true)) || t.matches_ignore_constructed(asn1kit::tag::context(20, true)) || t.matches_ignore_constructed(asn1kit::tag::context(21, true)) || t.matches_ignore_constructed(asn1kit::tag::context(22, true)) || t.matches_ignore_constructed(asn1kit::tag::context(23, true)) || t.matches_ignore_constructed(asn1kit::tag::context(24, true)) || t.matches_ignore_constructed(asn1kit::tag::context(25, true)) || t.matches_ignore_constructed(asn1kit::tag::context(26, true)));
     }
 
     static PKIBody decode(asn1kit::reader& r) {
@@ -271,11 +271,7 @@ struct PKIBody {
             std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> alt{};
             std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> tmp_ir{};
             r.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
-                tmp_ir = scoped.read_sequence_of<::asn1kit::modern::PKIXCRMF2009::CertReqMsg>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    ::asn1kit::modern::PKIXCRMF2009::CertReqMsg item{};
-                    item = ::asn1kit::modern::PKIXCRMF2009::CertReqMsg::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
+                tmp_ir = scoped.read_sequence_of<::asn1kit::modern::PKIXCRMF2009::CertReqMsg>(asn1kit::tag::sequence);
             });
             alt = std::move(tmp_ir);
             result.value.emplace<0>(std::move(alt));
@@ -286,7 +282,7 @@ struct PKIBody {
             CertRepMessage alt{};
             CertRepMessage tmp_ip{};
             r.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
-                tmp_ip = CertRepMessage::decode(scoped, asn1kit::tag::sequence);
+                tmp_ip = CertRepMessage::decode(scoped);
             });
             alt = std::move(tmp_ip);
             result.value.emplace<1>(std::move(alt));
@@ -297,11 +293,7 @@ struct PKIBody {
             std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> alt{};
             std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> tmp_cr{};
             r.with_explicit(asn1kit::tag::context(2, true), [&](asn1kit::reader& scoped) {
-                tmp_cr = scoped.read_sequence_of<::asn1kit::modern::PKIXCRMF2009::CertReqMsg>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    ::asn1kit::modern::PKIXCRMF2009::CertReqMsg item{};
-                    item = ::asn1kit::modern::PKIXCRMF2009::CertReqMsg::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
+                tmp_cr = scoped.read_sequence_of<::asn1kit::modern::PKIXCRMF2009::CertReqMsg>(asn1kit::tag::sequence);
             });
             alt = std::move(tmp_cr);
             result.value.emplace<0>(std::move(alt));
@@ -312,7 +304,7 @@ struct PKIBody {
             CertRepMessage alt{};
             CertRepMessage tmp_cp{};
             r.with_explicit(asn1kit::tag::context(3, true), [&](asn1kit::reader& scoped) {
-                tmp_cp = CertRepMessage::decode(scoped, asn1kit::tag::sequence);
+                tmp_cp = CertRepMessage::decode(scoped);
             });
             alt = std::move(tmp_cp);
             result.value.emplace<1>(std::move(alt));
@@ -323,7 +315,7 @@ struct PKIBody {
             ::asn1kit::modern::EnrollmentMessageSyntax2009::CertificationRequest alt{};
             ::asn1kit::modern::EnrollmentMessageSyntax2009::CertificationRequest tmp_p10cr{};
             r.with_explicit(asn1kit::tag::context(4, true), [&](asn1kit::reader& scoped) {
-                tmp_p10cr = ::asn1kit::modern::EnrollmentMessageSyntax2009::CertificationRequest::decode(scoped, asn1kit::tag::sequence);
+                tmp_p10cr = ::asn1kit::modern::EnrollmentMessageSyntax2009::CertificationRequest::decode(scoped);
             });
             alt = std::move(tmp_p10cr);
             result.value.emplace<2>(std::move(alt));
@@ -334,11 +326,7 @@ struct PKIBody {
             std::vector<Challenge> alt{};
             std::vector<Challenge> tmp_popdecc{};
             r.with_explicit(asn1kit::tag::context(5, true), [&](asn1kit::reader& scoped) {
-                tmp_popdecc = scoped.read_sequence_of<Challenge>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    Challenge item{};
-                    item = Challenge::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
+                tmp_popdecc = scoped.read_sequence_of<Challenge>(asn1kit::tag::sequence);
             });
             alt = std::move(tmp_popdecc);
             result.value.emplace<3>(std::move(alt));
@@ -349,11 +337,7 @@ struct PKIBody {
             std::vector<asn1kit::integer> alt{};
             std::vector<asn1kit::integer> tmp_popdecr{};
             r.with_explicit(asn1kit::tag::context(6, true), [&](asn1kit::reader& scoped) {
-                tmp_popdecr = scoped.read_sequence_of<asn1kit::integer>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    asn1kit::integer item{};
-                    item = inner.read_integer_value(asn1kit::tag::integer);
-                    return item;
-                });
+                tmp_popdecr = scoped.read_sequence_of<asn1kit::integer>(asn1kit::tag::sequence);
             });
             alt = std::move(tmp_popdecr);
             result.value.emplace<4>(std::move(alt));
@@ -364,11 +348,7 @@ struct PKIBody {
             std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> alt{};
             std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> tmp_kur{};
             r.with_explicit(asn1kit::tag::context(7, true), [&](asn1kit::reader& scoped) {
-                tmp_kur = scoped.read_sequence_of<::asn1kit::modern::PKIXCRMF2009::CertReqMsg>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    ::asn1kit::modern::PKIXCRMF2009::CertReqMsg item{};
-                    item = ::asn1kit::modern::PKIXCRMF2009::CertReqMsg::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
+                tmp_kur = scoped.read_sequence_of<::asn1kit::modern::PKIXCRMF2009::CertReqMsg>(asn1kit::tag::sequence);
             });
             alt = std::move(tmp_kur);
             result.value.emplace<0>(std::move(alt));
@@ -379,7 +359,7 @@ struct PKIBody {
             CertRepMessage alt{};
             CertRepMessage tmp_kup{};
             r.with_explicit(asn1kit::tag::context(8, true), [&](asn1kit::reader& scoped) {
-                tmp_kup = CertRepMessage::decode(scoped, asn1kit::tag::sequence);
+                tmp_kup = CertRepMessage::decode(scoped);
             });
             alt = std::move(tmp_kup);
             result.value.emplace<1>(std::move(alt));
@@ -390,11 +370,7 @@ struct PKIBody {
             std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> alt{};
             std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> tmp_krr{};
             r.with_explicit(asn1kit::tag::context(9, true), [&](asn1kit::reader& scoped) {
-                tmp_krr = scoped.read_sequence_of<::asn1kit::modern::PKIXCRMF2009::CertReqMsg>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    ::asn1kit::modern::PKIXCRMF2009::CertReqMsg item{};
-                    item = ::asn1kit::modern::PKIXCRMF2009::CertReqMsg::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
+                tmp_krr = scoped.read_sequence_of<::asn1kit::modern::PKIXCRMF2009::CertReqMsg>(asn1kit::tag::sequence);
             });
             alt = std::move(tmp_krr);
             result.value.emplace<0>(std::move(alt));
@@ -405,7 +381,7 @@ struct PKIBody {
             KeyRecRepContent alt{};
             KeyRecRepContent tmp_krp{};
             r.with_explicit(asn1kit::tag::context(10, true), [&](asn1kit::reader& scoped) {
-                tmp_krp = KeyRecRepContent::decode(scoped, asn1kit::tag::sequence);
+                tmp_krp = KeyRecRepContent::decode(scoped);
             });
             alt = std::move(tmp_krp);
             result.value.emplace<5>(std::move(alt));
@@ -416,11 +392,7 @@ struct PKIBody {
             std::vector<RevDetails> alt{};
             std::vector<RevDetails> tmp_rr{};
             r.with_explicit(asn1kit::tag::context(11, true), [&](asn1kit::reader& scoped) {
-                tmp_rr = scoped.read_sequence_of<RevDetails>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    RevDetails item{};
-                    item = RevDetails::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
+                tmp_rr = scoped.read_sequence_of<RevDetails>(asn1kit::tag::sequence);
             });
             alt = std::move(tmp_rr);
             result.value.emplace<6>(std::move(alt));
@@ -431,7 +403,7 @@ struct PKIBody {
             RevRepContent alt{};
             RevRepContent tmp_rp{};
             r.with_explicit(asn1kit::tag::context(12, true), [&](asn1kit::reader& scoped) {
-                tmp_rp = RevRepContent::decode(scoped, asn1kit::tag::sequence);
+                tmp_rp = RevRepContent::decode(scoped);
             });
             alt = std::move(tmp_rp);
             result.value.emplace<7>(std::move(alt));
@@ -442,11 +414,7 @@ struct PKIBody {
             std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> alt{};
             std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> tmp_ccr{};
             r.with_explicit(asn1kit::tag::context(13, true), [&](asn1kit::reader& scoped) {
-                tmp_ccr = scoped.read_sequence_of<::asn1kit::modern::PKIXCRMF2009::CertReqMsg>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    ::asn1kit::modern::PKIXCRMF2009::CertReqMsg item{};
-                    item = ::asn1kit::modern::PKIXCRMF2009::CertReqMsg::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
+                tmp_ccr = scoped.read_sequence_of<::asn1kit::modern::PKIXCRMF2009::CertReqMsg>(asn1kit::tag::sequence);
             });
             alt = std::move(tmp_ccr);
             result.value.emplace<0>(std::move(alt));
@@ -457,7 +425,7 @@ struct PKIBody {
             CertRepMessage alt{};
             CertRepMessage tmp_ccp{};
             r.with_explicit(asn1kit::tag::context(14, true), [&](asn1kit::reader& scoped) {
-                tmp_ccp = CertRepMessage::decode(scoped, asn1kit::tag::sequence);
+                tmp_ccp = CertRepMessage::decode(scoped);
             });
             alt = std::move(tmp_ccp);
             result.value.emplace<1>(std::move(alt));
@@ -468,7 +436,7 @@ struct PKIBody {
             CAKeyUpdAnnContent alt{};
             CAKeyUpdAnnContent tmp_ckuann{};
             r.with_explicit(asn1kit::tag::context(15, true), [&](asn1kit::reader& scoped) {
-                tmp_ckuann = CAKeyUpdAnnContent::decode(scoped, asn1kit::tag::sequence);
+                tmp_ckuann = CAKeyUpdAnnContent::decode(scoped);
             });
             alt = std::move(tmp_ckuann);
             result.value.emplace<8>(std::move(alt));
@@ -490,7 +458,7 @@ struct PKIBody {
             RevAnnContent alt{};
             RevAnnContent tmp_rann{};
             r.with_explicit(asn1kit::tag::context(17, true), [&](asn1kit::reader& scoped) {
-                tmp_rann = RevAnnContent::decode(scoped, asn1kit::tag::sequence);
+                tmp_rann = RevAnnContent::decode(scoped);
             });
             alt = std::move(tmp_rann);
             result.value.emplace<10>(std::move(alt));
@@ -501,11 +469,7 @@ struct PKIBody {
             std::vector<::asn1kit::modern::PKIX1Explicit2009::CertificateList> alt{};
             std::vector<::asn1kit::modern::PKIX1Explicit2009::CertificateList> tmp_crlann{};
             r.with_explicit(asn1kit::tag::context(18, true), [&](asn1kit::reader& scoped) {
-                tmp_crlann = scoped.read_sequence_of<::asn1kit::modern::PKIX1Explicit2009::CertificateList>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    ::asn1kit::modern::PKIX1Explicit2009::CertificateList item{};
-                    item = ::asn1kit::modern::PKIX1Explicit2009::CertificateList::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
+                tmp_crlann = scoped.read_sequence_of<::asn1kit::modern::PKIX1Explicit2009::CertificateList>(asn1kit::tag::sequence);
             });
             alt = std::move(tmp_crlann);
             result.value.emplace<11>(std::move(alt));
@@ -527,11 +491,7 @@ struct PKIBody {
             std::vector<PKIMessage> alt{};
             std::vector<PKIMessage> tmp_nested{};
             r.with_explicit(asn1kit::tag::context(20, true), [&](asn1kit::reader& scoped) {
-                tmp_nested = scoped.read_sequence_of<PKIMessage>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    PKIMessage item{};
-                    item = PKIMessage::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
+                tmp_nested = scoped.read_sequence_of<PKIMessage>(asn1kit::tag::sequence);
             });
             alt = std::move(tmp_nested);
             result.value.emplace<13>(std::move(alt));
@@ -542,11 +502,7 @@ struct PKIBody {
             std::vector<InfoTypeAndValue> alt{};
             std::vector<InfoTypeAndValue> tmp_genm{};
             r.with_explicit(asn1kit::tag::context(21, true), [&](asn1kit::reader& scoped) {
-                tmp_genm = scoped.read_sequence_of<InfoTypeAndValue>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    InfoTypeAndValue item{};
-                    item = InfoTypeAndValue::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
+                tmp_genm = scoped.read_sequence_of<InfoTypeAndValue>(asn1kit::tag::sequence);
             });
             alt = std::move(tmp_genm);
             result.value.emplace<14>(std::move(alt));
@@ -557,11 +513,7 @@ struct PKIBody {
             std::vector<InfoTypeAndValue> alt{};
             std::vector<InfoTypeAndValue> tmp_genp{};
             r.with_explicit(asn1kit::tag::context(22, true), [&](asn1kit::reader& scoped) {
-                tmp_genp = scoped.read_sequence_of<InfoTypeAndValue>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    InfoTypeAndValue item{};
-                    item = InfoTypeAndValue::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
+                tmp_genp = scoped.read_sequence_of<InfoTypeAndValue>(asn1kit::tag::sequence);
             });
             alt = std::move(tmp_genp);
             result.value.emplace<14>(std::move(alt));
@@ -572,7 +524,7 @@ struct PKIBody {
             ErrorMsgContent alt{};
             ErrorMsgContent tmp_error{};
             r.with_explicit(asn1kit::tag::context(23, true), [&](asn1kit::reader& scoped) {
-                tmp_error = ErrorMsgContent::decode(scoped, asn1kit::tag::sequence);
+                tmp_error = ErrorMsgContent::decode(scoped);
             });
             alt = std::move(tmp_error);
             result.value.emplace<15>(std::move(alt));
@@ -583,11 +535,7 @@ struct PKIBody {
             std::vector<CertStatus> alt{};
             std::vector<CertStatus> tmp_certConf{};
             r.with_explicit(asn1kit::tag::context(24, true), [&](asn1kit::reader& scoped) {
-                tmp_certConf = scoped.read_sequence_of<CertStatus>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    CertStatus item{};
-                    item = CertStatus::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
+                tmp_certConf = scoped.read_sequence_of<CertStatus>(asn1kit::tag::sequence);
             });
             alt = std::move(tmp_certConf);
             result.value.emplace<16>(std::move(alt));
@@ -598,11 +546,7 @@ struct PKIBody {
             std::vector<PollReqContent_Item> alt{};
             std::vector<PKIBody_PollReq_Item> tmp_pollReq{};
             r.with_explicit(asn1kit::tag::context(25, true), [&](asn1kit::reader& scoped) {
-                tmp_pollReq = scoped.read_sequence_of<PKIBody_PollReq_Item>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    PKIBody_PollReq_Item item{};
-                    item = PKIBody_PollReq_Item::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
+                tmp_pollReq = scoped.read_sequence_of<PKIBody_PollReq_Item>(asn1kit::tag::sequence);
             });
             alt = std::move(tmp_pollReq);
             result.value.emplace<17>(std::move(alt));
@@ -613,11 +557,7 @@ struct PKIBody {
             std::vector<PollRepContent_Item> alt{};
             std::vector<PKIBody_PollRep_Item> tmp_pollRep{};
             r.with_explicit(asn1kit::tag::context(26, true), [&](asn1kit::reader& scoped) {
-                tmp_pollRep = scoped.read_sequence_of<PKIBody_PollRep_Item>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    PKIBody_PollRep_Item item{};
-                    item = PKIBody_PollRep_Item::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
+                tmp_pollRep = scoped.read_sequence_of<PKIBody_PollRep_Item>(asn1kit::tag::sequence);
             });
             alt = std::move(tmp_pollRep);
             result.value.emplace<18>(std::move(alt));
@@ -639,9 +579,7 @@ struct PKIBody {
                 const auto& alt = std::get<0>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
-                    w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
-                        item.encode(inner, asn1kit::tag::sequence);
-                    });
+                    w.write_sequence_of(asn1kit::tag::sequence, alt);
                 }
                 break;
             }
@@ -650,7 +588,7 @@ struct PKIBody {
                 const auto& alt = std::get<1>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(1, true));
-                    alt.encode(w, asn1kit::tag::sequence);
+                    alt.encode(w);
                 }
                 break;
             }
@@ -659,9 +597,7 @@ struct PKIBody {
                 const auto& alt = std::get<0>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(2, true));
-                    w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
-                        item.encode(inner, asn1kit::tag::sequence);
-                    });
+                    w.write_sequence_of(asn1kit::tag::sequence, alt);
                 }
                 break;
             }
@@ -670,7 +606,7 @@ struct PKIBody {
                 const auto& alt = std::get<1>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(3, true));
-                    alt.encode(w, asn1kit::tag::sequence);
+                    alt.encode(w);
                 }
                 break;
             }
@@ -679,7 +615,7 @@ struct PKIBody {
                 const auto& alt = std::get<2>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(4, true));
-                    alt.encode(w, asn1kit::tag::sequence);
+                    alt.encode(w);
                 }
                 break;
             }
@@ -688,9 +624,7 @@ struct PKIBody {
                 const auto& alt = std::get<3>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(5, true));
-                    w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
-                        item.encode(inner, asn1kit::tag::sequence);
-                    });
+                    w.write_sequence_of(asn1kit::tag::sequence, alt);
                 }
                 break;
             }
@@ -699,9 +633,7 @@ struct PKIBody {
                 const auto& alt = std::get<4>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(6, true));
-                    w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
-                        inner.write_integer(asn1kit::tag::integer, item);
-                    });
+                    w.write_sequence_of(asn1kit::tag::sequence, alt);
                 }
                 break;
             }
@@ -710,9 +642,7 @@ struct PKIBody {
                 const auto& alt = std::get<0>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(7, true));
-                    w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
-                        item.encode(inner, asn1kit::tag::sequence);
-                    });
+                    w.write_sequence_of(asn1kit::tag::sequence, alt);
                 }
                 break;
             }
@@ -721,7 +651,7 @@ struct PKIBody {
                 const auto& alt = std::get<1>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(8, true));
-                    alt.encode(w, asn1kit::tag::sequence);
+                    alt.encode(w);
                 }
                 break;
             }
@@ -730,9 +660,7 @@ struct PKIBody {
                 const auto& alt = std::get<0>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(9, true));
-                    w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
-                        item.encode(inner, asn1kit::tag::sequence);
-                    });
+                    w.write_sequence_of(asn1kit::tag::sequence, alt);
                 }
                 break;
             }
@@ -741,7 +669,7 @@ struct PKIBody {
                 const auto& alt = std::get<5>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(10, true));
-                    alt.encode(w, asn1kit::tag::sequence);
+                    alt.encode(w);
                 }
                 break;
             }
@@ -750,9 +678,7 @@ struct PKIBody {
                 const auto& alt = std::get<6>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(11, true));
-                    w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
-                        item.encode(inner, asn1kit::tag::sequence);
-                    });
+                    w.write_sequence_of(asn1kit::tag::sequence, alt);
                 }
                 break;
             }
@@ -761,7 +687,7 @@ struct PKIBody {
                 const auto& alt = std::get<7>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(12, true));
-                    alt.encode(w, asn1kit::tag::sequence);
+                    alt.encode(w);
                 }
                 break;
             }
@@ -770,9 +696,7 @@ struct PKIBody {
                 const auto& alt = std::get<0>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(13, true));
-                    w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
-                        item.encode(inner, asn1kit::tag::sequence);
-                    });
+                    w.write_sequence_of(asn1kit::tag::sequence, alt);
                 }
                 break;
             }
@@ -781,7 +705,7 @@ struct PKIBody {
                 const auto& alt = std::get<1>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(14, true));
-                    alt.encode(w, asn1kit::tag::sequence);
+                    alt.encode(w);
                 }
                 break;
             }
@@ -790,7 +714,7 @@ struct PKIBody {
                 const auto& alt = std::get<8>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(15, true));
-                    alt.encode(w, asn1kit::tag::sequence);
+                    alt.encode(w);
                 }
                 break;
             }
@@ -808,7 +732,7 @@ struct PKIBody {
                 const auto& alt = std::get<10>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(17, true));
-                    alt.encode(w, asn1kit::tag::sequence);
+                    alt.encode(w);
                 }
                 break;
             }
@@ -817,9 +741,7 @@ struct PKIBody {
                 const auto& alt = std::get<11>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(18, true));
-                    w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
-                        item.encode(inner, asn1kit::tag::sequence);
-                    });
+                    w.write_sequence_of(asn1kit::tag::sequence, alt);
                 }
                 break;
             }
@@ -837,9 +759,7 @@ struct PKIBody {
                 const auto& alt = std::get<13>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(20, true));
-                    w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
-                        item.encode(inner, asn1kit::tag::sequence);
-                    });
+                    w.write_sequence_of(asn1kit::tag::sequence, alt);
                 }
                 break;
             }
@@ -848,9 +768,7 @@ struct PKIBody {
                 const auto& alt = std::get<14>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(21, true));
-                    w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
-                        item.encode(inner, asn1kit::tag::sequence);
-                    });
+                    w.write_sequence_of(asn1kit::tag::sequence, alt);
                 }
                 break;
             }
@@ -859,9 +777,7 @@ struct PKIBody {
                 const auto& alt = std::get<14>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(22, true));
-                    w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
-                        item.encode(inner, asn1kit::tag::sequence);
-                    });
+                    w.write_sequence_of(asn1kit::tag::sequence, alt);
                 }
                 break;
             }
@@ -870,7 +786,7 @@ struct PKIBody {
                 const auto& alt = std::get<15>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(23, true));
-                    alt.encode(w, asn1kit::tag::sequence);
+                    alt.encode(w);
                 }
                 break;
             }
@@ -879,9 +795,7 @@ struct PKIBody {
                 const auto& alt = std::get<16>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(24, true));
-                    w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
-                        item.encode(inner, asn1kit::tag::sequence);
-                    });
+                    w.write_sequence_of(asn1kit::tag::sequence, alt);
                 }
                 break;
             }
@@ -890,9 +804,7 @@ struct PKIBody {
                 const auto& alt = std::get<17>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(25, true));
-                    w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
-                        item.encode(inner, asn1kit::tag::sequence);
-                    });
+                    w.write_sequence_of(asn1kit::tag::sequence, alt);
                 }
                 break;
             }
@@ -901,9 +813,7 @@ struct PKIBody {
                 const auto& alt = std::get<18>(value);
                 {
                     auto explicit_scope = w.enter_explicit(asn1kit::tag::context(26, true));
-                    w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
-                        item.encode(inner, asn1kit::tag::sequence);
-                    });
+                    w.write_sequence_of(asn1kit::tag::sequence, alt);
                 }
                 break;
             }
@@ -922,14 +832,14 @@ struct PKIMessage {
     std::optional<asn1kit::bit_string> protection{};
     std::optional<std::vector<CMPCertificate>> extraCerts{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static PKIMessage decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static PKIMessage decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         PKIMessage value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.header = PKIHeader::decode(inner, asn1kit::tag::sequence);
+            value.header = PKIHeader::decode(inner);
             value.body = PKIBody::decode(inner);
             if (inner.next_is(asn1kit::tag::context(0, true))) {
                 asn1kit::bit_string tmp_protection{};
@@ -941,11 +851,7 @@ struct PKIMessage {
             if (inner.next_is(asn1kit::tag::context(1, true))) {
                 std::vector<CMPCertificate> tmp_extraCerts{};
                 inner.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
-                    tmp_extraCerts = scoped.read_sequence_of<CMPCertificate>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                        CMPCertificate item{};
-                        item = CMPCertificate::decode(inner);
-                        return item;
-                    });
+                    tmp_extraCerts = scoped.read_sequence_of<CMPCertificate>(asn1kit::tag::sequence);
                 });
                 value.extraCerts = std::move(tmp_extraCerts);
             }
@@ -953,9 +859,9 @@ struct PKIMessage {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
-        this->header.encode(w, asn1kit::tag::sequence);
+        this->header.encode(w);
         this->body.encode(w);
         if (this->protection.has_value()) {
             {
@@ -966,9 +872,7 @@ struct PKIMessage {
         if (this->extraCerts.has_value()) {
             {
                 auto explicit_scope = w.enter_explicit(asn1kit::tag::context(1, true));
-                w.write_sequence_of(asn1kit::tag::sequence, (*this->extraCerts), [&](asn1kit::writer& inner, const auto& item) {
-                    item.encode(inner);
-                });
+                w.write_sequence_of(asn1kit::tag::sequence, (*this->extraCerts));
             }
         }
     }

@@ -104,7 +104,7 @@ struct open_wire_ops<asn_time<Form, FractionDigits>> {
 template <typename T>
 void encode_open_value(writer& w, T& value) {
     if constexpr (asn1_encodable<T>) {
-        value.encode(w, T::default_tag());
+        value.encode(w);
     } else if constexpr (std::is_same_v<T, null_value>) {
         null_value::encode(w, tag::null);
     } else if constexpr (std::is_same_v<T, any>) {
@@ -119,7 +119,7 @@ void encode_open_value(writer& w, T& value) {
 template <typename T>
 [[nodiscard]] T decode_open_value(reader& r) {
     if constexpr (asn1_decodable<T>) {
-        return T::decode(r, T::default_tag());
+        return T::decode(r);
     } else if constexpr (std::is_same_v<T, null_value>) {
         return null_value::decode(r, tag::null);
     } else if constexpr (std::is_same_v<T, any>) {

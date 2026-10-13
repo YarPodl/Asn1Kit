@@ -31,11 +31,11 @@ struct Bag {
     asn1kit::integer a{};
     std::optional<bool> b{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::set;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::set);
     }
 
-    static Bag decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static Bag decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::set) {
         Bag value{};
         r.with_set(t, [&](asn1kit::reader& inner) {
             bool seen_a = false;
@@ -60,7 +60,7 @@ struct Bag {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::set) const {
         auto scope = w.enter_set_of(t);
         w.write_integer(asn1kit::tag::context(0), this->a);
         if (this->b.has_value()) {
@@ -75,11 +75,11 @@ struct Box {
     std::optional<asn1kit::null_value> flag{};
     std::optional<asn1kit::bytes> tail{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static Box decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static Box decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         Box value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.root = inner.read_integer_value(asn1kit::tag::context(0));
@@ -111,7 +111,7 @@ struct Box {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         if ((this->mid.has_value() || this->flag.has_value()) && (!this->mid.has_value())) throw asn1kit::exception("Incomplete extension group 2.");
         w.write_integer(asn1kit::tag::context(0), this->root);
@@ -151,8 +151,8 @@ struct Pick {
         return result;
     }
 
-    static asn1kit::tag default_tag() {
-        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::context(0));
     }
 
     static Pick decode(asn1kit::reader& r) {

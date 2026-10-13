@@ -28,11 +28,10 @@ concept typed_readable = asn1_decodable<T> || is_typed_primitive_v<T>;
 template <typename T>
 concept typed_writable = asn1_encodable<T> || is_typed_primitive_v<T>;
 
+/// Universal tag for typed primitives (not used for generated `asn1_decodable` types).
 template <typename T>
 [[nodiscard]] tag default_tag_for() {
-    if constexpr (requires { T::default_tag(); }) {
-        return T::default_tag();
-    } else if constexpr (std::is_same_v<T, bool>) {
+    if constexpr (std::is_same_v<T, bool>) {
         return tag::boolean;
     } else if constexpr (
         std::is_same_v<T, std::int32_t> || std::is_same_v<T, std::uint32_t>

@@ -52,62 +52,44 @@ struct AuthEnvelopedData {
     asn1kit::bytes mac{};
     std::optional<std::vector<::asn1kit::modern::CryptographicMessageSyntax2009::Attribute>> unauthAttrs{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static AuthEnvelopedData decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static AuthEnvelopedData decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         AuthEnvelopedData value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.version = inner.read_int32(asn1kit::tag::integer);
             if (inner.next_is(asn1kit::tag::context(0, true))) {
                 value.originatorInfo = ::asn1kit::modern::CryptographicMessageSyntax2009::OriginatorInfo::decode(inner, asn1kit::tag::context(0, true));
             }
-            value.recipientInfos = inner.read_set_of<::asn1kit::modern::CryptographicMessageSyntax2009::RecipientInfo>(asn1kit::tag::set, [&](asn1kit::reader& inner) {
-                ::asn1kit::modern::CryptographicMessageSyntax2009::RecipientInfo item{};
-                item = ::asn1kit::modern::CryptographicMessageSyntax2009::RecipientInfo::decode(inner);
-                return item;
-            });
-            value.authEncryptedContentInfo = ::asn1kit::modern::CryptographicMessageSyntax2009::EncryptedContentInfo::decode(inner, asn1kit::tag::sequence);
+            value.recipientInfos = inner.read_set_of<::asn1kit::modern::CryptographicMessageSyntax2009::RecipientInfo>(asn1kit::tag::set);
+            value.authEncryptedContentInfo = ::asn1kit::modern::CryptographicMessageSyntax2009::EncryptedContentInfo::decode(inner);
             if (inner.next_is(asn1kit::tag::context(1, true))) {
-                value.authAttrs = inner.read_set_of<::asn1kit::modern::CryptographicMessageSyntax2009::Attribute>(asn1kit::tag::context(1, true), [&](asn1kit::reader& inner) {
-                    ::asn1kit::modern::CryptographicMessageSyntax2009::Attribute item{};
-                    item = ::asn1kit::modern::CryptographicMessageSyntax2009::Attribute::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
+                value.authAttrs = inner.read_set_of<::asn1kit::modern::CryptographicMessageSyntax2009::Attribute>(asn1kit::tag::context(1, true));
             }
             value.mac = inner.read_octet_string(asn1kit::tag::octet_string);
             if (inner.next_is(asn1kit::tag::context(2, true))) {
-                value.unauthAttrs = inner.read_set_of<::asn1kit::modern::CryptographicMessageSyntax2009::Attribute>(asn1kit::tag::context(2, true), [&](asn1kit::reader& inner) {
-                    ::asn1kit::modern::CryptographicMessageSyntax2009::Attribute item{};
-                    item = ::asn1kit::modern::CryptographicMessageSyntax2009::Attribute::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
+                value.unauthAttrs = inner.read_set_of<::asn1kit::modern::CryptographicMessageSyntax2009::Attribute>(asn1kit::tag::context(2, true));
             }
         });
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_integer(asn1kit::tag::integer, this->version);
         if (this->originatorInfo.has_value()) {
             (*this->originatorInfo).encode(w, asn1kit::tag::context(0, true));
         }
-        w.write_set_of(asn1kit::tag::set, this->recipientInfos, [&](asn1kit::writer& inner, const auto& item) {
-            item.encode(inner);
-        });
-        this->authEncryptedContentInfo.encode(w, asn1kit::tag::sequence);
+        w.write_set_of(asn1kit::tag::set, this->recipientInfos);
+        this->authEncryptedContentInfo.encode(w);
         if (this->authAttrs.has_value()) {
-            w.write_set_of(asn1kit::tag::context(1, true), (*this->authAttrs), [&](asn1kit::writer& inner, const auto& item) {
-                item.encode(inner, asn1kit::tag::sequence);
-            });
+            w.write_set_of(asn1kit::tag::context(1, true), (*this->authAttrs));
         }
         w.write_octet_string(asn1kit::tag::octet_string, this->mac.span());
         if (this->unauthAttrs.has_value()) {
-            w.write_set_of(asn1kit::tag::context(2, true), (*this->unauthAttrs), [&](asn1kit::writer& inner, const auto& item) {
-                item.encode(inner, asn1kit::tag::sequence);
-            });
+            w.write_set_of(asn1kit::tag::context(2, true), (*this->unauthAttrs));
         }
     }
 };

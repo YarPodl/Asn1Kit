@@ -422,14 +422,65 @@ END
         Assert.Contains("struct Flags", source);
         Assert.Contains("FlagsFlags", source);
         Assert.Contains("enum class Bag_kind", source);
+        Assert.Contains("static bool match_tag(const asn1kit::tag& t)", source);
+        Assert.DoesNotContain("default_tag", source);
         Assert.Contains("write_set_of", source);
         Assert.Contains("read_sequence_of", source);
+        // Named SEQUENCE/CHOICE OF items use type-driven helpers (no per-item lambda).
+        Assert.Contains("read_sequence_of<Pair>(asn1kit::tag::context(0, true));", source);
+        Assert.Contains("write_sequence_of(asn1kit::tag::context(0, true), this->items);", source);
+        Assert.Contains("write_set_of(asn1kit::tag::context(1, true), this->bags);", source);
+        Assert.Contains("read_set_of<Bag>(asn1kit::tag::context(1, true));", source);
+        Assert.DoesNotContain("read_sequence_of<Pair>(asn1kit::tag::context(0, true), [&]", source);
         Assert.Contains("std::optional", source);
         Assert.Contains("encode_Color", source);
         Assert.Contains("Color::red", source);
         Assert.Contains("asn1kit::tag::context(", source);
         Assert.Contains("Flags(asn1kit::bit_string bits)", source);
         Assert.Contains("friend bool operator==(const Flags& a, const asn1kit::bit_string& b)", source);
+    }
+
+    [Fact]
+    public void TaggedChoiceNaturalCodecUsesExplicitWrapper()
+    {
+        const string asn = @"
+M DEFINITIONS ::= BEGIN
+CountryName ::= [APPLICATION 1] CHOICE {
+  numeric NumericString,
+  printable PrintableString
+}
+Holder ::= SEQUENCE {
+  country CountryName OPTIONAL,
+  next INTEGER
+}
+END
+";
+        var source = Assert.Single(new CppBackend().Generate(new Asn1Compiler().CompileText(asn))).Contents;
+
+        Assert.Contains("return t.matches_ignore_constructed(asn1kit::tag::application(1, true));", source);
+        Assert.Contains("static CountryName decode_content(asn1kit::reader& r)", source);
+        Assert.Contains("return decode(r, asn1kit::tag::application(1, true));", source);
+        Assert.Contains("value = decode_content(inner);", source);
+        Assert.Contains("void encode_content(asn1kit::writer& w) const", source);
+        Assert.Contains("encode(w, asn1kit::tag::application(1, true));", source);
+        Assert.Contains("encode_content(w);", source);
+        Assert.Contains("if (inner.next_matches<CountryName>())", source);
+        Assert.DoesNotContain("if (inner.next_is(asn1kit::tag::sequence))", source);
+        Assert.Contains("value.country = CountryName::decode(inner);", source);
+
+        // Untagged CHOICE must not emit the content helpers (no wrapper to peel twice).
+        const string untagged = @"
+U DEFINITIONS ::= BEGIN
+Bag ::= CHOICE { a INTEGER, b BOOLEAN }
+END
+";
+        var untaggedSource =
+            Assert.Single(new CppBackend().Generate(new Asn1Compiler().CompileText(untagged))).Contents;
+        Assert.Contains("static Bag decode(asn1kit::reader& r) {", untaggedSource);
+        Assert.DoesNotContain("decode_content", untaggedSource);
+        Assert.DoesNotContain("encode_content", untaggedSource);
+        Assert.Contains("return decode(r);", untaggedSource);
+        Assert.Contains("encode(w);", untaggedSource);
     }
 
     [Fact]

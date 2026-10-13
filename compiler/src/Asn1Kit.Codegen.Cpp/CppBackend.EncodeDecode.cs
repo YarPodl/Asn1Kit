@@ -238,13 +238,13 @@ public sealed partial class CppBackend
 
         if (type is RefType namedBitRef && Find(document, module, namedBitRef)?.Type is BitStringType { NamedBits.Count: > 0 })
         {
-            sb.AppendLine($"{indent}{expr}.encode({writer}, {encodeTag});");
+            EmitEncodeGenerated(sb, indent, writer, expr, encodeTag, forceTag, type);
             return;
         }
 
         if (IsNamedBitString(type))
         {
-            sb.AppendLine($"{indent}{expr}.encode({writer}, {encodeTag});");
+            EmitEncodeGenerated(sb, indent, writer, expr, encodeTag, forceTag, type);
             return;
         }
 
@@ -262,21 +262,26 @@ public sealed partial class CppBackend
             return;
         }
 
-        if (type is ChoiceType || (type is RefType choiceRef && Find(document, module, choiceRef)?.Type is ChoiceType))
+        EmitEncodeGenerated(sb, indent, writer, expr, encodeTag, forceTag, type);
+    }
+
+    private static void EmitEncodeGenerated(
+        StringBuilder sb,
+        string indent,
+        string writer,
+        string expr,
+        string encodeTag,
+        string? forceTag,
+        TypeExpr type)
+    {
+        if (forceTag is not null || type.Tag is not null)
         {
-            if (forceTag is not null || type.Tag is not null)
-            {
-                sb.AppendLine($"{indent}{expr}.encode({writer}, {encodeTag});");
-            }
-            else
-            {
-                sb.AppendLine($"{indent}{expr}.encode({writer});");
-            }
-
-            return;
+            sb.AppendLine($"{indent}{expr}.encode({writer}, {encodeTag});");
         }
-
-        sb.AppendLine($"{indent}{expr}.encode({writer}, {encodeTag});");
+        else
+        {
+            sb.AppendLine($"{indent}{expr}.encode({writer});");
+        }
     }
 
     private void EmitOfEncode(
@@ -296,6 +301,12 @@ public sealed partial class CppBackend
         var writeMethod = ofType is SetOfType ? "write_set_of" : "write_sequence_of";
         var tag = forceTag ?? TagExpr(document, module, ofType);
         var element = ofType is SetOfType setOf ? setOf.Element : ((SequenceOfType)ofType).Element;
+        if (CanUseTypeDrivenOfItem(document, module, element))
+        {
+            sb.AppendLine($"{indent}{writer}.{writeMethod}({tag}, {expr});");
+            return;
+        }
+
         sb.AppendLine($"{indent}{writer}.{writeMethod}({tag}, {expr}, [&](asn1kit::writer& inner, const auto& item) {{");
         EmitEncodeValue(
             sb,
@@ -348,12 +359,10 @@ public sealed partial class CppBackend
                     sb.AppendLine($"{indent}}}");
                 }
             }
-            else if (TryGetUntaggedMultiAltChoice(document, module, field.Type, out _))
+            else if (TryGetNextMatchesTypeName(
+                         document, module, owner, field.Name, field.Type, out var matchTypeName))
             {
-                sb.AppendLine($"{indent}{{");
-                sb.AppendLine($"{indent}    asn1kit::tag peeked_opt;");
-                sb.AppendLine(
-                    $"{indent}    if ({reader}.try_peek_tag(peeked_opt) && {PeekMatchExpr(document, module, field.Type, "peeked_opt")}) {{");
+                sb.AppendLine($"{indent}if ({reader}.next_matches<{matchTypeName}>()) {{");
                 EmitDecodeAssign(
                     sb,
                     document,
@@ -361,20 +370,18 @@ public sealed partial class CppBackend
                     owner,
                     field.Name,
                     field.Type,
-                    indent + "        ",
+                    indent + "    ",
                     reader,
                     $"{target}.{prop}",
                     fieldOptions: field.Options);
-                sb.AppendLine($"{indent}    }}");
+                sb.AppendLine($"{indent}}}");
                 if (field.Default is not null)
                 {
-                    sb.AppendLine($"{indent}    else {{");
+                    sb.AppendLine($"{indent}else {{");
                     sb.AppendLine(
-                        $"{indent}        {target}.{prop} = {DefaultExpression(document, module, owner, field)};");
-                    sb.AppendLine($"{indent}    }}");
+                        $"{indent}    {target}.{prop} = {DefaultExpression(document, module, owner, field)};");
+                    sb.AppendLine($"{indent}}}");
                 }
-
-                sb.AppendLine($"{indent}}}");
             }
             else
             {
@@ -426,6 +433,147 @@ public sealed partial class CppBackend
         }
 
         return $"{peekedVar}.matches_ignore_constructed({TagExpr(document, module, type)})";
+    }
+
+    /// <summary>
+    /// True when OF item codec equals natural <c>read&lt;T&gt;()</c> / <c>write(item)</c>
+    /// (no per-element tag override, nested OF, ENUMERATED free functions, or string/time forms).
+    /// </summary>
+    private bool CanUseTypeDrivenOfItem(IrDocument document, IrModule module, TypeExpr element)
+    {
+        if (element.Tag is not null)
+        {
+            return false;
+        }
+
+        var cursor = UnwrapAliases(document, module, element);
+        if (cursor.Tag is not null)
+        {
+            return false;
+        }
+
+        if (cursor is SequenceOfType or SetOfType)
+        {
+            return false;
+        }
+
+        if (cursor is SequenceType or SetType or ChoiceType)
+        {
+            return true;
+        }
+
+        if (IsNamedBitString(cursor))
+        {
+            return true;
+        }
+
+        if (cursor is RefType reference)
+        {
+            var found = Find(document, module, reference)?.Type;
+            if (found is SequenceType or SetType or ChoiceType)
+            {
+                return found.Tag is null;
+            }
+
+            if (found is BitStringType { NamedBits.Count: > 0 })
+            {
+                return found.Tag is null;
+            }
+
+            if (found is EnumeratedType)
+            {
+                return false;
+            }
+
+            if (found is not null)
+            {
+                cursor = found;
+            }
+        }
+
+        if (IsEnumeratedRefOrType(document, module, element))
+        {
+            return false;
+        }
+
+        return cursor switch
+        {
+            BooleanType => true,
+            IntegerType => true,
+            OidType => true,
+            OctetStringType { Containing: null } => true,
+            BitStringType { Containing: null, NamedBits: null } => true,
+            BitStringType { Containing: null, NamedBits.Count: 0 } => true,
+            _ => false
+        };
+    }
+
+    /// <summary>
+    /// Named generated type usable with <c>reader::next_matches&lt;T&gt;()</c> for OPTIONAL/DEFAULT.
+    /// Field-level tag overrides still use <c>next_is</c>. Tagged CHOICE typedefs are allowed:
+    /// <c>match_tag</c> already matches the CHOICE wrapper (e.g. APPLICATION).
+    /// </summary>
+    private bool TryGetNextMatchesTypeName(
+        IrDocument document,
+        IrModule module,
+        string owner,
+        string hint,
+        TypeExpr type,
+        out string typeName)
+    {
+        typeName = "";
+        // Per-use-site tag (context/EXPLICIT on the field) → next_is(that tag).
+        if (type.Tag is not null)
+        {
+            return false;
+        }
+
+        var cursor = UnwrapAliases(document, module, type);
+
+        if (cursor is RefType reference)
+        {
+            var found = FindWithModule(document, module, reference);
+            var defType = found?.Def.Type;
+            if (defType is ChoiceType)
+            {
+                // Emit relative to the owning module so cross-module refs stay qualified.
+                typeName = CppType(document, module, owner, hint, type, optional: false);
+                return true;
+            }
+
+            if (defType is SequenceType or SetType or BitStringType { NamedBits.Count: > 0 })
+            {
+                // SEQUENCE/SET match_tag is the universal tag only; typedef-level tags unsupported.
+                if (defType.Tag is not null)
+                {
+                    return false;
+                }
+
+                typeName = CppType(document, module, owner, hint, type, optional: false);
+                return true;
+            }
+
+            return false;
+        }
+
+        if (cursor is ChoiceType)
+        {
+            typeName = CppType(document, module, owner, hint, type, optional: false);
+            return true;
+        }
+
+        if (cursor.Tag is not null)
+        {
+            return false;
+        }
+
+        if (cursor is SequenceType or SetType || IsNamedBitString(cursor))
+        {
+            typeName = CppType(document, module, owner, hint, type, optional: false);
+            return true;
+        }
+
+        return false;
     }
 
     private bool TryGetUntaggedMultiAltChoice(
@@ -643,14 +791,14 @@ public sealed partial class CppBackend
         if (type is RefType namedBitRef && Find(document, module, namedBitRef)?.Type is BitStringType { NamedBits.Count: > 0 })
         {
             var name = NamedTypeName(document, resolvedModule, owner, hint, type);
-            sb.AppendLine($"{indent}{target} = {name}::decode({reader}, {decodeTag});");
+            EmitDecodeGenerated(sb, indent, reader, target, name, decodeTag, forceTag, type);
             return;
         }
 
         if (IsNamedBitString(type))
         {
             var name = owner + "_" + CppNames.SanitizeTypeName(hint);
-            sb.AppendLine($"{indent}{target} = {name}::decode({reader}, {decodeTag});");
+            EmitDecodeGenerated(sb, indent, reader, target, name, decodeTag, forceTag, type);
             return;
         }
 
@@ -672,25 +820,37 @@ public sealed partial class CppBackend
             return;
         }
 
-        if (type is ChoiceType || (type is RefType choiceRef && Find(document, module, choiceRef)?.Type is ChoiceType choice))
+        if (type is ChoiceType || (type is RefType choiceRef && Find(document, module, choiceRef)?.Type is ChoiceType))
         {
             var name = type is RefType
                 ? NamedTypeName(document, resolvedModule, owner, hint, type)
                 : owner + "_" + CppNames.SanitizeTypeName(hint);
-            if (forceTag is not null || type.Tag is not null)
-            {
-                sb.AppendLine($"{indent}{target} = {name}::decode({reader}, {decodeTag});");
-            }
-            else
-            {
-                sb.AppendLine($"{indent}{target} = {name}::decode({reader});");
-            }
-
+            EmitDecodeGenerated(sb, indent, reader, target, name, decodeTag, forceTag, type);
             return;
         }
 
         var typeName = NamedTypeName(document, resolvedModule, owner, hint, type);
-        sb.AppendLine($"{indent}{target} = {typeName}::decode({reader}, {decodeTag});");
+        EmitDecodeGenerated(sb, indent, reader, target, typeName, decodeTag, forceTag, type);
+    }
+
+    private static void EmitDecodeGenerated(
+        StringBuilder sb,
+        string indent,
+        string reader,
+        string target,
+        string typeName,
+        string decodeTag,
+        string? forceTag,
+        TypeExpr type)
+    {
+        if (forceTag is not null || type.Tag is not null)
+        {
+            sb.AppendLine($"{indent}{target} = {typeName}::decode({reader}, {decodeTag});");
+        }
+        else
+        {
+            sb.AppendLine($"{indent}{target} = {typeName}::decode({reader});");
+        }
     }
 
     private void EmitOfDecode(
@@ -711,6 +871,12 @@ public sealed partial class CppBackend
         var tag = forceTag ?? TagExpr(document, module, ofType);
         var element = ofType is SetOfType setOf ? setOf.Element : ((SequenceOfType)ofType).Element;
         var itemType = CppType(document, module, itemOwner, itemHint, element, optional: false);
+        if (CanUseTypeDrivenOfItem(document, module, element))
+        {
+            sb.AppendLine($"{indent}{target} = {reader}.{readMethod}<{itemType}>({tag});");
+            return;
+        }
+
         sb.AppendLine(
             $"{indent}{target} = {reader}.{readMethod}<{itemType}>({tag}, [&](asn1kit::reader& inner) {{");
         sb.AppendLine($"{indent}    {itemType} item{{}};");

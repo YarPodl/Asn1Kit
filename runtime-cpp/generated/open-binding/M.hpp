@@ -31,11 +31,11 @@ struct AlgorithmIdentifier {
     asn1kit::oid algorithm{};
     std::optional<asn1kit::any> parameters{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static AlgorithmIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static AlgorithmIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         AlgorithmIdentifier value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.algorithm = inner.read_oid(asn1kit::tag::object_identifier);
@@ -46,7 +46,7 @@ struct AlgorithmIdentifier {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_object_identifier(asn1kit::tag::object_identifier, this->algorithm);
         if (this->parameters.has_value()) {
@@ -59,11 +59,11 @@ struct Attribute {
     asn1kit::oid type{};
     std::vector<asn1kit::any> values{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static Attribute decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static Attribute decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         Attribute value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.type = inner.read_oid(asn1kit::tag::object_identifier);
@@ -76,7 +76,7 @@ struct Attribute {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_object_identifier(asn1kit::tag::object_identifier, this->type);
         w.write_set_of(asn1kit::tag::set, this->values, [&](asn1kit::writer& inner, const auto& item) {
@@ -89,11 +89,11 @@ struct Extension {
     asn1kit::oid extnID{};
     asn1kit::contained<asn1kit::any> extnValue{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static Extension decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static Extension decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         Extension value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.extnID = inner.read_oid(asn1kit::tag::object_identifier);
@@ -106,7 +106,7 @@ struct Extension {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_object_identifier(asn1kit::tag::object_identifier, this->extnID);
         w.write_contained(asn1kit::tag::octet_string, false, this->extnValue, [&](asn1kit::writer& inner, const auto& value) {
@@ -120,36 +120,36 @@ struct Holder {
     Extension ext{};
     Attribute attr{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static Holder decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static Holder decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         Holder value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.mixed = AlgorithmIdentifier::decode(inner, asn1kit::tag::sequence);
-            value.ext = Extension::decode(inner, asn1kit::tag::sequence);
-            value.attr = Attribute::decode(inner, asn1kit::tag::sequence);
+            value.mixed = AlgorithmIdentifier::decode(inner);
+            value.ext = Extension::decode(inner);
+            value.attr = Attribute::decode(inner);
         });
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
-        this->mixed.encode(w, asn1kit::tag::sequence);
-        this->ext.encode(w, asn1kit::tag::sequence);
-        this->attr.encode(w, asn1kit::tag::sequence);
+        this->mixed.encode(w);
+        this->ext.encode(w);
+        this->attr.encode(w);
     }
 };
 
 struct Outer_Nested_Item {
     asn1kit::any value_{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static Outer_Nested_Item decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static Outer_Nested_Item decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         Outer_Nested_Item value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.value_ = inner.read_any();
@@ -157,7 +157,7 @@ struct Outer_Nested_Item {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_any(this->value_);
     }
@@ -167,29 +167,23 @@ struct Outer {
     asn1kit::oid id{};
     std::vector<Outer_Nested_Item> nested{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static Outer decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static Outer decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         Outer value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.id = inner.read_oid(asn1kit::tag::object_identifier);
-            value.nested = inner.read_sequence_of<Outer_Nested_Item>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                Outer_Nested_Item item{};
-                item = Outer_Nested_Item::decode(inner, asn1kit::tag::sequence);
-                return item;
-            });
+            value.nested = inner.read_sequence_of<Outer_Nested_Item>(asn1kit::tag::sequence);
         });
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_object_identifier(asn1kit::tag::object_identifier, this->id);
-        w.write_sequence_of(asn1kit::tag::sequence, this->nested, [&](asn1kit::writer& inner, const auto& item) {
-            item.encode(inner, asn1kit::tag::sequence);
-        });
+        w.write_sequence_of(asn1kit::tag::sequence, this->nested);
     }
 };
 

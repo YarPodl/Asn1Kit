@@ -53,11 +53,11 @@ struct AdministrationDomainName {
         return result;
     }
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::application(2, true);
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::application(2, true));
     }
 
-    static AdministrationDomainName decode(asn1kit::reader& r) {
+    static AdministrationDomainName decode_content(asn1kit::reader& r) {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::numeric_string)) {
@@ -79,15 +79,19 @@ struct AdministrationDomainName {
         }
     }
 
+    static AdministrationDomainName decode(asn1kit::reader& r) {
+        return decode(r, asn1kit::tag::application(2, true));
+    }
+
     static AdministrationDomainName decode(asn1kit::reader& r, const asn1kit::tag& t) {
         AdministrationDomainName value{};
         r.with_explicit(t, [&](asn1kit::reader& inner) {
-            value = decode(inner);
+            value = decode_content(inner);
         });
         return value;
     }
 
-    void encode(asn1kit::writer& w) const {
+    void encode_content(asn1kit::writer& w) const {
         switch (kind) {
         case AdministrationDomainName_kind::numeric:
             {
@@ -104,9 +108,13 @@ struct AdministrationDomainName {
         }
     }
 
+    void encode(asn1kit::writer& w) const {
+        encode(w, asn1kit::tag::application(2, true));
+    }
+
     void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
         auto scope = w.enter_explicit(t);
-        encode(w);
+        encode_content(w);
     }
 };
 
@@ -114,11 +122,11 @@ struct BuiltInDomainDefinedAttribute {
     std::string type{};
     std::string value_{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static BuiltInDomainDefinedAttribute decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static BuiltInDomainDefinedAttribute decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         BuiltInDomainDefinedAttribute value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.type = inner.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
@@ -127,7 +135,7 @@ struct BuiltInDomainDefinedAttribute {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_string(asn1kit::tag::printable_string, this->type, asn1kit::string_form::printable);
         w.write_string(asn1kit::tag::printable_string, this->value_, asn1kit::string_form::printable);
@@ -157,11 +165,11 @@ struct CountryName {
         return result;
     }
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::application(1, true);
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::application(1, true));
     }
 
-    static CountryName decode(asn1kit::reader& r) {
+    static CountryName decode_content(asn1kit::reader& r) {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::numeric_string)) {
@@ -183,15 +191,19 @@ struct CountryName {
         }
     }
 
+    static CountryName decode(asn1kit::reader& r) {
+        return decode(r, asn1kit::tag::application(1, true));
+    }
+
     static CountryName decode(asn1kit::reader& r, const asn1kit::tag& t) {
         CountryName value{};
         r.with_explicit(t, [&](asn1kit::reader& inner) {
-            value = decode(inner);
+            value = decode_content(inner);
         });
         return value;
     }
 
-    void encode(asn1kit::writer& w) const {
+    void encode_content(asn1kit::writer& w) const {
         switch (kind) {
         case CountryName_kind::x121_dcc_code:
             {
@@ -208,9 +220,13 @@ struct CountryName {
         }
     }
 
+    void encode(asn1kit::writer& w) const {
+        encode(w, asn1kit::tag::application(1, true));
+    }
+
     void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
         auto scope = w.enter_explicit(t);
-        encode(w);
+        encode_content(w);
     }
 };
 
@@ -218,11 +234,11 @@ struct ExtensionAttribute {
     std::int32_t extension_attribute_type{};
     asn1kit::any extension_attribute_value{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static ExtensionAttribute decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static ExtensionAttribute decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         ExtensionAttribute value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.extension_attribute_type = inner.read_int32(asn1kit::tag::context(0));
@@ -235,7 +251,7 @@ struct ExtensionAttribute {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_integer(asn1kit::tag::context(0), this->extension_attribute_type);
         {
@@ -249,11 +265,11 @@ struct ExtensionAttribute_EaExtendedNetworkAddress_E1634Address {
     std::string number{};
     std::optional<std::string> sub_address{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static ExtensionAttribute_EaExtendedNetworkAddress_E1634Address decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static ExtensionAttribute_EaExtendedNetworkAddress_E1634Address decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         ExtensionAttribute_EaExtendedNetworkAddress_E1634Address value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.number = inner.read_string(asn1kit::tag::context(0), asn1kit::string_form::numeric);
@@ -264,7 +280,7 @@ struct ExtensionAttribute_EaExtendedNetworkAddress_E1634Address {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_string(asn1kit::tag::context(0), this->number, asn1kit::string_form::numeric);
         if (this->sub_address.has_value()) {
@@ -296,8 +312,8 @@ struct ExtensionAttribute_EaPhysicalDeliveryCountryName {
         return result;
     }
 
-    static asn1kit::tag default_tag() {
-        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
+    static bool match_tag(const asn1kit::tag& t) {
+        return (t.matches_ignore_constructed(asn1kit::tag::numeric_string) || t.matches_ignore_constructed(asn1kit::tag::printable_string));
     }
 
     static ExtensionAttribute_EaPhysicalDeliveryCountryName decode(asn1kit::reader& r) {
@@ -373,8 +389,8 @@ struct ExtensionAttribute_EaPostalCode {
         return result;
     }
 
-    static asn1kit::tag default_tag() {
-        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
+    static bool match_tag(const asn1kit::tag& t) {
+        return (t.matches_ignore_constructed(asn1kit::tag::numeric_string) || t.matches_ignore_constructed(asn1kit::tag::printable_string));
     }
 
     static ExtensionAttribute_EaPostalCode decode(asn1kit::reader& r) {
@@ -433,11 +449,11 @@ struct ExtensionAttribute_EaTeletexPersonalName {
     std::optional<std::string> initials{};
     std::optional<std::string> generation_qualifier{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::set;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::set);
     }
 
-    static ExtensionAttribute_EaTeletexPersonalName decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static ExtensionAttribute_EaTeletexPersonalName decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::set) {
         ExtensionAttribute_EaTeletexPersonalName value{};
         r.with_set(t, [&](asn1kit::reader& inner) {
             bool seen_surname = false;
@@ -468,7 +484,7 @@ struct ExtensionAttribute_EaTeletexPersonalName {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::set) const {
         auto scope = w.enter_set(t);
         w.write_string(asn1kit::tag::context(0), this->surname, asn1kit::string_form::teletex);
         if (this->given_name.has_value()) {
@@ -496,11 +512,11 @@ struct ExtensionAttribute_EaUnformattedPostalAddress {
     std::optional<std::vector<std::string>> printable_address{};
     std::optional<std::string> teletex_string{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::set;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::set);
     }
 
-    static ExtensionAttribute_EaUnformattedPostalAddress decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static ExtensionAttribute_EaUnformattedPostalAddress decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::set) {
         ExtensionAttribute_EaUnformattedPostalAddress value{};
         r.with_set(t, [&](asn1kit::reader& inner) {
             while (!inner.eof()) {
@@ -526,7 +542,7 @@ struct ExtensionAttribute_EaUnformattedPostalAddress {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::set) const {
         auto scope = w.enter_set(t);
         if (this->printable_address.has_value()) {
             w.write_sequence_of(asn1kit::tag::sequence, (*this->printable_address), [&](asn1kit::writer& inner, const auto& item) {
@@ -543,11 +559,11 @@ struct PDSParameter {
     std::optional<std::string> printable_string{};
     std::optional<std::string> teletex_string{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::set;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::set);
     }
 
-    static PDSParameter decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static PDSParameter decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::set) {
         PDSParameter value{};
         r.with_set(t, [&](asn1kit::reader& inner) {
             while (!inner.eof()) {
@@ -569,7 +585,7 @@ struct PDSParameter {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::set) const {
         auto scope = w.enter_set(t);
         if (this->printable_string.has_value()) {
             w.write_string(asn1kit::tag::printable_string, (*this->printable_string), asn1kit::string_form::printable);
@@ -586,11 +602,11 @@ struct PersonalName {
     std::optional<std::string> initials{};
     std::optional<std::string> generation_qualifier{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::set;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::set);
     }
 
-    static PersonalName decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static PersonalName decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::set) {
         PersonalName value{};
         r.with_set(t, [&](asn1kit::reader& inner) {
             bool seen_surname = false;
@@ -621,7 +637,7 @@ struct PersonalName {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::set) const {
         auto scope = w.enter_set(t);
         w.write_string(asn1kit::tag::context(0), this->surname, asn1kit::string_form::printable);
         if (this->given_name.has_value()) {
@@ -642,11 +658,11 @@ struct PresentationAddress {
     std::optional<asn1kit::bytes> tSelector{};
     std::vector<asn1kit::bytes> nAddresses{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static PresentationAddress decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static PresentationAddress decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         PresentationAddress value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             if (inner.next_is(asn1kit::tag::context(0, true))) {
@@ -672,18 +688,14 @@ struct PresentationAddress {
             }
             std::vector<asn1kit::bytes> tmp_nAddresses{};
             inner.with_explicit(asn1kit::tag::context(3, true), [&](asn1kit::reader& scoped) {
-                tmp_nAddresses = scoped.read_set_of<asn1kit::bytes>(asn1kit::tag::set, [&](asn1kit::reader& inner) {
-                    asn1kit::bytes item{};
-                    item = inner.read_octet_string(asn1kit::tag::octet_string);
-                    return item;
-                });
+                tmp_nAddresses = scoped.read_set_of<asn1kit::bytes>(asn1kit::tag::set);
             });
             value.nAddresses = std::move(tmp_nAddresses);
         });
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         if (this->pSelector.has_value()) {
             {
@@ -705,9 +717,7 @@ struct PresentationAddress {
         }
         {
             auto explicit_scope = w.enter_explicit(asn1kit::tag::context(3, true));
-            w.write_set_of(asn1kit::tag::set, this->nAddresses, [&](asn1kit::writer& inner, const auto& item) {
-                inner.write_octet_string(asn1kit::tag::octet_string, item.span());
-            });
+            w.write_set_of(asn1kit::tag::set, this->nAddresses);
         }
     }
 };
@@ -735,8 +745,8 @@ struct ExtensionAttribute_EaExtendedNetworkAddress {
         return result;
     }
 
-    static asn1kit::tag default_tag() {
-        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
+    static bool match_tag(const asn1kit::tag& t) {
+        return (t.matches_ignore_constructed(asn1kit::tag::sequence) || t.matches_ignore_constructed(asn1kit::tag::context(0, true)));
     }
 
     static ExtensionAttribute_EaExtendedNetworkAddress decode(asn1kit::reader& r) {
@@ -746,7 +756,7 @@ struct ExtensionAttribute_EaExtendedNetworkAddress {
             ExtensionAttribute_EaExtendedNetworkAddress result{};
             result.kind = ExtensionAttribute_EaExtendedNetworkAddress_kind::e163_4_address;
             ExtensionAttribute_EaExtendedNetworkAddress_E1634Address alt{};
-            alt = ExtensionAttribute_EaExtendedNetworkAddress_E1634Address::decode(r, asn1kit::tag::sequence);
+            alt = ExtensionAttribute_EaExtendedNetworkAddress_E1634Address::decode(r);
             result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
@@ -771,7 +781,7 @@ struct ExtensionAttribute_EaExtendedNetworkAddress {
         case ExtensionAttribute_EaExtendedNetworkAddress_kind::e163_4_address:
             {
                 const auto& alt = std::get<0>(value);
-                alt.encode(w, asn1kit::tag::sequence);
+                alt.encode(w);
                 break;
             }
         case ExtensionAttribute_EaExtendedNetworkAddress_kind::psap_address:
@@ -812,8 +822,8 @@ struct PrivateDomainName {
         return result;
     }
 
-    static asn1kit::tag default_tag() {
-        throw asn1kit::exception("Untagged CHOICE has no default_tag.");
+    static bool match_tag(const asn1kit::tag& t) {
+        return (t.matches_ignore_constructed(asn1kit::tag::numeric_string) || t.matches_ignore_constructed(asn1kit::tag::printable_string));
     }
 
     static PrivateDomainName decode(asn1kit::reader& r) {
@@ -877,17 +887,17 @@ struct BuiltInStandardAttributes {
     std::optional<PersonalName> personal_name{};
     std::optional<std::vector<std::string>> organizational_unit_names{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static BuiltInStandardAttributes decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static BuiltInStandardAttributes decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         BuiltInStandardAttributes value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            if (inner.next_is(asn1kit::tag::sequence)) {
+            if (inner.next_matches<CountryName>()) {
                 value.country_name = CountryName::decode(inner);
             }
-            if (inner.next_is(asn1kit::tag::sequence)) {
+            if (inner.next_matches<AdministrationDomainName>()) {
                 value.administration_domain_name = AdministrationDomainName::decode(inner);
             }
             if (inner.next_is(asn1kit::tag::context(0))) {
@@ -923,7 +933,7 @@ struct BuiltInStandardAttributes {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         if (this->country_name.has_value()) {
             (*this->country_name).encode(w);
@@ -965,44 +975,32 @@ struct ORAddress {
     std::optional<std::vector<BuiltInDomainDefinedAttribute>> built_in_domain_defined_attributes{};
     std::optional<std::vector<ExtensionAttribute>> extension_attributes{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static ORAddress decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static ORAddress decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         ORAddress value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.built_in_standard_attributes = BuiltInStandardAttributes::decode(inner, asn1kit::tag::sequence);
+            value.built_in_standard_attributes = BuiltInStandardAttributes::decode(inner);
             if (inner.next_is(asn1kit::tag::sequence)) {
-                value.built_in_domain_defined_attributes = inner.read_sequence_of<BuiltInDomainDefinedAttribute>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    BuiltInDomainDefinedAttribute item{};
-                    item = BuiltInDomainDefinedAttribute::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
+                value.built_in_domain_defined_attributes = inner.read_sequence_of<BuiltInDomainDefinedAttribute>(asn1kit::tag::sequence);
             }
             if (inner.next_is(asn1kit::tag::set)) {
-                value.extension_attributes = inner.read_set_of<ExtensionAttribute>(asn1kit::tag::set, [&](asn1kit::reader& inner) {
-                    ExtensionAttribute item{};
-                    item = ExtensionAttribute::decode(inner, asn1kit::tag::sequence);
-                    return item;
-                });
+                value.extension_attributes = inner.read_set_of<ExtensionAttribute>(asn1kit::tag::set);
             }
         });
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
-        this->built_in_standard_attributes.encode(w, asn1kit::tag::sequence);
+        this->built_in_standard_attributes.encode(w);
         if (this->built_in_domain_defined_attributes.has_value()) {
-            w.write_sequence_of(asn1kit::tag::sequence, (*this->built_in_domain_defined_attributes), [&](asn1kit::writer& inner, const auto& item) {
-                item.encode(inner, asn1kit::tag::sequence);
-            });
+            w.write_sequence_of(asn1kit::tag::sequence, (*this->built_in_domain_defined_attributes));
         }
         if (this->extension_attributes.has_value()) {
-            w.write_set_of(asn1kit::tag::set, (*this->extension_attributes), [&](asn1kit::writer& inner, const auto& item) {
-                item.encode(inner, asn1kit::tag::sequence);
-            });
+            w.write_set_of(asn1kit::tag::set, (*this->extension_attributes));
         }
     }
 };
@@ -1011,11 +1009,11 @@ struct TeletexDomainDefinedAttribute {
     std::string type{};
     std::string value_{};
 
-    static asn1kit::tag default_tag() {
-        return asn1kit::tag::sequence;
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    static TeletexDomainDefinedAttribute decode(asn1kit::reader& r, const asn1kit::tag& t = default_tag()) {
+    static TeletexDomainDefinedAttribute decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         TeletexDomainDefinedAttribute value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.type = inner.read_string(asn1kit::tag::teletex_string, asn1kit::string_form::teletex);
@@ -1024,7 +1022,7 @@ struct TeletexDomainDefinedAttribute {
         return value;
     }
 
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = default_tag()) const {
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_string(asn1kit::tag::teletex_string, this->type, asn1kit::string_form::teletex);
         w.write_string(asn1kit::tag::teletex_string, this->value_, asn1kit::string_form::teletex);
