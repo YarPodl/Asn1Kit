@@ -7,7 +7,6 @@
 #include "asn1kit/bit_string.hpp"
 #include "asn1kit/bytes.hpp"
 #include "asn1kit/concepts.hpp"
-#include "asn1kit/contained.hpp"
 #include "asn1kit/detail/typed_value.hpp"
 #include "asn1kit/encoding.hpp"
 #include "asn1kit/exception.hpp"
@@ -151,19 +150,26 @@ template <open_typed T>
 }
 
 template <open_typed T>
-[[nodiscard]] T decode_contained(const contained<any>& raw) {
+[[nodiscard]] T decode_contained(const bytes& raw) {
+    return decode_open<T>(any(raw));
+}
+
+template <open_typed T>
+[[nodiscard]] T decode_contained(const bit_string& raw) {
     if (raw.unused_bits() != 0) {
         throw exception("Typed contained value must be octet-aligned.");
-    }
-    if (raw.has_value()) {
-        return decode_open<T>(raw.value());
     }
     return decode_open<T>(any(raw.contents()));
 }
 
 template <open_typed T>
-[[nodiscard]] contained<any> encode_contained(const T& value) {
-    return contained<any>::from_value(encode_open(value));
+[[nodiscard]] bytes encode_contained_octets(const T& value) {
+    return encode_open(value).encoded();
+}
+
+template <open_typed T>
+[[nodiscard]] bit_string encode_contained_bits(const T& value) {
+    return bit_string{encode_open(value).encoded(), 0};
 }
 
 template <open_typed T>

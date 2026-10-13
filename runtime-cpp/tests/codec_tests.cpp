@@ -46,19 +46,16 @@ TEST(OpenTyped, KnownMismatchRejects) {
 }
 
 TEST(OpenTyped, ContainedTypedRoundTrip) {
-    const auto wrapped = encode_contained(std::int32_t{7});
-    EXPECT_TRUE(wrapped.has_value());
-    EXPECT_EQ(decode_contained<std::int32_t>(wrapped), 7);
+    const auto octets = encode_contained_octets(std::int32_t{7});
+    EXPECT_EQ(decode_contained<std::int32_t>(octets), 7);
 
-    const any inner = encode_open(std::int32_t{9});
-    const auto opaque = contained<any>::from_encoded(bytes::copy_from(inner.span()));
-    EXPECT_FALSE(opaque.has_value());
-    EXPECT_EQ(decode_contained<std::int32_t>(opaque), 9);
+    const auto bits = encode_contained_bits(std::int32_t{9});
+    EXPECT_EQ(decode_contained<std::int32_t>(bits), 9);
 }
 
 TEST(OpenTyped, ContainedRejectsNonAligned) {
-    const any inner = encode_open(std::int32_t{1});
-    const auto misaligned = contained<any>::from_encoded(bytes::copy_from(inner.span()), 1);
+    const auto inner = encode_contained_octets(std::int32_t{1});
+    const auto misaligned = bit_string{inner, 1};
     EXPECT_THROW((void)decode_contained<std::int32_t>(misaligned), exception);
 }
 

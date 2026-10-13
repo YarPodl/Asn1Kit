@@ -43,10 +43,10 @@
 | Reader type-driven | `read<T>` / `read_from_explicit<T>` / `read_sequence_of<T>` / `read_set_of<T>` / `read_sequence_of_from_explicit<T>` — без лямбд (T = generated или примитив) |
 | Writer type-driven | `write` / `write_to_explicit` / `write_sequence_of` / `write_set_of` / `write_sequence_of_to_explicit` — без лямбд |
 | Ergonomic encode/decode (`encode_decode.hpp`) | `encode(value, enc)` (значение → `std::vector<uint8_t>`); `try_encode(destination, value[, bytes_written], enc)` — запись в вызывающий буфер, `false` при нехватке места; `decode` (TLV → значение, строгий EOF, trailing → `asn1kit::exception`); `decode_prefix` игнорирует хвост. Перегрузки: `std::span<const uint8_t>`, `std::vector<uint8_t>`, `bytes` |
-| Value types | `integer`, `bit_string`, `oid`, `null_value`, `utc_date_time`, `any`, `contained<T>` |
+| Value types | `integer`, `bit_string`, `oid`, `null_value`, `utc_date_time`, `any` |
 | ANY | `any` — полный TLV (`tag` + `encoded` + `contents`); `read_any` / `write_any` (+ IMPLICIT retag); `from_tag_and_contents` / `from_value` / `decode_value` |
-| Contained | `contained<T>` — OCTET/BIT STRING CONTAINING; `read_contained` / `write_contained` (typed primitive frame / opaque octets; known BIT STRING octet-aligned) |
-| Open type | `encode_open` / `decode_open` — wire из `T` (`open_typed`); `asn_string<form>` / `asn_time<form>` для неоднозначных string/time; адаптеры `decode_contained` / `encode_contained` / `decode_each` / `encode_each` |
+| Containing | Известный `T`: `read_octet_string_containing` / `read_bit_string_containing` и симметричные `write_*`; неизвестное содержимое остаётся `bytes` / `bit_string` без неявной ASN.1-валидации |
+| Open type | `encode_open` / `decode_open` — wire из `T` (`open_typed`); `asn_string<form>` / `asn_time<form>` для неоднозначных string/time; адаптеры `decode_contained`, `encode_contained_octets` / `encode_contained_bits`, `decode_each` / `encode_each` |
 | Time | `utc_date_time` (календарные поля UTC + `time_fraction` до 7 десятичных цифр); конверсии в `std::chrono`: `to_sys_time` / `from_sys_time` (`utc_time_point`, 100 нс, 64-битный диапазон) и `to_system_clock` / `from_system_clock` (`std::chrono::system_clock::time_point`) |
 
 **Value / Lazy:** `asn1kit::value<T>` (`value.hpp`) — eager decode + `original_encoding()`; non-const `get()` сбрасывает retained TLV (encode идёт из текущего значения). `asn1kit::lazy<T>` (`lazy.hpp`) — deferred decode, `has_encoded()` / `write_to`. Reader: `read_with_original_encoding` / `read_lazy`. Generated encode: при `has_original_encoding()` / `has_encoded()` пишет raw TLV.
@@ -57,7 +57,7 @@
 
 `asn1kit/format.hpp` — header-only потоковый дамп для отладки. Публичная точка входа — `template <typename T> void to_string(const T& value, std::ostream& out)`, без завершающего `\n`. Точка кастомизации (ADL) — `void to_string(const T& value, std::ostream& out, int indent)` в namespace типа; отдельного generic-шаблона с `(…, int)` нет, иначе ADL уходит в бесконечную рекурсию.
 
-- Перегрузки: `bool`, `int32_t`/`uint32_t`/`int64_t`/`uint64_t`, `std::string`, `std::string_view`, `integer`, `null_value`, `oid`, `bytes`, `bit_string`, `utc_date_time`, `any`, `std::optional<T>`, `std::vector<T>`, `value<T>`, `lazy<T>`, `contained<T>`.
+- Перегрузки: `bool`, `int32_t`/`uint32_t`/`int64_t`/`uint64_t`, `std::string`, `std::string_view`, `integer`, `null_value`, `oid`, `bytes`, `bit_string`, `utc_date_time`, `any`, `std::optional<T>`, `std::vector<T>`, `value<T>`, `lazy<T>`.
 - Числа — locale-independent (`std::to_chars` / `integer::to_decimal`), OID — dotted, время — `utc_date_time::to_iso()`, `any` — `any::to_string()`.
 - Грамматика: структурный тип — `Type {`, по строке `field: <dump>` с отступом 4 пробела на уровень, `}`; CHOICE — `Type {` / `kind: <alt>` / `value: <dump>`; `OF` — `[N] { … }`; named BIT STRING — `Flags { N bits }`; `bytes` → `N bytes`; `bit_string` → `N bits`; `null` → `null`; отсутствующий `optional` → `<absent>`; lazy без TLV → `<unset>`, с TLV → `<not decoded: N bytes>`; opaque `contained` → `<opaque: N bytes>`.
 - Codegen эмитит перегрузки для своих именованных типов в `{Module}.format.hpp` ([cpp-backend.md](../../compiler/docs/playbooks/cpp-backend.md)).

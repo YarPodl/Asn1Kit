@@ -5,7 +5,6 @@
 
 #include "asn1kit/bit_string.hpp"
 #include "asn1kit/concepts.hpp"
-#include "asn1kit/contained.hpp"
 #include "asn1kit/detail/encode_buffer.hpp"
 #include "asn1kit/detail/typed_value.hpp"
 #include "asn1kit/encoding.hpp"
@@ -75,24 +74,20 @@ public:
     /// IMPLICIT outer tag: class/number from `t`, constructed flag from `value`.
     void write_any(const tag& t, const any& value);
 
-    /// Writes opaque octets or encodes typed CONTAINING content into a primitive TLV.
+    /// Encodes one known ASN.1 value into OCTET STRING contents.
     template <typename T, std::invocable<writer&, const T&> F>
-    void write_contained(const tag& t, bool is_bit_string, const contained<T>& value, F&& encode) {
-        if (!value.has_value()) {
-            if (is_bit_string) {
-                write_bit_string(t, asn1kit::bit_string{value.contents(), value.unused_bits()});
-            } else {
-                write_octet_string(t, value.contents().span());
-            }
-            return;
-        }
-
+    void write_octet_string_containing(const tag& t, const T& value, F&& encode) {
         [[maybe_unused]] auto scope = begin_primitive(t);
-        if (is_bit_string) {
-            const std::array<std::uint8_t, 1> unused{0};
-            write_raw(unused);
-        }
-        std::invoke(std::forward<F>(encode), *this, value.value());
+        std::invoke(std::forward<F>(encode), *this, value);
+    }
+
+    /// Encodes one known ASN.1 value into an octet-aligned BIT STRING.
+    template <typename T, std::invocable<writer&, const T&> F>
+    void write_bit_string_containing(const tag& t, const T& value, F&& encode) {
+        [[maybe_unused]] auto scope = begin_primitive(t);
+        const std::array<std::uint8_t, 1> unused{0};
+        write_raw(unused);
+        std::invoke(std::forward<F>(encode), *this, value);
     }
 
     [[nodiscard]] writer_scope enter_sequence(const tag& t);

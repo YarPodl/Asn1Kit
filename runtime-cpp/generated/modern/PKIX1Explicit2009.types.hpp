@@ -7,7 +7,6 @@
 #include "asn1kit/bit_string.hpp"
 #include "asn1kit/bytes.hpp"
 #include "asn1kit/codec.hpp"
-#include "asn1kit/contained.hpp"
 #include "asn1kit/exception.hpp"
 #include "asn1kit/integer.hpp"
 #include "asn1kit/lazy.hpp"
@@ -502,7 +501,7 @@ struct TBSCertList {
 struct CertificateList {
     TBSCertList toBeSigned{};
     CertificateList_AlgorithmIdentifier algorithmIdentifier{};
-    asn1kit::contained<asn1kit::any> signature{};
+    asn1kit::bit_string signature{};
 
     static bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -513,11 +512,7 @@ struct CertificateList {
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.toBeSigned = TBSCertList::decode(inner);
             value.algorithmIdentifier = CertificateList_AlgorithmIdentifier::decode(inner);
-            value.signature = inner.read_contained<asn1kit::any>(asn1kit::tag::bit_string, true, false, 0, [&](asn1kit::reader& inner, auto) {
-                asn1kit::any item{};
-                item = inner.read_any();
-                return item;
-            });
+            value.signature = inner.read_bit_string(asn1kit::tag::bit_string);
         });
         return value;
     }
@@ -526,9 +521,7 @@ struct CertificateList {
         auto scope = w.enter_sequence(t);
         this->toBeSigned.encode(w);
         this->algorithmIdentifier.encode(w);
-        w.write_contained(asn1kit::tag::bit_string, true, this->signature, [&](asn1kit::writer& inner, const auto& value) {
-            inner.write_any(value);
-        });
+        w.write_bit_string(asn1kit::tag::bit_string, this->signature);
     }
 };
 
@@ -690,7 +683,7 @@ struct TBSCertificate {
 struct Certificate {
     asn1kit::value<TBSCertificate> toBeSigned{};
     Certificate_AlgorithmIdentifier algorithmIdentifier{};
-    asn1kit::contained<asn1kit::any> signature{};
+    asn1kit::bit_string signature{};
 
     static bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -705,11 +698,7 @@ struct Certificate {
                 return item;
             });
             value.algorithmIdentifier = Certificate_AlgorithmIdentifier::decode(inner);
-            value.signature = inner.read_contained<asn1kit::any>(asn1kit::tag::bit_string, true, false, 0, [&](asn1kit::reader& inner, auto) {
-                asn1kit::any item{};
-                item = inner.read_any();
-                return item;
-            });
+            value.signature = inner.read_bit_string(asn1kit::tag::bit_string);
         });
         return value;
     }
@@ -722,9 +711,7 @@ struct Certificate {
             this->toBeSigned.get().encode(w);
         }
         this->algorithmIdentifier.encode(w);
-        w.write_contained(asn1kit::tag::bit_string, true, this->signature, [&](asn1kit::writer& inner, const auto& value) {
-            inner.write_any(value);
-        });
+        w.write_bit_string(asn1kit::tag::bit_string, this->signature);
     }
 };
 

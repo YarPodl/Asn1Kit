@@ -146,29 +146,29 @@ END
         var document = new Asn1Compiler().CompileText(asn);
         var source = CppSource(document);
 
-        Assert.Contains("#include \"asn1kit/contained.hpp\"", source);
-        Assert.Contains("asn1kit::contained<Inner> typed{}", source);
+        Assert.DoesNotContain("asn1kit/contained.hpp", source);
+        Assert.Contains("Inner typed{}", source);
         Assert.Contains("struct Box_Inline_Content", source);
-        Assert.Contains("asn1kit::contained<Box_Inline_Content> inline_{}", source);
-        Assert.Contains("asn1kit::contained<asn1kit::any> opaque{}", source);
-        Assert.Contains("asn1kit::contained<Inner> bits{}", source);
+        Assert.Contains("Box_Inline_Content inline_{}", source);
+        Assert.Contains("asn1kit::bytes opaque{}", source);
+        Assert.Contains("Inner bits{}", source);
         Assert.Contains(
-            "inner.read_contained<Inner>(asn1kit::tag::context(0), false, true, 0",
+            "inner.read_octet_string_containing<Inner>(asn1kit::tag::context(0)",
             source);
         Assert.Contains(
-            "inner.read_contained<Box_Inline_Content>(asn1kit::tag::context(1), false, true, 0",
+            "inner.read_octet_string_containing<Box_Inline_Content>(asn1kit::tag::context(1)",
             source);
         Assert.Contains(
-            "inner.read_contained<asn1kit::any>(asn1kit::tag::context(2), false, false, 0",
+            "inner.read_octet_string(asn1kit::tag::context(2))",
             source);
         Assert.Contains(
-            "inner.read_contained<Inner>(asn1kit::tag::context(3), true, true, 0",
+            "inner.read_bit_string_containing<Inner>(asn1kit::tag::context(3)",
             source);
         Assert.Contains(
-            "w.write_contained(asn1kit::tag::context(0), false, this->typed",
+            "w.write_octet_string_containing(asn1kit::tag::context(0), this->typed",
             source);
         Assert.Contains(
-            "w.write_contained(asn1kit::tag::context(3), true, this->bits",
+            "w.write_bit_string_containing(asn1kit::tag::context(3), this->bits",
             source);
     }
 
@@ -231,12 +231,12 @@ END
         var document = new Asn1Compiler().CompileText(asn);
         var source = CppSource(document);
 
-        Assert.Contains("asn1kit::contained<asn1kit::any> extnValue{}", source);
+        Assert.Contains("asn1kit::bytes extnValue{}", source);
         Assert.Contains("std::vector<asn1kit::any> values{}", source);
         Assert.Contains("struct extnValue_binding", source);
         Assert.Contains("struct values_binding", source);
         Assert.Contains("out = asn1kit::decode_contained<T>(", source);
-        Assert.Contains("src.extnValue = asn1kit::encode_contained(value);", source);
+        Assert.Contains("src.extnValue = asn1kit::encode_contained_octets(value);", source);
         Assert.Contains(
             "bool try_decode(const Attribute& src, std::vector<T>& out) const",
             source);
@@ -929,7 +929,7 @@ END
         var cms = Assert.Single(files, f => f.RelativePath == "Cms.hpp");
         Assert.Contains("struct EncapsulatedContentInfo", cms.Contents);
         Assert.Contains("struct SignedData", cms.Contents);
-        Assert.Contains("std::optional<asn1kit::contained<asn1kit::any>> eContent{}", cms.Contents);
+        Assert.Contains("std::optional<asn1kit::bytes> eContent{}", cms.Contents);
     }
 
     [Fact]

@@ -6,7 +6,6 @@
 #include "asn1kit/bit_string.hpp"
 #include "asn1kit/bytes.hpp"
 #include "asn1kit/codec.hpp"
-#include "asn1kit/contained.hpp"
 #include "asn1kit/exception.hpp"
 #include "asn1kit/integer.hpp"
 #include "asn1kit/lazy.hpp"
@@ -87,7 +86,7 @@ struct Attribute {
 
 struct Extension {
     asn1kit::oid extnID{};
-    asn1kit::contained<asn1kit::any> extnValue{};
+    asn1kit::bytes extnValue{};
 
     static bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -97,11 +96,7 @@ struct Extension {
         Extension value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.extnID = inner.read_oid(asn1kit::tag::object_identifier);
-            value.extnValue = inner.read_contained<asn1kit::any>(asn1kit::tag::octet_string, false, false, 0, [&](asn1kit::reader& inner, auto) {
-                asn1kit::any item{};
-                item = inner.read_any();
-                return item;
-            });
+            value.extnValue = inner.read_octet_string(asn1kit::tag::octet_string);
         });
         return value;
     }
@@ -109,9 +104,7 @@ struct Extension {
     void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_object_identifier(asn1kit::tag::object_identifier, this->extnID);
-        w.write_contained(asn1kit::tag::octet_string, false, this->extnValue, [&](asn1kit::writer& inner, const auto& value) {
-            inner.write_any(value);
-        });
+        w.write_octet_string(asn1kit::tag::octet_string, this->extnValue.span());
     }
 };
 
@@ -199,7 +192,7 @@ struct extnValue_binding {
 
     void set(Extension& src, const T& value) const {
         src.extnID = key;
-        src.extnValue = asn1kit::encode_contained(value);
+        src.extnValue = asn1kit::encode_contained_octets(value);
     }
 
     [[nodiscard]] Extension create(const T& value) const {

@@ -7,7 +7,6 @@
 #include "asn1kit/bit_string.hpp"
 #include "asn1kit/bytes.hpp"
 #include "asn1kit/codec.hpp"
-#include "asn1kit/contained.hpp"
 #include "asn1kit/exception.hpp"
 #include "asn1kit/integer.hpp"
 #include "asn1kit/lazy.hpp"
@@ -116,7 +115,7 @@ struct ContentInfo {
 
 struct EncapsulatedContentInfo {
     asn1kit::oid eContentType{};
-    std::optional<asn1kit::contained<asn1kit::any>> eContent{};
+    std::optional<asn1kit::bytes> eContent{};
 
     static bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -127,13 +126,9 @@ struct EncapsulatedContentInfo {
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.eContentType = inner.read_oid(asn1kit::tag::object_identifier);
             if (inner.next_is(asn1kit::tag::context(0, true))) {
-                asn1kit::contained<asn1kit::any> tmp_eContent{};
+                asn1kit::bytes tmp_eContent{};
                 inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
-                    tmp_eContent = scoped.read_contained<asn1kit::any>(asn1kit::tag::octet_string, false, false, 0, [&](asn1kit::reader& inner, auto) {
-                        asn1kit::any item{};
-                        item = inner.read_any();
-                        return item;
-                    });
+                    tmp_eContent = scoped.read_octet_string(asn1kit::tag::octet_string);
                 });
                 value.eContent = std::move(tmp_eContent);
             }
@@ -147,9 +142,7 @@ struct EncapsulatedContentInfo {
         if (this->eContent.has_value()) {
             {
                 auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
-                w.write_contained(asn1kit::tag::octet_string, false, (*this->eContent), [&](asn1kit::writer& inner, const auto& value) {
-                    inner.write_any(value);
-                });
+                w.write_octet_string(asn1kit::tag::octet_string, (*this->eContent).span());
             }
         }
     }

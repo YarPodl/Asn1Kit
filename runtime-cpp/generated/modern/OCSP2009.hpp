@@ -6,7 +6,6 @@
 #include "asn1kit/bit_string.hpp"
 #include "asn1kit/bytes.hpp"
 #include "asn1kit/codec.hpp"
-#include "asn1kit/contained.hpp"
 #include "asn1kit/exception.hpp"
 #include "asn1kit/integer.hpp"
 #include "asn1kit/lazy.hpp"
@@ -43,7 +42,7 @@ struct response_binding {
 
     void set(ResponseBytes& src, const T& value) const {
         src.responseType = key;
-        src.response = asn1kit::encode_contained(value);
+        src.response = asn1kit::encode_contained_octets(value);
     }
 
     [[nodiscard]] ResponseBytes create(const T& value) const {

@@ -6,7 +6,6 @@
 #include "asn1kit/bit_string.hpp"
 #include "asn1kit/bytes.hpp"
 #include "asn1kit/codec.hpp"
-#include "asn1kit/contained.hpp"
 #include "asn1kit/exception.hpp"
 #include "asn1kit/integer.hpp"
 #include "asn1kit/lazy.hpp"
@@ -65,7 +64,7 @@ struct signature_binding {
 
     void set(AttributeCertificateV1& src, const T& value) const {
         src.algorithmIdentifier.algorithm = key;
-        src.signature = asn1kit::encode_contained(value);
+        src.signature = asn1kit::encode_contained_bits(value);
     }
 
     [[nodiscard]] AttributeCertificateV1 create(const T& value) const {

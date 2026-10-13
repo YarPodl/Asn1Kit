@@ -206,8 +206,18 @@ public sealed partial class CppBackend
                 out var contentModule,
                 out var contentOwner,
                 out var contentHint);
-            return
-                $"asn1kit::contained<{CppType(document, emittingModule, contentOwner, contentHint, content, optional: false)}>";
+            var resolvedContent = UnwrapAliases(document, contentModule, content);
+            if (resolvedContent is AnyType)
+            {
+                return type is BitStringType ? "asn1kit::bit_string" : "asn1kit::bytes";
+            }
+            return CppType(
+                document,
+                emittingModule,
+                contentOwner,
+                contentHint,
+                content,
+                optional: false);
         }
 
         if (type is SequenceOfType or SetOfType)

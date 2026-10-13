@@ -1204,7 +1204,6 @@ public sealed partial class CppBackend
         builder.AppendLine("#include \"asn1kit/bit_string.hpp\"");
         builder.AppendLine("#include \"asn1kit/bytes.hpp\"");
         builder.AppendLine("#include \"asn1kit/codec.hpp\"");
-        builder.AppendLine("#include \"asn1kit/contained.hpp\"");
         builder.AppendLine("#include \"asn1kit/exception.hpp\"");
         builder.AppendLine("#include \"asn1kit/integer.hpp\"");
         builder.AppendLine("#include \"asn1kit/lazy.hpp\"");
@@ -1366,7 +1365,7 @@ public sealed partial class CppBackend
                     Walk(content, context, nestedOwner + "_Content");
                     break;
                 // Open-type AnyType.Bindings are not layout deps (payload stays any /
-                // contained<any>); binding descriptors are included via OpenPlan.
+                // opaque CONTAINING ANY); binding descriptors are included via OpenPlan.
             }
         }
 

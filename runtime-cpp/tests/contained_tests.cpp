@@ -1,7 +1,6 @@
 // Copyright Asn1Kit contributors
 // SPDX-License-Identifier: Apache-2.0
 
-#include "asn1kit/contained.hpp"
 #include "asn1kit/reader.hpp"
 #include "asn1kit/writer.hpp"
 
@@ -39,92 +38,68 @@ std::vector<std::uint8_t> hex_bytes(std::string_view hex) {
 
 } // namespace
 
-TEST(Contained, WritesTypedContentAndRetainsDecodedOctets) {
+TEST(Containing, OctetStringTypedRoundTrip) {
     writer w(encoding::der);
-    w.write_contained(
+    w.write_octet_string_containing(
         tag::octet_string,
-        false,
-        contained<std::int32_t>::from_value(42),
+        std::int32_t{42},
         [](writer& inner, const std::int32_t& v) { inner.write_integer(tag::integer, v); });
     EXPECT_EQ(w.encode(), hex_bytes("040302012A"));
 
     reader r(w.encode(), encoding::der);
-    const auto value = r.read_contained<std::int32_t>(
+    const auto value = r.read_octet_string_containing<std::int32_t>(
         tag::octet_string,
-        false,
-        true,
-        0,
-        [](reader& inner, int) { return inner.read_int32(tag::integer); });
-    EXPECT_EQ(value.value(), 42);
-    EXPECT_EQ(value.contents().to_vector(), hex_bytes("02012A"));
+        [](reader& inner) { return inner.read_int32(tag::integer); });
+    EXPECT_EQ(value, 42);
     r.throw_if_not_empty();
 }
 
-TEST(Contained, ReadsBerConstructedContentAndOpaqueOctets) {
+TEST(Containing, ReadsBerConstructedContent) {
     reader constructed(hex_bytes("24800401020402012A0000"), encoding::ber);
     EXPECT_EQ(
         constructed
-            .read_contained<std::int32_t>(
+            .read_octet_string_containing<std::int32_t>(
                 tag::octet_string,
-                false,
-                true,
-                0,
-                [](reader& inner, int) { return inner.read_int32(tag::integer); })
-            .value(),
+                [](reader& inner) { return inner.read_int32(tag::integer); }),
         42);
-
-    reader opaque_reader(hex_bytes("0402FFFF"), encoding::ber);
-    const auto opaque = opaque_reader.read_contained<std::int32_t>(
-        tag::octet_string,
-        false,
-        false,
-        0,
-        [](reader& inner, int) { return inner.read_int32(tag::integer); });
-    EXPECT_FALSE(opaque.has_value());
-    EXPECT_EQ(opaque.contents().to_vector(), hex_bytes("FFFF"));
 }
 
-TEST(Contained, RejectsCorruptKnownContent) {
+TEST(Containing, OpaqueOctetsDoNotRequireAsn1Content) {
+    reader opaque_reader(hex_bytes("0402FFFF"), encoding::ber);
+    const auto opaque = opaque_reader.read_octet_string(tag::octet_string);
+    EXPECT_EQ(opaque.to_vector(), hex_bytes("FFFF"));
+}
+
+TEST(Containing, RejectsCorruptKnownContent) {
     for (const auto& hex : {"04020201", "040402010100", "040105"}) {
         reader r(hex_bytes(hex), encoding::ber);
         EXPECT_THROW(
-            (void)r.read_contained<std::int32_t>(
+            (void)r.read_octet_string_containing<std::int32_t>(
                 tag::octet_string,
-                false,
-                true,
-                0,
-                [](reader& inner, int) { return inner.read_int32(tag::integer); }),
+                [](reader& inner) { return inner.read_int32(tag::integer); }),
             exception);
     }
 }
 
-TEST(Contained, BitStringContentMustBeOctetAlignedWhenKnown) {
+TEST(Containing, BitStringContentMustBeOctetAlignedWhenKnown) {
     writer w(encoding::der);
-    w.write_contained(
+    w.write_bit_string_containing(
         tag::bit_string,
-        true,
-        contained<std::int32_t>::from_value(42),
+        std::int32_t{42},
         [](writer& inner, const std::int32_t& v) { inner.write_integer(tag::integer, v); });
     EXPECT_EQ(w.encode(), hex_bytes("03040002012A"));
 
     reader r(hex_bytes("030203A0"), encoding::ber);
     EXPECT_THROW(
-        (void)r.read_contained<std::int32_t>(
+        (void)r.read_bit_string_containing<std::int32_t>(
             tag::bit_string,
-            true,
-            true,
-            0,
-            [](reader& inner, int) { return inner.read_int32(tag::integer); }),
+            [](reader& inner) { return inner.read_int32(tag::integer); }),
         exception);
 }
 
-TEST(Contained, OpaqueBitStringRoundTripsUnusedBits) {
-    const auto opaque = contained<std::int32_t>::from_encoded(bytes::copy_from(hex_bytes("A0")), 2);
+TEST(Containing, OpaqueBitStringRoundTripsUnusedBits) {
+    const auto opaque = bit_string::copy_from(hex_bytes("A0"), 2);
     writer w(encoding::der);
-    w.write_contained(
-        tag::bit_string,
-        true,
-        opaque,
-        [](writer&, const std::int32_t&) { FAIL() << "opaque encode must not invoke callback"; });
+    w.write_bit_string(tag::bit_string, opaque);
     EXPECT_EQ(w.encode(), hex_bytes("030202A0"));
 }

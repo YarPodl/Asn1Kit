@@ -131,7 +131,7 @@ using PkixOids = Pkix::PKIX1Explicit2009Oids;
     if (!signed_data.encapContentInfo.eContent.has_value()) {
         throw std::runtime_error("Attached SignedData requires eContent.");
     }
-    return signed_data.encapContentInfo.eContent->contents().span();
+    return signed_data.encapContentInfo.eContent->span();
 }
 
 [[nodiscard]] bool digest_algorithm_listed(
@@ -315,7 +315,7 @@ void print_cms(std::span<const std::uint8_t> encoded, std::ostream& out) {
     out << "    encapContentInfo:\n";
     out << "      eContentType: " << signed_data.encapContentInfo.eContentType.to_string() << "\n";
     if (signed_data.encapContentInfo.eContent.has_value()) {
-        out << "      eContent: " << signed_data.encapContentInfo.eContent->contents().size()
+        out << "      eContent: " << signed_data.encapContentInfo.eContent->size()
             << " octets\n";
     } else {
         out << "      eContent: <absent>\n";
@@ -389,8 +389,7 @@ std::vector<std::uint8_t> build_attached_signed_data(
     signed_data.version = Cms::CMSVersion::V1;
     signed_data.digestAlgorithms = {digest_algorithm};
     signed_data.encapContentInfo.eContentType = CmsOids::IdData.get();
-    signed_data.encapContentInfo.eContent =
-        asn1kit::contained<asn1kit::any>::from_encoded(asn1kit::bytes::copy_from(content));
+    signed_data.encapContentInfo.eContent = asn1kit::bytes::copy_from(content);
     signed_data.certificates = std::vector<Cms::CertificateChoices>{
         Cms::CertificateChoices::from_certificate(certificate)};
     signed_data.signerInfos = {std::move(signer)};

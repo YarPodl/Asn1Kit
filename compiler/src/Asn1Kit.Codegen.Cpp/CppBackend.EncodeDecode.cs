@@ -177,9 +177,20 @@ public sealed partial class CppBackend
                 out var contentOwner,
                 out var contentHint);
             var containedTag = forceTag ?? TagExpr(document, module, type);
-            var isBitString = type is BitStringType ? "true" : "false";
+            var resolvedContent = UnwrapAliases(document, contentModule, content);
+            if (resolvedContent is AnyType)
+            {
+                if (type is BitStringType)
+                    sb.AppendLine($"{indent}{writer}.write_bit_string({containedTag}, {expr});");
+                else
+                    sb.AppendLine($"{indent}{writer}.write_octet_string({containedTag}, {expr}.span());");
+                return;
+            }
+            var method = type is BitStringType
+                ? "write_bit_string_containing"
+                : "write_octet_string_containing";
             sb.AppendLine(
-                $"{indent}{writer}.write_contained({containedTag}, {isBitString}, {expr}, [&](asn1kit::writer& inner, const auto& value) {{");
+                $"{indent}{writer}.{method}({containedTag}, {expr}, [&](asn1kit::writer& inner, const auto& value) {{");
             EmitEncodeValue(
                 sb,
                 document,
@@ -710,8 +721,13 @@ public sealed partial class CppBackend
                 out var contentOwner,
                 out var contentHint);
             var containedTag = forceTag ?? TagExpr(document, module, type);
-            var isBitString = type is BitStringType ? "true" : "false";
-            var known = content is AnyType ? "false" : "true";
+            var resolvedContent = UnwrapAliases(document, contentModule, content);
+            if (resolvedContent is AnyType)
+            {
+                var readMethod = type is BitStringType ? "read_bit_string" : "read_octet_string";
+                sb.AppendLine($"{indent}{target} = {reader}.{readMethod}({containedTag});");
+                return;
+            }
             var contentCppType = CppType(
                 document,
                 contentModule,
@@ -719,8 +735,11 @@ public sealed partial class CppBackend
                 contentHint,
                 content,
                 optional: false);
+            var method = type is BitStringType
+                ? "read_bit_string_containing"
+                : "read_octet_string_containing";
             sb.AppendLine(
-                $"{indent}{target} = {reader}.read_contained<{contentCppType}>({containedTag}, {isBitString}, {known}, 0, [&](asn1kit::reader& inner, auto) {{");
+                $"{indent}{target} = {reader}.{method}<{contentCppType}>({containedTag}, [&](asn1kit::reader& inner) {{");
             sb.AppendLine($"{indent}    {contentCppType} item{{}};");
             EmitDecodeAssign(
                 sb,

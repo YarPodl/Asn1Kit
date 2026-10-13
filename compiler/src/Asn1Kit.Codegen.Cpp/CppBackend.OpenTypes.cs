@@ -630,9 +630,14 @@ public sealed partial class CppBackend
             OpenPayloadKind.Many => "asn1kit::decode_each<T>",
             _ => "asn1kit::decode_open<T>"
         };
+        var containedType = site.Payload.Kind == OpenPayloadKind.Contained
+            ? UnwrapAliases(document, site.Container.Module, site.Payload.Type)
+            : null;
         var encodeCall = site.Payload.Kind switch
         {
-            OpenPayloadKind.Contained => "asn1kit::encode_contained",
+            OpenPayloadKind.Contained when containedType is BitStringType =>
+                "asn1kit::encode_contained_bits",
+            OpenPayloadKind.Contained => "asn1kit::encode_contained_octets",
             OpenPayloadKind.Many => "asn1kit::encode_each",
             _ => "asn1kit::encode_open"
         };

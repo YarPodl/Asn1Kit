@@ -6,7 +6,6 @@
 #include "asn1kit/any.hpp"
 #include "asn1kit/bit_string.hpp"
 #include "asn1kit/bytes.hpp"
-#include "asn1kit/contained.hpp"
 #include "asn1kit/integer.hpp"
 #include "asn1kit/lazy.hpp"
 #include "asn1kit/null.hpp"
@@ -145,17 +144,6 @@ void to_string(const lazy<T>& value, std::ostream& out, int indent) {
         out << " bytes>";
     } else {
         out << "<unset>";
-    }
-}
-
-template <typename T>
-void to_string(const contained<T>& value, std::ostream& out, int indent) {
-    if (value.has_value()) {
-        to_string(value.value(), out, indent);
-    } else {
-        out << "<opaque: ";
-        detail::write_format_decimal(out, value.contents().size());
-        out << " bytes>";
     }
 }
 

@@ -6,7 +6,6 @@
 #include "asn1kit/bit_string.hpp"
 #include "asn1kit/bytes.hpp"
 #include "asn1kit/codec.hpp"
-#include "asn1kit/contained.hpp"
 #include "asn1kit/exception.hpp"
 #include "asn1kit/integer.hpp"
 #include "asn1kit/lazy.hpp"
@@ -96,7 +95,7 @@ struct eContent_binding {
 
     void set(EncapsulatedContentInfo& src, const T& value) const {
         src.eContentType = key;
-        src.eContent = asn1kit::encode_contained(value);
+        src.eContent = asn1kit::encode_contained_octets(value);
     }
 
     [[nodiscard]] EncapsulatedContentInfo create(const T& value) const {

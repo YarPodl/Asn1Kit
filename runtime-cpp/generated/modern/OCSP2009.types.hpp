@@ -7,7 +7,6 @@
 #include "asn1kit/bit_string.hpp"
 #include "asn1kit/bytes.hpp"
 #include "asn1kit/codec.hpp"
-#include "asn1kit/contained.hpp"
 #include "asn1kit/exception.hpp"
 #include "asn1kit/integer.hpp"
 #include "asn1kit/lazy.hpp"
@@ -311,7 +310,7 @@ struct ResponderID {
 
 struct ResponseBytes {
     asn1kit::oid responseType{};
-    asn1kit::contained<asn1kit::any> response{};
+    asn1kit::bytes response{};
 
     static bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -321,11 +320,7 @@ struct ResponseBytes {
         ResponseBytes value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.responseType = inner.read_oid(asn1kit::tag::object_identifier);
-            value.response = inner.read_contained<asn1kit::any>(asn1kit::tag::octet_string, false, false, 0, [&](asn1kit::reader& inner, auto) {
-                asn1kit::any item{};
-                item = inner.read_any();
-                return item;
-            });
+            value.response = inner.read_octet_string(asn1kit::tag::octet_string);
         });
         return value;
     }
@@ -333,9 +328,7 @@ struct ResponseBytes {
     void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
         w.write_object_identifier(asn1kit::tag::object_identifier, this->responseType);
-        w.write_contained(asn1kit::tag::octet_string, false, this->response, [&](asn1kit::writer& inner, const auto& value) {
-            inner.write_any(value);
-        });
+        w.write_octet_string(asn1kit::tag::octet_string, this->response.span());
     }
 };
 
