@@ -429,7 +429,7 @@ END
         Assert.Contains("struct Flags", source);
         Assert.Contains("FlagsFlags", source);
         Assert.Contains("enum class Bag_kind", source);
-        Assert.Contains("static bool match_tag(const asn1kit::tag& t)", source);
+        Assert.Contains("static constexpr bool match_tag(const asn1kit::tag& t)", source);
         Assert.DoesNotContain("default_tag", source);
         Assert.Contains("write_set_of", source);
         Assert.Contains("read_sequence_of", source);
@@ -661,6 +661,9 @@ END
 
         Assert.Contains("Time_kind kind{};", source);
         Assert.Contains("asn1kit::utc_date_time value{};", source);
+        Assert.Contains("static constexpr Time from_utcTime(asn1kit::utc_date_time v)", source);
+        Assert.Contains("static constexpr Time from_generalTime(asn1kit::utc_date_time v)", source);
+        Assert.Contains("static constexpr bool match_tag(const asn1kit::tag& t)", source);
         Assert.Contains("const auto& alt = value;", source);
         Assert.Contains("result.value = std::move(v);", source);
         Assert.Contains("result.value = std::move(alt);", source);
@@ -691,6 +694,29 @@ END
         Assert.Contains("const auto& alt = std::get<2>(value);", source);
         Assert.DoesNotContain("std::get<3>", source);
         Assert.Contains("return from_unknown(r.read_any());", source);
+        Assert.Contains("static Pick from_first(std::string v)", source);
+        Assert.DoesNotContain("static constexpr Pick from_", source);
+        Assert.Contains("static constexpr bool match_tag(const asn1kit::tag& t)", source);
+    }
+
+    [Fact]
+    public void ChoiceFactoriesAreConstexprOnlyForLiteralPayloads()
+    {
+        const string asn = @"
+M DEFINITIONS ::= BEGIN
+Mode ::= ENUMERATED { first(0), second(1) }
+LiteralPick ::= CHOICE { flag BOOLEAN, count INTEGER (0..10), mode Mode }
+OwnedPick ::= CHOICE { flag BOOLEAN, data OCTET STRING }
+END
+";
+        var source = CppSource(asn);
+
+        Assert.Contains("static constexpr LiteralPick from_flag(bool v)", source);
+        Assert.Contains("static constexpr LiteralPick from_count(std::int32_t v)", source);
+        Assert.Contains("static constexpr LiteralPick from_mode(Mode v)", source);
+        Assert.Contains("static OwnedPick from_flag(bool v)", source);
+        Assert.Contains("static OwnedPick from_data(asn1kit::bytes v)", source);
+        Assert.DoesNotContain("static constexpr OwnedPick from_", source);
     }
 
     [Fact]

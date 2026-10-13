@@ -33,7 +33,7 @@ struct AlgorithmIdentifier {
     asn1kit::oid algorithm{};
     std::optional<asn1kit::any> parameters{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -86,7 +86,7 @@ struct SMIMECapability {
     asn1kit::oid capabilityID{};
     std::optional<asn1kit::any> parameters{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 

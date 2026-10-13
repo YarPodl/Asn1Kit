@@ -49,16 +49,18 @@ template <time_form Form, int FractionDigits = 3>
 struct asn_time {
     utc_date_time value{};
 
-    asn_time() = default;
-    asn_time(utc_date_time v) : value(std::move(v)) {}
+    constexpr asn_time() = default;
+    constexpr asn_time(utc_date_time v) : value(std::move(v)) {}
 
-    [[nodiscard]] operator const utc_date_time&() const noexcept { return value; }
-    [[nodiscard]] operator utc_date_time&() noexcept { return value; }
+    [[nodiscard]] constexpr operator const utc_date_time&() const noexcept { return value; }
+    [[nodiscard]] constexpr operator utc_date_time&() noexcept { return value; }
 
-    friend bool operator==(const asn_time& a, const asn_time& b) noexcept {
+    friend constexpr bool operator==(const asn_time& a, const asn_time& b) noexcept {
         return a.value == b.value;
     }
-    friend bool operator!=(const asn_time& a, const asn_time& b) noexcept { return !(a == b); }
+    friend constexpr bool operator!=(const asn_time& a, const asn_time& b) noexcept {
+        return !(a == b);
+    }
 };
 
 namespace detail {

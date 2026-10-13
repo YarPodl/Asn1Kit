@@ -257,7 +257,7 @@ struct PKIBody {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::context(0, true)) || t.matches_ignore_constructed(asn1kit::tag::context(1, true)) || t.matches_ignore_constructed(asn1kit::tag::context(2, true)) || t.matches_ignore_constructed(asn1kit::tag::context(3, true)) || t.matches_ignore_constructed(asn1kit::tag::context(4, true)) || t.matches_ignore_constructed(asn1kit::tag::context(5, true)) || t.matches_ignore_constructed(asn1kit::tag::context(6, true)) || t.matches_ignore_constructed(asn1kit::tag::context(7, true)) || t.matches_ignore_constructed(asn1kit::tag::context(8, true)) || t.matches_ignore_constructed(asn1kit::tag::context(9, true)) || t.matches_ignore_constructed(asn1kit::tag::context(10, true)) || t.matches_ignore_constructed(asn1kit::tag::context(11, true)) || t.matches_ignore_constructed(asn1kit::tag::context(12, true)) || t.matches_ignore_constructed(asn1kit::tag::context(13, true)) || t.matches_ignore_constructed(asn1kit::tag::context(14, true)) || t.matches_ignore_constructed(asn1kit::tag::context(15, true)) || t.matches_ignore_constructed(asn1kit::tag::context(16, true)) || t.matches_ignore_constructed(asn1kit::tag::context(17, true)) || t.matches_ignore_constructed(asn1kit::tag::context(18, true)) || t.matches_ignore_constructed(asn1kit::tag::context(19, true)) || t.matches_ignore_constructed(asn1kit::tag::context(20, true)) || t.matches_ignore_constructed(asn1kit::tag::context(21, true)) || t.matches_ignore_constructed(asn1kit::tag::context(22, true)) || t.matches_ignore_constructed(asn1kit::tag::context(23, true)) || t.matches_ignore_constructed(asn1kit::tag::context(24, true)) || t.matches_ignore_constructed(asn1kit::tag::context(25, true)) || t.matches_ignore_constructed(asn1kit::tag::context(26, true)));
     }
 
@@ -831,7 +831,7 @@ struct PKIMessage {
     std::optional<asn1kit::bit_string> protection{};
     std::optional<std::vector<CMPCertificate>> extraCerts{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 

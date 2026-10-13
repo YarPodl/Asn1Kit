@@ -33,7 +33,7 @@ struct AttributeSet {
     asn1kit::oid type{};
     std::vector<asn1kit::any> values{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -64,7 +64,7 @@ struct Extension {
     bool critical = false;
     asn1kit::bytes extnValue{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -97,7 +97,7 @@ struct SecurityCategory {
     asn1kit::oid type{};
     asn1kit::any value_{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -128,7 +128,7 @@ struct SingleAttribute {
     asn1kit::oid type{};
     asn1kit::any value_{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 

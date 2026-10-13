@@ -30,7 +30,7 @@ struct Bag {
     asn1kit::integer a{};
     std::optional<bool> b{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::set);
     }
 
@@ -74,7 +74,7 @@ struct Box {
     std::optional<asn1kit::null_value> flag{};
     std::optional<asn1kit::bytes> tail{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -150,7 +150,7 @@ struct Pick {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::context(0));
     }
 

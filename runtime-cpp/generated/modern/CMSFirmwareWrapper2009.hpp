@@ -142,7 +142,7 @@ struct HardwareModuleName {
     asn1kit::oid hwType{};
     asn1kit::bytes hwSerialNum{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -166,7 +166,7 @@ struct HardwareSerialEntry_Block {
     asn1kit::bytes low{};
     asn1kit::bytes high{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -217,7 +217,7 @@ struct HardwareSerialEntry {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::null) || t.matches_ignore_constructed(asn1kit::tag::octet_string) || t.matches_ignore_constructed(asn1kit::tag::sequence));
     }
 
@@ -288,7 +288,7 @@ struct HardwareModules {
     asn1kit::oid hwType{};
     std::vector<HardwareSerialEntry> hwSerialEntries{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -331,7 +331,7 @@ struct CommunityIdentifier {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::object_identifier) || t.matches_ignore_constructed(asn1kit::tag::sequence));
     }
 
@@ -408,7 +408,7 @@ struct PreferredOrLegacyStalePackageIdentifier {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::integer) || t.matches_ignore_constructed(asn1kit::tag::octet_string));
     }
 
@@ -466,7 +466,7 @@ struct PreferredPackageIdentifier {
     asn1kit::oid fwPkgID{};
     asn1kit::integer verNum{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -509,7 +509,7 @@ struct PreferredOrLegacyPackageIdentifier {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::sequence) || t.matches_ignore_constructed(asn1kit::tag::octet_string));
     }
 
@@ -567,7 +567,7 @@ struct CurrentFWConfig {
     std::optional<asn1kit::integer> fwPkgType{};
     PreferredOrLegacyPackageIdentifier fwPkgName{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -595,7 +595,7 @@ struct FirmwarePackageIdentifier {
     PreferredOrLegacyPackageIdentifier name{};
     std::optional<PreferredOrLegacyStalePackageIdentifier> stale{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -623,7 +623,7 @@ struct FirmwarePackageInfo {
     std::optional<asn1kit::integer> fwPkgType{};
     std::optional<std::vector<PreferredOrLegacyPackageIdentifier>> dependencies{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -660,7 +660,7 @@ struct FirmwarePackageLoadError {
     std::optional<PreferredOrLegacyPackageIdentifier> fwPkgName{};
     std::optional<std::vector<CurrentFWConfig>> config{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -717,7 +717,7 @@ struct FirmwarePackageLoadReceipt {
     std::optional<asn1kit::bytes> trustAnchorKeyID{};
     std::optional<asn1kit::bytes> decryptKeyID{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 

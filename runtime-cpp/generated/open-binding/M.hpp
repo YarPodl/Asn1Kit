@@ -30,7 +30,7 @@ struct AlgorithmIdentifier {
     asn1kit::oid algorithm{};
     std::optional<asn1kit::any> parameters{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -58,7 +58,7 @@ struct Attribute {
     asn1kit::oid type{};
     std::vector<asn1kit::any> values{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -88,7 +88,7 @@ struct Extension {
     asn1kit::oid extnID{};
     asn1kit::bytes extnValue{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -113,7 +113,7 @@ struct Holder {
     Extension ext{};
     Attribute attr{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -138,7 +138,7 @@ struct Holder {
 struct Outer_Nested_Item {
     asn1kit::any value_{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -160,7 +160,7 @@ struct Outer {
     asn1kit::oid id{};
     std::vector<Outer_Nested_Item> nested{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 

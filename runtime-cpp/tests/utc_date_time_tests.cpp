@@ -14,6 +14,11 @@ namespace {
 
 using namespace asn1kit;
 
+constexpr utc_date_time constexpr_date{2024, 2, 29, 23, 59, 58, time_fraction{1234567}};
+constexpr auto constexpr_time_point = constexpr_date.to_sys_time();
+static_assert(utc_date_time::from_sys_time(constexpr_time_point) == constexpr_date);
+static_assert(utc_date_time::from_system_clock(constexpr_date.to_system_clock()) == constexpr_date);
+
 TEST(UtcDateTime, SysTimeRoundTrip) {
     // utc_date_time -> sys_time -> utc_date_time must be lossless, including dates
     // far from the epoch (the old 32-bit time_fraction rep overflowed here).

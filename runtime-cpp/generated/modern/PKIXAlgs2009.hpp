@@ -72,7 +72,7 @@ struct DSAParams {
     asn1kit::integer q{};
     asn1kit::integer g{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -98,7 +98,7 @@ struct DSASigValue {
     asn1kit::integer r{};
     asn1kit::integer s{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -122,7 +122,7 @@ struct ECDSASigValue {
     asn1kit::integer r{};
     asn1kit::integer s{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -146,7 +146,7 @@ struct RSAPublicKey {
     asn1kit::integer modulus{};
     asn1kit::integer publicExponent{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -170,7 +170,7 @@ struct ValidationParams {
     asn1kit::bit_string seed{};
     asn1kit::integer pgenCounter{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -197,7 +197,7 @@ struct DomainParameters {
     std::optional<asn1kit::integer> j{};
     std::optional<ValidationParams> validationParams{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 

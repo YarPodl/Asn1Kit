@@ -55,7 +55,7 @@ public sealed partial class CppBackend
 
         sb.AppendLine();
         var naturalTag = UniversalTag(document, module, type);
-        sb.AppendLine("    static bool match_tag(const asn1kit::tag& t) {");
+        sb.AppendLine("    static constexpr bool match_tag(const asn1kit::tag& t) {");
         sb.AppendLine($"        return t.matches_ignore_constructed({naturalTag});");
         sb.AppendLine("    }");
         sb.AppendLine();
@@ -227,6 +227,8 @@ public sealed partial class CppBackend
         var variantTypes = payloadTypes.Distinct(StringComparer.Ordinal).ToList();
         var variantIndices = payloadTypes.Select(t => variantTypes.IndexOf(t)).ToList();
         var singlePayload = variantTypes.Count == 1;
+        var constexprFactories = !type.Extensible
+            && alts.All(alt => IsConstexprChoicePayload(document, module, alt.Type));
 
         sb.AppendLine($"enum class {typeName}_kind {{");
         for (var i = 0; i < kinds.Count; i++)
@@ -257,7 +259,8 @@ public sealed partial class CppBackend
         for (var i = 0; i < alts.Count; i++)
         {
             var factory = "from_" + kinds[i];
-            sb.AppendLine($"    static {typeName} {factory}({payloadTypes[i]} v) {{");
+            var constexprKeyword = constexprFactories ? "constexpr " : "";
+            sb.AppendLine($"    static {constexprKeyword}{typeName} {factory}({payloadTypes[i]} v) {{");
             sb.AppendLine($"        {typeName} result{{}};");
             sb.AppendLine($"        result.kind = {typeName}_kind::{kinds[i]};");
             if (singlePayload)
@@ -285,7 +288,7 @@ public sealed partial class CppBackend
             sb.AppendLine();
         }
 
-        sb.AppendLine("    static bool match_tag(const asn1kit::tag& t) {");
+        sb.AppendLine("    static constexpr bool match_tag(const asn1kit::tag& t) {");
         if (type.Tag is not null)
         {
             sb.AppendLine(
@@ -372,6 +375,50 @@ public sealed partial class CppBackend
 
         sb.AppendLine("};");
     }
+
+    private bool IsConstexprChoicePayload(
+        IrDocument document,
+        IrModule module,
+        TypeExpr type)
+    {
+        var resolvedModule = module;
+        var resolved = UnwrapAliases(document, ref resolvedModule, type);
+        switch (resolved)
+        {
+            case BooleanType:
+            case NullType:
+            case TimeType:
+            case EnumeratedType:
+                return true;
+            case IntegerType:
+                return IsConstexprInteger(document, resolvedModule, type);
+            case RefType reference:
+            {
+                var found = FindWithModule(document, resolvedModule, reference);
+                if (found is null)
+                {
+                    return false;
+                }
+
+                if (found.Value.Def.Type is EnumeratedType)
+                {
+                    return true;
+                }
+
+                return found.Value.Def.Type is IntegerType
+                    && IsConstexprInteger(document, found.Value.Module, reference);
+            }
+            default:
+                return false;
+        }
+    }
+
+    private bool IsConstexprInteger(IrDocument document, IrModule module, TypeExpr type) =>
+        TryResolveIntegerRepresentation(document, module, type) is
+            IrOptions.IntegerRepresentations.Int32 or
+            IrOptions.IntegerRepresentations.UInt32 or
+            IrOptions.IntegerRepresentations.Int64 or
+            IrOptions.IntegerRepresentations.UInt64;
 
     private void EmitChoiceDecodeAlternatives(
         StringBuilder sb,
@@ -615,7 +662,7 @@ public sealed partial class CppBackend
         sb.AppendLine("        return result;");
         sb.AppendLine("    }");
         sb.AppendLine();
-        sb.AppendLine("    static bool match_tag(const asn1kit::tag& t) {");
+        sb.AppendLine("    static constexpr bool match_tag(const asn1kit::tag& t) {");
         sb.AppendLine("        return t.matches_ignore_constructed(asn1kit::tag::bit_string);");
         sb.AppendLine("    }");
         sb.AppendLine();

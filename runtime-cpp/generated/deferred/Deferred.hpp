@@ -29,7 +29,7 @@ namespace Deferred {
 struct Inner {
     asn1kit::integer n{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -51,7 +51,7 @@ struct Box {
     asn1kit::value<Inner> retained{};
     asn1kit::lazy<Inner> deferred{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 

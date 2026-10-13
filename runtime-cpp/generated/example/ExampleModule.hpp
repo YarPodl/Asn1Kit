@@ -32,7 +32,7 @@ struct Person {
     asn1kit::bytes name{};
     std::optional<asn1kit::bytes> nick{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 

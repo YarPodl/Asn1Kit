@@ -52,7 +52,7 @@ struct AAControls {
     std::optional<std::vector<asn1kit::oid>> excludedAttrs{};
     bool permitUnSpecified = true;
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -111,7 +111,7 @@ struct ACClearAttrs {
     asn1kit::integer acSerial{};
     std::vector<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet> attrs{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -137,7 +137,7 @@ struct AttCertValidityPeriod {
     asn1kit::utc_date_time notBeforeTime{};
     asn1kit::utc_date_time notAfterTime{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -165,7 +165,7 @@ struct AttributeCertificate_AlgorithmIdentifier {
     asn1kit::oid algorithm{};
     std::optional<asn1kit::any> parameters{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -264,7 +264,7 @@ struct ClassList {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::bit_string);
     }
 
@@ -284,7 +284,7 @@ struct Clearance {
     ClassList classList = asn1kit::bit_string::copy_from(std::vector<std::uint8_t>{0x40}, 6);
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SecurityCategory>> securityCategories{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -348,7 +348,7 @@ struct IetfAttrSyntax_Values_Item {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::octet_string) || t.matches_ignore_constructed(asn1kit::tag::object_identifier) || t.matches_ignore_constructed(asn1kit::tag::utf8_string));
     }
 
@@ -419,7 +419,7 @@ struct IetfAttrSyntax {
     std::optional<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> policyAuthority{};
     std::vector<IetfAttrSyntax_Values_Item> values{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -448,7 +448,7 @@ struct IssuerSerial {
     asn1kit::integer serial{};
     std::optional<asn1kit::bit_string> issuerUID{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -509,7 +509,7 @@ struct ObjectDigestInfo {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier digestAlgorithm{};
     asn1kit::bit_string objectDigest{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -542,7 +542,7 @@ struct Holder {
     std::optional<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> entityName{};
     std::optional<ObjectDigestInfo> objectDigestInfo{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -580,7 +580,7 @@ struct RoleSyntax {
     std::optional<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> roleAuthority{};
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName roleName{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -615,7 +615,7 @@ struct SecurityCategoryRfc3281 {
     asn1kit::oid type{};
     asn1kit::any value_{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -647,7 +647,7 @@ struct ClearanceRfc3281 {
     ClassList classList = asn1kit::bit_string::copy_from(std::vector<std::uint8_t>{0x40}, 6);
     std::optional<std::vector<SecurityCategoryRfc3281>> securityCategories{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -685,7 +685,7 @@ struct SvceAuthInfo {
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName ident{};
     std::optional<asn1kit::bytes> authInfo{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -716,7 +716,7 @@ struct TargetCert {
     std::optional<::asn1kit::modern::PKIX1Implicit2009::GeneralName> targetName{};
     std::optional<ObjectDigestInfo> certDigestInfo{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -777,7 +777,7 @@ struct Target {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::context(0, true)) || t.matches_ignore_constructed(asn1kit::tag::context(1, true)) || t.matches_ignore_constructed(asn1kit::tag::context(2, true)));
     }
 
@@ -863,7 +863,7 @@ struct V2Form {
     std::optional<IssuerSerial> baseCertificateID{};
     std::optional<ObjectDigestInfo> objectDigestInfo{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -920,7 +920,7 @@ struct AttCertIssuer {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::sequence) || t.matches_ignore_constructed(asn1kit::tag::context(0, true)));
     }
 
@@ -985,7 +985,7 @@ struct AttributeCertificateInfo {
     std::optional<asn1kit::bit_string> issuerUniqueID{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> extensions{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -1032,7 +1032,7 @@ struct AttributeCertificate {
     AttributeCertificate_AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::bit_string signature{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 

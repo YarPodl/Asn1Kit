@@ -85,7 +85,7 @@ struct AddExtensions {
     std::vector<std::uint32_t> certReferences{};
     std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension> extensions{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -130,7 +130,7 @@ struct BodyPartReference {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::integer) || t.matches_ignore_constructed(asn1kit::tag::sequence));
     }
 
@@ -217,7 +217,7 @@ struct CMCPublicationInfo {
     std::vector<asn1kit::bytes> certHashes{};
     ::asn1kit::modern::PKIXCRMF2009::PKIPublicationInfo pubInfo{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -253,7 +253,7 @@ struct CMCStatusInfoV2_OtherInfo_ExtendedFailInfo {
     asn1kit::oid failInfoOID{};
     asn1kit::any failInfoValue{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -278,7 +278,7 @@ struct CMCUnsignedData {
     asn1kit::oid identifier{};
     asn1kit::any content{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -304,7 +304,7 @@ struct CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithm{};
     asn1kit::bit_string subjectPublicKey{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -330,7 +330,7 @@ struct CertificationRequest_CertificationRequestInfo {
     CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo subjectPublicKeyInfo{};
     std::vector<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet> attributes{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -365,7 +365,7 @@ struct CertificationRequest {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signatureAlgorithm{};
     asn1kit::bit_string signature{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -390,7 +390,7 @@ struct CertificationRequest {
 struct ControlsProcessed {
     std::vector<BodyPartReference> bodyList{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -413,7 +413,7 @@ struct DecryptedPOP {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier thePOPAlgID{};
     asn1kit::bytes thePOP{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -451,7 +451,7 @@ struct GetCRL {
     std::optional<asn1kit::utc_date_time> time{};
     std::optional<::asn1kit::modern::PKIX1Implicit2009::ReasonFlags> reasons{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -497,7 +497,7 @@ struct GetCert {
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName issuerName{};
     asn1kit::integer serialNumber{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -522,7 +522,7 @@ struct IdentityProofV2 {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier macAlgId{};
     asn1kit::bytes witness{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -548,7 +548,7 @@ struct LraPopWitness {
     std::uint32_t pkiDataBodyid{};
     std::vector<std::uint32_t> bodyIds{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -574,7 +574,7 @@ struct ModCertTemplate {
     bool replace = true;
     ::asn1kit::modern::PKIXCRMF2009::CertTemplate certTemplate{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -610,7 +610,7 @@ struct OtherMsg {
     asn1kit::oid otherMsgType{};
     asn1kit::any otherMsgValue{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -636,7 +636,7 @@ struct PendInfo {
     asn1kit::bytes pendToken{};
     asn1kit::utc_date_time pendTime{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -687,7 +687,7 @@ struct CMCStatusInfoV2_OtherInfo {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::integer) || t.matches_ignore_constructed(asn1kit::tag::sequence) || t.matches_ignore_constructed(asn1kit::tag::context(1, true)));
     }
 
@@ -760,7 +760,7 @@ struct CMCStatusInfoV2 {
     std::optional<std::string> statusString{};
     std::optional<CMCStatusInfoV2_OtherInfo> otherInfo{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -815,7 +815,7 @@ struct CMCStatusInfo_OtherInfo {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::integer) || t.matches_ignore_constructed(asn1kit::tag::sequence));
     }
 
@@ -875,7 +875,7 @@ struct CMCStatusInfo {
     std::optional<std::string> statusString{};
     std::optional<CMCStatusInfo_OtherInfo> otherInfo{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -912,7 +912,7 @@ struct PopLinkWitnessV2 {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier macAlgorithm{};
     asn1kit::bytes witness{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -939,7 +939,7 @@ struct PublishTrustAnchors {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm{};
     std::vector<asn1kit::bytes> anchorHashes{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -969,7 +969,7 @@ struct RevokeRequest {
     std::optional<asn1kit::bytes> passphrase{};
     std::optional<std::string> comment{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -1020,7 +1020,7 @@ struct TaggedAttribute {
     asn1kit::oid attrType{};
     std::vector<asn1kit::any> attrValues{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -1052,7 +1052,7 @@ struct TaggedCertificationRequest {
     std::uint32_t bodyPartID{};
     CertificationRequest certificationRequest{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -1086,7 +1086,7 @@ struct TaggedContentInfo {
     std::uint32_t bodyPartID{};
     ::asn1kit::modern::CryptographicMessageSyntax2009::ContentInfo contentInfo{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -1111,7 +1111,7 @@ struct PKIResponse {
     std::vector<TaggedContentInfo> cmsSequence{};
     std::vector<OtherMsg> otherMsgSequence{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -1138,7 +1138,7 @@ struct TaggedRequest_Orm {
     asn1kit::oid requestMessageType{};
     asn1kit::any requestMessageValue{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -1191,7 +1191,7 @@ struct TaggedRequest {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::context(0, true)) || t.matches_ignore_constructed(asn1kit::tag::context(1, true)) || t.matches_ignore_constructed(asn1kit::tag::context(2, true)));
     }
 
@@ -1265,7 +1265,7 @@ struct EncryptedPOP {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier witnessAlgID{};
     asn1kit::bytes witness{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -1297,7 +1297,7 @@ struct PKIData {
     std::vector<TaggedContentInfo> cmsSequence{};
     std::vector<OtherMsg> otherMsgSequence{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 

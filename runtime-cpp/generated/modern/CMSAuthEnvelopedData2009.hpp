@@ -51,7 +51,7 @@ struct AuthEnvelopedData {
     asn1kit::bytes mac{};
     std::optional<std::vector<::asn1kit::modern::CryptographicMessageSyntax2009::Attribute>> unauthAttrs{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 

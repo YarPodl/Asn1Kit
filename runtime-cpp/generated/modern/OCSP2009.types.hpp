@@ -57,7 +57,7 @@ struct CertID {
     asn1kit::bytes issuerKeyHash{};
     asn1kit::integer serialNumber{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -86,7 +86,7 @@ struct CrlID {
     std::optional<asn1kit::integer> crlNum{};
     std::optional<asn1kit::utc_date_time> crlTime{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -180,7 +180,7 @@ struct Request {
     CertID reqCert{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> singleRequestExtensions{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -234,7 +234,7 @@ struct ResponderID {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::context(1, true)) || t.matches_ignore_constructed(asn1kit::tag::context(2, true)));
     }
 
@@ -312,7 +312,7 @@ struct ResponseBytes {
     asn1kit::oid responseType{};
     asn1kit::bytes response{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -336,7 +336,7 @@ struct OCSPResponse {
     OCSPResponseStatus responseStatus{};
     std::optional<ResponseBytes> responseBytes{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -381,7 +381,7 @@ struct RevokedInfo {
     asn1kit::utc_date_time revocationTime{};
     std::optional<::asn1kit::modern::PKIX1Implicit2009::CRLReason> revocationReason{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -443,7 +443,7 @@ struct CertStatus {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::context(0)) || t.matches_ignore_constructed(asn1kit::tag::context(1, true)) || t.matches_ignore_constructed(asn1kit::tag::context(2)));
     }
 
@@ -514,7 +514,7 @@ struct ServiceLocator {
     std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> issuer{};
     std::vector<::asn1kit::modern::PKIX1Implicit2009::AccessDescription> locator{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -555,7 +555,7 @@ struct Signature {
     asn1kit::bit_string signature{};
     std::optional<std::vector<::asn1kit::modern::PKIX1Explicit2009::Certificate>> certs{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -595,7 +595,7 @@ struct SingleResponse {
     std::optional<asn1kit::utc_date_time> nextUpdate{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> singleExtensions{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -650,7 +650,7 @@ struct ResponseData {
     std::vector<SingleResponse> responses{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> responseExtensions{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -707,7 +707,7 @@ struct BasicOCSPResponse {
     asn1kit::bit_string signature{};
     std::optional<std::vector<::asn1kit::modern::PKIX1Explicit2009::Certificate>> certs{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -748,7 +748,7 @@ struct TBSRequest {
     std::vector<Request> requestList{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> requestExtensions{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -812,7 +812,7 @@ struct OCSPRequest {
     TBSRequest tbsRequest{};
     std::optional<Signature> optionalSignature{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 

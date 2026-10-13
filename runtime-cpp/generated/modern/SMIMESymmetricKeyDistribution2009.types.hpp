@@ -68,7 +68,7 @@ struct Certificates {
     std::optional<std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::AttributeCertificate>> aC{};
     std::optional<std::vector<::asn1kit::modern::CryptographicMessageSyntax2009::CertificateChoices>> certPath{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -106,7 +106,7 @@ struct Date {
     asn1kit::utc_date_time start{};
     std::optional<asn1kit::utc_date_time> end{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -134,7 +134,7 @@ struct GLAQueryRequest {
     asn1kit::oid glaRequestType{};
     asn1kit::any glaRequestValue{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -158,7 +158,7 @@ struct GLAQueryResponse {
     asn1kit::oid glaResponseType{};
     asn1kit::any glaResponseValue{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -198,7 +198,7 @@ struct GLDeleteMember {
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName glName{};
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName glMemberToDelete{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -222,7 +222,7 @@ struct GLInfo {
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName glName{};
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName glAddress{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -246,7 +246,7 @@ struct GLKRefresh {
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName glName{};
     std::vector<Date> dates{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -284,7 +284,7 @@ struct GLKey {
     asn1kit::utc_date_time glkNotBefore{};
     asn1kit::utc_date_time glkNotAfter{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -319,7 +319,7 @@ struct GLKeyAttributes {
     asn1kit::integer generationCounter = asn1kit::integer::from_int64(2ll);
     ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability requestedAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability v{};         v.capabilityID = asn1kit::oid_literal<"2.16.840.1.101.3.4.1.5">().get(); return v; }());
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -385,7 +385,7 @@ struct GLMember {
     std::optional<::asn1kit::modern::PKIX1Implicit2009::GeneralName> glMemberAddress{};
     std::optional<Certificates> certificates{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -419,7 +419,7 @@ struct GLAddMember {
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName glName{};
     GLMember glMember{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -443,7 +443,7 @@ struct GLManageCert {
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName glName{};
     GLMember glMember{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -470,7 +470,7 @@ struct GLNewKeyAttributes {
     std::optional<asn1kit::integer> generationCounter{};
     std::optional<::asn1kit::modern::AlgorithmInformation2009::SMIMECapability> requestedAlgorithm{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -521,7 +521,7 @@ struct GLOwnerInfo {
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName glOwnerAddress{};
     std::optional<Certificates> certificates{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -551,7 +551,7 @@ struct GLOwnerAdministration {
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName glName{};
     GLOwnerInfo glOwnerInfo{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -577,7 +577,7 @@ struct GLRekey {
     std::optional<GLNewKeyAttributes> glNewKeyAttributes{};
     std::optional<bool> glRekeyAllGLKeys{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -619,7 +619,7 @@ struct GLUseKEK {
     std::int32_t glAdministration = 1;
     std::optional<GLKeyAttributes> glKeyAttributes{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 

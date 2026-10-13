@@ -73,7 +73,7 @@ struct PBKDF2Params_Salt {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::octet_string) || t.matches_ignore_constructed(asn1kit::tag::sequence));
     }
 
@@ -133,7 +133,7 @@ struct PBKDF2Params {
     std::optional<asn1kit::integer> keyLength{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier prf = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"1.3.6.1.5.5.8.1.2">().get();         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }());
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -172,7 +172,7 @@ struct RC2CBCParameter {
     std::int32_t rc2ParameterVersion{};
     asn1kit::bytes iv{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 

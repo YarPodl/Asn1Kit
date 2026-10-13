@@ -66,7 +66,7 @@ struct CertificateList_AlgorithmIdentifier {
     asn1kit::oid algorithm{};
     std::optional<asn1kit::any> parameters{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -94,7 +94,7 @@ struct Certificate_AlgorithmIdentifier {
     asn1kit::oid algorithm{};
     std::optional<asn1kit::any> parameters{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -165,7 +165,7 @@ struct DirectoryString {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::teletex_string) || t.matches_ignore_constructed(asn1kit::tag::printable_string) || t.matches_ignore_constructed(asn1kit::tag::bmp_string) || t.matches_ignore_constructed(asn1kit::tag::universal_string) || t.matches_ignore_constructed(asn1kit::tag::utf8_string));
     }
 
@@ -272,7 +272,7 @@ struct SubjectPublicKeyInfo {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithm{};
     asn1kit::bit_string subjectPublicKey{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -301,21 +301,21 @@ struct Time {
     Time_kind kind{};
     asn1kit::utc_date_time value{};
 
-    static Time from_utcTime(asn1kit::utc_date_time v) {
+    static constexpr Time from_utcTime(asn1kit::utc_date_time v) {
         Time result{};
         result.kind = Time_kind::utcTime;
         result.value = std::move(v);
         return result;
     }
 
-    static Time from_generalTime(asn1kit::utc_date_time v) {
+    static constexpr Time from_generalTime(asn1kit::utc_date_time v) {
         Time result{};
         result.kind = Time_kind::generalTime;
         result.value = std::move(v);
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::utc_time) || t.matches_ignore_constructed(asn1kit::tag::generalized_time));
     }
 
@@ -384,7 +384,7 @@ struct TBSCertList_RevokedCertificates_Item {
     Time revocationDate{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> crlEntryExtensions{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -429,7 +429,7 @@ struct TBSCertList {
     std::optional<std::vector<TBSCertList_RevokedCertificates_Item>> revokedCertificates{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> crlExtensions{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -503,7 +503,7 @@ struct CertificateList {
     CertificateList_AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::bit_string signature{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -529,7 +529,7 @@ struct Validity {
     Time notBefore{};
     Time notAfter{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -561,7 +561,7 @@ struct TBSCertificate {
     std::optional<asn1kit::bit_string> subjectUniqueID{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> extensions{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -685,7 +685,7 @@ struct Certificate {
     Certificate_AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::bit_string signature{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 

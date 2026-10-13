@@ -52,7 +52,7 @@ struct ArchiveTimeStamp {
     std::optional<std::vector<std::vector<asn1kit::bytes>>> reducedHashtree{};
     ::asn1kit::modern::CryptographicMessageSyntax2009::ContentInfo timeStamp{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -98,7 +98,7 @@ struct EncryptionInfo {
     asn1kit::oid encryptionInfoType{};
     asn1kit::any encryptionInfoValue{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -129,7 +129,7 @@ struct EvidenceRecord {
     std::optional<EncryptionInfo> encryptionInfo{};
     std::vector<std::vector<ArchiveTimeStamp>> archiveTimeStampSequence{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 

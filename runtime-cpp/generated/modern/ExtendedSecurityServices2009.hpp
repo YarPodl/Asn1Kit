@@ -51,7 +51,7 @@ struct ContentHints {
     std::optional<std::string> contentDescription{};
     asn1kit::oid contentType{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -80,7 +80,7 @@ struct ContentReference {
     asn1kit::bytes signedContentIdentifier{};
     asn1kit::bytes originatorSignatureValue{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -125,7 +125,7 @@ struct ESSPrivacyMark {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::printable_string) || t.matches_ignore_constructed(asn1kit::tag::utf8_string));
     }
 
@@ -195,7 +195,7 @@ struct ESSSecurityLabel {
     std::optional<ESSPrivacyMark> privacy_mark{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SecurityCategory>> security_categories{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::set);
     }
 
@@ -263,7 +263,7 @@ struct IssuerSerial {
     std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> issuer{};
     asn1kit::integer serialNumber{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -287,7 +287,7 @@ struct ESSCertID {
     asn1kit::bytes certHash{};
     std::optional<IssuerSerial> issuerSerial{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -326,7 +326,7 @@ struct ESSCertIDv2 {
     asn1kit::bytes certHash{};
     std::optional<IssuerSerial> issuerSerial{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -390,7 +390,7 @@ struct MLReceiptPolicy {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::context(0)) || t.matches_ignore_constructed(asn1kit::tag::context(1, true)) || t.matches_ignore_constructed(asn1kit::tag::context(2, true)));
     }
 
@@ -475,7 +475,7 @@ struct Receipt {
     asn1kit::bytes signedContentIdentifier{};
     asn1kit::bytes originatorSignatureValue{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -522,7 +522,7 @@ struct ReceiptsFrom {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::context(0)) || t.matches_ignore_constructed(asn1kit::tag::context(1, true)));
     }
 
@@ -587,7 +587,7 @@ struct ReceiptRequest {
     ReceiptsFrom receiptsFrom{};
     std::vector<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> receiptsTo{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -628,7 +628,7 @@ struct SigningCertificate {
     std::vector<ESSCertID> certs{};
     std::optional<std::vector<::asn1kit::modern::PKIX1Implicit2009::PolicyInformation>> policies{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -656,7 +656,7 @@ struct SigningCertificateV2 {
     std::vector<ESSCertIDv2> certs{};
     std::optional<std::vector<::asn1kit::modern::PKIX1Implicit2009::PolicyInformation>> policies{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -713,7 +713,7 @@ struct EntityIdentifier {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::sequence) || t.matches_ignore_constructed(asn1kit::tag::octet_string));
     }
 
@@ -772,7 +772,7 @@ struct MLData {
     asn1kit::utc_date_time expansionTime{};
     std::optional<MLReceiptPolicy> mlReceiptPolicy{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 

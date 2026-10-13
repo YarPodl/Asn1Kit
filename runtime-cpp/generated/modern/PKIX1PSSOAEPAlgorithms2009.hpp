@@ -59,7 +59,7 @@ struct RSAESOAEPParams {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier maskGenFunc = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"1.2.840.113549.1.1.8">().get();         v.parameters = asn1kit::encode_open(([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"1.3.14.3.2.26">().get();         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }())); return v; }());
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier pSourceFunc = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"1.2.840.113549.1.1.9">().get();         v.parameters = asn1kit::encode_open(asn1kit::bytes::copy_from(std::vector<std::uint8_t>{})); return v; }());
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -129,7 +129,7 @@ struct RSASSAPSSParams {
     asn1kit::integer saltLength = asn1kit::integer::from_int64(20ll);
     asn1kit::integer trailerField = asn1kit::integer::from_int64(1ll);
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 

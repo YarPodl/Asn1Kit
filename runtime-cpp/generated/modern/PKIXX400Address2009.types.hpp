@@ -52,7 +52,7 @@ struct AdministrationDomainName {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::application(2, true));
     }
 
@@ -121,7 +121,7 @@ struct BuiltInDomainDefinedAttribute {
     std::string type{};
     std::string value_{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -164,7 +164,7 @@ struct CountryName {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::application(1, true));
     }
 
@@ -233,7 +233,7 @@ struct ExtensionAttribute {
     std::int32_t extension_attribute_type{};
     asn1kit::any extension_attribute_value{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -264,7 +264,7 @@ struct ExtensionAttribute_EaExtendedNetworkAddress_E1634Address {
     std::string number{};
     std::optional<std::string> sub_address{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -311,7 +311,7 @@ struct ExtensionAttribute_EaPhysicalDeliveryCountryName {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::numeric_string) || t.matches_ignore_constructed(asn1kit::tag::printable_string));
     }
 
@@ -388,7 +388,7 @@ struct ExtensionAttribute_EaPostalCode {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::numeric_string) || t.matches_ignore_constructed(asn1kit::tag::printable_string));
     }
 
@@ -448,7 +448,7 @@ struct ExtensionAttribute_EaTeletexPersonalName {
     std::optional<std::string> initials{};
     std::optional<std::string> generation_qualifier{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::set);
     }
 
@@ -511,7 +511,7 @@ struct ExtensionAttribute_EaUnformattedPostalAddress {
     std::optional<std::vector<std::string>> printable_address{};
     std::optional<std::string> teletex_string{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::set);
     }
 
@@ -558,7 +558,7 @@ struct PDSParameter {
     std::optional<std::string> printable_string{};
     std::optional<std::string> teletex_string{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::set);
     }
 
@@ -601,7 +601,7 @@ struct PersonalName {
     std::optional<std::string> initials{};
     std::optional<std::string> generation_qualifier{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::set);
     }
 
@@ -657,7 +657,7 @@ struct PresentationAddress {
     std::optional<asn1kit::bytes> tSelector{};
     std::vector<asn1kit::bytes> nAddresses{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -744,7 +744,7 @@ struct ExtensionAttribute_EaExtendedNetworkAddress {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::sequence) || t.matches_ignore_constructed(asn1kit::tag::context(0, true)));
     }
 
@@ -821,7 +821,7 @@ struct PrivateDomainName {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::numeric_string) || t.matches_ignore_constructed(asn1kit::tag::printable_string));
     }
 
@@ -886,7 +886,7 @@ struct BuiltInStandardAttributes {
     std::optional<PersonalName> personal_name{};
     std::optional<std::vector<std::string>> organizational_unit_names{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -974,7 +974,7 @@ struct ORAddress {
     std::optional<std::vector<BuiltInDomainDefinedAttribute>> built_in_domain_defined_attributes{};
     std::optional<std::vector<ExtensionAttribute>> extension_attributes{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -1008,7 +1008,7 @@ struct TeletexDomainDefinedAttribute {
     std::string type{};
     std::string value_{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 

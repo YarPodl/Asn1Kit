@@ -32,6 +32,10 @@ using CountryNameKind = asn1kit::modern::PKIXX400Address2009::CountryName_kind;
 
 static_assert(std::is_same_v<decltype(Time::value), asn1kit::utc_date_time>);
 static_assert(std::is_same_v<decltype(DirectoryString::value), std::string>);
+constexpr asn1kit::utc_date_time constexpr_utc_time{2024, 1, 2, 3, 4, 5, {}};
+constexpr auto constexpr_time_choice = Time::from_utcTime(constexpr_utc_time);
+static_assert(constexpr_time_choice.kind == TimeKind::utcTime);
+static_assert(constexpr_time_choice.value == constexpr_utc_time);
 
 TEST(GeneratedModernCertificateTests, TaggedChoiceCountryNameUsesApplicationWrapper) {
     // CountryName ::= [APPLICATION 1] EXPLICIT CHOICE { numeric NumericString, ... }

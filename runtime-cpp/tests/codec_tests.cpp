@@ -13,6 +13,10 @@
 
 using namespace asn1kit;
 
+constexpr asn_time<time_form::utc> constexpr_asn_time{
+    utc_date_time{2024, 1, 2, 3, 4, 5, time_fraction{}}};
+static_assert(constexpr_asn_time.value == utc_date_time{2024, 1, 2, 3, 4, 5, time_fraction{}});
+
 TEST(OpenTyped, Int32RoundTripThroughAny) {
     const any encoded = encode_open(std::int32_t{42});
     EXPECT_EQ(encoded.to_vector(), (std::vector<std::uint8_t>{0x02, 0x01, 0x2A}));

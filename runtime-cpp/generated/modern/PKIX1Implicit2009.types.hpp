@@ -73,7 +73,7 @@ struct BasicConstraints {
     bool cA = false;
     std::optional<asn1kit::integer> pathLenConstraint{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -176,7 +176,7 @@ struct DisplayText {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::ia5_string) || t.matches_ignore_constructed(asn1kit::tag::visible_string) || t.matches_ignore_constructed(asn1kit::tag::bmp_string) || t.matches_ignore_constructed(asn1kit::tag::utf8_string));
     }
 
@@ -270,7 +270,7 @@ struct EDIPartyName {
     std::optional<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> nameAssigner{};
     ::asn1kit::modern::PKIX1Explicit2009::DirectoryString partyName{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -312,7 +312,7 @@ struct GeneralName_OtherName {
     asn1kit::oid type_id{};
     asn1kit::any value_{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -429,7 +429,7 @@ struct GeneralName {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::context(0, true)) || t.matches_ignore_constructed(asn1kit::tag::context(1)) || t.matches_ignore_constructed(asn1kit::tag::context(2)) || t.matches_ignore_constructed(asn1kit::tag::context(3, true)) || t.matches_ignore_constructed(asn1kit::tag::context(4, true)) || t.matches_ignore_constructed(asn1kit::tag::context(5, true)) || t.matches_ignore_constructed(asn1kit::tag::context(6)) || t.matches_ignore_constructed(asn1kit::tag::context(7)) || t.matches_ignore_constructed(asn1kit::tag::context(8)));
     }
 
@@ -591,7 +591,7 @@ struct AccessDescription {
     asn1kit::oid accessMethod{};
     GeneralName accessLocation{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -616,7 +616,7 @@ struct AuthorityKeyIdentifier {
     std::optional<std::vector<GeneralName>> authorityCertIssuer{};
     std::optional<asn1kit::integer> authorityCertSerialNumber{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -673,7 +673,7 @@ struct DistributionPointName {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::context(0, true)) || t.matches_ignore_constructed(asn1kit::tag::context(1, true)));
     }
 
@@ -732,7 +732,7 @@ struct GeneralSubtree {
     asn1kit::integer minimum = asn1kit::integer::from_int64(0ll);
     std::optional<asn1kit::integer> maximum{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -855,7 +855,7 @@ struct KeyUsage {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::bit_string);
     }
 
@@ -874,7 +874,7 @@ struct NameConstraints {
     std::optional<std::vector<GeneralSubtree>> permittedSubtrees{};
     std::optional<std::vector<GeneralSubtree>> excludedSubtrees{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -906,7 +906,7 @@ struct NoticeReference {
     DisplayText organization{};
     std::vector<asn1kit::integer> noticeNumbers{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -930,7 +930,7 @@ struct PolicyConstraints {
     std::optional<asn1kit::integer> requireExplicitPolicy{};
     std::optional<asn1kit::integer> inhibitPolicyMapping{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -962,7 +962,7 @@ struct PolicyMappings_Item {
     asn1kit::oid issuerDomainPolicy{};
     asn1kit::oid subjectDomainPolicy{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -986,7 +986,7 @@ struct PolicyQualifierInfo {
     asn1kit::oid policyQualifierId{};
     asn1kit::any qualifier{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -1010,7 +1010,7 @@ struct PolicyInformation {
     asn1kit::oid policyIdentifier{};
     std::optional<std::vector<PolicyQualifierInfo>> policyQualifiers{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -1038,7 +1038,7 @@ struct PrivateKeyUsagePeriod {
     std::optional<asn1kit::utc_date_time> notBefore{};
     std::optional<asn1kit::utc_date_time> notAfter{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -1156,7 +1156,7 @@ struct ReasonFlags {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::bit_string);
     }
 
@@ -1176,7 +1176,7 @@ struct DistributionPoint {
     std::optional<ReasonFlags> reasons{};
     std::optional<std::vector<GeneralName>> cRLIssuer{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -1225,7 +1225,7 @@ struct IssuingDistributionPoint {
     bool indirectCRL = false;
     bool onlyContainsAttributeCerts = false;
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -1300,7 +1300,7 @@ struct UserNotice {
     std::optional<NoticeReference> noticeRef{};
     std::optional<DisplayText> explicitText{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 

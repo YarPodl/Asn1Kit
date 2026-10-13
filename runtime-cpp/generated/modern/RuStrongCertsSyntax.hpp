@@ -62,7 +62,7 @@ struct IssuerSignTool {
     std::string signToolCert{};
     std::string cAToolCert{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 

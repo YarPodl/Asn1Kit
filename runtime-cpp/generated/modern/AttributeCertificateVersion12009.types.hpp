@@ -37,7 +37,7 @@ struct AttributeCertificateV1_AlgorithmIdentifier {
     asn1kit::oid algorithm{};
     std::optional<asn1kit::any> parameters{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -95,7 +95,7 @@ struct AttributeCertificateInfoV1_Subject {
         return result;
     }
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return (t.matches_ignore_constructed(asn1kit::tag::context(0, true)) || t.matches_ignore_constructed(asn1kit::tag::context(1, true)));
     }
 
@@ -186,7 +186,7 @@ struct AttributeCertificateInfoV1 {
     std::optional<asn1kit::bit_string> issuerUniqueID{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> extensions{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
@@ -240,7 +240,7 @@ struct AttributeCertificateV1 {
     AttributeCertificateV1_AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::bit_string signature{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 

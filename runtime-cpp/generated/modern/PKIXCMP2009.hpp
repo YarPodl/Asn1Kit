@@ -35,7 +35,7 @@ struct ProtectedPart {
     PKIHeader header{};
     PKIBody body{};
 
-    static bool match_tag(const asn1kit::tag& t) {
+    static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
