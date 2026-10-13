@@ -75,7 +75,9 @@ ctest --preset conan-default
 | `ASN1KIT_FETCH_TEST_DEPS` | `OFF` | FetchContent вместо `find_package` (пресет `fetch-default`) |
 | `ASN1KIT_BER_DER_FIXTURES_DIR` | `../runtime-csharp/fixtures/ber-der` | Каталог JSON-фикстур |
 
-Без тестов: `-DASN1KIT_BUILD_TESTS=OFF`. Без примеров: `-DASN1KIT_BUILD_EXAMPLES=OFF`.
+С Conan тестами и их зависимостями управляет опция рецепта:
+`conan install . -o "&:build_tests=False" …`. Без Conan используйте
+`-DASN1KIT_BUILD_TESTS=OFF`. Без примеров: `-DASN1KIT_BUILD_EXAMPLES=OFF`.
 
 CMS demo (Modern generated): [examples/cms_demo](examples/cms_demo/).
 
