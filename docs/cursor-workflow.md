@@ -49,8 +49,8 @@ dotnet test compiler/tests/Asn1Kit.Compiler.Tests/Asn1Kit.Compiler.Tests.csproj 
 # Общие слои compiler/IR/codegen/CLI или остальные .NET-компоненты
 dotnet test Asn1Kit.sln
 
-# runtime-cpp (из runtime-cpp/, актуальный preset)
-ctest --preset fetch-default
+# runtime-cpp: configure → build → test; команда из корня репозитория
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-runtime-cpp.ps1
 ```
 
-Общие BER/DER-фикстуры (`runtime-csharp/fixtures/ber-der/`) — полный .NET-прогон и `ctest`. C++-генератор вместе с C++ runtime/generated — только `CppCodegenTests` и `ctest`. Фильтр всего компонента достаточен для итоговой проверки; фильтр одного теста — нет.
+Общие BER/DER-фикстуры (`runtime-csharp/fixtures/ber-der/`) — полный .NET-прогон и нативный скрипт. C++-генератор вместе с C++ runtime/generated — только `CppCodegenTests` и нативный скрипт. Фильтр всего компонента достаточен для итоговой проверки; фильтр одного теста — нет. Один `ctest` не является итоговой проверкой: он не пересобирает изменённый код.

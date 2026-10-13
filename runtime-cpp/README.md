@@ -21,6 +21,26 @@ Codegen C++ (`Asn1Kit.Codegen.Cpp`, `--lang cpp`) — MVP; golden и Person roun
 На Windows удобен CMake/Ninja из VS:
 `…\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin` и `…\CMake\Ninja`.
 
+### Каноническая проверка
+
+Из корня репозитория выполните полный цикл configure → build → test:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-runtime-cpp.ps1
+```
+
+Скрипт по умолчанию использует `fetch-default`, на Windows находит CMake и Ninja из Visual Studio 2022, если их нет в `PATH`, и считает отсутствие тестов ошибкой. Один вызов `ctest` не пересобирает изменённый код и не заменяет этот цикл.
+
+Для уже подготовленного Conan build передайте preset явно:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-runtime-cpp.ps1 -Preset conan-default
+# или
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-runtime-cpp.ps1 -Preset conan-release
+```
+
+Перед первым Conan-прогоном нужен соответствующий `conan install` из раздела ниже; скрипт не устанавливает зависимости неявно.
+
 ### Без Conan (FetchContent) — Windows / Linux
 
 ```powershell

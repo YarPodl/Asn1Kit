@@ -31,10 +31,10 @@ Frontmatter `.mdc` предназначен для Cursor и не заменяе
 ## Среда и проверка
 
 - Только .NET SDK 6.0.402, `net6.0`, C# 10, nullable-контекст включён.
-- C++ runtime: C++20, CMake ≥ 3.21, Ninja; проверки — `ctest` в `runtime-cpp/`.
+- C++ runtime: C++20, CMake ≥ 3.21, Ninja; полная проверка из корня — `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-runtime-cpp.ps1` (configure → build → test, preset `fetch-default`). Один `ctest` без предшествующей сборки не является итоговой проверкой.
 - Оболочка — PowerShell на Windows; в командах используй пути с `/`.
 - Репозиторий локальный, без remote и CI.
-- После изменения кода выбирай набор по **затронутому компоненту**, а не по языку реализации (см. [`.cursor/rules/reliability-and-testing.mdc`](.cursor/rules/reliability-and-testing.mdc)). Для изолированных изменений `Asn1Kit.Codegen.Cpp` достаточно полного набора `CppCodegenTests` через `--filter`; изменения C++ runtime/generated дополнительно требуют `ctest`. Полный `dotnet test Asn1Kit.sln` для такой задачи не нужен.
+- После изменения кода выбирай набор по **затронутому компоненту**, а не по языку реализации (см. [`.cursor/rules/reliability-and-testing.mdc`](.cursor/rules/reliability-and-testing.mdc)). Для изолированных изменений `Asn1Kit.Codegen.Cpp` достаточно полного набора `CppCodegenTests` через `--filter`; изменения C++ runtime/generated дополнительно требуют канонического нативного скрипта из предыдущего пункта. Полный `dotnet test Asn1Kit.sln` для такой задачи не нужен.
 - Golden и `*.g.cs` не правь вручную: регенерируй каноническими командами из профильного README или playbook.
 
 ## Глобальные инварианты

@@ -8,7 +8,7 @@
 
 1. **Проект генератора.** `compiler/src/Asn1Kit.Codegen.Cpp` по образцу [Asn1Kit.Codegen.CSharp](../../src/Asn1Kit.Codegen.CSharp): ссылки на `Asn1Kit.Codegen` и `Asn1Kit.Ir`, реализация `ILanguageBackend` с `LanguageId => "cpp"`. Добавить в решение: `dotnet sln Asn1Kit.sln add compiler/src/Asn1Kit.Codegen.Cpp/Asn1Kit.Codegen.Cpp.csproj`.
 2. **Регистрация.** [Program.cs](../../src/Asn1Kit.Cli/Program.cs), метод `Generate`: добавить бэкенд в массив `CodeGenerator`. Неизвестный `--lang` уже падает `InvalidOperationException($"Unsupported language '{language}'.")`.
-3. **Runtime.** Библиотека в [runtime-cpp/](../../../runtime-cpp/) с теми же правилами BER/DER, что и [Asn1Kit.Runtime](../../../runtime-csharp/src/Asn1Kit.Runtime). Сборка и тесты — CMake presets (`fetch-default` / `conan-*`); `ctest` уже заведён.
+3. **Runtime.** Библиотека в [runtime-cpp/](../../../runtime-cpp/) с теми же правилами BER/DER, что и [Asn1Kit.Runtime](../../../runtime-csharp/src/Asn1Kit.Runtime). Полная проверка configure → build → test — `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-runtime-cpp.ps1` из корня; Conan preset передаётся через `-Preset` после `conan install`.
 4. **Опции.** Свои ключи в `options.cpp.*` (namespace, имена типов и полей) по аналогии с `IrOptions.CSharpNamespace` и компанией. Чужие ключи (`options.csharp.*`) бэкенд игнорирует, но не удаляет.
 5. **Документация.** [README.md](../../../README.md) — команда `generate --lang cpp`, [docs/architecture.md](../../../docs/architecture.md) — таблица проектов, [docs/status.md](../../../docs/status.md) — колонка поддержки kind, [runtime-cpp/README.md](../../../runtime-cpp/README.md). Детали эмиссии — [cpp-backend.md](cpp-backend.md).
 
@@ -25,5 +25,5 @@ C# тесты компилируют сгенерированный код че�
 
 1. **Golden-файлы.** Фикстура IR → сгенерированные `.hpp` сравниваются с эталоном в `runtime-cpp/generated/`. Ловит непреднамеренные изменения шаблона.
 2. **Отказы.** Неподдержанный kind — `NotSupportedException` с именем kind (`CppCodegenTests`).
-3. **Кодек C++.** Тесты runtime на байтовых векторах — в `runtime-cpp/tests/` (`ctest`); generated types — `generated_person_tests.cpp`.
+3. **Кодек C++.** Тесты runtime на байтовых векторах — в `runtime-cpp/tests/` (запускаются каноническим нативным скриптом); generated types — `generated_person_tests.cpp`.
 4. **Кросс-проверка.** Тот же DER-вектор, что даёт C# encode Person, декодируется C++ Person (и обратно по возможности).

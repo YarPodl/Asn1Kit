@@ -19,13 +19,15 @@ alwaysApply: true
 | --- | --- |
 | Только `compiler/src/Asn1Kit.Codegen.Cpp/` и/или его тесты, без изменения общих слоёв | `dotnet test compiler/tests/Asn1Kit.Compiler.Tests/Asn1Kit.Compiler.Tests.csproj --filter "FullyQualifiedName~Asn1Kit.Tests.CppCodegenTests"` |
 | Общие слои compiler/IR/codegen/CLI, общая тестовая инфраструктура, остальные .NET-компоненты | `dotnet test Asn1Kit.sln` |
-| `runtime-cpp/` | `ctest` актуального preset (`fetch-default` или `conan-*`) |
-| Общие BER/DER-фикстуры `runtime-csharp/fixtures/ber-der/` | оба: `dotnet test Asn1Kit.sln` и `ctest` |
-| Несколько компонентов сразу | объединение соответствующих прогонов; `Codegen.Cpp` + C++ runtime/generated → `CppCodegenTests` + `ctest`, без полного .NET solution |
+| `runtime-cpp/` | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-runtime-cpp.ps1` из корня (configure → build → test, по умолчанию `fetch-default`) |
+| Общие BER/DER-фикстуры `runtime-csharp/fixtures/ber-der/` | оба: `dotnet test Asn1Kit.sln` и канонический нативный скрипт |
+| Несколько компонентов сразу | объединение соответствующих прогонов; `Codegen.Cpp` + C++ runtime/generated → `CppCodegenTests` + канонический нативный скрипт, без полного .NET solution |
 | Только документация / `.mdc` / правила без исполняемого кода | тесты не обязательны |
 
 Фильтр, выбирающий весь набор компонента (например, `CppCodegenTests`), — полноценная итоговая проверка. Фильтр на один тест или метод — только для диагностики и не заменяет набор компонента. Если C++-тесты генератора будут вынесены в другие классы, включай их в фильтр. Расширяй прогон при изменении общих зависимостей или конкретных признаках межкомпонентной регрессии, а не из-за самого использования .NET.
 
+Для нативного кода не запускай один `ctest`: он использует уже собранные бинарники и не доказывает, что изменения скомпилированы. Скрипт сам переходит в `runtime-cpp/`; вызывай его по корректному пути из текущего каталога. Conan preset передавай явно через `-Preset conan-default` или `-Preset conan-release` только после `conan install`.
+
 ## Выводы из практики
 
-Для изменения OID в C++-генераторе и runtime достаточно `CppCodegenTests` и `ctest`: тесты C# runtime и остальных частей компилятора к этой задаче не относятся. Регенерация C++ golden не является основанием для полного .NET-прогона. Сначала заверши регенерацию, затем запускай проверки, читающие эти файлы.
+Для изменения OID в C++-генераторе и runtime достаточно `CppCodegenTests` и нативного скрипта: тесты C# runtime и остальных частей компилятора к этой задаче не относятся. Регенерация C++ golden не является основанием для полного .NET-прогона. Сначала заверши регенерацию, затем запускай проверки, читающие эти файлы.

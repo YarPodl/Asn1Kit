@@ -11,7 +11,7 @@
 1. Снять запрет в `EnsureBackendSupport` вместе с реализацией.
 2. Маппинг `CppType` / encode / decode (`WriteCall` / `ReadCall` или `encode`/`decode` именованного типа).
 3. Nested-типы — через `CollectNested` / `OfferNested`.
-4. Тест: golden и/или emit-assert; итоговый .NET-прогон — весь `CppCodegenTests`. При изменении C++ runtime/generated также `ctest` в `runtime-cpp/`.
+4. Тест: golden и/или emit-assert; итоговый .NET-прогон — весь `CppCodegenTests`. При изменении C++ runtime/generated также `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-runtime-cpp.ps1` из корня репозитория.
 5. Строка в [docs/status.md](../../../docs/status.md).
 
 ## Сгенерированный контракт
@@ -54,7 +54,7 @@
 dotnet test compiler/tests/Asn1Kit.Compiler.Tests/Asn1Kit.Compiler.Tests.csproj --filter "FullyQualifiedName~Asn1Kit.Tests.CppCodegenTests"
 ```
 
-Полный solution не запускай, если общие слои compiler/IR/codegen/CLI не изменены. Если затронуты C++ runtime/generated, дополнительно собери C++ и выполни `ctest` актуального preset. Регенерация должна завершиться до сборки и тестов, читающих golden.
+Полный solution не запускай, если общие слои compiler/IR/codegen/CLI не изменены. Если затронуты C++ runtime/generated, дополнительно выполни канонический нативный скрипт: он конфигурирует, собирает и только затем запускает тесты. Регенерация должна завершиться до сборки и тестов, читающих golden.
 
 ```powershell
 dotnet run --project compiler/src/Asn1Kit.Cli -- generate `
@@ -66,4 +66,4 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- generate `
 ./scripts/regenerate-modern-cpp.ps1
 ```
 
-Golden и native headers — один SoT: `runtime-cpp/generated/`. Сверяет `CppCodegenTests` (example / extensible / deferred / **modern**, включая `*.format.hpp`). Нативный round-trip — `generated_person_tests.cpp`, open-type — `open_binding_tests.cpp`, extensible — `generated_extensible_tests.cpp`, deferred — `generated_deferred_tests.cpp` + `value_lazy_tests.cpp`, debug-формат — `format_tests.cpp`, Modern Certificate — `generated_modern_certificate_tests.cpp` (`ctest`).
+Golden и native headers — один SoT: `runtime-cpp/generated/`. Сверяет `CppCodegenTests` (example / extensible / deferred / **modern**, включая `*.format.hpp`). Нативный round-trip — `generated_person_tests.cpp`, open-type — `open_binding_tests.cpp`, extensible — `generated_extensible_tests.cpp`, deferred — `generated_deferred_tests.cpp` + `value_lazy_tests.cpp`, debug-формат — `format_tests.cpp`, Modern Certificate — `generated_modern_certificate_tests.cpp` (канонический нативный скрипт).
