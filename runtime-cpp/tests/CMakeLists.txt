@@ -19,6 +19,7 @@ add_executable(asn1kit_tests
     generated_deferred_tests.cpp
     utc_date_time_tests.cpp
     encode_decode_tests.cpp
+    format_tests.cpp
 )
 
 target_link_libraries(asn1kit_tests

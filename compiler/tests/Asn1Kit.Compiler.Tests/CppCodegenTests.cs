@@ -8,6 +8,34 @@ namespace Asn1Kit.Tests;
 
 public sealed class CppCodegenTests
 {
+    private static string CppSource(IrDocument document) =>
+        new CppBackend().Generate(document)
+            .Single(file => !file.RelativePath.EndsWith(".format.hpp", StringComparison.Ordinal))
+            .Contents;
+
+    private static string CppSource(string asn) => CppSource(new Asn1Compiler().CompileText(asn));
+
+    private static void AssertGolden(IrDocument document, string goldenRelativeDir)
+    {
+        var files = new CppBackend().Generate(document)
+            .OrderBy(f => f.RelativePath, StringComparer.Ordinal)
+            .ToList();
+        var goldenDir = TestData.RepoPath(goldenRelativeDir);
+        var expectedNames = Directory.GetFiles(goldenDir, "*.hpp")
+            .Select(static path => Path.GetFileName(path)!)
+            .OrderBy(static n => n, StringComparer.Ordinal)
+            .ToList();
+        Assert.Equal(expectedNames, files.Select(static f => f.RelativePath).ToList());
+
+        foreach (var file in files)
+        {
+            var expectedPath = Path.Combine(goldenDir, file.RelativePath);
+            var expected = File.ReadAllText(expectedPath).Replace("\r\n", "\n", StringComparison.Ordinal);
+            var actual = file.Contents.Replace("\r\n", "\n", StringComparison.Ordinal);
+            Assert.Equal(expected, actual);
+        }
+    }
+
     [Fact]
     public void CommonAliasKeepsCrossModuleQualification()
     {
@@ -37,7 +65,7 @@ public sealed class CppCodegenTests
             END");
         document.Modules[0].Types[0].Options = IrOptions.Set(null, "cpp.typeName", System.Text.Json.Nodes.JsonValue.Create("DirectoryString")!);
         document.Modules[0].Types[1].Options = new System.Text.Json.Nodes.JsonObject { ["aliasOf"] = "A" };
-        var source = Assert.Single(new CppBackend().Generate(document)).Contents;
+        var source = CppSource(document);
         Assert.Contains("struct DirectoryString {", source);
         Assert.DoesNotContain("struct B {", source);
         Assert.Contains("DirectoryString first{};", source);
@@ -49,14 +77,7 @@ public sealed class CppCodegenTests
     public void GenerateMatchesCommittedExampleGolden()
     {
         var document = TestData.LoadIr("compiler/fixtures/ir/example.json");
-        var files = new CppBackend().Generate(document);
-        var file = Assert.Single(files);
-        Assert.Equal("ExampleModule.hpp", file.RelativePath);
-
-        var expectedPath = TestData.RepoPath("runtime-cpp/generated/example/ExampleModule.hpp");
-        var expected = File.ReadAllText(expectedPath).Replace("\r\n", "\n", StringComparison.Ordinal);
-        var actual = file.Contents.Replace("\r\n", "\n", StringComparison.Ordinal);
-        Assert.Equal(expected, actual);
+        AssertGolden(document, "runtime-cpp/generated/example");
     }
 
     [Fact]
@@ -73,7 +94,7 @@ Box ::= SEQUENCE {
 END
 ";
         var document = new Asn1Compiler().CompileText(asn);
-        var source = new CppBackend().Generate(document).Single().Contents;
+        var source = CppSource(document);
 
         Assert.Contains("#include \"asn1kit/any.hpp\"", source);
         Assert.Contains("asn1kit::any required{}", source);
@@ -101,7 +122,7 @@ Box ::= SEQUENCE {
 END
 ";
         var document = new Asn1Compiler().CompileText(asn);
-        var source = new CppBackend().Generate(document).Single().Contents;
+        var source = CppSource(document);
 
         Assert.Contains("asn1kit::any payload{}", source);
         Assert.Contains("inner.read_any(asn1kit::tag::context(1))", source);
@@ -123,7 +144,7 @@ Box ::= SEQUENCE {
 END
 ";
         var document = new Asn1Compiler().CompileText(asn);
-        var source = new CppBackend().Generate(document).Single().Contents;
+        var source = CppSource(document);
 
         Assert.Contains("#include \"asn1kit/contained.hpp\"", source);
         Assert.Contains("asn1kit::contained<Inner> typed{}", source);
@@ -168,7 +189,7 @@ M DEFINITIONS ::= BEGIN
 END
 ";
         var document = new Asn1Compiler().CompileText(asn);
-        var source = new CppBackend().Generate(document).Single().Contents;
+        var source = CppSource(document);
 
         Assert.Contains("#include \"asn1kit/codec.hpp\"", source);
         Assert.Contains("struct AlgorithmIdentifier", source);
@@ -208,7 +229,7 @@ M DEFINITIONS ::= BEGIN
 END
 ";
         var document = new Asn1Compiler().CompileText(asn);
-        var source = new CppBackend().Generate(document).Single().Contents;
+        var source = CppSource(document);
 
         Assert.Contains("asn1kit::contained<asn1kit::any> extnValue{}", source);
         Assert.Contains("std::vector<asn1kit::any> values{}", source);
@@ -238,7 +259,7 @@ M DEFINITIONS ::= BEGIN
 END
 ";
         var document = new Asn1Compiler().CompileText(asn);
-        var source = new CppBackend().Generate(document).Single().Contents;
+        var source = CppSource(document);
 
         Assert.Contains("struct Outer_Nested_Item", source);
         Assert.Contains("struct value_binding", source);
@@ -280,7 +301,7 @@ M DEFINITIONS ::= BEGIN
 END
 ";
         var document = new Asn1Compiler().CompileText(asn);
-        var source = new CppBackend().Generate(document).Single().Contents;
+        var source = CppSource(document);
 
         Assert.Contains("src.algorithmIdentifier.algorithm", source);
         Assert.Contains("parent0.algorithmIdentifier.algorithm", source);
@@ -307,7 +328,7 @@ END
         sequence.Components[0].Options = IrOptions.SetRetainEncoded(null, true);
         sequence.Components[1].Options = IrOptions.SetLazy(null, true);
 
-        var source = new CppBackend().Generate(document).Single().Contents;
+        var source = CppSource(document);
         Assert.Contains("#include \"asn1kit/value.hpp\"", source);
         Assert.Contains("#include \"asn1kit/lazy.hpp\"", source);
         Assert.Contains("asn1kit::value<Inner> retained{}", source);
@@ -326,14 +347,7 @@ END
     public void GenerateMatchesCommittedDeferredGolden()
     {
         var document = TestData.LoadIr("compiler/fixtures/ir/cpp-deferred.json");
-        var files = new CppBackend().Generate(document);
-        var file = Assert.Single(files);
-        Assert.Equal("Deferred.hpp", file.RelativePath);
-
-        var expectedPath = TestData.RepoPath("runtime-cpp/generated/deferred/Deferred.hpp");
-        var expected = File.ReadAllText(expectedPath).Replace("\r\n", "\n", StringComparison.Ordinal);
-        var actual = file.Contents.Replace("\r\n", "\n", StringComparison.Ordinal);
-        Assert.Equal(expected, actual);
+        AssertGolden(document, "runtime-cpp/generated/deferred");
     }
 
     [Fact]
@@ -356,7 +370,7 @@ Pick ::= CHOICE { left INTEGER, ... }
 END
 ";
         var document = new Asn1Compiler().CompileText(asn);
-        var source = new CppBackend().Generate(document).Single().Contents;
+        var source = CppSource(document);
 
         Assert.Contains("struct Box", source);
         Assert.Contains("auto next_extension =", source);
@@ -381,14 +395,7 @@ END
     public void GenerateMatchesCommittedExtensibleGolden()
     {
         var document = TestData.LoadIr("compiler/fixtures/ir/cpp-extensible.json");
-        var files = new CppBackend().Generate(document);
-        var file = Assert.Single(files);
-        Assert.Equal("ExtModule.hpp", file.RelativePath);
-
-        var expectedPath = TestData.RepoPath("runtime-cpp/generated/extensible/ExtModule.hpp");
-        var expected = File.ReadAllText(expectedPath).Replace("\r\n", "\n", StringComparison.Ordinal);
-        var actual = file.Contents.Replace("\r\n", "\n", StringComparison.Ordinal);
-        Assert.Equal(expected, actual);
+        AssertGolden(document, "runtime-cpp/generated/extensible");
     }
 
     [Fact]
@@ -411,7 +418,7 @@ END
 ";
         var document = new Asn1Compiler().CompileText(asn);
         document.Modules[0].Options = IrOptions.SetCpp(document.Modules[0].Options, "namespace", "cpp::demo");
-        var source = new CppBackend().Generate(document).Single().Contents;
+        var source = CppSource(document);
 
         Assert.Contains("struct CppDemoOids", source);
         Assert.Contains("IdDemo", source);
@@ -455,7 +462,7 @@ Holder ::= SEQUENCE {
 }
 END
 ";
-        var source = Assert.Single(new CppBackend().Generate(new Asn1Compiler().CompileText(asn))).Contents;
+        var source = CppSource(asn);
 
         Assert.Contains("return t.matches_ignore_constructed(asn1kit::tag::application(1, true));", source);
         Assert.Contains("static CountryName decode_content(asn1kit::reader& r)", source);
@@ -474,8 +481,7 @@ U DEFINITIONS ::= BEGIN
 Bag ::= CHOICE { a INTEGER, b BOOLEAN }
 END
 ";
-        var untaggedSource =
-            Assert.Single(new CppBackend().Generate(new Asn1Compiler().CompileText(untagged))).Contents;
+        var untaggedSource = CppSource(untagged);
         Assert.Contains("static Bag decode(asn1kit::reader& r) {", untaggedSource);
         Assert.DoesNotContain("decode_content", untaggedSource);
         Assert.DoesNotContain("encode_content", untaggedSource);
@@ -492,7 +498,7 @@ Flags ::= BIT STRING { a(0), b(1) }
 Holder ::= SEQUENCE { flags Flags DEFAULT {a} }
 END
 ";
-        var source = Assert.Single(new CppBackend().Generate(new Asn1Compiler().CompileText(asn))).Contents;
+        var source = CppSource(asn);
         Assert.Contains("Flags flags = asn1kit::bit_string::copy_from(", source);
         Assert.Contains("if (this->flags != asn1kit::bit_string::copy_from(", source);
         Assert.Contains("Flags(asn1kit::bit_string bits) : value(std::move(bits))", source);
@@ -633,7 +639,7 @@ M DEFINITIONS ::= BEGIN
 Value ::= SEQUENCE { algorithm OBJECT IDENTIFIER DEFAULT { 2 999 128 } }
 END
 ";
-        var source = new CppBackend().Generate(new Asn1Compiler().CompileText(asn)).Single().Contents;
+        var source = CppSource(asn);
         Assert.Contains("asn1kit::oid_literal<\"2.999.128\">().get()", source);
         Assert.DoesNotContain("asn1kit::oid::parse", source);
     }
@@ -651,7 +657,7 @@ END
 ";
         var document = new Asn1Compiler().CompileText(asn);
         document.Modules[0].Options = IrOptions.SetCpp(document.Modules[0].Options, "namespace", "cpp::time");
-        var source = new CppBackend().Generate(document).Single().Contents;
+        var source = CppSource(document);
 
         Assert.Contains("Time_kind kind{};", source);
         Assert.Contains("asn1kit::utc_date_time value{};", source);
@@ -674,7 +680,7 @@ Text ::= UTF8String
 Pick ::= CHOICE { first Text, flag BOOLEAN, second IA5String, data OCTET STRING, ... }
 END
 ";
-        var source = new CppBackend().Generate(new Asn1Compiler().CompileText(asn)).Single().Contents;
+        var source = CppSource(asn);
         Assert.Contains("std::variant<std::string, bool, asn1kit::bytes> value{};", source);
         Assert.DoesNotContain("_box", source);
         Assert.Contains("result.kind = Pick_kind::second;\n        result.value.emplace<0>(std::move(v));",
@@ -693,7 +699,7 @@ END
         var document = TestData.LoadIr("compiler/fixtures/ir/example.json");
         var files = new CodeGenerator(new ILanguageBackend[] { new CppBackend() })
             .Generate(document, "cpp");
-        Assert.Contains("struct Person", files.Single().Contents);
+        Assert.Contains("struct Person", files.Single(f => f.RelativePath == "ExampleModule.hpp").Contents);
     }
 
     [Fact]
@@ -749,10 +755,14 @@ END
             }
         };
         var files = new CppBackend().Generate(document);
-        Assert.Equal(2, files.Count);
+        Assert.Equal(4, files.Count);
         var b = Assert.Single(files, f => f.RelativePath == "B.hpp");
         Assert.Contains("#include \"A.hpp\"", b.Contents);
         Assert.Contains("::mod::a::Item item{}", b.Contents);
+
+        var bFormat = Assert.Single(files, f => f.RelativePath == "B.format.hpp");
+        Assert.Contains("#include \"A.format.hpp\"", bFormat.Contents);
+        Assert.Contains("to_string(value.item, out, indent + 1);", bFormat.Contents);
         Assert.DoesNotContain(files, f => f.RelativePath.StartsWith("cycle_", StringComparison.Ordinal));
     }
 
@@ -1182,8 +1192,7 @@ END
         Assert.DoesNotContain("std::vector<Extension>", ocsp.Contents);
     }
 
-    [Fact]
-    public void GenerateMatchesCommittedModernGolden()
+    private static IrDocument LoadModernPkixCms()
     {
         var document = TestData.LoadIr("compiler/fixtures/ir/modern-pkix-cms.json");
         foreach (var module in document.Modules)
@@ -1195,7 +1204,39 @@ END
 
         IrOptionsPatch.ApplyFile(
             document, TestData.RepoPath("compiler/fixtures/ir/modern-pkix-cms.patch.json"));
+        return document;
+    }
 
+    [Fact]
+    public void ModernCrossModuleNamesAreQualified()
+    {
+        var files = new CppBackend().Generate(LoadModernPkixCms())
+            .ToDictionary(f => f.RelativePath, f => f.Contents, StringComparer.Ordinal);
+
+        // Synthesized nested owner referenced from another module's OID catalog.
+        Assert.Contains(
+            "extnValue_binding<std::vector<::asn1kit::modern::PKIX1Implicit2009::PolicyMappings_Item>>",
+            files["PKIXCommonTypes2009.hpp"]);
+        // Collapsible-alias named type resolved into a different module.
+        Assert.Contains(
+            "value_binding<::asn1kit::modern::PKIXCRMF2009::CertId>",
+            files["PKIXCommonTypes2009.hpp"]);
+        Assert.Contains(
+            "value_binding<::asn1kit::modern::PKIXCRMF2009::CertRequest>",
+            files["PKIXCommonTypes2009.hpp"]);
+        // Cross-module ENUMERATED codec helper names.
+        Assert.Contains(
+            "::asn1kit::modern::PKIX1Implicit2009::decode_CRLReason(",
+            files["OCSP2009.types.hpp"]);
+        Assert.Contains(
+            "::asn1kit::modern::PKIX1Implicit2009::encode_CRLReason(",
+            files["EnrollmentMessageSyntax2009.types.hpp"]);
+    }
+
+    [Fact]
+    public void GenerateMatchesCommittedModernGolden()
+    {
+        var document = LoadModernPkixCms();
         var files = new CppBackend().Generate(document)
             .OrderBy(f => f.RelativePath, StringComparer.Ordinal)
             .ToList();

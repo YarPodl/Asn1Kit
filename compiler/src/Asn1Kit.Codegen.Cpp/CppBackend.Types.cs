@@ -259,10 +259,10 @@ public sealed partial class CppBackend
 
         if (IsEnumeratedRefOrType(document, resolvedModule, type))
         {
-            return NamedTypeName(document, resolvedModule, owner, hint, type);
+            return NamedTypeName(document, resolvedModule, owner, hint, type, emittingModule);
         }
 
-        return NamedTypeName(document, resolvedModule, owner, hint, type);
+        return NamedTypeName(document, resolvedModule, owner, hint, type, emittingModule);
     }
 
     private static string MapIntegerCppType(string representation) => representation switch
@@ -281,7 +281,8 @@ public sealed partial class CppBackend
         IrModule module,
         string owner,
         string hint,
-        TypeExpr type)
+        TypeExpr type,
+        IrModule? emitting = null)
     {
         if (type is RefType reference)
         {
@@ -290,9 +291,15 @@ public sealed partial class CppBackend
             {
                 var (definingModule, def) = ResolveAliasOfTarget(document, found.Value.Module, found.Value.Def);
                 var typeName = IrOptions.CppTypeName(def.Options) ?? CppNames.SanitizeTypeName(def.Name);
-                var currentNs = ModuleNamespace(module);
                 var definingNs = ModuleNamespace(definingModule);
-                if (!string.Equals(currentNs, definingNs, StringComparison.Ordinal))
+                // The definition must be qualified unless it is visible unqualified from
+                // every module context in play. After a collapsible-alias unwrap the
+                // resolution module and the emitting module can differ from each other
+                // and from the definition's module, so check both.
+                var emittingNs = ModuleNamespace(emitting ?? module);
+                var resolvedNs = ModuleNamespace(module);
+                if (!string.Equals(definingNs, emittingNs, StringComparison.Ordinal) ||
+                    !string.Equals(definingNs, resolvedNs, StringComparison.Ordinal))
                 {
                     return "::" + definingNs.Replace("::", "::", StringComparison.Ordinal) + "::" + typeName;
                 }
@@ -309,6 +316,21 @@ public sealed partial class CppBackend
         }
 
         return CppNames.SanitizeTypeName(hint);
+    }
+
+    /// <summary>
+    /// Qualifies a generated name relative to the module that owns the declaration.
+    /// Used for synthesized nested-type owners (e.g. <c>PolicyMappings_Item</c> from
+    /// PKIX1Implicit2009) and cross-module ENUMERATED codec helpers (e.g.
+    /// <c>decode_CRLReason</c>) referenced from a different module.
+    /// </summary>
+    private static string QualifyCrossModule(IrModule emitting, IrModule owning, string name)
+    {
+        var emittingNs = ModuleNamespace(emitting);
+        var owningNs = ModuleNamespace(owning);
+        return string.Equals(emittingNs, owningNs, StringComparison.Ordinal)
+            ? name
+            : "::" + owningNs + "::" + name;
     }
 
     private void ResolveOfItemNaming(
@@ -353,7 +375,8 @@ public sealed partial class CppBackend
             var inner = def.Type;
             if (inner is SequenceOfType or SetOfType)
             {
-                itemOwner = IrOptions.CppTypeName(def.Options) ?? CppNames.SanitizeTypeName(def.Name);
+                var itemName = IrOptions.CppTypeName(def.Options) ?? CppNames.SanitizeTypeName(def.Name);
+                itemOwner = QualifyCrossModule(module, definingModule, itemName);
                 return;
             }
 
@@ -504,6 +527,30 @@ public sealed partial class CppBackend
     private bool IsEnumeratedRefOrType(IrDocument document, IrModule module, TypeExpr type) =>
         type is EnumeratedType ||
         (type is RefType reference && Find(document, module, reference)?.Type is EnumeratedType);
+
+    /// <summary>
+    /// Resolves the generated ENUMERATED codec function name
+    /// (<c>encode_…</c>/<c>decode_…</c>) and qualifies it when the owning module
+    /// differs from the emitting one. Inline enums keep the <c>Owner_Field</c> name.
+    /// </summary>
+    private string EnumeratedCodecName(
+        IrDocument document, IrModule module, string owner, string hint, TypeExpr type, string operation)
+    {
+        if (type is RefType reference)
+        {
+            var found = FindWithModule(document, module, reference);
+            if (found is not null)
+            {
+                var (definingModule, def) = ResolveAliasOfTarget(document, found.Value.Module, found.Value.Def);
+                var name = IrOptions.CppTypeName(def.Options) ?? CppNames.SanitizeTypeName(def.Name);
+                return QualifyCrossModule(module, definingModule, operation + "_" + name);
+            }
+
+            return operation + "_" + CppNames.SanitizeTypeName(reference.Name);
+        }
+
+        return operation + "_" + owner + "_" + CppNames.SanitizeTypeName(hint);
+    }
 
     private TypeExpr UnwrapAliases(IrDocument document, IrModule module, TypeExpr type) =>
         UnwrapAliases(document, ref module, type);

@@ -9,10 +9,10 @@ namespace asn1kit {
 struct reader_options {
     /// Soft profile: non-minimal INTEGER and nonzero BIT STRING trailing bits are accepted;
     /// non-minimal length and overlong OID base-128 are rejected.
-    static reader_options default_profile() { return {}; }
+    [[nodiscard]] static constexpr reader_options default_profile() { return {}; }
 
     /// All optional rejects enabled.
-    static reader_options strict() {
+    [[nodiscard]] static constexpr reader_options strict() {
         reader_options o;
         o.reject_non_minimal_integer = true;
         o.reject_bit_string_trailing_bits = true;
@@ -22,14 +22,14 @@ struct reader_options {
     }
 
     /// Softened length checks only.
-    static reader_options allow_non_minimal_length() {
+    [[nodiscard]] static constexpr reader_options allow_non_minimal_length() {
         reader_options o;
         o.reject_non_minimal_length = false;
         return o;
     }
 
     /// Softened OID base-128 checks only.
-    static reader_options allow_overlong_oid_base128() {
+    [[nodiscard]] static constexpr reader_options allow_overlong_oid_base128() {
         reader_options o;
         o.reject_overlong_oid_base128 = false;
         return o;

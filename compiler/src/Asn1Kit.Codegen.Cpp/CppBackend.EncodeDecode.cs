@@ -212,27 +212,8 @@ public sealed partial class CppBackend
         var encodeTag = forceTag ?? TagExpr(document, module, type);
         if (IsEnumeratedRefOrType(document, module, type))
         {
-            var enumName = NamedTypeName(document, resolvedModule, owner, hint, type);
-            if (type is RefType)
-            {
-                enumName = NamedTypeName(document, resolvedModule, owner, hint, type);
-            }
-            else if (type is EnumeratedType)
-            {
-                enumName = owner + "_" + CppNames.SanitizeTypeName(hint);
-            }
-
-            // Named ENUMERATED typedef uses the typedef name; inline uses Owner_Field.
-            if (type is RefType reference)
-            {
-                var found = Find(document, module, reference);
-                if (found is not null)
-                {
-                    enumName = IrOptions.CppTypeName(found.Options) ?? CppNames.SanitizeTypeName(found.Name);
-                }
-            }
-
-            sb.AppendLine($"{indent}encode_{enumName}({writer}, {expr}, {encodeTag});");
+            var enumName = EnumeratedCodecName(document, module, owner, hint, type, "encode");
+            sb.AppendLine($"{indent}{enumName}({writer}, {expr}, {encodeTag});");
             return;
         }
 
@@ -774,23 +755,14 @@ public sealed partial class CppBackend
         var decodeTag = forceTag ?? TagExpr(document, module, type);
         if (IsEnumeratedRefOrType(document, module, type))
         {
-            var enumName = owner + "_" + CppNames.SanitizeTypeName(hint);
-            if (type is RefType reference)
-            {
-                var found = Find(document, module, reference);
-                if (found is not null)
-                {
-                    enumName = IrOptions.CppTypeName(found.Options) ?? CppNames.SanitizeTypeName(found.Name);
-                }
-            }
-
-            sb.AppendLine($"{indent}{target} = decode_{enumName}({reader}, {decodeTag});");
+            var enumName = EnumeratedCodecName(document, module, owner, hint, type, "decode");
+            sb.AppendLine($"{indent}{target} = {enumName}({reader}, {decodeTag});");
             return;
         }
 
         if (type is RefType namedBitRef && Find(document, module, namedBitRef)?.Type is BitStringType { NamedBits.Count: > 0 })
         {
-            var name = NamedTypeName(document, resolvedModule, owner, hint, type);
+            var name = NamedTypeName(document, resolvedModule, owner, hint, type, module);
             EmitDecodeGenerated(sb, indent, reader, target, name, decodeTag, forceTag, type);
             return;
         }
@@ -823,13 +795,13 @@ public sealed partial class CppBackend
         if (type is ChoiceType || (type is RefType choiceRef && Find(document, module, choiceRef)?.Type is ChoiceType))
         {
             var name = type is RefType
-                ? NamedTypeName(document, resolvedModule, owner, hint, type)
+                ? NamedTypeName(document, resolvedModule, owner, hint, type, module)
                 : owner + "_" + CppNames.SanitizeTypeName(hint);
             EmitDecodeGenerated(sb, indent, reader, target, name, decodeTag, forceTag, type);
             return;
         }
 
-        var typeName = NamedTypeName(document, resolvedModule, owner, hint, type);
+        var typeName = NamedTypeName(document, resolvedModule, owner, hint, type, module);
         EmitDecodeGenerated(sb, indent, reader, target, typeName, decodeTag, forceTag, type);
     }
 

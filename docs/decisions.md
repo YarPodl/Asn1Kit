@@ -170,6 +170,22 @@
 
 **Последствие.** Граф deps — только layout. `cycle_*.hpp` содержит только членов нетривиального SCC и `#include`-ит `Module.types.hpp` / `Module.hpp` / другие cycle по DAG конденсации, но не facade с cycle-includes. `Module.types.hpp` (нециклические типы + OID) создаётся только когда модулю нужен facade (owned cycle / post / open-type); иначе всё в одном `Module.hpp`. Facade не дублирует OID, если они уже в `*.types.hpp`. Peer `#include` в types/facade **откладываются** до первого owning-типа; типы с reentrant peer (include-triangle CMS→AttrCert→ESS→CMS) и их in-module потомки эмитятся после остальных, чтобы локальные типы (например `IssuerAndSerialNumber`) были полны до реentrant include.
 
+## C++ codegen — глубокий debug-формат в отдельных `Module.format.hpp`
+
+**Причина.** Плоский `Asn1Formatting` в C# не подходит для отладки нативных структур: нужен рекурсивный многострочный дамп с отступами без промежуточной `std::string`.
+
+**Решение.** Публичная точка входа — потоковая и ADL-дружественная: `template<class T> void to_string(const T&, std::ostream&)` в `runtime-cpp/include/asn1kit/format.hpp` вызывает `to_string(value, out, 0)`; конкретные перегрузки (`int32_t`…`asn1kit::integer`, `bytes`, `bit_string`, `oid`, `utc_date_time`, `any`, `null_value`, `std::optional`, `std::vector`, `value<T>`, `lazy<T>`, `contained<T>`) — header-only там же. Всеядного primary-шаблона `to_string(const T&, std::ostream&, int)` нет: он уводил бы ADL-хук в бесконечную рекурсию. Генератор эмитит `{Module}.format.hpp`: forward-объявления `to_string` своих типов, `#include` format-заголовков owning-модулей всех форматированных layout-ссылок, затем `inline`-определения. Объявления до пиров разрывают взаимную рекурсию циклов через include-guard.
+
+**Последствие.** Тела пишутся всегда (сейчас без `options.cpp.*`); named INTEGER-структуры констант формат не получают, `generate: false` уважается. Кодек не дублируется — используется только API runtime. Точка расширения для пользовательских типов: перегрузка `to_string(const T&, std::ostream&, int)` в namespace типа.
+
+## C++ codegen — namespace-квалификация cross-module имён
+
+**Причина.** Синтезированные владельцы вложенных типов (например `<Owner>_Item` в `SEQUENCE OF`), имена ENUMERATED-кодеков (`encode_<Type>` / `decode_<Type>`) и имена типов, полученные разворачиванием сворачиваемого alias (`options.aliasOf`), могли эмититься без namespace-квалификации, когда определение живёт в другом модуле. В modern PKIX из-за этого не собирались `value_binding<CertId>` / `value_binding<CertRequest>` и `extnValue_binding<std::vector<PolicyMappings_Item>>` в OID-каталоге `PKIXCommonTypes2009.hpp`, а также `decode_CRLReason` / `encode_CRLReason` в OCSP / EnrollmentMessageSyntax (тип `CRLReason` определён в `PKIX1Implicit2009`).
+
+**Решение.** Общий хелпер `QualifyCrossModule(emitting, owning, name)` добавляет `::<namespace>::` к имени, когда namespace владельца отличается от namespace эмиттера. Применяется к владельцу OF-элемента (`ResolveOfItemNaming`) и к именам ENUMERATED-кодеков (`EnumeratedCodecName`). `NamedTypeName` квалифицирует определение, если его namespace не совпадает ни с резолвящим, ни с эмитирующим модулем: после разворачивания alias эти контексты расходятся, и одного из них недостаточно.
+
+**Последствие.** Устранены unqualified cross-module ссылки в modern golden (`PKIXCommonTypes2009.hpp`, `OCSP2009.types.hpp`, `EnrollmentMessageSyntax2009.types.hpp`). Регрессия закрыта тестом `CppCodegenTests.ModernCrossModuleNamesAreQualified`.
+
 ## C++ runtime — C++20, `bytes` = span + keep-alive, Conan только для тестов
 
 **Причина.** Нужен нативный runtime с тем же soft-profile и hex-матрицей, без runtime-зависимостей и без копирования фикстур. `std::span` сам по себе не удерживает backing store.

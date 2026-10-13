@@ -186,7 +186,7 @@ inline const extnValue_binding<::asn1kit::modern::PKIX1Implicit2009::PrivateKeyU
 inline const extnValue_binding<std::vector<::asn1kit::modern::PKIX1Implicit2009::PolicyInformation>> certificate_policies{
     asn1kit::oid_literal<"2.5.29.32">().get()};
 
-inline const extnValue_binding<std::vector<PolicyMappings_Item>> policy_mappings{
+inline const extnValue_binding<std::vector<::asn1kit::modern::PKIX1Implicit2009::PolicyMappings_Item>> policy_mappings{
     asn1kit::oid_literal<"2.5.29.33">().get()};
 
 inline const extnValue_binding<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> subject_alt_name{
@@ -318,7 +318,7 @@ inline const value_binding<::asn1kit::modern::PKIXCRMF2009::PKIPublicationInfo> 
 inline const value_binding<::asn1kit::modern::PKIXCRMF2009::PKIArchiveOptions> reg_ctrl_pki_archive_options{
     asn1kit::oid_literal<"1.3.6.1.5.5.7.5.1.4">().get()};
 
-inline const value_binding<CertId> reg_ctrl_old_cert_i_d{
+inline const value_binding<::asn1kit::modern::PKIXCRMF2009::CertId> reg_ctrl_old_cert_i_d{
     asn1kit::oid_literal<"1.3.6.1.5.5.7.5.1.5">().get()};
 
 inline const value_binding<::asn1kit::modern::PKCS10::SubjectPublicKeyInfo> reg_ctrl_protocol_encr_key{
@@ -330,7 +330,7 @@ namespace regInfoSet_value_bindings {
 inline const value_binding<asn1kit::asn_string<asn1kit::string_form::utf8>> reg_info_utf8_pairs{
     asn1kit::oid_literal<"1.3.6.1.5.5.7.5.2.1">().get()};
 
-inline const value_binding<CertRequest> reg_info_cert_req{
+inline const value_binding<::asn1kit::modern::PKIXCRMF2009::CertRequest> reg_info_cert_req{
     asn1kit::oid_literal<"1.3.6.1.5.5.7.5.2.2">().get()};
 
 } // namespace regInfoSet_value_bindings

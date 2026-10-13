@@ -399,7 +399,7 @@ struct RevokedInfo {
             if (inner.next_is(asn1kit::tag::context(0, true))) {
                 ::asn1kit::modern::PKIX1Implicit2009::CRLReason tmp_revocationReason{};
                 inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
-                    tmp_revocationReason = decode_CRLReason(scoped, asn1kit::tag::enumerated);
+                    tmp_revocationReason = ::asn1kit::modern::PKIX1Implicit2009::decode_CRLReason(scoped, asn1kit::tag::enumerated);
                 });
                 value.revocationReason = std::move(tmp_revocationReason);
             }
@@ -413,7 +413,7 @@ struct RevokedInfo {
         if (this->revocationReason.has_value()) {
             {
                 auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
-                encode_CRLReason(w, (*this->revocationReason), asn1kit::tag::enumerated);
+                ::asn1kit::modern::PKIX1Implicit2009::encode_CRLReason(w, (*this->revocationReason), asn1kit::tag::enumerated);
             }
         }
     }

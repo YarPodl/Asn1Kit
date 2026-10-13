@@ -53,6 +53,15 @@
 
 Вне текущего среза: modern IOC, oracle, `external/` фикстуры. Extensible SEQUENCE/SET/CHOICE эмитит codegen (skip-unknown через `read_any`). Codegen C++ — [cpp-backend.md](../../compiler/docs/playbooks/cpp-backend.md).
 
+## Debug-формат (`format.hpp`)
+
+`asn1kit/format.hpp` — header-only потоковый дамп для отладки. Публичная точка входа — `template <typename T> void to_string(const T& value, std::ostream& out)`, без завершающего `\n`. Точка кастомизации (ADL) — `void to_string(const T& value, std::ostream& out, int indent)` в namespace типа; отдельного generic-шаблона с `(…, int)` нет, иначе ADL уходит в бесконечную рекурсию.
+
+- Перегрузки: `bool`, `int32_t`/`uint32_t`/`int64_t`/`uint64_t`, `std::string`, `std::string_view`, `integer`, `null_value`, `oid`, `bytes`, `bit_string`, `utc_date_time`, `any`, `std::optional<T>`, `std::vector<T>`, `value<T>`, `lazy<T>`, `contained<T>`.
+- Числа — locale-independent (`std::to_chars` / `integer::to_decimal`), OID — dotted, время — `utc_date_time::to_iso()`, `any` — `any::to_string()`.
+- Грамматика: структурный тип — `Type {`, по строке `field: <dump>` с отступом 4 пробела на уровень, `}`; CHOICE — `Type {` / `kind: <alt>` / `value: <dump>`; `OF` — `[N] { … }`; named BIT STRING — `Flags { N bits }`; `bytes` → `N bytes`; `bit_string` → `N bits`; `null` → `null`; отсутствующий `optional` → `<absent>`; lazy без TLV → `<unset>`, с TLV → `<not decoded: N bytes>`; opaque `contained` → `<opaque: N bytes>`.
+- Codegen эмитит перегрузки для своих именованных типов в `{Module}.format.hpp` ([cpp-backend.md](../../compiler/docs/playbooks/cpp-backend.md)).
+
 ## Constructed scopes
 
 - Scopes **move-only**. Публично — `end()` и destructor.

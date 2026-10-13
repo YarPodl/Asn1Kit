@@ -42,12 +42,12 @@ struct utc_date_time {
     [[nodiscard]] std::chrono::system_clock::time_point to_system_clock() const;
     [[nodiscard]] static utc_date_time from_system_clock(std::chrono::system_clock::time_point tp);
 
-    friend bool operator==(const utc_date_time& a, const utc_date_time& b) noexcept {
+    friend constexpr bool operator==(const utc_date_time& a, const utc_date_time& b) noexcept {
         return a.year == b.year && a.month == b.month && a.day == b.day
             && a.hour == b.hour && a.minute == b.minute && a.second == b.second
             && a.fraction == b.fraction;
     }
-    friend bool operator!=(const utc_date_time& a, const utc_date_time& b) noexcept {
+    friend constexpr bool operator!=(const utc_date_time& a, const utc_date_time& b) noexcept {
         return !(a == b);
     }
 };

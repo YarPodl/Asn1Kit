@@ -92,7 +92,7 @@ public sealed partial class CppBackend
         var peerModulesByModule = BuildPeerModulesByModule(
             document, plans, typesInAmalgams, postTypes, typeToCycleFile, keyOf);
 
-        var files = new List<GeneratedFile>(plans.Count * 2 + amalgams.Count);
+        var files = new List<GeneratedFile>(plans.Count * 3 + amalgams.Count);
 
         for (var i = 0; i < amalgams.Count; i++)
         {
@@ -164,6 +164,14 @@ public sealed partial class CppBackend
                     document, plan, coreNested, includes, emitOids: true,
                     typeToCycleFile, typesInAmalgams, postTypes, modulesWithTypesFile, keyOf,
                     peerTypesFiles: true, peerModulesByModule));
+            }
+        }
+
+        foreach (var plan in plans)
+        {
+            if (plan.Nested.Any(t => HasFormatDefinition(t.Type)))
+            {
+                files.Add(EmitFormatFile(document, plan, items, keyOf));
             }
         }
 

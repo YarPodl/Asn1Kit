@@ -983,7 +983,7 @@ struct RevokeRequest {
                 return item;
             });
             value.serialNumber = inner.read_integer_value(asn1kit::tag::integer);
-            value.reason = decode_CRLReason(inner, asn1kit::tag::enumerated);
+            value.reason = ::asn1kit::modern::PKIX1Implicit2009::decode_CRLReason(inner, asn1kit::tag::enumerated);
             if (inner.next_is(asn1kit::tag::generalized_time)) {
                 value.invalidityDate = inner.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
             }
@@ -1003,7 +1003,7 @@ struct RevokeRequest {
             inner.write_set_of(asn1kit::tag::set, item);
         });
         w.write_integer(asn1kit::tag::integer, this->serialNumber);
-        encode_CRLReason(w, this->reason, asn1kit::tag::enumerated);
+        ::asn1kit::modern::PKIX1Implicit2009::encode_CRLReason(w, this->reason, asn1kit::tag::enumerated);
         if (this->invalidityDate.has_value()) {
             w.write_time(asn1kit::tag::generalized_time, (*this->invalidityDate), asn1kit::time_form::generalized, 3);
         }
