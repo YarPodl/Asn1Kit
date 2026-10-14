@@ -54,9 +54,11 @@ endif()
 include(GoogleTest)
 gtest_discover_tests(asn1kit_tests)
 
-# Modern PKIX/CMS amalgam is large; keep Certificate round-trip in a separate binary.
+# Modern PKIX/CMS amalgam is large; keep its compile gate and Certificate
+# round-trip in a separate binary.
 add_executable(asn1kit_modern_tests
     generated_modern_certificate_tests.cpp
+    generated_modern_headers_compile.cpp
 )
 
 target_link_libraries(asn1kit_modern_tests

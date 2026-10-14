@@ -710,7 +710,8 @@ public sealed partial class CppBackend
             for (var suffix = 2; !memberNames.Add(member); suffix++)
                 member = binding.MemberName + "_" + suffix.ToString(CultureInfo.InvariantCulture);
             var valueType = OpenBindingCppType(
-                document, module, site.Container.TypeName, "Value", binding.Binding.Type);
+                document, module, site.Container.TypeName,
+                binding.Binding.Name ?? "Value", binding.Binding.Type);
             var keyExpr = OpenBindingKeyExpression(document, module, site, binding.Binding.Key);
             sb.AppendLine($"inline const {stem}_binding<{valueType}> {member}{{");
             sb.AppendLine($"    {keyExpr}}};");

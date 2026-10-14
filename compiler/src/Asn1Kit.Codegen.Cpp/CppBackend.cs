@@ -191,7 +191,8 @@ public sealed partial class CppBackend : ILanguageBackend
         }
     }
 
-    private void EmitType(StringBuilder sb, IrDocument document, IrModule module, string typeName, TypeExpr type)
+    private void EmitType(StringBuilder sb, IrDocument document, IrModule module, string typeName, TypeExpr type,
+        bool deferChoiceCodecs = false)
     {
         EnsureBackendSupport(document, module, type);
         switch (type)
@@ -203,7 +204,7 @@ public sealed partial class CppBackend : ILanguageBackend
                 EmitSet(sb, document, module, typeName, set);
                 break;
             case ChoiceType choice:
-                EmitChoice(sb, document, module, typeName, choice);
+                EmitChoice(sb, document, module, typeName, choice, deferChoiceCodecs);
                 break;
             case BitStringType bitString when IsNamedBitString(bitString):
                 EmitNamedBitString(sb, typeName, bitString);

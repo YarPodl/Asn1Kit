@@ -1257,6 +1257,13 @@ END
         Assert.Contains(
             "::asn1kit::modern::PKIX1Implicit2009::encode_CRLReason(",
             files["EnrollmentMessageSyntax2009.types.hpp"]);
+
+        Assert.Contains(
+            "extension_attribute_value_binding<ExtensionAttribute_EaTeletexPersonalName>",
+            files["PKIXX400Address2009.hpp"]);
+        Assert.Contains(
+            "struct PKIMessage;",
+            files["cycle_PKIXCMP2009_PKIBody_PKIXCMP2009_PKIMessage.hpp"]);
     }
 
     [Fact]

@@ -1,0 +1,28 @@
+// Copyright Asn1Kit contributors
+// SPDX-License-Identifier: Apache-2.0
+
+// Compile the complete public Modern formatting surface in one consumer unit.
+#include "AlgorithmInformation2009.format.hpp"
+#include "AttributeCertificateVersion12009.format.hpp"
+#include "CMSAuthEnvelopedData2009.format.hpp"
+#include "CMSFirmwareWrapper2009.format.hpp"
+#include "CryptographicMessageSyntax2009.format.hpp"
+#include "CryptographicMessageSyntaxAlgorithms2009.format.hpp"
+#include "EnrollmentMessageSyntax2009.format.hpp"
+#include "ERS.format.hpp"
+#include "ExtendedSecurityServices2009.format.hpp"
+#include "GostR34102012PKISyntax.format.hpp"
+#include "OCSP2009.format.hpp"
+#include "PKCS10.format.hpp"
+#include "PKIX1Explicit2009.format.hpp"
+#include "PKIX1Implicit2009.format.hpp"
+#include "PKIX1PSSOAEPAlgorithms2009.format.hpp"
+#include "PKIXAlgs2009.format.hpp"
+#include "PKIXAttributeCertificate2009.format.hpp"
+#include "PKIXCMP2009.format.hpp"
+#include "PKIXCommonTypes2009.format.hpp"
+#include "PKIXCRMF2009.format.hpp"
+#include "PKIXX400Address2009.format.hpp"
+#include "RuStrongCertsSyntax.format.hpp"
+#include "SecureMimeMessageV3dot12009.format.hpp"
+#include "SMIMESymmetricKeyDistribution2009.format.hpp"

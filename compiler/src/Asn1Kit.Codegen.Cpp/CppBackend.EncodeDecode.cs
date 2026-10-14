@@ -673,7 +673,11 @@ public sealed partial class CppBackend
         if (type.Tag?.Mode == TagModes.Explicit && forceTag is null)
         {
             var tmp = "tmp_" + CppNames.SanitizeFieldName(hint);
-            var tmpType = CppType(document, module, owner, hint, CloneUntagged(type), optional: false);
+            // Preserve a named/aliased reference while removing only the use-site
+            // EXPLICIT tag. Unwrapping first would invent Owner_Field_Item names
+            // for aliases such as PollReqContent ::= SEQUENCE OF PollReqContent-Item.
+            var untaggedOriginal = CloneUntagged(original);
+            var tmpType = CppType(document, module, owner, hint, untaggedOriginal, optional: false);
             sb.AppendLine($"{indent}{tmpType} {tmp}{{}};");
             sb.AppendLine(
                 $"{indent}{reader}.with_explicit({TagFromIr(type.Tag, constructed: true)}, [&](asn1kit::reader& scoped) {{");
@@ -683,7 +687,7 @@ public sealed partial class CppBackend
                 module,
                 owner,
                 hint,
-                CloneUntagged(type),
+                untaggedOriginal,
                 indent + "    ",
                 "scoped",
                 tmp);

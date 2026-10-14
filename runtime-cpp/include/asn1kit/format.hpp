@@ -105,15 +105,6 @@ inline void to_string(const any& value, std::ostream& out, int /*indent*/) {
 }
 
 template <typename T>
-void to_string(const std::optional<T>& value, std::ostream& out, int indent) {
-    if (value.has_value()) {
-        to_string(*value, out, indent);
-    } else {
-        out << "<absent>";
-    }
-}
-
-template <typename T>
 void to_string(const std::vector<T>& value, std::ostream& out, int indent) {
     out << '[';
     detail::write_format_decimal(out, value.size());
@@ -127,6 +118,17 @@ void to_string(const std::vector<T>& value, std::ostream& out, int indent) {
     out << '\n';
     detail::write_format_indent(out, indent);
     out << '}';
+}
+
+// Keep optional after vector: dependent unqualified lookup must see the vector
+// overload when instantiating optional<vector<T>>.
+template <typename T>
+void to_string(const std::optional<T>& value, std::ostream& out, int indent) {
+    if (value.has_value()) {
+        to_string(*value, out, indent);
+    } else {
+        out << "<absent>";
+    }
 }
 
 template <typename T>

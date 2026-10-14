@@ -1122,6 +1122,31 @@ public sealed partial class CppBackend
             }
         }
 
+        // Every member of an SCC must be name-visible before any member body is
+        // emitted. Recursive CHOICE codec bodies are emitted after all complete
+        // types below, so containers such as vector<PKIMessage> can instantiate.
+        foreach (var group in typeFilter
+                     .GroupBy(static item => item.Module, StringComparer.Ordinal)
+                     .OrderBy(static group => group.Key, StringComparer.Ordinal))
+        {
+            var plan = plans.Single(item => item.Module.Name == group.Key);
+            builder.Append(CppNames.NamespaceOpen(ModuleNamespace(plan.Module)));
+            foreach (var item in group.OrderBy(static item => item.Name, StringComparer.Ordinal))
+            {
+                var type = plan.Nested.Single(nested => nested.Name == item.Name).Type;
+                if (type is EnumeratedType)
+                {
+                    builder.AppendLine($"enum class {item.Name};");
+                }
+                else
+                {
+                    builder.AppendLine($"struct {item.Name};");
+                }
+            }
+            builder.Append(CppNames.NamespaceClose(ModuleNamespace(plan.Module)));
+            builder.AppendLine();
+        }
+
         var ordered = OrderAllNestedForEmit(document, plans)
             .Where(item => typeFilter.Contains((item.Module.Name, item.Name)))
             .ToList();
@@ -1143,10 +1168,34 @@ public sealed partial class CppBackend
                 openNs = ns;
             }
 
-            EmitType(builder, document, module, name, type);
+            EmitType(builder, document, module, name, type, deferChoiceCodecs: type is ChoiceType);
             builder.AppendLine();
         }
 
+        if (openNs is not null)
+        {
+            builder.Append(CppNames.NamespaceClose(openNs));
+            builder.AppendLine();
+        }
+
+        openNs = null;
+        foreach (var (module, name, type) in ordered.Where(static item => item.Type is ChoiceType))
+        {
+            var ns = ModuleNamespace(module);
+            if (!string.Equals(openNs, ns, StringComparison.Ordinal))
+            {
+                if (openNs is not null)
+                {
+                    builder.Append(CppNames.NamespaceClose(openNs));
+                    builder.AppendLine();
+                }
+                builder.Append(CppNames.NamespaceOpen(ns));
+                builder.AppendLine();
+                openNs = ns;
+            }
+            EmitChoiceCodecDefinitions(builder, document, module, name, (ChoiceType)type);
+            builder.AppendLine();
+        }
         if (openNs is not null)
         {
             builder.Append(CppNames.NamespaceClose(openNs));

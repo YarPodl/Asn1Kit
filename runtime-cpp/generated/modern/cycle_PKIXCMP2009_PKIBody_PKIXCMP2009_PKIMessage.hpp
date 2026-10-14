@@ -33,6 +33,15 @@
 namespace asn1kit {
 namespace modern {
 namespace PKIXCMP2009 {
+struct PKIBody;
+struct PKIMessage;
+} // namespace PKIXCMP2009
+} // namespace modern
+} // namespace asn1kit
+
+namespace asn1kit {
+namespace modern {
+namespace PKIXCMP2009 {
 
 enum class PKIBody_kind {
     ir,
@@ -261,7 +270,73 @@ struct PKIBody {
         return (t.matches_ignore_constructed(asn1kit::tag::context(0, true)) || t.matches_ignore_constructed(asn1kit::tag::context(1, true)) || t.matches_ignore_constructed(asn1kit::tag::context(2, true)) || t.matches_ignore_constructed(asn1kit::tag::context(3, true)) || t.matches_ignore_constructed(asn1kit::tag::context(4, true)) || t.matches_ignore_constructed(asn1kit::tag::context(5, true)) || t.matches_ignore_constructed(asn1kit::tag::context(6, true)) || t.matches_ignore_constructed(asn1kit::tag::context(7, true)) || t.matches_ignore_constructed(asn1kit::tag::context(8, true)) || t.matches_ignore_constructed(asn1kit::tag::context(9, true)) || t.matches_ignore_constructed(asn1kit::tag::context(10, true)) || t.matches_ignore_constructed(asn1kit::tag::context(11, true)) || t.matches_ignore_constructed(asn1kit::tag::context(12, true)) || t.matches_ignore_constructed(asn1kit::tag::context(13, true)) || t.matches_ignore_constructed(asn1kit::tag::context(14, true)) || t.matches_ignore_constructed(asn1kit::tag::context(15, true)) || t.matches_ignore_constructed(asn1kit::tag::context(16, true)) || t.matches_ignore_constructed(asn1kit::tag::context(17, true)) || t.matches_ignore_constructed(asn1kit::tag::context(18, true)) || t.matches_ignore_constructed(asn1kit::tag::context(19, true)) || t.matches_ignore_constructed(asn1kit::tag::context(20, true)) || t.matches_ignore_constructed(asn1kit::tag::context(21, true)) || t.matches_ignore_constructed(asn1kit::tag::context(22, true)) || t.matches_ignore_constructed(asn1kit::tag::context(23, true)) || t.matches_ignore_constructed(asn1kit::tag::context(24, true)) || t.matches_ignore_constructed(asn1kit::tag::context(25, true)) || t.matches_ignore_constructed(asn1kit::tag::context(26, true)));
     }
 
-    static PKIBody decode(asn1kit::reader& r) {
+    static PKIBody decode(asn1kit::reader& r);
+    static PKIBody decode(asn1kit::reader& r, const asn1kit::tag& t);
+    void encode(asn1kit::writer& w) const;
+    void encode(asn1kit::writer& w, const asn1kit::tag& t) const;
+};
+
+struct PKIMessage {
+    PKIHeader header{};
+    PKIBody body{};
+    std::optional<asn1kit::bit_string> protection{};
+    std::optional<std::vector<CMPCertificate>> extraCerts{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static PKIMessage decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        PKIMessage value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.header = PKIHeader::decode(inner);
+            value.body = PKIBody::decode(inner);
+            if (inner.next_is(asn1kit::tag::context(0, true))) {
+                asn1kit::bit_string tmp_protection{};
+                inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
+                    tmp_protection = scoped.read_bit_string(asn1kit::tag::bit_string);
+                });
+                value.protection = std::move(tmp_protection);
+            }
+            if (inner.next_is(asn1kit::tag::context(1, true))) {
+                std::vector<CMPCertificate> tmp_extraCerts{};
+                inner.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
+                    tmp_extraCerts = scoped.read_sequence_of<CMPCertificate>(asn1kit::tag::sequence);
+                });
+                value.extraCerts = std::move(tmp_extraCerts);
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->header.encode(w);
+        this->body.encode(w);
+        if (this->protection.has_value()) {
+            {
+                auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
+                w.write_bit_string(asn1kit::tag::bit_string, (*this->protection));
+            }
+        }
+        if (this->extraCerts.has_value()) {
+            {
+                auto explicit_scope = w.enter_explicit(asn1kit::tag::context(1, true));
+                w.write_sequence_of(asn1kit::tag::sequence, (*this->extraCerts));
+            }
+        }
+    }
+};
+
+} // namespace PKIXCMP2009
+} // namespace modern
+} // namespace asn1kit
+
+namespace asn1kit {
+namespace modern {
+namespace PKIXCMP2009 {
+
+inline PKIBody PKIBody::decode(asn1kit::reader& r) {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
@@ -543,9 +618,9 @@ struct PKIBody {
             PKIBody result{};
             result.kind = PKIBody_kind::pollReq;
             std::vector<PollReqContent_Item> alt{};
-            std::vector<PKIBody_PollReq_Item> tmp_pollReq{};
+            std::vector<PollReqContent_Item> tmp_pollReq{};
             r.with_explicit(asn1kit::tag::context(25, true), [&](asn1kit::reader& scoped) {
-                tmp_pollReq = scoped.read_sequence_of<PKIBody_PollReq_Item>(asn1kit::tag::sequence);
+                tmp_pollReq = scoped.read_sequence_of<PollReqContent_Item>(asn1kit::tag::sequence);
             });
             alt = std::move(tmp_pollReq);
             result.value.emplace<17>(std::move(alt));
@@ -554,9 +629,9 @@ struct PKIBody {
             PKIBody result{};
             result.kind = PKIBody_kind::pollRep;
             std::vector<PollRepContent_Item> alt{};
-            std::vector<PKIBody_PollRep_Item> tmp_pollRep{};
+            std::vector<PollRepContent_Item> tmp_pollRep{};
             r.with_explicit(asn1kit::tag::context(26, true), [&](asn1kit::reader& scoped) {
-                tmp_pollRep = scoped.read_sequence_of<PKIBody_PollRep_Item>(asn1kit::tag::sequence);
+                tmp_pollRep = scoped.read_sequence_of<PollRepContent_Item>(asn1kit::tag::sequence);
             });
             alt = std::move(tmp_pollRep);
             result.value.emplace<18>(std::move(alt));
@@ -564,14 +639,12 @@ struct PKIBody {
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
-    }
-
-    static PKIBody decode(asn1kit::reader& r, const asn1kit::tag& t) {
-        (void)t;
-        return decode(r);
-    }
-
-    void encode(asn1kit::writer& w) const {
+}
+inline PKIBody PKIBody::decode(asn1kit::reader& r, const asn1kit::tag& t) {
+    (void)t;
+    return decode(r);
+}
+inline void PKIBody::encode(asn1kit::writer& w) const {
         switch (kind) {
         case PKIBody_kind::ir:
             {
@@ -817,65 +890,11 @@ struct PKIBody {
                 break;
             }
         }
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
-        (void)t;
-        encode(w);
-    }
-};
-
-struct PKIMessage {
-    PKIHeader header{};
-    PKIBody body{};
-    std::optional<asn1kit::bit_string> protection{};
-    std::optional<std::vector<CMPCertificate>> extraCerts{};
-
-    static constexpr bool match_tag(const asn1kit::tag& t) {
-        return t.matches_ignore_constructed(asn1kit::tag::sequence);
-    }
-
-    static PKIMessage decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
-        PKIMessage value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.header = PKIHeader::decode(inner);
-            value.body = PKIBody::decode(inner);
-            if (inner.next_is(asn1kit::tag::context(0, true))) {
-                asn1kit::bit_string tmp_protection{};
-                inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
-                    tmp_protection = scoped.read_bit_string(asn1kit::tag::bit_string);
-                });
-                value.protection = std::move(tmp_protection);
-            }
-            if (inner.next_is(asn1kit::tag::context(1, true))) {
-                std::vector<CMPCertificate> tmp_extraCerts{};
-                inner.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
-                    tmp_extraCerts = scoped.read_sequence_of<CMPCertificate>(asn1kit::tag::sequence);
-                });
-                value.extraCerts = std::move(tmp_extraCerts);
-            }
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
-        auto scope = w.enter_sequence(t);
-        this->header.encode(w);
-        this->body.encode(w);
-        if (this->protection.has_value()) {
-            {
-                auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
-                w.write_bit_string(asn1kit::tag::bit_string, (*this->protection));
-            }
-        }
-        if (this->extraCerts.has_value()) {
-            {
-                auto explicit_scope = w.enter_explicit(asn1kit::tag::context(1, true));
-                w.write_sequence_of(asn1kit::tag::sequence, (*this->extraCerts));
-            }
-        }
-    }
-};
+}
+inline void PKIBody::encode(asn1kit::writer& w, const asn1kit::tag& t) const {
+    (void)t;
+    encode(w);
+}
 
 } // namespace PKIXCMP2009
 } // namespace modern

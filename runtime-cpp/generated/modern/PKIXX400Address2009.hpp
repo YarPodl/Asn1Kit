@@ -62,7 +62,7 @@ inline const extension_attribute_value_binding<asn1kit::asn_string<asn1kit::stri
 inline const extension_attribute_value_binding<asn1kit::asn_string<asn1kit::string_form::teletex>> ea_teletex_organization_name{
     std::int32_t{3}};
 
-inline const extension_attribute_value_binding<ExtensionAttribute_Value> ea_teletex_personal_name{
+inline const extension_attribute_value_binding<ExtensionAttribute_EaTeletexPersonalName> ea_teletex_personal_name{
     std::int32_t{4}};
 
 inline const extension_attribute_value_binding<std::vector<std::string>> ea_teletex_organizational_unit_names{
@@ -71,10 +71,10 @@ inline const extension_attribute_value_binding<std::vector<std::string>> ea_tele
 inline const extension_attribute_value_binding<asn1kit::asn_string<asn1kit::string_form::printable>> ea_p_d_s_name{
     std::int32_t{7}};
 
-inline const extension_attribute_value_binding<ExtensionAttribute_Value> ea_physical_delivery_country_name{
+inline const extension_attribute_value_binding<ExtensionAttribute_EaPhysicalDeliveryCountryName> ea_physical_delivery_country_name{
     std::int32_t{8}};
 
-inline const extension_attribute_value_binding<ExtensionAttribute_Value> ea_postal_code{
+inline const extension_attribute_value_binding<ExtensionAttribute_EaPostalCode> ea_postal_code{
     std::int32_t{9}};
 
 inline const extension_attribute_value_binding<PDSParameter> ea_physical_delivery_office_name{
@@ -95,7 +95,7 @@ inline const extension_attribute_value_binding<PDSParameter> ea_physical_deliver
 inline const extension_attribute_value_binding<PDSParameter> ea_extension_physical_delivery_address_components{
     std::int32_t{15}};
 
-inline const extension_attribute_value_binding<ExtensionAttribute_Value> ea_unformatted_postal_address{
+inline const extension_attribute_value_binding<ExtensionAttribute_EaUnformattedPostalAddress> ea_unformatted_postal_address{
     std::int32_t{16}};
 
 inline const extension_attribute_value_binding<PDSParameter> ea_street_address{
@@ -113,7 +113,7 @@ inline const extension_attribute_value_binding<PDSParameter> ea_unique_postal_na
 inline const extension_attribute_value_binding<PDSParameter> ea_local_postal_attributes{
     std::int32_t{21}};
 
-inline const extension_attribute_value_binding<ExtensionAttribute_Value> ea_extended_network_address{
+inline const extension_attribute_value_binding<ExtensionAttribute_EaExtendedNetworkAddress> ea_extended_network_address{
     std::int32_t{22}};
 
 inline const extension_attribute_value_binding<std::int32_t> ea_terminal_type{

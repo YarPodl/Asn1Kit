@@ -211,7 +211,8 @@ public sealed partial class CppBackend
         IrDocument document,
         IrModule module,
         string typeName,
-        ChoiceType type)
+        ChoiceType type,
+        bool deferCodecs = false)
     {
         if (IsSingleAlternativeChoice(type))
         {
@@ -314,7 +315,26 @@ public sealed partial class CppBackend
         // Tagged CHOICE needs decode_content/encode_content so with_explicit does not
         // re-enter natural decode (which would peel the wrapper twice). Untagged CHOICE
         // puts alternatives directly in decode(r) / encode(w).
-        if (type.Tag is not null)
+        if (deferCodecs)
+        {
+            if (type.Tag is not null)
+            {
+                sb.AppendLine($"    static {typeName} decode_content(asn1kit::reader& r);");
+                sb.AppendLine($"    static {typeName} decode(asn1kit::reader& r);");
+                sb.AppendLine($"    static {typeName} decode(asn1kit::reader& r, const asn1kit::tag& t);");
+                sb.AppendLine("    void encode_content(asn1kit::writer& w) const;");
+                sb.AppendLine("    void encode(asn1kit::writer& w) const;");
+                sb.AppendLine("    void encode(asn1kit::writer& w, const asn1kit::tag& t) const;");
+            }
+            else
+            {
+                sb.AppendLine($"    static {typeName} decode(asn1kit::reader& r);");
+                sb.AppendLine($"    static {typeName} decode(asn1kit::reader& r, const asn1kit::tag& t);");
+                sb.AppendLine("    void encode(asn1kit::writer& w) const;");
+                sb.AppendLine("    void encode(asn1kit::writer& w, const asn1kit::tag& t) const;");
+            }
+        }
+        else if (type.Tag is not null)
         {
             var wrapperTag = TagFromIr(type.Tag, constructed: true);
             sb.AppendLine($"    static {typeName} decode_content(asn1kit::reader& r) {{");
@@ -374,6 +394,62 @@ public sealed partial class CppBackend
         }
 
         sb.AppendLine("};");
+    }
+
+    private void EmitChoiceCodecDefinitions(
+        StringBuilder sb, IrDocument document, IrModule module, string typeName, ChoiceType type)
+    {
+        var alts = type.Components;
+        var kinds = alts.Select(a => CppNames.SanitizeEnumMember(a.Name)).ToList();
+        var payloadTypes = alts
+            .Select(a => CppType(document, module, typeName, a.Name, a.Type, optional: false))
+            .ToList();
+        var variantTypes = payloadTypes.Distinct(StringComparer.Ordinal).ToList();
+        var variantIndices = payloadTypes.Select(t => variantTypes.IndexOf(t)).ToList();
+        var singlePayload = variantTypes.Count == 1;
+
+        if (type.Tag is not null)
+        {
+            var wrapperTag = TagFromIr(type.Tag, constructed: true);
+            sb.AppendLine($"inline {typeName} {typeName}::decode_content(asn1kit::reader& r) {{");
+            EmitChoiceDecodeAlternatives(sb, document, module, typeName, type, alts, kinds,
+                payloadTypes, variantIndices, singlePayload);
+            sb.AppendLine("}");
+            sb.AppendLine($"inline {typeName} {typeName}::decode(asn1kit::reader& r) {{ return decode(r, {wrapperTag}); }}");
+            sb.AppendLine($"inline {typeName} {typeName}::decode(asn1kit::reader& r, const asn1kit::tag& t) {{");
+            sb.AppendLine($"    {typeName} value{{}};");
+            sb.AppendLine("    r.with_explicit(t, [&](asn1kit::reader& inner) { value = decode_content(inner); });");
+            sb.AppendLine("    return value;");
+            sb.AppendLine("}");
+            sb.AppendLine($"inline void {typeName}::encode_content(asn1kit::writer& w) const {{");
+            EmitChoiceEncodeAlternatives(sb, document, module, typeName, type, alts, kinds,
+                variantIndices, singlePayload);
+            sb.AppendLine("}");
+            sb.AppendLine($"inline void {typeName}::encode(asn1kit::writer& w) const {{ encode(w, {wrapperTag}); }}");
+            sb.AppendLine($"inline void {typeName}::encode(asn1kit::writer& w, const asn1kit::tag& t) const {{");
+            sb.AppendLine("    auto scope = w.enter_explicit(t);");
+            sb.AppendLine("    encode_content(w);");
+            sb.AppendLine("}");
+        }
+        else
+        {
+            sb.AppendLine($"inline {typeName} {typeName}::decode(asn1kit::reader& r) {{");
+            EmitChoiceDecodeAlternatives(sb, document, module, typeName, type, alts, kinds,
+                payloadTypes, variantIndices, singlePayload);
+            sb.AppendLine("}");
+            sb.AppendLine($"inline {typeName} {typeName}::decode(asn1kit::reader& r, const asn1kit::tag& t) {{");
+            sb.AppendLine("    (void)t;");
+            sb.AppendLine("    return decode(r);");
+            sb.AppendLine("}");
+            sb.AppendLine($"inline void {typeName}::encode(asn1kit::writer& w) const {{");
+            EmitChoiceEncodeAlternatives(sb, document, module, typeName, type, alts, kinds,
+                variantIndices, singlePayload);
+            sb.AppendLine("}");
+            sb.AppendLine($"inline void {typeName}::encode(asn1kit::writer& w, const asn1kit::tag& t) const {{");
+            sb.AppendLine("    (void)t;");
+            sb.AppendLine("    encode(w);");
+            sb.AppendLine("}");
+        }
     }
 
     private bool IsConstexprChoicePayload(
