@@ -3,6 +3,7 @@
 
 #include "ber_der_fixtures.hpp"
 
+#include "asn1kit/any.hpp"
 #include "asn1kit/bit_string.hpp"
 #include "asn1kit/exception.hpp"
 #include "asn1kit/integer.hpp"
@@ -14,6 +15,7 @@
 
 #include <gtest/gtest.h>
 
+#include <array>
 #include <cctype>
 #include <functional>
 #include <iterator>
@@ -287,6 +289,70 @@ TEST(PrimitiveCodecExtra, OverlongOid_DefaultRejects_AllowProfileAccepts) {
         "1.2.1",
         reader(bytes, encoding::der, reader_options::allow_overlong_oid_base128())
             .read_object_identifier(tag::object_identifier));
+}
+
+TEST(PrimitiveCodecExtra, HostileBer_IndefiniteScanEnforcesRecursionDepth) {
+    const auto encoded = parse_hex("2480248004014100000000");
+
+    auto allowed_options = reader_options::default_profile();
+    allowed_options.max_recursion_depth = 2;
+    reader allowed(encoded, encoding::ber, allowed_options);
+    EXPECT_EQ((std::vector<std::uint8_t>{0x41}), allowed.read_octet_string(tag::octet_string).to_vector());
+
+    auto rejected_options = reader_options::default_profile();
+    rejected_options.max_recursion_depth = 1;
+    reader rejected(encoded, encoding::ber, rejected_options);
+    EXPECT_THROW((void)rejected.read_any(), exception);
+}
+
+TEST(PrimitiveCodecExtra, HostileBer_RejectsZeroRecursionDepth) {
+    auto options = reader_options::default_profile();
+    options.max_recursion_depth = 0;
+    EXPECT_THROW(reader(parse_hex("0500"), encoding::ber, options), std::invalid_argument);
+}
+
+TEST(PrimitiveCodecExtra, HostileBer_ConstructedOctetEnforcesLimitsAndKeepsTryAtomic) {
+    const auto encoded = parse_hex("24080401412403040142");
+
+    auto allowed_options = reader_options::default_profile();
+    allowed_options.max_materialized_constructed_value_bytes = 2;
+    reader allowed(encoded, encoding::ber, allowed_options);
+    EXPECT_EQ(
+        (std::vector<std::uint8_t>{0x41, 0x42}),
+        allowed.read_octet_string(tag::octet_string).to_vector());
+
+    auto recursion_options = allowed_options;
+    recursion_options.max_recursion_depth = 1;
+    reader recursion_rejected(encoded, encoding::ber, recursion_options);
+    EXPECT_THROW((void)recursion_rejected.read_octet_string(tag::octet_string), exception);
+
+    auto size_options = reader_options::default_profile();
+    size_options.max_materialized_constructed_value_bytes = 1;
+    reader size_rejected(encoded, encoding::ber, size_options);
+    std::array<std::uint8_t, 2> destination{};
+    std::size_t written = 0;
+    EXPECT_THROW(
+        (void)size_rejected.try_read_octet_string(tag::octet_string, destination, written),
+        exception);
+    EXPECT_EQ(encoded.size(), size_rejected.remaining());
+}
+
+TEST(PrimitiveCodecExtra, HostileBer_PrimitiveOctetDoesNotConsumeMaterializationBudget) {
+    auto options = reader_options::default_profile();
+    options.max_materialized_constructed_value_bytes = 0;
+    reader r(parse_hex("04024142"), encoding::ber, options);
+    EXPECT_EQ((std::vector<std::uint8_t>{0x41, 0x42}), r.read_octet_string(tag::octet_string).to_vector());
+}
+
+TEST(PrimitiveCodecExtra, HostileBer_ConstructedBitStringAndStringEnforceMaterializationLimit) {
+    auto options = reader_options::default_profile();
+    options.max_materialized_constructed_value_bytes = 1;
+
+    reader bits(parse_hex("2308030200A003020500"), encoding::ber, options);
+    EXPECT_THROW((void)bits.read_bit_string(tag::bit_string), exception);
+
+    reader text(parse_hex("2C060C01410C0142"), encoding::ber, options);
+    EXPECT_THROW((void)text.read_string(tag::utf8_string, string_form::utf8), exception);
 }
 
 TEST(PrimitiveCodecExtra, IntegerValue_PreservesNonMinimalContents_OnWrite) {

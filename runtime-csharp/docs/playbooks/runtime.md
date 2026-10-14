@@ -12,7 +12,7 @@
 | [Asn1Reader.cs](../../src/Asn1Kit.Runtime/Asn1Reader.cs) | Публичный фасад: `Encoding` / `Options` / `Remaining` / `Eof`, `Enter*` / typed `Read*` / `ReadAny` / `ReadLazy` / `ReadWithOriginalEncoding`; внутри один value-type cursor без второй heap-аллокации |
 | [Asn1DecodeCursor.cs](../../src/Asn1Kit.Runtime/Asn1DecodeCursor.cs) | `internal struct`: текущее `ReadOnlyMemory`-окно, tag/length/TLV, BER indefinite; копия cursor служит bookmark для `Try*` |
 | [Asn1ReaderScope.cs](../../src/Asn1Kit.Runtime/Asn1ReaderScope.cs) | allocation-free nested scope; восстанавливает cursor, проверяет single-dispose и LIFO |
-| [Asn1ConstructedDecoder.cs](../../src/Asn1Kit.Runtime/Asn1ConstructedDecoder.cs) | `internal`: склейка constructed OCTET/BIT/string поверх `ref Asn1DecodeCursor` (soft under DER — backlog §9) |
+| [Asn1ConstructedDecoder.cs](../../src/Asn1Kit.Runtime/Asn1ConstructedDecoder.cs) | `internal`: склейка constructed OCTET/BIT/string поверх `ref Asn1DecodeCursor` с лимитами глубины и materialized payload (soft under DER — backlog §8) |
 | [Asn1BitString.cs](../../src/Asn1Kit.Runtime/Asn1BitString.cs) | `Asn1BitString` (Memory wrap / `CopyFrom`), `UnusedBits`, indexer MSB-first, `FromBits`, `ParsePrimitive` (`internal`) |
 | [Asn1Any.cs](../../src/Asn1Kit.Runtime/Asn1Any.cs) | `Asn1Any` (полный TLV `EncodedMemory` + `ContentsMemory`; `FromTagAndContents` / `CopyFrom`) |
 | [Asn1TextCodec.cs](../../src/Asn1Kit.Runtime/Asn1TextCodec.cs) | `internal`: encode/decode строк и времени (наборы символов, DER/BER-формы) |

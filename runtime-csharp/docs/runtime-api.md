@@ -56,7 +56,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `Asn1Reader(byte[]\|offset/length\|ReadOnlyMemory, encoding, options?)` / `Remaining` / `Options` / `ThrowIfNotEmpty()` | hot | входной `ReadOnlyMemory` не копируется; `Remaining` — байты до конца текущего окна; `ThrowIfNotEmpty` отвергает непрочитанный хвост без продвижения; options сохраняются во вложенных окнах |
 | `Asn1ReaderScope` | hot | публично только `Dispose`; произвольного `Push` и доступа к reader через scope нет |
 | `Asn1WriterScope` | hot | публично только `Dispose`; `Encode` / `TryEncode` / `Reset` запрещены, пока открыт хотя бы один scope |
-| `Asn1ReaderOptions` (`Default` / `Strict` / `AllowNonMinimalLength` / `AllowOverlongOidBase128`) | warm | immutable flags |
+| `Asn1ReaderOptions` (`Default` / `Strict` / `AllowNonMinimalLength` / `AllowOverlongOidBase128`; `MaxRecursionDepth` / `MaxMaterializedConstructedValueBytes`) | warm | immutable flags; hostile BER по умолчанию ограничен глубиной 64 и одним materialized payload 100 MiB |
 | `ReadOctetString → ReadOnlyMemory` / `TryReadOctetString(Span)` | hot | primitive view / copy-out; short destination → `false`, `bytesWritten=0`, reader не продвигается; constructed BER — owned |
 | `ReadAny` | hot/cold | единственный raw TLV escape hatch: tag + encoded/contents views |
 | `Asn1Any.EncodedMemory` / `ContentsMemory` / `ToArray` / `DecodeValue<T>` | hot/warm | view полного TLV / срез V / detach; `DecodeValue<T>` создаёт reader поверх TLV без копии и требует полного потребления |
@@ -94,6 +94,14 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 - Open-type DEFINED BY OID: codegen передаёт `Asn1Oid` и сравнивает со статическими константами (без `Oid.ToString()` на hot path).
 - `TryPeekTag` работает на копии cursor: malformed tag бросает `Asn1Exception`, не меняя позицию. `TryReadOctetString` коммитит cursor только при успехе.
 - Обычный `Read*` после исключения не гарантирует сохранение позиции: продолжать decode после ошибки входа нельзя.
+
+## Лимиты hostile BER
+
+`Asn1ReaderOptions.MaxRecursionDepth` ограничивает рекурсивный поиск EOC во вложенных indefinite-length TLV и вложенность constructed OCTET STRING / BIT STRING / строк при materialize. Значение по умолчанию — `DefaultMaxRecursionDepth` = 64; значение должно быть положительным. Ровно 64 уровня разрешены, следующий уровень отклоняется с `Asn1Exception`.
+
+`Asn1ReaderOptions.MaxMaterializedConstructedValueBytes` ограничивает сумму payload всех primitive-сегментов одного materialized constructed OCTET STRING, BIT STRING, строкового или временного значения. Значение по умолчанию — `DefaultMaxMaterializedConstructedValueBytes` = 100 MiB; ноль разрешает только пустой constructed payload. Граница включительна, превышение отклоняется до выделения результирующего массива. Primitive values остаются view исходного буфера и этот бюджет не расходуют.
+
+Лимиты действуют одинаково для definite и indefinite constructed materialization и наследуются всеми вложенными окнами reader. `TryReadOctetString` при превышении лимита бросает `Asn1Exception` без продвижения reader; `false` зарезервирован только для короткого destination.
 
 ## Soft-read и строгие опции
 

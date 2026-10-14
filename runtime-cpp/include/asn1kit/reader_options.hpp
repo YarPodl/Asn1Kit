@@ -3,10 +3,15 @@
 
 #pragma once
 
+#include <cstddef>
+
 namespace asn1kit {
 
 /// Decode-time strictness knobs. Encode stays canonical regardless of these flags.
 struct reader_options {
+    static constexpr std::size_t default_max_recursion_depth = 64;
+    static constexpr std::size_t default_max_materialized_constructed_value_bytes = 100 * 1024 * 1024;
+
     /// Soft profile: non-minimal INTEGER and nonzero BIT STRING trailing bits are accepted;
     /// non-minimal length and overlong OID base-128 are rejected.
     [[nodiscard]] static constexpr reader_options default_profile() { return {}; }
@@ -39,6 +44,9 @@ struct reader_options {
     bool reject_bit_string_trailing_bits{false};
     bool reject_non_minimal_length{true};
     bool reject_overlong_oid_base128{true};
+    std::size_t max_recursion_depth{default_max_recursion_depth};
+    std::size_t max_materialized_constructed_value_bytes{
+        default_max_materialized_constructed_value_bytes};
 };
 
 } // namespace asn1kit

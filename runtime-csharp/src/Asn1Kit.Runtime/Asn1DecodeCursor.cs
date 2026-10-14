@@ -79,7 +79,9 @@ internal struct Asn1DecodeCursor
         return true;
     }
 
-    public Asn1Tlv ReadTlv()
+    public Asn1Tlv ReadTlv() => ReadTlv(0);
+
+    private Asn1Tlv ReadTlv(int recursionDepth)
     {
         var encodedStart = _offset;
         var tag = ReadTag();
@@ -98,7 +100,12 @@ internal struct Asn1DecodeCursor
                 throw new Asn1Exception("Indefinite length requires a constructed tag.");
             }
 
-            contents = ReadIndefiniteContents();
+            if (recursionDepth >= _options.MaxRecursionDepth)
+            {
+                throw new Asn1Exception($"ASN.1 recursion depth exceeds limit {_options.MaxRecursionDepth}.");
+            }
+
+            contents = ReadIndefiniteContents(recursionDepth + 1);
         }
         else
         {
@@ -114,7 +121,7 @@ internal struct Asn1DecodeCursor
         return new Asn1Tlv(tag, contents, _data.Slice(encodedStart, _offset - encodedStart));
     }
 
-    private ReadOnlyMemory<byte> ReadIndefiniteContents()
+    private ReadOnlyMemory<byte> ReadIndefiniteContents(int recursionDepth)
     {
         var contentsStart = _offset;
         while (true)
@@ -132,7 +139,7 @@ internal struct Asn1DecodeCursor
                 return contents;
             }
 
-            _ = ReadTlv();
+            _ = ReadTlv(recursionDepth);
         }
     }
 

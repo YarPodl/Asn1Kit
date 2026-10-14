@@ -67,7 +67,9 @@ internal static class Asn1ConstructedDecoder
         ReadOnlyMemory<byte> constructedContents,
         Asn1Tag segmentTag)
     {
-        var segments = CollectOctetLikeSegments(parent, constructedContents, segmentTag, out var total);
+        var segments = new List<ReadOnlyMemory<byte>>();
+        var total = 0;
+        CollectOctetLikeSegments(parent, constructedContents, segmentTag, segments, ref total, depth: 1);
         if (total == 0)
         {
             return Array.Empty<byte>();
@@ -85,7 +87,9 @@ internal static class Asn1ConstructedDecoder
         Span<byte> destination,
         out int bytesWritten)
     {
-        var segments = CollectOctetLikeSegments(parent, constructedContents, segmentTag, out var total);
+        var segments = new List<ReadOnlyMemory<byte>>();
+        var total = 0;
+        CollectOctetLikeSegments(parent, constructedContents, segmentTag, segments, ref total, depth: 1);
         if (destination.Length < total)
         {
             bytesWritten = 0;
@@ -97,29 +101,35 @@ internal static class Asn1ConstructedDecoder
         return true;
     }
 
-    private static List<ReadOnlyMemory<byte>> CollectOctetLikeSegments(
+    private static void CollectOctetLikeSegments(
         Asn1DecodeCursor parent,
         ReadOnlyMemory<byte> constructedContents,
         Asn1Tag segmentTag,
-        out int totalLength)
+        List<ReadOnlyMemory<byte>> segments,
+        ref int totalLength,
+        int depth)
     {
         var nested = parent.CreateNested(constructedContents);
-        var segments = new List<ReadOnlyMemory<byte>>();
-        var length = 0;
         while (!nested.Eof)
         {
-            var segment = ReadOctetLike(ref nested, segmentTag);
-            if (segment.Length > int.MaxValue - length)
+            var tlv = nested.ReadTlv();
+            EnsureExpectedTag(tlv.Tag, segmentTag);
+            if (tlv.Tag.Constructed)
             {
-                throw new Asn1Exception("Constructed value exceeds Int32.");
+                EnsureRecursionDepth(parent.Options, depth);
+                CollectOctetLikeSegments(
+                    parent,
+                    tlv.Contents,
+                    segmentTag,
+                    segments,
+                    ref totalLength,
+                    depth + 1);
+                continue;
             }
 
-            segments.Add(segment);
-            length += segment.Length;
+            AddMaterializedLength(parent.Options, ref totalLength, tlv.Contents.Length);
+            segments.Add(tlv.Contents);
         }
-
-        totalLength = length;
-        return segments;
     }
 
     private static void CopySegments(List<ReadOnlyMemory<byte>> segments, Span<byte> destination)
@@ -137,36 +147,15 @@ internal static class Asn1ConstructedDecoder
         ReadOnlyMemory<byte> constructedContents,
         bool rejectTrailingBits)
     {
-        var nested = parent.CreateNested(constructedContents);
         var segments = new List<Asn1BitString>();
-        var unusedBits = 0;
-        while (!nested.Eof)
-        {
-            var segment = ReadBitString(ref nested, Asn1Tag.BitString, rejectTrailingBits);
-            if (segments.Count > 0 && unusedBits != 0)
-            {
-                throw new Asn1Exception("Only the last BIT STRING segment may have unused bits.");
-            }
-
-            segments.Add(segment);
-            unusedBits = segment.UnusedBits;
-        }
-
-        if (segments.Count == 0)
-        {
-            throw new Asn1Exception("Constructed BIT STRING has no segments.");
-        }
-
         var total = 0;
-        foreach (var segment in segments)
-        {
-            if (segment.Span.Length > int.MaxValue - total)
-            {
-                throw new Asn1Exception("Constructed BIT STRING exceeds Int32.");
-            }
-
-            total += segment.Span.Length;
-        }
+        CollectBitStringSegments(
+            parent,
+            constructedContents,
+            rejectTrailingBits,
+            segments,
+            ref total,
+            depth: 1);
 
         var concatenated = total == 0 ? Array.Empty<byte>() : new byte[total];
         var offset = 0;
@@ -176,13 +165,75 @@ internal static class Asn1ConstructedDecoder
             offset += segment.Span.Length;
         }
 
-        var value = new Asn1BitString(concatenated, unusedBits);
+        var value = new Asn1BitString(concatenated, segments[^1].UnusedBits);
         if (rejectTrailingBits)
         {
             Asn1TextCodec.EnsureTrailingBitsZero(value.Span, value.UnusedBits);
         }
 
         return value;
+    }
+
+    private static void CollectBitStringSegments(
+        Asn1DecodeCursor parent,
+        ReadOnlyMemory<byte> constructedContents,
+        bool rejectTrailingBits,
+        List<Asn1BitString> segments,
+        ref int totalLength,
+        int depth)
+    {
+        var initialCount = segments.Count;
+        var nested = parent.CreateNested(constructedContents);
+        while (!nested.Eof)
+        {
+            var tlv = nested.ReadTlv();
+            EnsureExpectedTag(tlv.Tag, Asn1Tag.BitString);
+            if (tlv.Tag.Constructed)
+            {
+                EnsureRecursionDepth(parent.Options, depth);
+                CollectBitStringSegments(
+                    parent,
+                    tlv.Contents,
+                    rejectTrailingBits,
+                    segments,
+                    ref totalLength,
+                    depth + 1);
+                continue;
+            }
+
+            if (segments.Count > 0 && segments[^1].UnusedBits != 0)
+            {
+                throw new Asn1Exception("Only the last BIT STRING segment may have unused bits.");
+            }
+
+            var segment = Asn1BitString.ParsePrimitive(tlv.Contents, rejectTrailingBits);
+            AddMaterializedLength(parent.Options, ref totalLength, segment.Span.Length);
+            segments.Add(segment);
+        }
+
+        if (segments.Count == initialCount)
+        {
+            throw new Asn1Exception("Constructed BIT STRING has no segments.");
+        }
+    }
+
+    private static void EnsureRecursionDepth(Asn1ReaderOptions options, int depth)
+    {
+        if (depth >= options.MaxRecursionDepth)
+        {
+            throw new Asn1Exception($"ASN.1 recursion depth exceeds limit {options.MaxRecursionDepth}.");
+        }
+    }
+
+    private static void AddMaterializedLength(Asn1ReaderOptions options, ref int total, int length)
+    {
+        if (length > options.MaxMaterializedConstructedValueBytes - total)
+        {
+            throw new Asn1Exception(
+                $"Constructed value exceeds materialization limit {options.MaxMaterializedConstructedValueBytes} bytes.");
+        }
+
+        total += length;
     }
 
     private static void EnsureExpectedTag(Asn1Tag actual, Asn1Tag expected)

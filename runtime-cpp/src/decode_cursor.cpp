@@ -4,6 +4,7 @@
 #include "asn1kit/detail/decode_cursor.hpp"
 
 #include <limits>
+#include <stdexcept>
 
 namespace asn1kit::detail {
 
@@ -11,7 +12,11 @@ decode_cursor::decode_cursor(bytes data, encoding enc, reader_options options)
     : decode_cursor(std::move(data), enc, std::move(options), 0) {}
 
 decode_cursor::decode_cursor(bytes data, encoding enc, reader_options options, std::size_t base_offset)
-    : data_(std::move(data)), encoding_(enc), options_(options), base_offset_(base_offset) {}
+    : data_(std::move(data)), encoding_(enc), options_(options), base_offset_(base_offset) {
+    if (options_.max_recursion_depth == 0) {
+        throw std::invalid_argument("Recursion depth must be positive.");
+    }
+}
 
 bool decode_cursor::eof() const noexcept {
     return offset_ >= data_.size();
@@ -53,6 +58,10 @@ bool decode_cursor::try_peek_tag(tag& out) const {
 }
 
 tlv decode_cursor::read_tlv() {
+    return read_tlv(0);
+}
+
+tlv decode_cursor::read_tlv(std::size_t recursion_depth) {
     const std::size_t encoded_start = offset_;
     auto tag_value = read_tag();
     auto [length, indefinite] = read_length();
@@ -65,7 +74,13 @@ tlv decode_cursor::read_tlv() {
         if (!tag_value.constructed()) {
             throw exception("Indefinite length requires a constructed tag.", absolute_offset());
         }
-        contents = read_indefinite_contents();
+        if (recursion_depth >= options_.max_recursion_depth) {
+            throw exception(
+                "ASN.1 recursion depth exceeds limit "
+                    + std::to_string(options_.max_recursion_depth) + ".",
+                absolute_offset());
+        }
+        contents = read_indefinite_contents(recursion_depth + 1);
     } else {
         if (length > remaining()) {
             throw exception("Length exceeds buffer.", absolute_offset());
@@ -81,7 +96,7 @@ tlv decode_cursor::read_tlv() {
     };
 }
 
-bytes decode_cursor::read_indefinite_contents() {
+bytes decode_cursor::read_indefinite_contents(std::size_t recursion_depth) {
     const std::size_t contents_start = offset_;
     while (true) {
         if (remaining() < 2) {
@@ -93,7 +108,7 @@ bytes decode_cursor::read_indefinite_contents() {
             offset_ += 2;
             return contents;
         }
-        (void)read_tlv();
+        (void)read_tlv(recursion_depth);
     }
 }
 

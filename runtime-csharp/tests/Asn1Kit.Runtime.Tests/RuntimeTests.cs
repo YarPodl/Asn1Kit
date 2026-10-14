@@ -239,6 +239,47 @@ public sealed class RuntimeTests
     }
 
     [Fact]
+    public void Ber_IndefiniteScan_EnforcesRecursionDepth()
+    {
+        var ber = new byte[]
+        {
+            0x24, 0x80,
+            0x24, 0x80,
+            0x04, 0x01, 0x41,
+            0x00, 0x00,
+            0x00, 0x00
+        };
+        var allowed = new Asn1Reader(ber, Asn1Encoding.Ber, new Asn1ReaderOptions
+        {
+            MaxRecursionDepth = 2
+        });
+        Assert.Equal(new byte[] { 0x41 }, allowed.ReadOctetString(Asn1Tag.OctetString).ToArray());
+
+        var rejected = new Asn1Reader(ber, Asn1Encoding.Ber, new Asn1ReaderOptions
+        {
+            MaxRecursionDepth = 1
+        });
+        var error = Assert.Throws<Asn1Exception>(() => rejected.ReadAny());
+        Assert.Contains("recursion depth exceeds limit 1", error.Message);
+    }
+
+    [Fact]
+    public void ReaderOptions_RejectInvalidHostileBerLimits()
+    {
+        Assert.Equal(
+            100 * 1024 * 1024,
+            Asn1ReaderOptions.Default.MaxMaterializedConstructedValueBytes);
+        Assert.Throws<ArgumentOutOfRangeException>(() => new Asn1ReaderOptions
+        {
+            MaxRecursionDepth = 0
+        });
+        Assert.Throws<ArgumentOutOfRangeException>(() => new Asn1ReaderOptions
+        {
+            MaxMaterializedConstructedValueBytes = -1
+        });
+    }
+
+    [Fact]
     public void Der_RejectsIndefiniteLength()
     {
         var ber = new byte[] { 0x30, 0x80, 0x00, 0x00 };
@@ -379,6 +420,50 @@ public sealed class RuntimeTests
         Assert.True(berReader.TryReadOctetString(Asn1Tag.OctetString, berDest.AsSpan(), out written));
         Assert.Equal(3, written);
         Assert.Equal(payload, berDest);
+    }
+
+    [Fact]
+    public void ConstructedOctetString_EnforcesMaterializationLimitAndKeepsTryAtomic()
+    {
+        var ber = new byte[]
+        {
+            0x24, 0x08,
+            0x04, 0x01, 0x41,
+            0x24, 0x03, 0x04, 0x01, 0x42
+        };
+        var allowed = new Asn1Reader(ber, Asn1Encoding.Ber, new Asn1ReaderOptions
+        {
+            MaxMaterializedConstructedValueBytes = 2
+        });
+        Assert.Equal(new byte[] { 0x41, 0x42 }, allowed.ReadOctetString(Asn1Tag.OctetString).ToArray());
+
+        var recursionRejected = new Asn1Reader(ber, Asn1Encoding.Ber, new Asn1ReaderOptions
+        {
+            MaxRecursionDepth = 1,
+            MaxMaterializedConstructedValueBytes = 2
+        });
+        Assert.Throws<Asn1Exception>(() => recursionRejected.ReadOctetString(Asn1Tag.OctetString));
+
+        var rejected = new Asn1Reader(ber, Asn1Encoding.Ber, new Asn1ReaderOptions
+        {
+            MaxMaterializedConstructedValueBytes = 1
+        });
+        var destination = new byte[2];
+        var error = Assert.Throws<Asn1Exception>(() =>
+            rejected.TryReadOctetString(Asn1Tag.OctetString, destination, out _));
+        Assert.Contains("materialization limit 1 bytes", error.Message);
+        Assert.Equal(ber.Length, rejected.Remaining);
+    }
+
+    [Fact]
+    public void PrimitiveOctetString_DoesNotConsumeMaterializationBudget()
+    {
+        var reader = new Asn1Reader(
+            new byte[] { 0x04, 0x02, 0x41, 0x42 },
+            Asn1Encoding.Ber,
+            new Asn1ReaderOptions { MaxMaterializedConstructedValueBytes = 0 });
+
+        Assert.Equal(new byte[] { 0x41, 0x42 }, reader.ReadOctetString(Asn1Tag.OctetString).ToArray());
     }
 
     [Fact]
@@ -682,6 +767,23 @@ public sealed class RuntimeTests
     }
 
     [Fact]
+    public void ConstructedBitString_EnforcesMaterializationLimit()
+    {
+        var ber = new byte[]
+        {
+            0x23, 0x08,
+            0x03, 0x02, 0x00, 0xA0,
+            0x03, 0x02, 0x05, 0x00
+        };
+        var reader = new Asn1Reader(ber, Asn1Encoding.Ber, new Asn1ReaderOptions
+        {
+            MaxMaterializedConstructedValueBytes = 1
+        });
+
+        Assert.Throws<Asn1Exception>(() => reader.ReadBitString(Asn1Tag.BitString));
+    }
+
+    [Fact]
     public void BitString_RejectsInvalidForms()
     {
         Assert.Throws<Asn1Exception>(() => new Asn1BitString(new byte[] { 0xFF }, 8));
@@ -741,6 +843,24 @@ public sealed class RuntimeTests
         };
         var reader = new Asn1Reader(ber, Asn1Encoding.Ber);
         Assert.Equal("Ann", reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8));
+    }
+
+    [Fact]
+    public void ConstructedString_EnforcesMaterializationLimit()
+    {
+        var ber = new byte[]
+        {
+            0x2C, 0x06,
+            0x0C, 0x01, 0x41,
+            0x0C, 0x01, 0x42
+        };
+        var reader = new Asn1Reader(ber, Asn1Encoding.Ber, new Asn1ReaderOptions
+        {
+            MaxMaterializedConstructedValueBytes = 1
+        });
+
+        Assert.Throws<Asn1Exception>(() =>
+            reader.ReadString(Asn1Tag.Utf8String, Asn1StringForm.Utf8));
     }
 
     [Fact]

@@ -46,7 +46,8 @@ public:
 private:
     decode_cursor(bytes data, encoding enc, reader_options options, std::size_t base_offset);
 
-    [[nodiscard]] bytes read_indefinite_contents();
+    [[nodiscard]] tlv read_tlv(std::size_t recursion_depth);
+    [[nodiscard]] bytes read_indefinite_contents(std::size_t recursion_depth);
     [[nodiscard]] tag read_tag();
     [[nodiscard]] int read_high_tag_number();
     [[nodiscard]] std::pair<std::size_t, bool> read_length();

@@ -7,7 +7,7 @@
 #include "text_codec.hpp"
 
 #include <cstring>
-#include <limits>
+#include <string>
 #include <vector>
 
 namespace asn1kit::detail {
@@ -21,24 +21,57 @@ void ensure_expected_tag(std::size_t tlv_start, const tag& actual, const tag& ex
     }
 }
 
-std::vector<bytes> collect_octet_like_segments(
+void ensure_recursion_depth(
+    const reader_options& options,
+    std::size_t depth,
+    std::size_t offset) {
+    if (depth >= options.max_recursion_depth) {
+        throw exception(
+            "ASN.1 recursion depth exceeds limit " + std::to_string(options.max_recursion_depth) + ".",
+            offset);
+    }
+}
+
+void add_materialized_length(
+    const reader_options& options,
+    std::size_t& total,
+    std::size_t length,
+    std::size_t offset) {
+    if (length > options.max_materialized_constructed_value_bytes - total) {
+        throw exception(
+            "Constructed value exceeds materialization limit "
+                + std::to_string(options.max_materialized_constructed_value_bytes) + " bytes.",
+            offset);
+    }
+    total += length;
+}
+
+void collect_octet_like_segments(
     decode_cursor& parent,
     bytes constructed_contents,
     const tag& segment_tag,
-    std::size_t& total_length) {
+    std::vector<bytes>& segments,
+    std::size_t& total_length,
+    std::size_t depth) {
     auto nested = parent.create_nested(std::move(constructed_contents));
-    std::vector<bytes> segments;
-    std::size_t length = 0;
     while (!nested.eof()) {
-        auto segment = constructed_decoder::read_octet_like(nested, segment_tag);
-        if (length > (std::numeric_limits<std::size_t>::max() - segment.size())) {
-            throw exception("Constructed value is too large.", nested.absolute_offset());
+        const auto tlv_start = nested.absolute_offset();
+        auto tlv = nested.read_tlv();
+        ensure_expected_tag(tlv_start, tlv.tag_value, segment_tag);
+        if (tlv.tag_value.constructed()) {
+            ensure_recursion_depth(parent.options(), depth, tlv_start);
+            collect_octet_like_segments(
+                parent,
+                std::move(tlv.contents),
+                segment_tag,
+                segments,
+                total_length,
+                depth + 1);
+            continue;
         }
-        length += segment.size();
-        segments.push_back(std::move(segment));
+        add_materialized_length(parent.options(), total_length, tlv.contents.size(), tlv_start);
+        segments.push_back(std::move(tlv.contents));
     }
-    total_length = length;
-    return segments;
 }
 
 void copy_segments(const std::vector<bytes>& segments, std::span<std::uint8_t> destination) {
@@ -52,8 +85,10 @@ void copy_segments(const std::vector<bytes>& segments, std::span<std::uint8_t> d
 }
 
 bytes concat_octet_like(decode_cursor& parent, bytes constructed_contents, const tag& segment_tag) {
+    std::vector<bytes> segments;
     std::size_t total = 0;
-    auto segments = collect_octet_like_segments(parent, std::move(constructed_contents), segment_tag, total);
+    collect_octet_like_segments(
+        parent, std::move(constructed_contents), segment_tag, segments, total, 1);
     if (total == 0) {
         return bytes::from_vector({});
     }
@@ -68,8 +103,10 @@ bool try_copy_concat_octet_like(
     const tag& segment_tag,
     std::span<std::uint8_t> destination,
     std::size_t& bytes_written) {
+    std::vector<bytes> segments;
     std::size_t total = 0;
-    auto segments = collect_octet_like_segments(parent, std::move(constructed_contents), segment_tag, total);
+    collect_octet_like_segments(
+        parent, std::move(constructed_contents), segment_tag, segments, total, 1);
     if (destination.size() < total) {
         bytes_written = 0;
         return false;
@@ -79,34 +116,52 @@ bool try_copy_concat_octet_like(
     return true;
 }
 
+void collect_bit_string_segments(
+    decode_cursor& parent,
+    bytes constructed_contents,
+    bool reject_trailing_bits,
+    std::vector<bit_string>& segments,
+    std::size_t& total_length,
+    std::size_t depth) {
+    auto nested = parent.create_nested(std::move(constructed_contents));
+    const auto initial_count = segments.size();
+    while (!nested.eof()) {
+        const auto tlv_start = nested.absolute_offset();
+        auto tlv = nested.read_tlv();
+        ensure_expected_tag(tlv_start, tlv.tag_value, tag::bit_string);
+        if (tlv.tag_value.constructed()) {
+            ensure_recursion_depth(parent.options(), depth, tlv_start);
+            collect_bit_string_segments(
+                parent,
+                std::move(tlv.contents),
+                reject_trailing_bits,
+                segments,
+                total_length,
+                depth + 1);
+            continue;
+        }
+        if (!segments.empty() && segments.back().unused_bits() != 0) {
+            throw exception(
+                "Only the last BIT STRING segment may have unused bits.",
+                tlv_start);
+        }
+        auto segment = bit_string::parse_primitive(std::move(tlv.contents), reject_trailing_bits);
+        add_materialized_length(parent.options(), total_length, segment.span().size(), tlv_start);
+        segments.push_back(std::move(segment));
+    }
+    if (segments.size() == initial_count) {
+        throw exception("Constructed BIT STRING has no segments.", nested.absolute_offset());
+    }
+}
+
 bit_string read_constructed_bit_string(
     decode_cursor& parent,
     bytes constructed_contents,
     bool reject_trailing_bits) {
-    auto nested = parent.create_nested(std::move(constructed_contents));
     std::vector<bit_string> segments;
-    int unused_bits = 0;
-    while (!nested.eof()) {
-        auto segment = constructed_decoder::read_bit_string(nested, tag::bit_string, reject_trailing_bits);
-        if (!segments.empty() && unused_bits != 0) {
-            throw exception(
-                "Only the last BIT STRING segment may have unused bits.",
-                nested.absolute_offset());
-        }
-        unused_bits = segment.unused_bits();
-        segments.push_back(std::move(segment));
-    }
-    if (segments.empty()) {
-        throw exception("Constructed BIT STRING has no segments.", nested.absolute_offset());
-    }
-
     std::size_t total = 0;
-    for (const auto& segment : segments) {
-        if (total > (std::numeric_limits<std::size_t>::max() - segment.span().size())) {
-            throw exception("Constructed BIT STRING is too large.", nested.absolute_offset());
-        }
-        total += segment.span().size();
-    }
+    collect_bit_string_segments(
+        parent, std::move(constructed_contents), reject_trailing_bits, segments, total, 1);
 
     std::vector<std::uint8_t> concatenated;
     if (total > 0) {
@@ -120,7 +175,7 @@ bit_string read_constructed_bit_string(
         }
     }
 
-    bit_string value(bytes::from_vector(std::move(concatenated)), unused_bits);
+    bit_string value(bytes::from_vector(std::move(concatenated)), segments.back().unused_bits());
     if (reject_trailing_bits) {
         text_codec::ensure_trailing_bits_zero(value.span(), value.unused_bits());
     }

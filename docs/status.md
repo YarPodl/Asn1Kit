@@ -63,7 +63,7 @@
 | Non-minimal INTEGER contents | `RejectNonMinimalInteger` |
 | BIT STRING nonzero trailing bits | `RejectBitStringTrailingBits` |
 
-Не soft (default reject): non-minimal length, OID overlong base-128. Всегда reject: BOOLEAN length≠1 / constructed; empty INTEGER; truncated EOC; indefinite в DER. BER: indefinite, constructed строки/BIT STRING, время без секунд / `±hhmm`.
+Не soft (default reject): non-minimal length, OID overlong base-128. Всегда reject: BOOLEAN length≠1 / constructed; empty INTEGER; truncated EOC; indefinite в DER. BER: indefinite, constructed строки/BIT STRING, время без секунд / `±hhmm`. Hostile BER ограничен в обоих runtime: глубина рекурсивного indefinite scan и nested constructed materialization — 64, суммарный payload одного materialized constructed значения — 100 MiB; оба лимита настраиваются через reader options.
 
 ## Продуктовые артефакты
 
@@ -85,8 +85,7 @@
 6. Пул массивов (constructed BER concat, DER SET OF sort)
 7. Второй oracle — BouncyCastle (не gate `dotnet test`)
 8. **DER: reject constructed OCTET / BIT STRING / string** (или soft-флаг в `Asn1ReaderOptions`, default как сейчас accept; выровнять код с формулировкой § Runtime «BER: constructed…»). Фикстуры + runtime-api soft-inventory
-9. **Лимиты hostile BER**: ограничить глубину рекурсивного indefinite scan и общий размер materialized constructed values
-10. **C++ modern golden: кросс-модульные compile-дефекты** (pre-existing, вне debug-формата; выявлены при компиляции 24 `*.format.hpp`). `PKIXX400Address2009.hpp` эмитит `ExtensionAttribute_Value` вместо альтернативы `ExtensionAttribute_<…>` в OID-каталоге; `CryptographicMessageSyntax2009.types.hpp` ссылается на `AttributeCertificateVersion12009::AttributeCertificateV1`, которого там нет; `cycle_PKIXCMP2009_PKIBody_PKIXCMP2009_PKIMessage.hpp` использует `PKIMessage` до объявления (взаимная by-value рекурсия в SCC-амальгаме). Полная компиляция modern `*.format.hpp` ждёт этих фиксов.
+9. **C++ modern golden: кросс-модульные compile-дефекты** (pre-existing, вне debug-формата; выявлены при компиляции 24 `*.format.hpp`). `PKIXX400Address2009.hpp` эмитит `ExtensionAttribute_Value` вместо альтернативы `ExtensionAttribute_<…>` в OID-каталоге; `CryptographicMessageSyntax2009.types.hpp` ссылается на `AttributeCertificateVersion12009::AttributeCertificateV1`, которого там нет; `cycle_PKIXCMP2009_PKIBody_PKIXCMP2009_PKIMessage.hpp` использует `PKIMessage` до объявления (взаимная by-value рекурсия в SCC-амальгаме). Полная компиляция modern `*.format.hpp` ждёт этих фиксов.
 
 ### Крупные
 
