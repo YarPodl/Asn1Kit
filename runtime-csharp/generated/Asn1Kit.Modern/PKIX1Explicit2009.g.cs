@@ -281,34 +281,10 @@ public static class PKIX1Explicit2009Oids
     }
 }
 
-public sealed class SignedAlgorithmIdentifier
-{
-    public Asn1Oid Algorithm { get; set; }
-    public Asn1Any? Parameters { get; set; }
-    public void Encode(Asn1Writer writer)
-    {
-        using (writer.EnterSequence(Asn1Tag.Sequence))
-        {
-            writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, Algorithm);
-            if (Parameters is { } parameters) writer.WriteAny(parameters);
-        }
-    }
-    public static SignedAlgorithmIdentifier Decode(Asn1Reader reader)
-    {
-        using (reader.EnterSequence(Asn1Tag.Sequence))
-        {
-            var value = new SignedAlgorithmIdentifier { Algorithm = reader.ReadOid(Asn1Tag.ObjectIdentifier) };
-            if (!reader.Eof) value.Parameters = reader.ReadAny();
-            reader.ThrowIfNotEmpty();
-            return value;
-        }
-    }
-}
-
 public abstract class Signed<T>
 {
     public T ToBeSigned { get; set; } = default!;
-    public SignedAlgorithmIdentifier AlgorithmIdentifier { get; set; } = new();
+    public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier AlgorithmIdentifier { get; set; } = new();
     public Asn1BitString Signature { get; set; }
     public void Encode(Asn1Writer writer) => Encode(writer, Asn1Tag.Sequence);
     public void Encode(Asn1Writer writer, Asn1Tag tag)
@@ -323,7 +299,7 @@ public abstract class Signed<T>
     protected abstract void EncodeToBeSigned(Asn1Writer writer);
     protected static void DecodeTail(Asn1Reader reader, Signed<T> value)
     {
-        value.AlgorithmIdentifier = SignedAlgorithmIdentifier.Decode(reader);
+        value.AlgorithmIdentifier = Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier.Decode(reader);
         value.Signature = reader.ReadBitString(Asn1Tag.BitString);
     }
 }

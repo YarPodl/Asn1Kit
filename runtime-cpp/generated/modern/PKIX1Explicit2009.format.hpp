@@ -18,8 +18,6 @@ inline void to_string(const Time& value, std::ostream& out, int indent);
 inline void to_string(const SubjectPublicKeyInfo& value, std::ostream& out, int indent);
 inline void to_string(const CertificateList& value, std::ostream& out, int indent);
 inline void to_string(const TBSCertList& value, std::ostream& out, int indent);
-inline void to_string(const Certificate_AlgorithmIdentifier& value, std::ostream& out, int indent);
-inline void to_string(const CertificateList_AlgorithmIdentifier& value, std::ostream& out, int indent);
 inline void to_string(const TBSCertList_RevokedCertificates_Item& value, std::ostream& out, int indent);
 } // namespace PKIX1Explicit2009
 } // namespace modern
@@ -235,30 +233,6 @@ inline void to_string(const TBSCertList& value, std::ostream& out, int indent) {
     out << '\n' << pad;
     out << "crlExtensions: ";
     to_string(value.crlExtensions, out, indent + 1);
-    out << '\n' << std::string(static_cast<std::size_t>(indent) * 4, ' ') << '}';
-}
-
-inline void to_string(const Certificate_AlgorithmIdentifier& value, std::ostream& out, int indent) {
-    out << "Certificate_AlgorithmIdentifier {";
-    const auto pad = std::string(static_cast<std::size_t>(indent + 1) * 4, ' ');
-    out << '\n' << pad;
-    out << "algorithm: ";
-    to_string(value.algorithm, out, indent + 1);
-    out << '\n' << pad;
-    out << "parameters: ";
-    to_string(value.parameters, out, indent + 1);
-    out << '\n' << std::string(static_cast<std::size_t>(indent) * 4, ' ') << '}';
-}
-
-inline void to_string(const CertificateList_AlgorithmIdentifier& value, std::ostream& out, int indent) {
-    out << "CertificateList_AlgorithmIdentifier {";
-    const auto pad = std::string(static_cast<std::size_t>(indent + 1) * 4, ' ');
-    out << '\n' << pad;
-    out << "algorithm: ";
-    to_string(value.algorithm, out, indent + 1);
-    out << '\n' << pad;
-    out << "parameters: ";
-    to_string(value.parameters, out, indent + 1);
     out << '\n' << std::string(static_cast<std::size_t>(indent) * 4, ' ') << '}';
 }
 

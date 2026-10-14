@@ -33,7 +33,8 @@
   - Каталог — `namespace {table}_{field}_bindings` с `inline const` members (`{ key }`).
   - Policy: unknown/wrong key → `try_decode` = false (raw живёт); match + bad wire → reject.
   - Selector: OID и INTEGER; nested path (`path.Count > 1`) через поля SEQUENCE/SET (нужно для Certificate/SIGNED parameters).
-  - Вне среза: `AsString`, SIGNED-шаблон как у C#, Legacy Explicit88 C++ golden.
+  - Inline SEQUENCE/SET, совпадающие с typedef, уже схлопнуты в IR (`InlineCompositeDeduper`) → общие типы вроде `AlgorithmIdentifier`, без `Owner_AlgorithmIdentifier`.
+  - Вне среза: `AsString`, SIGNED-шаблон `Signed<T>` как у C#, Legacy Explicit88 C++ golden.
   - CMS demo на Modern generated: `runtime-cpp/examples/cms_demo` (`asn1kit_cms_demo`).
 - Cross-module: peer `#include "Peer.hpp"` / `Peer.types.hpp` по фактическим layout-deps (open-type `AnyType.Bindings` в граф deps не входят). Peer-includes в `Module.types.hpp` / `Module.hpp` **откладываются** до первого owning-типа (`OrderNestedForEmit`), чтобы include-only треугольники (CMS → AttrCert → ESS → CMS) видели локальные типы до реentrant `#include`. Eager наверху остаются `cycle_*.hpp` и собственный `Module.types.hpp`. Нетривиальные SCC → `cycle_….hpp` только с членами SCC. `Module.types.hpp` — только если модулю нужен facade (owned cycle / post-типы / open-type catalogs) и есть нециклические типы; иначе один `Module.hpp`.
 - Namespace-квалификация кросс-модульных имён: `QualifyCrossModule(emitting, owning, name)` → `::ns::name`, когда namespace владельца ≠ namespace эмиттера. Применяется к синтезированному владельцу OF-элемента (`ResolveOfItemNaming`) и к именам ENUMERATED-кодеков (`encode_`/`decode_<Type>`, `EnumeratedCodecName`). `NamedTypeName` квалифицирует определение, если его namespace не совпадает ни с резолвящим, ни с эмитирующим модулем (после alias-unwrap контексты расходятся).

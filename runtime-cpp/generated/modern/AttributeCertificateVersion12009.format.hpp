@@ -12,7 +12,6 @@ namespace AttributeCertificateVersion12009 {
 
 inline void to_string(const AttributeCertificateV1& value, std::ostream& out, int indent);
 inline void to_string(const AttributeCertificateInfoV1& value, std::ostream& out, int indent);
-inline void to_string(const AttributeCertificateV1_AlgorithmIdentifier& value, std::ostream& out, int indent);
 inline void to_string(const AttributeCertificateInfoV1_Subject& value, std::ostream& out, int indent);
 } // namespace AttributeCertificateVersion12009
 } // namespace modern
@@ -75,18 +74,6 @@ inline void to_string(const AttributeCertificateInfoV1& value, std::ostream& out
     out << '\n' << pad;
     out << "extensions: ";
     to_string(value.extensions, out, indent + 1);
-    out << '\n' << std::string(static_cast<std::size_t>(indent) * 4, ' ') << '}';
-}
-
-inline void to_string(const AttributeCertificateV1_AlgorithmIdentifier& value, std::ostream& out, int indent) {
-    out << "AttributeCertificateV1_AlgorithmIdentifier {";
-    const auto pad = std::string(static_cast<std::size_t>(indent + 1) * 4, ' ');
-    out << '\n' << pad;
-    out << "algorithm: ";
-    to_string(value.algorithm, out, indent + 1);
-    out << '\n' << pad;
-    out << "parameters: ";
-    to_string(value.parameters, out, indent + 1);
     out << '\n' << std::string(static_cast<std::size_t>(indent) * 4, ' ') << '}';
 }
 

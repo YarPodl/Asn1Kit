@@ -245,124 +245,106 @@
               {
                 "name": "algorithmIdentifier",
                 "type": {
-                  "kind": "sequence",
-                  "components": [
+                  "kind": "ref",
+                  "name": "AlgorithmIdentifier",
+                  "module": "AlgorithmInformation-2009",
+                  "openTypes": [
                     {
-                      "name": "algorithm",
-                      "type": {
-                        "kind": "oid",
-                        "constraint": {
-                          "unsupported": " table({ SignatureAlgorithms })"
-                        }
-                      },
-                      "optional": false
-                    },
-                    {
-                      "name": "parameters",
-                      "type": {
-                        "kind": "any",
-                        "bindings": [
-                          {
-                            "key": "1.2.840.113549.1.1.2",
-                            "name": "sa-rsaWithMD2",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.113549.1.1.4",
-                            "name": "sa-rsaWithMD5",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.113549.1.1.5",
-                            "name": "sa-rsaWithSHA1",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.10040.4.3",
-                            "name": "sa-dsaWithSHA1",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.10045.4.1",
-                            "name": "sa-ecdsaWithSHA1",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "2.16.840.1.101.3.4.3.1",
-                            "name": "sa-dsaWithSHA224",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "2.16.840.1.101.3.4.3.2",
-                            "name": "sa-dsaWithSHA256",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.10045.4.3.1",
-                            "name": "sa-ecdsaWithSHA224",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.10045.4.3.2",
-                            "name": "sa-ecdsaWithSHA256",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.10045.4.3.3",
-                            "name": "sa-ecdsaWithSHA384",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.10045.4.3.4",
-                            "name": "sa-ecdsaWithSHA512",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.113549.1.1.10",
-                            "name": "sa-rsaSSA-PSS",
-                            "type": {
-                              "kind": "ref",
-                              "name": "RSASSA-PSS-params",
-                              "module": "PKIX1-PSS-OAEP-Algorithms-2009"
-                            }
+                      "path": [
+                        "parameters"
+                      ],
+                      "bindings": [
+                        {
+                          "key": "1.2.840.113549.1.1.2",
+                          "name": "sa-rsaWithMD2",
+                          "type": {
+                            "kind": "null"
                           }
-                        ],
-                        "selector": {
-                          "levels": 1,
-                          "path": [
-                            "algorithmIdentifier",
-                            "algorithm"
-                          ]
                         },
-                        "table": "SignatureAlgorithms",
-                        "tableExtensible": true
-                      },
-                      "optional": true
+                        {
+                          "key": "1.2.840.113549.1.1.4",
+                          "name": "sa-rsaWithMD5",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.5",
+                          "name": "sa-rsaWithSHA1",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.10040.4.3",
+                          "name": "sa-dsaWithSHA1",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.10045.4.1",
+                          "name": "sa-ecdsaWithSHA1",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "2.16.840.1.101.3.4.3.1",
+                          "name": "sa-dsaWithSHA224",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "2.16.840.1.101.3.4.3.2",
+                          "name": "sa-dsaWithSHA256",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.10045.4.3.1",
+                          "name": "sa-ecdsaWithSHA224",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.10045.4.3.2",
+                          "name": "sa-ecdsaWithSHA256",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.10045.4.3.3",
+                          "name": "sa-ecdsaWithSHA384",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.10045.4.3.4",
+                          "name": "sa-ecdsaWithSHA512",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.10",
+                          "name": "sa-rsaSSA-PSS",
+                          "type": {
+                            "kind": "ref",
+                            "name": "RSASSA-PSS-params",
+                            "module": "PKIX1-PSS-OAEP-Algorithms-2009"
+                          }
+                        }
+                      ],
+                      "table": "SignatureAlgorithms",
+                      "tableExtensible": true
                     }
-                  ],
-                  "extensible": false
+                  ]
                 },
                 "optional": false
               },
@@ -12803,124 +12785,106 @@
               {
                 "name": "algorithmIdentifier",
                 "type": {
-                  "kind": "sequence",
-                  "components": [
+                  "kind": "ref",
+                  "name": "AlgorithmIdentifier",
+                  "module": "AlgorithmInformation-2009",
+                  "openTypes": [
                     {
-                      "name": "algorithm",
-                      "type": {
-                        "kind": "oid",
-                        "constraint": {
-                          "unsupported": " table({ SignatureAlgorithms })"
-                        }
-                      },
-                      "optional": false
-                    },
-                    {
-                      "name": "parameters",
-                      "type": {
-                        "kind": "any",
-                        "bindings": [
-                          {
-                            "key": "1.2.840.113549.1.1.2",
-                            "name": "sa-rsaWithMD2",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.113549.1.1.4",
-                            "name": "sa-rsaWithMD5",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.113549.1.1.5",
-                            "name": "sa-rsaWithSHA1",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.10040.4.3",
-                            "name": "sa-dsaWithSHA1",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.10045.4.1",
-                            "name": "sa-ecdsaWithSHA1",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "2.16.840.1.101.3.4.3.1",
-                            "name": "sa-dsaWithSHA224",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "2.16.840.1.101.3.4.3.2",
-                            "name": "sa-dsaWithSHA256",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.10045.4.3.1",
-                            "name": "sa-ecdsaWithSHA224",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.10045.4.3.2",
-                            "name": "sa-ecdsaWithSHA256",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.10045.4.3.3",
-                            "name": "sa-ecdsaWithSHA384",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.10045.4.3.4",
-                            "name": "sa-ecdsaWithSHA512",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.113549.1.1.10",
-                            "name": "sa-rsaSSA-PSS",
-                            "type": {
-                              "kind": "ref",
-                              "name": "RSASSA-PSS-params",
-                              "module": "PKIX1-PSS-OAEP-Algorithms-2009"
-                            }
+                      "path": [
+                        "parameters"
+                      ],
+                      "bindings": [
+                        {
+                          "key": "1.2.840.113549.1.1.2",
+                          "name": "sa-rsaWithMD2",
+                          "type": {
+                            "kind": "null"
                           }
-                        ],
-                        "selector": {
-                          "levels": 1,
-                          "path": [
-                            "algorithmIdentifier",
-                            "algorithm"
-                          ]
                         },
-                        "table": "SignatureAlgorithms",
-                        "tableExtensible": true
-                      },
-                      "optional": true
+                        {
+                          "key": "1.2.840.113549.1.1.4",
+                          "name": "sa-rsaWithMD5",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.5",
+                          "name": "sa-rsaWithSHA1",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.10040.4.3",
+                          "name": "sa-dsaWithSHA1",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.10045.4.1",
+                          "name": "sa-ecdsaWithSHA1",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "2.16.840.1.101.3.4.3.1",
+                          "name": "sa-dsaWithSHA224",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "2.16.840.1.101.3.4.3.2",
+                          "name": "sa-dsaWithSHA256",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.10045.4.3.1",
+                          "name": "sa-ecdsaWithSHA224",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.10045.4.3.2",
+                          "name": "sa-ecdsaWithSHA256",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.10045.4.3.3",
+                          "name": "sa-ecdsaWithSHA384",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.10045.4.3.4",
+                          "name": "sa-ecdsaWithSHA512",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.10",
+                          "name": "sa-rsaSSA-PSS",
+                          "type": {
+                            "kind": "ref",
+                            "name": "RSASSA-PSS-params",
+                            "module": "PKIX1-PSS-OAEP-Algorithms-2009"
+                          }
+                        }
+                      ],
+                      "table": "SignatureAlgorithms",
+                      "tableExtensible": true
                     }
-                  ],
-                  "extensible": false
+                  ]
                 },
                 "optional": false
               },
@@ -13642,124 +13606,106 @@
               {
                 "name": "algorithmIdentifier",
                 "type": {
-                  "kind": "sequence",
-                  "components": [
+                  "kind": "ref",
+                  "name": "AlgorithmIdentifier",
+                  "module": "AlgorithmInformation-2009",
+                  "openTypes": [
                     {
-                      "name": "algorithm",
-                      "type": {
-                        "kind": "oid",
-                        "constraint": {
-                          "unsupported": " table({ SignatureAlgorithms })"
-                        }
-                      },
-                      "optional": false
-                    },
-                    {
-                      "name": "parameters",
-                      "type": {
-                        "kind": "any",
-                        "bindings": [
-                          {
-                            "key": "1.2.840.113549.1.1.2",
-                            "name": "sa-rsaWithMD2",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.113549.1.1.4",
-                            "name": "sa-rsaWithMD5",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.113549.1.1.5",
-                            "name": "sa-rsaWithSHA1",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.10040.4.3",
-                            "name": "sa-dsaWithSHA1",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.10045.4.1",
-                            "name": "sa-ecdsaWithSHA1",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "2.16.840.1.101.3.4.3.1",
-                            "name": "sa-dsaWithSHA224",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "2.16.840.1.101.3.4.3.2",
-                            "name": "sa-dsaWithSHA256",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.10045.4.3.1",
-                            "name": "sa-ecdsaWithSHA224",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.10045.4.3.2",
-                            "name": "sa-ecdsaWithSHA256",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.10045.4.3.3",
-                            "name": "sa-ecdsaWithSHA384",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.10045.4.3.4",
-                            "name": "sa-ecdsaWithSHA512",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.113549.1.1.10",
-                            "name": "sa-rsaSSA-PSS",
-                            "type": {
-                              "kind": "ref",
-                              "name": "RSASSA-PSS-params",
-                              "module": "PKIX1-PSS-OAEP-Algorithms-2009"
-                            }
+                      "path": [
+                        "parameters"
+                      ],
+                      "bindings": [
+                        {
+                          "key": "1.2.840.113549.1.1.2",
+                          "name": "sa-rsaWithMD2",
+                          "type": {
+                            "kind": "null"
                           }
-                        ],
-                        "selector": {
-                          "levels": 1,
-                          "path": [
-                            "algorithmIdentifier",
-                            "algorithm"
-                          ]
                         },
-                        "table": "SignatureAlgorithms",
-                        "tableExtensible": true
-                      },
-                      "optional": true
+                        {
+                          "key": "1.2.840.113549.1.1.4",
+                          "name": "sa-rsaWithMD5",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.5",
+                          "name": "sa-rsaWithSHA1",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.10040.4.3",
+                          "name": "sa-dsaWithSHA1",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.10045.4.1",
+                          "name": "sa-ecdsaWithSHA1",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "2.16.840.1.101.3.4.3.1",
+                          "name": "sa-dsaWithSHA224",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "2.16.840.1.101.3.4.3.2",
+                          "name": "sa-dsaWithSHA256",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.10045.4.3.1",
+                          "name": "sa-ecdsaWithSHA224",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.10045.4.3.2",
+                          "name": "sa-ecdsaWithSHA256",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.10045.4.3.3",
+                          "name": "sa-ecdsaWithSHA384",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.10045.4.3.4",
+                          "name": "sa-ecdsaWithSHA512",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.10",
+                          "name": "sa-rsaSSA-PSS",
+                          "type": {
+                            "kind": "ref",
+                            "name": "RSASSA-PSS-params",
+                            "module": "PKIX1-PSS-OAEP-Algorithms-2009"
+                          }
+                        }
+                      ],
+                      "table": "SignatureAlgorithms",
+                      "tableExtensible": true
                     }
-                  ],
-                  "extensible": false
+                  ]
                 },
                 "optional": false
               },
@@ -17047,124 +16993,106 @@
               {
                 "name": "algorithmIdentifier",
                 "type": {
-                  "kind": "sequence",
-                  "components": [
+                  "kind": "ref",
+                  "name": "AlgorithmIdentifier",
+                  "module": "AlgorithmInformation-2009",
+                  "openTypes": [
                     {
-                      "name": "algorithm",
-                      "type": {
-                        "kind": "oid",
-                        "constraint": {
-                          "unsupported": " table({ SignatureAlgorithms })"
-                        }
-                      },
-                      "optional": false
-                    },
-                    {
-                      "name": "parameters",
-                      "type": {
-                        "kind": "any",
-                        "bindings": [
-                          {
-                            "key": "1.2.840.113549.1.1.2",
-                            "name": "sa-rsaWithMD2",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.113549.1.1.4",
-                            "name": "sa-rsaWithMD5",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.113549.1.1.5",
-                            "name": "sa-rsaWithSHA1",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.10040.4.3",
-                            "name": "sa-dsaWithSHA1",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.10045.4.1",
-                            "name": "sa-ecdsaWithSHA1",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "2.16.840.1.101.3.4.3.1",
-                            "name": "sa-dsaWithSHA224",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "2.16.840.1.101.3.4.3.2",
-                            "name": "sa-dsaWithSHA256",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.10045.4.3.1",
-                            "name": "sa-ecdsaWithSHA224",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.10045.4.3.2",
-                            "name": "sa-ecdsaWithSHA256",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.10045.4.3.3",
-                            "name": "sa-ecdsaWithSHA384",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.10045.4.3.4",
-                            "name": "sa-ecdsaWithSHA512",
-                            "type": {
-                              "kind": "null"
-                            }
-                          },
-                          {
-                            "key": "1.2.840.113549.1.1.10",
-                            "name": "sa-rsaSSA-PSS",
-                            "type": {
-                              "kind": "ref",
-                              "name": "RSASSA-PSS-params",
-                              "module": "PKIX1-PSS-OAEP-Algorithms-2009"
-                            }
+                      "path": [
+                        "parameters"
+                      ],
+                      "bindings": [
+                        {
+                          "key": "1.2.840.113549.1.1.2",
+                          "name": "sa-rsaWithMD2",
+                          "type": {
+                            "kind": "null"
                           }
-                        ],
-                        "selector": {
-                          "levels": 1,
-                          "path": [
-                            "algorithmIdentifier",
-                            "algorithm"
-                          ]
                         },
-                        "table": "SignatureAlgorithms",
-                        "tableExtensible": true
-                      },
-                      "optional": true
+                        {
+                          "key": "1.2.840.113549.1.1.4",
+                          "name": "sa-rsaWithMD5",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.5",
+                          "name": "sa-rsaWithSHA1",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.10040.4.3",
+                          "name": "sa-dsaWithSHA1",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.10045.4.1",
+                          "name": "sa-ecdsaWithSHA1",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "2.16.840.1.101.3.4.3.1",
+                          "name": "sa-dsaWithSHA224",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "2.16.840.1.101.3.4.3.2",
+                          "name": "sa-dsaWithSHA256",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.10045.4.3.1",
+                          "name": "sa-ecdsaWithSHA224",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.10045.4.3.2",
+                          "name": "sa-ecdsaWithSHA256",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.10045.4.3.3",
+                          "name": "sa-ecdsaWithSHA384",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.10045.4.3.4",
+                          "name": "sa-ecdsaWithSHA512",
+                          "type": {
+                            "kind": "null"
+                          }
+                        },
+                        {
+                          "key": "1.2.840.113549.1.1.10",
+                          "name": "sa-rsaSSA-PSS",
+                          "type": {
+                            "kind": "ref",
+                            "name": "RSASSA-PSS-params",
+                            "module": "PKIX1-PSS-OAEP-Algorithms-2009"
+                          }
+                        }
+                      ],
+                      "table": "SignatureAlgorithms",
+                      "tableExtensible": true
                     }
-                  ],
-                  "extensible": false
+                  ]
                 },
                 "optional": false
               },

@@ -62,62 +62,6 @@ struct PKIX1Explicit2009Oids {
     static constexpr auto IdEmailAddress = asn1kit::oid_literal<"1.2.840.113549.1.9.1">();
 };
 
-struct CertificateList_AlgorithmIdentifier {
-    asn1kit::oid algorithm{};
-    std::optional<asn1kit::any> parameters{};
-
-    static constexpr bool match_tag(const asn1kit::tag& t) {
-        return t.matches_ignore_constructed(asn1kit::tag::sequence);
-    }
-
-    static CertificateList_AlgorithmIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
-        CertificateList_AlgorithmIdentifier value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.algorithm = inner.read_oid(asn1kit::tag::object_identifier);
-            if (!inner.eof()) {
-                value.parameters = inner.read_any();
-            }
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
-        auto scope = w.enter_sequence(t);
-        w.write_object_identifier(asn1kit::tag::object_identifier, this->algorithm);
-        if (this->parameters.has_value()) {
-            w.write_any((*this->parameters));
-        }
-    }
-};
-
-struct Certificate_AlgorithmIdentifier {
-    asn1kit::oid algorithm{};
-    std::optional<asn1kit::any> parameters{};
-
-    static constexpr bool match_tag(const asn1kit::tag& t) {
-        return t.matches_ignore_constructed(asn1kit::tag::sequence);
-    }
-
-    static Certificate_AlgorithmIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
-        Certificate_AlgorithmIdentifier value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.algorithm = inner.read_oid(asn1kit::tag::object_identifier);
-            if (!inner.eof()) {
-                value.parameters = inner.read_any();
-            }
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
-        auto scope = w.enter_sequence(t);
-        w.write_object_identifier(asn1kit::tag::object_identifier, this->algorithm);
-        if (this->parameters.has_value()) {
-            w.write_any((*this->parameters));
-        }
-    }
-};
-
 enum class DirectoryString_kind {
     teletexString,
     printableString,
@@ -500,7 +444,7 @@ struct TBSCertList {
 
 struct CertificateList {
     TBSCertList toBeSigned{};
-    CertificateList_AlgorithmIdentifier algorithmIdentifier{};
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::bit_string signature{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -511,7 +455,7 @@ struct CertificateList {
         CertificateList value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.toBeSigned = TBSCertList::decode(inner);
-            value.algorithmIdentifier = CertificateList_AlgorithmIdentifier::decode(inner);
+            value.algorithmIdentifier = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
             value.signature = inner.read_bit_string(asn1kit::tag::bit_string);
         });
         return value;
@@ -682,7 +626,7 @@ struct TBSCertificate {
 
 struct Certificate {
     asn1kit::value<TBSCertificate> toBeSigned{};
-    Certificate_AlgorithmIdentifier algorithmIdentifier{};
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::bit_string signature{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -697,7 +641,7 @@ struct Certificate {
                 item = TBSCertificate::decode(deferred);
                 return item;
             });
-            value.algorithmIdentifier = Certificate_AlgorithmIdentifier::decode(inner);
+            value.algorithmIdentifier = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
             value.signature = inner.read_bit_string(asn1kit::tag::bit_string);
         });
         return value;

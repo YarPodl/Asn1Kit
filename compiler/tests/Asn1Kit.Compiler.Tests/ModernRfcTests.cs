@@ -73,6 +73,11 @@ public sealed class ModernRfcTests
             typeof(ModernAttributeCertificateV1)
         })
             Assert.Equal(signedBase, type.BaseType!.GetGenericTypeDefinition());
+        Assert.Null(typeof(Asn1Kit.Modern.PKIX1Explicit2009.Certificate).Assembly
+            .GetType("Asn1Kit.Modern.PKIX1Explicit2009.SignedAlgorithmIdentifier"));
+        Assert.Equal(
+            typeof(Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier),
+            signedBase.GetProperty("AlgorithmIdentifier")!.PropertyType);
     }
 
     [Theory]

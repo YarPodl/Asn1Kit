@@ -38,7 +38,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
         foreach (var type in module.Types)
         {
             if (!IrOptions.ShouldGenerate(type.Options)) continue;
-            if (IsSignedSpecialization(type)) continue;
+            if (IsSignedSpecialization(document, module, type)) continue;
             if (IrOptions.CSharpAliasOf(type.Options) is not null) continue;
             var typeName = IrOptions.CSharpTypeName(type.Options) ?? SanitizeIdentifier(type.Name);
             if (IsCollapsibleAlias(type.Type))
@@ -90,7 +90,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
                 continue;
             }
 
-            if (IsSignedSpecialization(type))
+            if (IsSignedSpecialization(document, module, type))
             {
                 continue;
             }
@@ -168,16 +168,26 @@ public sealed partial class CSharpBackend : ILanguageBackend
         }
 
         PlanDecodeContexts(nested);
-        if (document.Modules.SelectMany(m => m.Types).Any(t => IsSignedSpecialization(t) && t.Specialization!.Module == module.Name))
+        var signedForOrigin = document.Modules
+            .SelectMany(m => m.Types.Select(t => (Module: m, Def: t)))
+            .Where(x => IsSignedSpecialization(document, x.Module, x.Def) &&
+                        x.Def.Specialization!.Module == module.Name)
+            .ToList();
+        if (signedForOrigin.Count > 0)
         {
-            EmitSignedBase(builder);
+            var sample = signedForOrigin[0];
+            var algorithmType = ((SequenceType)sample.Def.Type).Components[1].Type;
+            var algorithmCsType = CsType(
+                document, sample.Module, SanitizeIdentifier(sample.Def.Name), "AlgorithmIdentifier",
+                algorithmType, optional: false);
+            EmitSignedBase(builder, algorithmCsType);
         }
         foreach (var (name, type) in nested)
         {
             EmitType(builder, document, module, name, type);
             builder.AppendLine();
         }
-        foreach (var definition in module.Types.Where(IsSignedSpecialization))
+        foreach (var definition in module.Types.Where(t => IsSignedSpecialization(document, module, t)))
         {
             EmitSignedSpecialization(builder, document, module, definition);
             builder.AppendLine();
@@ -192,47 +202,35 @@ public sealed partial class CSharpBackend : ILanguageBackend
         return new GeneratedFile(SanitizeIdentifier(module.Name) + ".g.cs", builder.ToString());
     }
 
-    private static bool IsSignedSpecialization(IrTypeDef definition) =>
+    private bool IsSignedSpecialization(IrDocument document, IrModule module, IrTypeDef definition) =>
         definition.Specialization is { Name: "SIGNED" } &&
         definition.Type is SequenceType { Components.Count: 3, Extensible: false, Tag: null } sequence &&
         sequence.Components[0] is { Name: "toBeSigned", Optional: false } &&
-        sequence.Components[1] is { Name: "algorithmIdentifier", Optional: false,
-            Type: SequenceType { Components.Count: 2, Extensible: false, Tag: null } } &&
-        sequence.Components[1].Type is SequenceType algorithm &&
-        algorithm.Components[0] is { Name: "algorithm", Optional: false, Type: OidType { Tag: null } } &&
-        algorithm.Components[1] is { Name: "parameters", Optional: true, Type: AnyType { Tag: null } } &&
+        sequence.Components[1] is { Name: "algorithmIdentifier", Optional: false } algorithmIdentifier &&
+        IsAlgorithmIdentifierFieldType(document, module, algorithmIdentifier.Type) &&
         sequence.Components[2] is { Name: "signature", Optional: false, Type: BitStringType { Tag: null } };
 
-    private static void EmitSignedBase(StringBuilder sb)
+    private bool IsAlgorithmIdentifierFieldType(IrDocument document, IrModule module, TypeExpr type)
     {
-        sb.AppendLine("public sealed class SignedAlgorithmIdentifier");
-        sb.AppendLine("{");
-        sb.AppendLine("    public Asn1Oid Algorithm { get; set; }");
-        sb.AppendLine("    public Asn1Any? Parameters { get; set; }");
-        sb.AppendLine("    public void Encode(Asn1Writer writer)");
-        sb.AppendLine("    {");
-        sb.AppendLine("        using (writer.EnterSequence(Asn1Tag.Sequence))");
-        sb.AppendLine("        {");
-        sb.AppendLine("            writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, Algorithm);");
-        sb.AppendLine("            if (Parameters is { } parameters) writer.WriteAny(parameters);");
-        sb.AppendLine("        }");
-        sb.AppendLine("    }");
-        sb.AppendLine("    public static SignedAlgorithmIdentifier Decode(Asn1Reader reader)");
-        sb.AppendLine("    {");
-        sb.AppendLine("        using (reader.EnterSequence(Asn1Tag.Sequence))");
-        sb.AppendLine("        {");
-        sb.AppendLine("            var value = new SignedAlgorithmIdentifier { Algorithm = reader.ReadOid(Asn1Tag.ObjectIdentifier) };");
-        sb.AppendLine("            if (!reader.Eof) value.Parameters = reader.ReadAny();");
-        sb.AppendLine("            reader.ThrowIfNotEmpty();");
-        sb.AppendLine("            return value;");
-        sb.AppendLine("        }");
-        sb.AppendLine("    }");
-        sb.AppendLine("}");
-        sb.AppendLine();
+        if (IsInlineAlgorithmIdentifier(type)) return true;
+        if (type is not RefType reference) return false;
+        var found = FindWithModule(document, module, reference);
+        if (found is null) return false;
+        var (_, resolved) = ResolveAliasOfTarget(document, found.Value.Module, found.Value.Def);
+        return IsInlineAlgorithmIdentifier(resolved.Type);
+    }
+
+    private static bool IsInlineAlgorithmIdentifier(TypeExpr type) =>
+        type is SequenceType { Components.Count: 2, Extensible: false, Tag: null } algorithm &&
+        algorithm.Components[0] is { Name: "algorithm", Optional: false, Type: OidType { Tag: null } } &&
+        algorithm.Components[1] is { Name: "parameters", Optional: true, Type: AnyType { Tag: null } };
+
+    private static void EmitSignedBase(StringBuilder sb, string algorithmIdentifierType)
+    {
         sb.AppendLine("public abstract class Signed<T>");
         sb.AppendLine("{");
         sb.AppendLine("    public T ToBeSigned { get; set; } = default!;");
-        sb.AppendLine("    public SignedAlgorithmIdentifier AlgorithmIdentifier { get; set; } = new();");
+        sb.AppendLine($"    public {algorithmIdentifierType} AlgorithmIdentifier {{ get; set; }} = new();");
         sb.AppendLine("    public Asn1BitString Signature { get; set; }");
         sb.AppendLine("    public void Encode(Asn1Writer writer) => Encode(writer, Asn1Tag.Sequence);");
         sb.AppendLine("    public void Encode(Asn1Writer writer, Asn1Tag tag)");
@@ -247,7 +245,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
         sb.AppendLine("    protected abstract void EncodeToBeSigned(Asn1Writer writer);");
         sb.AppendLine("    protected static void DecodeTail(Asn1Reader reader, Signed<T> value)");
         sb.AppendLine("    {");
-        sb.AppendLine("        value.AlgorithmIdentifier = SignedAlgorithmIdentifier.Decode(reader);");
+        sb.AppendLine($"        value.AlgorithmIdentifier = {algorithmIdentifierType}.Decode(reader);");
         sb.AppendLine("        value.Signature = reader.ReadBitString(Asn1Tag.BitString);");
         sb.AppendLine("    }");
         sb.AppendLine("}");

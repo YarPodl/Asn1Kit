@@ -33,34 +33,6 @@ struct AttCertVersionV1 {
     static constexpr std::int32_t V1 = 0;
 };
 
-struct AttributeCertificateV1_AlgorithmIdentifier {
-    asn1kit::oid algorithm{};
-    std::optional<asn1kit::any> parameters{};
-
-    static constexpr bool match_tag(const asn1kit::tag& t) {
-        return t.matches_ignore_constructed(asn1kit::tag::sequence);
-    }
-
-    static AttributeCertificateV1_AlgorithmIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
-        AttributeCertificateV1_AlgorithmIdentifier value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.algorithm = inner.read_oid(asn1kit::tag::object_identifier);
-            if (!inner.eof()) {
-                value.parameters = inner.read_any();
-            }
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
-        auto scope = w.enter_sequence(t);
-        w.write_object_identifier(asn1kit::tag::object_identifier, this->algorithm);
-        if (this->parameters.has_value()) {
-            w.write_any((*this->parameters));
-        }
-    }
-};
-
 } // namespace AttributeCertificateVersion12009
 } // namespace modern
 } // namespace asn1kit
@@ -237,7 +209,7 @@ struct AttributeCertificateInfoV1 {
 
 struct AttributeCertificateV1 {
     AttributeCertificateInfoV1 toBeSigned{};
-    AttributeCertificateV1_AlgorithmIdentifier algorithmIdentifier{};
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::bit_string signature{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -248,7 +220,7 @@ struct AttributeCertificateV1 {
         AttributeCertificateV1 value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.toBeSigned = AttributeCertificateInfoV1::decode(inner);
-            value.algorithmIdentifier = AttributeCertificateV1_AlgorithmIdentifier::decode(inner);
+            value.algorithmIdentifier = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
             value.signature = inner.read_bit_string(asn1kit::tag::bit_string);
         });
         return value;

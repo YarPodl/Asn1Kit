@@ -148,15 +148,15 @@ END
 
         Assert.DoesNotContain("asn1kit/contained.hpp", source);
         Assert.Contains("Inner typed{}", source);
-        Assert.Contains("struct Box_Inline_Content", source);
-        Assert.Contains("Box_Inline_Content inline_{}", source);
+        Assert.DoesNotContain("struct Box_Inline_Content", source);
+        Assert.Contains("Inner inline_{}", source);
         Assert.Contains("asn1kit::bytes opaque{}", source);
         Assert.Contains("Inner bits{}", source);
         Assert.Contains(
             "inner.read_octet_string_containing<Inner>(asn1kit::tag::context(0)",
             source);
         Assert.Contains(
-            "inner.read_octet_string_containing<Box_Inline_Content>(asn1kit::tag::context(1)",
+            "inner.read_octet_string_containing<Inner>(asn1kit::tag::context(1)",
             source);
         Assert.Contains(
             "inner.read_octet_string(asn1kit::tag::context(2))",
@@ -1270,6 +1270,12 @@ END
         Assert.Contains(files, f => f.RelativePath.StartsWith("cycle_", StringComparison.Ordinal));
         Assert.DoesNotContain(files, f => f.RelativePath == "all.hpp");
         Assert.DoesNotContain(files, f => f.RelativePath == "certificate.hpp");
+        var explicitTypes = files.Single(f => f.RelativePath == "PKIX1Explicit2009.types.hpp").Contents;
+        Assert.DoesNotContain("Certificate_AlgorithmIdentifier", explicitTypes, StringComparison.Ordinal);
+        Assert.Contains(
+            "AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier",
+            explicitTypes,
+            StringComparison.Ordinal);
 
         var goldenDir = TestData.RepoPath("runtime-cpp/generated/modern");
         var expectedNames = Directory.GetFiles(goldenDir, "*.hpp")

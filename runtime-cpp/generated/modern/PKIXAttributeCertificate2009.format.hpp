@@ -29,7 +29,6 @@ inline void to_string(const SecurityCategoryRfc3281& value, std::ostream& out, i
 inline void to_string(const ClearanceRfc3281& value, std::ostream& out, int indent);
 inline void to_string(const ClassList& value, std::ostream& out, int indent);
 inline void to_string(const ACClearAttrs& value, std::ostream& out, int indent);
-inline void to_string(const AttributeCertificate_AlgorithmIdentifier& value, std::ostream& out, int indent);
 inline void to_string(const ObjectDigestInfo_DigestedObjectType& value, std::ostream& out, int indent);
 inline void to_string(const IetfAttrSyntax_Values_Item& value, std::ostream& out, int indent);
 } // namespace PKIXAttributeCertificate2009
@@ -366,18 +365,6 @@ inline void to_string(const ACClearAttrs& value, std::ostream& out, int indent) 
     out << '\n' << pad;
     out << "attrs: ";
     to_string(value.attrs, out, indent + 1);
-    out << '\n' << std::string(static_cast<std::size_t>(indent) * 4, ' ') << '}';
-}
-
-inline void to_string(const AttributeCertificate_AlgorithmIdentifier& value, std::ostream& out, int indent) {
-    out << "AttributeCertificate_AlgorithmIdentifier {";
-    const auto pad = std::string(static_cast<std::size_t>(indent + 1) * 4, ' ');
-    out << '\n' << pad;
-    out << "algorithm: ";
-    to_string(value.algorithm, out, indent + 1);
-    out << '\n' << pad;
-    out << "parameters: ";
-    to_string(value.parameters, out, indent + 1);
     out << '\n' << std::string(static_cast<std::size_t>(indent) * 4, ' ') << '}';
 }
 

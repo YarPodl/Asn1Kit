@@ -26,31 +26,11 @@
 
 #include "PKIX1Explicit2009.types.hpp"
 
-#include "PKIX1PSSOAEPAlgorithms2009.hpp"
 #include "PKIXAlgs2009.hpp"
 
 namespace asn1kit {
 namespace modern {
 namespace PKIX1Explicit2009 {
-
-template <typename T>
-struct certificateList_AlgorithmIdentifier_parameters_binding {
-    asn1kit::oid key{};
-
-    [[nodiscard]] bool try_decode(const CertificateList_AlgorithmIdentifier& src, const CertificateList& parent0, T& out) const {
-        if (!src.parameters.has_value()) return false;
-        if (!(parent0.algorithmIdentifier.algorithm == key)) return false;
-        out = asn1kit::decode_open<T>(*src.parameters);
-        return true;
-    }
-
-    void set(CertificateList_AlgorithmIdentifier& src, const CertificateList& parent0, const T& value) const {
-        if (!(parent0.algorithmIdentifier.algorithm == key)) {
-            throw asn1kit::exception("Enclosing selector does not match the open-type binding.");
-        }
-        src.parameters = asn1kit::encode_open(value);
-    }
-};
 
 template <typename T>
 struct certificateList_signature_binding {
@@ -75,25 +55,6 @@ struct certificateList_signature_binding {
 };
 
 template <typename T>
-struct parameters_binding {
-    asn1kit::oid key{};
-
-    [[nodiscard]] bool try_decode(const Certificate_AlgorithmIdentifier& src, const Certificate& parent0, T& out) const {
-        if (!src.parameters.has_value()) return false;
-        if (!(parent0.algorithmIdentifier.algorithm == key)) return false;
-        out = asn1kit::decode_open<T>(*src.parameters);
-        return true;
-    }
-
-    void set(Certificate_AlgorithmIdentifier& src, const Certificate& parent0, const T& value) const {
-        if (!(parent0.algorithmIdentifier.algorithm == key)) {
-            throw asn1kit::exception("Enclosing selector does not match the open-type binding.");
-        }
-        src.parameters = asn1kit::encode_open(value);
-    }
-};
-
-template <typename T>
 struct signature_binding {
     asn1kit::oid key{};
 
@@ -114,84 +75,6 @@ struct signature_binding {
         return src;
     }
 };
-
-namespace signatureAlgorithms_parameters_bindings {
-inline const parameters_binding<asn1kit::null_value> sa_rsa_with_m_d2{
-    asn1kit::oid_literal<"1.2.840.113549.1.1.2">().get()};
-
-inline const parameters_binding<asn1kit::null_value> sa_rsa_with_m_d5{
-    asn1kit::oid_literal<"1.2.840.113549.1.1.4">().get()};
-
-inline const parameters_binding<asn1kit::null_value> sa_rsa_with_s_h_a1{
-    asn1kit::oid_literal<"1.2.840.113549.1.1.5">().get()};
-
-inline const parameters_binding<asn1kit::null_value> sa_dsa_with_s_h_a1{
-    asn1kit::oid_literal<"1.2.840.10040.4.3">().get()};
-
-inline const parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a1{
-    asn1kit::oid_literal<"1.2.840.10045.4.1">().get()};
-
-inline const parameters_binding<asn1kit::null_value> sa_dsa_with_s_h_a224{
-    asn1kit::oid_literal<"2.16.840.1.101.3.4.3.1">().get()};
-
-inline const parameters_binding<asn1kit::null_value> sa_dsa_with_s_h_a256{
-    asn1kit::oid_literal<"2.16.840.1.101.3.4.3.2">().get()};
-
-inline const parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a224{
-    asn1kit::oid_literal<"1.2.840.10045.4.3.1">().get()};
-
-inline const parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a256{
-    asn1kit::oid_literal<"1.2.840.10045.4.3.2">().get()};
-
-inline const parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a384{
-    asn1kit::oid_literal<"1.2.840.10045.4.3.3">().get()};
-
-inline const parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a512{
-    asn1kit::oid_literal<"1.2.840.10045.4.3.4">().get()};
-
-inline const parameters_binding<::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::RSASSAPSSParams> sa_rsa_s_s_a_p_s_s{
-    asn1kit::oid_literal<"1.2.840.113549.1.1.10">().get()};
-
-} // namespace signatureAlgorithms_parameters_bindings
-
-namespace signatureAlgorithms_parameters_certificateList_AlgorithmIdentifier_bindings {
-inline const certificateList_AlgorithmIdentifier_parameters_binding<asn1kit::null_value> sa_rsa_with_m_d2{
-    asn1kit::oid_literal<"1.2.840.113549.1.1.2">().get()};
-
-inline const certificateList_AlgorithmIdentifier_parameters_binding<asn1kit::null_value> sa_rsa_with_m_d5{
-    asn1kit::oid_literal<"1.2.840.113549.1.1.4">().get()};
-
-inline const certificateList_AlgorithmIdentifier_parameters_binding<asn1kit::null_value> sa_rsa_with_s_h_a1{
-    asn1kit::oid_literal<"1.2.840.113549.1.1.5">().get()};
-
-inline const certificateList_AlgorithmIdentifier_parameters_binding<asn1kit::null_value> sa_dsa_with_s_h_a1{
-    asn1kit::oid_literal<"1.2.840.10040.4.3">().get()};
-
-inline const certificateList_AlgorithmIdentifier_parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a1{
-    asn1kit::oid_literal<"1.2.840.10045.4.1">().get()};
-
-inline const certificateList_AlgorithmIdentifier_parameters_binding<asn1kit::null_value> sa_dsa_with_s_h_a224{
-    asn1kit::oid_literal<"2.16.840.1.101.3.4.3.1">().get()};
-
-inline const certificateList_AlgorithmIdentifier_parameters_binding<asn1kit::null_value> sa_dsa_with_s_h_a256{
-    asn1kit::oid_literal<"2.16.840.1.101.3.4.3.2">().get()};
-
-inline const certificateList_AlgorithmIdentifier_parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a224{
-    asn1kit::oid_literal<"1.2.840.10045.4.3.1">().get()};
-
-inline const certificateList_AlgorithmIdentifier_parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a256{
-    asn1kit::oid_literal<"1.2.840.10045.4.3.2">().get()};
-
-inline const certificateList_AlgorithmIdentifier_parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a384{
-    asn1kit::oid_literal<"1.2.840.10045.4.3.3">().get()};
-
-inline const certificateList_AlgorithmIdentifier_parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a512{
-    asn1kit::oid_literal<"1.2.840.10045.4.3.4">().get()};
-
-inline const certificateList_AlgorithmIdentifier_parameters_binding<::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::RSASSAPSSParams> sa_rsa_s_s_a_p_s_s{
-    asn1kit::oid_literal<"1.2.840.113549.1.1.10">().get()};
-
-} // namespace signatureAlgorithms_parameters_certificateList_AlgorithmIdentifier_bindings
 
 namespace signatureAlgorithms_signature_bindings {
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a1{

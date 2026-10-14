@@ -220,7 +220,7 @@ inline const algorithmIdentifier_parameters_binding<asn1kit::oid> pk_ec_d_h{
 inline const algorithmIdentifier_parameters_binding<asn1kit::oid> pk_ec_m_q_v{
     asn1kit::oid_literal<"1.3.132.1.13">().get()};
 
-inline const algorithmIdentifier_parameters_binding<::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::RSASSAPSSParams> pk_rsa_s_s_a_p_s_s{
+inline const algorithmIdentifier_parameters_binding<::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::RSASSAPSSParams> sa_rsa_s_s_a_p_s_s{
     asn1kit::oid_literal<"1.2.840.113549.1.1.10">().get()};
 
 inline const algorithmIdentifier_parameters_binding<::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::RSAESOAEPParams> pk_rsa_e_s_o_a_e_p{
@@ -271,7 +271,7 @@ inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> sa_ecds
 inline const algorithmIdentifier_parameters_binding<asn1kit::null_value> sa_ecdsa_with_s_h_a512{
     asn1kit::oid_literal<"1.2.840.10045.4.3.4">().get()};
 
-inline const algorithmIdentifier_parameters_binding<::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::RSASSAPSSParams> pk_rsa_s_s_a_p_s_s{
+inline const algorithmIdentifier_parameters_binding<::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::RSASSAPSSParams> sa_rsa_s_s_a_p_s_s{
     asn1kit::oid_literal<"1.2.840.113549.1.1.10">().get()};
 
 } // namespace signatureAlgorithms_parameters_bindings
