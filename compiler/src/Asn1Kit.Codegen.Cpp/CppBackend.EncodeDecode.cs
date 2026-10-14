@@ -21,7 +21,10 @@ public sealed partial class CppBackend
         var expr = "this->" + FieldName(field);
         if (field.Default is not null)
         {
-            sb.AppendLine($"{indent}if ({DefaultNotEqualExpression(document, module, owner, field, expr)}) {{");
+            var omitGuard = NeedsDefaultHelper(field)
+                ? $"!{IsDefaultHelperName(field)}({expr})"
+                : DefaultNotEqualExpression(document, module, owner, field, expr);
+            sb.AppendLine($"{indent}if ({omitGuard}) {{");
             EmitEncodeValue(
                 sb,
                 document,
@@ -1106,6 +1109,15 @@ public sealed partial class CppBackend
             _ => throw new NotSupportedException($"Unknown integer representation '{representation}'.")
         };
 
+    private static bool NeedsDefaultHelper(IrComponent field) =>
+        field.Default is IrStructuredValue or IrCollectionValue or IrChoiceValue or IrTypedValue;
+
+    private static string DefaultHelperName(IrComponent field) =>
+        "default_" + FieldName(field);
+
+    private static string IsDefaultHelperName(IrComponent field) =>
+        "is_default_" + FieldName(field);
+
     private string DefaultNotEqualExpression(
         IrDocument document,
         IrModule module,
@@ -1133,21 +1145,29 @@ public sealed partial class CppBackend
             throw new InvalidOperationException("DEFAULT expression requested without default.");
         }
 
+        if (NeedsDefaultHelper(field))
+        {
+            return DefaultHelperName(field) + "()";
+        }
+
         return ValueExpression(document, module, owner, field.Name, field.Type, field.Default);
     }
 
     private string ValueExpression(
         IrDocument document,
-        IrModule module,
+        IrModule emitting,
         string owner,
         string hint,
         TypeExpr declared,
-        IrValue value)
+        IrValue value,
+        IrModule? resolveFrom = null,
+        string indent = "        ")
     {
-        var (typeModule, type) = ResolveAliasTarget(document, module, declared);
+        var resolveModule = resolveFrom ?? emitting;
+        var (typeModule, type) = ResolveAliasTarget(document, resolveModule, declared);
         if (value is IrIntegerValue enumDefault &&
             ResolveEnumeratedDefault(
-                document, module, owner, new IrComponent { Name = hint, Type = declared }, type, enumDefault)
+                document, emitting, owner, new IrComponent { Name = hint, Type = declared }, type, enumDefault)
                 is { } enumExpr)
         {
             return enumExpr;
@@ -1158,25 +1178,42 @@ public sealed partial class CppBackend
             var components = type is SequenceType seq ? seq.Components : ((SetType)type).Components;
             // Collapsible open-type aliases (e.g. PBKDF2-PRFsAlgorithmIdentifier) are not emitted;
             // construct the underlying C++ type that fields actually use.
-            var typeName = CppType(document, module, owner, hint, declared, optional: false);
-            var assigns = structure.Fields.Select(pair =>
+            var typeName = CppType(document, emitting, owner, hint, declared, optional: false);
+            var nestedIndent = indent + "    ";
+            var lines = new List<string>
+            {
+                "([&] {",
+                nestedIndent + typeName + " v{};"
+            };
+            foreach (var pair in structure.Fields)
             {
                 var field = components.Single(f => f.Name == pair.Key);
                 var fieldExpr = ValueExpression(
-                    document, typeModule, typeName, field.Name, field.Type, pair.Value);
-                return $"        v.{FieldName(field)} = {fieldExpr};";
-            });
-            return "([&]{ " + typeName + " v{}; " + string.Join(" ", assigns) + " return v; }())";
+                    document,
+                    emitting,
+                    typeName,
+                    field.Name,
+                    field.Type,
+                    pair.Value,
+                    typeModule,
+                    nestedIndent);
+                lines.Add(nestedIndent + "v." + FieldName(field) + " = " + fieldExpr + ";");
+            }
+
+            lines.Add(nestedIndent + "return v;");
+            lines.Add(indent + "}())");
+            return string.Join("\n", lines);
         }
 
         if (value is IrCollectionValue collection && type is SequenceOfType or SetOfType)
         {
             var element = type is SequenceOfType of ? of.Element : ((SetOfType)type).Element;
-            ResolveOfItemNaming(document, module, declared, owner, hint, out var itemOwner, out var itemHint);
+            ResolveOfItemNaming(document, emitting, declared, owner, hint, out var itemOwner, out var itemHint);
             var items = collection.Items.Select(item =>
-                ValueExpression(document, typeModule, itemOwner, itemHint, element, item));
+                ValueExpression(
+                    document, emitting, itemOwner, itemHint, element, item, typeModule, indent));
             return "std::vector<" +
-                   CppType(document, module, itemOwner, itemHint, element, optional: false) +
+                   CppType(document, emitting, itemOwner, itemHint, element, optional: false) +
                    ">{" + string.Join(", ", items) + "}";
         }
 
@@ -1184,13 +1221,13 @@ public sealed partial class CppBackend
         {
             var field = alternatives.Components.Single(f => f.Name == choice.Alternative);
             var inner = ValueExpression(
-                document, typeModule, owner, field.Name, field.Type, choice.Value);
+                document, emitting, owner, field.Name, field.Type, choice.Value, typeModule, indent);
             if (IsSingleAlternativeChoice(type))
             {
                 return inner;
             }
 
-            var typeName = CppType(document, module, owner, hint, declared, optional: false);
+            var typeName = CppType(document, emitting, owner, hint, declared, optional: false);
             var factory = "from_" + CppNames.SanitizeEnumMember(field.Name);
             return typeName + "::" + factory + "(" + inner + ")";
         }
@@ -1198,7 +1235,7 @@ public sealed partial class CppBackend
         if (value is IrTypedValue typed && type is AnyType)
         {
             var nested = ValueExpression(
-                document, typeModule, owner, hint, typed.Type, typed.Value);
+                document, emitting, owner, hint, typed.Type, typed.Value, typeModule, indent);
             // encode_open handles null_value / bytes / generated types (instance encode is not universal).
             return "asn1kit::encode_open(" + nested + ")";
         }
@@ -1208,6 +1245,7 @@ public sealed partial class CppBackend
             (BooleanType, IrBooleanValue b) => b.Value ? "true" : "false",
             (NullType, IrNullValue) => "asn1kit::null_value::value()",
             (OidType, IrOidValue oid) =>
+                KnownOidExpression(emitting, oid.Value) ??
                 $"asn1kit::oid_literal<\"{CppNames.EscapeString(oid.Value)}\">().get()",
             (StringType, IrStringValue text) =>
                 $"std::string(\"{CppNames.EscapeString(text.Value)}\")",
@@ -1220,20 +1258,42 @@ public sealed partial class CppBackend
         };
     }
 
+    /// <summary>
+    /// Prefer the emitting module's OID catalog. Cross-module catalogs are not referenced
+    /// here — that would require extra includes; fall back to <c>oid_literal</c> instead.
+    /// </summary>
+    private static string? KnownOidExpression(IrModule emitting, string dottedValue)
+    {
+        foreach (var definition in emitting.Values)
+        {
+            if (definition.Value is IrOidValue oid &&
+                IrOptions.ShouldGenerate(definition.Options) &&
+                string.Equals(oid.Value, dottedValue, StringComparison.Ordinal))
+            {
+                return OidCatalogName(emitting) + "::" +
+                       CppNames.SanitizeTypeName(definition.Name) + ".get()";
+            }
+        }
+
+        return null;
+    }
+
     private string ValueNotEqualExpression(
         IrDocument document,
-        IrModule module,
+        IrModule emitting,
         string owner,
         string hint,
         TypeExpr declared,
         IrValue expected,
-        string actual)
+        string actual,
+        IrModule? resolveFrom = null)
     {
-        var (typeModule, type) = ResolveAliasTarget(document, module, declared);
+        var resolveModule = resolveFrom ?? emitting;
+        var (typeModule, type) = ResolveAliasTarget(document, resolveModule, declared);
         if (expected is IrStructuredValue structure && type is SequenceType or SetType)
         {
             var components = type is SequenceType seq ? seq.Components : ((SetType)type).Components;
-            var typeName = CppType(document, module, owner, hint, declared, optional: false);
+            var typeName = CppType(document, emitting, owner, hint, declared, optional: false);
             var tests = new List<string>();
             foreach (var field in components)
             {
@@ -1250,7 +1310,14 @@ public sealed partial class CppBackend
                     tests.Add(access + ".has_value()");
                 tests.Add(
                     "!(" + ValueNotEqualExpression(
-                        document, typeModule, typeName, field.Name, field.Type, present, fieldActual) +
+                        document,
+                        emitting,
+                        typeName,
+                        field.Name,
+                        field.Type,
+                        present,
+                        fieldActual,
+                        typeModule) +
                     ")");
             }
 
@@ -1261,7 +1328,7 @@ public sealed partial class CppBackend
         if (expected is IrCollectionValue collection && type is SequenceOfType or SetOfType)
         {
             var element = type is SequenceOfType of ? of.Element : ((SetOfType)type).Element;
-            ResolveOfItemNaming(document, module, declared, owner, hint, out var itemOwner, out var itemHint);
+            ResolveOfItemNaming(document, emitting, declared, owner, hint, out var itemOwner, out var itemHint);
             var parts = new List<string>
             {
                 actual + ".size() == " +
@@ -1271,14 +1338,21 @@ public sealed partial class CppBackend
             {
                 parts.Add(
                     "!(" + ValueNotEqualExpression(
-                        document, typeModule, itemOwner, itemHint, element, collection.Items[index],
-                        actual + "[" + index.ToString(CultureInfo.InvariantCulture) + "]") + ")");
+                        document,
+                        emitting,
+                        itemOwner,
+                        itemHint,
+                        element,
+                        collection.Items[index],
+                        actual + "[" + index.ToString(CultureInfo.InvariantCulture) + "]",
+                        typeModule) + ")");
             }
 
             return "!(" + string.Join(" && ", parts) + ")";
         }
 
-        var defaultValue = ValueExpression(document, module, owner, hint, declared, expected);
+        var defaultValue = ValueExpression(
+            document, emitting, owner, hint, declared, expected, resolveModule);
         return actual + " != " + defaultValue;
     }
 

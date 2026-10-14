@@ -317,7 +317,17 @@ struct GLKeyAttributes {
     bool recipientsNotMutuallyAware = true;
     asn1kit::integer duration = asn1kit::integer::from_int64(0ll);
     asn1kit::integer generationCounter = asn1kit::integer::from_int64(2ll);
-    ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability requestedAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability v{};         v.capabilityID = asn1kit::oid_literal<"2.16.840.1.101.3.4.1.5">().get(); return v; }());
+    ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability requestedAlgorithm = default_requestedAlgorithm();
+
+    static ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability default_requestedAlgorithm() {
+        ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability v{};
+        v.capabilityID = asn1kit::oid_literal<"2.16.840.1.101.3.4.1.5">().get();
+        return v;
+    }
+
+    static bool is_default_requestedAlgorithm(const ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability& value) {
+        return !(value.capabilityID != asn1kit::oid_literal<"2.16.840.1.101.3.4.1.5">().get()) && !value.parameters.has_value();
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -354,7 +364,7 @@ struct GLKeyAttributes {
                 value.requestedAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability::decode(inner, asn1kit::tag::context(4, true));
             }
             else {
-                value.requestedAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability v{};         v.capabilityID = asn1kit::oid_literal<"2.16.840.1.101.3.4.1.5">().get(); return v; }());
+                value.requestedAlgorithm = default_requestedAlgorithm();
             }
         });
         return value;
@@ -374,7 +384,7 @@ struct GLKeyAttributes {
         if (this->generationCounter != asn1kit::integer::from_int64(2ll)) {
             w.write_integer(asn1kit::tag::context(3), this->generationCounter);
         }
-        if (!(!(this->requestedAlgorithm.capabilityID != asn1kit::oid_literal<"2.16.840.1.101.3.4.1.5">().get()) && !this->requestedAlgorithm.parameters.has_value())) {
+        if (!is_default_requestedAlgorithm(this->requestedAlgorithm)) {
             this->requestedAlgorithm.encode(w, asn1kit::tag::context(4, true));
         }
     }

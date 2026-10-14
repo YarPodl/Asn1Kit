@@ -125,7 +125,18 @@ struct PBKDF2Params {
     PBKDF2Params_Salt salt{};
     asn1kit::integer iterationCount{};
     std::optional<asn1kit::integer> keyLength{};
-    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier prf = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"1.3.6.1.5.5.8.1.2">().get();         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }());
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier prf = default_prf();
+
+    static ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier default_prf() {
+        ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};
+        v.algorithm = CryptographicMessageSyntaxAlgorithms2009Oids::HMACSHA1.get();
+        v.parameters = asn1kit::encode_open(asn1kit::null_value::value());
+        return v;
+    }
+
+    static bool is_default_prf(const ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier& value) {
+        return !(value.algorithm != CryptographicMessageSyntaxAlgorithms2009Oids::HMACSHA1.get()) && value.parameters.has_value() && !((*value.parameters) != asn1kit::encode_open(asn1kit::null_value::value()));
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -143,7 +154,7 @@ struct PBKDF2Params {
                 value.prf = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
             }
             else {
-                value.prf = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"1.3.6.1.5.5.8.1.2">().get();         v.parameters = asn1kit::encode_open(asn1kit::null_value::value()); return v; }());
+                value.prf = default_prf();
             }
         });
         return value;
@@ -156,7 +167,7 @@ struct PBKDF2Params {
         if (this->keyLength.has_value()) {
             w.write_integer(asn1kit::tag::integer, (*this->keyLength));
         }
-        if (!(!(this->prf.algorithm != asn1kit::oid_literal<"1.3.6.1.5.5.8.1.2">().get()) && this->prf.parameters.has_value() && !((*this->prf.parameters) != asn1kit::encode_open(asn1kit::null_value::value())))) {
+        if (!is_default_prf(this->prf)) {
             this->prf.encode(w);
         }
     }

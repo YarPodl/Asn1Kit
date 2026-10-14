@@ -670,6 +670,32 @@ END
     }
 
     [Fact]
+    public void StructuredDefaultEmitsNamedHelpersAndOidCatalog()
+    {
+        const string asn = @"
+M DEFINITIONS ::= BEGIN
+id-alg OBJECT IDENTIFIER ::= { 2 999 1 }
+AlgorithmIdentifier ::= SEQUENCE {
+  algorithm OBJECT IDENTIFIER,
+  parameters NULL
+}
+Params ::= SEQUENCE {
+  prf AlgorithmIdentifier DEFAULT { algorithm id-alg, parameters NULL }
+}
+END
+";
+        var source = CppSource(asn).Replace("\r\n", "\n", StringComparison.Ordinal);
+        Assert.Contains("prf = default_prf();", source);
+        Assert.Contains("static AlgorithmIdentifier default_prf() {", source);
+        Assert.Contains("static bool is_default_prf(const AlgorithmIdentifier& value) {", source);
+        Assert.Contains("value.prf = default_prf();", source);
+        Assert.Contains("if (!is_default_prf(this->prf)) {", source);
+        Assert.Contains("MOids::IdAlg.get()", source);
+        Assert.DoesNotContain("v{};         v.", source);
+        Assert.DoesNotContain("([&]{ ", source);
+    }
+
+    [Fact]
     public void ChoiceWithOneCppPayloadTypeEmitsDirectValue()
     {
         const string asn = @"

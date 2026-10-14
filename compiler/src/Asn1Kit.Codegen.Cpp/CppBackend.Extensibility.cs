@@ -32,7 +32,9 @@ public sealed partial class CppBackend
                 " || ",
                 group.Select(f => f.Default is null
                     ? FieldPresentExpression(f, Access(f))
-                    : DefaultNotEqualExpression(document, module, owner, f, Access(f))));
+                    : NeedsDefaultHelper(f)
+                        ? "!" + IsDefaultHelperName(f) + "(" + Access(f) + ")"
+                        : DefaultNotEqualExpression(document, module, owner, f, Access(f))));
             var missing = string.Join(
                 " || ",
                 required.Select(f => FieldAbsentExpression(f, Access(f))));

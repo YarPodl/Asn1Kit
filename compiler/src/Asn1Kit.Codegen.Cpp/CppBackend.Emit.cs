@@ -54,6 +54,7 @@ public sealed partial class CppBackend
         }
 
         sb.AppendLine();
+        EmitStructuredDefaultHelpers(sb, document, module, typeName, components);
         var naturalTag = UniversalTag(document, module, type);
         sb.AppendLine("    static constexpr bool match_tag(const asn1kit::tag& t) {");
         sb.AppendLine($"        return t.matches_ignore_constructed({naturalTag});");
@@ -741,6 +742,115 @@ public sealed partial class CppBackend
         sb.AppendLine("        w.write_bit_string(t, value);");
         sb.AppendLine("    }");
         sb.AppendLine("};");
+    }
+
+    private void EmitStructuredDefaultHelpers(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string owner,
+        IReadOnlyList<IrComponent> components)
+    {
+        var helpers = components.Where(NeedsDefaultHelper).ToList();
+        if (helpers.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var field in helpers)
+        {
+            var cppType = CppType(document, module, owner, field.Name, field.Type, optional: false);
+            var defaultName = DefaultHelperName(field);
+            sb.AppendLine($"    static {cppType} {defaultName}() {{");
+            EmitDefaultConstruction(
+                sb, document, module, owner, field.Name, field.Type, field.Default!, "        ");
+            sb.AppendLine("    }");
+            sb.AppendLine();
+            sb.AppendLine(
+                $"    static bool {IsDefaultHelperName(field)}(const {cppType}& value) {{");
+            var notEqual = DefaultNotEqualExpression(document, module, owner, field, "value");
+            sb.AppendLine($"        return {InvertNotEqualToEqual(notEqual)};");
+            sb.AppendLine("    }");
+            sb.AppendLine();
+        }
+    }
+
+    /// <summary>
+    /// <see cref="ValueNotEqualExpression"/> wraps structured/collection checks as <c>!(eq)</c>;
+    /// strip that outer negate for <c>is_default_*</c> bodies.
+    /// </summary>
+    private static string InvertNotEqualToEqual(string notEqualExpression)
+    {
+        if (notEqualExpression.StartsWith("!(", StringComparison.Ordinal) &&
+            notEqualExpression.EndsWith(')') &&
+            IsWrappedByOuterParens(notEqualExpression, 1))
+        {
+            return notEqualExpression.Substring(2, notEqualExpression.Length - 3);
+        }
+
+        return "!(" + notEqualExpression + ")";
+    }
+
+    private static bool IsWrappedByOuterParens(string expression, int openIndex)
+    {
+        var depth = 0;
+        for (var i = openIndex; i < expression.Length; i++)
+        {
+            var c = expression[i];
+            if (c == '(')
+            {
+                depth++;
+            }
+            else if (c == ')')
+            {
+                depth--;
+                if (depth == 0)
+                {
+                    return i == expression.Length - 1;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private void EmitDefaultConstruction(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string owner,
+        string hint,
+        TypeExpr declared,
+        IrValue value,
+        string indent)
+    {
+        var (typeModule, type) = ResolveAliasTarget(document, module, declared);
+        if (value is IrStructuredValue structure && type is SequenceType or SetType)
+        {
+            var components = type is SequenceType seq ? seq.Components : ((SetType)type).Components;
+            var typeName = CppType(document, module, owner, hint, declared, optional: false);
+            sb.AppendLine($"{indent}{typeName} v{{}};");
+            foreach (var pair in structure.Fields)
+            {
+                var field = components.Single(f => f.Name == pair.Key);
+                var fieldExpr = ValueExpression(
+                    document,
+                    module,
+                    typeName,
+                    field.Name,
+                    field.Type,
+                    pair.Value,
+                    typeModule,
+                    indent);
+                sb.AppendLine($"{indent}v.{FieldName(field)} = {fieldExpr};");
+            }
+
+            sb.AppendLine($"{indent}return v;");
+            return;
+        }
+
+        sb.AppendLine(
+            $"{indent}return {ValueExpression(document, module, owner, hint, declared, value, indent: indent)};");
     }
 
     private string FieldInitializer(

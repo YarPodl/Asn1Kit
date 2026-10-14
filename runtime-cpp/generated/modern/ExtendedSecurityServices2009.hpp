@@ -316,9 +316,19 @@ namespace modern {
 namespace ExtendedSecurityServices2009 {
 
 struct ESSCertIDv2 {
-    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"2.16.840.1.101.3.4.2.1">().get(); return v; }());
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm = default_hashAlgorithm();
     asn1kit::bytes certHash{};
     std::optional<IssuerSerial> issuerSerial{};
+
+    static ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier default_hashAlgorithm() {
+        ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};
+        v.algorithm = asn1kit::oid_literal<"2.16.840.1.101.3.4.2.1">().get();
+        return v;
+    }
+
+    static bool is_default_hashAlgorithm(const ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier& value) {
+        return !(value.algorithm != asn1kit::oid_literal<"2.16.840.1.101.3.4.2.1">().get()) && !value.parameters.has_value();
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -331,7 +341,7 @@ struct ESSCertIDv2 {
                 value.hashAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
             }
             else {
-                value.hashAlgorithm = ([&]{ ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};         v.algorithm = asn1kit::oid_literal<"2.16.840.1.101.3.4.2.1">().get(); return v; }());
+                value.hashAlgorithm = default_hashAlgorithm();
             }
             value.certHash = inner.read_octet_string(asn1kit::tag::octet_string);
             if (inner.next_matches<IssuerSerial>()) {
@@ -343,7 +353,7 @@ struct ESSCertIDv2 {
 
     void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
-        if (!(!(this->hashAlgorithm.algorithm != asn1kit::oid_literal<"2.16.840.1.101.3.4.2.1">().get()) && !this->hashAlgorithm.parameters.has_value())) {
+        if (!is_default_hashAlgorithm(this->hashAlgorithm)) {
             this->hashAlgorithm.encode(w);
         }
         w.write_octet_string(asn1kit::tag::octet_string, this->certHash.span());
