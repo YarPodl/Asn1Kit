@@ -400,7 +400,7 @@ struct CertTemplate {
                 inner.with_explicit(asn1kit::tag::context(3, true), [&](asn1kit::reader& scoped) {
                     tmp_issuer = scoped.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
                         std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                        item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>(asn1kit::tag::set);
+                        item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
                         return item;
                     });
                 });
@@ -414,7 +414,7 @@ struct CertTemplate {
                 inner.with_explicit(asn1kit::tag::context(5, true), [&](asn1kit::reader& scoped) {
                     tmp_subject = scoped.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
                         std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                        item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>(asn1kit::tag::set);
+                        item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
                         return item;
                     });
                 });
@@ -496,7 +496,7 @@ struct CertRequest {
             value.certReqId = inner.read_integer_value(asn1kit::tag::integer);
             value.certTemplate = CertTemplate::decode(inner);
             if (inner.next_is(asn1kit::tag::sequence)) {
-                value.controls = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>(asn1kit::tag::sequence);
+                value.controls = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
             }
         });
         return value;
@@ -1167,7 +1167,7 @@ struct CertReqMsg {
                 value.popo = ProofOfPossession::decode(inner);
             }
             if (inner.next_is(asn1kit::tag::sequence)) {
-                value.regInfo = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>(asn1kit::tag::sequence);
+                value.regInfo = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
             }
         });
         return value;
@@ -1233,7 +1233,7 @@ struct PKIPublicationInfo {
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.action = inner.read_int32(asn1kit::tag::integer);
             if (inner.next_is(asn1kit::tag::sequence)) {
-                value.pubInfos = inner.read_sequence_of<SinglePubInfo>(asn1kit::tag::sequence);
+                value.pubInfos = inner.read_sequence_of<SinglePubInfo>();
             }
         });
         return value;

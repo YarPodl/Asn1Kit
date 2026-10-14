@@ -448,6 +448,29 @@ END
     }
 
     [Fact]
+    public void TypeDrivenSequenceOfOmitsDefaultCollectionTag()
+    {
+        const string asn = @"
+M DEFINITIONS ::= BEGIN
+Pair ::= SEQUENCE { a INTEGER, b OCTET STRING }
+Bag ::= CHOICE { left INTEGER, right BOOLEAN }
+BagSeq ::= SEQUENCE {
+  items SEQUENCE OF Pair,
+  bags SET OF Bag
+}
+END
+";
+        var source = CppSource(asn);
+
+        Assert.Contains("read_sequence_of<Pair>();", source);
+        Assert.Contains("read_set_of<Bag>();", source);
+        Assert.DoesNotContain("read_sequence_of<Pair>(asn1kit::tag::sequence)", source);
+        Assert.DoesNotContain("read_set_of<Bag>(asn1kit::tag::set)", source);
+        Assert.Contains("write_sequence_of(asn1kit::tag::sequence, this->items);", source);
+        Assert.Contains("write_set_of(asn1kit::tag::set, this->bags);", source);
+    }
+
+    [Fact]
     public void TaggedChoiceNaturalCodecUsesExplicitWrapper()
     {
         const string asn = @"

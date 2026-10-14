@@ -91,7 +91,7 @@ struct AttributeCertificateInfoV1_Subject {
             std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> alt{};
             std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> tmp_subjectName{};
             r.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
-                tmp_subjectName = scoped.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>(asn1kit::tag::sequence);
+                tmp_subjectName = scoped.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
             });
             alt = std::move(tmp_subjectName);
             result.value.emplace<1>(std::move(alt));
@@ -172,16 +172,16 @@ struct AttributeCertificateInfoV1 {
                 value.version = 0;
             }
             value.subject = AttributeCertificateInfoV1_Subject::decode(inner);
-            value.issuer = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>(asn1kit::tag::sequence);
+            value.issuer = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
             value.signature = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
             value.serialNumber = inner.read_integer_value(asn1kit::tag::integer);
             value.attCertValidityPeriod = ::asn1kit::modern::PKIXAttributeCertificate2009::AttCertValidityPeriod::decode(inner);
-            value.attributes = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet>(asn1kit::tag::sequence);
+            value.attributes = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet>();
             if (inner.next_is(asn1kit::tag::bit_string)) {
                 value.issuerUniqueID = inner.read_bit_string(asn1kit::tag::bit_string);
             }
             if (inner.next_is(asn1kit::tag::sequence)) {
-                value.extensions = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>(asn1kit::tag::sequence);
+                value.extensions = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>();
             }
         });
         return value;

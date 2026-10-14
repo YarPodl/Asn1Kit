@@ -687,7 +687,7 @@ struct PresentationAddress {
             }
             std::vector<asn1kit::bytes> tmp_nAddresses{};
             inner.with_explicit(asn1kit::tag::context(3, true), [&](asn1kit::reader& scoped) {
-                tmp_nAddresses = scoped.read_set_of<asn1kit::bytes>(asn1kit::tag::set);
+                tmp_nAddresses = scoped.read_set_of<asn1kit::bytes>();
             });
             value.nAddresses = std::move(tmp_nAddresses);
         });
@@ -983,10 +983,10 @@ struct ORAddress {
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.built_in_standard_attributes = BuiltInStandardAttributes::decode(inner);
             if (inner.next_is(asn1kit::tag::sequence)) {
-                value.built_in_domain_defined_attributes = inner.read_sequence_of<BuiltInDomainDefinedAttribute>(asn1kit::tag::sequence);
+                value.built_in_domain_defined_attributes = inner.read_sequence_of<BuiltInDomainDefinedAttribute>();
             }
             if (inner.next_is(asn1kit::tag::set)) {
-                value.extension_attributes = inner.read_set_of<ExtensionAttribute>(asn1kit::tag::set);
+                value.extension_attributes = inner.read_set_of<ExtensionAttribute>();
             }
         });
         return value;

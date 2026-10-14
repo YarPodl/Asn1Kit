@@ -220,7 +220,7 @@ struct ESSSecurityLabel {
                     value.privacy_mark = ESSPrivacyMark::decode(inner);
                 } else if (peeked.matches_ignore_constructed(asn1kit::tag::set)) {
                     if (value.security_categories.has_value()) throw asn1kit::exception("Duplicate SET component 'security-categories'.");
-                    value.security_categories = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SecurityCategory>(asn1kit::tag::set);
+                    value.security_categories = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SecurityCategory>();
                 } else {
                     throw asn1kit::exception("Unknown SET component.");
                 }
@@ -270,7 +270,7 @@ struct IssuerSerial {
     static IssuerSerial decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         IssuerSerial value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.issuer = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>(asn1kit::tag::sequence);
+            value.issuer = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
             value.serialNumber = inner.read_integer_value(asn1kit::tag::integer);
         });
         return value;
@@ -410,7 +410,7 @@ struct MLReceiptPolicy {
             std::vector<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> alt{};
             alt = r.read_sequence_of<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>>(asn1kit::tag::context(1, true), [&](asn1kit::reader& inner) {
                 std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> item{};
-                item = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>(asn1kit::tag::sequence);
+                item = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
                 return item;
             });
             result.value.emplace<1>(std::move(alt));
@@ -421,7 +421,7 @@ struct MLReceiptPolicy {
             std::vector<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> alt{};
             alt = r.read_sequence_of<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>>(asn1kit::tag::context(2, true), [&](asn1kit::reader& inner) {
                 std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> item{};
-                item = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>(asn1kit::tag::sequence);
+                item = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
                 return item;
             });
             result.value.emplace<1>(std::move(alt));
@@ -542,7 +542,7 @@ struct ReceiptsFrom {
             std::vector<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> alt{};
             alt = r.read_sequence_of<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>>(asn1kit::tag::context(1, true), [&](asn1kit::reader& inner) {
                 std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> item{};
-                item = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>(asn1kit::tag::sequence);
+                item = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
                 return item;
             });
             result.value.emplace<1>(std::move(alt));
@@ -598,7 +598,7 @@ struct ReceiptRequest {
             value.receiptsFrom = ReceiptsFrom::decode(inner);
             value.receiptsTo = inner.read_sequence_of<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
                 std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> item{};
-                item = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>(asn1kit::tag::sequence);
+                item = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
                 return item;
             });
         });
@@ -635,9 +635,9 @@ struct SigningCertificate {
     static SigningCertificate decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         SigningCertificate value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.certs = inner.read_sequence_of<ESSCertID>(asn1kit::tag::sequence);
+            value.certs = inner.read_sequence_of<ESSCertID>();
             if (inner.next_is(asn1kit::tag::sequence)) {
-                value.policies = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::PolicyInformation>(asn1kit::tag::sequence);
+                value.policies = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::PolicyInformation>();
             }
         });
         return value;
@@ -663,9 +663,9 @@ struct SigningCertificateV2 {
     static SigningCertificateV2 decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         SigningCertificateV2 value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.certs = inner.read_sequence_of<ESSCertIDv2>(asn1kit::tag::sequence);
+            value.certs = inner.read_sequence_of<ESSCertIDv2>();
             if (inner.next_is(asn1kit::tag::sequence)) {
-                value.policies = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::PolicyInformation>(asn1kit::tag::sequence);
+                value.policies = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::PolicyInformation>();
             }
         });
         return value;

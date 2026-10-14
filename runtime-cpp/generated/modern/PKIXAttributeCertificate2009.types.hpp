@@ -120,7 +120,7 @@ struct ACClearAttrs {
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.acIssuer = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
             value.acSerial = inner.read_integer_value(asn1kit::tag::integer);
-            value.attrs = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet>(asn1kit::tag::sequence);
+            value.attrs = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet>();
         });
         return value;
     }
@@ -271,7 +271,7 @@ struct Clearance {
                 value.classList = asn1kit::bit_string::copy_from(std::vector<std::uint8_t>{0x40}, 6);
             }
             if (inner.next_is(asn1kit::tag::set)) {
-                value.securityCategories = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SecurityCategory>(asn1kit::tag::set);
+                value.securityCategories = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SecurityCategory>();
             }
         });
         return value;
@@ -401,7 +401,7 @@ struct IetfAttrSyntax {
             if (inner.next_is(asn1kit::tag::context(0, true))) {
                 value.policyAuthority = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>(asn1kit::tag::context(0, true));
             }
-            value.values = inner.read_sequence_of<IetfAttrSyntax_Values_Item>(asn1kit::tag::sequence);
+            value.values = inner.read_sequence_of<IetfAttrSyntax_Values_Item>();
         });
         return value;
     }
@@ -427,7 +427,7 @@ struct IssuerSerial {
     static IssuerSerial decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         IssuerSerial value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.issuer = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>(asn1kit::tag::sequence);
+            value.issuer = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
             value.serial = inner.read_integer_value(asn1kit::tag::integer);
             if (inner.next_is(asn1kit::tag::bit_string)) {
                 value.issuerUID = inner.read_bit_string(asn1kit::tag::bit_string);
@@ -843,7 +843,7 @@ struct V2Form {
         V2Form value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             if (inner.next_is(asn1kit::tag::sequence)) {
-                value.issuerName = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>(asn1kit::tag::sequence);
+                value.issuerName = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
             }
             if (inner.next_is(asn1kit::tag::context(0, true))) {
                 value.baseCertificateID = IssuerSerial::decode(inner, asn1kit::tag::context(0, true));
@@ -903,7 +903,7 @@ struct AttCertIssuer {
             AttCertIssuer result{};
             result.kind = AttCertIssuer_kind::v1Form;
             std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> alt{};
-            alt = r.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>(asn1kit::tag::sequence);
+            alt = r.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
             result.value.emplace<0>(std::move(alt));
             return result;
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
@@ -970,12 +970,12 @@ struct AttributeCertificateInfo {
             value.signature = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
             value.serialNumber = inner.read_integer_value(asn1kit::tag::integer);
             value.attrCertValidityPeriod = AttCertValidityPeriod::decode(inner);
-            value.attributes = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet>(asn1kit::tag::sequence);
+            value.attributes = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet>();
             if (inner.next_is(asn1kit::tag::bit_string)) {
                 value.issuerUniqueID = inner.read_bit_string(asn1kit::tag::bit_string);
             }
             if (inner.next_is(asn1kit::tag::sequence)) {
-                value.extensions = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>(asn1kit::tag::sequence);
+                value.extensions = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>();
             }
         });
         return value;

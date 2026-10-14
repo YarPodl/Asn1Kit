@@ -296,7 +296,7 @@ struct HardwareModules {
         HardwareModules value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.hwType = inner.read_oid(asn1kit::tag::object_identifier);
-            value.hwSerialEntries = inner.read_sequence_of<HardwareSerialEntry>(asn1kit::tag::sequence);
+            value.hwSerialEntries = inner.read_sequence_of<HardwareSerialEntry>();
         });
         return value;
     }
@@ -634,7 +634,7 @@ struct FirmwarePackageInfo {
                 value.fwPkgType = inner.read_integer_value(asn1kit::tag::integer);
             }
             if (inner.next_is(asn1kit::tag::sequence)) {
-                value.dependencies = inner.read_sequence_of<PreferredOrLegacyPackageIdentifier>(asn1kit::tag::sequence);
+                value.dependencies = inner.read_sequence_of<PreferredOrLegacyPackageIdentifier>();
             }
         });
         return value;

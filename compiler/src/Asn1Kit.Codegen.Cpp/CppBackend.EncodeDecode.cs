@@ -868,7 +868,9 @@ public sealed partial class CppBackend
         var itemType = CppType(document, module, itemOwner, itemHint, element, optional: false);
         if (CanUseTypeDrivenOfItem(document, module, element))
         {
-            sb.AppendLine($"{indent}{target} = {reader}.{readMethod}<{itemType}>({tag});");
+            var defaultTag = ofType is SetOfType ? "asn1kit::tag::set" : "asn1kit::tag::sequence";
+            var tagArgs = tag == defaultTag ? string.Empty : tag;
+            sb.AppendLine($"{indent}{target} = {reader}.{readMethod}<{itemType}>({tagArgs});");
             return;
         }
 

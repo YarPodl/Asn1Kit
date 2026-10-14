@@ -68,7 +68,7 @@ struct ArchiveTimeStamp {
             if (inner.next_is(asn1kit::tag::context(2, true))) {
                 value.reducedHashtree = inner.read_sequence_of<std::vector<asn1kit::bytes>>(asn1kit::tag::context(2, true), [&](asn1kit::reader& inner) {
                     std::vector<asn1kit::bytes> item{};
-                    item = inner.read_sequence_of<asn1kit::bytes>(asn1kit::tag::sequence);
+                    item = inner.read_sequence_of<asn1kit::bytes>();
                     return item;
                 });
             }
@@ -137,7 +137,7 @@ struct EvidenceRecord {
         EvidenceRecord value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.version = inner.read_int32(asn1kit::tag::integer);
-            value.digestAlgorithms = inner.read_sequence_of<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier>(asn1kit::tag::sequence);
+            value.digestAlgorithms = inner.read_sequence_of<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier>();
             if (inner.next_is(asn1kit::tag::context(0, true))) {
                 value.cryptoInfos = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet>(asn1kit::tag::context(0, true));
             }
@@ -146,7 +146,7 @@ struct EvidenceRecord {
             }
             value.archiveTimeStampSequence = inner.read_sequence_of<std::vector<ArchiveTimeStamp>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
                 std::vector<ArchiveTimeStamp> item{};
-                item = inner.read_sequence_of<ArchiveTimeStamp>(asn1kit::tag::sequence);
+                item = inner.read_sequence_of<ArchiveTimeStamp>();
                 return item;
             });
         });

@@ -254,7 +254,7 @@ struct GLKRefresh {
         GLKRefresh value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.glName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
-            value.dates = inner.read_sequence_of<Date>(asn1kit::tag::sequence);
+            value.dates = inner.read_sequence_of<Date>();
         });
         return value;
     }
@@ -293,7 +293,7 @@ struct GLKey {
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.glName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
             value.glIdentifier = ::asn1kit::modern::CryptographicMessageSyntax2009::KEKIdentifier::decode(inner);
-            value.glkWrapped = inner.read_set_of<::asn1kit::modern::CryptographicMessageSyntax2009::RecipientInfo>(asn1kit::tag::set);
+            value.glkWrapped = inner.read_set_of<::asn1kit::modern::CryptographicMessageSyntax2009::RecipientInfo>();
             value.glkAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability::decode(inner);
             value.glkNotBefore = inner.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
             value.glkNotAfter = inner.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
@@ -627,7 +627,7 @@ struct GLUseKEK {
         GLUseKEK value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.glInfo = GLInfo::decode(inner);
-            value.glOwnerInfo = inner.read_sequence_of<GLOwnerInfo>(asn1kit::tag::sequence);
+            value.glOwnerInfo = inner.read_sequence_of<GLOwnerInfo>();
             if (inner.next_is(asn1kit::tag::integer)) {
                 value.glAdministration = inner.read_int32(asn1kit::tag::integer);
             }

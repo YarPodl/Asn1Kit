@@ -472,7 +472,7 @@ struct GeneralName {
             r.with_explicit(asn1kit::tag::context(4, true), [&](asn1kit::reader& scoped) {
                 tmp_directoryName = scoped.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
                     std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                    item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>(asn1kit::tag::set);
+                    item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
                     return item;
                 });
             });
@@ -914,7 +914,7 @@ struct NoticeReference {
         NoticeReference value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.organization = DisplayText::decode(inner);
-            value.noticeNumbers = inner.read_sequence_of<asn1kit::integer>(asn1kit::tag::sequence);
+            value.noticeNumbers = inner.read_sequence_of<asn1kit::integer>();
         });
         return value;
     }
@@ -1019,7 +1019,7 @@ struct PolicyInformation {
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.policyIdentifier = inner.read_oid(asn1kit::tag::object_identifier);
             if (inner.next_is(asn1kit::tag::sequence)) {
-                value.policyQualifiers = inner.read_sequence_of<PolicyQualifierInfo>(asn1kit::tag::sequence);
+                value.policyQualifiers = inner.read_sequence_of<PolicyQualifierInfo>();
             }
         });
         return value;

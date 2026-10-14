@@ -292,7 +292,7 @@ struct ExtendedCertificateInfo {
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.version = inner.read_int32(asn1kit::tag::integer);
             value.certificate = ::asn1kit::modern::PKIX1Explicit2009::Certificate::decode(inner);
-            value.attributes = inner.read_set_of<Attribute>(asn1kit::tag::set);
+            value.attributes = inner.read_set_of<Attribute>();
         });
         return value;
     }
@@ -434,7 +434,7 @@ struct IssuerAndSerialNumber {
                 std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> item{};
                 item = deferred.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
                     std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                    item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>(asn1kit::tag::set);
+                    item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
                     return item;
                 });
                 return item;
@@ -1058,7 +1058,7 @@ struct KeyAgreeRecipientInfo {
                 value.ukm = std::move(tmp_ukm);
             }
             value.keyEncryptionAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
-            value.recipientEncryptedKeys = inner.read_sequence_of<RecipientEncryptedKey>(asn1kit::tag::sequence);
+            value.recipientEncryptedKeys = inner.read_sequence_of<RecipientEncryptedKey>();
         });
         return value;
     }
@@ -1764,7 +1764,7 @@ struct AuthenticatedData {
             if (inner.next_is(asn1kit::tag::context(0, true))) {
                 value.originatorInfo = OriginatorInfo::decode(inner, asn1kit::tag::context(0, true));
             }
-            value.recipientInfos = inner.read_set_of<RecipientInfo>(asn1kit::tag::set);
+            value.recipientInfos = inner.read_set_of<RecipientInfo>();
             value.macAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
             if (inner.next_is(asn1kit::tag::context(1, true))) {
                 value.digestAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner, asn1kit::tag::context(1, true));
@@ -1821,7 +1821,7 @@ struct EnvelopedData {
             if (inner.next_is(asn1kit::tag::context(0, true))) {
                 value.originatorInfo = OriginatorInfo::decode(inner, asn1kit::tag::context(0, true));
             }
-            value.recipientInfos = inner.read_set_of<RecipientInfo>(asn1kit::tag::set);
+            value.recipientInfos = inner.read_set_of<RecipientInfo>();
             value.encryptedContentInfo = EncryptedContentInfo::decode(inner);
             auto next_extension = 4;
             while (true) {
@@ -1870,7 +1870,7 @@ struct SignedData {
         SignedData value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.version = inner.read_int32(asn1kit::tag::integer);
-            value.digestAlgorithms = inner.read_set_of<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier>(asn1kit::tag::set);
+            value.digestAlgorithms = inner.read_set_of<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier>();
             value.encapContentInfo = EncapsulatedContentInfo::decode(inner);
             if (inner.next_is(asn1kit::tag::context(0, true))) {
                 value.certificates = inner.read_set_of<CertificateChoices>(asn1kit::tag::context(0, true));
@@ -1878,7 +1878,7 @@ struct SignedData {
             if (inner.next_is(asn1kit::tag::context(1, true))) {
                 value.crls = inner.read_set_of<RevocationInfoChoice>(asn1kit::tag::context(1, true));
             }
-            value.signerInfos = inner.read_set_of<SignerInfo>(asn1kit::tag::set);
+            value.signerInfos = inner.read_set_of<SignerInfo>();
         });
         return value;
     }

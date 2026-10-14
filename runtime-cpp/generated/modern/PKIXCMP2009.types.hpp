@@ -755,7 +755,7 @@ struct PKIHeader {
             if (inner.next_is(asn1kit::tag::context(8, true))) {
                 std::vector<InfoTypeAndValue> tmp_generalInfo{};
                 inner.with_explicit(asn1kit::tag::context(8, true), [&](asn1kit::reader& scoped) {
-                    tmp_generalInfo = scoped.read_sequence_of<InfoTypeAndValue>(asn1kit::tag::sequence);
+                    tmp_generalInfo = scoped.read_sequence_of<InfoTypeAndValue>();
                 });
                 value.generalInfo = std::move(tmp_generalInfo);
             }
@@ -930,11 +930,11 @@ struct CertRepMessage {
             if (inner.next_is(asn1kit::tag::context(1, true))) {
                 std::vector<CMPCertificate> tmp_caPubs{};
                 inner.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
-                    tmp_caPubs = scoped.read_sequence_of<CMPCertificate>(asn1kit::tag::sequence);
+                    tmp_caPubs = scoped.read_sequence_of<CMPCertificate>();
                 });
                 value.caPubs = std::move(tmp_caPubs);
             }
-            value.response = inner.read_sequence_of<CertResponse>(asn1kit::tag::sequence);
+            value.response = inner.read_sequence_of<CertResponse>();
         });
         return value;
     }
@@ -1047,14 +1047,14 @@ struct KeyRecRepContent {
             if (inner.next_is(asn1kit::tag::context(1, true))) {
                 std::vector<CMPCertificate> tmp_caCerts{};
                 inner.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
-                    tmp_caCerts = scoped.read_sequence_of<CMPCertificate>(asn1kit::tag::sequence);
+                    tmp_caCerts = scoped.read_sequence_of<CMPCertificate>();
                 });
                 value.caCerts = std::move(tmp_caCerts);
             }
             if (inner.next_is(asn1kit::tag::context(2, true))) {
                 std::vector<CertifiedKeyPair> tmp_keyPairHist{};
                 inner.with_explicit(asn1kit::tag::context(2, true), [&](asn1kit::reader& scoped) {
-                    tmp_keyPairHist = scoped.read_sequence_of<CertifiedKeyPair>(asn1kit::tag::sequence);
+                    tmp_keyPairHist = scoped.read_sequence_of<CertifiedKeyPair>();
                 });
                 value.keyPairHist = std::move(tmp_keyPairHist);
             }
@@ -1173,7 +1173,7 @@ struct RevAnnContent {
             value.willBeRevokedAt = inner.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
             value.badSinceDate = inner.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
             if (inner.next_is(asn1kit::tag::sequence)) {
-                value.crlDetails = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>(asn1kit::tag::sequence);
+                value.crlDetails = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>();
             }
         });
         return value;
@@ -1204,7 +1204,7 @@ struct RevDetails {
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.certDetails = ::asn1kit::modern::PKIXCRMF2009::CertTemplate::decode(inner);
             if (inner.next_is(asn1kit::tag::sequence)) {
-                value.crlEntryDetails = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>(asn1kit::tag::sequence);
+                value.crlEntryDetails = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>();
             }
         });
         return value;
@@ -1231,18 +1231,18 @@ struct RevRepContent {
     static RevRepContent decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         RevRepContent value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.status = inner.read_sequence_of<PKIStatusInfo>(asn1kit::tag::sequence);
+            value.status = inner.read_sequence_of<PKIStatusInfo>();
             if (inner.next_is(asn1kit::tag::context(0, true))) {
                 std::vector<::asn1kit::modern::PKIXCRMF2009::CertId> tmp_revCerts{};
                 inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
-                    tmp_revCerts = scoped.read_sequence_of<::asn1kit::modern::PKIXCRMF2009::CertId>(asn1kit::tag::sequence);
+                    tmp_revCerts = scoped.read_sequence_of<::asn1kit::modern::PKIXCRMF2009::CertId>();
                 });
                 value.revCerts = std::move(tmp_revCerts);
             }
             if (inner.next_is(asn1kit::tag::context(1, true))) {
                 std::vector<::asn1kit::modern::PKIX1Explicit2009::CertificateList> tmp_crls{};
                 inner.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
-                    tmp_crls = scoped.read_sequence_of<::asn1kit::modern::PKIX1Explicit2009::CertificateList>(asn1kit::tag::sequence);
+                    tmp_crls = scoped.read_sequence_of<::asn1kit::modern::PKIX1Explicit2009::CertificateList>();
                 });
                 value.crls = std::move(tmp_crls);
             }

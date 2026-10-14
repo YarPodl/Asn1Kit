@@ -191,7 +191,7 @@ struct Request {
             if (inner.next_is(asn1kit::tag::context(0, true))) {
                 std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension> tmp_singleRequestExtensions{};
                 inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
-                    tmp_singleRequestExtensions = scoped.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>(asn1kit::tag::sequence);
+                    tmp_singleRequestExtensions = scoped.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>();
                 });
                 value.singleRequestExtensions = std::move(tmp_singleRequestExtensions);
             }
@@ -249,7 +249,7 @@ struct ResponderID {
             r.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
                 tmp_byName = scoped.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
                     std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                    item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>(asn1kit::tag::set);
+                    item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
                     return item;
                 });
             });
@@ -523,10 +523,10 @@ struct ServiceLocator {
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.issuer = inner.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
                 std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>(asn1kit::tag::set);
+                item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
                 return item;
             });
-            value.locator = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::AccessDescription>(asn1kit::tag::sequence);
+            value.locator = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::AccessDescription>();
         });
         return value;
     }
@@ -567,7 +567,7 @@ struct Signature {
             if (inner.next_is(asn1kit::tag::context(0, true))) {
                 std::vector<::asn1kit::modern::PKIX1Explicit2009::Certificate> tmp_certs{};
                 inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
-                    tmp_certs = scoped.read_sequence_of<::asn1kit::modern::PKIX1Explicit2009::Certificate>(asn1kit::tag::sequence);
+                    tmp_certs = scoped.read_sequence_of<::asn1kit::modern::PKIX1Explicit2009::Certificate>();
                 });
                 value.certs = std::move(tmp_certs);
             }
@@ -615,7 +615,7 @@ struct SingleResponse {
             if (inner.next_is(asn1kit::tag::context(1, true))) {
                 std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension> tmp_singleExtensions{};
                 inner.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
-                    tmp_singleExtensions = scoped.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>(asn1kit::tag::sequence);
+                    tmp_singleExtensions = scoped.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>();
                 });
                 value.singleExtensions = std::move(tmp_singleExtensions);
             }
@@ -669,11 +669,11 @@ struct ResponseData {
             }
             value.responderID = ResponderID::decode(inner);
             value.producedAt = inner.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
-            value.responses = inner.read_sequence_of<SingleResponse>(asn1kit::tag::sequence);
+            value.responses = inner.read_sequence_of<SingleResponse>();
             if (inner.next_is(asn1kit::tag::context(1, true))) {
                 std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension> tmp_responseExtensions{};
                 inner.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
-                    tmp_responseExtensions = scoped.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>(asn1kit::tag::sequence);
+                    tmp_responseExtensions = scoped.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>();
                 });
                 value.responseExtensions = std::move(tmp_responseExtensions);
             }
@@ -720,7 +720,7 @@ struct BasicOCSPResponse {
             if (inner.next_is(asn1kit::tag::context(0, true))) {
                 std::vector<::asn1kit::modern::PKIX1Explicit2009::Certificate> tmp_certs{};
                 inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
-                    tmp_certs = scoped.read_sequence_of<::asn1kit::modern::PKIX1Explicit2009::Certificate>(asn1kit::tag::sequence);
+                    tmp_certs = scoped.read_sequence_of<::asn1kit::modern::PKIX1Explicit2009::Certificate>();
                 });
                 value.certs = std::move(tmp_certs);
             }
@@ -772,11 +772,11 @@ struct TBSRequest {
                 });
                 value.requestorName = std::move(tmp_requestorName);
             }
-            value.requestList = inner.read_sequence_of<Request>(asn1kit::tag::sequence);
+            value.requestList = inner.read_sequence_of<Request>();
             if (inner.next_is(asn1kit::tag::context(2, true))) {
                 std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension> tmp_requestExtensions{};
                 inner.with_explicit(asn1kit::tag::context(2, true), [&](asn1kit::reader& scoped) {
-                    tmp_requestExtensions = scoped.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>(asn1kit::tag::sequence);
+                    tmp_requestExtensions = scoped.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>();
                 });
                 value.requestExtensions = std::move(tmp_requestExtensions);
             }

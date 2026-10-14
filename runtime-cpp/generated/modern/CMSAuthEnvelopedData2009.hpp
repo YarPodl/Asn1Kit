@@ -62,7 +62,7 @@ struct AuthEnvelopedData {
             if (inner.next_is(asn1kit::tag::context(0, true))) {
                 value.originatorInfo = ::asn1kit::modern::CryptographicMessageSyntax2009::OriginatorInfo::decode(inner, asn1kit::tag::context(0, true));
             }
-            value.recipientInfos = inner.read_set_of<::asn1kit::modern::CryptographicMessageSyntax2009::RecipientInfo>(asn1kit::tag::set);
+            value.recipientInfos = inner.read_set_of<::asn1kit::modern::CryptographicMessageSyntax2009::RecipientInfo>();
             value.authEncryptedContentInfo = ::asn1kit::modern::CryptographicMessageSyntax2009::EncryptedContentInfo::decode(inner);
             if (inner.next_is(asn1kit::tag::context(1, true))) {
                 value.authAttrs = inner.read_set_of<::asn1kit::modern::CryptographicMessageSyntax2009::Attribute>(asn1kit::tag::context(1, true));

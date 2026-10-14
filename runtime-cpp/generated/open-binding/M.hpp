@@ -168,7 +168,7 @@ struct Outer {
         Outer value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.id = inner.read_oid(asn1kit::tag::object_identifier);
-            value.nested = inner.read_sequence_of<Outer_Nested_Item>(asn1kit::tag::sequence);
+            value.nested = inner.read_sequence_of<Outer_Nested_Item>();
         });
         return value;
     }

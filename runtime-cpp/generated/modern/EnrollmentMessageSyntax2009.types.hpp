@@ -93,8 +93,8 @@ struct AddExtensions {
         AddExtensions value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.pkiDataReference = inner.read_uint32(asn1kit::tag::integer);
-            value.certReferences = inner.read_sequence_of<std::uint32_t>(asn1kit::tag::sequence);
-            value.extensions = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>(asn1kit::tag::sequence);
+            value.certReferences = inner.read_sequence_of<std::uint32_t>();
+            value.extensions = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>();
         });
         return value;
     }
@@ -148,7 +148,7 @@ struct BodyPartReference {
             BodyPartReference result{};
             result.kind = BodyPartReference_kind::bodyPartPath;
             std::vector<std::uint32_t> alt{};
-            alt = r.read_sequence_of<std::uint32_t>(asn1kit::tag::sequence);
+            alt = r.read_sequence_of<std::uint32_t>();
             result.value.emplace<1>(std::move(alt));
             return result;
         } else {
@@ -225,7 +225,7 @@ struct CMCPublicationInfo {
         CMCPublicationInfo value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.hashAlg = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
-            value.certHashes = inner.read_sequence_of<asn1kit::bytes>(asn1kit::tag::sequence);
+            value.certHashes = inner.read_sequence_of<asn1kit::bytes>();
             value.pubInfo = ::asn1kit::modern::PKIXCRMF2009::PKIPublicationInfo::decode(inner);
         });
         return value;
@@ -285,7 +285,7 @@ struct CMCUnsignedData {
     static CMCUnsignedData decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         CMCUnsignedData value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.bodyPartPath = inner.read_sequence_of<std::uint32_t>(asn1kit::tag::sequence);
+            value.bodyPartPath = inner.read_sequence_of<std::uint32_t>();
             value.identifier = inner.read_oid(asn1kit::tag::object_identifier);
             value.content = inner.read_any();
         });
@@ -340,7 +340,7 @@ struct CertificationRequest_CertificationRequestInfo {
             value.version = inner.read_integer_value(asn1kit::tag::integer);
             value.subject = inner.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
                 std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>(asn1kit::tag::set);
+                item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
                 return item;
             });
             value.subjectPublicKeyInfo = CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo::decode(inner);
@@ -397,7 +397,7 @@ struct ControlsProcessed {
     static ControlsProcessed decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         ControlsProcessed value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.bodyList = inner.read_sequence_of<BodyPartReference>(asn1kit::tag::sequence);
+            value.bodyList = inner.read_sequence_of<BodyPartReference>();
         });
         return value;
     }
@@ -460,7 +460,7 @@ struct GetCRL {
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.issuerName = inner.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
                 std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>(asn1kit::tag::set);
+                item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
                 return item;
             });
             if (inner.next_matches<::asn1kit::modern::PKIX1Implicit2009::GeneralName>()) {
@@ -556,7 +556,7 @@ struct LraPopWitness {
         LraPopWitness value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.pkiDataBodyid = inner.read_uint32(asn1kit::tag::integer);
-            value.bodyIds = inner.read_sequence_of<std::uint32_t>(asn1kit::tag::sequence);
+            value.bodyIds = inner.read_sequence_of<std::uint32_t>();
         });
         return value;
     }
@@ -581,8 +581,8 @@ struct ModCertTemplate {
     static ModCertTemplate decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         ModCertTemplate value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.pkiDataReference = inner.read_sequence_of<std::uint32_t>(asn1kit::tag::sequence);
-            value.certReferences = inner.read_sequence_of<std::uint32_t>(asn1kit::tag::sequence);
+            value.pkiDataReference = inner.read_sequence_of<std::uint32_t>();
+            value.certReferences = inner.read_sequence_of<std::uint32_t>();
             if (inner.next_is(asn1kit::tag::boolean)) {
                 value.replace = inner.read_boolean(asn1kit::tag::boolean);
             }
@@ -768,7 +768,7 @@ struct CMCStatusInfoV2 {
         CMCStatusInfoV2 value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.cMCStatus = inner.read_int32(asn1kit::tag::integer);
-            value.bodyList = inner.read_sequence_of<BodyPartReference>(asn1kit::tag::sequence);
+            value.bodyList = inner.read_sequence_of<BodyPartReference>();
             if (inner.next_is(asn1kit::tag::utf8_string)) {
                 value.statusString = inner.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
             }
@@ -883,7 +883,7 @@ struct CMCStatusInfo {
         CMCStatusInfo value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.cMCStatus = inner.read_int32(asn1kit::tag::integer);
-            value.bodyList = inner.read_sequence_of<std::uint32_t>(asn1kit::tag::sequence);
+            value.bodyList = inner.read_sequence_of<std::uint32_t>();
             if (inner.next_is(asn1kit::tag::utf8_string)) {
                 value.statusString = inner.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
             }
@@ -948,7 +948,7 @@ struct PublishTrustAnchors {
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.seqNumber = inner.read_integer_value(asn1kit::tag::integer);
             value.hashAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
-            value.anchorHashes = inner.read_sequence_of<asn1kit::bytes>(asn1kit::tag::sequence);
+            value.anchorHashes = inner.read_sequence_of<asn1kit::bytes>();
         });
         return value;
     }
@@ -978,7 +978,7 @@ struct RevokeRequest {
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.issuerName = inner.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
                 std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>(asn1kit::tag::set);
+                item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
                 return item;
             });
             value.serialNumber = inner.read_integer_value(asn1kit::tag::integer);
@@ -1118,9 +1118,9 @@ struct PKIResponse {
     static PKIResponse decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         PKIResponse value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.controlSequence = inner.read_sequence_of<TaggedAttribute>(asn1kit::tag::sequence);
-            value.cmsSequence = inner.read_sequence_of<TaggedContentInfo>(asn1kit::tag::sequence);
-            value.otherMsgSequence = inner.read_sequence_of<OtherMsg>(asn1kit::tag::sequence);
+            value.controlSequence = inner.read_sequence_of<TaggedAttribute>();
+            value.cmsSequence = inner.read_sequence_of<TaggedContentInfo>();
+            value.otherMsgSequence = inner.read_sequence_of<OtherMsg>();
         });
         return value;
     }
@@ -1304,10 +1304,10 @@ struct PKIData {
     static PKIData decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         PKIData value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.controlSequence = inner.read_sequence_of<TaggedAttribute>(asn1kit::tag::sequence);
-            value.reqSequence = inner.read_sequence_of<TaggedRequest>(asn1kit::tag::sequence);
-            value.cmsSequence = inner.read_sequence_of<TaggedContentInfo>(asn1kit::tag::sequence);
-            value.otherMsgSequence = inner.read_sequence_of<OtherMsg>(asn1kit::tag::sequence);
+            value.controlSequence = inner.read_sequence_of<TaggedAttribute>();
+            value.reqSequence = inner.read_sequence_of<TaggedRequest>();
+            value.cmsSequence = inner.read_sequence_of<TaggedContentInfo>();
+            value.otherMsgSequence = inner.read_sequence_of<OtherMsg>();
         });
         return value;
     }

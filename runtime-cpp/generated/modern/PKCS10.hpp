@@ -122,7 +122,7 @@ struct CertificationRequestInfo {
             value.version = inner.read_int32(asn1kit::tag::integer);
             value.subject = inner.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
                 std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>(asn1kit::tag::set);
+                item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
                 return item;
             });
             value.subjectPKInfo = SubjectPublicKeyInfo::decode(inner);

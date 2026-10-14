@@ -343,7 +343,7 @@ struct TBSCertList_RevokedCertificates_Item {
                 if (!inner.try_peek_tag(extension_tag)) break;
                 if (extension_tag.matches_ignore_constructed(asn1kit::tag::sequence)) {
                     if (next_extension > 2) throw asn1kit::exception("Duplicate or unordered extension component 'crlEntryExtensions'.");
-                    value.crlEntryExtensions = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>(asn1kit::tag::sequence);
+                    value.crlEntryExtensions = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>();
                     next_extension = 3;
                 }
                 else {
@@ -386,7 +386,7 @@ struct TBSCertList {
             value.signature = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
             value.issuer = inner.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
                 std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>(asn1kit::tag::set);
+                item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
                 return item;
             });
             value.thisUpdate = Time::decode(inner);
@@ -394,7 +394,7 @@ struct TBSCertList {
                 value.nextUpdate = Time::decode(inner);
             }
             if (inner.next_is(asn1kit::tag::sequence)) {
-                value.revokedCertificates = inner.read_sequence_of<TBSCertList_RevokedCertificates_Item>(asn1kit::tag::sequence);
+                value.revokedCertificates = inner.read_sequence_of<TBSCertList_RevokedCertificates_Item>();
             }
             auto next_extension = 6;
             while (true) {
@@ -404,7 +404,7 @@ struct TBSCertList {
                     if (next_extension > 6) throw asn1kit::exception("Duplicate or unordered extension component 'crlExtensions'.");
                     std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension> tmp_crlExtensions{};
                     inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
-                        tmp_crlExtensions = scoped.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>(asn1kit::tag::sequence);
+                        tmp_crlExtensions = scoped.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>();
                     });
                     value.crlExtensions = std::move(tmp_crlExtensions);
                     next_extension = 7;
@@ -528,7 +528,7 @@ struct TBSCertificate {
                 std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> item{};
                 item = deferred.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
                     std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                    item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>(asn1kit::tag::set);
+                    item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
                     return item;
                 });
                 return item;
@@ -538,7 +538,7 @@ struct TBSCertificate {
                 std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> item{};
                 item = deferred.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
                     std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                    item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>(asn1kit::tag::set);
+                    item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
                     return item;
                 });
                 return item;
@@ -566,7 +566,7 @@ struct TBSCertificate {
                     if (next_extension > 9) throw asn1kit::exception("Duplicate or unordered extension component 'extensions'.");
                     std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension> tmp_extensions{};
                     inner.with_explicit(asn1kit::tag::context(3, true), [&](asn1kit::reader& scoped) {
-                        tmp_extensions = scoped.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>(asn1kit::tag::sequence);
+                        tmp_extensions = scoped.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>();
                     });
                     value.extensions = std::move(tmp_extensions);
                     next_extension = 10;
