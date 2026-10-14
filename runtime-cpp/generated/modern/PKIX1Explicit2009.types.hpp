@@ -117,40 +117,25 @@ struct DirectoryString {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::teletex_string)) {
-            DirectoryString result{};
-            result.kind = DirectoryString_kind::teletexString;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::teletex_string, asn1kit::string_form::teletex);
-            result.value = std::move(alt);
-            return result;
+            return from_teletexString(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::printable_string)) {
-            DirectoryString result{};
-            result.kind = DirectoryString_kind::printableString;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
-            result.value = std::move(alt);
-            return result;
+            return from_printableString(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::bmp_string)) {
-            DirectoryString result{};
-            result.kind = DirectoryString_kind::bmpString;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::bmp_string, asn1kit::string_form::bmp);
-            result.value = std::move(alt);
-            return result;
+            return from_bmpString(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::universal_string)) {
-            DirectoryString result{};
-            result.kind = DirectoryString_kind::universalString;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::universal_string, asn1kit::string_form::universal);
-            result.value = std::move(alt);
-            return result;
+            return from_universalString(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::utf8_string)) {
-            DirectoryString result{};
-            result.kind = DirectoryString_kind::uTF8String;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
-            result.value = std::move(alt);
-            return result;
+            return from_uTF8String(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -267,19 +252,13 @@ struct Time {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::utc_time)) {
-            Time result{};
-            result.kind = Time_kind::utcTime;
             asn1kit::utc_date_time alt{};
             alt = r.read_time(asn1kit::tag::utc_time, asn1kit::time_form::utc);
-            result.value = std::move(alt);
-            return result;
+            return from_utcTime(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::generalized_time)) {
-            Time result{};
-            result.kind = Time_kind::generalTime;
             asn1kit::utc_date_time alt{};
             alt = r.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
-            result.value = std::move(alt);
-            return result;
+            return from_generalTime(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }

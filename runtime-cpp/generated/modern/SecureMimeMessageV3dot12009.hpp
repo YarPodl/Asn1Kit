@@ -86,26 +86,17 @@ struct SMIMEEncryptionKeyPreference {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
-            SMIMEEncryptionKeyPreference result{};
-            result.kind = SMIMEEncryptionKeyPreference_kind::issuerAndSerialNumber;
             ::asn1kit::modern::CryptographicMessageSyntax2009::IssuerAndSerialNumber alt{};
             alt = ::asn1kit::modern::CryptographicMessageSyntax2009::IssuerAndSerialNumber::decode(r, asn1kit::tag::context(0, true));
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_issuerAndSerialNumber(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
-            SMIMEEncryptionKeyPreference result{};
-            result.kind = SMIMEEncryptionKeyPreference_kind::receipentKeyId;
             ::asn1kit::modern::CryptographicMessageSyntax2009::RecipientKeyIdentifier alt{};
             alt = ::asn1kit::modern::CryptographicMessageSyntax2009::RecipientKeyIdentifier::decode(r, asn1kit::tag::context(1, true));
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_receipentKeyId(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2))) {
-            SMIMEEncryptionKeyPreference result{};
-            result.kind = SMIMEEncryptionKeyPreference_kind::subjectAltKeyIdentifier;
             asn1kit::bytes alt{};
             alt = r.read_octet_string(asn1kit::tag::context(2));
-            result.value.emplace<2>(std::move(alt));
-            return result;
+            return from_subjectAltKeyIdentifier(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }

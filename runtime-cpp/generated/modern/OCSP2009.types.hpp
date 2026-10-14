@@ -242,8 +242,6 @@ struct ResponderID {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
-            ResponderID result{};
-            result.kind = ResponderID_kind::byName;
             std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> alt{};
             std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> tmp_byName{};
             r.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
@@ -252,19 +250,15 @@ struct ResponderID {
                 });
             });
             alt = std::move(tmp_byName);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_byName(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2, true))) {
-            ResponderID result{};
-            result.kind = ResponderID_kind::byKey;
             asn1kit::bytes alt{};
             asn1kit::bytes tmp_byKey{};
             r.with_explicit(asn1kit::tag::context(2, true), [&](asn1kit::reader& scoped) {
                 tmp_byKey = scoped.read_octet_string(asn1kit::tag::octet_string);
             });
             alt = std::move(tmp_byKey);
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_byKey(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -449,26 +443,17 @@ struct CertStatus {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::context(0))) {
-            CertStatus result{};
-            result.kind = CertStatus_kind::good;
             asn1kit::null_value alt{};
             alt = asn1kit::null_value::decode(r, asn1kit::tag::context(0));
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_good(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
-            CertStatus result{};
-            result.kind = CertStatus_kind::revoked;
             RevokedInfo alt{};
             alt = RevokedInfo::decode(r, asn1kit::tag::context(1, true));
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_revoked(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2))) {
-            CertStatus result{};
-            result.kind = CertStatus_kind::unknown;
             asn1kit::null_value alt{};
             alt = asn1kit::null_value::decode(r, asn1kit::tag::context(2));
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_unknown(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }

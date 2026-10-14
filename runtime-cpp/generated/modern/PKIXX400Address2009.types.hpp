@@ -60,19 +60,13 @@ struct AdministrationDomainName {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::numeric_string)) {
-            AdministrationDomainName result{};
-            result.kind = AdministrationDomainName_kind::numeric;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::numeric_string, asn1kit::string_form::numeric);
-            result.value = std::move(alt);
-            return result;
+            return from_numeric(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::printable_string)) {
-            AdministrationDomainName result{};
-            result.kind = AdministrationDomainName_kind::printable;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
-            result.value = std::move(alt);
-            return result;
+            return from_printable(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -172,19 +166,13 @@ struct CountryName {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::numeric_string)) {
-            CountryName result{};
-            result.kind = CountryName_kind::x121_dcc_code;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::numeric_string, asn1kit::string_form::numeric);
-            result.value = std::move(alt);
-            return result;
+            return from_x121_dcc_code(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::printable_string)) {
-            CountryName result{};
-            result.kind = CountryName_kind::iso_3166_alpha2_code;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
-            result.value = std::move(alt);
-            return result;
+            return from_iso_3166_alpha2_code(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -319,19 +307,13 @@ struct ExtensionAttribute_EaPhysicalDeliveryCountryName {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::numeric_string)) {
-            ExtensionAttribute_EaPhysicalDeliveryCountryName result{};
-            result.kind = ExtensionAttribute_EaPhysicalDeliveryCountryName_kind::x121_dcc_code;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::numeric_string, asn1kit::string_form::numeric);
-            result.value = std::move(alt);
-            return result;
+            return from_x121_dcc_code(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::printable_string)) {
-            ExtensionAttribute_EaPhysicalDeliveryCountryName result{};
-            result.kind = ExtensionAttribute_EaPhysicalDeliveryCountryName_kind::iso_3166_alpha2_code;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
-            result.value = std::move(alt);
-            return result;
+            return from_iso_3166_alpha2_code(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -396,19 +378,13 @@ struct ExtensionAttribute_EaPostalCode {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::numeric_string)) {
-            ExtensionAttribute_EaPostalCode result{};
-            result.kind = ExtensionAttribute_EaPostalCode_kind::numeric_code;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::numeric_string, asn1kit::string_form::numeric);
-            result.value = std::move(alt);
-            return result;
+            return from_numeric_code(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::printable_string)) {
-            ExtensionAttribute_EaPostalCode result{};
-            result.kind = ExtensionAttribute_EaPostalCode_kind::printable_code;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
-            result.value = std::move(alt);
-            return result;
+            return from_printable_code(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -750,19 +726,13 @@ struct ExtensionAttribute_EaExtendedNetworkAddress {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
-            ExtensionAttribute_EaExtendedNetworkAddress result{};
-            result.kind = ExtensionAttribute_EaExtendedNetworkAddress_kind::e163_4_address;
             ExtensionAttribute_EaExtendedNetworkAddress_E1634Address alt{};
             alt = ExtensionAttribute_EaExtendedNetworkAddress_E1634Address::decode(r);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_e163_4_address(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
-            ExtensionAttribute_EaExtendedNetworkAddress result{};
-            result.kind = ExtensionAttribute_EaExtendedNetworkAddress_kind::psap_address;
             PresentationAddress alt{};
             alt = PresentationAddress::decode(r, asn1kit::tag::context(0, true));
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_psap_address(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -827,19 +797,13 @@ struct PrivateDomainName {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::numeric_string)) {
-            PrivateDomainName result{};
-            result.kind = PrivateDomainName_kind::numeric;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::numeric_string, asn1kit::string_form::numeric);
-            result.value = std::move(alt);
-            return result;
+            return from_numeric(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::printable_string)) {
-            PrivateDomainName result{};
-            result.kind = PrivateDomainName_kind::printable;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
-            result.value = std::move(alt);
-            return result;
+            return from_printable(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }

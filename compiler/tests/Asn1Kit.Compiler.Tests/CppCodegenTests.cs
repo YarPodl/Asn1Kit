@@ -691,7 +691,8 @@ END
         Assert.Contains("static constexpr bool match_tag(const asn1kit::tag& t)", source);
         Assert.Contains("const auto& alt = value;", source);
         Assert.Contains("result.value = std::move(v);", source);
-        Assert.Contains("result.value = std::move(alt);", source);
+        Assert.Contains("return from_utcTime(std::move(alt));", source);
+        Assert.Contains("return from_generalTime(std::move(alt));", source);
         Assert.Contains("time_form::utc", source);
         Assert.Contains("time_form::generalized", source);
         Assert.DoesNotContain("_box", source);
@@ -715,7 +716,7 @@ END
             source.Replace("\r\n", "\n", StringComparison.Ordinal));
         Assert.Contains("case Pick_kind::second:\n            {\n                const auto& alt = std::get<0>(value);",
             source.Replace("\r\n", "\n", StringComparison.Ordinal));
-        Assert.Contains("result.value.emplace<2>(std::move(alt));", source);
+        Assert.Contains("return from_data(std::move(alt));", source);
         Assert.Contains("const auto& alt = std::get<2>(value);", source);
         Assert.DoesNotContain("std::get<3>", source);
         Assert.Contains("return from_unknown(r.read_any());", source);

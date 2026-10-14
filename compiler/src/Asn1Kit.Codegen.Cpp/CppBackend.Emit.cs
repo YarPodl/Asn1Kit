@@ -339,7 +339,7 @@ public sealed partial class CppBackend
             var wrapperTag = TagFromIr(type.Tag, constructed: true);
             sb.AppendLine($"    static {typeName} decode_content(asn1kit::reader& r) {{");
             EmitChoiceDecodeAlternatives(
-                sb, document, module, typeName, type, alts, kinds, payloadTypes, variantIndices, singlePayload);
+                sb, document, module, typeName, type, alts, kinds, payloadTypes);
             sb.AppendLine("    }");
             sb.AppendLine();
             sb.AppendLine($"    static {typeName} decode(asn1kit::reader& r) {{");
@@ -373,7 +373,7 @@ public sealed partial class CppBackend
         {
             sb.AppendLine($"    static {typeName} decode(asn1kit::reader& r) {{");
             EmitChoiceDecodeAlternatives(
-                sb, document, module, typeName, type, alts, kinds, payloadTypes, variantIndices, singlePayload);
+                sb, document, module, typeName, type, alts, kinds, payloadTypes);
             sb.AppendLine("    }");
             sb.AppendLine();
             sb.AppendLine(
@@ -413,7 +413,7 @@ public sealed partial class CppBackend
             var wrapperTag = TagFromIr(type.Tag, constructed: true);
             sb.AppendLine($"inline {typeName} {typeName}::decode_content(asn1kit::reader& r) {{");
             EmitChoiceDecodeAlternatives(sb, document, module, typeName, type, alts, kinds,
-                payloadTypes, variantIndices, singlePayload);
+                payloadTypes);
             sb.AppendLine("}");
             sb.AppendLine($"inline {typeName} {typeName}::decode(asn1kit::reader& r) {{ return decode(r, {wrapperTag}); }}");
             sb.AppendLine($"inline {typeName} {typeName}::decode(asn1kit::reader& r, const asn1kit::tag& t) {{");
@@ -435,7 +435,7 @@ public sealed partial class CppBackend
         {
             sb.AppendLine($"inline {typeName} {typeName}::decode(asn1kit::reader& r) {{");
             EmitChoiceDecodeAlternatives(sb, document, module, typeName, type, alts, kinds,
-                payloadTypes, variantIndices, singlePayload);
+                payloadTypes);
             sb.AppendLine("}");
             sb.AppendLine($"inline {typeName} {typeName}::decode(asn1kit::reader& r, const asn1kit::tag& t) {{");
             sb.AppendLine("    (void)t;");
@@ -504,9 +504,7 @@ public sealed partial class CppBackend
         ChoiceType type,
         IReadOnlyList<IrComponent> alts,
         IReadOnlyList<string> kinds,
-        IReadOnlyList<string> payloadTypes,
-        IReadOnlyList<int> variantIndices,
-        bool singlePayload)
+        IReadOnlyList<string> payloadTypes)
     {
         sb.AppendLine("        asn1kit::tag peeked;");
         sb.AppendLine(
@@ -516,8 +514,6 @@ public sealed partial class CppBackend
             var alt = alts[i];
             var cond = i == 0 ? "if" : "} else if";
             sb.AppendLine($"        {cond} ({PeekMatchExpr(document, module, alt.Type, "peeked")}) {{");
-            sb.AppendLine($"            {typeName} result{{}};");
-            sb.AppendLine($"            result.kind = {typeName}_kind::{kinds[i]};");
             sb.AppendLine($"            {payloadTypes[i]} alt{{}};");
             EmitDecodeAssign(
                 sb,
@@ -529,16 +525,7 @@ public sealed partial class CppBackend
                 "            ",
                 "r",
                 "alt");
-            if (singlePayload)
-            {
-                sb.AppendLine("            result.value = std::move(alt);");
-            }
-            else
-            {
-                sb.AppendLine($"            result.value.emplace<{variantIndices[i]}>(std::move(alt));");
-            }
-
-            sb.AppendLine("            return result;");
+            sb.AppendLine($"            return from_{kinds[i]}(std::move(alt));");
         }
 
         if (type.Extensible)

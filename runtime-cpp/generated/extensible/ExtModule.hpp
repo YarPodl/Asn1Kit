@@ -158,12 +158,9 @@ struct Pick {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::context(0))) {
-            Pick result{};
-            result.kind = Pick_kind::left;
             asn1kit::integer alt{};
             alt = r.read_integer_value(asn1kit::tag::context(0));
-            result.value = std::move(alt);
-            return result;
+            return from_left(std::move(alt));
         } else {
             return from_unknown(r.read_any());
         }

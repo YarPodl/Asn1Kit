@@ -76,12 +76,9 @@ struct CMPCertificate {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
-            CMPCertificate result{};
-            result.kind = CMPCertificate_kind::x509v3PKCert;
             ::asn1kit::modern::PKIX1Explicit2009::Certificate alt{};
             alt = ::asn1kit::modern::PKIX1Explicit2009::Certificate::decode(r);
-            result.value = std::move(alt);
-            return result;
+            return from_x509v3PKCert(std::move(alt));
         } else {
             return from_unknown(r.read_any());
         }
@@ -181,27 +178,21 @@ struct CertOrEncCert {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
-            CertOrEncCert result{};
-            result.kind = CertOrEncCert_kind::certificate;
             CMPCertificate alt{};
             CMPCertificate tmp_certificate{};
             r.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
                 tmp_certificate = CMPCertificate::decode(scoped);
             });
             alt = std::move(tmp_certificate);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_certificate(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
-            CertOrEncCert result{};
-            result.kind = CertOrEncCert_kind::encryptedCert;
             ::asn1kit::modern::PKIXCRMF2009::EncryptedValue alt{};
             ::asn1kit::modern::PKIXCRMF2009::EncryptedValue tmp_encryptedCert{};
             r.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
                 tmp_encryptedCert = ::asn1kit::modern::PKIXCRMF2009::EncryptedValue::decode(scoped);
             });
             alt = std::move(tmp_encryptedCert);
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_encryptedCert(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }

@@ -81,19 +81,13 @@ struct PBKDF2Params_Salt {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::octet_string)) {
-            PBKDF2Params_Salt result{};
-            result.kind = PBKDF2Params_Salt_kind::specified;
             asn1kit::bytes alt{};
             alt = r.read_octet_string(asn1kit::tag::octet_string);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_specified(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
-            PBKDF2Params_Salt result{};
-            result.kind = PBKDF2Params_Salt_kind::otherSource;
             ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier alt{};
             alt = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(r);
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_otherSource(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }

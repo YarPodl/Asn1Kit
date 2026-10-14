@@ -184,33 +184,21 @@ struct DisplayText {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::ia5_string)) {
-            DisplayText result{};
-            result.kind = DisplayText_kind::ia5String;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::ia5_string, asn1kit::string_form::ia5);
-            result.value = std::move(alt);
-            return result;
+            return from_ia5String(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::visible_string)) {
-            DisplayText result{};
-            result.kind = DisplayText_kind::visibleString;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::visible_string, asn1kit::string_form::visible);
-            result.value = std::move(alt);
-            return result;
+            return from_visibleString(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::bmp_string)) {
-            DisplayText result{};
-            result.kind = DisplayText_kind::bmpString;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::bmp_string, asn1kit::string_form::bmp);
-            result.value = std::move(alt);
-            return result;
+            return from_bmpString(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::utf8_string)) {
-            DisplayText result{};
-            result.kind = DisplayText_kind::utf8String;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
-            result.value = std::move(alt);
-            return result;
+            return from_utf8String(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -437,36 +425,22 @@ struct GeneralName {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
-            GeneralName result{};
-            result.kind = GeneralName_kind::otherName;
             GeneralName_OtherName alt{};
             alt = GeneralName_OtherName::decode(r, asn1kit::tag::context(0, true));
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_otherName(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1))) {
-            GeneralName result{};
-            result.kind = GeneralName_kind::rfc822Name;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::context(1), asn1kit::string_form::ia5);
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_rfc822Name(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2))) {
-            GeneralName result{};
-            result.kind = GeneralName_kind::dNSName;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::context(2), asn1kit::string_form::ia5);
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_dNSName(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(3, true))) {
-            GeneralName result{};
-            result.kind = GeneralName_kind::x400Address;
             ::asn1kit::modern::PKIXX400Address2009::ORAddress alt{};
             alt = ::asn1kit::modern::PKIXX400Address2009::ORAddress::decode(r, asn1kit::tag::context(3, true));
-            result.value.emplace<2>(std::move(alt));
-            return result;
+            return from_x400Address(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(4, true))) {
-            GeneralName result{};
-            result.kind = GeneralName_kind::directoryName;
             std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> alt{};
             std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> tmp_directoryName{};
             r.with_explicit(asn1kit::tag::context(4, true), [&](asn1kit::reader& scoped) {
@@ -475,36 +449,23 @@ struct GeneralName {
                 });
             });
             alt = std::move(tmp_directoryName);
-            result.value.emplace<3>(std::move(alt));
-            return result;
+            return from_directoryName(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(5, true))) {
-            GeneralName result{};
-            result.kind = GeneralName_kind::ediPartyName;
             EDIPartyName alt{};
             alt = EDIPartyName::decode(r, asn1kit::tag::context(5, true));
-            result.value.emplace<4>(std::move(alt));
-            return result;
+            return from_ediPartyName(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(6))) {
-            GeneralName result{};
-            result.kind = GeneralName_kind::uniformResourceIdentifier;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::context(6), asn1kit::string_form::ia5);
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_uniformResourceIdentifier(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(7))) {
-            GeneralName result{};
-            result.kind = GeneralName_kind::iPAddress;
             asn1kit::bytes alt{};
             alt = r.read_octet_string(asn1kit::tag::context(7));
-            result.value.emplace<5>(std::move(alt));
-            return result;
+            return from_iPAddress(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(8))) {
-            GeneralName result{};
-            result.kind = GeneralName_kind::registeredID;
             asn1kit::oid alt{};
             alt = r.read_oid(asn1kit::tag::context(8));
-            result.value.emplace<6>(std::move(alt));
-            return result;
+            return from_registeredID(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -679,19 +640,13 @@ struct DistributionPointName {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
-            DistributionPointName result{};
-            result.kind = DistributionPointName_kind::fullName;
             std::vector<GeneralName> alt{};
             alt = r.read_sequence_of<GeneralName>(asn1kit::tag::context(0, true));
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_fullName(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
-            DistributionPointName result{};
-            result.kind = DistributionPointName_kind::nameRelativeToCRLIssuer;
             std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> alt{};
             alt = r.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>(asn1kit::tag::context(1, true));
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_nameRelativeToCRLIssuer(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }

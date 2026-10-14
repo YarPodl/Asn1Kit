@@ -340,302 +340,221 @@ inline PKIBody PKIBody::decode(asn1kit::reader& r) {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::ir;
             std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> alt{};
             std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> tmp_ir{};
             r.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
                 tmp_ir = scoped.read_sequence_of<::asn1kit::modern::PKIXCRMF2009::CertReqMsg>();
             });
             alt = std::move(tmp_ir);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_ir(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::ip;
             CertRepMessage alt{};
             CertRepMessage tmp_ip{};
             r.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
                 tmp_ip = CertRepMessage::decode(scoped);
             });
             alt = std::move(tmp_ip);
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_ip(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::cr;
             std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> alt{};
             std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> tmp_cr{};
             r.with_explicit(asn1kit::tag::context(2, true), [&](asn1kit::reader& scoped) {
                 tmp_cr = scoped.read_sequence_of<::asn1kit::modern::PKIXCRMF2009::CertReqMsg>();
             });
             alt = std::move(tmp_cr);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_cr(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(3, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::cp;
             CertRepMessage alt{};
             CertRepMessage tmp_cp{};
             r.with_explicit(asn1kit::tag::context(3, true), [&](asn1kit::reader& scoped) {
                 tmp_cp = CertRepMessage::decode(scoped);
             });
             alt = std::move(tmp_cp);
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_cp(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(4, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::p10cr;
             ::asn1kit::modern::EnrollmentMessageSyntax2009::CertificationRequest alt{};
             ::asn1kit::modern::EnrollmentMessageSyntax2009::CertificationRequest tmp_p10cr{};
             r.with_explicit(asn1kit::tag::context(4, true), [&](asn1kit::reader& scoped) {
                 tmp_p10cr = ::asn1kit::modern::EnrollmentMessageSyntax2009::CertificationRequest::decode(scoped);
             });
             alt = std::move(tmp_p10cr);
-            result.value.emplace<2>(std::move(alt));
-            return result;
+            return from_p10cr(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(5, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::popdecc;
             std::vector<Challenge> alt{};
             std::vector<Challenge> tmp_popdecc{};
             r.with_explicit(asn1kit::tag::context(5, true), [&](asn1kit::reader& scoped) {
                 tmp_popdecc = scoped.read_sequence_of<Challenge>();
             });
             alt = std::move(tmp_popdecc);
-            result.value.emplace<3>(std::move(alt));
-            return result;
+            return from_popdecc(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(6, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::popdecr;
             std::vector<asn1kit::integer> alt{};
             std::vector<asn1kit::integer> tmp_popdecr{};
             r.with_explicit(asn1kit::tag::context(6, true), [&](asn1kit::reader& scoped) {
                 tmp_popdecr = scoped.read_sequence_of<asn1kit::integer>();
             });
             alt = std::move(tmp_popdecr);
-            result.value.emplace<4>(std::move(alt));
-            return result;
+            return from_popdecr(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(7, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::kur;
             std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> alt{};
             std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> tmp_kur{};
             r.with_explicit(asn1kit::tag::context(7, true), [&](asn1kit::reader& scoped) {
                 tmp_kur = scoped.read_sequence_of<::asn1kit::modern::PKIXCRMF2009::CertReqMsg>();
             });
             alt = std::move(tmp_kur);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_kur(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(8, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::kup;
             CertRepMessage alt{};
             CertRepMessage tmp_kup{};
             r.with_explicit(asn1kit::tag::context(8, true), [&](asn1kit::reader& scoped) {
                 tmp_kup = CertRepMessage::decode(scoped);
             });
             alt = std::move(tmp_kup);
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_kup(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(9, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::krr;
             std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> alt{};
             std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> tmp_krr{};
             r.with_explicit(asn1kit::tag::context(9, true), [&](asn1kit::reader& scoped) {
                 tmp_krr = scoped.read_sequence_of<::asn1kit::modern::PKIXCRMF2009::CertReqMsg>();
             });
             alt = std::move(tmp_krr);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_krr(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(10, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::krp;
             KeyRecRepContent alt{};
             KeyRecRepContent tmp_krp{};
             r.with_explicit(asn1kit::tag::context(10, true), [&](asn1kit::reader& scoped) {
                 tmp_krp = KeyRecRepContent::decode(scoped);
             });
             alt = std::move(tmp_krp);
-            result.value.emplace<5>(std::move(alt));
-            return result;
+            return from_krp(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(11, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::rr;
             std::vector<RevDetails> alt{};
             std::vector<RevDetails> tmp_rr{};
             r.with_explicit(asn1kit::tag::context(11, true), [&](asn1kit::reader& scoped) {
                 tmp_rr = scoped.read_sequence_of<RevDetails>();
             });
             alt = std::move(tmp_rr);
-            result.value.emplace<6>(std::move(alt));
-            return result;
+            return from_rr(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(12, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::rp;
             RevRepContent alt{};
             RevRepContent tmp_rp{};
             r.with_explicit(asn1kit::tag::context(12, true), [&](asn1kit::reader& scoped) {
                 tmp_rp = RevRepContent::decode(scoped);
             });
             alt = std::move(tmp_rp);
-            result.value.emplace<7>(std::move(alt));
-            return result;
+            return from_rp(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(13, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::ccr;
             std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> alt{};
             std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> tmp_ccr{};
             r.with_explicit(asn1kit::tag::context(13, true), [&](asn1kit::reader& scoped) {
                 tmp_ccr = scoped.read_sequence_of<::asn1kit::modern::PKIXCRMF2009::CertReqMsg>();
             });
             alt = std::move(tmp_ccr);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_ccr(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(14, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::ccp;
             CertRepMessage alt{};
             CertRepMessage tmp_ccp{};
             r.with_explicit(asn1kit::tag::context(14, true), [&](asn1kit::reader& scoped) {
                 tmp_ccp = CertRepMessage::decode(scoped);
             });
             alt = std::move(tmp_ccp);
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_ccp(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(15, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::ckuann;
             CAKeyUpdAnnContent alt{};
             CAKeyUpdAnnContent tmp_ckuann{};
             r.with_explicit(asn1kit::tag::context(15, true), [&](asn1kit::reader& scoped) {
                 tmp_ckuann = CAKeyUpdAnnContent::decode(scoped);
             });
             alt = std::move(tmp_ckuann);
-            result.value.emplace<8>(std::move(alt));
-            return result;
+            return from_ckuann(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(16, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::cann;
             CMPCertificate alt{};
             CMPCertificate tmp_cann{};
             r.with_explicit(asn1kit::tag::context(16, true), [&](asn1kit::reader& scoped) {
                 tmp_cann = CMPCertificate::decode(scoped);
             });
             alt = std::move(tmp_cann);
-            result.value.emplace<9>(std::move(alt));
-            return result;
+            return from_cann(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(17, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::rann;
             RevAnnContent alt{};
             RevAnnContent tmp_rann{};
             r.with_explicit(asn1kit::tag::context(17, true), [&](asn1kit::reader& scoped) {
                 tmp_rann = RevAnnContent::decode(scoped);
             });
             alt = std::move(tmp_rann);
-            result.value.emplace<10>(std::move(alt));
-            return result;
+            return from_rann(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(18, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::crlann;
             std::vector<::asn1kit::modern::PKIX1Explicit2009::CertificateList> alt{};
             std::vector<::asn1kit::modern::PKIX1Explicit2009::CertificateList> tmp_crlann{};
             r.with_explicit(asn1kit::tag::context(18, true), [&](asn1kit::reader& scoped) {
                 tmp_crlann = scoped.read_sequence_of<::asn1kit::modern::PKIX1Explicit2009::CertificateList>();
             });
             alt = std::move(tmp_crlann);
-            result.value.emplace<11>(std::move(alt));
-            return result;
+            return from_crlann(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(19, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::pkiconf;
             asn1kit::null_value alt{};
             asn1kit::null_value tmp_pkiconf{};
             r.with_explicit(asn1kit::tag::context(19, true), [&](asn1kit::reader& scoped) {
                 tmp_pkiconf = asn1kit::null_value::decode(scoped, asn1kit::tag::null);
             });
             alt = std::move(tmp_pkiconf);
-            result.value.emplace<12>(std::move(alt));
-            return result;
+            return from_pkiconf(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(20, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::nested;
             std::vector<PKIMessage> alt{};
             std::vector<PKIMessage> tmp_nested{};
             r.with_explicit(asn1kit::tag::context(20, true), [&](asn1kit::reader& scoped) {
                 tmp_nested = scoped.read_sequence_of<PKIMessage>();
             });
             alt = std::move(tmp_nested);
-            result.value.emplace<13>(std::move(alt));
-            return result;
+            return from_nested(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(21, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::genm;
             std::vector<InfoTypeAndValue> alt{};
             std::vector<InfoTypeAndValue> tmp_genm{};
             r.with_explicit(asn1kit::tag::context(21, true), [&](asn1kit::reader& scoped) {
                 tmp_genm = scoped.read_sequence_of<InfoTypeAndValue>();
             });
             alt = std::move(tmp_genm);
-            result.value.emplace<14>(std::move(alt));
-            return result;
+            return from_genm(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(22, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::genp;
             std::vector<InfoTypeAndValue> alt{};
             std::vector<InfoTypeAndValue> tmp_genp{};
             r.with_explicit(asn1kit::tag::context(22, true), [&](asn1kit::reader& scoped) {
                 tmp_genp = scoped.read_sequence_of<InfoTypeAndValue>();
             });
             alt = std::move(tmp_genp);
-            result.value.emplace<14>(std::move(alt));
-            return result;
+            return from_genp(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(23, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::error;
             ErrorMsgContent alt{};
             ErrorMsgContent tmp_error{};
             r.with_explicit(asn1kit::tag::context(23, true), [&](asn1kit::reader& scoped) {
                 tmp_error = ErrorMsgContent::decode(scoped);
             });
             alt = std::move(tmp_error);
-            result.value.emplace<15>(std::move(alt));
-            return result;
+            return from_error(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(24, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::certConf;
             std::vector<CertStatus> alt{};
             std::vector<CertStatus> tmp_certConf{};
             r.with_explicit(asn1kit::tag::context(24, true), [&](asn1kit::reader& scoped) {
                 tmp_certConf = scoped.read_sequence_of<CertStatus>();
             });
             alt = std::move(tmp_certConf);
-            result.value.emplace<16>(std::move(alt));
-            return result;
+            return from_certConf(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(25, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::pollReq;
             std::vector<PollReqContent_Item> alt{};
             std::vector<PollReqContent_Item> tmp_pollReq{};
             r.with_explicit(asn1kit::tag::context(25, true), [&](asn1kit::reader& scoped) {
                 tmp_pollReq = scoped.read_sequence_of<PollReqContent_Item>();
             });
             alt = std::move(tmp_pollReq);
-            result.value.emplace<17>(std::move(alt));
-            return result;
+            return from_pollReq(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(26, true))) {
-            PKIBody result{};
-            result.kind = PKIBody_kind::pollRep;
             std::vector<PollRepContent_Item> alt{};
             std::vector<PollRepContent_Item> tmp_pollRep{};
             r.with_explicit(asn1kit::tag::context(26, true), [&](asn1kit::reader& scoped) {
                 tmp_pollRep = scoped.read_sequence_of<PollRepContent_Item>();
             });
             alt = std::move(tmp_pollRep);
-            result.value.emplace<18>(std::move(alt));
-            return result;
+            return from_pollRep(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }

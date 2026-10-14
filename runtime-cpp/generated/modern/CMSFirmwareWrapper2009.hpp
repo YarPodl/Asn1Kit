@@ -225,26 +225,17 @@ struct HardwareSerialEntry {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::null)) {
-            HardwareSerialEntry result{};
-            result.kind = HardwareSerialEntry_kind::all;
             asn1kit::null_value alt{};
             alt = asn1kit::null_value::decode(r, asn1kit::tag::null);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_all(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::octet_string)) {
-            HardwareSerialEntry result{};
-            result.kind = HardwareSerialEntry_kind::single;
             asn1kit::bytes alt{};
             alt = r.read_octet_string(asn1kit::tag::octet_string);
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_single(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
-            HardwareSerialEntry result{};
-            result.kind = HardwareSerialEntry_kind::block;
             HardwareSerialEntry_Block alt{};
             alt = HardwareSerialEntry_Block::decode(r);
-            result.value.emplace<2>(std::move(alt));
-            return result;
+            return from_block(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -339,19 +330,13 @@ struct CommunityIdentifier {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::object_identifier)) {
-            CommunityIdentifier result{};
-            result.kind = CommunityIdentifier_kind::communityOID;
             asn1kit::oid alt{};
             alt = r.read_oid(asn1kit::tag::object_identifier);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_communityOID(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
-            CommunityIdentifier result{};
-            result.kind = CommunityIdentifier_kind::hwModuleList;
             HardwareModules alt{};
             alt = HardwareModules::decode(r);
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_hwModuleList(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -416,19 +401,13 @@ struct PreferredOrLegacyStalePackageIdentifier {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::integer)) {
-            PreferredOrLegacyStalePackageIdentifier result{};
-            result.kind = PreferredOrLegacyStalePackageIdentifier_kind::preferredStaleVerNum;
             asn1kit::integer alt{};
             alt = r.read_integer_value(asn1kit::tag::integer);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_preferredStaleVerNum(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::octet_string)) {
-            PreferredOrLegacyStalePackageIdentifier result{};
-            result.kind = PreferredOrLegacyStalePackageIdentifier_kind::legacyStaleVersion;
             asn1kit::bytes alt{};
             alt = r.read_octet_string(asn1kit::tag::octet_string);
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_legacyStaleVersion(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -517,19 +496,13 @@ struct PreferredOrLegacyPackageIdentifier {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
-            PreferredOrLegacyPackageIdentifier result{};
-            result.kind = PreferredOrLegacyPackageIdentifier_kind::preferred;
             PreferredPackageIdentifier alt{};
             alt = PreferredPackageIdentifier::decode(r);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_preferred(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::octet_string)) {
-            PreferredOrLegacyPackageIdentifier result{};
-            result.kind = PreferredOrLegacyPackageIdentifier_kind::legacy;
             asn1kit::bytes alt{};
             alt = r.read_octet_string(asn1kit::tag::octet_string);
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_legacy(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }

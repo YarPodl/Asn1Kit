@@ -75,27 +75,21 @@ struct AttributeCertificateInfoV1_Subject {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
-            AttributeCertificateInfoV1_Subject result{};
-            result.kind = AttributeCertificateInfoV1_Subject_kind::baseCertificateID;
             ::asn1kit::modern::ExtendedSecurityServices2009::IssuerSerial alt{};
             ::asn1kit::modern::ExtendedSecurityServices2009::IssuerSerial tmp_baseCertificateID{};
             r.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
                 tmp_baseCertificateID = ::asn1kit::modern::ExtendedSecurityServices2009::IssuerSerial::decode(scoped);
             });
             alt = std::move(tmp_baseCertificateID);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_baseCertificateID(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
-            AttributeCertificateInfoV1_Subject result{};
-            result.kind = AttributeCertificateInfoV1_Subject_kind::subjectName;
             std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> alt{};
             std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> tmp_subjectName{};
             r.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
                 tmp_subjectName = scoped.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
             });
             alt = std::move(tmp_subjectName);
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_subjectName(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }

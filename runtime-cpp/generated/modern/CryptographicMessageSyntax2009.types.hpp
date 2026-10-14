@@ -361,19 +361,13 @@ struct ExtendedCertificateOrCertificate {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
-            ExtendedCertificateOrCertificate result{};
-            result.kind = ExtendedCertificateOrCertificate_kind::certificate;
             ::asn1kit::modern::PKIX1Explicit2009::Certificate alt{};
             alt = ::asn1kit::modern::PKIX1Explicit2009::Certificate::decode(r);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_certificate(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
-            ExtendedCertificateOrCertificate result{};
-            result.kind = ExtendedCertificateOrCertificate_kind::extendedCertificate;
             ExtendedCertificate alt{};
             alt = ExtendedCertificate::decode(r, asn1kit::tag::context(0, true));
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_extendedCertificate(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -514,26 +508,17 @@ struct OriginatorIdentifierOrKey {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
-            OriginatorIdentifierOrKey result{};
-            result.kind = OriginatorIdentifierOrKey_kind::issuerAndSerialNumber;
             IssuerAndSerialNumber alt{};
             alt = IssuerAndSerialNumber::decode(r);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_issuerAndSerialNumber(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0))) {
-            OriginatorIdentifierOrKey result{};
-            result.kind = OriginatorIdentifierOrKey_kind::subjectKeyIdentifier;
             asn1kit::bytes alt{};
             alt = r.read_octet_string(asn1kit::tag::context(0));
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_subjectKeyIdentifier(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
-            OriginatorIdentifierOrKey result{};
-            result.kind = OriginatorIdentifierOrKey_kind::originatorKey;
             OriginatorPublicKey alt{};
             alt = OriginatorPublicKey::decode(r, asn1kit::tag::context(1, true));
-            result.value.emplace<2>(std::move(alt));
-            return result;
+            return from_originatorKey(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -808,19 +793,13 @@ struct RecipientIdentifier {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
-            RecipientIdentifier result{};
-            result.kind = RecipientIdentifier_kind::issuerAndSerialNumber;
             IssuerAndSerialNumber alt{};
             alt = IssuerAndSerialNumber::decode(r);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_issuerAndSerialNumber(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0))) {
-            RecipientIdentifier result{};
-            result.kind = RecipientIdentifier_kind::subjectKeyIdentifier;
             asn1kit::bytes alt{};
             alt = r.read_octet_string(asn1kit::tag::context(0));
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_subjectKeyIdentifier(std::move(alt));
         } else {
             return from_unknown(r.read_any());
         }
@@ -954,19 +933,13 @@ struct KeyAgreeRecipientIdentifier {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
-            KeyAgreeRecipientIdentifier result{};
-            result.kind = KeyAgreeRecipientIdentifier_kind::issuerAndSerialNumber;
             IssuerAndSerialNumber alt{};
             alt = IssuerAndSerialNumber::decode(r);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_issuerAndSerialNumber(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
-            KeyAgreeRecipientIdentifier result{};
-            result.kind = KeyAgreeRecipientIdentifier_kind::rKeyId;
             RecipientKeyIdentifier alt{};
             alt = RecipientKeyIdentifier::decode(r, asn1kit::tag::context(0, true));
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_rKeyId(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -1139,40 +1112,25 @@ struct RecipientInfo {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
-            RecipientInfo result{};
-            result.kind = RecipientInfo_kind::ktri;
             KeyTransRecipientInfo alt{};
             alt = KeyTransRecipientInfo::decode(r);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_ktri(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
-            RecipientInfo result{};
-            result.kind = RecipientInfo_kind::kari;
             KeyAgreeRecipientInfo alt{};
             alt = KeyAgreeRecipientInfo::decode(r, asn1kit::tag::context(1, true));
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_kari(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2, true))) {
-            RecipientInfo result{};
-            result.kind = RecipientInfo_kind::kekri;
             KEKRecipientInfo alt{};
             alt = KEKRecipientInfo::decode(r, asn1kit::tag::context(2, true));
-            result.value.emplace<2>(std::move(alt));
-            return result;
+            return from_kekri(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(3, true))) {
-            RecipientInfo result{};
-            result.kind = RecipientInfo_kind::pwri;
             PasswordRecipientInfo alt{};
             alt = PasswordRecipientInfo::decode(r, asn1kit::tag::context(3, true));
-            result.value.emplace<3>(std::move(alt));
-            return result;
+            return from_pwri(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(4, true))) {
-            RecipientInfo result{};
-            result.kind = RecipientInfo_kind::ori;
             OtherRecipientInfo alt{};
             alt = OtherRecipientInfo::decode(r, asn1kit::tag::context(4, true));
-            result.value.emplace<4>(std::move(alt));
-            return result;
+            return from_ori(std::move(alt));
         } else {
             return from_unknown(r.read_any());
         }
@@ -1268,19 +1226,13 @@ struct RevocationInfoChoice {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
-            RevocationInfoChoice result{};
-            result.kind = RevocationInfoChoice_kind::crl;
             ::asn1kit::modern::PKIX1Explicit2009::CertificateList alt{};
             alt = ::asn1kit::modern::PKIX1Explicit2009::CertificateList::decode(r);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_crl(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
-            RevocationInfoChoice result{};
-            result.kind = RevocationInfoChoice_kind::other;
             OtherRevocationInfoFormat alt{};
             alt = OtherRevocationInfoFormat::decode(r, asn1kit::tag::context(1, true));
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_other(std::move(alt));
         } else {
             return from_unknown(r.read_any());
         }
@@ -1358,19 +1310,13 @@ struct SignerIdentifier {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
-            SignerIdentifier result{};
-            result.kind = SignerIdentifier_kind::issuerAndSerialNumber;
             IssuerAndSerialNumber alt{};
             alt = IssuerAndSerialNumber::decode(r);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_issuerAndSerialNumber(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0))) {
-            SignerIdentifier result{};
-            result.kind = SignerIdentifier_kind::subjectKeyIdentifier;
             asn1kit::bytes alt{};
             alt = r.read_octet_string(asn1kit::tag::context(0));
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_subjectKeyIdentifier(std::move(alt));
         } else {
             return from_unknown(r.read_any());
         }
@@ -1492,19 +1438,13 @@ struct Time {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::utc_time)) {
-            Time result{};
-            result.kind = Time_kind::utcTime;
             asn1kit::utc_date_time alt{};
             alt = r.read_time(asn1kit::tag::utc_time, asn1kit::time_form::utc);
-            result.value = std::move(alt);
-            return result;
+            return from_utcTime(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::generalized_time)) {
-            Time result{};
-            result.kind = Time_kind::generalTime;
             asn1kit::utc_date_time alt{};
             alt = r.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
-            result.value = std::move(alt);
-            return result;
+            return from_generalTime(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -1613,40 +1553,25 @@ struct CertificateChoices {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
-            CertificateChoices result{};
-            result.kind = CertificateChoices_kind::certificate;
             ::asn1kit::modern::PKIX1Explicit2009::Certificate alt{};
             alt = ::asn1kit::modern::PKIX1Explicit2009::Certificate::decode(r);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_certificate(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
-            CertificateChoices result{};
-            result.kind = CertificateChoices_kind::extendedCertificate;
             ExtendedCertificate alt{};
             alt = ExtendedCertificate::decode(r, asn1kit::tag::context(0, true));
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_extendedCertificate(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
-            CertificateChoices result{};
-            result.kind = CertificateChoices_kind::v1AttrCert;
             ::asn1kit::modern::AttributeCertificateVersion12009::AttributeCertificateV1 alt{};
             alt = ::asn1kit::modern::AttributeCertificateVersion12009::AttributeCertificateV1::decode(r, asn1kit::tag::context(1, true));
-            result.value.emplace<2>(std::move(alt));
-            return result;
+            return from_v1AttrCert(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2, true))) {
-            CertificateChoices result{};
-            result.kind = CertificateChoices_kind::v2AttrCert;
             ::asn1kit::modern::PKIXAttributeCertificate2009::AttributeCertificate alt{};
             alt = ::asn1kit::modern::PKIXAttributeCertificate2009::AttributeCertificate::decode(r, asn1kit::tag::context(2, true));
-            result.value.emplace<3>(std::move(alt));
-            return result;
+            return from_v2AttrCert(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(3, true))) {
-            CertificateChoices result{};
-            result.kind = CertificateChoices_kind::other;
             OtherCertificateFormat alt{};
             alt = OtherCertificateFormat::decode(r, asn1kit::tag::context(3, true));
-            result.value.emplace<4>(std::move(alt));
-            return result;
+            return from_other(std::move(alt));
         } else {
             return from_unknown(r.read_any());
         }

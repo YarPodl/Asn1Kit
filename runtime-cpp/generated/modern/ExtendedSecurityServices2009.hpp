@@ -133,19 +133,13 @@ struct ESSPrivacyMark {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::printable_string)) {
-            ESSPrivacyMark result{};
-            result.kind = ESSPrivacyMark_kind::pString;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
-            result.value = std::move(alt);
-            return result;
+            return from_pString(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::utf8_string)) {
-            ESSPrivacyMark result{};
-            result.kind = ESSPrivacyMark_kind::utf8String;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
-            result.value = std::move(alt);
-            return result;
+            return from_utf8String(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -398,30 +392,21 @@ struct MLReceiptPolicy {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::context(0))) {
-            MLReceiptPolicy result{};
-            result.kind = MLReceiptPolicy_kind::none;
             asn1kit::null_value alt{};
             alt = asn1kit::null_value::decode(r, asn1kit::tag::context(0));
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_none(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
-            MLReceiptPolicy result{};
-            result.kind = MLReceiptPolicy_kind::insteadOf;
             std::vector<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> alt{};
             alt = r.read_sequence_of<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>>(asn1kit::tag::context(1, true), [&](asn1kit::reader& inner) {
                 return inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
             });
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_insteadOf(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2, true))) {
-            MLReceiptPolicy result{};
-            result.kind = MLReceiptPolicy_kind::inAdditionTo;
             std::vector<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> alt{};
             alt = r.read_sequence_of<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>>(asn1kit::tag::context(2, true), [&](asn1kit::reader& inner) {
                 return inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
             });
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_inAdditionTo(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -526,21 +511,15 @@ struct ReceiptsFrom {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::context(0))) {
-            ReceiptsFrom result{};
-            result.kind = ReceiptsFrom_kind::allOrFirstTier;
             std::int32_t alt{};
             alt = r.read_int32(asn1kit::tag::context(0));
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_allOrFirstTier(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
-            ReceiptsFrom result{};
-            result.kind = ReceiptsFrom_kind::receiptList;
             std::vector<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> alt{};
             alt = r.read_sequence_of<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>>(asn1kit::tag::context(1, true), [&](asn1kit::reader& inner) {
                 return inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
             });
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_receiptList(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -713,19 +692,13 @@ struct EntityIdentifier {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
-            EntityIdentifier result{};
-            result.kind = EntityIdentifier_kind::issuerAndSerialNumber;
             ::asn1kit::modern::CryptographicMessageSyntax2009::IssuerAndSerialNumber alt{};
             alt = ::asn1kit::modern::CryptographicMessageSyntax2009::IssuerAndSerialNumber::decode(r);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_issuerAndSerialNumber(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::octet_string)) {
-            EntityIdentifier result{};
-            result.kind = EntityIdentifier_kind::subjectKeyIdentifier;
             asn1kit::bytes alt{};
             alt = r.read_octet_string(asn1kit::tag::octet_string);
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_subjectKeyIdentifier(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }

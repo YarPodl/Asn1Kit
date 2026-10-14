@@ -111,19 +111,13 @@ struct EncKeyWithID_Identifier {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::utf8_string)) {
-            EncKeyWithID_Identifier result{};
-            result.kind = EncKeyWithID_Identifier_kind::string;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_string(std::move(alt));
         } else if ((peeked.matches_ignore_constructed(asn1kit::tag::context(0, true)) || peeked.matches_ignore_constructed(asn1kit::tag::context(1)) || peeked.matches_ignore_constructed(asn1kit::tag::context(2)) || peeked.matches_ignore_constructed(asn1kit::tag::context(3, true)) || peeked.matches_ignore_constructed(asn1kit::tag::context(4, true)) || peeked.matches_ignore_constructed(asn1kit::tag::context(5, true)) || peeked.matches_ignore_constructed(asn1kit::tag::context(6)) || peeked.matches_ignore_constructed(asn1kit::tag::context(7)) || peeked.matches_ignore_constructed(asn1kit::tag::context(8)))) {
-            EncKeyWithID_Identifier result{};
-            result.kind = EncKeyWithID_Identifier_kind::generalName;
             ::asn1kit::modern::PKIX1Implicit2009::GeneralName alt{};
             alt = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(r);
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_generalName(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -264,19 +258,13 @@ struct EncryptedKey {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
-            EncryptedKey result{};
-            result.kind = EncryptedKey_kind::encryptedValue;
             EncryptedValue alt{};
             alt = EncryptedValue::decode(r);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_encryptedValue(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
-            EncryptedKey result{};
-            result.kind = EncryptedKey_kind::envelopedData;
             ::asn1kit::modern::CryptographicMessageSyntax2009::EnvelopedData alt{};
             alt = ::asn1kit::modern::CryptographicMessageSyntax2009::EnvelopedData::decode(r, asn1kit::tag::context(0, true));
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_envelopedData(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -577,30 +565,21 @@ struct PKIArchiveOptions {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
-            PKIArchiveOptions result{};
-            result.kind = PKIArchiveOptions_kind::encryptedPrivKey;
             EncryptedKey alt{};
             EncryptedKey tmp_encryptedPrivKey{};
             r.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
                 tmp_encryptedPrivKey = EncryptedKey::decode(scoped);
             });
             alt = std::move(tmp_encryptedPrivKey);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_encryptedPrivKey(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1))) {
-            PKIArchiveOptions result{};
-            result.kind = PKIArchiveOptions_kind::keyGenParameters;
             asn1kit::bytes alt{};
             alt = r.read_octet_string(asn1kit::tag::context(1));
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_keyGenParameters(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2))) {
-            PKIArchiveOptions result{};
-            result.kind = PKIArchiveOptions_kind::archiveRemGenPrivKey;
             bool alt{};
             alt = r.read_boolean(asn1kit::tag::context(2));
-            result.value.emplace<2>(std::move(alt));
-            return result;
+            return from_archiveRemGenPrivKey(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -727,40 +706,25 @@ struct POPOPrivKey {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::context(0))) {
-            POPOPrivKey result{};
-            result.kind = POPOPrivKey_kind::thisMessage;
             asn1kit::bit_string alt{};
             alt = r.read_bit_string(asn1kit::tag::context(0));
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_thisMessage(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1))) {
-            POPOPrivKey result{};
-            result.kind = POPOPrivKey_kind::subsequentMessage;
             std::int32_t alt{};
             alt = r.read_int32(asn1kit::tag::context(1));
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_subsequentMessage(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2))) {
-            POPOPrivKey result{};
-            result.kind = POPOPrivKey_kind::dhMAC;
             asn1kit::bit_string alt{};
             alt = r.read_bit_string(asn1kit::tag::context(2));
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_dhMAC(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(3, true))) {
-            POPOPrivKey result{};
-            result.kind = POPOPrivKey_kind::agreeMAC;
             PKMACValue alt{};
             alt = PKMACValue::decode(r, asn1kit::tag::context(3, true));
-            result.value.emplace<2>(std::move(alt));
-            return result;
+            return from_agreeMAC(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(4, true))) {
-            POPOPrivKey result{};
-            result.kind = POPOPrivKey_kind::encryptedKey;
             ::asn1kit::modern::CryptographicMessageSyntax2009::EnvelopedData alt{};
             alt = ::asn1kit::modern::CryptographicMessageSyntax2009::EnvelopedData::decode(r, asn1kit::tag::context(4, true));
-            result.value.emplace<3>(std::move(alt));
-            return result;
+            return from_encryptedKey(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -843,23 +807,17 @@ struct POPOSigningKeyInput_AuthInfo {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
-            POPOSigningKeyInput_AuthInfo result{};
-            result.kind = POPOSigningKeyInput_AuthInfo_kind::sender;
             ::asn1kit::modern::PKIX1Implicit2009::GeneralName alt{};
             ::asn1kit::modern::PKIX1Implicit2009::GeneralName tmp_sender{};
             r.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
                 tmp_sender = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(scoped);
             });
             alt = std::move(tmp_sender);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_sender(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
-            POPOSigningKeyInput_AuthInfo result{};
-            result.kind = POPOSigningKeyInput_AuthInfo_kind::publicKeyMAC;
             PKMACValue alt{};
             alt = PKMACValue::decode(r);
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_publicKeyMAC(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -1060,41 +1018,29 @@ struct ProofOfPossession {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::context(0))) {
-            ProofOfPossession result{};
-            result.kind = ProofOfPossession_kind::raVerified;
             asn1kit::null_value alt{};
             alt = asn1kit::null_value::decode(r, asn1kit::tag::context(0));
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_raVerified(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
-            ProofOfPossession result{};
-            result.kind = ProofOfPossession_kind::signature;
             POPOSigningKey alt{};
             alt = POPOSigningKey::decode(r, asn1kit::tag::context(1, true));
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_signature(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2, true))) {
-            ProofOfPossession result{};
-            result.kind = ProofOfPossession_kind::keyEncipherment;
             POPOPrivKey alt{};
             POPOPrivKey tmp_keyEncipherment{};
             r.with_explicit(asn1kit::tag::context(2, true), [&](asn1kit::reader& scoped) {
                 tmp_keyEncipherment = POPOPrivKey::decode(scoped);
             });
             alt = std::move(tmp_keyEncipherment);
-            result.value.emplace<2>(std::move(alt));
-            return result;
+            return from_keyEncipherment(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(3, true))) {
-            ProofOfPossession result{};
-            result.kind = ProofOfPossession_kind::keyAgreement;
             POPOPrivKey alt{};
             POPOPrivKey tmp_keyAgreement{};
             r.with_explicit(asn1kit::tag::context(3, true), [&](asn1kit::reader& scoped) {
                 tmp_keyAgreement = POPOPrivKey::decode(scoped);
             });
             alt = std::move(tmp_keyAgreement);
-            result.value.emplace<2>(std::move(alt));
-            return result;
+            return from_keyAgreement(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }

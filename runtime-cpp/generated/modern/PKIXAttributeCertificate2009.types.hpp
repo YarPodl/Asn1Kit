@@ -328,26 +328,17 @@ struct IetfAttrSyntax_Values_Item {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::octet_string)) {
-            IetfAttrSyntax_Values_Item result{};
-            result.kind = IetfAttrSyntax_Values_Item_kind::octets;
             asn1kit::bytes alt{};
             alt = r.read_octet_string(asn1kit::tag::octet_string);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_octets(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::object_identifier)) {
-            IetfAttrSyntax_Values_Item result{};
-            result.kind = IetfAttrSyntax_Values_Item_kind::oid;
             asn1kit::oid alt{};
             alt = r.read_oid(asn1kit::tag::object_identifier);
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_oid(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::utf8_string)) {
-            IetfAttrSyntax_Values_Item result{};
-            result.kind = IetfAttrSyntax_Values_Item_kind::string;
             std::string alt{};
             alt = r.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
-            result.value.emplace<2>(std::move(alt));
-            return result;
+            return from_string(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -757,34 +748,25 @@ struct Target {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
-            Target result{};
-            result.kind = Target_kind::targetName;
             ::asn1kit::modern::PKIX1Implicit2009::GeneralName alt{};
             ::asn1kit::modern::PKIX1Implicit2009::GeneralName tmp_targetName{};
             r.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
                 tmp_targetName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(scoped);
             });
             alt = std::move(tmp_targetName);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_targetName(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
-            Target result{};
-            result.kind = Target_kind::targetGroup;
             ::asn1kit::modern::PKIX1Implicit2009::GeneralName alt{};
             ::asn1kit::modern::PKIX1Implicit2009::GeneralName tmp_targetGroup{};
             r.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
                 tmp_targetGroup = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(scoped);
             });
             alt = std::move(tmp_targetGroup);
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_targetGroup(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2, true))) {
-            Target result{};
-            result.kind = Target_kind::targetCert;
             TargetCert alt{};
             alt = TargetCert::decode(r, asn1kit::tag::context(2, true));
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_targetCert(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
@@ -900,19 +882,13 @@ struct AttCertIssuer {
         asn1kit::tag peeked;
         if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
         if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
-            AttCertIssuer result{};
-            result.kind = AttCertIssuer_kind::v1Form;
             std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> alt{};
             alt = r.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
-            result.value.emplace<0>(std::move(alt));
-            return result;
+            return from_v1Form(std::move(alt));
         } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
-            AttCertIssuer result{};
-            result.kind = AttCertIssuer_kind::v2Form;
             V2Form alt{};
             alt = V2Form::decode(r, asn1kit::tag::context(0, true));
-            result.value.emplace<1>(std::move(alt));
-            return result;
+            return from_v2Form(std::move(alt));
         } else {
             throw asn1kit::exception("Unknown CHOICE alternative.");
         }
