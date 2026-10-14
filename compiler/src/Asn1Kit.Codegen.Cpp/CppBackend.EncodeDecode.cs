@@ -645,10 +645,26 @@ public sealed partial class CppBackend
                 : "read_with_original_encoding";
             var coreType = CppType(
                 document, module, owner, hint, type, optional: false, fieldOptions, allowDeferredWrapper: false);
+            if (CanUseTypeDrivenDeferredDecode(document, module, type, forceTag))
+            {
+                var probeModule = module;
+                var unwrapped = UnwrapAliases(document, ref probeModule, type);
+                var deferredTag = forceTag ?? TagExpr(document, module, unwrapped);
+                if (forceTag is not null || unwrapped.Tag is not null)
+                {
+                    sb.AppendLine($"{indent}{target} = {reader}.{method}<{coreType}>({deferredTag});");
+                }
+                else
+                {
+                    sb.AppendLine($"{indent}{target} = {reader}.{method}<{coreType}>();");
+                }
+
+                return;
+            }
+
             sb.AppendLine(
                 $"{indent}{target} = {reader}.{method}<{coreType}>([&](asn1kit::reader& deferred) {{");
-            sb.AppendLine($"{indent}    {coreType} item{{}};");
-            EmitDecodeAssign(
+            EmitDecodeLambdaReturn(
                 sb,
                 document,
                 module,
@@ -657,11 +673,10 @@ public sealed partial class CppBackend
                 type,
                 indent + "    ",
                 "deferred",
-                "item",
+                coreType,
                 forceTag,
                 fieldOptions: null,
                 allowDeferredWrapper: false);
-            sb.AppendLine($"{indent}    return item;");
             sb.AppendLine($"{indent}}});");
             return;
         }
@@ -742,10 +757,16 @@ public sealed partial class CppBackend
             var method = type is BitStringType
                 ? "read_bit_string_containing"
                 : "read_octet_string_containing";
+            if (CanUseTypeDrivenOfItem(document, contentModule, content))
+            {
+                sb.AppendLine(
+                    $"{indent}{target} = {reader}.{method}<{contentCppType}>({containedTag});");
+                return;
+            }
+
             sb.AppendLine(
                 $"{indent}{target} = {reader}.{method}<{contentCppType}>({containedTag}, [&](asn1kit::reader& inner) {{");
-            sb.AppendLine($"{indent}    {contentCppType} item{{}};");
-            EmitDecodeAssign(
+            EmitDecodeLambdaReturn(
                 sb,
                 document,
                 contentModule,
@@ -754,8 +775,7 @@ public sealed partial class CppBackend
                 content,
                 indent + "    ",
                 "inner",
-                "item");
-            sb.AppendLine($"{indent}    return item;");
+                contentCppType);
             sb.AppendLine($"{indent}}});");
             return;
         }
@@ -876,8 +896,7 @@ public sealed partial class CppBackend
 
         sb.AppendLine(
             $"{indent}{target} = {reader}.{readMethod}<{itemType}>({tag}, [&](asn1kit::reader& inner) {{");
-        sb.AppendLine($"{indent}    {itemType} item{{}};");
-        EmitDecodeAssign(
+        EmitDecodeLambdaReturn(
             sb,
             document,
             module,
@@ -886,9 +905,133 @@ public sealed partial class CppBackend
             element,
             indent + "    ",
             "inner",
-            "item");
-        sb.AppendLine($"{indent}    return item;");
+            itemType);
         sb.AppendLine($"{indent}}});");
+    }
+
+    /// <summary>
+    /// True when retain/lazy can call type-driven <c>read_with_original_encoding&lt;T&gt;()</c> /
+    /// <c>read_lazy&lt;T&gt;()</c> (named SEQUENCE/SET via <c>read&lt;T&gt;</c>), not OF or EXPLICIT
+    /// multi-statement decode.
+    /// </summary>
+    private bool CanUseTypeDrivenDeferredDecode(
+        IrDocument document,
+        IrModule module,
+        TypeExpr type,
+        string? forceTag)
+    {
+        var resolvedModule = module;
+        var unwrapped = UnwrapAliases(document, ref resolvedModule, type);
+        if (unwrapped.Tag?.Mode == TagModes.Explicit && forceTag is null)
+        {
+            return false;
+        }
+
+        if (unwrapped is SequenceOfType or SetOfType)
+        {
+            return false;
+        }
+
+        if (unwrapped is SequenceType or SetType)
+        {
+            return true;
+        }
+
+        if (unwrapped is RefType reference)
+        {
+            var found = Find(document, resolvedModule, reference)?.Type;
+            return found is SequenceType or SetType;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Emit lambda body as <c>return expr;</c> when decode is a single assignment, otherwise
+    /// <c>T item{}; …; return item;</c>.
+    /// </summary>
+    private void EmitDecodeLambdaReturn(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module,
+        string owner,
+        string hint,
+        TypeExpr type,
+        string indent,
+        string reader,
+        string itemCppType,
+        string? forceTag = null,
+        JsonObject? fieldOptions = null,
+        bool allowDeferredWrapper = true)
+    {
+        var body = new StringBuilder();
+        EmitDecodeAssign(
+            body,
+            document,
+            module,
+            owner,
+            hint,
+            type,
+            indent,
+            reader,
+            "item",
+            forceTag,
+            fieldOptions,
+            allowDeferredWrapper);
+        if (TryGetSingleAssignmentExpression(body.ToString(), indent, "item", out var expr))
+        {
+            sb.AppendLine($"{indent}return {expr};");
+            return;
+        }
+
+        sb.AppendLine($"{indent}{itemCppType} item{{}};");
+        sb.Append(body);
+        sb.AppendLine($"{indent}return item;");
+    }
+
+    /// <summary>
+    /// True when <paramref name="body"/> is a single assignment to <paramref name="target"/>
+    /// (expression may span lines, e.g. nested OF lambdas).
+    /// </summary>
+    private static bool TryGetSingleAssignmentExpression(
+        string body,
+        string indent,
+        string target,
+        out string expr)
+    {
+        expr = "";
+        var trimmed = body.Replace("\r\n", "\n", StringComparison.Ordinal).TrimEnd('\n');
+        var prefix = $"{indent}{target} = ";
+        if (!trimmed.StartsWith(prefix, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var depth = 0;
+        for (var i = prefix.Length; i < trimmed.Length; i++)
+        {
+            var c = trimmed[i];
+            if (c is '(' or '{' or '[')
+            {
+                depth++;
+            }
+            else if (c is ')' or '}' or ']')
+            {
+                depth--;
+            }
+            else if (c == ';' && depth == 0)
+            {
+                if (i != trimmed.Length - 1)
+                {
+                    return false;
+                }
+
+                expr = trimmed.Substring(prefix.Length, i - prefix.Length);
+                return expr.Length > 0;
+            }
+        }
+
+        return false;
     }
 
     private string WriteCall(

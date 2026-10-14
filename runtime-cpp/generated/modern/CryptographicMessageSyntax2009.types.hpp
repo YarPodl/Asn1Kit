@@ -56,9 +56,7 @@ struct Attribute {
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.attrType = inner.read_oid(asn1kit::tag::object_identifier);
             value.attrValues = inner.read_set_of<asn1kit::any>(asn1kit::tag::set, [&](asn1kit::reader& inner) {
-                asn1kit::any item{};
-                item = inner.read_any();
-                return item;
+                return inner.read_any();
             });
         });
         return value;
@@ -431,13 +429,9 @@ struct IssuerAndSerialNumber {
         IssuerAndSerialNumber value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.issuer = inner.read_with_original_encoding<std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>>([&](asn1kit::reader& deferred) {
-                std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> item{};
-                item = deferred.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                    item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
-                    return item;
+                return deferred.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
+                    return inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
                 });
-                return item;
             });
             value.serialNumber = inner.read_integer_value(asn1kit::tag::integer);
         });
@@ -1435,9 +1429,7 @@ struct SignerInfo {
             value.digestAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
             if (inner.next_is(asn1kit::tag::context(0, true))) {
                 value.signedAttrs = inner.read_with_original_encoding<std::vector<Attribute>>([&](asn1kit::reader& deferred) {
-                    std::vector<Attribute> item{};
-                    item = deferred.read_set_of<Attribute>(asn1kit::tag::context(0, true));
-                    return item;
+                    return deferred.read_set_of<Attribute>(asn1kit::tag::context(0, true));
                 });
             }
             value.signatureAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);

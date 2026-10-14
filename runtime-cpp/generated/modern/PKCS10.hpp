@@ -41,9 +41,7 @@ struct Attribute {
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.type = inner.read_oid(asn1kit::tag::object_identifier);
             value.values = inner.read_set_of<asn1kit::any>(asn1kit::tag::set, [&](asn1kit::reader& inner) {
-                asn1kit::any item{};
-                item = inner.read_any();
-                return item;
+                return inner.read_any();
             });
         });
         return value;
@@ -121,9 +119,7 @@ struct CertificationRequestInfo {
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.version = inner.read_int32(asn1kit::tag::integer);
             value.subject = inner.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
-                return item;
+                return inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
             });
             value.subjectPKInfo = SubjectPublicKeyInfo::decode(inner);
             value.attributes = inner.read_set_of<Attribute>(asn1kit::tag::context(0, true));

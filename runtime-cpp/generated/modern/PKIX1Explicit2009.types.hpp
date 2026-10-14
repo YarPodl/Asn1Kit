@@ -385,9 +385,7 @@ struct TBSCertList {
             }
             value.signature = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
             value.issuer = inner.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
-                return item;
+                return inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
             });
             value.thisUpdate = Time::decode(inner);
             if (inner.next_matches<Time>()) {
@@ -525,29 +523,17 @@ struct TBSCertificate {
             value.serialNumber = inner.read_integer_value(asn1kit::tag::integer);
             value.signature = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
             value.issuer = inner.read_with_original_encoding<std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>>([&](asn1kit::reader& deferred) {
-                std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> item{};
-                item = deferred.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                    item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
-                    return item;
+                return deferred.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
+                    return inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
                 });
-                return item;
             });
             value.validity = Validity::decode(inner);
             value.subject = inner.read_with_original_encoding<std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>>([&](asn1kit::reader& deferred) {
-                std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> item{};
-                item = deferred.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                    item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
-                    return item;
+                return deferred.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
+                    return inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
                 });
-                return item;
             });
-            value.subjectPublicKeyInfo = inner.read_with_original_encoding<SubjectPublicKeyInfo>([&](asn1kit::reader& deferred) {
-                SubjectPublicKeyInfo item{};
-                item = SubjectPublicKeyInfo::decode(deferred);
-                return item;
-            });
+            value.subjectPublicKeyInfo = inner.read_with_original_encoding<SubjectPublicKeyInfo>();
             auto next_extension = 7;
             while (true) {
                 asn1kit::tag extension_tag;
@@ -636,11 +622,7 @@ struct Certificate {
     static Certificate decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         Certificate value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.toBeSigned = inner.read_with_original_encoding<TBSCertificate>([&](asn1kit::reader& deferred) {
-                TBSCertificate item{};
-                item = TBSCertificate::decode(deferred);
-                return item;
-            });
+            value.toBeSigned = inner.read_with_original_encoding<TBSCertificate>();
             value.algorithmIdentifier = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
             value.signature = inner.read_bit_string(asn1kit::tag::bit_string);
         });

@@ -339,9 +339,7 @@ struct CertificationRequest_CertificationRequestInfo {
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.version = inner.read_integer_value(asn1kit::tag::integer);
             value.subject = inner.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
-                return item;
+                return inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
             });
             value.subjectPublicKeyInfo = CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo::decode(inner);
             value.attributes = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet>(asn1kit::tag::context(0, true));
@@ -459,9 +457,7 @@ struct GetCRL {
         GetCRL value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.issuerName = inner.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
-                return item;
+                return inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
             });
             if (inner.next_matches<::asn1kit::modern::PKIX1Implicit2009::GeneralName>()) {
                 value.cRLName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
@@ -977,9 +973,7 @@ struct RevokeRequest {
         RevokeRequest value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.issuerName = inner.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
-                return item;
+                return inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
             });
             value.serialNumber = inner.read_integer_value(asn1kit::tag::integer);
             value.reason = ::asn1kit::modern::PKIX1Implicit2009::decode_CRLReason(inner, asn1kit::tag::enumerated);
@@ -1030,9 +1024,7 @@ struct TaggedAttribute {
             value.bodyPartID = inner.read_uint32(asn1kit::tag::integer);
             value.attrType = inner.read_oid(asn1kit::tag::object_identifier);
             value.attrValues = inner.read_set_of<asn1kit::any>(asn1kit::tag::set, [&](asn1kit::reader& inner) {
-                asn1kit::any item{};
-                item = inner.read_any();
-                return item;
+                return inner.read_any();
             });
         });
         return value;

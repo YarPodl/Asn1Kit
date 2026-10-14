@@ -526,9 +526,7 @@ struct ExtensionAttribute_EaUnformattedPostalAddress {
                 if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
                     if (value.printable_address.has_value()) throw asn1kit::exception("Duplicate SET component 'printable-address'.");
                     value.printable_address = inner.read_sequence_of<std::string>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                        std::string item{};
-                        item = inner.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
-                        return item;
+                        return inner.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
                     });
                 } else if (peeked.matches_ignore_constructed(asn1kit::tag::teletex_string)) {
                     if (value.teletex_string.has_value()) throw asn1kit::exception("Duplicate SET component 'teletex-string'.");
@@ -923,9 +921,7 @@ struct BuiltInStandardAttributes {
             }
             if (inner.next_is(asn1kit::tag::context(6, true))) {
                 value.organizational_unit_names = inner.read_sequence_of<std::string>(asn1kit::tag::context(6, true), [&](asn1kit::reader& inner) {
-                    std::string item{};
-                    item = inner.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
-                    return item;
+                    return inner.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
                 });
             }
         });

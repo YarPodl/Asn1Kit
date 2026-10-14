@@ -745,9 +745,7 @@ struct PKIHeader {
                 std::vector<std::string> tmp_freeText{};
                 inner.with_explicit(asn1kit::tag::context(7, true), [&](asn1kit::reader& scoped) {
                     tmp_freeText = scoped.read_sequence_of<std::string>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                        std::string item{};
-                        item = inner.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
-                        return item;
+                        return inner.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
                     });
                 });
                 value.freeText = std::move(tmp_freeText);
@@ -852,9 +850,7 @@ struct PKIStatusInfo {
             value.status = inner.read_int32(asn1kit::tag::integer);
             if (inner.next_is(asn1kit::tag::sequence)) {
                 value.statusString = inner.read_sequence_of<std::string>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    std::string item{};
-                    item = inner.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
-                    return item;
+                    return inner.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
                 });
             }
             if (inner.next_matches<PKIFailureInfo>()) {
@@ -1000,9 +996,7 @@ struct ErrorMsgContent {
             }
             if (inner.next_is(asn1kit::tag::sequence)) {
                 value.errorDetails = inner.read_sequence_of<std::string>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    std::string item{};
-                    item = inner.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
-                    return item;
+                    return inner.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
                 });
             }
         });
@@ -1102,9 +1096,7 @@ struct PollRepContent_Item {
             value.checkAfter = inner.read_integer_value(asn1kit::tag::integer);
             if (inner.next_is(asn1kit::tag::sequence)) {
                 value.reason = inner.read_sequence_of<std::string>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    std::string item{};
-                    item = inner.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
-                    return item;
+                    return inner.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
                 });
             }
         });

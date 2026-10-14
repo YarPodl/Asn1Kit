@@ -248,9 +248,7 @@ struct ResponderID {
             std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> tmp_byName{};
             r.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
                 tmp_byName = scoped.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                    std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                    item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
-                    return item;
+                    return inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
                 });
             });
             alt = std::move(tmp_byName);
@@ -522,9 +520,7 @@ struct ServiceLocator {
         ServiceLocator value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.issuer = inner.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> item{};
-                item = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
-                return item;
+                return inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
             });
             value.locator = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::AccessDescription>();
         });

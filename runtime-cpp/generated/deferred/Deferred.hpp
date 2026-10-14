@@ -58,16 +58,8 @@ struct Box {
     static Box decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         Box value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.retained = inner.read_with_original_encoding<Inner>([&](asn1kit::reader& deferred) {
-                Inner item{};
-                item = Inner::decode(deferred, asn1kit::tag::context(0, true));
-                return item;
-            });
-            value.deferred = inner.read_lazy<Inner>([&](asn1kit::reader& deferred) {
-                Inner item{};
-                item = Inner::decode(deferred, asn1kit::tag::context(1, true));
-                return item;
-            });
+            value.retained = inner.read_with_original_encoding<Inner>(asn1kit::tag::context(0, true));
+            value.deferred = inner.read_lazy<Inner>(asn1kit::tag::context(1, true));
         });
         return value;
     }

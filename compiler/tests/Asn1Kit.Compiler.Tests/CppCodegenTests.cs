@@ -333,8 +333,10 @@ END
         Assert.Contains("#include \"asn1kit/lazy.hpp\"", source);
         Assert.Contains("asn1kit::value<Inner> retained{}", source);
         Assert.Contains("asn1kit::lazy<Inner> deferred{}", source);
-        Assert.Contains("read_with_original_encoding<Inner>", source);
-        Assert.Contains("read_lazy<Inner>", source);
+        Assert.Contains("read_with_original_encoding<Inner>(asn1kit::tag::context(0, true))", source);
+        Assert.Contains("read_lazy<Inner>(asn1kit::tag::context(1, true))", source);
+        Assert.DoesNotContain("Inner item{}", source);
+        Assert.DoesNotContain("[&](asn1kit::reader& deferred)", source);
         Assert.Contains("if (this->retained.has_original_encoding())", source);
         Assert.Contains("w.write_raw(this->retained.original_encoding().span());", source);
         Assert.Contains("this->retained.get()", source);

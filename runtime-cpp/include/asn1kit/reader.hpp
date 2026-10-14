@@ -116,6 +116,19 @@ public:
         return value<T>::decoded(std::move(decoded), std::move(tlv.encoded));
     }
 
+    /// Type-driven retain: decode via natural <c>read&lt;T&gt;()</c>.
+    template <detail::typed_readable T>
+    [[nodiscard]] value<T> read_with_original_encoding() {
+        return read_with_original_encoding<T>([](reader& r) { return r.read<T>(); });
+    }
+
+    /// Type-driven retain with an override tag (e.g. AUTOMATIC context).
+    template <detail::typed_readable T>
+    [[nodiscard]] value<T> read_with_original_encoding(const tag& expected) {
+        return read_with_original_encoding<T>(
+            [expected](reader& r) { return r.read<T>(expected); });
+    }
+
     /// Consumes a TLV without decoding content until `lazy::get()`.
     template <typename T, std::invocable<reader&> F>
     [[nodiscard]] lazy<T> read_lazy(F&& decode) {
@@ -125,6 +138,19 @@ public:
             encoding_rules(),
             options(),
             std::function<T(reader&)>(std::forward<F>(decode)));
+    }
+
+    /// Type-driven lazy: decode via natural <c>read&lt;T&gt;()</c> on first <c>get()</c>.
+    template <detail::typed_readable T>
+    [[nodiscard]] lazy<T> read_lazy() {
+        return read_lazy<T>([](reader& r) { return r.read<T>(); });
+    }
+
+    /// Type-driven lazy with an override tag (e.g. AUTOMATIC context).
+    template <detail::typed_readable T>
+    [[nodiscard]] lazy<T> read_lazy(const tag& expected) {
+        // Capture by value: decode runs later on lazy::get().
+        return read_lazy<T>([expected](reader& r) { return r.read<T>(expected); });
     }
 
     /// Reads OCTET STRING contents as exactly one known ASN.1 value.
@@ -138,6 +164,12 @@ public:
             value = std::invoke(std::forward<F>(decode), r);
         });
         return value;
+    }
+
+    /// Type-driven OCTET STRING CONTAINING: content via natural <c>read&lt;T&gt;()</c>.
+    template <detail::typed_readable T>
+    [[nodiscard]] T read_octet_string_containing(const tag& expected) {
+        return read_octet_string_containing<T>(expected, [](reader& r) { return r.read<T>(); });
     }
 
     /// Reads octet-aligned BIT STRING contents as exactly one known ASN.1 value.
@@ -154,6 +186,12 @@ public:
             value = std::invoke(std::forward<F>(decode), r);
         });
         return value;
+    }
+
+    /// Type-driven BIT STRING CONTAINING: content via natural <c>read&lt;T&gt;()</c>.
+    template <detail::typed_readable T>
+    [[nodiscard]] T read_bit_string_containing(const tag& expected) {
+        return read_bit_string_containing<T>(expected, [](reader& r) { return r.read<T>(); });
     }
 
     [[nodiscard]] reader_scope enter_sequence(const tag& expected);

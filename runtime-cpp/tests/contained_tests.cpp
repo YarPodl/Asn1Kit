@@ -54,6 +54,30 @@ TEST(Containing, OctetStringTypedRoundTrip) {
     r.throw_if_not_empty();
 }
 
+TEST(Containing, TypeDrivenOctetStringContaining) {
+    writer w(encoding::der);
+    w.write_octet_string_containing(
+        tag::octet_string,
+        std::int32_t{42},
+        [](writer& inner, const std::int32_t& v) { inner.write_integer(tag::integer, v); });
+
+    reader r(w.encode(), encoding::der);
+    EXPECT_EQ(r.read_octet_string_containing<std::int32_t>(tag::octet_string), 42);
+    r.throw_if_not_empty();
+}
+
+TEST(Containing, TypeDrivenBitStringContaining) {
+    writer w(encoding::der);
+    w.write_bit_string_containing(
+        tag::bit_string,
+        std::int32_t{7},
+        [](writer& inner, const std::int32_t& v) { inner.write_integer(tag::integer, v); });
+
+    reader r(w.encode(), encoding::der);
+    EXPECT_EQ(r.read_bit_string_containing<std::int32_t>(tag::bit_string), 7);
+    r.throw_if_not_empty();
+}
+
 TEST(Containing, ReadsBerConstructedContent) {
     reader constructed(hex_bytes("24800401020402012A0000"), encoding::ber);
     EXPECT_EQ(

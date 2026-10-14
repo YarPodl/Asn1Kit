@@ -409,9 +409,7 @@ struct MLReceiptPolicy {
             result.kind = MLReceiptPolicy_kind::insteadOf;
             std::vector<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> alt{};
             alt = r.read_sequence_of<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>>(asn1kit::tag::context(1, true), [&](asn1kit::reader& inner) {
-                std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> item{};
-                item = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
-                return item;
+                return inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
             });
             result.value.emplace<1>(std::move(alt));
             return result;
@@ -420,9 +418,7 @@ struct MLReceiptPolicy {
             result.kind = MLReceiptPolicy_kind::inAdditionTo;
             std::vector<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> alt{};
             alt = r.read_sequence_of<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>>(asn1kit::tag::context(2, true), [&](asn1kit::reader& inner) {
-                std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> item{};
-                item = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
-                return item;
+                return inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
             });
             result.value.emplace<1>(std::move(alt));
             return result;
@@ -541,9 +537,7 @@ struct ReceiptsFrom {
             result.kind = ReceiptsFrom_kind::receiptList;
             std::vector<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> alt{};
             alt = r.read_sequence_of<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>>(asn1kit::tag::context(1, true), [&](asn1kit::reader& inner) {
-                std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> item{};
-                item = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
-                return item;
+                return inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
             });
             result.value.emplace<1>(std::move(alt));
             return result;
@@ -597,9 +591,7 @@ struct ReceiptRequest {
             value.signedContentIdentifier = inner.read_octet_string(asn1kit::tag::octet_string);
             value.receiptsFrom = ReceiptsFrom::decode(inner);
             value.receiptsTo = inner.read_sequence_of<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> item{};
-                item = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
-                return item;
+                return inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
             });
         });
         return value;

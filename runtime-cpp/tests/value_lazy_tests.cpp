@@ -65,6 +65,31 @@ TEST(ValueLazy, ReadWithOriginalEncodingRetainsTlv) {
     EXPECT_EQ(retained.original_encoding().to_vector(), der);
 }
 
+TEST(ValueLazy, TypeDrivenReadWithOriginalEncoding) {
+    const auto der = encode_inner(42);
+    reader r(der, encoding::der);
+    const auto retained = r.read_with_original_encoding<Inner>();
+    EXPECT_TRUE(r.eof());
+    EXPECT_EQ(retained.get().n, integer::from_int32(42));
+    ASSERT_TRUE(retained.has_original_encoding());
+    EXPECT_EQ(retained.original_encoding().to_vector(), der);
+}
+
+TEST(ValueLazy, TypeDrivenReadWithOriginalEncodingTagged) {
+    Inner value{};
+    value.n = integer::from_int32(5);
+    writer w(encoding::der);
+    value.encode(w, tag::context(0, true));
+    const auto der = w.encode();
+
+    reader r(der, encoding::der);
+    const auto retained = r.read_with_original_encoding<Inner>(tag::context(0, true));
+    EXPECT_TRUE(r.eof());
+    EXPECT_EQ(retained.get().n, integer::from_int32(5));
+    ASSERT_TRUE(retained.has_original_encoding());
+    EXPECT_EQ(retained.original_encoding().to_vector(), der);
+}
+
 TEST(ValueLazy, FromValueHasEmptyOriginalEncoding) {
     Inner inner{};
     inner.n = integer::from_int32(1);
@@ -90,6 +115,31 @@ TEST(ValueLazy, LazyDefersDecodeUntilGet) {
     EXPECT_EQ(decode_count, 1);
     EXPECT_EQ(deferred.get().n, integer::from_int32(7));
     EXPECT_EQ(decode_count, 1);
+}
+
+TEST(ValueLazy, TypeDrivenReadLazy) {
+    const auto der = encode_inner(7);
+    reader r(der, encoding::der);
+    auto deferred = r.read_lazy<Inner>();
+    EXPECT_TRUE(r.eof());
+    EXPECT_TRUE(deferred.has_encoded());
+    EXPECT_FALSE(deferred.is_materialized());
+    EXPECT_EQ(deferred.get().n, integer::from_int32(7));
+}
+
+TEST(ValueLazy, TypeDrivenReadLazyTagged) {
+    Inner value{};
+    value.n = integer::from_int32(11);
+    writer w(encoding::der);
+    value.encode(w, tag::context(1, true));
+    const auto der = w.encode();
+
+    reader r(der, encoding::der);
+    auto deferred = r.read_lazy<Inner>(tag::context(1, true));
+    EXPECT_TRUE(r.eof());
+    EXPECT_TRUE(deferred.has_encoded());
+    EXPECT_FALSE(deferred.is_materialized());
+    EXPECT_EQ(deferred.get().n, integer::from_int32(11));
 }
 
 TEST(ValueLazy, LazyWriteToIsBitExact) {

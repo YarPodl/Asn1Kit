@@ -67,9 +67,7 @@ struct Attribute {
         r.with_sequence(t, [&](asn1kit::reader& inner) {
             value.type = inner.read_oid(asn1kit::tag::object_identifier);
             value.values = inner.read_set_of<asn1kit::any>(asn1kit::tag::set, [&](asn1kit::reader& inner) {
-                asn1kit::any item{};
-                item = inner.read_any();
-                return item;
+                return inner.read_any();
             });
         });
         return value;

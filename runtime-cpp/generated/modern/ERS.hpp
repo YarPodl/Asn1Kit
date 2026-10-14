@@ -67,9 +67,7 @@ struct ArchiveTimeStamp {
             }
             if (inner.next_is(asn1kit::tag::context(2, true))) {
                 value.reducedHashtree = inner.read_sequence_of<std::vector<asn1kit::bytes>>(asn1kit::tag::context(2, true), [&](asn1kit::reader& inner) {
-                    std::vector<asn1kit::bytes> item{};
-                    item = inner.read_sequence_of<asn1kit::bytes>();
-                    return item;
+                    return inner.read_sequence_of<asn1kit::bytes>();
                 });
             }
             value.timeStamp = ::asn1kit::modern::CryptographicMessageSyntax2009::ContentInfo::decode(inner);
@@ -145,9 +143,7 @@ struct EvidenceRecord {
                 value.encryptionInfo = EncryptionInfo::decode(inner, asn1kit::tag::context(1, true));
             }
             value.archiveTimeStampSequence = inner.read_sequence_of<std::vector<ArchiveTimeStamp>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
-                std::vector<ArchiveTimeStamp> item{};
-                item = inner.read_sequence_of<ArchiveTimeStamp>();
-                return item;
+                return inner.read_sequence_of<ArchiveTimeStamp>();
             });
         });
         return value;
