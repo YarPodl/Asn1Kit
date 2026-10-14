@@ -22,7 +22,7 @@ public static class CmsModernSignedDataInspector
         if (contentInfo.ContentType != ModernCms.CryptographicMessageSyntax2009Oids.IdSignedData ||
             !contentInfo.TryDecodeContent(ModernCms.ContentSetContentBindings.CtSignedData, out var signedData))
             throw new InvalidDataException("ContentInfo must contain SignedData.");
-        var content = signedData.EncapContentInfo.EContent?.Contents;
+        var content = signedData.EncapContentInfo.EContent;
         if (content is null)
             throw new InvalidDataException("Attached SignedData requires eContent.");
         if (signedData.SignerInfos.Length == 0)

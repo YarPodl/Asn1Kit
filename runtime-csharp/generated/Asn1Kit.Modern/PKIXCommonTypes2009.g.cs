@@ -12,7 +12,7 @@ public sealed class Extension
 {
     public Asn1Oid ExtnID { get; set; }
     public bool Critical { get; set; } = false;
-    public Asn1Contained<Asn1Any> ExtnValue { get; set; }
+    public ReadOnlyMemory<byte> ExtnValue { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -25,10 +25,7 @@ public sealed class Extension
             {
                 writer.WriteBoolean(Asn1Tag.Boolean, Critical);
             }
-            writer.WriteContained(Asn1Tag.OctetString, false, ExtnValue, static (inner, value) =>
-            {
-                inner.WriteAny(value);
-            });
+            writer.WriteOctetString(Asn1Tag.OctetString, ExtnValue.Span);
         }
     }
 
@@ -44,7 +41,7 @@ public sealed class Extension
             {
                 value.Critical = reader.ReadBoolean(Asn1Tag.Boolean);
             }
-            value.ExtnValue = reader.ReadContained(Asn1Tag.OctetString, false, false, 0, static (inner, key) => inner.ReadAny());
+            value.ExtnValue = reader.ReadOctetString(Asn1Tag.OctetString);
             reader.ThrowIfNotEmpty();
             return value;
         }
@@ -435,7 +432,7 @@ public sealed record ExtnValueBinding<T>
     public Asn1Oid Oid { get; }
     public Asn1Codec<T>? Codec { get; }
     public Func<Extension, T>? Decoder { get; }
-    public Func<T, Asn1Contained<Asn1Any>>? Encoder { get; }
+    public Func<T, ReadOnlyMemory<byte>>? Encoder { get; }
 
     public ExtnValueBinding(Asn1Oid oid, Asn1Codec<T> codec)
     {
@@ -443,7 +440,7 @@ public sealed record ExtnValueBinding<T>
         Codec = codec ?? throw new ArgumentNullException(nameof(codec));
     }
 
-    public ExtnValueBinding(Asn1Oid oid, Func<Extension, T> decoder, Func<T, Asn1Contained<Asn1Any>> encoder)
+    public ExtnValueBinding(Asn1Oid oid, Func<Extension, T> decoder, Func<T, ReadOnlyMemory<byte>> encoder)
     {
         Oid = oid;
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
@@ -1020,7 +1017,7 @@ public static class PKIXCommonTypes2009OpenTypeExtensions
         var result = source;
         result.ExtnID = binding.Oid;
         var encoded = binding.Codec is { } codec
-            ? Asn1Codecs.EncodeContained(value, codec)
+            ? Asn1Codecs.EncodeContainedOctets(value, codec)
             : binding.Encoder!(value);
         result.ExtnValue = encoded;
     }

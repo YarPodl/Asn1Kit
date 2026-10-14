@@ -436,7 +436,7 @@ public enum OCSPResponseStatus
 public sealed class ResponseBytes
 {
     public Asn1Oid ResponseType { get; set; }
-    public Asn1Contained<Asn1Any> Response { get; set; }
+    public ReadOnlyMemory<byte> Response { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -445,10 +445,7 @@ public sealed class ResponseBytes
         using (writer.EnterSequence(tag))
         {
             writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, ResponseType);
-            writer.WriteContained(Asn1Tag.OctetString, false, Response, static (inner, value) =>
-            {
-                inner.WriteAny(value);
-            });
+            writer.WriteOctetString(Asn1Tag.OctetString, Response.Span);
         }
     }
 
@@ -460,7 +457,7 @@ public sealed class ResponseBytes
         {
             var value = new ResponseBytes();
             value.ResponseType = reader.ReadOid(Asn1Tag.ObjectIdentifier);
-            value.Response = reader.ReadContained(Asn1Tag.OctetString, false, false, 0, static (inner, key) => inner.ReadAny());
+            value.Response = reader.ReadOctetString(Asn1Tag.OctetString);
             reader.ThrowIfNotEmpty();
             return value;
         }
@@ -1079,7 +1076,7 @@ public sealed record ResponseBinding<T>
     public Asn1Oid Oid { get; }
     public Asn1Codec<T>? Codec { get; }
     public Func<ResponseBytes, T>? Decoder { get; }
-    public Func<T, Asn1Contained<Asn1Any>>? Encoder { get; }
+    public Func<T, ReadOnlyMemory<byte>>? Encoder { get; }
 
     public ResponseBinding(Asn1Oid oid, Asn1Codec<T> codec)
     {
@@ -1087,7 +1084,7 @@ public sealed record ResponseBinding<T>
         Codec = codec ?? throw new ArgumentNullException(nameof(codec));
     }
 
-    public ResponseBinding(Asn1Oid oid, Func<ResponseBytes, T> decoder, Func<T, Asn1Contained<Asn1Any>> encoder)
+    public ResponseBinding(Asn1Oid oid, Func<ResponseBytes, T> decoder, Func<T, ReadOnlyMemory<byte>> encoder)
     {
         Oid = oid;
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
@@ -1393,7 +1390,7 @@ public static class OCSP2009OpenTypeExtensions
         var result = source;
         result.ResponseType = binding.Oid;
         var encoded = binding.Codec is { } codec
-            ? Asn1Codecs.EncodeContained(value, codec)
+            ? Asn1Codecs.EncodeContainedOctets(value, codec)
             : binding.Encoder!(value);
         result.Response = encoded;
     }

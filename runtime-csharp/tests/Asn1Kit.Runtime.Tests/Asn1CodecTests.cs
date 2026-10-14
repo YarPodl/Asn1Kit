@@ -19,8 +19,10 @@ public sealed class Asn1CodecTests
     [Fact]
     public void OpenTypeAdaptersReuseLeafCodec()
     {
-        var encoded = Asn1Codecs.EncodeContained(42, Asn1Codecs.Int32);
+        var encoded = Asn1Codecs.EncodeContainedOctets(42, Asn1Codecs.Int32);
         Assert.Equal(42, Asn1Codecs.DecodeContained(encoded, Asn1Codecs.Int32));
+        var bits = Asn1Codecs.EncodeContainedBits(42, Asn1Codecs.Int32);
+        Assert.Equal(42, Asn1Codecs.DecodeContained(bits, Asn1Codecs.Int32));
 
         var raw = Asn1Codecs.EncodeEach(new[] { 1, 2 }, Asn1Codecs.Int32);
         Assert.Equal(new[] { 1, 2 }, Asn1Codecs.DecodeEach(raw, Asn1Codecs.Int32));
@@ -53,7 +55,7 @@ public sealed class Asn1CodecTests
     [Fact]
     public void ContainedAdapterRejectsUnalignedBitString()
     {
-        var raw = Asn1Contained<Asn1Any>.FromEncoded(new byte[] { 0x02, 0x01, 0x2A }, unusedBits: 1);
+        var raw = new Asn1BitString(new byte[] { 0x02, 0x01, 0x2A }, unusedBits: 1);
         Assert.Throws<Asn1Exception>(() => Asn1Codecs.DecodeContained(raw, Asn1Codecs.Int32));
     }
 }

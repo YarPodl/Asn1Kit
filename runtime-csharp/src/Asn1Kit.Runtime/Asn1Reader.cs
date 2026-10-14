@@ -177,25 +177,30 @@ public sealed class Asn1Reader
     public T[] ReadSetOf<T, TState>(Asn1Tag expected, TState state, Func<Asn1Reader, TState, T> decodeItem) =>
         ReadSequenceOf(expected, state, decodeItem);
 
-    /// <summary>Reads contained OCTET STRING or BIT STRING content, decoding known structures in the same reader.</summary>
-    public Asn1Contained<T> ReadContained<T, TState>(Asn1Tag tag, bool bitString, bool known, TState state, Func<Asn1Reader, TState, T> decode)
+    /// <summary>Reads OCTET STRING contents as one contained ASN.1 value.</summary>
+    public T ReadOctetStringContaining<T, TState>(Asn1Tag tag, TState state, Func<Asn1Reader, TState, T> decode)
     {
         if (decode is null) throw new ArgumentNullException(nameof(decode));
-        ReadOnlyMemory<byte> contents;
-        var unusedBits = 0;
-        if (bitString)
-        {
-            var bits = ReadBitString(tag);
-            contents = bits.Memory; unusedBits = bits.UnusedBits;
-        }
-        else contents = ReadOctetString(tag);
-        if (!known) return Asn1Contained<T>.FromEncoded(contents, unusedBits);
-        if (unusedBits != 0) throw new Asn1Exception("ASN.1 contained content must be octet-aligned.");
+        var contents = ReadOctetString(tag);
         using (PushContentsWindow(contents))
         {
             var value = decode(this, state);
             ThrowIfNotEmpty();
-            return Asn1Contained<T>.Decoded(contents, value);
+            return value;
+        }
+    }
+
+    /// <summary>Reads an octet-aligned BIT STRING as one contained ASN.1 value.</summary>
+    public T ReadBitStringContaining<T, TState>(Asn1Tag tag, TState state, Func<Asn1Reader, TState, T> decode)
+    {
+        if (decode is null) throw new ArgumentNullException(nameof(decode));
+        var bits = ReadBitString(tag);
+        if (bits.UnusedBits != 0) throw new Asn1Exception("ASN.1 contained content must be octet-aligned.");
+        using (PushContentsWindow(bits.Memory))
+        {
+            var value = decode(this, state);
+            ThrowIfNotEmpty();
+            return value;
         }
     }
 

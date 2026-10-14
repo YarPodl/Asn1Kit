@@ -712,7 +712,7 @@ public sealed partial class CSharpBackend
         {
             "direct" => $"{codec}.Decode({raw})",
             "many" => $"Asn1Codecs.DecodeEach({raw}, {codec})",
-            "contained" => $"Asn1Codecs.DecodeContained({raw}, {codec})",
+            "contained-octets" or "contained-bits" => $"Asn1Codecs.DecodeContained({raw}, {codec})",
             _ => throw new InvalidOperationException("Open-type codec path requires a simple payload shape.")
         };
 
@@ -721,7 +721,8 @@ public sealed partial class CSharpBackend
         {
             "direct" => $"{codec}.Encode({value})",
             "many" => $"Asn1Codecs.EncodeEach({value}, {codec})",
-            "contained" => $"Asn1Codecs.EncodeContained({value}, {codec})",
+            "contained-octets" => $"Asn1Codecs.EncodeContainedOctets({value}, {codec})",
+            "contained-bits" => $"Asn1Codecs.EncodeContainedBits({value}, {codec})",
             _ => throw new InvalidOperationException("Open-type codec path requires a simple payload shape.")
         };
 
@@ -982,8 +983,10 @@ public sealed partial class CSharpBackend
         if (payload.Child is null && payload.RawType == "Asn1Any") return "direct";
         if (payload.Many && payload.RawType == "Asn1Any[]" &&
             payload.Child is { Child: null, RawType: "Asn1Any" }) return "many";
-        if (!payload.Many && payload.RawType == "Asn1Contained<Asn1Any>" &&
-            payload.Child is { Child: null, RawType: "Asn1Any" }) return "contained";
+        if (!payload.Many && payload.RawType == "ReadOnlyMemory<byte>" &&
+            payload.Child is { Child: null, RawType: "Asn1Any" }) return "contained-octets";
+        if (!payload.Many && payload.RawType == "Asn1BitString" &&
+            payload.Child is { Child: null, RawType: "Asn1Any" }) return "contained-bits";
         return null;
     }
 
@@ -1047,7 +1050,7 @@ public sealed partial class CSharpBackend
         {
             "direct" => $"{codec}.Decode({raw})",
             "many" => $"Asn1Codecs.DecodeEach({raw}, {codec})",
-            "contained" => $"Asn1Codecs.DecodeContained({raw}, {codec})",
+            "contained-octets" or "contained-bits" => $"Asn1Codecs.DecodeContained({raw}, {codec})",
             _ => $"{wrapper.Name}BindingCodec.Decode({raw})"
         };
     }
@@ -1060,7 +1063,8 @@ public sealed partial class CSharpBackend
         {
             "direct" => $"{codec}.Encode({value})",
             "many" => $"Asn1Codecs.EncodeEach({value}, {codec})",
-            "contained" => $"Asn1Codecs.EncodeContained({value}, {codec})",
+            "contained-octets" => $"Asn1Codecs.EncodeContainedOctets({value}, {codec})",
+            "contained-bits" => $"Asn1Codecs.EncodeContainedBits({value}, {codec})",
             _ => $"{wrapper.Name}BindingCodec.Encode({value})"
         };
     }
@@ -1507,9 +1511,9 @@ public sealed partial class CSharpBackend
         }
         else
         {
-            sb.AppendLine("        if (raw.UnusedBits != 0) throw new Asn1Exception(\"Typed contained value must be octet-aligned.\");");
-            sb.AppendLine($"        if (raw.HasValue) return Decode{prefix}{depth + 1}(raw.Value);");
-            sb.AppendLine("        var reader = new Asn1Reader(raw.Contents, Asn1Encoding.Ber);");
+            if (node.BitString)
+                sb.AppendLine("        if (raw.UnusedBits != 0) throw new Asn1Exception(\"Typed contained value must be octet-aligned.\");");
+            sb.AppendLine($"        var reader = new Asn1Reader({(node.BitString ? "raw.Memory" : "raw")}, Asn1Encoding.Ber);");
             sb.AppendLine($"        {node.Child.RawType} contents;");
             EmitDecodeAssign(sb, document, module, node.Child.Owner, node.Child.Hint,
                 QualifyOpenTypeReferences(document, node.Child.Module, module, node.Child.Type), null,
@@ -1533,7 +1537,17 @@ public sealed partial class CSharpBackend
             sb.AppendLine($"        for (var i = 0; i < value.Length; i++) result[i] = Encode{prefix}{depth + 1}(value[i]);");
             sb.AppendLine("        return result;");
         }
-        else sb.AppendLine($"        return {node.RawType}.FromValue(Encode{prefix}{depth + 1}(value));");
+        else
+        {
+            sb.AppendLine($"        var contents = Encode{prefix}{depth + 1}(value);");
+            sb.AppendLine("        var writer = new Asn1Writer(Asn1Encoding.Der);");
+            EmitEncodeValue(sb, document, module, node.Child.Owner, node.Child.Hint,
+                QualifyOpenTypeReferences(document, node.Child.Module, module, node.Child.Type),
+                "        ", "writer", "contents");
+            sb.AppendLine(node.BitString
+                ? "        return new Asn1BitString(writer.Encode(), 0);"
+                : "        return writer.Encode();");
+        }
         sb.AppendLine("    }");
         if (node.Child is not null)
             EmitOpenPayloadMethods(sb, document, module, wrapper, node.Child, prefix, depth + 1);
@@ -1743,14 +1757,13 @@ public sealed partial class CSharpBackend
             }
             else if (step.Contained is { Child: { } child })
             {
-                sb.AppendLine($"{indent}if ({expression}.UnusedBits != 0) throw new Asn1Exception(\"Typed contained value must be octet-aligned.\");");
+                if (step.Contained.BitString)
+                    sb.AppendLine($"{indent}if ({expression}.UnusedBits != 0) throw new Asn1Exception(\"Typed contained value must be octet-aligned.\");");
                 sb.AppendLine($"{indent}{child.RawType} {local};");
-                sb.AppendLine($"{indent}if ({expression}.HasValue) {local} = {expression}.Value;");
-                sb.AppendLine(indent + "else"); sb.AppendLine(indent + "{");
-                sb.AppendLine($"{indent}    var reader{index} = new Asn1Reader({expression}.Contents, Asn1Encoding.Ber);");
+                sb.AppendLine($"{indent}var reader{index} = new Asn1Reader({expression}{(step.Contained.BitString ? ".Memory" : "")}, Asn1Encoding.Ber);");
                 EmitDecodeAssign(sb, document, child.Module, child.Owner, child.Hint, child.Type, null,
-                    indent + "    ", "reader" + index, local);
-                sb.AppendLine($"{indent}    reader{index}.ThrowIfNotEmpty();"); sb.AppendLine(indent + "}");
+                    indent, "reader" + index, local);
+                sb.AppendLine($"{indent}reader{index}.ThrowIfNotEmpty();");
                 var next = new Dictionary<int, string>(routes) { [index + 1] = local };
                 EmitRoute(index + 1, local, indent, next);
             }

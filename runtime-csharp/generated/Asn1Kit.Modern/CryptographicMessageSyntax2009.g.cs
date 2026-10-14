@@ -225,7 +225,7 @@ public sealed class SignedData
 public sealed class EncapsulatedContentInfo
 {
     public Asn1Oid EContentType { get; set; }
-    public Asn1Contained<Asn1Any>? EContent { get; set; }
+    public ReadOnlyMemory<byte>? EContent { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
 
@@ -238,10 +238,7 @@ public sealed class EncapsulatedContentInfo
             {
                 using (writer.EnterExplicit(Asn1Tag.Context(0, true)))
                 {
-                    writer.WriteContained(Asn1Tag.OctetString, false, EContent.Value, static (inner, value) =>
-                    {
-                        inner.WriteAny(value);
-                    });
+                    writer.WriteOctetString(Asn1Tag.OctetString, EContent.Value.Span);
                 }
             }
         }
@@ -259,7 +256,7 @@ public sealed class EncapsulatedContentInfo
             {
                 using (reader.EnterExplicit(Asn1Tag.Context(0, true)))
                 {
-                    value.EContent = reader.ReadContained(Asn1Tag.OctetString, false, false, 0, static (inner, key) => inner.ReadAny());
+                    value.EContent = reader.ReadOctetString(Asn1Tag.OctetString);
                     reader.ThrowIfNotEmpty();
                 }
             }
@@ -2241,7 +2238,7 @@ public sealed record EContentBinding<T>
     public Asn1Oid Oid { get; }
     public Asn1Codec<T>? Codec { get; }
     public Func<EncapsulatedContentInfo, T>? Decoder { get; }
-    public Func<T, Asn1Contained<Asn1Any>>? Encoder { get; }
+    public Func<T, ReadOnlyMemory<byte>>? Encoder { get; }
 
     public EContentBinding(Asn1Oid oid, Asn1Codec<T> codec)
     {
@@ -2249,7 +2246,7 @@ public sealed record EContentBinding<T>
         Codec = codec ?? throw new ArgumentNullException(nameof(codec));
     }
 
-    public EContentBinding(Asn1Oid oid, Func<EncapsulatedContentInfo, T> decoder, Func<T, Asn1Contained<Asn1Any>> encoder)
+    public EContentBinding(Asn1Oid oid, Func<EncapsulatedContentInfo, T> decoder, Func<T, ReadOnlyMemory<byte>> encoder)
     {
         Oid = oid;
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
@@ -2697,7 +2694,7 @@ public static class CryptographicMessageSyntax2009OpenTypeExtensions
         var result = source;
         result.EContentType = binding.Oid;
         var encoded = binding.Codec is { } codec
-            ? Asn1Codecs.EncodeContained(value, codec)
+            ? Asn1Codecs.EncodeContainedOctets(value, codec)
             : binding.Encoder!(value);
         result.EContent = encoded;
     }

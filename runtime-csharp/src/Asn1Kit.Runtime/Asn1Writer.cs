@@ -146,28 +146,34 @@ public sealed class Asn1Writer
     public void WriteOctetString(Asn1Tag tag, ReadOnlySpan<byte> value) =>
         _buffer.WritePrimitive(tag, value);
 
-    /// <summary>Writes opaque octets or encodes typed content directly into the existing buffer.</summary>
-    public void WriteContained<T>(Asn1Tag tag, bool bitString, Asn1Contained<T> value, Action<Asn1Writer, T> encode)
+    /// <summary>Encodes one ASN.1 value into an OCTET STRING.</summary>
+    public void WriteOctetStringContaining<T>(Asn1Tag tag, T value, Action<Asn1Writer, T> encode)
     {
         if (encode is null) throw new ArgumentNullException(nameof(encode));
-        if (!value.HasValue)
-        {
-            if (bitString) WriteBitString(tag, new Asn1BitString(value.Contents, value.UnusedBits));
-            else WriteOctetString(tag, value.Contents.Span);
-            return;
-        }
         var parentToken = _activeScopeToken;
         var token = ++_nextScopeToken;
         var frame = _buffer.BeginValue(tag.AsPrimitive());
         _activeScopeToken = token;
         using (Asn1WriterScope.Create(this, frame, token, parentToken, false))
         {
-            if (bitString)
-            {
-                Span<byte> unused = stackalloc byte[1]; unused[0] = 0;
-                _buffer.WriteRaw(unused);
-            }
-            encode(this, value.Value);
+            encode(this, value);
+        }
+    }
+
+    /// <summary>Encodes one ASN.1 value into an octet-aligned BIT STRING.</summary>
+    public void WriteBitStringContaining<T>(Asn1Tag tag, T value, Action<Asn1Writer, T> encode)
+    {
+        if (encode is null) throw new ArgumentNullException(nameof(encode));
+        var parentToken = _activeScopeToken;
+        var token = ++_nextScopeToken;
+        var frame = _buffer.BeginValue(tag.AsPrimitive());
+        _activeScopeToken = token;
+        using (Asn1WriterScope.Create(this, frame, token, parentToken, false))
+        {
+            Span<byte> unused = stackalloc byte[1];
+            unused[0] = 0;
+            _buffer.WriteRaw(unused);
+            encode(this, value);
         }
     }
 

@@ -5,15 +5,14 @@ namespace Asn1Kit.Runtime.Tests;
 public sealed class ContainedValueTests
 {
     [Fact]
-    public void WritesTypedContentAndRetainsDecodedOctets()
+    public void WritesAndReadsTypedOctetStringContent()
     {
         var writer = new Asn1Writer();
-        writer.WriteContained(Asn1Tag.OctetString, false, Asn1Contained<int>.FromValue(42), static (w, v) => w.WriteInteger(Asn1Tag.Integer, v));
+        writer.WriteOctetStringContaining(Asn1Tag.OctetString, 42, static (w, v) => w.WriteInteger(Asn1Tag.Integer, v));
         Assert.Equal("040302012A", Convert.ToHexString(writer.Encode()));
         var reader = new Asn1Reader(writer.Encode(), Asn1Encoding.Der);
-        var value = reader.ReadContained(Asn1Tag.OctetString, false, true, 0, static (r, _) => r.ReadInt32(Asn1Tag.Integer));
-        Assert.Equal(42, value.Value);
-        Assert.Equal("02012A", Convert.ToHexString(value.Contents.Span));
+        var value = reader.ReadOctetStringContaining(Asn1Tag.OctetString, 0, static (r, _) => r.ReadInt32(Asn1Tag.Integer));
+        Assert.Equal(42, value);
         reader.ThrowIfNotEmpty();
     }
 
@@ -21,11 +20,10 @@ public sealed class ContainedValueTests
     public void ReadsBerConstructedContentAndOpaqueOctets()
     {
         var reader = new Asn1Reader(Convert.FromHexString("24800401020402012A0000"), Asn1Encoding.Ber);
-        Assert.Equal(42, reader.ReadContained(Asn1Tag.OctetString, false, true, 0, static (r, _) => r.ReadInt32(Asn1Tag.Integer)).Value);
+        Assert.Equal(42, reader.ReadOctetStringContaining(Asn1Tag.OctetString, 0, static (r, _) => r.ReadInt32(Asn1Tag.Integer)));
         reader = new Asn1Reader(Convert.FromHexString("0402FFFF"));
-        var opaque = reader.ReadContained(Asn1Tag.OctetString, false, false, 0, static (r, _) => r.ReadInt32(Asn1Tag.Integer));
-        Assert.False(opaque.HasValue);
-        Assert.Equal("FFFF", Convert.ToHexString(opaque.Contents.Span));
+        var opaque = reader.ReadOctetString(Asn1Tag.OctetString);
+        Assert.Equal("FFFF", Convert.ToHexString(opaque.Span));
     }
 
     [Theory]
@@ -35,17 +33,17 @@ public sealed class ContainedValueTests
     public void RejectsCorruptKnownContent(string hex)
     {
         var reader = new Asn1Reader(Convert.FromHexString(hex));
-        Assert.Throws<Asn1Exception>(() => reader.ReadContained(Asn1Tag.OctetString, false, true, 0, static (r, _) => r.ReadInt32(Asn1Tag.Integer)));
+        Assert.Throws<Asn1Exception>(() => reader.ReadOctetStringContaining(Asn1Tag.OctetString, 0, static (r, _) => r.ReadInt32(Asn1Tag.Integer)));
     }
 
     [Fact]
     public void BitStringContentMustBeOctetAlignedWhenKnown()
     {
         var writer = new Asn1Writer();
-        writer.WriteContained(Asn1Tag.BitString, true, Asn1Contained<int>.FromValue(42), static (w, v) => w.WriteInteger(Asn1Tag.Integer, v));
+        writer.WriteBitStringContaining(Asn1Tag.BitString, 42, static (w, v) => w.WriteInteger(Asn1Tag.Integer, v));
         Assert.Equal("03040002012A", Convert.ToHexString(writer.Encode()));
         var reader = new Asn1Reader(Convert.FromHexString("030203A0"));
-        Assert.Throws<Asn1Exception>(() => reader.ReadContained(Asn1Tag.BitString, true, true, 0, static (r, _) => r.ReadInt32(Asn1Tag.Integer)));
+        Assert.Throws<Asn1Exception>(() => reader.ReadBitStringContaining(Asn1Tag.BitString, 0, static (r, _) => r.ReadInt32(Asn1Tag.Integer)));
     }
 
     [Fact]

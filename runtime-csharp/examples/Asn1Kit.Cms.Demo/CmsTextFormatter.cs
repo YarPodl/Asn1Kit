@@ -96,7 +96,7 @@ public static class CmsTextFormatter
         {
             writer.Line("eContent:");
             writer.Push();
-            writer.BytesSummary("octet string", content.Contents.Span);
+            writer.BytesSummary("octet string", content.Span);
             writer.Pop();
         }
         else

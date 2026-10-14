@@ -44,7 +44,7 @@ public static class CmsModernSignedDataBuilder
             EncapContentInfo = new ModernCms.EncapsulatedContentInfo
             {
                 EContentType = ModernCms.CryptographicMessageSyntax2009Oids.IdData,
-                EContent = Asn1Contained<Asn1Any>.FromEncoded(content)
+                EContent = content
             },
             Certificates = new[] { ModernCms.CertificateChoices.FromCertificate(certificate) },
             SignerInfos = new[] { signer }

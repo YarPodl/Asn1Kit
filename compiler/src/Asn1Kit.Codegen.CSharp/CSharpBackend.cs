@@ -1676,7 +1676,16 @@ public sealed partial class CSharpBackend : ILanguageBackend
         if (ContainedType(type) is { } content)
         {
             ContainedNaming(document, module, original, owner, hint, out var contentModule, out var contentOwner, out var contentHint);
-            sb.AppendLine($"{indent}{writer}.WriteContained({forceTag ?? TagExpr(document, module, type)}, {BoolLiteral(type is BitStringType)}, {expr}, static (inner, value) =>");
+            if (content is AnyType)
+            {
+                if (type is BitStringType)
+                    sb.AppendLine($"{indent}{writer}.WriteBitString({forceTag ?? TagExpr(document, module, type)}, {expr});");
+                else
+                    sb.AppendLine($"{indent}{writer}.WriteOctetString({forceTag ?? TagExpr(document, module, type)}, {expr}.Span);");
+                return;
+            }
+            var method = type is BitStringType ? "WriteBitStringContaining" : "WriteOctetStringContaining";
+            sb.AppendLine($"{indent}{writer}.{method}({forceTag ?? TagExpr(document, module, type)}, {expr}, static (inner, value) =>");
             sb.AppendLine($"{indent}{{");
             EmitEncodeValue(sb, document, contentModule, contentOwner, contentHint, content, indent + "    ", "inner", "value");
             sb.AppendLine($"{indent}}});");
@@ -2238,8 +2247,15 @@ public sealed partial class CSharpBackend : ILanguageBackend
         if (ContainedType(type) is { } content)
         {
             ContainedNaming(document, resolvedModule, original, owner, hint, out var contentModule, out var contentOwner, out var contentHint);
-            var known = content is AnyType ? "false" : "true";
-            sb.Append($"{reader}.ReadContained({forceTag ?? TagExpr(document, module, type)}, {BoolLiteral(type is BitStringType)}, {known}, {openTypeKeyExpr ?? "0"}, static (inner, key) => ");
+            if (content is AnyType)
+            {
+                sb.Append(type is BitStringType
+                    ? $"{reader}.ReadBitString({forceTag ?? TagExpr(document, module, type)})"
+                    : $"{reader}.ReadOctetString({forceTag ?? TagExpr(document, module, type)})");
+                return;
+            }
+            var method = type is BitStringType ? "ReadBitStringContaining" : "ReadOctetStringContaining";
+            sb.Append($"{reader}.{method}({forceTag ?? TagExpr(document, module, type)}, {openTypeKeyExpr ?? "0"}, static (inner, key) => ");
             EmitDecodeExpr(
                 sb,
                 document,
@@ -2547,7 +2563,9 @@ public sealed partial class CSharpBackend : ILanguageBackend
         if (ContainedType(type) is { } content)
         {
             ContainedNaming(document, resolvedModule, original, owner, hint, out var contentModule, out var contentOwner, out var contentHint);
-            var contained = $"Asn1Contained<{CsType(document, contentModule, contentOwner, contentHint, content, false, emittingModule: emittingModule)}>";
+            var contained = content is AnyType
+                ? type is BitStringType ? "Asn1BitString" : "ReadOnlyMemory<byte>"
+                : CsType(document, contentModule, contentOwner, contentHint, content, false, emittingModule: emittingModule);
             return optional ? contained + "?" : contained;
         }
 

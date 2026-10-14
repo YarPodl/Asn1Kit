@@ -103,7 +103,7 @@ public static class CertificateTextFormatter
                 writer.Line(CmsDemoOidNames.Format(extension.ExtnID) + ": " +
                             (extension.Critical ? "critical" : "non-critical"));
                 writer.Push();
-                writer.Hex(extension.ExtnValue.Contents.Span);
+                writer.Hex(extension.ExtnValue.Span);
                 writer.Pop();
             }
             writer.Pop();

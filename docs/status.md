@@ -11,8 +11,8 @@
 | `boolean` | да | `bool` | `bool` | `ParserTests`, `PrimitiveCodecTests`, `PrimitiveOracleTests`, `CppCodegenTests` |
 | `integer` | да, `namedValues` | `int`…`Asn1Integer` по опции / выводу | `int32_t`…`asn1kit::integer`; namedValues → константы | `CompilerTests`, `Primitive*`, `RoundTripTests`, `CppCodegenTests` |
 | `enumerated` | да, автоматическая нумерация и `...` | C# `enum`; inline → `Owner_Field` | `enum class` + `encode_`/`decode_` | `ModernAsn1Tests`, `PkixImplicit88Tests`, `PrimitiveCodecTests`, `CppCodegenTests` |
-| `bitString` | да, `namedBits` | `Asn1BitString` или класс + `[Flags]` | `asn1kit::bit_string` / Flags; `CONTAINING T` → `T` | `Primitive*`, `RuntimeTests`, `RoundTripTests`, `CppCodegenTests`, `contained_tests` |
-| `octetString` | да, `CONTAINING` | `ReadOnlyMemory<byte>` / `Asn1Contained<T>` | `asn1kit::bytes`; `CONTAINING T` → `T` | `ModernAsn1Tests`, `ContainedValueTests`, `Primitive*`, `CppCodegenTests`, `contained_tests` |
+| `bitString` | да, `namedBits` | `Asn1BitString` / Flags; `CONTAINING T` → `T` | `asn1kit::bit_string` / Flags; `CONTAINING T` → `T` | `Primitive*`, `RuntimeTests`, `RoundTripTests`, `CppCodegenTests`, `contained_tests` |
+| `octetString` | да, `CONTAINING` | `ReadOnlyMemory<byte>`; `CONTAINING T` → `T` | `asn1kit::bytes`; `CONTAINING T` → `T` | `ModernAsn1Tests`, `ContainedValueTests`, `Primitive*`, `CppCodegenTests`, `contained_tests` |
 | `oid` | да (dotted; base-128 в т.ч. `2.999…`) | `Asn1Oid` — единственный codec (string↔arcs↔contents); dotted `string` — warm (`Encode`/`DecodeString`) | `asn1kit::oid` + каталог `…Oids`: единая `constexpr` константа с `.text()` / `.span()` / `.get()`, DER-содержимое через `consteval`; DEFAULT/open-type keys без динамического разбора | `Primitive*`, `RuntimeTests`, `CppCodegenTests`, `oid_literal_tests` |
 | `string` (12 форм) | да | `string` + `Asn1StringForm` | `std::string` + `string_form` | `Primitive*` (все 12), `RuntimeTests`, `RoundTripTests` |
 | `time` (`utc` / `generalized`) | да; `fractionDigits` 0…7 | `DateTimeOffset` + `Asn1TimeForm` | `asn1kit::utc_date_time` + `time_form` | `Primitive*`, `RuntimeTests`, `RoundTripTests` |

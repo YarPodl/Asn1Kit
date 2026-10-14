@@ -113,21 +113,32 @@ public static class Asn1Codecs
     /// <summary>Shared GeneralizedTime codec with millisecond precision.</summary>
     public static Asn1Codec<DateTimeOffset> GeneralizedTime { get; } = Time(Asn1Tag.GeneralizedTime, Asn1TimeForm.Generalized, 3);
 
-    /// <summary>Decodes a typed value from OCTET STRING or aligned BIT STRING contents.</summary>
-    public static T DecodeContained<T>(Asn1Contained<Asn1Any> raw, Asn1Codec<T> codec)
+    /// <summary>Decodes a typed value from OCTET STRING contents.</summary>
+    public static T DecodeContained<T>(ReadOnlyMemory<byte> raw, Asn1Codec<T> codec)
+    {
+        ArgumentNullException.ThrowIfNull(codec);
+        return codec.Decode(new Asn1Any(raw));
+    }
+
+    /// <summary>Decodes a typed value from octet-aligned BIT STRING contents.</summary>
+    public static T DecodeContained<T>(Asn1BitString raw, Asn1Codec<T> codec)
     {
         ArgumentNullException.ThrowIfNull(codec);
         if (raw.UnusedBits != 0)
             throw new Asn1Exception("Typed contained value must be octet-aligned.");
-        return codec.Decode(raw.HasValue ? raw.Value : new Asn1Any(raw.Contents));
+        return codec.Decode(new Asn1Any(raw.Memory));
     }
 
-    /// <summary>Encodes a typed value for OCTET STRING or BIT STRING CONTAINING.</summary>
-    public static Asn1Contained<Asn1Any> EncodeContained<T>(T value, Asn1Codec<T> codec)
+    /// <summary>Encodes a typed value as OCTET STRING contents.</summary>
+    public static ReadOnlyMemory<byte> EncodeContainedOctets<T>(T value, Asn1Codec<T> codec)
     {
         ArgumentNullException.ThrowIfNull(codec);
-        return Asn1Contained<Asn1Any>.FromValue(codec.Encode(value));
+        return codec.Encode(value).EncodedMemory;
     }
+
+    /// <summary>Encodes a typed value as octet-aligned BIT STRING contents.</summary>
+    public static Asn1BitString EncodeContainedBits<T>(T value, Asn1Codec<T> codec) =>
+        new(EncodeContainedOctets(value, codec), 0);
 
     /// <summary>Decodes raw open-type collection elements with one shared element codec.</summary>
     public static T[] DecodeEach<T>(Asn1Any[] raw, Asn1Codec<T> codec)

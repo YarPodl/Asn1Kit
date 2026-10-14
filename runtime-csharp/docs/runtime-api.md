@@ -66,7 +66,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `Asn1BitString.Span` / `Memory` / `ToArray` | hot | view (из reader) / detach |
 | `Asn1Integer.Span` / `Memory` / `ToArray` | hot | view DER contents / detach |
 | `Asn1Primitives` wrappers (+ `Asn1OctetString.TryDecode`) | warm | делегируют |
-| `Asn1Contained<T>` / `ReadContained` / `WriteContained` | hot | исходные contents + optional typed value; typed decode в том же reader, encode в том же writer |
+| `ReadOctetStringContaining` / `ReadBitStringContaining` и write-пары | hot | typed `CONTAINING T`: decode/encode непосредственно как `T` в том же reader/writer |
 | `EnterEncoded(ReadOnlyMemory<byte>)` | hot | окно ранее прочитанного TLV для отложенного SET decode; те же encoding/options, scope восстанавливает исходное окно |
 | `Asn1Any.FromValue<T>(T, Action<Asn1Writer,T>)` | warm | owned DER TLV одного значения, используется для констант typed DEFAULT |
 | `Asn1Codec<T>` / `Asn1Codecs` | warm/hot | переиспользуемая пара reader/writer; singleton-кодеки примитивов и общие адаптеры raw open type для ANY, CONTAINING, массивов и decoder-only string CHOICE (`DecodeStringChoice`) |
@@ -75,9 +75,9 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 
 ## CONTAINING и неизвестные расширения
 
-`Asn1Contained<T>.FromValue(value)` создаёт типизированное содержимое; `FromEncoded(contents, unusedBits = 0)` сохраняет opaque октеты без копирования. `Contents` — первоначальные contents внешнего OCTET/BIT STRING (без unused-bits октета у BIT STRING); `Value` доступно только при `HasValue`. Decode известного содержимого проверяет полное потребление и сохраняет исходные октеты. Encode известного значения использует текущее `Value`, opaque — исходные `Contents`. Typed BIT STRING требует выравнивания по октетам; opaque сохраняет `UnusedBits`.
+Известный `CONTAINING T` представлен непосредственно как `T`. Неизвестный `OCTET STRING (CONTAINING ANY)` остаётся `ReadOnlyMemory<byte>`, а неизвестный `BIT STRING (CONTAINING ANY)` — `Asn1BitString`; runtime не пытается угадать или проверить внутренний ASN.1 до явного применения open-type binding. Typed BIT STRING требует выравнивания по октетам, opaque BIT STRING сохраняет `UnusedBits`.
 
-`ReadContained<T,TState>(tag, bitString, known, state, decode)` использует обычный string decoder, включая constructed BER, и при `known` открывает окно contents с теми же options. `WriteContained<T>(tag, bitString, value, encode)` помещает DER-представление в primitive string, используя тот же буфер. Открытые современные таблицы передают `known` по OID; неизвестное содержимое не декодируется по догадке о теге.
+`ReadOctetStringContaining<T,TState>` и `ReadBitStringContaining<T,TState>` используют обычные string decoder, включая constructed BER, и открывают окно contents с теми же options. `WriteOctetStringContaining<T>` и `WriteBitStringContaining<T>` помещают DER-представление непосредственно в primitive string, используя тот же буфер. Open-type bindings декодируют raw string только после совпадения selector.
 
 Расширяемые SEQUENCE/SET при decode пропускают неизвестные extension additions (`ReadAny` без сохранения); encode пишет только известные компоненты. Расширяемый CHOICE сохраняет неизвестную альтернативу целиком как raw TLV.
 
@@ -87,7 +87,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 - `EnterSequence` / `EnterSet` / `EnterSequenceOf` / `EnterSetOf` / `EnterExplicit` пишут nested contents в тот же encode-буфер. Для коллекций есть компактные `WriteSequenceOf<T>` / `WriteSetOf<T>` с item callback; они открывают соответствующий scope и вызывают callback для каждого элемента. Под length резервируется один октет, а `Asn1WriterScope.Dispose()` завершает frame и при необходимости расширяет длинную форму с минимальным сдвигом. `EnterSetOf` и `WriteSetOf<T>` сортируют TLV только в DER; обычный `EnterSet` сохраняет порядок полей.
 - Writer scopes закрываются ровно один раз и строго в LIFO-порядке. Scope не транзакционный: при исключении внутри `using` уже записанное содержимое финализируется; после обработки ошибки writer можно очистить через `Reset()`. Внутренний буфер — `byte[]` (не `MemoryStream`), `Reset()` не уменьшает capacity.
 - `ReadSequenceOf` / `ReadSetOf` возвращают `T[]`: пустой OF → `Array.Empty<T>()`; один элемент → `new T[1]` без pool; иначе grow через `ArrayPool<T>` и точный `T[count]`. Заполнение идёт через `EnterSequence` (без capturing-лямбды вокруг `decodeItem`).
-- `EnterSequence` / `EnterSet` / `EnterExplicit` открывают обычные constructed значения; `EnterEncoded` открывает сохранённый TLV, `ReadContained` — contents string-типа. Для encode scope-методы обязательны для structured значений и ручного OF; collection OF дополнительно использует `WriteSequenceOf<T>` / `WriteSetOf<T>` с `Action<Asn1Writer, T>`.
+- `EnterSequence` / `EnterSet` / `EnterExplicit` открывают обычные constructed значения; `EnterEncoded` открывает сохранённый TLV, `Read*Containing` — contents string-типа. Для encode scope-методы обязательны для structured значений и ручного OF; collection OF дополнительно использует `WriteSequenceOf<T>` / `WriteSetOf<T>` с `Action<Asn1Writer, T>`.
 - `Asn1ReaderScope.Dispose()` только восстанавливает внешнее окно и проверяет LIFO. Полное потребление проверяется явным `ThrowIfNotEmpty()` в успешной ветке decode, чтобы исключение при unwind не заменяло исходную ошибку.
 - `ReadInt32` / `TryGetInt32` (и UInt32/Int64/UInt64) разбирают short contents без `BigInteger`.
 - `ReadTime` парсит UTCTime/GeneralizedTime из contents octets без промежуточной `string` (`Asn1TextCodec.ParseTime(span)`).

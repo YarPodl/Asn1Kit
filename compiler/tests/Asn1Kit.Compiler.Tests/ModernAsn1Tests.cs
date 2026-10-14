@@ -75,6 +75,37 @@ END";
         Assert.Equal("3000", Convert.ToHexString(writer.Encode()));
     }
 
+    [Fact]
+    public void GeneratedContainingUsesTypedValuesAndOriginalOpaqueStringTypes()
+    {
+        var document = new Asn1Compiler().CompileText(@"M DEFINITIONS ::= BEGIN
+          Inner ::= SEQUENCE { n INTEGER (0..100) }
+          Holder ::= SEQUENCE {
+            typed OCTET STRING (CONTAINING Inner),
+            inline OCTET STRING (CONTAINING SEQUENCE { n INTEGER (0..100) }),
+            opaque OCTET STRING (CONTAINING ANY),
+            bits BIT STRING (CONTAINING Inner),
+            opaqueBits BIT STRING (CONTAINING ANY) }
+          END");
+        var generated = new CSharpBackend().Generate(document).Single().Contents;
+        Assert.Contains("public Inner Typed { get; set; }", generated);
+        Assert.Contains("public Holder_Inline_Content Inline { get; set; }", generated);
+        Assert.Contains("public ReadOnlyMemory<byte> Opaque { get; set; }", generated);
+        Assert.Contains("public Inner Bits { get; set; }", generated);
+        Assert.Contains("public Asn1BitString OpaqueBits { get; set; }", generated);
+        Assert.DoesNotContain("Asn1Contained", generated);
+
+        var assembly = CompileGenerated(generated);
+        var type = assembly.GetType("M.Holder")!;
+        var bytes = Convert.FromHexString("30230405300302012A0405300302012A040302012A030600300302012A030600300302012A");
+        var reader = new Asn1Reader(bytes);
+        var value = type.GetMethod("Decode", new[] {typeof(Asn1Reader)})!.Invoke(null, new object[] {reader})!;
+        reader.ThrowIfNotEmpty();
+        var writer = new Asn1Writer();
+        type.GetMethod("Encode", new[] {typeof(Asn1Writer)})!.Invoke(value, new object[] {writer});
+        Assert.Equal(bytes, writer.Encode());
+    }
+
     internal static Assembly CompileGenerated(params string[] sources) =>
         GeneratedCompilation.CompileSources(sources);
 
@@ -505,8 +536,7 @@ END";
         var value = type.GetMethod("Decode", new[] {typeof(Asn1Reader)})!.Invoke(null, new object[] {new Asn1Reader(Convert.FromHexString(hex), Asn1Encoding.Ber)})!;
         var payload = type.GetProperty("Payload")!.GetValue(value)!;
         // Open-type CONTAINING stays opaque on Decode; typed access is via Binding TryDecode.
-        Assert.False((bool)payload.GetType().GetProperty("HasValue")!.GetValue(payload)!);
-        Assert.Equal(contents, Convert.ToHexString(((ReadOnlyMemory<byte>)payload.GetType().GetProperty("Contents")!.GetValue(payload)!).Span));
+        Assert.Equal(contents, Convert.ToHexString(((ReadOnlyMemory<byte>)payload).Span));
     }
 
     [Fact]
@@ -518,7 +548,7 @@ END";
         var decoded = type.GetMethod("Decode", new[] {typeof(Asn1Reader)})!.Invoke(null,
             new object[] {new Asn1Reader(Convert.FromHexString("300A06022A03310004020201"))})!;
         var payload = type.GetProperty("Payload")!.GetValue(decoded)!;
-        Assert.False((bool)payload.GetType().GetProperty("HasValue")!.GetValue(payload)!);
+        Assert.IsType<ReadOnlyMemory<byte>>(payload);
         var extensions = assembly.GetType("Modern.ModernOpenTypeExtensions")!;
         var binding = assembly.GetType("Modern.EntriesPayloadBindings")!.GetProperty("One")!.GetValue(null)!;
         var tryDecode = extensions.GetMethods()

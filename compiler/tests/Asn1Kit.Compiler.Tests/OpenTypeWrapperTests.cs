@@ -244,11 +244,11 @@ public sealed class OpenTypeBindingTests
           raw = Extension.Decode(new Asn1Reader(bytes));
           if (!raw.TryDecodePayload(NumbersPayloadBindings.IntegerEntry, out var decoded) ||
               decoded != 42 || !raw.Critical) throw new Exception(""Conversion failed."");
-          var before = raw.Payload.Contents;
+          var before = raw.Payload;
           raw.SetPayload(NumbersPayloadBindings.IntegerEntry, 7);
           if (!raw.TryDecodePayload(NumbersPayloadBindings.IntegerEntry, out var changed) || changed != 7)
               throw new Exception(""Updated data was not encoded."");
-          if (before.Span.SequenceEqual(raw.Payload.Contents.Span)) throw new Exception(""Source was not updated."");
+          if (before.Span.SequenceEqual(raw.Payload.Span)) throw new Exception(""Source was not updated."");
           if (!raw.Critical) throw new Exception(""Metadata was not preserved."");
           return Convert.ToHexString(bytes);
         ");
@@ -392,7 +392,7 @@ public sealed class OpenTypeBindingTests
               {
                   var writer = new Asn1Writer();
                   writer.WriteInteger(Asn1Tag.Integer, value);
-                  return Asn1Contained<Asn1Any>.FromValue(new Asn1Any(writer.Encode()));
+                  return (ReadOnlyMemory<byte>)writer.Encode();
               });
           if (!raw.TryDecodePayload(custom, out var value)) throw new Exception();
           return value;
@@ -411,7 +411,7 @@ public sealed class OpenTypeBindingTests
               {
                   var writer = new Asn1Writer();
                   writer.WriteInteger(Asn1Tag.Integer, value);
-                  return Asn1Contained<Asn1Any>.FromValue(new Asn1Any(writer.Encode()));
+                  return (ReadOnlyMemory<byte>)writer.Encode();
               });
           if (!raw.TryDecodePayload(custom, out var value)) throw new Exception();
           return value;
@@ -442,7 +442,7 @@ public sealed class OpenTypeBindingTests
           var binding = new PayloadBinding<int>(oid, source =>
           {
             calls++;
-            var reader = new Asn1Reader(source.Payload.Value.EncodedMemory);
+            var reader = new Asn1Reader(source.Payload);
             var decoded = reader.ReadInt32(Asn1Tag.Integer);
             reader.ThrowIfNotEmpty();
             return decoded;
@@ -450,7 +450,7 @@ public sealed class OpenTypeBindingTests
           {
             var writer = new Asn1Writer();
             writer.WriteInteger(Asn1Tag.Integer, value);
-            return Asn1Contained<Asn1Any>.FromValue(new Asn1Any(writer.Encode()));
+            return (ReadOnlyMemory<byte>)writer.Encode();
           });
           raw.SetPayload(binding, 7);
           var holder = new Holder {Extensions = new[] {raw}};
@@ -484,7 +484,7 @@ public sealed class OpenTypeBindingTests
         var body = @"
           var raw = new Extension();
           raw.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
-          raw.Payload = Asn1Contained<Asn1Any>.FromEncoded(Convert.FromHexString(""" + contents + @"""));
+          raw.Payload = Convert.FromHexString(""" + contents + @""");
           return raw.TryDecodePayload(NumbersPayloadBindings.IntegerEntry, out _);";
         if (fails) Assert.Throws<Asn1Exception>(() => Run(body));
         else Assert.Equal(true, Run(body));
@@ -497,7 +497,7 @@ public sealed class OpenTypeBindingTests
         var error = Assert.Throws<Asn1Exception>(() => Run(@"
           var raw = new Extension();
           raw.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
-          raw.Payload = Asn1Contained<Asn1Any>.FromEncoded(new byte[] {0xFF});
+          raw.Payload = new byte[] {0xFF};
           var holder = new Holder { Extensions = new[] {raw, raw} };
           return holder.Extensions.TryGet(NumbersPayloadBindings.IntegerEntry, out _);
         "));
@@ -671,7 +671,7 @@ public sealed class OpenTypeBindingTests
     {
         Assert.Throws<Asn1Exception>(() => Run(@"
           var raw = new Extension(); raw.SetPayload(NumbersPayloadBindings.IntegerEntry, 42);
-          raw.Payload = Asn1Contained<Asn1Any>.FromEncoded(Convert.FromHexString(""02012A""), 1);
+          raw.Payload = new Asn1BitString(Convert.FromHexString(""02012A""), 1);
           return raw.TryDecodePayload(NumbersPayloadBindings.IntegerEntry, out _);
         ", source: Source.Replace("OCTET STRING (CONTAINING", "BIT STRING (CONTAINING")));
     }

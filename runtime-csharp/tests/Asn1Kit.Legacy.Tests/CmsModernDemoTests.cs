@@ -46,7 +46,7 @@ public sealed class CmsModernDemoTests
         var modern = ModernCms.ContentInfo.Decode(new Asn1Reader(Fixture));
         Assert.True(modern.TryDecodeContent<ModernCms.SignedData>(
             ModernCms.ContentSetContentBindings.CtSignedData, out var signedData));
-        Assert.Equal(signedData.EncapContentInfo.EContent!.Value.Contents.ToArray(), verifier.SignedBytes);
+        Assert.Equal(signedData.EncapContentInfo.EContent!.Value.ToArray(), verifier.SignedBytes);
         var signerIssuer = signedData.SignerInfos[0].Sid.IssuerAndSerialNumber!.Issuer.OriginalEncoding;
         var certificateIssuer = signedData.Certificates!.Single(choice => choice.Certificate is not null)
             .Certificate!.Value.Value.ToBeSigned.Issuer.OriginalEncoding;
