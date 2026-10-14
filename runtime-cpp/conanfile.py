@@ -12,13 +12,21 @@ class Asn1kitRuntimeConan(ConanFile):
     """
 
     settings = "os", "compiler", "build_type", "arch"
-    options = {"build_tests": [True, False]}
-    default_options = {"build_tests": True}
+    options = {
+        "build_tests": [True, False],
+        "build_benchmarks": [True, False],
+    }
+    default_options = {
+        "build_tests": True,
+        "build_benchmarks": False,
+    }
 
     def build_requirements(self):
         if self.options.build_tests:
             self.test_requires("gtest/1.15.0")
             self.test_requires("nlohmann_json/3.11.3")
+        if self.options.build_benchmarks:
+            self.test_requires("benchmark/1.9.1")
 
     def generate(self):
         deps = CMakeDeps(self)
@@ -27,4 +35,5 @@ class Asn1kitRuntimeConan(ConanFile):
         tc.user_presets_path = False
         tc.variables["CMAKE_CXX_STANDARD"] = "20"
         tc.variables["ASN1KIT_BUILD_TESTS"] = bool(self.options.build_tests)
+        tc.variables["ASN1KIT_BUILD_BENCHMARKS"] = bool(self.options.build_benchmarks)
         tc.generate()

@@ -10,8 +10,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(ASN1KIT_BUILD_TESTS "Build asn1kit unit tests" ON)
 option(ASN1KIT_BUILD_EXAMPLES "Build asn1kit example programs" ON)
+option(ASN1KIT_BUILD_BENCHMARKS "Build asn1kit Google Benchmark suite (not a test gate)" OFF)
 option(ASN1KIT_FETCH_TEST_DEPS
-    "Fetch gtest and nlohmann_json via FetchContent instead of find_package (no Conan)"
+    "Fetch gtest, nlohmann_json, and (if benchmarks) Google Benchmark via FetchContent instead of find_package (no Conan)"
     OFF)
 
 set(ASN1KIT_BER_DER_FIXTURES_DIR
@@ -81,4 +82,24 @@ endif()
 if(ASN1KIT_BUILD_EXAMPLES)
     enable_testing()
     add_subdirectory(examples)
+endif()
+
+if(ASN1KIT_BUILD_BENCHMARKS)
+    if(ASN1KIT_FETCH_TEST_DEPS)
+        include(FetchContent)
+        set(FETCHCONTENT_BASE_DIR "${CMAKE_BINARY_DIR}/_deps" CACHE PATH "" FORCE)
+        set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+        set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE BOOL "" FORCE)
+        set(BENCHMARK_ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
+        FetchContent_Declare(
+            googlebenchmark
+            GIT_REPOSITORY https://github.com/google/benchmark.git
+            GIT_TAG v1.9.1
+            GIT_SHALLOW TRUE
+        )
+        FetchContent_MakeAvailable(googlebenchmark)
+    else()
+        find_package(benchmark REQUIRED)
+    endif()
+    add_subdirectory(benchmarks)
 endif()

@@ -43,6 +43,18 @@
       }
     },
     {
+      "name": "fetch-release",
+      "displayName": "FetchContent Release (Ninja)",
+      "description": "No Conan Release build; enable benchmarks with -DASN1KIT_BUILD_BENCHMARKS=ON",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-fetch-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ASN1KIT_BUILD_TESTS": "ON",
+        "ASN1KIT_FETCH_TEST_DEPS": "ON"
+      }
+    },
+    {
       "name": "conan-default-vs",
       "displayName": "Conan Debug (Visual Studio)",
       "generator": "Visual Studio 17 2022",
@@ -71,6 +83,10 @@
     {
       "name": "fetch-default",
       "configurePreset": "fetch-default"
+    },
+    {
+      "name": "fetch-release",
+      "configurePreset": "fetch-release"
     }
   ],
   "testPresets": [
@@ -99,6 +115,13 @@
     {
       "name": "fetch-default",
       "configurePreset": "fetch-default",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "fetch-release",
+      "configurePreset": "fetch-release",
       "output": {
         "outputOnFailure": true
       }
