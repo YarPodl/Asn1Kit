@@ -74,6 +74,50 @@ public sealed class CmsModernDemoTests
     }
 
     [Fact]
+    public void SignedAttributes_RejectMissingDuplicateMultipleAndMismatchedBindings()
+    {
+        var encoded = WithSignedAttrs();
+
+        AssertRejected(Mutate(encoded, (info, signedData) =>
+        {
+            var signer = signedData.SignerInfos[0];
+            signer.SignedAttrs = signer.SignedAttrs!.Value.Value
+                .Where(attribute => attribute.AttrType != CryptographicMessageSyntax2004Oids.IdContentType)
+                .ToArray();
+            info.SetContent(ContentInfoContentBindings.SignedData, signedData);
+        }), "requires contentType");
+
+        AssertRejected(Mutate(encoded, (info, signedData) =>
+        {
+            var signer = signedData.SignerInfos[0];
+            var attributes = signer.SignedAttrs!.Value.Value;
+            signer.SignedAttrs = attributes.Append(attributes.Single(attribute =>
+                attribute.AttrType == CryptographicMessageSyntax2004Oids.IdContentType)).ToArray();
+            info.SetContent(ContentInfoContentBindings.SignedData, signedData);
+        }), "Multiple values match");
+
+        AssertRejected(Mutate(encoded, (info, signedData) =>
+        {
+            var attribute = signedData.SignerInfos[0].SignedAttrs!.Value.Value.Single(item =>
+                item.AttrType == CryptographicMessageSyntax2004Oids.IdMessageDigest);
+            attribute.AttrValues = new[] {attribute.AttrValues[0], attribute.AttrValues[0]};
+            info.SetContent(ContentInfoContentBindings.SignedData, signedData);
+        }), "exactly one messageDigest");
+
+        AssertRejected(Mutate(encoded, (info, signedData) =>
+        {
+            var attribute = signedData.SignerInfos[0].SignedAttrs!.Value.Value.Single(item =>
+                item.AttrType == CryptographicMessageSyntax2004Oids.IdContentType);
+            attribute.AttrValues = new[]
+            {
+                Asn1Any.FromValue(CryptographicMessageSyntax2004Oids.IdSignedData,
+                    static (writer, value) => writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, value))
+            };
+            info.SetContent(ContentInfoContentBindings.SignedData, signedData);
+        }), "differs from eContentType");
+    }
+
+    [Fact]
     public void MalformedInputAndMissingRequiredContainerFields_AreRejected()
     {
         Assert.Throws<Asn1Exception>(() => CmsModernSignedDataInspector.Inspect(new byte[] { 0x30, 0x02, 0x06 }, new RecordingVerifier()));

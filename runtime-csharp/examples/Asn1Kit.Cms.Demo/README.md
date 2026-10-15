@@ -18,3 +18,5 @@ dotnet run --project runtime-csharp/examples/Asn1Kit.Cms.Demo -- sign --certific
 | CMS | `CryptographicMessageSyntax2009` | `CryptographicMessageSyntax2004` |
 
 Options: modern — [modern-pkix-cms.patch.json](../../../compiler/fixtures/ir/modern-pkix-cms.patch.json); legacy — [dvcs.patch.json](../../../compiler/fixtures/ir/dvcs.patch.json).
+
+Modern-ветка использует generated open-type bindings для `ContentInfo`, signed attributes и расширений сертификата (`Create`, `TryDecodeContent`, `TryGet`). Legacy-ветка использует тот же API там, где bindings доступны; `Attribute.attrValues` остаётся raw `Asn1Any`, поскольку для Legacy CMS каталог bindings не генерируется.

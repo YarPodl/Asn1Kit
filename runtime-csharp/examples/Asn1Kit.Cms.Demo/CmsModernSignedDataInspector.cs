@@ -19,8 +19,7 @@ public static class CmsModernSignedDataInspector
         ArgumentNullException.ThrowIfNull(verifier);
         var contentInfo = Asn1Utils.Decode(encoded, ModernCms.ContentInfo.Decode);
 
-        if (contentInfo.ContentType != ModernCms.CryptographicMessageSyntax2009Oids.IdSignedData ||
-            !contentInfo.TryDecodeContent(ModernCms.ContentSetContentBindings.CtSignedData, out var signedData))
+        if (!contentInfo.TryDecodeContent(ModernCms.ContentSetContentBindings.CtSignedData, out var signedData))
             throw new InvalidDataException("ContentInfo must contain SignedData.");
         var content = signedData.EncapContentInfo.EContent;
         if (content is null)
@@ -70,7 +69,7 @@ public static class CmsModernSignedDataInspector
         if (signer.SignedAttrs is not null)
         {
             var signedAttrs = signer.SignedAttrs.Value;
-            var claimedDigest = ReadSignedAttributes(signer, signedData.EncapContentInfo.EContentType);
+            var claimedDigest = ReadSignedAttributes(signedAttrs.Value, signedData.EncapContentInfo.EContentType);
             if (!verifier.VerifyDigest(signer.DigestAlgorithm.Algorithm, content, claimedDigest, certificate))
                 throw new InvalidDataException("Digest was rejected by the educational stub.");
 
@@ -83,12 +82,12 @@ public static class CmsModernSignedDataInspector
         return certificate;
     }
 
-    private static ReadOnlyMemory<byte> ReadSignedAttributes(ModernCms.SignerInfo signer, Asn1Oid contentType)
+    private static ReadOnlyMemory<byte> ReadSignedAttributes(ModernCms.Attribute[] attributes, Asn1Oid contentType)
     {
-        if (signer.SignedAttrs?.Value.TryGet(
-                ModernCms.SignedAttributesSetBindings.ContentType, out var declaredContentType) != true ||
-            signer.SignedAttrs?.Value.TryGet(
-                ModernCms.SignedAttributesSetBindings.MessageDigest, out var digest) != true)
+        if (!attributes.TryGet(
+                ModernCms.SignedAttributesSetBindings.ContentType, out var declaredContentType) ||
+            !attributes.TryGet(
+                ModernCms.SignedAttributesSetBindings.MessageDigest, out var digest))
             throw new InvalidDataException("SignedAttrs requires contentType and messageDigest.");
         if (declaredContentType.Length != 1)
             throw new InvalidDataException("SignedAttrs must contain exactly one contentType value.");

@@ -2,6 +2,7 @@
 /build-release/
 /build-vs/
 /build-fetch/
+/build-fetch-release/
 /CMakeUserPresets.json
 /CMakeFiles/
 /Testing/

@@ -14,8 +14,7 @@ public static class CmsSignedDataInspector
         ArgumentNullException.ThrowIfNull(verifier);
         var contentInfo = Asn1Utils.Decode(encoded, ContentInfo.Decode);
 
-        if (contentInfo.ContentType != CryptographicMessageSyntax2004Oids.IdSignedData ||
-            !contentInfo.TryDecodeContent(ContentInfoContentBindings.SignedData, out var signedData))
+        if (!contentInfo.TryDecodeContent(ContentInfoContentBindings.SignedData, out var signedData))
             throw new InvalidDataException("ContentInfo must contain SignedData.");
         var content = signedData.EncapContentInfo.EContent;
         if (content is null)

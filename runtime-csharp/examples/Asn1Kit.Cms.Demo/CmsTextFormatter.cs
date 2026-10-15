@@ -21,8 +21,7 @@ public static class CmsTextFormatter
     {
         ArgumentNullException.ThrowIfNull(output);
         var contentInfo = Asn1Utils.Decode(encoded, ContentInfo.Decode);
-        if (contentInfo.ContentType != CryptographicMessageSyntax2004Oids.IdSignedData ||
-            !contentInfo.TryDecodeContent(ContentInfoContentBindings.SignedData, out SignedData signedData))
+        if (!contentInfo.TryDecodeContent(ContentInfoContentBindings.SignedData, out SignedData signedData))
             throw new InvalidDataException("ContentInfo must contain SignedData.");
 
         var writer = new DemoTextWriter(output);
@@ -71,8 +70,7 @@ public static class CmsTextFormatter
     {
         ArgumentNullException.ThrowIfNull(output);
         var contentInfo = Asn1Utils.Decode(encoded, ModernCms.ContentInfo.Decode);
-        if (contentInfo.ContentType != ModernCms.CryptographicMessageSyntax2009Oids.IdSignedData ||
-            !TryDecodeModernSignedData(contentInfo, out var signedData))
+        if (!TryDecodeModernSignedData(contentInfo, out var signedData))
             throw new InvalidDataException("ContentInfo must contain SignedData.");
 
         var writer = new DemoTextWriter(output);

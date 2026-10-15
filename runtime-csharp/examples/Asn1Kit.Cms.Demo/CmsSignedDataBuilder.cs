@@ -72,8 +72,7 @@ public static class CmsSignedDataBuilder
             SignerInfos = new[] { signer }
         };
 
-        var contentInfo = new ContentInfo();
-        contentInfo.SetContent(ContentInfoContentBindings.SignedData, signedData);
+        var contentInfo = ContentInfoContentBindings.SignedData.Create(signedData);
         var writer = new Asn1Writer(Asn1Encoding.Der);
         contentInfo.Encode(writer);
         return writer.Encode();
