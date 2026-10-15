@@ -47,6 +47,38 @@ struct Attribute {
     asn1kit::oid attrType{};
     std::vector<asn1kit::any> attrValues{};
 
+    template <typename Context, typename T>
+    [[nodiscard]] std::optional<std::vector<T>> try_decode(
+        const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding) const {
+        if (!(this->attrType == binding.key)) return std::nullopt;
+        return asn1kit::decode_each<T>(attrValues);
+    }
+
+    template <typename Context, typename T>
+    void set(const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding, const std::vector<T>& value) {
+        this->attrType = binding.key;
+        attrValues = asn1kit::encode_each(value);
+    }
+
+    template <typename Context, typename T>
+    void set(const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding, const T& value) {
+        set(binding, std::vector<T>{value});
+    }
+
+    template <typename Context, typename T>
+    [[nodiscard]] static Attribute create(
+        const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding, const std::vector<T>& value) {
+        Attribute result{};
+        result.set(binding, value);
+        return result;
+    }
+
+    template <typename Context, typename T>
+    [[nodiscard]] static Attribute create(
+        const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding, const T& value) {
+        return create(binding, std::vector<T>{value});
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
@@ -84,6 +116,27 @@ struct ContentInfo {
     asn1kit::oid contentType{};
     asn1kit::any content{};
 
+    template <typename Context, typename T>
+    [[nodiscard]] std::optional<T> try_decode(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding) const {
+        if (!(this->contentType == binding.key)) return std::nullopt;
+        return asn1kit::decode_open<T>(content);
+    }
+
+    template <typename Context, typename T>
+    void set(const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        this->contentType = binding.key;
+        content = asn1kit::encode_open(value);
+    }
+
+    template <typename Context, typename T>
+    [[nodiscard]] static ContentInfo create(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        ContentInfo result{};
+        result.set(binding, value);
+        return result;
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
@@ -114,6 +167,28 @@ struct ContentInfo {
 struct EncapsulatedContentInfo {
     asn1kit::oid eContentType{};
     std::optional<asn1kit::bytes> eContent{};
+
+    template <typename Context, typename T>
+    [[nodiscard]] std::optional<T> try_decode(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding) const {
+        if (!eContent.has_value()) return std::nullopt;
+        if (!(this->eContentType == binding.key)) return std::nullopt;
+        return asn1kit::decode_contained<T>(*eContent);
+    }
+
+    template <typename Context, typename T>
+    void set(const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        this->eContentType = binding.key;
+        eContent = asn1kit::encode_contained_octets(value);
+    }
+
+    template <typename Context, typename T>
+    [[nodiscard]] static EncapsulatedContentInfo create(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        EncapsulatedContentInfo result{};
+        result.set(binding, value);
+        return result;
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -198,6 +273,12 @@ struct EncryptedContentInfo {
     asn1kit::oid contentType{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier contentEncryptionAlgorithm{};
     std::optional<asn1kit::bytes> encryptedContent{};
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_content_encryption_algorithm(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.contentEncryptionAlgorithmSet_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).contentEncryptionAlgorithm, binding);
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -449,6 +530,12 @@ struct OriginatorPublicKey {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithm{};
     asn1kit::bit_string publicKey{};
 
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_algorithm(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.originatorKeySet_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).algorithm, binding);
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
@@ -647,6 +734,12 @@ struct KEKRecipientInfo {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier keyEncryptionAlgorithm{};
     asn1kit::bytes encryptedKey{};
 
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_key_encryption_algorithm(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.keyWrapAlgs_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).keyEncryptionAlgorithm, binding);
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
@@ -724,6 +817,19 @@ struct PasswordRecipientInfo {
     std::optional<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> keyDerivationAlgorithm{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier keyEncryptionAlgorithm{};
     asn1kit::bytes encryptedKey{};
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_key_derivation_algorithm(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.keyDevAlgs_parameters">, asn1kit::oid, T>& binding) const {
+        if (!(*this).keyDerivationAlgorithm.has_value()) return std::nullopt;
+        return asn1kit::try_decode_unique((*(*this).keyDerivationAlgorithm), binding);
+    }
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_key_encryption_algorithm(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.keyWrapAlgs_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).keyEncryptionAlgorithm, binding);
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -842,6 +948,12 @@ struct KeyTransRecipientInfo {
     RecipientIdentifier rid{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier keyEncryptionAlgorithm{};
     asn1kit::bytes encryptedKey{};
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_key_encryption_algorithm(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.keyTransportAlgorithmSet_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).keyEncryptionAlgorithm, binding);
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -1003,6 +1115,12 @@ struct KeyAgreeRecipientInfo {
     std::optional<asn1kit::bytes> ukm{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier keyEncryptionAlgorithm{};
     std::vector<RecipientEncryptedKey> recipientEncryptedKeys{};
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_key_encryption_algorithm(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.keyAgreementAlgorithmSet_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).keyEncryptionAlgorithm, binding);
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -1363,6 +1481,20 @@ struct SignerInfo {
     asn1kit::bytes signature{};
     std::optional<std::vector<Attribute>> unsignedAttrs{};
 
+    template <typename T>
+    [[nodiscard]] std::optional<std::vector<T>> try_decode_signed_attrs(
+        const asn1kit::open_binding<asn1kit::open_context<"CryptographicMessageSyntax-2009.signedAttributesSet">, asn1kit::oid, std::vector<T>>& binding) const {
+        if (!(*this).signedAttrs.has_value()) return std::nullopt;
+        return asn1kit::try_decode_unique((*(*this).signedAttrs).get(), binding);
+    }
+
+    template <typename T>
+    [[nodiscard]] std::optional<std::vector<T>> try_decode_unsigned_attrs(
+        const asn1kit::open_binding<asn1kit::open_context<"CryptographicMessageSyntax-2009.unsignedAttributes">, asn1kit::oid, std::vector<T>>& binding) const {
+        if (!(*this).unsignedAttrs.has_value()) return std::nullopt;
+        return asn1kit::try_decode_unique((*(*this).unsignedAttrs), binding);
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
@@ -1669,6 +1801,19 @@ struct AuthenticatedData {
     std::optional<std::vector<Attribute>> authAttrs{};
     asn1kit::bytes mac{};
     std::optional<std::vector<Attribute>> unauthAttrs{};
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_mac_algorithm(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.pOPAlgs_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).macAlgorithm, binding);
+    }
+
+    template <typename T>
+    [[nodiscard]] std::optional<std::vector<T>> try_decode_auth_attrs(
+        const asn1kit::open_binding<asn1kit::open_context<"CryptographicMessageSyntax-2009.authAttributeSet">, asn1kit::oid, std::vector<T>>& binding) const {
+        if (!(*this).authAttrs.has_value()) return std::nullopt;
+        return asn1kit::try_decode_unique((*(*this).authAttrs), binding);
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);

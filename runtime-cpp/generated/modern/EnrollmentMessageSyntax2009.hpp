@@ -32,125 +32,155 @@ namespace asn1kit {
 namespace modern {
 namespace EnrollmentMessageSyntax2009 {
 
-template <typename T>
-struct attrValues_binding {
-    asn1kit::oid key{};
-
-    [[nodiscard]] bool try_decode(const TaggedAttribute& src, std::vector<T>& out) const {
-        if (!(src.attrType == key)) return false;
-        out = asn1kit::decode_each<T>(src.attrValues);
-        return true;
-    }
-
-    void set(TaggedAttribute& src, const std::vector<T>& value) const {
-        src.attrType = key;
-        src.attrValues = asn1kit::encode_each(value);
-    }
-
-    void set(TaggedAttribute& src, const T& value) const {
-        set(src, std::vector<T>{value});
-    }
-
-    [[nodiscard]] TaggedAttribute create(const std::vector<T>& value) const {
-        TaggedAttribute src{};
-        set(src, value);
-        return src;
-    }
-
-    [[nodiscard]] TaggedAttribute create(const T& value) const {
-        return create(std::vector<T>{value});
-    }
-};
-
 namespace cmc_control_set_attrValues_bindings {
-inline const attrValues_binding<asn1kit::bytes> cmc_identity_proof{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<asn1kit::bytes>> cmc_identity_proof{
     EnrollmentMessageSyntax2009Oids::IdCmcIdentityProof.get()};
 
-inline const attrValues_binding<asn1kit::bytes> cmc_data_return{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<asn1kit::bytes>> cmc_data_return{
     EnrollmentMessageSyntax2009Oids::IdCmcDataReturn.get()};
 
-inline const attrValues_binding<asn1kit::bytes> cmc_reg_info{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<asn1kit::bytes>> cmc_reg_info{
     EnrollmentMessageSyntax2009Oids::IdCmcRegInfo.get()};
 
-inline const attrValues_binding<asn1kit::bytes> cmc_response_info{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<asn1kit::bytes>> cmc_response_info{
     EnrollmentMessageSyntax2009Oids::IdCmcResponseInfo.get()};
 
-inline const attrValues_binding<asn1kit::bytes> cmc_query_pending{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<asn1kit::bytes>> cmc_query_pending{
     EnrollmentMessageSyntax2009Oids::IdCmcQueryPending.get()};
 
-inline const attrValues_binding<asn1kit::bytes> cmc_pop_link_random{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<asn1kit::bytes>> cmc_pop_link_random{
     EnrollmentMessageSyntax2009Oids::IdCmcPopLinkRandom.get()};
 
-inline const attrValues_binding<asn1kit::bytes> cmc_pop_link_witness{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<asn1kit::bytes>> cmc_pop_link_witness{
     EnrollmentMessageSyntax2009Oids::IdCmcPopLinkWitness.get()};
 
-inline const attrValues_binding<asn1kit::asn_string<asn1kit::string_form::utf8>> cmc_identification{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<asn1kit::asn_string<asn1kit::string_form::utf8>>> cmc_identification{
     EnrollmentMessageSyntax2009Oids::IdCmcIdentification.get()};
 
-inline const attrValues_binding<asn1kit::integer> cmc_transaction_id{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<asn1kit::integer>> cmc_transaction_id{
     EnrollmentMessageSyntax2009Oids::IdCmcTransactionId.get()};
 
-inline const attrValues_binding<asn1kit::bytes> cmc_sender_nonce{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<asn1kit::bytes>> cmc_sender_nonce{
     EnrollmentMessageSyntax2009Oids::IdCmcSenderNonce.get()};
 
-inline const attrValues_binding<asn1kit::bytes> cmc_recipient_nonce{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<asn1kit::bytes>> cmc_recipient_nonce{
     EnrollmentMessageSyntax2009Oids::IdCmcRecipientNonce.get()};
 
-inline const attrValues_binding<CMCStatusInfo> cmc_status_info{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<CMCStatusInfo>> cmc_status_info{
     EnrollmentMessageSyntax2009Oids::IdCmcStatusInfo.get()};
 
-inline const attrValues_binding<AddExtensions> cmc_add_extensions{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<AddExtensions>> cmc_add_extensions{
     EnrollmentMessageSyntax2009Oids::IdCmcAddExtensions.get()};
 
-inline const attrValues_binding<EncryptedPOP> cmc_encrypted_p_o_p{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<EncryptedPOP>> cmc_encrypted_p_o_p{
     EnrollmentMessageSyntax2009Oids::IdCmcEncryptedPOP.get()};
 
-inline const attrValues_binding<DecryptedPOP> cmc_decrypted_p_o_p{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<DecryptedPOP>> cmc_decrypted_p_o_p{
     EnrollmentMessageSyntax2009Oids::IdCmcDecryptedPOP.get()};
 
-inline const attrValues_binding<LraPopWitness> cmc_lra_p_o_p_witness{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<LraPopWitness>> cmc_lra_p_o_p_witness{
     EnrollmentMessageSyntax2009Oids::IdCmcLraPOPWitness.get()};
 
-inline const attrValues_binding<GetCert> cmc_get_cert{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<GetCert>> cmc_get_cert{
     EnrollmentMessageSyntax2009Oids::IdCmcGetCert.get()};
 
-inline const attrValues_binding<GetCRL> cmc_get_c_r_l{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<GetCRL>> cmc_get_c_r_l{
     EnrollmentMessageSyntax2009Oids::IdCmcGetCRL.get()};
 
-inline const attrValues_binding<RevokeRequest> cmc_revoke_request{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<RevokeRequest>> cmc_revoke_request{
     EnrollmentMessageSyntax2009Oids::IdCmcRevokeRequest.get()};
 
-inline const attrValues_binding<::asn1kit::modern::CryptographicMessageSyntax2009::IssuerAndSerialNumber> cmc_confirm_cert_acceptance{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<::asn1kit::modern::CryptographicMessageSyntax2009::IssuerAndSerialNumber>> cmc_confirm_cert_acceptance{
     EnrollmentMessageSyntax2009Oids::IdCmcConfirmCertAcceptance.get()};
 
-inline const attrValues_binding<CMCStatusInfoV2> cmc_status_info_v2{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<CMCStatusInfoV2>> cmc_status_info_v2{
     EnrollmentMessageSyntax2009Oids::IdCmcStatusInfoV2.get()};
 
-inline const attrValues_binding<PublishTrustAnchors> cmc_trusted_anchors{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<PublishTrustAnchors>> cmc_trusted_anchors{
     EnrollmentMessageSyntax2009Oids::IdCmcTrustedAnchors.get()};
 
-inline const attrValues_binding<std::uint32_t> cmc_auth_data{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<std::uint32_t>> cmc_auth_data{
     EnrollmentMessageSyntax2009Oids::IdCmcAuthData.get()};
 
-inline const attrValues_binding<std::vector<std::uint32_t>> cmc_batch_requests{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<std::vector<std::uint32_t>>> cmc_batch_requests{
     EnrollmentMessageSyntax2009Oids::IdCmcBatchRequests.get()};
 
-inline const attrValues_binding<std::vector<std::uint32_t>> cmc_batch_responses{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<std::vector<std::uint32_t>>> cmc_batch_responses{
     EnrollmentMessageSyntax2009Oids::IdCmcBatchResponses.get()};
 
-inline const attrValues_binding<CMCPublicationInfo> cmc_publish_cert{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<CMCPublicationInfo>> cmc_publish_cert{
     EnrollmentMessageSyntax2009Oids::IdCmcPublishCert.get()};
 
-inline const attrValues_binding<ModCertTemplate> cmc_mod_cert_template{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<ModCertTemplate>> cmc_mod_cert_template{
     EnrollmentMessageSyntax2009Oids::IdCmcModCertTemplate.get()};
 
-inline const attrValues_binding<ControlsProcessed> cmc_control_processed{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<ControlsProcessed>> cmc_control_processed{
     EnrollmentMessageSyntax2009Oids::IdCmcControlProcessed.get()};
 
-inline const attrValues_binding<IdentityProofV2> cmc_identity_proof_v2{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<IdentityProofV2>> cmc_identity_proof_v2{
     EnrollmentMessageSyntax2009Oids::IdCmcIdentityProofV2.get()};
 
-inline const attrValues_binding<PopLinkWitnessV2> cmc_pop_link_witness_v2{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
+    asn1kit::oid, std::vector<PopLinkWitnessV2>> cmc_pop_link_witness_v2{
     EnrollmentMessageSyntax2009Oids::IdCmcPopLinkWitnessV2.get()};
 
 } // namespace cmc_control_set_attrValues_bindings

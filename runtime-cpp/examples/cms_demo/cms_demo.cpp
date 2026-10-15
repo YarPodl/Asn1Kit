@@ -120,11 +120,11 @@ using PkixOids = Pkix::PKIX1Explicit2009Oids;
     if (info.contentType != CmsOids::IdSignedData.get()) {
         throw std::runtime_error("ContentInfo must be id-signedData.");
     }
-    Cms::SignedData signed_data{};
-    if (!Cms::contentSet_content_bindings::ct_signed_data.try_decode(info, signed_data)) {
+    auto signed_data = info.try_decode(Cms::contentSet_content_bindings::ct_signed_data);
+    if (!signed_data) {
         throw std::runtime_error("ContentInfo must contain SignedData.");
     }
-    return signed_data;
+    return std::move(*signed_data);
 }
 
 [[nodiscard]] std::span<const std::uint8_t> require_econtent(const Cms::SignedData& signed_data) {
@@ -192,38 +192,23 @@ using PkixOids = Pkix::PKIX1Explicit2009Oids;
         throw std::runtime_error("SignedAttrs requires contentType and messageDigest.");
     }
 
-    bool saw_content_type = false;
-    bool saw_digest = false;
-    asn1kit::oid declared_type{};
-    asn1kit::bytes digest{};
-
-    for (const auto& attr : signer.signedAttrs->get()) {
-        std::vector<asn1kit::oid> types;
-        if (Cms::signedAttributesSet_bindings::content_type.try_decode(attr, types)) {
-            if (types.size() != 1) {
-                throw std::runtime_error("SignedAttrs must contain exactly one contentType value.");
-            }
-            declared_type = types[0];
-            saw_content_type = true;
-            continue;
-        }
-        std::vector<asn1kit::bytes> digests;
-        if (Cms::signedAttributesSet_bindings::message_digest.try_decode(attr, digests)) {
-            if (digests.size() != 1) {
-                throw std::runtime_error("SignedAttrs must contain exactly one messageDigest value.");
-            }
-            digest = digests[0];
-            saw_digest = true;
-        }
-    }
-
-    if (!saw_content_type || !saw_digest) {
+    const auto types = signer.try_decode_signed_attrs(
+        Cms::signedAttributesSet_bindings::content_type);
+    const auto digests = signer.try_decode_signed_attrs(
+        Cms::signedAttributesSet_bindings::message_digest);
+    if (!types || !digests) {
         throw std::runtime_error("SignedAttrs requires contentType and messageDigest.");
     }
-    if (declared_type != econtent_type) {
+    if (types->size() != 1) {
+        throw std::runtime_error("SignedAttrs must contain exactly one contentType value.");
+    }
+    if (digests->size() != 1) {
+        throw std::runtime_error("SignedAttrs must contain exactly one messageDigest value.");
+    }
+    if (types->front() != econtent_type) {
         throw std::runtime_error("SignedAttrs contentType differs from eContentType.");
     }
-    return digest;
+    return digests->front();
 }
 
 [[nodiscard]] bool stub_accept_digest(const asn1kit::bytes& claimed) {
@@ -379,8 +364,8 @@ std::vector<std::uint8_t> build_attached_signed_data(
     signer.sid = Cms::SignerIdentifier::from_issuerAndSerialNumber(std::move(ias));
     signer.digestAlgorithm = digest_algorithm;
     signer.signedAttrs = asn1kit::value<std::vector<Cms::Attribute>>::from_value({
-        Cms::signedAttributesSet_bindings::content_type.create(CmsOids::IdData.get()),
-        Cms::signedAttributesSet_bindings::message_digest.create(digest),
+        Cms::Attribute::create(Cms::signedAttributesSet_bindings::content_type, CmsOids::IdData.get()),
+        Cms::Attribute::create(Cms::signedAttributesSet_bindings::message_digest, digest),
     });
     signer.signatureAlgorithm = signature_algorithm;
     signer.signature = asn1kit::bytes::from_vector(std::vector<std::uint8_t>(32, 0x01));
@@ -394,7 +379,8 @@ std::vector<std::uint8_t> build_attached_signed_data(
         Cms::CertificateChoices::from_certificate(certificate)};
     signed_data.signerInfos = {std::move(signer)};
 
-    const auto content_info = Cms::contentSet_content_bindings::ct_signed_data.create(signed_data);
+    const auto content_info = Cms::ContentInfo::create(
+        Cms::contentSet_content_bindings::ct_signed_data, signed_data);
     return asn1kit::encode(content_info, asn1kit::encoding::der);
 }
 

@@ -45,10 +45,9 @@ void verify_fixtures() {
     const auto cms_der = read_cms_fixture("attached-signeddata.p7m");
     require(!cms_der.empty(), "CMS fixture is empty.");
     const auto info = asn1kit::decode<Cms::ContentInfo>(cms_der, asn1kit::encoding::der);
-    Cms::SignedData signed_data{};
-    require(
-        Cms::contentSet_content_bindings::ct_signed_data.try_decode(info, signed_data),
-        "CMS fixture must contain SignedData.");
+    auto decoded_signed_data = info.try_decode(Cms::contentSet_content_bindings::ct_signed_data);
+    require(decoded_signed_data.has_value(), "CMS fixture must contain SignedData.");
+    auto signed_data = std::move(*decoded_signed_data);
     require(signed_data.certificates.has_value(), "CMS SignedData must carry certificates.");
     bool found_retained_tbs = false;
     for (const auto& choice : *signed_data.certificates) {
@@ -69,7 +68,7 @@ void verify_fixtures() {
     require(!asn1kit::encode(hand_crl, asn1kit::encoding::der).empty(), "Hand-built CRL encode failed.");
 
     Cms::ContentInfo rebound = info;
-    Cms::contentSet_content_bindings::ct_signed_data.set(rebound, signed_data);
+    rebound.set(Cms::contentSet_content_bindings::ct_signed_data, signed_data);
     require(!asn1kit::encode(rebound, asn1kit::encoding::der).empty(), "CMS Lazy Encode smoke failed.");
 }
 

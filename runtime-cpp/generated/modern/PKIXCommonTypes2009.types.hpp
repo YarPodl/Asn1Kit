@@ -33,6 +33,38 @@ struct AttributeSet {
     asn1kit::oid type{};
     std::vector<asn1kit::any> values{};
 
+    template <typename Context, typename T>
+    [[nodiscard]] std::optional<std::vector<T>> try_decode(
+        const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding) const {
+        if (!(this->type == binding.key)) return std::nullopt;
+        return asn1kit::decode_each<T>(values);
+    }
+
+    template <typename Context, typename T>
+    void set(const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding, const std::vector<T>& value) {
+        this->type = binding.key;
+        values = asn1kit::encode_each(value);
+    }
+
+    template <typename Context, typename T>
+    void set(const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding, const T& value) {
+        set(binding, std::vector<T>{value});
+    }
+
+    template <typename Context, typename T>
+    [[nodiscard]] static AttributeSet create(
+        const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding, const std::vector<T>& value) {
+        AttributeSet result{};
+        result.set(binding, value);
+        return result;
+    }
+
+    template <typename Context, typename T>
+    [[nodiscard]] static AttributeSet create(
+        const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding, const T& value) {
+        return create(binding, std::vector<T>{value});
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
@@ -61,6 +93,27 @@ struct Extension {
     asn1kit::oid extnID{};
     bool critical = false;
     asn1kit::bytes extnValue{};
+
+    template <typename Context, typename T>
+    [[nodiscard]] std::optional<T> try_decode(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding) const {
+        if (!(this->extnID == binding.key)) return std::nullopt;
+        return asn1kit::decode_contained<T>(extnValue);
+    }
+
+    template <typename Context, typename T>
+    void set(const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        this->extnID = binding.key;
+        extnValue = asn1kit::encode_contained_octets(value);
+    }
+
+    template <typename Context, typename T>
+    [[nodiscard]] static Extension create(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        Extension result{};
+        result.set(binding, value);
+        return result;
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -125,6 +178,27 @@ struct SecurityCategory {
 struct SingleAttribute {
     asn1kit::oid type{};
     asn1kit::any value_{};
+
+    template <typename Context, typename T>
+    [[nodiscard]] std::optional<T> try_decode(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding) const {
+        if (!(this->type == binding.key)) return std::nullopt;
+        return asn1kit::decode_open<T>(value_);
+    }
+
+    template <typename Context, typename T>
+    void set(const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        this->type = binding.key;
+        value_ = asn1kit::encode_open(value);
+    }
+
+    template <typename Context, typename T>
+    [[nodiscard]] static SingleAttribute create(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        SingleAttribute result{};
+        result.set(binding, value);
+        return result;
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);

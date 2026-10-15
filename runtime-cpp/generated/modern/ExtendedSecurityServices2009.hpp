@@ -321,6 +321,12 @@ struct ESSCertIDv2 {
     asn1kit::bytes certHash{};
     std::optional<IssuerSerial> issuerSerial{};
 
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_hash_algorithm(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.algorithmIdentifier_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).hashAlgorithm, binding);
+    }
+
     static ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier default_hashAlgorithm() {
         ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};
         v.algorithm = ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256.get();

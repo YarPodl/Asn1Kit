@@ -193,16 +193,16 @@ END
 
         Assert.Contains("#include \"asn1kit/codec.hpp\"", source);
         Assert.Contains("struct AlgorithmIdentifier", source);
-        Assert.Contains("struct parameters_binding", source);
-        Assert.Contains("asn1kit::oid key{}", source);
+        Assert.Contains("asn1kit::open_binding<", source);
+        Assert.Contains("asn1kit::open_context<\"M.mixed_parameters\">", source);
         Assert.Contains("MOids::IdEmpty.get()", source);
         Assert.DoesNotContain("IdEmpty_oid", source);
         Assert.DoesNotContain("open_codec", source);
         Assert.DoesNotContain("asn1kit::codecs::", source);
-        Assert.Contains("bool try_decode(const AlgorithmIdentifier& src, T& out) const", source);
-        Assert.Contains("out = asn1kit::decode_open<T>(", source);
-        Assert.Contains("src.parameters = asn1kit::encode_open(value);", source);
-        Assert.Contains("AlgorithmIdentifier create(const T& value) const", source);
+        Assert.Contains("std::optional<T> try_decode(", source);
+        Assert.Contains("return asn1kit::decode_open<T>(", source);
+        Assert.Contains("parameters = asn1kit::encode_open(value);", source);
+        Assert.Contains("static AlgorithmIdentifier create(", source);
         Assert.Contains("namespace mixed_parameters_bindings", source);
         Assert.Contains("empty_entry{", source);
         Assert.Contains("data_entry{", source);
@@ -263,15 +263,13 @@ END
 
         Assert.Contains("asn1kit::bytes extnValue{}", source);
         Assert.Contains("std::vector<asn1kit::any> values{}", source);
-        Assert.Contains("struct extnValue_binding", source);
-        Assert.Contains("struct values_binding", source);
-        Assert.Contains("out = asn1kit::decode_contained<T>(", source);
-        Assert.Contains("src.extnValue = asn1kit::encode_contained_octets(value);", source);
+        Assert.Contains("return asn1kit::decode_contained<T>(", source);
+        Assert.Contains("extnValue = asn1kit::encode_contained_octets(value);", source);
         Assert.Contains(
-            "bool try_decode(const Attribute& src, std::vector<T>& out) const",
+            "std::optional<std::vector<T>> try_decode(",
             source);
-        Assert.Contains("out = asn1kit::decode_each<T>(", source);
-        Assert.Contains("src.values = asn1kit::encode_each(value);", source);
+        Assert.Contains("return asn1kit::decode_each<T>(", source);
+        Assert.Contains("values = asn1kit::encode_each(value);", source);
         Assert.Contains("namespace mixed_extnValue_bindings", source);
         Assert.Contains("namespace mixed_values_bindings", source);
     }
@@ -292,18 +290,11 @@ END
         var source = CppSource(document);
 
         Assert.Contains("struct Outer_Nested_Item", source);
-        Assert.Contains("struct value_binding", source);
         Assert.Contains(
-            "bool try_decode(const Outer_Nested_Item& src, const Outer& parent0, T& out) const",
+            "std::optional<T> try_decode_nested(",
             source);
-        Assert.Contains("if (!(parent0.id == key)) return false;", source);
-        Assert.Contains(
-            "void set(Outer_Nested_Item& src, const Outer& parent0, const T& value) const",
-            source);
-        Assert.Contains(
-            "Enclosing selector does not match the open-type binding.",
-            source);
-        Assert.DoesNotContain("Outer_Nested_Item create(", source);
+        Assert.Contains("if (!((*this).id == binding.key)) return result;", source);
+        Assert.DoesNotContain("static Outer_Nested_Item create(", source);
         Assert.Contains("namespace items_value_bindings", source);
     }
 
@@ -333,11 +324,11 @@ END
         var document = new Asn1Compiler().CompileText(asn);
         var source = CppSource(document);
 
-        Assert.Contains("src.algorithmIdentifier.algorithm", source);
-        Assert.Contains("parent0.algorithmIdentifier.algorithm", source);
-        Assert.Contains("std::int32_t key{}", source);
+        Assert.Contains("this->algorithmIdentifier.algorithm", source);
+        Assert.Contains("(*this).algorithmIdentifier.algorithm", source);
+        Assert.Contains("std::int32_t, asn1kit::null_value", source);
         Assert.Contains("std::int32_t{7}", source);
-        Assert.Contains("src.id = key;", source);
+        Assert.Contains("this->id = binding.key;", source);
     }
 
     [Fact]
@@ -1354,14 +1345,14 @@ END
 
         // Synthesized nested owner referenced from another module's OID catalog.
         Assert.Contains(
-            "extnValue_binding<std::vector<::asn1kit::modern::PKIX1Implicit2009::PolicyMappings_Item>>",
+            "std::vector<::asn1kit::modern::PKIX1Implicit2009::PolicyMappings_Item>",
             files["PKIXCommonTypes2009.hpp"]);
         // Collapsible-alias named type resolved into a different module.
         Assert.Contains(
-            "value_binding<::asn1kit::modern::PKIXCRMF2009::CertId>",
+            "::asn1kit::modern::PKIXCRMF2009::CertId>",
             files["PKIXCommonTypes2009.hpp"]);
         Assert.Contains(
-            "value_binding<::asn1kit::modern::PKIXCRMF2009::CertRequest>",
+            "::asn1kit::modern::PKIXCRMF2009::CertRequest>",
             files["PKIXCommonTypes2009.hpp"]);
         // Cross-module ENUMERATED codec helper names.
         Assert.Contains(
@@ -1372,8 +1363,32 @@ END
             files["EnrollmentMessageSyntax2009.types.hpp"]);
 
         Assert.Contains(
-            "extension_attribute_value_binding<ExtensionAttribute_EaTeletexPersonalName>",
+            "ExtensionAttribute_EaTeletexPersonalName>",
             files["PKIXX400Address2009.hpp"]);
+        Assert.Contains(
+            "std::optional<std::vector<T>> try_decode_signed_attrs(",
+            files["CryptographicMessageSyntax2009.types.hpp"]);
+        Assert.Contains(
+            "open_context<\"CryptographicMessageSyntax-2009.signedAttributesSet\">",
+            files["CryptographicMessageSyntax2009.types.hpp"]);
+        Assert.DoesNotContain(
+            "try_decode_revoked_certificates",
+            files["PKIX1Explicit2009.types.hpp"]);
+        Assert.Contains(
+            "try_decode_issuer",
+            files["PKIX1Explicit2009.types.hpp"]);
+        Assert.Contains(
+            "try_decode_extensions",
+            files["EnrollmentMessageSyntax2009.types.hpp"]);
+        Assert.Contains(
+            "try_decode_attrs",
+            files["PKIXAttributeCertificate2009.types.hpp"]);
+        Assert.Contains(
+            "return asn1kit::try_decode_unique(",
+            files["CryptographicMessageSyntax2009.types.hpp"]);
+        Assert.DoesNotContain(
+            "Multiple values match open-type contextual decode.",
+            files["CryptographicMessageSyntax2009.types.hpp"]);
         Assert.Contains(
             "struct PKIMessage;",
             files["cycle_PKIXCMP2009_PKIBody_PKIXCMP2009_PKIMessage.hpp"]);

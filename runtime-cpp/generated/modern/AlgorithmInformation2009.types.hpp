@@ -33,6 +33,28 @@ struct AlgorithmIdentifier {
     asn1kit::oid algorithm{};
     std::optional<asn1kit::any> parameters{};
 
+    template <typename Context, typename T>
+    [[nodiscard]] std::optional<T> try_decode(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding) const {
+        if (!parameters.has_value()) return std::nullopt;
+        if (!(this->algorithm == binding.key)) return std::nullopt;
+        return asn1kit::decode_open<T>(*parameters);
+    }
+
+    template <typename Context, typename T>
+    void set(const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        this->algorithm = binding.key;
+        parameters = asn1kit::encode_open(value);
+    }
+
+    template <typename Context, typename T>
+    [[nodiscard]] static AlgorithmIdentifier create(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        AlgorithmIdentifier result{};
+        result.set(binding, value);
+        return result;
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
@@ -85,6 +107,28 @@ inline ParamOptions decode_ParamOptions(asn1kit::reader& r, const asn1kit::tag& 
 struct SMIMECapability {
     asn1kit::oid capabilityID{};
     std::optional<asn1kit::any> parameters{};
+
+    template <typename Context, typename T>
+    [[nodiscard]] std::optional<T> try_decode(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding) const {
+        if (!parameters.has_value()) return std::nullopt;
+        if (!(this->capabilityID == binding.key)) return std::nullopt;
+        return asn1kit::decode_open<T>(*parameters);
+    }
+
+    template <typename Context, typename T>
+    void set(const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        this->capabilityID = binding.key;
+        parameters = asn1kit::encode_open(value);
+    }
+
+    template <typename Context, typename T>
+    [[nodiscard]] static SMIMECapability create(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        SMIMECapability result{};
+        result.set(binding, value);
+        return result;
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);

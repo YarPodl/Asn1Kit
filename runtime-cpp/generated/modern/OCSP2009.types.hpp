@@ -180,6 +180,13 @@ struct Request {
     CertID reqCert{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> singleRequestExtensions{};
 
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_single_request_extensions(
+        const asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.extension_extnValue_extension">, asn1kit::oid, T>& binding) const {
+        if (!(*this).singleRequestExtensions.has_value()) return std::nullopt;
+        return asn1kit::try_decode_unique((*(*this).singleRequestExtensions), binding);
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
@@ -303,6 +310,27 @@ struct ResponderID {
 struct ResponseBytes {
     asn1kit::oid responseType{};
     asn1kit::bytes response{};
+
+    template <typename Context, typename T>
+    [[nodiscard]] std::optional<T> try_decode(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding) const {
+        if (!(this->responseType == binding.key)) return std::nullopt;
+        return asn1kit::decode_contained<T>(response);
+    }
+
+    template <typename Context, typename T>
+    void set(const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        this->responseType = binding.key;
+        response = asn1kit::encode_contained_octets(value);
+    }
+
+    template <typename Context, typename T>
+    [[nodiscard]] static ResponseBytes create(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        ResponseBytes result{};
+        result.set(binding, value);
+        return result;
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -576,6 +604,13 @@ struct SingleResponse {
     std::optional<asn1kit::utc_date_time> nextUpdate{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> singleExtensions{};
 
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_single_extensions(
+        const asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.extension_extnValue_extension_3">, asn1kit::oid, T>& binding) const {
+        if (!(*this).singleExtensions.has_value()) return std::nullopt;
+        return asn1kit::try_decode_unique((*(*this).singleExtensions), binding);
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
@@ -630,6 +665,13 @@ struct ResponseData {
     asn1kit::utc_date_time producedAt{};
     std::vector<SingleResponse> responses{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> responseExtensions{};
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_response_extensions(
+        const asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.extension_extnValue_extension_2">, asn1kit::oid, T>& binding) const {
+        if (!(*this).responseExtensions.has_value()) return std::nullopt;
+        return asn1kit::try_decode_unique((*(*this).responseExtensions), binding);
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -688,6 +730,12 @@ struct BasicOCSPResponse {
     asn1kit::bit_string signature{};
     std::optional<std::vector<::asn1kit::modern::PKIX1Explicit2009::Certificate>> certs{};
 
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_signature_algorithm(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.algorithmIdentifier_parameters_algorithmIdentifier">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).signatureAlgorithm, binding);
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
@@ -728,6 +776,13 @@ struct TBSRequest {
     std::optional<::asn1kit::modern::PKIX1Implicit2009::GeneralName> requestorName{};
     std::vector<Request> requestList{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> requestExtensions{};
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_request_extensions(
+        const asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.extension_extnValue">, asn1kit::oid, T>& binding) const {
+        if (!(*this).requestExtensions.has_value()) return std::nullopt;
+        return asn1kit::try_decode_unique((*(*this).requestExtensions), binding);
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);

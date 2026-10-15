@@ -30,30 +30,10 @@ namespace asn1kit {
 namespace modern {
 namespace OCSP2009 {
 
-template <typename T>
-struct response_binding {
-    asn1kit::oid key{};
-
-    [[nodiscard]] bool try_decode(const ResponseBytes& src, T& out) const {
-        if (!(src.responseType == key)) return false;
-        out = asn1kit::decode_contained<T>(src.response);
-        return true;
-    }
-
-    void set(ResponseBytes& src, const T& value) const {
-        src.responseType = key;
-        src.response = asn1kit::encode_contained_octets(value);
-    }
-
-    [[nodiscard]] ResponseBytes create(const T& value) const {
-        ResponseBytes src{};
-        set(src, value);
-        return src;
-    }
-};
-
 namespace responseSet_response_bindings {
-inline const response_binding<BasicOCSPResponse> basic_response{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"OCSP-2009.responseSet_response">,
+    asn1kit::oid, BasicOCSPResponse> basic_response{
     OCSP2009Oids::IdPkixOcspBasic.get()};
 
 } // namespace responseSet_response_bindings

@@ -111,6 +111,12 @@ struct ACClearAttrs {
     asn1kit::integer acSerial{};
     std::vector<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet> attrs{};
 
+    template <typename T>
+    [[nodiscard]] std::optional<std::vector<T>> try_decode_attrs(
+        const asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.attributesDefined">, asn1kit::oid, std::vector<T>>& binding) const {
+        return asn1kit::try_decode_unique((*this).attrs, binding);
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
@@ -933,6 +939,25 @@ struct AttributeCertificateInfo {
     std::optional<asn1kit::bit_string> issuerUniqueID{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> extensions{};
 
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_signature(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).signature, binding);
+    }
+
+    template <typename T>
+    [[nodiscard]] std::optional<std::vector<T>> try_decode_attributes(
+        const asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.attributesDefined">, asn1kit::oid, std::vector<T>>& binding) const {
+        return asn1kit::try_decode_unique((*this).attributes, binding);
+    }
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_extensions(
+        const asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.attributeCertExtensions">, asn1kit::oid, T>& binding) const {
+        if (!(*this).extensions.has_value()) return std::nullopt;
+        return asn1kit::try_decode_unique((*(*this).extensions), binding);
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
@@ -979,6 +1004,33 @@ struct AttributeCertificate {
     AttributeCertificateInfo toBeSigned{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::bit_string signature{};
+
+    template <typename Context, typename T>
+    [[nodiscard]] std::optional<T> try_decode(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding) const {
+        if (!(this->algorithmIdentifier.algorithm == binding.key)) return std::nullopt;
+        return asn1kit::decode_contained<T>(signature);
+    }
+
+    template <typename Context, typename T>
+    void set(const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        this->algorithmIdentifier.algorithm = binding.key;
+        signature = asn1kit::encode_contained_bits(value);
+    }
+
+    template <typename Context, typename T>
+    [[nodiscard]] static AttributeCertificate create(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        AttributeCertificate result{};
+        result.set(binding, value);
+        return result;
+    }
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_algorithm_identifier(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).algorithmIdentifier, binding);
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);

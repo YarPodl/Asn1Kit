@@ -60,6 +60,30 @@ struct RSAESOAEPParams {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier maskGenFunc = default_maskGenFunc();
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier pSourceFunc = default_pSourceFunc();
 
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_hash_func(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.hashAlgorithms_parameters_algorithmIdentifier">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).hashFunc, binding);
+    }
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_mask_gen_func(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.pKCS1MGFAlgorithms_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).maskGenFunc, binding);
+    }
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_mask_gen_func(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.hashAlgorithms_parameters_algorithmIdentifier">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).maskGenFunc, binding);
+    }
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_p_source_func(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.pSS_sourceAlgorithms_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).pSourceFunc, binding);
+    }
+
     static ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier default_hashFunc() {
         ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};
         v.algorithm = ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdSha1.get();
@@ -172,6 +196,24 @@ struct RSASSAPSSParams {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier maskGenAlgorithm = default_maskGenAlgorithm();
     asn1kit::integer saltLength = asn1kit::integer::from_int64(20ll);
     asn1kit::integer trailerField = asn1kit::integer::from_int64(1ll);
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_hash_algorithm(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.hashAlgorithms_parameters_algorithmIdentifier">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).hashAlgorithm, binding);
+    }
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_mask_gen_algorithm(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.pKCS1MGFAlgorithms_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).maskGenAlgorithm, binding);
+    }
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_mask_gen_algorithm(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.hashAlgorithms_parameters_algorithmIdentifier">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).maskGenAlgorithm, binding);
+    }
 
     static ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier default_hashAlgorithm() {
         ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};

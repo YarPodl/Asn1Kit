@@ -32,33 +32,15 @@ namespace asn1kit {
 namespace modern {
 namespace PKIX1Implicit2009 {
 
-template <typename T>
-struct qualifier_binding {
-    asn1kit::oid key{};
-
-    [[nodiscard]] bool try_decode(const PolicyQualifierInfo& src, T& out) const {
-        if (!(src.policyQualifierId == key)) return false;
-        out = asn1kit::decode_open<T>(src.qualifier);
-        return true;
-    }
-
-    void set(PolicyQualifierInfo& src, const T& value) const {
-        src.policyQualifierId = key;
-        src.qualifier = asn1kit::encode_open(value);
-    }
-
-    [[nodiscard]] PolicyQualifierInfo create(const T& value) const {
-        PolicyQualifierInfo src{};
-        set(src, value);
-        return src;
-    }
-};
-
 namespace policyQualifierId_qualifier_bindings {
-inline const qualifier_binding<asn1kit::asn_string<asn1kit::string_form::ia5>> pqid_cps{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX1Implicit-2009.policyQualifierId_qualifier">,
+    asn1kit::oid, asn1kit::asn_string<asn1kit::string_form::ia5>> pqid_cps{
     ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdQtCps.get()};
 
-inline const qualifier_binding<UserNotice> pqid_unotice{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX1Implicit-2009.policyQualifierId_qualifier">,
+    asn1kit::oid, UserNotice> pqid_unotice{
     ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdQtUnotice.get()};
 
 } // namespace policyQualifierId_qualifier_bindings

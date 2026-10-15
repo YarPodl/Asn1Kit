@@ -26,6 +26,10 @@ public sealed partial class CppBackend
         OpenPayload Payload,
         IrOpenTypeSelector Selector,
         IReadOnlyList<OpenContainer> Parents,
+        IrModule ContextModule,
+        string ContextOwner,
+        IReadOnlyList<string> ContextPath,
+        bool CrossesInlineBoundary,
         string? Table,
         IReadOnlyList<string> Path,
         List<OpenBinding> Bindings)
@@ -43,6 +47,28 @@ public sealed partial class CppBackend
         public List<OpenBinding> Bindings { get; } = new();
     }
 
+    private readonly Dictionary<(string Module, string Type), List<OpenSite>> _openSitesByType = new();
+
+    private void ConfigureOpenTypeEmission(IEnumerable<ModulePlan> plans)
+    {
+        _openSitesByType.Clear();
+        foreach (var plan in plans)
+        foreach (var site in plan.Open.Sites)
+        {
+            Add(site.Container.Module.Name, site.Container.TypeName, site);
+            if (site.ContextOwner != site.Container.TypeName || site.ContextModule != site.Container.Module)
+                Add(site.ContextModule.Name, site.ContextOwner, site);
+        }
+
+        void Add(string module, string type, OpenSite site)
+        {
+            var key = (module, type);
+            if (!_openSitesByType.TryGetValue(key, out var sites))
+                _openSitesByType.Add(key, sites = new List<OpenSite>());
+            if (!sites.Contains(site)) sites.Add(site);
+        }
+    }
+
     private static void ResetOpenTypeState()
     {
     }
@@ -55,6 +81,7 @@ public sealed partial class CppBackend
     {
         var plan = new OpenPlan();
         var shared = new Dictionary<string, OpenBinding>(StringComparer.Ordinal);
+        var incomingRefs = new HashSet<string>(StringComparer.Ordinal);
         var names = new HashSet<string>(emittedNames, StringComparer.Ordinal) { OidCatalogName(module) };
         _ = nested;
 
@@ -64,22 +91,27 @@ public sealed partial class CppBackend
             if (IsCollapsibleAlias(definition.Type)) continue;
             var typeName = IrOptions.CppTypeName(definition.Options)
                 ?? CppNames.SanitizeTypeName(definition.Name);
-            WalkDefinitionScoped(
-                document, module, typeName, definition.Type, Array.Empty<OpenContainer>(), plan, shared);
+            WalkDefinitionScoped(document, module, typeName, definition.Type,
+                Array.Empty<OpenContainer>(), typeName, Array.Empty<string>(), plan, shared);
         }
 
         foreach (var other in document.Modules)
         {
             foreach (var definition in other.Types)
-                ScanIncoming(definition.Type, other);
+            {
+                var owner = IrOptions.CppTypeName(definition.Options)
+                    ?? CppNames.SanitizeTypeName(definition.Name);
+                ScanIncoming(definition.Type, other, owner, Array.Empty<string>(), false);
+            }
             foreach (var definition in other.Values)
-                ScanIncoming(definition.Type, other);
+                ScanIncoming(definition.Type, other, CppNames.SanitizeTypeName(definition.Name), Array.Empty<string>(), false);
         }
 
         AssignOpenStems(plan, names);
         return plan;
 
-        void ScanIncoming(TypeExpr expression, IrModule contextModule)
+        void ScanIncoming(TypeExpr expression, IrModule contextModule, string contextOwner,
+            IReadOnlyList<string> route, bool crossesInlineBoundary)
         {
             switch (expression)
             {
@@ -92,7 +124,9 @@ public sealed partial class CppBackend
                             IrOptions.ShouldGenerate(found.Value.Def.Options))
                         {
                             foreach (var use in reference.OpenTypes)
-                                ResolveUse(document, contextModule, found.Value, use, plan, shared, names);
+                                ResolveUse(document, contextModule, found.Value, use, contextOwner,
+                                    route.Concat(use.Path).ToList(), crossesInlineBoundary,
+                                    plan, shared, names);
                         }
                     }
 
@@ -100,40 +134,79 @@ public sealed partial class CppBackend
                     {
                         foreach (var use in reference.OpenTypes)
                         foreach (var binding in use.Bindings)
-                            ScanIncoming(binding.Type, contextModule);
+                            ScanIncoming(binding.Type, contextModule, contextOwner, route, crossesInlineBoundary);
+                    }
+
+                    if (FindWithModule(document, contextModule, reference) is { } referenced &&
+                        (referenced.Def.Type is RefType or SequenceOfType or SetOfType ||
+                         IsSingleAlternativeChoice(referenced.Def.Type)))
+                    {
+                        var refKey = referenced.Module.Name + "\n" + referenced.Def.Name + "\n" +
+                                     contextOwner + "\n" + (route.Count > 0 ? route[0] : "");
+                        if (incomingRefs.Add(refKey))
+                            ScanIncoming(referenced.Def.Type, referenced.Module, contextOwner, route,
+                                crossesInlineBoundary);
                     }
 
                     break;
                 case AnyType { Bindings: { } bodyBindings }:
                     foreach (var binding in bodyBindings)
-                        ScanIncoming(binding.Type, contextModule);
+                        ScanIncoming(binding.Type, contextModule, contextOwner, route, crossesInlineBoundary);
                     break;
                 case SequenceType sequence:
                     foreach (var field in sequence.Components)
-                        ScanIncoming(field.Type, contextModule);
+                        ScanIncoming(field.Type, contextModule, contextOwner,
+                            route.Append(field.Name).ToList(),
+                            crossesInlineBoundary || CrossesInlineOwnerBoundary(field.Type));
                     break;
                 case SetType set:
                     foreach (var field in set.Components)
-                        ScanIncoming(field.Type, contextModule);
+                        ScanIncoming(field.Type, contextModule, contextOwner,
+                            route.Append(field.Name).ToList(),
+                            crossesInlineBoundary || CrossesInlineOwnerBoundary(field.Type));
                     break;
                 case ChoiceType choice:
-                    foreach (var alternative in choice.Components)
-                        ScanIncoming(alternative.Type, contextModule);
+                    if (choice.Components.Count == 1)
+                    {
+                        var alternative = choice.Components[0];
+                        ScanIncoming(alternative.Type, contextModule, contextOwner,
+                            route, crossesInlineBoundary || alternative.Type is not RefType);
+                    }
+                    else
+                    {
+                        foreach (var alternative in choice.Components)
+                            ScanIncoming(alternative.Type, contextModule, contextOwner,
+                                route.Append(alternative.Name).ToList(),
+                                crossesInlineBoundary || alternative.Type is not RefType);
+                    }
                     break;
                 case SequenceOfType of:
-                    ScanIncoming(of.Element, contextModule);
+                    ScanIncoming(of.Element, contextModule, contextOwner, route.Append("[]").ToList(),
+                        crossesInlineBoundary || of.Element is not RefType);
                     break;
                 case SetOfType of:
-                    ScanIncoming(of.Element, contextModule);
+                    ScanIncoming(of.Element, contextModule, contextOwner, route.Append("[]").ToList(),
+                        crossesInlineBoundary || of.Element is not RefType);
                     break;
                 case OctetStringType { Containing: { } containing }:
-                    ScanIncoming(containing, contextModule);
+                    ScanIncoming(containing, contextModule, contextOwner, route.Append("containing").ToList(),
+                        crossesInlineBoundary || containing is not RefType);
                     break;
                 case BitStringType { Containing: { } containing }:
-                    ScanIncoming(containing, contextModule);
+                    ScanIncoming(containing, contextModule, contextOwner, route.Append("containing").ToList(),
+                        crossesInlineBoundary || containing is not RefType);
                     break;
             }
         }
+
+        static bool CrossesInlineOwnerBoundary(TypeExpr type) => type switch
+        {
+            RefType => false,
+            SequenceOfType sequence => CrossesInlineOwnerBoundary(sequence.Element),
+            SetOfType set => CrossesInlineOwnerBoundary(set.Element),
+            SequenceType or SetType or ChoiceType => true,
+            _ => false
+        };
     }
 
     private void WalkDefinitionScoped(
@@ -142,6 +215,8 @@ public sealed partial class CppBackend
         string owner,
         TypeExpr type,
         IReadOnlyList<OpenContainer> parents,
+        string contextOwner,
+        IReadOnlyList<string> contextPath,
         OpenPlan plan,
         Dictionary<string, OpenBinding> shared)
     {
@@ -149,14 +224,16 @@ public sealed partial class CppBackend
         if (IsSingleAlternativeChoice(type))
         {
             WalkDefinitionScoped(
-                document, module, owner, ((ChoiceType)type).Components[0].Type, parents, plan, shared);
+                document, module, owner, ((ChoiceType)type).Components[0].Type, parents,
+                contextOwner, contextPath, plan, shared);
             return;
         }
 
         if (type is SequenceOfType or SetOfType)
         {
             var element = type is SetOfType setOf ? setOf.Element : ((SequenceOfType)type).Element;
-            WalkDefinitionScoped(document, module, owner + "_Item", element, parents, plan, shared);
+            WalkDefinitionScoped(document, module, owner + "_Item", element, parents,
+                contextOwner, contextPath.Append("[]").ToList(), plan, shared);
             return;
         }
 
@@ -166,7 +243,8 @@ public sealed partial class CppBackend
         foreach (var field in fields)
         {
             TryRegisterDefinitionScoped(
-                document, module, container, field, parents, plan, shared);
+                document, module, container, field, parents, contextOwner,
+                contextPath.Append(field.Name).ToList(), plan, shared);
             var fieldType = UnwrapAliases(document, module, field.Type);
             if (fieldType is RefType) continue;
             if (fieldType is SequenceOfType or SetOfType or SequenceType or SetType or ChoiceType)
@@ -174,7 +252,8 @@ public sealed partial class CppBackend
                 var childParents = parents.Append(container).ToList();
                 var childOwner = owner + "_" + CppNames.SanitizeTypeName(field.Name);
                 WalkDefinitionScoped(
-                    document, module, childOwner, fieldType, childParents, plan, shared);
+                    document, module, childOwner, fieldType, childParents, contextOwner,
+                    contextPath.Append(field.Name).ToList(), plan, shared);
             }
         }
     }
@@ -185,6 +264,8 @@ public sealed partial class CppBackend
         OpenContainer container,
         IrComponent field,
         IReadOnlyList<OpenContainer> outerParents,
+        string contextOwner,
+        IReadOnlyList<string> contextPath,
         OpenPlan plan,
         Dictionary<string, OpenBinding> shared)
     {
@@ -208,7 +289,7 @@ public sealed partial class CppBackend
         var parents = outerParents.Reverse().Take(selector.Levels).ToList();
         var payload = BuildOpenPayload(document, module, field.Type);
         AddSite(document, module, container, field, payload, selector, parents, definitionAny.Bindings!,
-            definitionAny.Table, new[] { field.Name }, module, plan, shared);
+            contextOwner, contextPath, false, definitionAny.Table, new[] { field.Name }, module, plan, shared);
     }
 
     private void ResolveUse(
@@ -216,6 +297,9 @@ public sealed partial class CppBackend
         IrModule contextModule,
         (IrModule Module, IrTypeDef Def) target,
         IrOpenTypeUse use,
+        string contextOwner,
+        IReadOnlyList<string> contextPath,
+        bool crossesInlineBoundary,
         OpenPlan plan,
         Dictionary<string, OpenBinding> shared,
         HashSet<string> names)
@@ -308,6 +392,7 @@ public sealed partial class CppBackend
 
             AddSite(document, target.Module, container, openField, payload, selector,
                 Array.Empty<OpenContainer>(), use.Bindings,
+                contextOwner, contextPath, crossesInlineBoundary,
                 use.Table, use.Path, contextModule, plan, shared);
             return;
         }
@@ -322,6 +407,9 @@ public sealed partial class CppBackend
         IrOpenTypeSelector selector,
         IReadOnlyList<OpenContainer> parents,
         IReadOnlyList<IrOpenTypeBinding> bindings,
+        string contextOwner,
+        IReadOnlyList<string> contextPath,
+        bool crossesInlineBoundary,
         string? table,
         IReadOnlyList<string> path,
         IrModule bindingModule,
@@ -330,7 +418,8 @@ public sealed partial class CppBackend
     {
         if (container.Module != emittingModule) return;
         var site = new OpenSite(
-            container, openField, payload, selector, parents.ToList(), table, path.ToList(),
+            container, openField, payload, selector, parents.ToList(), bindingModule, contextOwner,
+            contextPath.ToList(), crossesInlineBoundary, table, path.ToList(),
             new List<OpenBinding>());
         foreach (var binding in bindings)
         {
@@ -592,15 +681,6 @@ public sealed partial class CppBackend
     {
         if (plan.Sites.Count == 0) return;
 
-        var emittedStems = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var site in plan.Sites
-                     .OrderBy(static s => s.BindingStem, StringComparer.Ordinal)
-                     .ThenBy(static s => s.Container.TypeName, StringComparer.Ordinal))
-        {
-            if (!emittedStems.Add(site.BindingStem)) continue;
-            EmitOpenBindingType(sb, document, module, site);
-        }
-
         foreach (var site in plan.Sites.Where(static s => s.EmitCatalog)
                      .OrderBy(static s => s.CatalogStem, StringComparer.Ordinal))
         {
@@ -608,22 +688,40 @@ public sealed partial class CppBackend
         }
     }
 
-    private void EmitOpenBindingType(
-        StringBuilder sb, IrDocument document, IrModule module, OpenSite site)
+    private void EmitOpenOwnerMethods(
+        StringBuilder sb, IrDocument document, IrModule module, string typeName)
     {
-        var stem = site.BindingStem;
-        var container = site.Container.TypeName;
+        if (!_openSitesByType.TryGetValue((module.Name, typeName), out var allSites)) return;
+
+        var carrierSites = allSites
+            .Where(site => site.Container.TypeName == typeName && site.Selector.Levels == 0)
+            .GroupBy(site => site.Field.Name, StringComparer.Ordinal)
+            .Select(static group => group.First())
+            .ToList();
+        var shortCarrierNames = carrierSites.Count == 1;
+        foreach (var site in carrierSites)
+            EmitCarrierOpenMethods(sb, document, site, shortCarrierNames);
+
+        foreach (var site in allSites
+                     .Where(site => site.ContextOwner == typeName && site.ContextOwner != site.Container.TypeName)
+                     .GroupBy(site => site.CatalogStem + "\n" + string.Join("/", site.ContextPath),
+                         StringComparer.Ordinal)
+                     .Select(static group => group.First()))
+        {
+            EmitContextualOpenMethod(sb, document, module, site);
+        }
+    }
+
+    private void EmitCarrierOpenMethods(
+        StringBuilder sb, IrDocument document, OpenSite site, bool shortNames)
+    {
         var field = FieldName(site.Field);
         var keyExpr = OpenKeyExpression(document, site);
         var keyCppType = OpenKeyCppType(document, site);
         var optional = site.Field.Optional;
-        var ancestor = site.Selector.Levels > 0;
-        var parentParams = string.Concat(
-            site.Parents.Select((p, i) => $", const {p.TypeName}& parent{i.ToString(CultureInfo.InvariantCulture)}"));
-        var parentArgs = string.Concat(
-            site.Parents.Select((_, i) => $", parent{i.ToString(CultureInfo.InvariantCulture)}"));
-
-        var valueParam = site.Payload.Kind == OpenPayloadKind.Many ? "std::vector<T>" : "T";
+        var suffix = shortNames ? "" : "_" + OpenStemName(site.Field);
+        var valueType = site.Payload.Kind == OpenPayloadKind.Many ? "std::vector<T>" : "T";
+        var bindingType = $"asn1kit::open_binding<Context, {keyCppType}, {valueType}>";
         var decodeCall = site.Payload.Kind switch
         {
             OpenPayloadKind.Contained => "asn1kit::decode_contained<T>",
@@ -642,60 +740,220 @@ public sealed partial class CppBackend
             _ => "asn1kit::encode_open"
         };
 
-        sb.AppendLine($"template <typename T>");
-        sb.AppendLine($"struct {stem}_binding {{");
-        sb.AppendLine($"    {keyCppType} key{{}};");
-        sb.AppendLine();
-        sb.AppendLine(
-            $"    [[nodiscard]] bool try_decode(const {container}& src{parentParams}, {valueParam}& out) const {{");
+        sb.AppendLine("    template <typename Context, typename T>");
+        sb.AppendLine($"    [[nodiscard]] std::optional<{valueType}> try_decode{suffix}(");
+        sb.AppendLine($"        const {bindingType}& binding) const {{");
         if (optional)
-            sb.AppendLine($"        if (!src.{field}.has_value()) return false;");
-        sb.AppendLine($"        if (!({keyExpr} == key)) return false;");
-        var raw = optional ? $"*src.{field}" : $"src.{field}";
-        sb.AppendLine($"        out = {decodeCall}({raw});");
-        sb.AppendLine("        return true;");
+            sb.AppendLine($"        if (!{field}.has_value()) return std::nullopt;");
+        sb.AppendLine($"        if (!({keyExpr.Replace("src.", "this->", StringComparison.Ordinal)} == binding.key)) return std::nullopt;");
+        var raw = optional ? $"*{field}" : field;
+        sb.AppendLine($"        return {decodeCall}({raw});");
         sb.AppendLine("    }");
         sb.AppendLine();
-        sb.AppendLine($"    void set({container}& src{parentParams}, const {valueParam}& value) const {{");
-        if (ancestor)
-        {
-            sb.AppendLine($"        if (!({keyExpr} == key)) {{");
-            sb.AppendLine(
-                "            throw asn1kit::exception(\"Enclosing selector does not match the open-type binding.\");");
-            sb.AppendLine("        }");
-        }
-        else
-            sb.AppendLine($"        {OpenKeyAssignmentTarget(document, site)} = key;");
-        sb.AppendLine($"        src.{field} = {encodeCall}(value);");
+        sb.AppendLine("    template <typename Context, typename T>");
+        sb.AppendLine($"    void set{suffix}(const {bindingType}& binding, const {valueType}& value) {{");
+        sb.AppendLine($"        {OpenKeyAssignmentTarget(document, site).Replace("src.", "this->", StringComparison.Ordinal)} = binding.key;");
+        sb.AppendLine($"        {field} = {encodeCall}(value);");
         sb.AppendLine("    }");
         if (site.Payload.Kind == OpenPayloadKind.Many)
         {
             sb.AppendLine();
-            sb.AppendLine($"    void set({container}& src{parentParams}, const T& value) const {{");
-            sb.AppendLine($"        set(src{parentArgs}, std::vector<T>{{value}});");
+            sb.AppendLine("    template <typename Context, typename T>");
+            sb.AppendLine($"    void set{suffix}(const {bindingType}& binding, const T& value) {{");
+            sb.AppendLine($"        set{suffix}(binding, std::vector<T>{{value}});");
             sb.AppendLine("    }");
         }
-
-        if (!ancestor)
+        sb.AppendLine();
+        sb.AppendLine("    template <typename Context, typename T>");
+        sb.AppendLine($"    [[nodiscard]] static {site.Container.TypeName} create{suffix}(");
+        sb.AppendLine($"        const {bindingType}& binding, const {valueType}& value) {{");
+        sb.AppendLine($"        {site.Container.TypeName} result{{}};");
+        sb.AppendLine($"        result.set{suffix}(binding, value);");
+        sb.AppendLine("        return result;");
+        sb.AppendLine("    }");
+        if (site.Payload.Kind == OpenPayloadKind.Many)
         {
             sb.AppendLine();
-            sb.AppendLine($"    [[nodiscard]] {container} create(const {valueParam}& value) const {{");
-            sb.AppendLine($"        {container} src{{}};");
-            sb.AppendLine("        set(src, value);");
-            sb.AppendLine("        return src;");
+            sb.AppendLine("    template <typename Context, typename T>");
+            sb.AppendLine($"    [[nodiscard]] static {site.Container.TypeName} create{suffix}(");
+            sb.AppendLine($"        const {bindingType}& binding, const T& value) {{");
+            sb.AppendLine($"        return create{suffix}(binding, std::vector<T>{{value}});");
             sb.AppendLine("    }");
-            if (site.Payload.Kind == OpenPayloadKind.Many)
-            {
-                sb.AppendLine();
-                sb.AppendLine($"    [[nodiscard]] {container} create(const T& value) const {{");
-                sb.AppendLine("        return create(std::vector<T>{value});");
-                sb.AppendLine("    }");
-            }
         }
-
-        sb.AppendLine("};");
         sb.AppendLine();
     }
+
+    private void EmitContextualOpenMethod(
+        StringBuilder sb, IrDocument document, IrModule module, OpenSite site)
+    {
+        if (site.CrossesInlineBoundary) return;
+        var openFieldIndex = -1;
+        for (var i = site.ContextPath.Count - 1; i >= 0; i--)
+        {
+            if (site.ContextPath[i] == site.Field.Name)
+            {
+                openFieldIndex = i;
+                break;
+            }
+        }
+        if (openFieldIndex < 0) return;
+
+        var carrierPath = site.ContextPath.Take(openFieldIndex).ToList();
+        if (carrierPath.Count == 0) return;
+        if (carrierPath.Count(static part => part is not "[]" and not "containing") != 1) return;
+
+        var routeStem = carrierPath.First(static part => part is not "[]" and not "containing");
+        var method = "try_decode_" + ToSnakeCaseIdentifier(routeStem);
+        var keyType = OpenKeyCppType(document, site);
+        var valueType = site.Payload.Kind == OpenPayloadKind.Many ? "std::vector<T>" : "T";
+        var contextName = site.Container.Module.Name + "." + site.CatalogStem;
+        var bindingType = "asn1kit::open_binding<asn1kit::open_context<\"" +
+                          EscapeCppString(contextName) + "\">, " + keyType + ", " + valueType + ">";
+
+        sb.AppendLine("    template <typename T>");
+        sb.AppendLine($"    [[nodiscard]] std::optional<{valueType}> {method}(");
+        sb.AppendLine($"        const {bindingType}& binding) const {{");
+        if (site.Selector.Levels > 0)
+        {
+            sb.AppendLine($"        std::optional<{valueType}> result;");
+            var contextualKey = OpenKeyAccessExpression(document, site, "(*this)");
+            sb.AppendLine($"        if (!({contextualKey} == binding.key)) return result;");
+        }
+
+        var definition = module.Types.FirstOrDefault(def =>
+            (IrOptions.CppTypeName(def.Options) ?? CppNames.SanitizeTypeName(def.Name)) == site.ContextOwner);
+        if (definition is null)
+        {
+            sb.AppendLine(site.Selector.Levels > 0
+                ? "        return result;"
+                : "        return std::nullopt;");
+            sb.AppendLine("    }");
+            sb.AppendLine();
+            return;
+        }
+
+        if (site.Selector.Levels == 0 &&
+            OpenContainerFields(definition.Type) is { } ownerFields &&
+            ownerFields.SingleOrDefault(field => field.Name == carrierPath[0]) is { } ownerField)
+        {
+            var source = "(*this)." + FieldName(ownerField);
+            var optionalOwnerField = (ownerField.Optional || ownerField.ExtensionAddition == true) &&
+                                     ownerField.Default is null;
+            if (optionalOwnerField)
+            {
+                sb.AppendLine($"        if (!{source}.has_value()) return std::nullopt;");
+                source = "(*" + source + ")";
+            }
+            if (ShouldEmitLazy(document, module, ownerField.Type, ownerField.Options) ||
+                ShouldEmitRetainEncoded(document, module, ownerField.Type, ownerField.Options))
+                source += ".get()";
+            sb.AppendLine($"        return asn1kit::try_decode_unique({source}, binding);");
+            sb.AppendLine("    }");
+            sb.AppendLine();
+            return;
+        }
+
+        if (site.Selector.Levels == 0)
+            sb.AppendLine($"        std::optional<{valueType}> result;");
+
+        var uniqueCarrierFields = _openSitesByType.TryGetValue(
+            (site.Container.Module.Name, site.Container.TypeName), out var carrierSites)
+            ? carrierSites.Where(s => s.Container.TypeName == site.Container.TypeName && s.Selector.Levels == 0)
+                .Select(s => s.Field.Name).Distinct(StringComparer.Ordinal).Count()
+            : 1;
+        var carrierMethod = "try_decode" +
+                            (uniqueCarrierFields == 1 ? "" : "_" + OpenStemName(site.Field));
+
+        EmitRoute(definition.Type, module, "(*this)", 0, "        ");
+        sb.AppendLine("        return result;");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+
+        void EmitRoute(TypeExpr expressionType, IrModule expressionModule, string expression,
+            int index, string indent)
+        {
+            while (expressionType is RefType reference)
+            {
+                var found = FindWithModule(document, expressionModule, reference);
+                if (found is null) return;
+                expressionModule = found.Value.Module;
+                expressionType = found.Value.Def.Type;
+            }
+            expressionType = UnwrapAliases(document, expressionModule, expressionType);
+
+            if (index == carrierPath.Count)
+            {
+                if (site.Selector.Levels == 0)
+                {
+                    sb.AppendLine($"{indent}if (auto decoded = {expression}.{carrierMethod}(binding)) {{");
+                }
+                else
+                {
+                    var raw = expression + "." + FieldName(site.Field);
+                    if (site.Field.Optional)
+                    {
+                        sb.AppendLine($"{indent}if (!{raw}.has_value()) return result;");
+                        raw = "*" + raw;
+                    }
+                    var decode = site.Payload.Kind switch
+                    {
+                        OpenPayloadKind.Contained => "asn1kit::decode_contained<T>",
+                        OpenPayloadKind.Many => "asn1kit::decode_each<T>",
+                        _ => "asn1kit::decode_open<T>"
+                    };
+                    sb.AppendLine($"{indent}{{ auto decoded = std::optional<{valueType}>{{{decode}({raw})}};");
+                }
+                sb.AppendLine($"{indent}    asn1kit::merge_unique(result, std::move(decoded));");
+                sb.AppendLine($"{indent}}}");
+                return;
+            }
+
+            var step = carrierPath[index];
+            if (step == "[]")
+            {
+                var element = expressionType switch
+                {
+                    SequenceOfType sequence => sequence.Element,
+                    SetOfType set => set.Element,
+                    _ => null
+                };
+                if (element is null) return;
+                var local = "open_item_" + index.ToString(CultureInfo.InvariantCulture);
+                sb.AppendLine($"{indent}for (const auto& {local} : {expression}) {{");
+                EmitRoute(element, expressionModule, local, index + 1, indent + "    ");
+                sb.AppendLine($"{indent}}}");
+                return;
+            }
+
+            if (step == "containing") return;
+            if (OpenContainerFields(expressionType) is not { } fields) return;
+            var field = fields.SingleOrDefault(candidate => candidate.Name == step);
+            if (field is null) return;
+            var access = expression + "." + FieldName(field);
+            var optional = (field.Optional || field.ExtensionAddition == true) && field.Default is null;
+            if (optional)
+            {
+                sb.AppendLine($"{indent}if ({access}.has_value()) {{");
+                access = "(*" + access + ")";
+                if (ShouldEmitLazy(document, expressionModule, field.Type, field.Options) ||
+                    ShouldEmitRetainEncoded(document, expressionModule, field.Type, field.Options))
+                    access += ".get()";
+                EmitRoute(field.Type, expressionModule, access, index + 1, indent + "    ");
+                sb.AppendLine($"{indent}}}");
+            }
+            else
+            {
+                if (ShouldEmitLazy(document, expressionModule, field.Type, field.Options) ||
+                    ShouldEmitRetainEncoded(document, expressionModule, field.Type, field.Options))
+                    access += ".get()";
+                EmitRoute(field.Type, expressionModule, access, index + 1, indent);
+            }
+        }
+    }
+
+    private static string EscapeCppString(string value) =>
+        value.Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("\"", "\\\"", StringComparison.Ordinal);
 
     private void EmitOpenCatalog(
         StringBuilder sb, IrDocument document, IrModule module, OpenSite site)
@@ -709,11 +967,17 @@ public sealed partial class CppBackend
             var member = binding.MemberName;
             for (var suffix = 2; !memberNames.Add(member); suffix++)
                 member = binding.MemberName + "_" + suffix.ToString(CultureInfo.InvariantCulture);
-            var valueType = OpenBindingCppType(
+            var leafType = OpenBindingCppType(
                 document, module, site.Container.TypeName,
                 binding.Binding.Name ?? "Value", binding.Binding.Type);
+            var valueType = site.Payload.Kind == OpenPayloadKind.Many
+                ? $"std::vector<{leafType}>"
+                : leafType;
             var keyExpr = OpenBindingKeyExpression(document, module, site, binding.Binding.Key);
-            sb.AppendLine($"inline const {stem}_binding<{valueType}> {member}{{");
+            var contextName = module.Name + "." + site.CatalogStem;
+            sb.AppendLine($"inline const asn1kit::open_binding<");
+            sb.AppendLine($"    asn1kit::open_context<\"{EscapeCppString(contextName)}\">,");
+            sb.AppendLine($"    {OpenKeyCppType(document, site)}, {valueType}> {member}{{");
             sb.AppendLine($"    {keyExpr}}};");
             sb.AppendLine();
         }

@@ -221,6 +221,27 @@ struct ExtensionAttribute {
     std::int32_t extension_attribute_type{};
     asn1kit::any extension_attribute_value{};
 
+    template <typename Context, typename T>
+    [[nodiscard]] std::optional<T> try_decode(
+        const asn1kit::open_binding<Context, std::int32_t, T>& binding) const {
+        if (!(this->extension_attribute_type == binding.key)) return std::nullopt;
+        return asn1kit::decode_open<T>(extension_attribute_value);
+    }
+
+    template <typename Context, typename T>
+    void set(const asn1kit::open_binding<Context, std::int32_t, T>& binding, const T& value) {
+        this->extension_attribute_type = binding.key;
+        extension_attribute_value = asn1kit::encode_open(value);
+    }
+
+    template <typename Context, typename T>
+    [[nodiscard]] static ExtensionAttribute create(
+        const asn1kit::open_binding<Context, std::int32_t, T>& binding, const T& value) {
+        ExtensionAttribute result{};
+        result.set(binding, value);
+        return result;
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }

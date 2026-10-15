@@ -22,6 +22,7 @@ public sealed partial class CppBackend
             .Where(module => module.Types.Any(static type => IrOptions.ShouldGenerate(type.Options)))
             .ToList();
         var plans = modules.Select(module => PlanModule(document, module)).ToList();
+        ConfigureOpenTypeEmission(plans);
 
         var items = new List<(IrModule Module, string Name, TypeExpr Type)>();
         var keyOf = new Dictionary<(string Module, string Name), int>();

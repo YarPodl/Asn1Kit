@@ -939,6 +939,27 @@ struct PolicyQualifierInfo {
     asn1kit::oid policyQualifierId{};
     asn1kit::any qualifier{};
 
+    template <typename Context, typename T>
+    [[nodiscard]] std::optional<T> try_decode(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding) const {
+        if (!(this->policyQualifierId == binding.key)) return std::nullopt;
+        return asn1kit::decode_open<T>(qualifier);
+    }
+
+    template <typename Context, typename T>
+    void set(const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        this->policyQualifierId = binding.key;
+        qualifier = asn1kit::encode_open(value);
+    }
+
+    template <typename Context, typename T>
+    [[nodiscard]] static PolicyQualifierInfo create(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        PolicyQualifierInfo result{};
+        result.set(binding, value);
+        return result;
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }

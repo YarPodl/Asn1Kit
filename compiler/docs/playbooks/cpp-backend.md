@@ -22,16 +22,17 @@
 - `string` / `time` / `null` — явные `read_string` / `write_string` / `read_time` / `write_time` / `write_null` / `null_value::decode` (не type-driven примитивы).
 - Опции: `options.cpp.namespace`, `typeName`, `fieldName`; общие `aliasOf`, `generate`, `integer.representation`.
 - `any` → `asn1kit::any` (`read_any` / `write_any`; untagged OPTIONAL — через `eof()`).
-- Open-type Binding (direct / CONTAINING / SEQUENCE·SET OF / ancestor, local OID selector): `OpenTypeBindings.NormalizeLegacy` → plan/emit в `CppBackend.OpenTypes.cs`.
-  - Descriptor `{stem}_binding<T>` — только `asn1kit::oid key`; encode/decode выводятся из `T`:
+- Open-type Binding (direct / CONTAINING / SEQUENCE·SET OF / ancestor, OID/INTEGER selector): `OpenTypeBindings.NormalizeLegacy` → plan/emit в `CppBackend.OpenTypes.cs`.
+  - Runtime-descriptor `asn1kit::open_binding<Context, Key, Value>` хранит только key; phantom `Context` идентифицирует таблицу, `Value` — публичный decoded-тип:
     - direct `any` → `encode_open` / `decode_open<T>`;
     - `CONTAINING` → `encode_contained` / `decode_contained<T>`;
     - OF → `encode_each` / `decode_each<T>` (`std::vector<T>` + overload на один `T`).
-  - Ancestor (`selector.levels > 0`): `try_decode`/`set` принимают `const ParentN& parentN`; ключ читается с предка; `set` не меняет ключ (mismatch → exception); `create` не эмитится.
+  - Carrier с local selector получает `try_decode(binding) -> std::optional<Value>`, `set(binding, value)` и `static create(binding, value)`; carrier принимает binding любого `Context`.
+  - Contextual read API эмитится на общем владельце selector/value: `try_decode_<route>(binding) -> std::optional<Value>`. Он проходит OPTIONAL/deferred/OF-маршрут, требует phantom-context своей таблицы и отклоняет несколько совпадений. Contextual `set` не эмитится.
+  - Ancestor (`selector.levels > 0`) декодируется contextual-методом без явных parent-параметров; низкоуровневые `set/create` для такого carrier не эмитятся.
   - String/time в binding — `asn_string<form>` / `asn_time<form>` (форма в типе, не runtime-codec).
-  - Операции на descriptor: `try_decode` / `set` / `create` (create — только local selector).
   - Каталог — `namespace {table}_{field}_bindings` с `inline const` members (`{ key }`).
-  - Policy: unknown/wrong key → `try_decode` = false (raw живёт); match + bad wire → reject.
+  - Policy: unknown/wrong key → `std::nullopt` (raw живёт); match + bad wire → reject.
   - Selector: OID и INTEGER; nested path (`path.Count > 1`) через поля SEQUENCE/SET (нужно для Certificate/SIGNED parameters).
   - Inline SEQUENCE/SET, совпадающие с typedef, уже схлопнуты в IR (`InlineCompositeDeduper`) → общие типы вроде `AlgorithmIdentifier`, без `Owner_AlgorithmIdentifier`.
   - Вне среза: `AsString`, SIGNED-шаблон `Signed<T>` как у C#, Legacy Explicit88 C++ golden.

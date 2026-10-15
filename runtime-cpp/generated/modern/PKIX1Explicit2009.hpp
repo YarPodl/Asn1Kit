@@ -32,100 +32,88 @@ namespace asn1kit {
 namespace modern {
 namespace PKIX1Explicit2009 {
 
-template <typename T>
-struct certificateList_signature_binding {
-    asn1kit::oid key{};
-
-    [[nodiscard]] bool try_decode(const CertificateList& src, T& out) const {
-        if (!(src.algorithmIdentifier.algorithm == key)) return false;
-        out = asn1kit::decode_contained<T>(src.signature);
-        return true;
-    }
-
-    void set(CertificateList& src, const T& value) const {
-        src.algorithmIdentifier.algorithm = key;
-        src.signature = asn1kit::encode_contained_bits(value);
-    }
-
-    [[nodiscard]] CertificateList create(const T& value) const {
-        CertificateList src{};
-        set(src, value);
-        return src;
-    }
-};
-
-template <typename T>
-struct signature_binding {
-    asn1kit::oid key{};
-
-    [[nodiscard]] bool try_decode(const Certificate& src, T& out) const {
-        if (!(src.algorithmIdentifier.algorithm == key)) return false;
-        out = asn1kit::decode_contained<T>(src.signature);
-        return true;
-    }
-
-    void set(Certificate& src, const T& value) const {
-        src.algorithmIdentifier.algorithm = key;
-        src.signature = asn1kit::encode_contained_bits(value);
-    }
-
-    [[nodiscard]] Certificate create(const T& value) const {
-        Certificate src{};
-        set(src, value);
-        return src;
-    }
-};
-
 namespace signatureAlgorithms_signature_bindings {
-inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a1{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
+    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a1{
     ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha1.get()};
 
-inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a1{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
+    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a1{
     ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA1.get()};
 
-inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a224{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
+    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a224{
     ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha224.get()};
 
-inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a256{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
+    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a256{
     ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha256.get()};
 
-inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a224{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
+    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a224{
     ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA224.get()};
 
-inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a256{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
+    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a256{
     ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA256.get()};
 
-inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a384{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
+    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a384{
     ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA384.get()};
 
-inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a512{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
+    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a512{
     ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA512.get()};
 
 } // namespace signatureAlgorithms_signature_bindings
 
 namespace signatureAlgorithms_signature_certificateList_bindings {
-inline const certificateList_signature_binding<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a1{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
+    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a1{
     ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha1.get()};
 
-inline const certificateList_signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a1{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
+    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a1{
     ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA1.get()};
 
-inline const certificateList_signature_binding<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a224{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
+    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a224{
     ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha224.get()};
 
-inline const certificateList_signature_binding<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a256{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
+    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a256{
     ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha256.get()};
 
-inline const certificateList_signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a224{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
+    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a224{
     ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA224.get()};
 
-inline const certificateList_signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a256{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
+    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a256{
     ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA256.get()};
 
-inline const certificateList_signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a384{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
+    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a384{
     ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA384.get()};
 
-inline const certificateList_signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a512{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
+    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a512{
     ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA512.get()};
 
 } // namespace signatureAlgorithms_signature_certificateList_bindings

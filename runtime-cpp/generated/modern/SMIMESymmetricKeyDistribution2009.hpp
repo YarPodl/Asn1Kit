@@ -32,58 +32,18 @@ namespace asn1kit {
 namespace modern {
 namespace SMIMESymmetricKeyDistribution2009 {
 
-template <typename T>
-struct glaRequestValue_binding {
-    asn1kit::oid key{};
-
-    [[nodiscard]] bool try_decode(const GLAQueryRequest& src, T& out) const {
-        if (!(src.glaRequestType == key)) return false;
-        out = asn1kit::decode_open<T>(src.glaRequestValue);
-        return true;
-    }
-
-    void set(GLAQueryRequest& src, const T& value) const {
-        src.glaRequestType = key;
-        src.glaRequestValue = asn1kit::encode_open(value);
-    }
-
-    [[nodiscard]] GLAQueryRequest create(const T& value) const {
-        GLAQueryRequest src{};
-        set(src, value);
-        return src;
-    }
-};
-
-template <typename T>
-struct glaResponseValue_binding {
-    asn1kit::oid key{};
-
-    [[nodiscard]] bool try_decode(const GLAQueryResponse& src, T& out) const {
-        if (!(src.glaResponseType == key)) return false;
-        out = asn1kit::decode_open<T>(src.glaResponseValue);
-        return true;
-    }
-
-    void set(GLAQueryResponse& src, const T& value) const {
-        src.glaResponseType = key;
-        src.glaResponseValue = asn1kit::encode_open(value);
-    }
-
-    [[nodiscard]] GLAQueryResponse create(const T& value) const {
-        GLAQueryResponse src{};
-        set(src, value);
-        return src;
-    }
-};
-
 namespace skdQuerySet_glaRequestValue_bindings {
-inline const glaRequestValue_binding<asn1kit::null_value> skd_alg_request{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"SMIMESymmetricKeyDistribution-2009.skdQuerySet_glaRequestValue">,
+    asn1kit::oid, asn1kit::null_value> skd_alg_request{
     SMIMESymmetricKeyDistribution2009Oids::IdCmcGlaSkdAlgRequest.get()};
 
 } // namespace skdQuerySet_glaRequestValue_bindings
 
 namespace skdResponseSet_glaResponseValue_bindings {
-inline const glaResponseValue_binding<::asn1kit::modern::AlgorithmInformation2009::SMIMECapability> skd_alg_response{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"SMIMESymmetricKeyDistribution-2009.skdResponseSet_glaResponseValue">,
+    asn1kit::oid, ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability> skd_alg_response{
     SMIMESymmetricKeyDistribution2009Oids::IdCmcGlaSkdAlgResponse.get()};
 
 } // namespace skdResponseSet_glaResponseValue_bindings

@@ -30,143 +30,102 @@ namespace asn1kit {
 namespace modern {
 namespace CryptographicMessageSyntax2009 {
 
-template <typename T>
-struct attrValues_binding {
-    asn1kit::oid key{};
-
-    [[nodiscard]] bool try_decode(const Attribute& src, std::vector<T>& out) const {
-        if (!(src.attrType == key)) return false;
-        out = asn1kit::decode_each<T>(src.attrValues);
-        return true;
-    }
-
-    void set(Attribute& src, const std::vector<T>& value) const {
-        src.attrType = key;
-        src.attrValues = asn1kit::encode_each(value);
-    }
-
-    void set(Attribute& src, const T& value) const {
-        set(src, std::vector<T>{value});
-    }
-
-    [[nodiscard]] Attribute create(const std::vector<T>& value) const {
-        Attribute src{};
-        set(src, value);
-        return src;
-    }
-
-    [[nodiscard]] Attribute create(const T& value) const {
-        return create(std::vector<T>{value});
-    }
-};
-
-template <typename T>
-struct content_binding {
-    asn1kit::oid key{};
-
-    [[nodiscard]] bool try_decode(const ContentInfo& src, T& out) const {
-        if (!(src.contentType == key)) return false;
-        out = asn1kit::decode_open<T>(src.content);
-        return true;
-    }
-
-    void set(ContentInfo& src, const T& value) const {
-        src.contentType = key;
-        src.content = asn1kit::encode_open(value);
-    }
-
-    [[nodiscard]] ContentInfo create(const T& value) const {
-        ContentInfo src{};
-        set(src, value);
-        return src;
-    }
-};
-
-template <typename T>
-struct eContent_binding {
-    asn1kit::oid key{};
-
-    [[nodiscard]] bool try_decode(const EncapsulatedContentInfo& src, T& out) const {
-        if (!src.eContent.has_value()) return false;
-        if (!(src.eContentType == key)) return false;
-        out = asn1kit::decode_contained<T>(*src.eContent);
-        return true;
-    }
-
-    void set(EncapsulatedContentInfo& src, const T& value) const {
-        src.eContentType = key;
-        src.eContent = asn1kit::encode_contained_octets(value);
-    }
-
-    [[nodiscard]] EncapsulatedContentInfo create(const T& value) const {
-        EncapsulatedContentInfo src{};
-        set(src, value);
-        return src;
-    }
-};
-
 namespace authAttributeSet_bindings {
-inline const attrValues_binding<asn1kit::oid> content_type{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"CryptographicMessageSyntax-2009.authAttributeSet">,
+    asn1kit::oid, std::vector<asn1kit::oid>> content_type{
     CryptographicMessageSyntax2009Oids::IdContentType.get()};
 
-inline const attrValues_binding<asn1kit::bytes> message_digest{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"CryptographicMessageSyntax-2009.authAttributeSet">,
+    asn1kit::oid, std::vector<asn1kit::bytes>> message_digest{
     CryptographicMessageSyntax2009Oids::IdMessageDigest.get()};
 
-inline const attrValues_binding<Time> signing_time{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"CryptographicMessageSyntax-2009.authAttributeSet">,
+    asn1kit::oid, std::vector<Time>> signing_time{
     CryptographicMessageSyntax2009Oids::IdSigningTime.get()};
 
 } // namespace authAttributeSet_bindings
 
 namespace contentSet_content_bindings {
-inline const content_binding<SignedData> ct_signed_data{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_content">,
+    asn1kit::oid, SignedData> ct_signed_data{
     CryptographicMessageSyntax2009Oids::IdSignedData.get()};
 
-inline const content_binding<EncryptedData> ct_encrypted_data{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_content">,
+    asn1kit::oid, EncryptedData> ct_encrypted_data{
     CryptographicMessageSyntax2009Oids::IdEncryptedData.get()};
 
-inline const content_binding<EnvelopedData> ct_enveloped_data{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_content">,
+    asn1kit::oid, EnvelopedData> ct_enveloped_data{
     CryptographicMessageSyntax2009Oids::IdEnvelopedData.get()};
 
-inline const content_binding<AuthenticatedData> ct_authenticated_data{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_content">,
+    asn1kit::oid, AuthenticatedData> ct_authenticated_data{
     CryptographicMessageSyntax2009Oids::IdCtAuthData.get()};
 
-inline const content_binding<DigestedData> ct_digested_data{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_content">,
+    asn1kit::oid, DigestedData> ct_digested_data{
     CryptographicMessageSyntax2009Oids::IdDigestedData.get()};
 
 } // namespace contentSet_content_bindings
 
 namespace contentSet_eContent_bindings {
-inline const eContent_binding<SignedData> ct_signed_data{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_eContent">,
+    asn1kit::oid, SignedData> ct_signed_data{
     CryptographicMessageSyntax2009Oids::IdSignedData.get()};
 
-inline const eContent_binding<EncryptedData> ct_encrypted_data{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_eContent">,
+    asn1kit::oid, EncryptedData> ct_encrypted_data{
     CryptographicMessageSyntax2009Oids::IdEncryptedData.get()};
 
-inline const eContent_binding<EnvelopedData> ct_enveloped_data{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_eContent">,
+    asn1kit::oid, EnvelopedData> ct_enveloped_data{
     CryptographicMessageSyntax2009Oids::IdEnvelopedData.get()};
 
-inline const eContent_binding<AuthenticatedData> ct_authenticated_data{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_eContent">,
+    asn1kit::oid, AuthenticatedData> ct_authenticated_data{
     CryptographicMessageSyntax2009Oids::IdCtAuthData.get()};
 
-inline const eContent_binding<DigestedData> ct_digested_data{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_eContent">,
+    asn1kit::oid, DigestedData> ct_digested_data{
     CryptographicMessageSyntax2009Oids::IdDigestedData.get()};
 
 } // namespace contentSet_eContent_bindings
 
 namespace signedAttributesSet_bindings {
-inline const attrValues_binding<Time> signing_time{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"CryptographicMessageSyntax-2009.signedAttributesSet">,
+    asn1kit::oid, std::vector<Time>> signing_time{
     CryptographicMessageSyntax2009Oids::IdSigningTime.get()};
 
-inline const attrValues_binding<asn1kit::bytes> message_digest{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"CryptographicMessageSyntax-2009.signedAttributesSet">,
+    asn1kit::oid, std::vector<asn1kit::bytes>> message_digest{
     CryptographicMessageSyntax2009Oids::IdMessageDigest.get()};
 
-inline const attrValues_binding<asn1kit::oid> content_type{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"CryptographicMessageSyntax-2009.signedAttributesSet">,
+    asn1kit::oid, std::vector<asn1kit::oid>> content_type{
     CryptographicMessageSyntax2009Oids::IdContentType.get()};
 
 } // namespace signedAttributesSet_bindings
 
 namespace unsignedAttributes_bindings {
-inline const attrValues_binding<SignerInfo> countersignature{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"CryptographicMessageSyntax-2009.unsignedAttributes">,
+    asn1kit::oid, std::vector<SignerInfo>> countersignature{
     CryptographicMessageSyntax2009Oids::IdCountersignature.get()};
 
 } // namespace unsignedAttributes_bindings

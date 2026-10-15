@@ -59,11 +59,11 @@ using Name = std::vector<std::vector<Attr>>;
 
 [[nodiscard]] Name make_name(const char* common_name) {
     Name name;
-    name.push_back({Common::supportedAttributes_value_bindings::x520country_name.create(
+    name.push_back({Common::SingleAttribute::create(Common::supportedAttributes_value_bindings::x520country_name,
         asn1kit::asn_string<asn1kit::string_form::printable>{"US"})});
-    name.push_back({Common::supportedAttributes_value_bindings::x520_organization_name.create(
+    name.push_back({Common::SingleAttribute::create(Common::supportedAttributes_value_bindings::x520_organization_name,
         Pkix::DirectoryString::from_printableString("Test Certificates 2011"))});
-    name.push_back({Common::supportedAttributes_value_bindings::x520_common_name.create(
+    name.push_back({Common::SingleAttribute::create(Common::supportedAttributes_value_bindings::x520_common_name,
         Pkix::DirectoryString::from_printableString(common_name))});
     return name;
 }
@@ -117,14 +117,14 @@ Pkix::Certificate create_certificate() {
 
     const auto ski_bytes = filled(20, 0xE4);
     std::vector<Common::Extension> extensions{
-        Common::certExtensions_bindings::subject_key_identifier.create(
+        Common::Extension::create(Common::certExtensions_bindings::subject_key_identifier,
             asn1kit::bytes::copy_from(ski_bytes)),
         with_critical(
-            Common::certExtensions_bindings::key_usage.create(Implicit::KeyUsage::from_flags(
+            Common::Extension::create(Common::certExtensions_bindings::key_usage, Implicit::KeyUsage::from_flags(
                 Implicit::KeyUsageFlags::keyCertSign | Implicit::KeyUsageFlags::cRLSign)),
             true),
         with_critical(
-            Common::certExtensions_bindings::basic_constraints.create(
+            Common::Extension::create(Common::certExtensions_bindings::basic_constraints,
                 Implicit::BasicConstraints{true, std::nullopt}),
             true),
     };
@@ -154,8 +154,8 @@ Pkix::CertificateList create_certificate_list() {
     Implicit::AuthorityKeyIdentifier aki{};
     aki.keyIdentifier = asn1kit::bytes::copy_from(filled(20, 0x58));
     tbs.crlExtensions = std::vector<Common::Extension>{
-        Common::crlExtensions_bindings::authority_key_identifier.create(aki),
-        Common::crlExtensions_bindings::c_r_l_number.create(asn1kit::integer::from_int32(1)),
+        Common::Extension::create(Common::crlExtensions_bindings::authority_key_identifier, aki),
+        Common::Extension::create(Common::crlExtensions_bindings::c_r_l_number, asn1kit::integer::from_int32(1)),
     };
 
     Pkix::CertificateList crl{};

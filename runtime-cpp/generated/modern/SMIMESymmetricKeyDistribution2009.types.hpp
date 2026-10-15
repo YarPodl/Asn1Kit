@@ -134,6 +134,27 @@ struct GLAQueryRequest {
     asn1kit::oid glaRequestType{};
     asn1kit::any glaRequestValue{};
 
+    template <typename Context, typename T>
+    [[nodiscard]] std::optional<T> try_decode(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding) const {
+        if (!(this->glaRequestType == binding.key)) return std::nullopt;
+        return asn1kit::decode_open<T>(glaRequestValue);
+    }
+
+    template <typename Context, typename T>
+    void set(const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        this->glaRequestType = binding.key;
+        glaRequestValue = asn1kit::encode_open(value);
+    }
+
+    template <typename Context, typename T>
+    [[nodiscard]] static GLAQueryRequest create(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        GLAQueryRequest result{};
+        result.set(binding, value);
+        return result;
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
@@ -157,6 +178,27 @@ struct GLAQueryRequest {
 struct GLAQueryResponse {
     asn1kit::oid glaResponseType{};
     asn1kit::any glaResponseValue{};
+
+    template <typename Context, typename T>
+    [[nodiscard]] std::optional<T> try_decode(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding) const {
+        if (!(this->glaResponseType == binding.key)) return std::nullopt;
+        return asn1kit::decode_open<T>(glaResponseValue);
+    }
+
+    template <typename Context, typename T>
+    void set(const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        this->glaResponseType = binding.key;
+        glaResponseValue = asn1kit::encode_open(value);
+    }
+
+    template <typename Context, typename T>
+    [[nodiscard]] static GLAQueryResponse create(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        GLAQueryResponse result{};
+        result.set(binding, value);
+        return result;
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);

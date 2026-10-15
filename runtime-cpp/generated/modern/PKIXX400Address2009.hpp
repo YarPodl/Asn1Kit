@@ -30,96 +30,120 @@ namespace asn1kit {
 namespace modern {
 namespace PKIXX400Address2009 {
 
-template <typename T>
-struct extension_attribute_value_binding {
-    std::int32_t key{};
-
-    [[nodiscard]] bool try_decode(const ExtensionAttribute& src, T& out) const {
-        if (!(src.extension_attribute_type == key)) return false;
-        out = asn1kit::decode_open<T>(src.extension_attribute_value);
-        return true;
-    }
-
-    void set(ExtensionAttribute& src, const T& value) const {
-        src.extension_attribute_type = key;
-        src.extension_attribute_value = asn1kit::encode_open(value);
-    }
-
-    [[nodiscard]] ExtensionAttribute create(const T& value) const {
-        ExtensionAttribute src{};
-        set(src, value);
-        return src;
-    }
-};
-
 namespace supportedExtensionAttributes_extension_attribute_value_bindings {
-inline const extension_attribute_value_binding<asn1kit::asn_string<asn1kit::string_form::printable>> ea_common_name{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX-X400Address-2009.supportedExtensionAttributes_extension_attribute_value">,
+    std::int32_t, asn1kit::asn_string<asn1kit::string_form::printable>> ea_common_name{
     std::int32_t{1}};
 
-inline const extension_attribute_value_binding<asn1kit::asn_string<asn1kit::string_form::teletex>> ea_teletex_common_name{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX-X400Address-2009.supportedExtensionAttributes_extension_attribute_value">,
+    std::int32_t, asn1kit::asn_string<asn1kit::string_form::teletex>> ea_teletex_common_name{
     std::int32_t{2}};
 
-inline const extension_attribute_value_binding<asn1kit::asn_string<asn1kit::string_form::teletex>> ea_teletex_organization_name{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX-X400Address-2009.supportedExtensionAttributes_extension_attribute_value">,
+    std::int32_t, asn1kit::asn_string<asn1kit::string_form::teletex>> ea_teletex_organization_name{
     std::int32_t{3}};
 
-inline const extension_attribute_value_binding<ExtensionAttribute_EaTeletexPersonalName> ea_teletex_personal_name{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX-X400Address-2009.supportedExtensionAttributes_extension_attribute_value">,
+    std::int32_t, ExtensionAttribute_EaTeletexPersonalName> ea_teletex_personal_name{
     std::int32_t{4}};
 
-inline const extension_attribute_value_binding<std::vector<std::string>> ea_teletex_organizational_unit_names{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX-X400Address-2009.supportedExtensionAttributes_extension_attribute_value">,
+    std::int32_t, std::vector<std::string>> ea_teletex_organizational_unit_names{
     std::int32_t{5}};
 
-inline const extension_attribute_value_binding<asn1kit::asn_string<asn1kit::string_form::printable>> ea_p_d_s_name{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX-X400Address-2009.supportedExtensionAttributes_extension_attribute_value">,
+    std::int32_t, asn1kit::asn_string<asn1kit::string_form::printable>> ea_p_d_s_name{
     std::int32_t{7}};
 
-inline const extension_attribute_value_binding<ExtensionAttribute_EaPhysicalDeliveryCountryName> ea_physical_delivery_country_name{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX-X400Address-2009.supportedExtensionAttributes_extension_attribute_value">,
+    std::int32_t, ExtensionAttribute_EaPhysicalDeliveryCountryName> ea_physical_delivery_country_name{
     std::int32_t{8}};
 
-inline const extension_attribute_value_binding<ExtensionAttribute_EaPostalCode> ea_postal_code{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX-X400Address-2009.supportedExtensionAttributes_extension_attribute_value">,
+    std::int32_t, ExtensionAttribute_EaPostalCode> ea_postal_code{
     std::int32_t{9}};
 
-inline const extension_attribute_value_binding<PDSParameter> ea_physical_delivery_office_name{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX-X400Address-2009.supportedExtensionAttributes_extension_attribute_value">,
+    std::int32_t, PDSParameter> ea_physical_delivery_office_name{
     std::int32_t{10}};
 
-inline const extension_attribute_value_binding<PDSParameter> ea_physical_delivery_office_number{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX-X400Address-2009.supportedExtensionAttributes_extension_attribute_value">,
+    std::int32_t, PDSParameter> ea_physical_delivery_office_number{
     std::int32_t{11}};
 
-inline const extension_attribute_value_binding<PDSParameter> ea_extension_o_r_address_components{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX-X400Address-2009.supportedExtensionAttributes_extension_attribute_value">,
+    std::int32_t, PDSParameter> ea_extension_o_r_address_components{
     std::int32_t{12}};
 
-inline const extension_attribute_value_binding<PDSParameter> ea_physical_delivery_personal_name{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX-X400Address-2009.supportedExtensionAttributes_extension_attribute_value">,
+    std::int32_t, PDSParameter> ea_physical_delivery_personal_name{
     std::int32_t{13}};
 
-inline const extension_attribute_value_binding<PDSParameter> ea_physical_delivery_organization_name{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX-X400Address-2009.supportedExtensionAttributes_extension_attribute_value">,
+    std::int32_t, PDSParameter> ea_physical_delivery_organization_name{
     std::int32_t{14}};
 
-inline const extension_attribute_value_binding<PDSParameter> ea_extension_physical_delivery_address_components{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX-X400Address-2009.supportedExtensionAttributes_extension_attribute_value">,
+    std::int32_t, PDSParameter> ea_extension_physical_delivery_address_components{
     std::int32_t{15}};
 
-inline const extension_attribute_value_binding<ExtensionAttribute_EaUnformattedPostalAddress> ea_unformatted_postal_address{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX-X400Address-2009.supportedExtensionAttributes_extension_attribute_value">,
+    std::int32_t, ExtensionAttribute_EaUnformattedPostalAddress> ea_unformatted_postal_address{
     std::int32_t{16}};
 
-inline const extension_attribute_value_binding<PDSParameter> ea_street_address{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX-X400Address-2009.supportedExtensionAttributes_extension_attribute_value">,
+    std::int32_t, PDSParameter> ea_street_address{
     std::int32_t{17}};
 
-inline const extension_attribute_value_binding<PDSParameter> ea_post_office_box_address{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX-X400Address-2009.supportedExtensionAttributes_extension_attribute_value">,
+    std::int32_t, PDSParameter> ea_post_office_box_address{
     std::int32_t{18}};
 
-inline const extension_attribute_value_binding<PDSParameter> ea_poste_restante_address{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX-X400Address-2009.supportedExtensionAttributes_extension_attribute_value">,
+    std::int32_t, PDSParameter> ea_poste_restante_address{
     std::int32_t{19}};
 
-inline const extension_attribute_value_binding<PDSParameter> ea_unique_postal_name{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX-X400Address-2009.supportedExtensionAttributes_extension_attribute_value">,
+    std::int32_t, PDSParameter> ea_unique_postal_name{
     std::int32_t{20}};
 
-inline const extension_attribute_value_binding<PDSParameter> ea_local_postal_attributes{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX-X400Address-2009.supportedExtensionAttributes_extension_attribute_value">,
+    std::int32_t, PDSParameter> ea_local_postal_attributes{
     std::int32_t{21}};
 
-inline const extension_attribute_value_binding<ExtensionAttribute_EaExtendedNetworkAddress> ea_extended_network_address{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX-X400Address-2009.supportedExtensionAttributes_extension_attribute_value">,
+    std::int32_t, ExtensionAttribute_EaExtendedNetworkAddress> ea_extended_network_address{
     std::int32_t{22}};
 
-inline const extension_attribute_value_binding<std::int32_t> ea_terminal_type{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX-X400Address-2009.supportedExtensionAttributes_extension_attribute_value">,
+    std::int32_t, std::int32_t> ea_terminal_type{
     std::int32_t{23}};
 
-inline const extension_attribute_value_binding<std::vector<TeletexDomainDefinedAttribute>> ea_teletex_domain_defined_attributes{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"PKIX-X400Address-2009.supportedExtensionAttributes_extension_attribute_value">,
+    std::int32_t, std::vector<TeletexDomainDefinedAttribute>> ea_teletex_domain_defined_attributes{
     std::int32_t{6}};
 
 } // namespace supportedExtensionAttributes_extension_attribute_value_bindings

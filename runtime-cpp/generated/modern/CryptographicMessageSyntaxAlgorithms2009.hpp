@@ -127,6 +127,12 @@ struct PBKDF2Params {
     std::optional<asn1kit::integer> keyLength{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier prf = default_prf();
 
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_prf(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.pOPAlgs_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).prf, binding);
+    }
+
     static ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier default_prf() {
         ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};
         v.algorithm = CryptographicMessageSyntaxAlgorithms2009Oids::HMACSHA1.get();

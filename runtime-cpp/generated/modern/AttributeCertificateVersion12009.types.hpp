@@ -206,6 +206,33 @@ struct AttributeCertificateV1 {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::bit_string signature{};
 
+    template <typename Context, typename T>
+    [[nodiscard]] std::optional<T> try_decode(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding) const {
+        if (!(this->algorithmIdentifier.algorithm == binding.key)) return std::nullopt;
+        return asn1kit::decode_contained<T>(signature);
+    }
+
+    template <typename Context, typename T>
+    void set(const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        this->algorithmIdentifier.algorithm = binding.key;
+        signature = asn1kit::encode_contained_bits(value);
+    }
+
+    template <typename Context, typename T>
+    [[nodiscard]] static AttributeCertificateV1 create(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        AttributeCertificateV1 result{};
+        result.set(binding, value);
+        return result;
+    }
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_algorithm_identifier(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).algorithmIdentifier, binding);
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }

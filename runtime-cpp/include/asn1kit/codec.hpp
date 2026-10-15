@@ -19,12 +19,49 @@
 #include "asn1kit/writer.hpp"
 
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
 namespace asn1kit {
+
+/// Identifies one generated open-type table at compile time.
+template <detail::oid_text Name>
+struct open_context final {};
+
+/// Associates an open-type selector key with its decoded public value type.
+/// Encoding and decoding remain operations of the generated carrier/owner types.
+template <typename Context, typename Key, typename Value>
+struct open_binding {
+    using context_type = Context;
+    using key_type = Key;
+    using value_type = Value;
+
+    Key key{};
+};
+
+template <typename T>
+void merge_unique(std::optional<T>& result, std::optional<T> candidate) {
+    if (!candidate.has_value()) return;
+    if (result.has_value())
+        throw exception("Multiple values match open-type contextual decode.");
+    result = std::move(candidate);
+}
+
+template <typename Source, typename Context, typename Key, typename Value>
+[[nodiscard]] std::optional<Value> try_decode_unique(
+    const Source& source, const open_binding<Context, Key, Value>& binding) {
+    if constexpr (requires { source.try_decode(binding); }) {
+        return source.try_decode(binding);
+    } else {
+        std::optional<Value> result;
+        for (const auto& item : source)
+            merge_unique(result, try_decode_unique(item, binding));
+        return result;
+    }
+}
 
 /// UTF8String / PrintableString / … with the ASN.1 form in the type (not a runtime codec).
 template <string_form Form>

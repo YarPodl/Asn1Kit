@@ -54,6 +54,7 @@ public sealed partial class CppBackend
         }
 
         sb.AppendLine();
+        EmitOpenOwnerMethods(sb, document, module, typeName);
         EmitStructuredDefaultHelpers(sb, document, module, typeName, components);
         var naturalTag = UniversalTag(document, module, type);
         sb.AppendLine("    static constexpr bool match_tag(const asn1kit::tag& t) {");

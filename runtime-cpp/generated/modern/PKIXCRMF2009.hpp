@@ -367,6 +367,20 @@ struct CertTemplate {
     std::optional<asn1kit::bit_string> subjectUID{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> extensions{};
 
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_signing_alg(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">, asn1kit::oid, T>& binding) const {
+        if (!(*this).signingAlg.has_value()) return std::nullopt;
+        return asn1kit::try_decode_unique((*(*this).signingAlg), binding);
+    }
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_extensions(
+        const asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.certExtensions">, asn1kit::oid, T>& binding) const {
+        if (!(*this).extensions.has_value()) return std::nullopt;
+        return asn1kit::try_decode_unique((*(*this).extensions), binding);
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
@@ -470,6 +484,13 @@ struct CertRequest {
     CertTemplate certTemplate{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> controls{};
 
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_controls(
+        const asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.regControlSet_value">, asn1kit::oid, T>& binding) const {
+        if (!(*this).controls.has_value()) return std::nullopt;
+        return asn1kit::try_decode_unique((*(*this).controls), binding);
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
@@ -501,6 +522,18 @@ struct PBMParameter {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier owf{};
     asn1kit::integer iterationCount{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier mac{};
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_owf(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.witnessAlgs_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).owf, binding);
+    }
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_mac(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.pOPAlgs_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).mac, binding);
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -630,6 +663,12 @@ struct PKIPublicationInfo_Action {
 struct PKMACValue {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algId{};
     asn1kit::bit_string value_{};
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_alg_id(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.password_mACAlgorithms_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).algId, binding);
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -883,6 +922,12 @@ struct POPOSigningKey {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::bit_string signature{};
 
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_algorithm_identifier(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).algorithmIdentifier, binding);
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
@@ -1096,6 +1141,13 @@ struct CertReqMsg {
     CertRequest certReq{};
     std::optional<ProofOfPossession> popo{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> regInfo{};
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_reg_info(
+        const asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.regInfoSet_value">, asn1kit::oid, T>& binding) const {
+        if (!(*this).regInfo.has_value()) return std::nullopt;
+        return asn1kit::try_decode_unique((*(*this).regInfo), binding);
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);

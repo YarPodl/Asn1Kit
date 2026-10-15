@@ -19,29 +19,27 @@ using namespace asn1kit;
 using namespace M;
 
 TEST(OpenBinding, SetTryDecodeRoundTripNullAndInt32) {
-    auto info = mixed_parameters_bindings::empty_entry.create(null_value::value());
+    auto info = AlgorithmIdentifier::create(mixed_parameters_bindings::empty_entry, null_value::value());
     EXPECT_EQ(info.algorithm, oid::parse("1.2.3"));
     ASSERT_TRUE(info.parameters.has_value());
 
-    null_value decoded_null{};
-    EXPECT_TRUE(mixed_parameters_bindings::empty_entry.try_decode(info, decoded_null));
-    EXPECT_EQ(decoded_null, null_value::value());
+    const auto decoded_null = info.try_decode(mixed_parameters_bindings::empty_entry);
+    ASSERT_TRUE(decoded_null.has_value());
+    EXPECT_EQ(*decoded_null, null_value::value());
 
-    std::int32_t ignored = 0;
-    EXPECT_FALSE(mixed_parameters_bindings::data_entry.try_decode(info, ignored));
+    EXPECT_FALSE(info.try_decode(mixed_parameters_bindings::data_entry).has_value());
 
-    mixed_parameters_bindings::data_entry.set(info, 42);
+    info.set(mixed_parameters_bindings::data_entry, 42);
     EXPECT_EQ(info.algorithm, oid::parse("1.2.4"));
-    std::int32_t decoded = 0;
-    EXPECT_TRUE(mixed_parameters_bindings::data_entry.try_decode(info, decoded));
-    EXPECT_EQ(decoded, 42);
+    const auto decoded = info.try_decode(mixed_parameters_bindings::data_entry);
+    ASSERT_TRUE(decoded.has_value());
+    EXPECT_EQ(*decoded, 42);
 
     writer w(encoding::der);
     info.encode(w);
     reader r(bytes::from_vector(w.encode()), encoding::der);
     const auto round_trip = AlgorithmIdentifier::decode(r);
-    EXPECT_TRUE(mixed_parameters_bindings::data_entry.try_decode(round_trip, decoded));
-    EXPECT_EQ(decoded, 42);
+    EXPECT_EQ(round_trip.try_decode(mixed_parameters_bindings::data_entry), 42);
 }
 
 TEST(OpenBinding, UnknownKeyKeepsRaw) {
@@ -49,10 +47,8 @@ TEST(OpenBinding, UnknownKeyKeepsRaw) {
     info.algorithm = oid::parse("1.2.9");
     info.parameters = encode_open(std::int32_t{7});
 
-    null_value n{};
-    std::int32_t i = 0;
-    EXPECT_FALSE(mixed_parameters_bindings::empty_entry.try_decode(info, n));
-    EXPECT_FALSE(mixed_parameters_bindings::data_entry.try_decode(info, i));
+    EXPECT_FALSE(info.try_decode(mixed_parameters_bindings::empty_entry).has_value());
+    EXPECT_FALSE(info.try_decode(mixed_parameters_bindings::data_entry).has_value());
     ASSERT_TRUE(info.parameters.has_value());
     EXPECT_EQ(decode_open<std::int32_t>(*info.parameters, encoding::der), 7);
 }
@@ -62,61 +58,62 @@ TEST(OpenBinding, KnownKeyWireMismatchRejects) {
     info.algorithm = oid::parse("1.2.3");
     info.parameters = encode_open(std::int32_t{1});
 
-    null_value n{};
     EXPECT_THROW(
-        (void)mixed_parameters_bindings::empty_entry.try_decode(info, n), exception);
+        (void)info.try_decode(mixed_parameters_bindings::empty_entry), exception);
 }
 
 TEST(OpenBinding, ContainedSetTryDecodeRoundTrip) {
-    auto ext = mixed_extnValue_bindings::data_entry.create(std::int32_t{7});
+    auto ext = Extension::create(mixed_extnValue_bindings::data_entry, std::int32_t{7});
     EXPECT_EQ(ext.extnID, oid::parse("1.2.4"));
 
-    std::int32_t decoded = 0;
-    EXPECT_TRUE(mixed_extnValue_bindings::data_entry.try_decode(ext, decoded));
-    EXPECT_EQ(decoded, 7);
+    EXPECT_EQ(ext.try_decode(mixed_extnValue_bindings::data_entry), 7);
 
-    null_value ignored{};
-    EXPECT_FALSE(mixed_extnValue_bindings::empty_entry.try_decode(ext, ignored));
+    EXPECT_FALSE(ext.try_decode(mixed_extnValue_bindings::empty_entry).has_value());
 
     writer w(encoding::der);
     ext.encode(w);
     reader r(bytes::from_vector(w.encode()), encoding::der);
     const auto round_trip = Extension::decode(r);
-    EXPECT_TRUE(mixed_extnValue_bindings::data_entry.try_decode(round_trip, decoded));
-    EXPECT_EQ(decoded, 7);
+    EXPECT_EQ(round_trip.try_decode(mixed_extnValue_bindings::data_entry), 7);
 }
 
 TEST(OpenBinding, SetOfSetTryDecodeRoundTrip) {
-    auto attr = mixed_values_bindings::data_entry.create(
+    auto attr = Attribute::create(mixed_values_bindings::data_entry,
         std::vector<std::int32_t>{1, 2});
     EXPECT_EQ(attr.type, oid::parse("1.2.4"));
     ASSERT_EQ(attr.values.size(), 2u);
 
-    std::vector<std::int32_t> decoded;
-    EXPECT_TRUE(mixed_values_bindings::data_entry.try_decode(attr, decoded));
-    EXPECT_EQ(decoded, (std::vector<std::int32_t>{1, 2}));
+    const auto decoded = attr.try_decode(mixed_values_bindings::data_entry);
+    ASSERT_TRUE(decoded.has_value());
+    EXPECT_EQ(*decoded, (std::vector<std::int32_t>{1, 2}));
 
-    mixed_values_bindings::empty_entry.set(attr, null_value::value());
+    attr.set(mixed_values_bindings::empty_entry, null_value::value());
     EXPECT_EQ(attr.type, oid::parse("1.2.3"));
-    std::vector<null_value> nulls;
-    EXPECT_TRUE(mixed_values_bindings::empty_entry.try_decode(attr, nulls));
-    ASSERT_EQ(nulls.size(), 1u);
+    const auto nulls = attr.try_decode(mixed_values_bindings::empty_entry);
+    ASSERT_TRUE(nulls.has_value());
+    ASSERT_EQ(nulls->size(), 1u);
 }
 
 TEST(OpenBinding, AncestorSelectorUsesParentKey) {
     Outer outer{};
     outer.id = oid::parse("1.2.4");
-    Outer_Nested_Item item{};
-    mixed_value_bindings::data_entry.set(item, outer, std::int32_t{9});
+    outer.nested.push_back(Outer_Nested_Item{});
+    outer.nested.back().value_ = encode_open(std::int32_t{9});
+    const auto decoded = outer.try_decode_nested(mixed_value_bindings::data_entry);
+    ASSERT_TRUE(decoded.has_value());
+    EXPECT_EQ(*decoded, 9);
 
-    std::int32_t decoded = 0;
-    EXPECT_TRUE(mixed_value_bindings::data_entry.try_decode(item, outer, decoded));
-    EXPECT_EQ(decoded, 9);
-    EXPECT_EQ(decode_open<std::int32_t>(item.value_), 9);
+    outer.id = oid::parse("1.2.3");
+    EXPECT_FALSE(outer.try_decode_nested(mixed_value_bindings::data_entry).has_value());
+}
 
-    Outer wrong{};
-    wrong.id = oid::parse("1.2.3");
-    EXPECT_FALSE(mixed_value_bindings::data_entry.try_decode(item, wrong, decoded));
+TEST(OpenBinding, ContextualDecodeRejectsMultipleMatches) {
+    Outer outer{};
+    outer.id = oid::parse("1.2.4");
+    outer.nested.resize(2);
+    outer.nested[0].value_ = encode_open(std::int32_t{1});
+    outer.nested[1].value_ = encode_open(std::int32_t{2});
+
     EXPECT_THROW(
-        mixed_value_bindings::data_entry.set(item, wrong, std::int32_t{1}), exception);
+        (void)outer.try_decode_nested(mixed_value_bindings::data_entry), exception);
 }

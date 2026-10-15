@@ -85,6 +85,12 @@ struct AddExtensions {
     std::vector<std::uint32_t> certReferences{};
     std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension> extensions{};
 
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_extensions(
+        const asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.certExtensions">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).extensions, binding);
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
@@ -210,6 +216,12 @@ struct CMCPublicationInfo {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlg{};
     std::vector<asn1kit::bytes> certHashes{};
     ::asn1kit::modern::PKIXCRMF2009::PKIPublicationInfo pubInfo{};
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_hash_alg(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.hashAlgorithms_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).hashAlg, binding);
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -357,6 +369,12 @@ struct CertificationRequest {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signatureAlgorithm{};
     asn1kit::bit_string signature{};
 
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_signature_algorithm(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).signatureAlgorithm, binding);
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
@@ -404,6 +422,12 @@ struct DecryptedPOP {
     std::uint32_t bodyPartID{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier thePOPAlgID{};
     asn1kit::bytes thePOP{};
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_the_p_o_p_alg_i_d(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.pOPAlgs_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).thePOPAlgID, binding);
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -511,6 +535,18 @@ struct IdentityProofV2 {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier proofAlgID{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier macAlgId{};
     asn1kit::bytes witness{};
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_proof_alg_i_d(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.witnessAlgs_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).proofAlgID, binding);
+    }
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_mac_alg_id(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.pOPAlgs_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).macAlgId, binding);
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -887,6 +923,18 @@ struct PopLinkWitnessV2 {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier macAlgorithm{};
     asn1kit::bytes witness{};
 
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_key_gen_algorithm(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.keyDevAlgs_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).keyGenAlgorithm, binding);
+    }
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_mac_algorithm(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.pOPAlgs_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).macAlgorithm, binding);
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
@@ -913,6 +961,12 @@ struct PublishTrustAnchors {
     asn1kit::integer seqNumber{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm{};
     std::vector<asn1kit::bytes> anchorHashes{};
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_hash_algorithm(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.hashAlgorithms_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).hashAlgorithm, binding);
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -992,6 +1046,38 @@ struct TaggedAttribute {
     std::uint32_t bodyPartID{};
     asn1kit::oid attrType{};
     std::vector<asn1kit::any> attrValues{};
+
+    template <typename Context, typename T>
+    [[nodiscard]] std::optional<std::vector<T>> try_decode(
+        const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding) const {
+        if (!(this->attrType == binding.key)) return std::nullopt;
+        return asn1kit::decode_each<T>(attrValues);
+    }
+
+    template <typename Context, typename T>
+    void set(const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding, const std::vector<T>& value) {
+        this->attrType = binding.key;
+        attrValues = asn1kit::encode_each(value);
+    }
+
+    template <typename Context, typename T>
+    void set(const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding, const T& value) {
+        set(binding, std::vector<T>{value});
+    }
+
+    template <typename Context, typename T>
+    [[nodiscard]] static TaggedAttribute create(
+        const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding, const std::vector<T>& value) {
+        TaggedAttribute result{};
+        result.set(binding, value);
+        return result;
+    }
+
+    template <typename Context, typename T>
+    [[nodiscard]] static TaggedAttribute create(
+        const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding, const T& value) {
+        return create(binding, std::vector<T>{value});
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -1226,6 +1312,18 @@ struct EncryptedPOP {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier thePOPAlgID{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier witnessAlgID{};
     asn1kit::bytes witness{};
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_the_p_o_p_alg_i_d(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.pOPAlgs_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).thePOPAlgID, binding);
+    }
+
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_witness_alg_i_d(
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.witnessAlgs_parameters">, asn1kit::oid, T>& binding) const {
+        return asn1kit::try_decode_unique((*this).witnessAlgID, binding);
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);

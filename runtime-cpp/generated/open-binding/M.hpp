@@ -30,6 +30,28 @@ struct AlgorithmIdentifier {
     asn1kit::oid algorithm{};
     std::optional<asn1kit::any> parameters{};
 
+    template <typename Context, typename T>
+    [[nodiscard]] std::optional<T> try_decode(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding) const {
+        if (!parameters.has_value()) return std::nullopt;
+        if (!(this->algorithm == binding.key)) return std::nullopt;
+        return asn1kit::decode_open<T>(*parameters);
+    }
+
+    template <typename Context, typename T>
+    void set(const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        this->algorithm = binding.key;
+        parameters = asn1kit::encode_open(value);
+    }
+
+    template <typename Context, typename T>
+    [[nodiscard]] static AlgorithmIdentifier create(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        AlgorithmIdentifier result{};
+        result.set(binding, value);
+        return result;
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
@@ -58,6 +80,38 @@ struct Attribute {
     asn1kit::oid type{};
     std::vector<asn1kit::any> values{};
 
+    template <typename Context, typename T>
+    [[nodiscard]] std::optional<std::vector<T>> try_decode(
+        const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding) const {
+        if (!(this->type == binding.key)) return std::nullopt;
+        return asn1kit::decode_each<T>(values);
+    }
+
+    template <typename Context, typename T>
+    void set(const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding, const std::vector<T>& value) {
+        this->type = binding.key;
+        values = asn1kit::encode_each(value);
+    }
+
+    template <typename Context, typename T>
+    void set(const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding, const T& value) {
+        set(binding, std::vector<T>{value});
+    }
+
+    template <typename Context, typename T>
+    [[nodiscard]] static Attribute create(
+        const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding, const std::vector<T>& value) {
+        Attribute result{};
+        result.set(binding, value);
+        return result;
+    }
+
+    template <typename Context, typename T>
+    [[nodiscard]] static Attribute create(
+        const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding, const T& value) {
+        return create(binding, std::vector<T>{value});
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
@@ -85,6 +139,27 @@ struct Attribute {
 struct Extension {
     asn1kit::oid extnID{};
     asn1kit::bytes extnValue{};
+
+    template <typename Context, typename T>
+    [[nodiscard]] std::optional<T> try_decode(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding) const {
+        if (!(this->extnID == binding.key)) return std::nullopt;
+        return asn1kit::decode_contained<T>(extnValue);
+    }
+
+    template <typename Context, typename T>
+    void set(const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        this->extnID = binding.key;
+        extnValue = asn1kit::encode_contained_octets(value);
+    }
+
+    template <typename Context, typename T>
+    [[nodiscard]] static Extension create(
+        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
+        Extension result{};
+        result.set(binding, value);
+        return result;
+    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -158,6 +233,19 @@ struct Outer {
     asn1kit::oid id{};
     std::vector<Outer_Nested_Item> nested{};
 
+    template <typename T>
+    [[nodiscard]] std::optional<T> try_decode_nested(
+        const asn1kit::open_binding<asn1kit::open_context<"M.mixed_value">, asn1kit::oid, T>& binding) const {
+        std::optional<T> result;
+        if (!((*this).id == binding.key)) return result;
+        for (const auto& open_item_1 : (*this).nested) {
+            { auto decoded = std::optional<T>{asn1kit::decode_open<T>(open_item_1.value_)};
+                asn1kit::merge_unique(result, std::move(decoded));
+            }
+        }
+        return result;
+    }
+
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
@@ -178,131 +266,54 @@ struct Outer {
     }
 };
 
-template <typename T>
-struct extnValue_binding {
-    asn1kit::oid key{};
-
-    [[nodiscard]] bool try_decode(const Extension& src, T& out) const {
-        if (!(src.extnID == key)) return false;
-        out = asn1kit::decode_contained<T>(src.extnValue);
-        return true;
-    }
-
-    void set(Extension& src, const T& value) const {
-        src.extnID = key;
-        src.extnValue = asn1kit::encode_contained_octets(value);
-    }
-
-    [[nodiscard]] Extension create(const T& value) const {
-        Extension src{};
-        set(src, value);
-        return src;
-    }
-};
-
-template <typename T>
-struct parameters_binding {
-    asn1kit::oid key{};
-
-    [[nodiscard]] bool try_decode(const AlgorithmIdentifier& src, T& out) const {
-        if (!src.parameters.has_value()) return false;
-        if (!(src.algorithm == key)) return false;
-        out = asn1kit::decode_open<T>(*src.parameters);
-        return true;
-    }
-
-    void set(AlgorithmIdentifier& src, const T& value) const {
-        src.algorithm = key;
-        src.parameters = asn1kit::encode_open(value);
-    }
-
-    [[nodiscard]] AlgorithmIdentifier create(const T& value) const {
-        AlgorithmIdentifier src{};
-        set(src, value);
-        return src;
-    }
-};
-
-template <typename T>
-struct value_binding {
-    asn1kit::oid key{};
-
-    [[nodiscard]] bool try_decode(const Outer_Nested_Item& src, const Outer& parent0, T& out) const {
-        if (!(parent0.id == key)) return false;
-        out = asn1kit::decode_open<T>(src.value_);
-        return true;
-    }
-
-    void set(Outer_Nested_Item& src, const Outer& parent0, const T& value) const {
-        if (!(parent0.id == key)) {
-            throw asn1kit::exception("Enclosing selector does not match the open-type binding.");
-        }
-        src.value_ = asn1kit::encode_open(value);
-    }
-};
-
-template <typename T>
-struct values_binding {
-    asn1kit::oid key{};
-
-    [[nodiscard]] bool try_decode(const Attribute& src, std::vector<T>& out) const {
-        if (!(src.type == key)) return false;
-        out = asn1kit::decode_each<T>(src.values);
-        return true;
-    }
-
-    void set(Attribute& src, const std::vector<T>& value) const {
-        src.type = key;
-        src.values = asn1kit::encode_each(value);
-    }
-
-    void set(Attribute& src, const T& value) const {
-        set(src, std::vector<T>{value});
-    }
-
-    [[nodiscard]] Attribute create(const std::vector<T>& value) const {
-        Attribute src{};
-        set(src, value);
-        return src;
-    }
-
-    [[nodiscard]] Attribute create(const T& value) const {
-        return create(std::vector<T>{value});
-    }
-};
-
 namespace mixed_extnValue_bindings {
-inline const extnValue_binding<asn1kit::null_value> empty_entry{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"M.mixed_extnValue">,
+    asn1kit::oid, asn1kit::null_value> empty_entry{
     asn1kit::oid_literal<"1.2.3">().get()};
 
-inline const extnValue_binding<std::int32_t> data_entry{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"M.mixed_extnValue">,
+    asn1kit::oid, std::int32_t> data_entry{
     asn1kit::oid_literal<"1.2.4">().get()};
 
 } // namespace mixed_extnValue_bindings
 
 namespace mixed_parameters_bindings {
-inline const parameters_binding<asn1kit::null_value> empty_entry{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"M.mixed_parameters">,
+    asn1kit::oid, asn1kit::null_value> empty_entry{
     asn1kit::oid_literal<"1.2.3">().get()};
 
-inline const parameters_binding<std::int32_t> data_entry{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"M.mixed_parameters">,
+    asn1kit::oid, std::int32_t> data_entry{
     asn1kit::oid_literal<"1.2.4">().get()};
 
 } // namespace mixed_parameters_bindings
 
 namespace mixed_value_bindings {
-inline const value_binding<asn1kit::null_value> empty_entry{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"M.mixed_value">,
+    asn1kit::oid, asn1kit::null_value> empty_entry{
     asn1kit::oid_literal<"1.2.3">().get()};
 
-inline const value_binding<std::int32_t> data_entry{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"M.mixed_value">,
+    asn1kit::oid, std::int32_t> data_entry{
     asn1kit::oid_literal<"1.2.4">().get()};
 
 } // namespace mixed_value_bindings
 
 namespace mixed_values_bindings {
-inline const values_binding<asn1kit::null_value> empty_entry{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"M.mixed_values">,
+    asn1kit::oid, std::vector<asn1kit::null_value>> empty_entry{
     asn1kit::oid_literal<"1.2.3">().get()};
 
-inline const values_binding<std::int32_t> data_entry{
+inline const asn1kit::open_binding<
+    asn1kit::open_context<"M.mixed_values">,
+    asn1kit::oid, std::vector<std::int32_t>> data_entry{
     asn1kit::oid_literal<"1.2.4">().get()};
 
 } // namespace mixed_values_bindings
