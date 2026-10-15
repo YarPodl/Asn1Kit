@@ -891,17 +891,8 @@ public sealed partial class CppBackend
             };
         }
 
-        foreach (var definition in module.Values)
-        {
-            if (definition.Value is IrOidValue oid &&
-                string.Equals(oid.Value, key, StringComparison.Ordinal) &&
-                IrOptions.ShouldGenerate(definition.Options))
-            {
-                return $"{OidCatalogName(module)}::{CppNames.SanitizeTypeName(definition.Name)}.get()";
-            }
-        }
-
-        return $"asn1kit::oid_literal<\"{CppNames.EscapeString(key)}\">().get()";
+        return KnownOidExpression(document, module, key) ??
+               $"asn1kit::oid_literal<\"{CppNames.EscapeString(key)}\">().get()";
     }
 
     private static TypeExpr QualifyOpenTypeReferences(

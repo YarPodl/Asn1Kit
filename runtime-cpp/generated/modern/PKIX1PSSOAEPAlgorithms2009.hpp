@@ -49,6 +49,7 @@ struct PKIX1PSSOAEPAlgorithms2009Oids {
 } // namespace asn1kit
 
 #include "AlgorithmInformation2009.types.hpp"
+#include "PKIXAlgs2009.hpp"
 
 namespace asn1kit {
 namespace modern {
@@ -61,13 +62,13 @@ struct RSAESOAEPParams {
 
     static ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier default_hashFunc() {
         ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};
-        v.algorithm = asn1kit::oid_literal<"1.3.14.3.2.26">().get();
+        v.algorithm = ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdSha1.get();
         v.parameters = asn1kit::encode_open(asn1kit::null_value::value());
         return v;
     }
 
     static bool is_default_hashFunc(const ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier& value) {
-        return !(value.algorithm != asn1kit::oid_literal<"1.3.14.3.2.26">().get()) && value.parameters.has_value() && !((*value.parameters) != asn1kit::encode_open(asn1kit::null_value::value()));
+        return !(value.algorithm != ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdSha1.get()) && value.parameters.has_value() && !((*value.parameters) != asn1kit::encode_open(asn1kit::null_value::value()));
     }
 
     static ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier default_maskGenFunc() {
@@ -75,7 +76,7 @@ struct RSAESOAEPParams {
         v.algorithm = PKIX1PSSOAEPAlgorithms2009Oids::IdMgf1.get();
         v.parameters = asn1kit::encode_open(([&] {
             ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};
-            v.algorithm = asn1kit::oid_literal<"1.3.14.3.2.26">().get();
+            v.algorithm = ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdSha1.get();
             v.parameters = asn1kit::encode_open(asn1kit::null_value::value());
             return v;
         }()));
@@ -85,7 +86,7 @@ struct RSAESOAEPParams {
     static bool is_default_maskGenFunc(const ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier& value) {
         return !(value.algorithm != PKIX1PSSOAEPAlgorithms2009Oids::IdMgf1.get()) && value.parameters.has_value() && !((*value.parameters) != asn1kit::encode_open(([&] {
             ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};
-            v.algorithm = asn1kit::oid_literal<"1.3.14.3.2.26">().get();
+            v.algorithm = ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdSha1.get();
             v.parameters = asn1kit::encode_open(asn1kit::null_value::value());
             return v;
         }())));
@@ -174,13 +175,13 @@ struct RSASSAPSSParams {
 
     static ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier default_hashAlgorithm() {
         ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};
-        v.algorithm = asn1kit::oid_literal<"1.3.14.3.2.26">().get();
+        v.algorithm = ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdSha1.get();
         v.parameters = asn1kit::encode_open(asn1kit::null_value::value());
         return v;
     }
 
     static bool is_default_hashAlgorithm(const ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier& value) {
-        return !(value.algorithm != asn1kit::oid_literal<"1.3.14.3.2.26">().get()) && value.parameters.has_value() && !((*value.parameters) != asn1kit::encode_open(asn1kit::null_value::value()));
+        return !(value.algorithm != ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdSha1.get()) && value.parameters.has_value() && !((*value.parameters) != asn1kit::encode_open(asn1kit::null_value::value()));
     }
 
     static ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier default_maskGenAlgorithm() {
@@ -188,7 +189,7 @@ struct RSASSAPSSParams {
         v.algorithm = PKIX1PSSOAEPAlgorithms2009Oids::IdMgf1.get();
         v.parameters = asn1kit::encode_open(([&] {
             ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};
-            v.algorithm = asn1kit::oid_literal<"1.3.14.3.2.26">().get();
+            v.algorithm = ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdSha1.get();
             v.parameters = asn1kit::encode_open(asn1kit::null_value::value());
             return v;
         }()));
@@ -198,7 +199,7 @@ struct RSASSAPSSParams {
     static bool is_default_maskGenAlgorithm(const ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier& value) {
         return !(value.algorithm != PKIX1PSSOAEPAlgorithms2009Oids::IdMgf1.get()) && value.parameters.has_value() && !((*value.parameters) != asn1kit::encode_open(([&] {
             ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};
-            v.algorithm = asn1kit::oid_literal<"1.3.14.3.2.26">().get();
+            v.algorithm = ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdSha1.get();
             v.parameters = asn1kit::encode_open(asn1kit::null_value::value());
             return v;
         }())));

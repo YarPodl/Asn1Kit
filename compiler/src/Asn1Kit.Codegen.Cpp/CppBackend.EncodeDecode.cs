@@ -1245,7 +1245,7 @@ public sealed partial class CppBackend
             (BooleanType, IrBooleanValue b) => b.Value ? "true" : "false",
             (NullType, IrNullValue) => "asn1kit::null_value::value()",
             (OidType, IrOidValue oid) =>
-                KnownOidExpression(emitting, oid.Value) ??
+                KnownOidExpression(document, emitting, oid.Value) ??
                 $"asn1kit::oid_literal<\"{CppNames.EscapeString(oid.Value)}\">().get()",
             (StringType, IrStringValue text) =>
                 $"std::string(\"{CppNames.EscapeString(text.Value)}\")",
@@ -1259,19 +1259,52 @@ public sealed partial class CppBackend
     }
 
     /// <summary>
-    /// Prefer the emitting module's OID catalog. Cross-module catalogs are not referenced
-    /// here — that would require extra includes; fall back to <c>oid_literal</c> instead.
+    /// Prefer the emitting module's OID catalog, then imports, then the rest of the document.
+    /// Cross-module references are qualified; peer headers are collected separately.
     /// </summary>
-    private static string? KnownOidExpression(IrModule emitting, string dottedValue)
+    private string? KnownOidExpression(IrDocument document, IrModule emitting, string dottedValue)
     {
-        foreach (var definition in emitting.Values)
+        var owner = FindOidOwningModule(document, emitting, dottedValue);
+        if (owner is null)
         {
-            if (definition.Value is IrOidValue oid &&
+            return null;
+        }
+
+        var catalog = QualifyCrossModule(emitting, owner, OidCatalogName(owner));
+        var name = owner.Values
+            .Where(definition =>
+                definition.Value is IrOidValue oid &&
                 IrOptions.ShouldGenerate(definition.Options) &&
                 string.Equals(oid.Value, dottedValue, StringComparison.Ordinal))
+            .Select(definition => CppNames.SanitizeTypeName(definition.Name))
+            .First();
+        return catalog + "::" + name + ".get()";
+    }
+
+    /// <summary>
+    /// Module that owns a generated OID value definition for <paramref name="dottedValue"/>,
+    /// or null when none exists.
+    /// </summary>
+    private static IrModule? FindOidOwningModule(
+        IrDocument document, IrModule emitting, string dottedValue)
+    {
+        var candidates = new[] { emitting }
+            .Concat(
+                emitting.Imports
+                    .Select(import => document.Modules.FirstOrDefault(m => m.Name == import.Module))
+                    .OfType<IrModule>())
+            .Concat(document.Modules)
+            .Distinct();
+        foreach (var candidate in candidates)
+        {
+            foreach (var definition in candidate.Values)
             {
-                return OidCatalogName(emitting) + "::" +
-                       CppNames.SanitizeTypeName(definition.Name) + ".get()";
+                if (definition.Value is IrOidValue oid &&
+                    IrOptions.ShouldGenerate(definition.Options) &&
+                    string.Equals(oid.Value, dottedValue, StringComparison.Ordinal))
+                {
+                    return candidate;
+                }
             }
         }
 

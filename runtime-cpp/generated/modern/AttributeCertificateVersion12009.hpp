@@ -56,28 +56,28 @@ struct signature_binding {
 
 namespace signatureAlgorithms_signature_bindings {
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a1{
-    asn1kit::oid_literal<"1.2.840.10040.4.3">().get()};
+    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha1.get()};
 
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a1{
-    asn1kit::oid_literal<"1.2.840.10045.4.1">().get()};
+    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA1.get()};
 
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a224{
-    asn1kit::oid_literal<"2.16.840.1.101.3.4.3.1">().get()};
+    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha224.get()};
 
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a256{
-    asn1kit::oid_literal<"2.16.840.1.101.3.4.3.2">().get()};
+    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha256.get()};
 
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a224{
-    asn1kit::oid_literal<"1.2.840.10045.4.3.1">().get()};
+    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA224.get()};
 
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a256{
-    asn1kit::oid_literal<"1.2.840.10045.4.3.2">().get()};
+    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA256.get()};
 
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a384{
-    asn1kit::oid_literal<"1.2.840.10045.4.3.3">().get()};
+    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA384.get()};
 
 inline const signature_binding<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a512{
-    asn1kit::oid_literal<"1.2.840.10045.4.3.4">().get()};
+    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA512.get()};
 
 } // namespace signatureAlgorithms_signature_bindings
 

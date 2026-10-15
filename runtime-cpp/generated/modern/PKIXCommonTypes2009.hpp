@@ -27,6 +27,7 @@
 #include "PKIXCommonTypes2009.types.hpp"
 
 #include "CryptographicMessageSyntax2009.types.hpp"
+#include "EnrollmentMessageSyntax2009.types.hpp"
 #include "OCSP2009.types.hpp"
 #include "PKCS10.hpp"
 #include "PKIX1Explicit2009.types.hpp"
@@ -114,331 +115,331 @@ struct values_binding {
 
 namespace attributeCertExtensions_bindings {
 inline const extnValue_binding<asn1kit::bytes> audit_identity{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.1.4">().get()};
+    ::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdPeAcAuditIdentity.get()};
 
 inline const extnValue_binding<std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::Target>> target_information{
-    asn1kit::oid_literal<"2.5.29.55">().get()};
+    ::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdCeTargetInformation.get()};
 
 inline const extnValue_binding<::asn1kit::modern::PKIX1Implicit2009::AuthorityKeyIdentifier> authority_key_identifier{
-    asn1kit::oid_literal<"2.5.29.35">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeAuthorityKeyIdentifier.get()};
 
 inline const extnValue_binding<std::vector<::asn1kit::modern::PKIX1Implicit2009::AccessDescription>> authority_info_access{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.1.1">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdPeAuthorityInfoAccess.get()};
 
 inline const extnValue_binding<std::vector<::asn1kit::modern::PKIX1Implicit2009::DistributionPoint>> c_r_l_distribution_points{
-    asn1kit::oid_literal<"2.5.29.31">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeCRLDistributionPoints.get()};
 
 inline const extnValue_binding<asn1kit::null_value> no_rev_avail{
-    asn1kit::oid_literal<"2.5.29.56">().get()};
+    ::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdCeNoRevAvail.get()};
 
 inline const extnValue_binding<std::vector<std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::Target>>> ac_proxying{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.1.10">().get()};
+    ::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdPeAcProxying.get()};
 
 inline const extnValue_binding<::asn1kit::modern::PKIXAttributeCertificate2009::AAControls> aa_controls{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.1.6">().get()};
+    ::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdPeAaControls.get()};
 
 } // namespace attributeCertExtensions_bindings
 
 namespace attributeList_bindings {
 inline const values_binding<std::vector<Extension>> extension_req{
-    asn1kit::oid_literal<"1.2.840.113549.1.9.14">().get()};
+    ::asn1kit::modern::EnrollmentMessageSyntax2009::EnrollmentMessageSyntax2009Oids::IdExtensionReq.get()};
 
 } // namespace attributeList_bindings
 
 namespace attributesDefined_bindings {
 inline const values_binding<::asn1kit::modern::PKIXAttributeCertificate2009::SvceAuthInfo> authentication_info{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.10.1">().get()};
+    ::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAcaAuthenticationInfo.get()};
 
 inline const values_binding<::asn1kit::modern::PKIXAttributeCertificate2009::SvceAuthInfo> acces_identity{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.10.2">().get()};
+    ::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAcaAccessIdentity.get()};
 
 inline const values_binding<::asn1kit::modern::PKIXAttributeCertificate2009::IetfAttrSyntax> charging_identity{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.10.3">().get()};
+    ::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAcaChargingIdentity.get()};
 
 inline const values_binding<::asn1kit::modern::PKIXAttributeCertificate2009::IetfAttrSyntax> group{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.10.4">().get()};
+    ::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAcaGroup.get()};
 
 inline const values_binding<::asn1kit::modern::PKIXAttributeCertificate2009::RoleSyntax> role{
-    asn1kit::oid_literal<"2.5.4.72">().get()};
+    ::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAtRole.get()};
 
 inline const values_binding<::asn1kit::modern::PKIXAttributeCertificate2009::Clearance> clearance{
-    asn1kit::oid_literal<"2.5.4.55">().get()};
+    ::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAtClearance.get()};
 
 inline const values_binding<::asn1kit::modern::CryptographicMessageSyntax2009::ContentInfo> enc_attrs{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.10.6">().get()};
+    ::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAcaEncAttrs.get()};
 
 } // namespace attributesDefined_bindings
 
 namespace certExtensions_bindings {
 inline const extnValue_binding<::asn1kit::modern::PKIX1Implicit2009::AuthorityKeyIdentifier> authority_key_identifier{
-    asn1kit::oid_literal<"2.5.29.35">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeAuthorityKeyIdentifier.get()};
 
 inline const extnValue_binding<asn1kit::bytes> subject_key_identifier{
-    asn1kit::oid_literal<"2.5.29.14">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeSubjectKeyIdentifier.get()};
 
 inline const extnValue_binding<::asn1kit::modern::PKIX1Implicit2009::KeyUsage> key_usage{
-    asn1kit::oid_literal<"2.5.29.15">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeKeyUsage.get()};
 
 inline const extnValue_binding<::asn1kit::modern::PKIX1Implicit2009::PrivateKeyUsagePeriod> private_key_usage_period{
-    asn1kit::oid_literal<"2.5.29.16">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCePrivateKeyUsagePeriod.get()};
 
 inline const extnValue_binding<std::vector<::asn1kit::modern::PKIX1Implicit2009::PolicyInformation>> certificate_policies{
-    asn1kit::oid_literal<"2.5.29.32">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeCertificatePolicies.get()};
 
 inline const extnValue_binding<std::vector<::asn1kit::modern::PKIX1Implicit2009::PolicyMappings_Item>> policy_mappings{
-    asn1kit::oid_literal<"2.5.29.33">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCePolicyMappings.get()};
 
 inline const extnValue_binding<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> subject_alt_name{
-    asn1kit::oid_literal<"2.5.29.17">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeSubjectAltName.get()};
 
 inline const extnValue_binding<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> issuer_alt_name{
-    asn1kit::oid_literal<"2.5.29.18">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeIssuerAltName.get()};
 
 inline const extnValue_binding<std::vector<AttributeSet>> subject_directory_attributes{
-    asn1kit::oid_literal<"2.5.29.9">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeSubjectDirectoryAttributes.get()};
 
 inline const extnValue_binding<::asn1kit::modern::PKIX1Implicit2009::BasicConstraints> basic_constraints{
-    asn1kit::oid_literal<"2.5.29.19">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeBasicConstraints.get()};
 
 inline const extnValue_binding<::asn1kit::modern::PKIX1Implicit2009::NameConstraints> name_constraints{
-    asn1kit::oid_literal<"2.5.29.30">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeNameConstraints.get()};
 
 inline const extnValue_binding<::asn1kit::modern::PKIX1Implicit2009::PolicyConstraints> policy_constraints{
-    asn1kit::oid_literal<"2.5.29.36">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCePolicyConstraints.get()};
 
 inline const extnValue_binding<std::vector<asn1kit::oid>> ext_key_usage{
-    asn1kit::oid_literal<"2.5.29.37">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeExtKeyUsage.get()};
 
 inline const extnValue_binding<std::vector<::asn1kit::modern::PKIX1Implicit2009::DistributionPoint>> c_r_l_distribution_points{
-    asn1kit::oid_literal<"2.5.29.31">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeCRLDistributionPoints.get()};
 
 inline const extnValue_binding<asn1kit::integer> inhibit_any_policy{
-    asn1kit::oid_literal<"2.5.29.54">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeInhibitAnyPolicy.get()};
 
 inline const extnValue_binding<std::vector<::asn1kit::modern::PKIX1Implicit2009::DistributionPoint>> freshest_c_r_l{
-    asn1kit::oid_literal<"2.5.29.46">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeFreshestCRL.get()};
 
 inline const extnValue_binding<std::vector<::asn1kit::modern::PKIX1Implicit2009::AccessDescription>> authority_info_access{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.1.1">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdPeAuthorityInfoAccess.get()};
 
 inline const extnValue_binding<std::vector<::asn1kit::modern::PKIX1Implicit2009::AccessDescription>> subject_info_access_syntax{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.1.11">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdPeSubjectInfoAccess.get()};
 
 } // namespace certExtensions_bindings
 
 namespace crlEntryExtensions_bindings {
 inline const extnValue_binding<::asn1kit::modern::PKIX1Implicit2009::CRLReason> c_r_l_reason{
-    asn1kit::oid_literal<"2.5.29.21">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeCRLReasons.get()};
 
 inline const extnValue_binding<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> certificate_issuer{
-    asn1kit::oid_literal<"2.5.29.29">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeCertificateIssuer.get()};
 
 inline const extnValue_binding<asn1kit::oid> hold_instruction_code{
-    asn1kit::oid_literal<"2.5.29.23">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeHoldInstructionCode.get()};
 
 inline const extnValue_binding<asn1kit::asn_time<asn1kit::time_form::generalized>> invalidity_date{
-    asn1kit::oid_literal<"2.5.29.24">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeInvalidityDate.get()};
 
 } // namespace crlEntryExtensions_bindings
 
 namespace crlExtensions_bindings {
 inline const extnValue_binding<::asn1kit::modern::PKIX1Implicit2009::AuthorityKeyIdentifier> authority_key_identifier{
-    asn1kit::oid_literal<"2.5.29.35">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeAuthorityKeyIdentifier.get()};
 
 inline const extnValue_binding<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> issuer_alt_name{
-    asn1kit::oid_literal<"2.5.29.18">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeIssuerAltName.get()};
 
 inline const extnValue_binding<asn1kit::integer> c_r_l_number{
-    asn1kit::oid_literal<"2.5.29.20">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeCRLNumber.get()};
 
 inline const extnValue_binding<asn1kit::integer> delta_c_r_l_indicator{
-    asn1kit::oid_literal<"2.5.29.27">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeDeltaCRLIndicator.get()};
 
 inline const extnValue_binding<::asn1kit::modern::PKIX1Implicit2009::IssuingDistributionPoint> issuing_distribution_point{
-    asn1kit::oid_literal<"2.5.29.28">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeIssuingDistributionPoint.get()};
 
 inline const extnValue_binding<std::vector<::asn1kit::modern::PKIX1Implicit2009::DistributionPoint>> freshest_c_r_l{
-    asn1kit::oid_literal<"2.5.29.46">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeFreshestCRL.get()};
 
 } // namespace crlExtensions_bindings
 
 namespace extension_extnValue_bindings {
 inline const extnValue_binding<asn1kit::bytes> re_ocsp_nonce{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.48.1.2">().get()};
+    ::asn1kit::modern::OCSP2009::OCSP2009Oids::IdPkixOcspNonce.get()};
 
 inline const extnValue_binding<std::vector<asn1kit::oid>> re_ocsp_response{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.48.1.4">().get()};
+    ::asn1kit::modern::OCSP2009::OCSP2009Oids::IdPkixOcspResponse.get()};
 
 } // namespace extension_extnValue_bindings
 
 namespace extension_extnValue_extension_bindings {
 inline const extnValue_binding<::asn1kit::modern::OCSP2009::ServiceLocator> re_ocsp_service_locator{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.48.1.7">().get()};
+    ::asn1kit::modern::OCSP2009::OCSP2009Oids::IdPkixOcspServiceLocator.get()};
 
 } // namespace extension_extnValue_extension_bindings
 
 namespace extension_extnValue_extension_2_bindings {
 inline const extnValue_binding<asn1kit::bytes> re_ocsp_nonce{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.48.1.2">().get()};
+    ::asn1kit::modern::OCSP2009::OCSP2009Oids::IdPkixOcspNonce.get()};
 
 } // namespace extension_extnValue_extension_2_bindings
 
 namespace extension_extnValue_extension_3_bindings {
 inline const extnValue_binding<::asn1kit::modern::OCSP2009::CrlID> re_ocsp_crl{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.48.1.3">().get()};
+    ::asn1kit::modern::OCSP2009::OCSP2009Oids::IdPkixOcspCrl.get()};
 
 inline const extnValue_binding<asn1kit::asn_time<asn1kit::time_form::generalized>> re_ocsp_archive_cutoff{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.48.1.6">().get()};
+    ::asn1kit::modern::OCSP2009::OCSP2009Oids::IdPkixOcspArchiveCutoff.get()};
 
 inline const extnValue_binding<::asn1kit::modern::PKIX1Implicit2009::CRLReason> c_r_l_reason{
-    asn1kit::oid_literal<"2.5.29.21">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeCRLReasons.get()};
 
 inline const extnValue_binding<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> certificate_issuer{
-    asn1kit::oid_literal<"2.5.29.29">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeCertificateIssuer.get()};
 
 inline const extnValue_binding<asn1kit::oid> hold_instruction_code{
-    asn1kit::oid_literal<"2.5.29.23">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeHoldInstructionCode.get()};
 
 inline const extnValue_binding<asn1kit::asn_time<asn1kit::time_form::generalized>> invalidity_date{
-    asn1kit::oid_literal<"2.5.29.24">().get()};
+    ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeInvalidityDate.get()};
 
 } // namespace extension_extnValue_extension_3_bindings
 
 namespace regControlSet_value_bindings {
 inline const value_binding<asn1kit::asn_string<asn1kit::string_form::utf8>> reg_ctrl_reg_token{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.5.1.1">().get()};
+    ::asn1kit::modern::PKIXCRMF2009::PKIXCRMF2009Oids::IdRegCtrlRegToken.get()};
 
 inline const value_binding<asn1kit::asn_string<asn1kit::string_form::utf8>> reg_ctrl_authenticator{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.5.1.2">().get()};
+    ::asn1kit::modern::PKIXCRMF2009::PKIXCRMF2009Oids::IdRegCtrlAuthenticator.get()};
 
 inline const value_binding<::asn1kit::modern::PKIXCRMF2009::PKIPublicationInfo> reg_ctrl_pki_publication_info{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.5.1.3">().get()};
+    ::asn1kit::modern::PKIXCRMF2009::PKIXCRMF2009Oids::IdRegCtrlPkiPublicationInfo.get()};
 
 inline const value_binding<::asn1kit::modern::PKIXCRMF2009::PKIArchiveOptions> reg_ctrl_pki_archive_options{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.5.1.4">().get()};
+    ::asn1kit::modern::PKIXCRMF2009::PKIXCRMF2009Oids::IdRegCtrlPkiArchiveOptions.get()};
 
 inline const value_binding<::asn1kit::modern::PKIXCRMF2009::CertId> reg_ctrl_old_cert_i_d{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.5.1.5">().get()};
+    ::asn1kit::modern::PKIXCRMF2009::PKIXCRMF2009Oids::IdRegCtrlOldCertID.get()};
 
 inline const value_binding<::asn1kit::modern::PKCS10::SubjectPublicKeyInfo> reg_ctrl_protocol_encr_key{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.5.1.6">().get()};
+    ::asn1kit::modern::PKIXCRMF2009::PKIXCRMF2009Oids::IdRegCtrlProtocolEncrKey.get()};
 
 } // namespace regControlSet_value_bindings
 
 namespace regInfoSet_value_bindings {
 inline const value_binding<asn1kit::asn_string<asn1kit::string_form::utf8>> reg_info_utf8_pairs{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.5.2.1">().get()};
+    ::asn1kit::modern::PKIXCRMF2009::PKIXCRMF2009Oids::IdRegInfoUtf8Pairs.get()};
 
 inline const value_binding<::asn1kit::modern::PKIXCRMF2009::CertRequest> reg_info_cert_req{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.5.2.2">().get()};
+    ::asn1kit::modern::PKIXCRMF2009::PKIXCRMF2009Oids::IdRegInfoCertReq.get()};
 
 } // namespace regInfoSet_value_bindings
 
 namespace supportedAttributes_bindings {
 inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> name{
-    asn1kit::oid_literal<"2.5.4.41">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtName.get()};
 
 inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> surname{
-    asn1kit::oid_literal<"2.5.4.4">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtSurname.get()};
 
 inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> given_name{
-    asn1kit::oid_literal<"2.5.4.42">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtGivenName.get()};
 
 inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> initials{
-    asn1kit::oid_literal<"2.5.4.43">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtInitials.get()};
 
 inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> generation_qualifier{
-    asn1kit::oid_literal<"2.5.4.44">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtGenerationQualifier.get()};
 
 inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_common_name{
-    asn1kit::oid_literal<"2.5.4.3">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtCommonName.get()};
 
 inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_locality_name{
-    asn1kit::oid_literal<"2.5.4.7">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtLocalityName.get()};
 
 inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_state_or_province_name{
-    asn1kit::oid_literal<"2.5.4.8">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtStateOrProvinceName.get()};
 
 inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_organization_name{
-    asn1kit::oid_literal<"2.5.4.10">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtOrganizationName.get()};
 
 inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_organizational_unit_name{
-    asn1kit::oid_literal<"2.5.4.11">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtOrganizationalUnitName.get()};
 
 inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_title{
-    asn1kit::oid_literal<"2.5.4.12">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtTitle.get()};
 
 inline const values_binding<asn1kit::asn_string<asn1kit::string_form::printable>> x520dn_qualifier{
-    asn1kit::oid_literal<"2.5.4.46">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtDnQualifier.get()};
 
 inline const values_binding<asn1kit::asn_string<asn1kit::string_form::printable>> x520country_name{
-    asn1kit::oid_literal<"2.5.4.6">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtCountryName.get()};
 
 inline const values_binding<asn1kit::asn_string<asn1kit::string_form::printable>> x520_serial_number{
-    asn1kit::oid_literal<"2.5.4.5">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtSerialNumber.get()};
 
 inline const values_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_pseudonym{
-    asn1kit::oid_literal<"2.5.4.65">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtPseudonym.get()};
 
 inline const values_binding<asn1kit::asn_string<asn1kit::string_form::ia5>> domain_component{
-    asn1kit::oid_literal<"0.9.2342.19200300.100.1.25">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdDomainComponent.get()};
 
 inline const values_binding<asn1kit::asn_string<asn1kit::string_form::ia5>> email_address{
-    asn1kit::oid_literal<"1.2.840.113549.1.9.1">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdEmailAddress.get()};
 
 } // namespace supportedAttributes_bindings
 
 namespace supportedAttributes_value_bindings {
 inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> name{
-    asn1kit::oid_literal<"2.5.4.41">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtName.get()};
 
 inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> surname{
-    asn1kit::oid_literal<"2.5.4.4">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtSurname.get()};
 
 inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> given_name{
-    asn1kit::oid_literal<"2.5.4.42">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtGivenName.get()};
 
 inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> initials{
-    asn1kit::oid_literal<"2.5.4.43">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtInitials.get()};
 
 inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> generation_qualifier{
-    asn1kit::oid_literal<"2.5.4.44">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtGenerationQualifier.get()};
 
 inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_common_name{
-    asn1kit::oid_literal<"2.5.4.3">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtCommonName.get()};
 
 inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_locality_name{
-    asn1kit::oid_literal<"2.5.4.7">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtLocalityName.get()};
 
 inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_state_or_province_name{
-    asn1kit::oid_literal<"2.5.4.8">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtStateOrProvinceName.get()};
 
 inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_organization_name{
-    asn1kit::oid_literal<"2.5.4.10">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtOrganizationName.get()};
 
 inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_organizational_unit_name{
-    asn1kit::oid_literal<"2.5.4.11">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtOrganizationalUnitName.get()};
 
 inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_title{
-    asn1kit::oid_literal<"2.5.4.12">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtTitle.get()};
 
 inline const value_binding<asn1kit::asn_string<asn1kit::string_form::printable>> x520dn_qualifier{
-    asn1kit::oid_literal<"2.5.4.46">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtDnQualifier.get()};
 
 inline const value_binding<asn1kit::asn_string<asn1kit::string_form::printable>> x520country_name{
-    asn1kit::oid_literal<"2.5.4.6">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtCountryName.get()};
 
 inline const value_binding<asn1kit::asn_string<asn1kit::string_form::printable>> x520_serial_number{
-    asn1kit::oid_literal<"2.5.4.5">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtSerialNumber.get()};
 
 inline const value_binding<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_pseudonym{
-    asn1kit::oid_literal<"2.5.4.65">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtPseudonym.get()};
 
 inline const value_binding<asn1kit::asn_string<asn1kit::string_form::ia5>> domain_component{
-    asn1kit::oid_literal<"0.9.2342.19200300.100.1.25">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdDomainComponent.get()};
 
 inline const value_binding<asn1kit::asn_string<asn1kit::string_form::ia5>> email_address{
-    asn1kit::oid_literal<"1.2.840.113549.1.9.1">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdEmailAddress.get()};
 
 } // namespace supportedAttributes_value_bindings
 

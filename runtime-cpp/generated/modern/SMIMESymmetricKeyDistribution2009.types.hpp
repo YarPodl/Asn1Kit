@@ -312,6 +312,16 @@ struct GLKey {
     }
 };
 
+} // namespace SMIMESymmetricKeyDistribution2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "CMSAesRsaesOaep2009.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace SMIMESymmetricKeyDistribution2009 {
+
 struct GLKeyAttributes {
     bool rekeyControlledByGLO = false;
     bool recipientsNotMutuallyAware = true;
@@ -321,12 +331,12 @@ struct GLKeyAttributes {
 
     static ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability default_requestedAlgorithm() {
         ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability v{};
-        v.capabilityID = asn1kit::oid_literal<"2.16.840.1.101.3.4.1.5">().get();
+        v.capabilityID = ::asn1kit::modern::CMSAesRsaesOaep2009::CMSAesRsaesOaep2009Oids::IdAes128Wrap.get();
         return v;
     }
 
     static bool is_default_requestedAlgorithm(const ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability& value) {
-        return !(value.capabilityID != asn1kit::oid_literal<"2.16.840.1.101.3.4.1.5">().get()) && !value.parameters.has_value();
+        return !(value.capabilityID != ::asn1kit::modern::CMSAesRsaesOaep2009::CMSAesRsaesOaep2009Oids::IdAes128Wrap.get()) && !value.parameters.has_value();
     }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {

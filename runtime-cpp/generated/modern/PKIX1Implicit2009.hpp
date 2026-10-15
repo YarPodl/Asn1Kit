@@ -26,6 +26,8 @@
 
 #include "PKIX1Implicit2009.types.hpp"
 
+#include "PKIX1Explicit2009.types.hpp"
+
 namespace asn1kit {
 namespace modern {
 namespace PKIX1Implicit2009 {
@@ -54,10 +56,10 @@ struct qualifier_binding {
 
 namespace policyQualifierId_qualifier_bindings {
 inline const qualifier_binding<asn1kit::asn_string<asn1kit::string_form::ia5>> pqid_cps{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.2.1">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdQtCps.get()};
 
 inline const qualifier_binding<UserNotice> pqid_unotice{
-    asn1kit::oid_literal<"1.3.6.1.5.5.7.2.2">().get()};
+    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdQtUnotice.get()};
 
 } // namespace policyQualifierId_qualifier_bindings
 

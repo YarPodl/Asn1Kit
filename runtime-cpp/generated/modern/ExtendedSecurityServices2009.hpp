@@ -310,6 +310,7 @@ struct ESSCertID {
 } // namespace asn1kit
 
 #include "AlgorithmInformation2009.types.hpp"
+#include "PKIX1PSSOAEPAlgorithms2009.hpp"
 
 namespace asn1kit {
 namespace modern {
@@ -322,12 +323,12 @@ struct ESSCertIDv2 {
 
     static ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier default_hashAlgorithm() {
         ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};
-        v.algorithm = asn1kit::oid_literal<"2.16.840.1.101.3.4.2.1">().get();
+        v.algorithm = ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256.get();
         return v;
     }
 
     static bool is_default_hashAlgorithm(const ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier& value) {
-        return !(value.algorithm != asn1kit::oid_literal<"2.16.840.1.101.3.4.2.1">().get()) && !value.parameters.has_value();
+        return !(value.algorithm != ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256.get()) && !value.parameters.has_value();
     }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {

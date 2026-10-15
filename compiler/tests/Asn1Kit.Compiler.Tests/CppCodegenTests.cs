@@ -210,6 +210,36 @@ END
     }
 
     [Fact]
+    public void OpenBindingKeyUsesCrossModuleOidCatalogAndInclude()
+    {
+        var document = new Asn1Compiler().CompileTexts(new (string Text, string? FileName)[]
+        {
+            (@"Oids DEFINITIONS ::= BEGIN
+id-empty OBJECT IDENTIFIER ::= { 1 2 3 }
+END", "Oids.asn"),
+            (@"Params DEFINITIONS ::= BEGIN
+IMPORTS id-empty FROM Oids;
+C ::= CLASS { &id OBJECT IDENTIFIER UNIQUE, &T } WITH SYNTAX { &T IDENTIFIED BY &id }
+NoData ::= NULL
+emptyEntry C ::= { NoData IDENTIFIED BY id-empty }
+Mixed C ::= {emptyEntry}
+AlgorithmIdentifier{C:S} ::= SEQUENCE {
+  algorithm C.&id({S}), parameters C.&T({S}{@algorithm}) OPTIONAL }
+Holder ::= SEQUENCE { mixed AlgorithmIdentifier{Mixed} }
+END", "Params.asn")
+        });
+        var oids = Assert.Single(document.Modules, m => m.Name == "Oids");
+        var paramsModule = Assert.Single(document.Modules, m => m.Name == "Params");
+        oids.Options = IrOptions.SetCpp(oids.Options, "namespace", "asn1kit::t::Oids");
+        paramsModule.Options = IrOptions.SetCpp(paramsModule.Options, "namespace", "asn1kit::t::Params");
+        var paramsFile = Assert.Single(new CppBackend().Generate(document), f => f.RelativePath == "Params.hpp")
+            .Contents.Replace("\r\n", "\n", StringComparison.Ordinal);
+        Assert.Contains("#include \"Oids.hpp\"", paramsFile);
+        Assert.Contains("::asn1kit::t::Oids::OidsOids::IdEmpty.get()", paramsFile);
+        Assert.DoesNotContain("oid_literal<\"1.2.3\">", paramsFile);
+    }
+
+    [Fact]
     public void GeneratesContainedAndSetOfOpenTypeBindings()
     {
         const string asn = @"
@@ -693,6 +723,37 @@ END
         Assert.Contains("MOids::IdAlg.get()", source);
         Assert.DoesNotContain("v{};         v.", source);
         Assert.DoesNotContain("([&]{ ", source);
+    }
+
+    [Fact]
+    public void StructuredDefaultUsesCrossModuleOidCatalogAndInclude()
+    {
+        var document = new Asn1Compiler().CompileTexts(new (string Text, string? FileName)[]
+        {
+            (@"Oids DEFINITIONS ::= BEGIN
+id-sha1 OBJECT IDENTIFIER ::= { 1 3 14 3 2 26 }
+END", "Oids.asn"),
+            (@"Params DEFINITIONS ::= BEGIN
+IMPORTS id-sha1 FROM Oids;
+AlgorithmIdentifier ::= SEQUENCE {
+  algorithm OBJECT IDENTIFIER,
+  parameters NULL
+}
+Holder ::= SEQUENCE {
+  hash AlgorithmIdentifier DEFAULT { algorithm id-sha1, parameters NULL }
+}
+END", "Params.asn")
+        });
+        var oids = Assert.Single(document.Modules, m => m.Name == "Oids");
+        var paramsModule = Assert.Single(document.Modules, m => m.Name == "Params");
+        oids.Options = IrOptions.SetCpp(oids.Options, "namespace", "asn1kit::t::Oids");
+        paramsModule.Options = IrOptions.SetCpp(paramsModule.Options, "namespace", "asn1kit::t::Params");
+        var files = new CppBackend().Generate(document);
+        var paramsFile = Assert.Single(files, f => f.RelativePath == "Params.hpp").Contents
+            .Replace("\r\n", "\n", StringComparison.Ordinal);
+        Assert.Contains("#include \"Oids.hpp\"", paramsFile);
+        Assert.Contains("::asn1kit::t::Oids::OidsOids::IdSha1.get()", paramsFile);
+        Assert.DoesNotContain("oid_literal<\"1.3.14.3.2.26\">", paramsFile);
     }
 
     [Fact]

@@ -450,6 +450,7 @@ public sealed partial class CppBackend
             peers.Add(key.Module);
         }
 
+        peers.UnionWith(CollectOidCatalogPeerModules(document, module, type));
         return peers;
     }
 
@@ -498,6 +499,109 @@ public sealed partial class CppBackend
             peers.Add(key.Module);
         }
 
+        peers.UnionWith(CollectOidCatalogPeerModules(document, module, type));
+        return peers;
+    }
+
+    /// <summary>
+    /// Modules whose OID catalogs are referenced by DEFAULT values under <paramref name="type"/>.
+    /// Catalogs are emitted before peer includes, so these edges are cycle-safe via include guards.
+    /// </summary>
+    private HashSet<string> CollectOidCatalogPeerModules(
+        IrDocument document,
+        IrModule emitting,
+        TypeExpr type)
+    {
+        var peers = new HashSet<string>(StringComparer.Ordinal);
+
+        void ConsiderOid(string dotted)
+        {
+            var owner = FindOidOwningModule(document, emitting, dotted);
+            if (owner is not null &&
+                !string.Equals(owner.Name, emitting.Name, StringComparison.Ordinal))
+            {
+                peers.Add(owner.Name);
+            }
+        }
+
+        void WalkValue(IrValue value)
+        {
+            switch (value)
+            {
+                case IrOidValue oid:
+                    ConsiderOid(oid.Value);
+                    break;
+                case IrStructuredValue structure:
+                    foreach (var nested in structure.Fields.Values)
+                    {
+                        WalkValue(nested);
+                    }
+
+                    break;
+                case IrCollectionValue collection:
+                    foreach (var item in collection.Items)
+                    {
+                        WalkValue(item);
+                    }
+
+                    break;
+                case IrChoiceValue choice:
+                    WalkValue(choice.Value);
+                    break;
+                case IrTypedValue typed:
+                    WalkValue(typed.Value);
+                    break;
+            }
+        }
+
+        void WalkType(TypeExpr expression, IrModule context)
+        {
+            expression = UnwrapAliases(document, context, expression);
+            switch (expression)
+            {
+                case SequenceType sequence:
+                    foreach (var field in sequence.Components)
+                    {
+                        if (field.Default is not null)
+                        {
+                            WalkValue(field.Default);
+                        }
+
+                        WalkType(field.Type, context);
+                    }
+
+                    break;
+                case SetType set:
+                    foreach (var field in set.Components)
+                    {
+                        if (field.Default is not null)
+                        {
+                            WalkValue(field.Default);
+                        }
+
+                        WalkType(field.Type, context);
+                    }
+
+                    break;
+                case ChoiceType choice:
+                    foreach (var alt in choice.Components)
+                    {
+                        WalkType(alt.Type, context);
+                    }
+
+                    break;
+                case SequenceOfType of:
+                    WalkType(of.Element, context);
+                    break;
+                case SetOfType of:
+                    WalkType(of.Element, context);
+                    break;
+                // RefType targets are not walked: DEFAULT OID values are already inlined
+                // in IrValue trees on the emitting type's own components.
+            }
+        }
+
+        WalkType(type, emitting);
         return peers;
     }
 
@@ -559,6 +663,11 @@ public sealed partial class CppBackend
             }
 
             moduleIncludes.Add(TypesFileName(key.Module));
+        }
+
+        foreach (var peer in CollectOidCatalogPeerModules(document, module, type))
+        {
+            moduleIncludes.Add(PeerHeaderForTypesFile(peer, modulesWithTypesFile));
         }
 
         return moduleIncludes;
@@ -825,6 +934,11 @@ public sealed partial class CppBackend
                     ConsiderKey(pair.Key);
                 }
             }
+
+            foreach (var peer in CollectOidCatalogPeerModules(document, module, type))
+            {
+                moduleIncludes.Add(PeerHeaderForTypesFile(peer, modulesWithTypesFile));
+            }
         }
 
         foreach (var binding in plan.Open.Bindings)
@@ -837,6 +951,13 @@ public sealed partial class CppBackend
                 {
                     ConsiderKey(pair.Key);
                 }
+            }
+
+            var oidOwner = FindOidOwningModule(document, module, binding.Binding.Key);
+            if (oidOwner is not null &&
+                !string.Equals(oidOwner.Name, module.Name, StringComparison.Ordinal))
+            {
+                moduleIncludes.Add(PeerHeaderForTypesFile(oidOwner.Name, modulesWithTypesFile));
             }
         }
 
