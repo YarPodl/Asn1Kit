@@ -87,6 +87,13 @@
 7. Второй oracle — BouncyCastle (не gate `dotnet test`)
 8. **DER: reject constructed OCTET / BIT STRING / string** (или soft-флаг в `Asn1ReaderOptions`, default как сейчас accept; выровнять код с формулировкой § Runtime «BER: constructed…»). Фикстуры + runtime-api soft-inventory
 9. **C++ modern headers: standalone self-containment.** Общая consumer translation unit компилирует все 24 `*.format.hpp`, но отдельное включение некоторых facade всё ещё упирается в ациклические type-deps при цикле модулей (CMS → AttributeCertificate → ESS → CMS). Это не type-SCC: нужен более мелкий layout header split или module-SCC amalgam без раздувания/поломки соседних facade.
+10. **`InlineCompositeDeduper` и field `options`.** Fingerprint снимает `options`, поэтому inline SEQUENCE/SET/CHOICE с разным `lazy` / `retainEncoded` / `integer.representation` при одинаковом wire-shape схлопываются в один typedef. Учитывать codegen-значимые options в fingerprint или явно документировать ограничение.
+11. **C++ `is_default_*` для CHOICE DEFAULT.** Сравнение идёт через `!=`, а у generated CHOICE нет `operator==`/`!=` (есть у named BIT STRING). В modern IR CHOICE DEFAULT нет — latent; при первом таком DEFAULT C++ не соберётся. Нужен `operator==` для CHOICE или отдельный compare в helper.
+12. **`asn1kit::value<T>::get()` non-const.** Любой non-const доступ сбрасывает retained TLV — footgun для bit-exact re-encode (CMS `signedAttrs` / `toBeSigned`). Усилить API/документацию и тест «inspect via non-const → `!has_original_encoding()`».
+13. **Ergonomic `asn1kit::encode` / `decode` и `reader_options`.** Обёртки всегда используют `default_profile()`; ужесточить/ослабить depth/materialize лимиты можно только через raw `reader`. Прокинуть options в API или явно оставить gap.
+14. **Hostile BER: structural depth и segment storm.** Сейчас лимиты только на indefinite EOC-scan и nested constructed string/BIT STRING materialize (depth 64, payload 100 MiB). Глубина definite SEQUENCE/SET/OF и число tiny-сегментов до concat не ограничены — остаточный DoS; при необходимости — structural depth / segment cap + тесты.
+15. **CONTAINING ADR.** Удаление `Asn1Contained` / `contained<T>` (typed → `T`, opaque → `ROM`/`bytes`/`bit_string`) зафиксировано в status/runtime-api, но без отдельной записи в [decisions.md](decisions.md).
+16. **BIT STRING CONTAINING success path (C#).** Есть write + reject unaligned; нет успешного read round-trip через `ReadBitStringContaining` (в отличие от OCTET).
 
 ### Крупные
 
