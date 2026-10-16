@@ -33,6 +33,11 @@ struct AlgorithmIdentifier {
     asn1kit::oid algorithm{};
     std::optional<asn1kit::any> parameters{};
 
+    template <typename T>
+    [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, T> open_binding(asn1kit::oid key) {
+        return {std::move(key)};
+    }
+
     template <typename Context, typename T>
     [[nodiscard]] std::optional<T> try_decode(
         const asn1kit::open_binding<Context, asn1kit::oid, T>& binding) const {
@@ -107,6 +112,11 @@ inline ParamOptions decode_ParamOptions(asn1kit::reader& r, const asn1kit::tag& 
 struct SMIMECapability {
     asn1kit::oid capabilityID{};
     std::optional<asn1kit::any> parameters{};
+
+    template <typename T>
+    [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, T> open_binding(asn1kit::oid key) {
+        return {std::move(key)};
+    }
 
     template <typename Context, typename T>
     [[nodiscard]] std::optional<T> try_decode(

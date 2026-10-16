@@ -13,10 +13,16 @@
 #include <gtest/gtest.h>
 
 #include <cstdint>
+#include <type_traits>
 #include <vector>
 
 using namespace asn1kit;
 using namespace M;
+
+template <typename Owner, typename Binding>
+concept supports_nested_open_decode = requires(const Owner& owner, const Binding& binding) {
+    owner.try_decode_nested(binding);
+};
 
 TEST(OpenBinding, SetTryDecodeRoundTripNullAndInt32) {
     auto info = AlgorithmIdentifier::create(mixed_parameters_bindings::empty_entry, null_value::value());
@@ -77,6 +83,29 @@ TEST(OpenBinding, ContainedSetTryDecodeRoundTrip) {
     EXPECT_EQ(round_trip.try_decode(mixed_extnValue_bindings::data_entry), 7);
 }
 
+TEST(OpenBinding, UserDefinedContainedBindingSupportsLocalCarrierOperations) {
+    const auto binding = Extension::open_binding<std::int32_t>(oid::parse("1.2.99"));
+
+    auto ext = Extension::create(binding, std::int32_t{7});
+    EXPECT_EQ(ext.extnID, oid::parse("1.2.99"));
+    EXPECT_EQ(ext.try_decode(binding), 7);
+
+    ext.set(binding, std::int32_t{42});
+    EXPECT_EQ(ext.try_decode(binding), 42);
+
+    const auto other = Extension::open_binding<std::int32_t>(oid::parse("1.2.100"));
+    EXPECT_FALSE(ext.try_decode(other).has_value());
+}
+
+TEST(OpenBinding, UserDefinedBindingRejectsMatchingKeyWithInvalidWireValue) {
+    const auto binding = Extension::open_binding<std::int32_t>(oid::parse("1.2.99"));
+    Extension ext{};
+    ext.extnID = binding.key;
+    ext.extnValue = encode_contained_octets(null_value::value());
+
+    EXPECT_THROW((void)ext.try_decode(binding), exception);
+}
+
 TEST(OpenBinding, SetOfSetTryDecodeRoundTrip) {
     auto attr = Attribute::create(mixed_values_bindings::data_entry,
         std::vector<std::int32_t>{1, 2});
@@ -94,6 +123,15 @@ TEST(OpenBinding, SetOfSetTryDecodeRoundTrip) {
     ASSERT_EQ(nulls->size(), 1u);
 }
 
+TEST(OpenBinding, UserDefinedCollectionBindingUsesElementType) {
+    const auto binding = Attribute::open_binding<std::int32_t>(oid::parse("1.2.99"));
+    static_assert(std::is_same_v<typename std::remove_cv_t<decltype(binding)>::value_type,
+        std::vector<std::int32_t>>);
+
+    auto attr = Attribute::create(binding, std::int32_t{7});
+    ASSERT_EQ(attr.try_decode(binding), (std::vector<std::int32_t>{7}));
+}
+
 TEST(OpenBinding, AncestorSelectorUsesParentKey) {
     Outer outer{};
     outer.id = oid::parse("1.2.4");
@@ -105,6 +143,11 @@ TEST(OpenBinding, AncestorSelectorUsesParentKey) {
 
     outer.id = oid::parse("1.2.3");
     EXPECT_FALSE(outer.try_decode_nested(mixed_value_bindings::data_entry).has_value());
+}
+
+TEST(OpenBinding, DefaultContextDoesNotBypassContextualOwnerProtection) {
+    const auto binding = Extension::open_binding<std::int32_t>(oid::parse("1.2.4"));
+    static_assert(!supports_nested_open_decode<Outer, decltype(binding)>);
 }
 
 TEST(OpenBinding, ContextualDecodeRejectsMultipleMatches) {

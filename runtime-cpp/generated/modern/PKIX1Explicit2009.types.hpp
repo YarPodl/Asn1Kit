@@ -449,6 +449,11 @@ struct CertificateList {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::bit_string signature{};
 
+    template <typename T>
+    [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, T> open_binding(asn1kit::oid key) {
+        return {std::move(key)};
+    }
+
     template <typename Context, typename T>
     [[nodiscard]] std::optional<T> try_decode(
         const asn1kit::open_binding<Context, asn1kit::oid, T>& binding) const {
@@ -670,6 +675,11 @@ struct Certificate {
     asn1kit::value<TBSCertificate> toBeSigned{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::bit_string signature{};
+
+    template <typename T>
+    [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, T> open_binding(asn1kit::oid key) {
+        return {std::move(key)};
+    }
 
     template <typename Context, typename T>
     [[nodiscard]] std::optional<T> try_decode(

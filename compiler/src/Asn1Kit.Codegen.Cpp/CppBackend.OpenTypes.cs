@@ -722,6 +722,8 @@ public sealed partial class CppBackend
         var suffix = shortNames ? "" : "_" + OpenStemName(site.Field);
         var valueType = site.Payload.Kind == OpenPayloadKind.Many ? "std::vector<T>" : "T";
         var bindingType = $"asn1kit::open_binding<Context, {keyCppType}, {valueType}>";
+        var defaultBindingType =
+            $"asn1kit::open_binding<asn1kit::default_open_context, {keyCppType}, {valueType}>";
         var decodeCall = site.Payload.Kind switch
         {
             OpenPayloadKind.Contained => "asn1kit::decode_contained<T>",
@@ -740,6 +742,11 @@ public sealed partial class CppBackend
             _ => "asn1kit::encode_open"
         };
 
+        sb.AppendLine("    template <typename T>");
+        sb.AppendLine($"    [[nodiscard]] static {defaultBindingType} open_binding{suffix}({keyCppType} key) {{");
+        sb.AppendLine("        return {std::move(key)};");
+        sb.AppendLine("    }");
+        sb.AppendLine();
         sb.AppendLine("    template <typename Context, typename T>");
         sb.AppendLine($"    [[nodiscard]] std::optional<{valueType}> try_decode{suffix}(");
         sb.AppendLine($"        const {bindingType}& binding) const {{");

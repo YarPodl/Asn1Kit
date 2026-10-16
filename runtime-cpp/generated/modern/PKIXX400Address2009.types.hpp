@@ -221,6 +221,11 @@ struct ExtensionAttribute {
     std::int32_t extension_attribute_type{};
     asn1kit::any extension_attribute_value{};
 
+    template <typename T>
+    [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, std::int32_t, T> open_binding(std::int32_t key) {
+        return {std::move(key)};
+    }
+
     template <typename Context, typename T>
     [[nodiscard]] std::optional<T> try_decode(
         const asn1kit::open_binding<Context, std::int32_t, T>& binding) const {

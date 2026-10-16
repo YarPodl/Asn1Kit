@@ -939,6 +939,11 @@ struct PolicyQualifierInfo {
     asn1kit::oid policyQualifierId{};
     asn1kit::any qualifier{};
 
+    template <typename T>
+    [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, T> open_binding(asn1kit::oid key) {
+        return {std::move(key)};
+    }
+
     template <typename Context, typename T>
     [[nodiscard]] std::optional<T> try_decode(
         const asn1kit::open_binding<Context, asn1kit::oid, T>& binding) const {

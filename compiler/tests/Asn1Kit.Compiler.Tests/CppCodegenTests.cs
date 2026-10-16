@@ -199,6 +199,10 @@ END
         Assert.DoesNotContain("IdEmpty_oid", source);
         Assert.DoesNotContain("open_codec", source);
         Assert.DoesNotContain("asn1kit::codecs::", source);
+        Assert.Contains(
+            "static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, T> open_binding(asn1kit::oid key)",
+            source);
+        Assert.Contains("return {std::move(key)};", source);
         Assert.Contains("std::optional<T> try_decode(", source);
         Assert.Contains("return asn1kit::decode_open<T>(", source);
         Assert.Contains("parameters = asn1kit::encode_open(value);", source);
@@ -268,6 +272,9 @@ END
         Assert.Contains(
             "std::optional<std::vector<T>> try_decode(",
             source);
+        Assert.Contains(
+            "static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, std::vector<T>> open_binding(asn1kit::oid key)",
+            source);
         Assert.Contains("return asn1kit::decode_each<T>(", source);
         Assert.Contains("values = asn1kit::encode_each(value);", source);
         Assert.Contains("namespace mixed_extnValue_bindings", source);
@@ -328,7 +335,32 @@ END
         Assert.Contains("(*this).algorithmIdentifier.algorithm", source);
         Assert.Contains("std::int32_t, asn1kit::null_value", source);
         Assert.Contains("std::int32_t{7}", source);
+        Assert.Contains(
+            "static asn1kit::open_binding<asn1kit::default_open_context, std::int32_t, T> open_binding(std::int32_t key)",
+            source);
         Assert.Contains("this->id = binding.key;", source);
+    }
+
+    [Fact]
+    public void MultipleLocalOpenFieldsUseSuffixedBindingFactories()
+    {
+        const string asn = @"
+M DEFINITIONS ::= BEGIN
+  C ::= CLASS { &id OBJECT IDENTIFIER UNIQUE, &T } WITH SYNTAX { &T IDENTIFIED BY &id }
+  item C ::= { INTEGER IDENTIFIED BY {1 2 3} }
+  Items C ::= {item}
+  Pair{C:S} ::= SEQUENCE {
+    id C.&id({S}),
+    first C.&T({S}{@id}),
+    second C.&T({S}{@id}) }
+  Value ::= Pair{Items}
+END
+";
+        var source = CppSource(new Asn1Compiler().CompileText(asn));
+
+        Assert.Contains("open_binding_first(asn1kit::oid key)", source);
+        Assert.Contains("open_binding_second(asn1kit::oid key)", source);
+        Assert.DoesNotContain(" open_binding(asn1kit::oid key)", source);
     }
 
     [Fact]

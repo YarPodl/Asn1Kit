@@ -27,7 +27,7 @@
     - direct `any` → `encode_open` / `decode_open<T>`;
     - `CONTAINING` → `encode_contained` / `decode_contained<T>`;
     - OF → `encode_each` / `decode_each<T>` (`std::vector<T>` + overload на один `T`).
-  - Carrier с local selector получает `try_decode(binding) -> std::optional<Value>`, `set(binding, value)` и `static create(binding, value)`; carrier принимает binding любого `Context`.
+  - Carrier с local selector получает `open_binding<T>(key)` для пользовательского binding с `default_open_context`, а также `try_decode(binding) -> std::optional<Value>`, `set(binding, value)` и `static create(binding, value)`; carrier принимает binding любого `Context`. Для OF параметр `T` фабрики — тип элемента, возвращаемый descriptor содержит `std::vector<T>`.
   - Contextual read API эмитится на общем владельце selector/value: `try_decode_<route>(binding) -> std::optional<Value>`. Он проходит OPTIONAL/deferred/OF-маршрут, требует phantom-context своей таблицы и отклоняет несколько совпадений. Contextual `set` не эмитится.
   - Ancestor (`selector.levels > 0`) декодируется contextual-методом без явных parent-параметров; низкоуровневые `set/create` для такого carrier не эмитятся.
   - String/time в binding — `asn_string<form>` / `asn_time<form>` (форма в типе, не runtime-codec).

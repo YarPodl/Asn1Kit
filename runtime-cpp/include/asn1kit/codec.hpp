@@ -31,6 +31,9 @@ namespace asn1kit {
 template <detail::oid_text Name>
 struct open_context final {};
 
+/// Identifies a user-defined binding intended for a carrier's local open-type API.
+struct default_open_context final {};
+
 /// Associates an open-type selector key with its decoded public value type.
 /// Encoding and decoding remain operations of the generated carrier/owner types.
 template <typename Context, typename Key, typename Value>
