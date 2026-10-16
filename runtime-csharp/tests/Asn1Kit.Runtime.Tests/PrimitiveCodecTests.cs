@@ -113,6 +113,92 @@ public sealed class PrimitiveCodecTests
     public void Time_Fixture(BerDerCase c) => Run(c, EncodeTime, DecodeTime);
 
     [Fact]
+    public void EveryProperPrefix_OfRepresentativeTlvs_ThrowsAsn1Exception()
+    {
+        var longOctetString = new byte[131];
+        longOctetString[0] = 0x04;
+        longOctetString[1] = 0x81;
+        longOctetString[2] = 0x80;
+        Array.Fill(longOctetString, (byte)0xA5, 3, 128);
+
+        var cases = new (byte[] Encoded, Asn1Encoding Encoding, Action<Asn1Reader> Decode)[]
+        {
+            (Hex.Parse("9F81490100"), Asn1Encoding.Der, static reader => _ = reader.ReadAny()),
+            (Hex.Parse("020101"), Asn1Encoding.Der,
+                static reader => _ = reader.ReadInteger(Asn1Tag.Integer)),
+            (longOctetString, Asn1Encoding.Der,
+                static reader => _ = reader.ReadOctetString(Asn1Tag.OctetString)),
+            (Hex.Parse("248024800401AA00000000"), Asn1Encoding.Ber,
+                static reader => _ = reader.ReadOctetString(Asn1Tag.OctetString)),
+        };
+
+        foreach (var item in cases)
+        {
+            for (var length = 0; length < item.Encoded.Length; length++)
+            {
+                var reader = new Asn1Reader(item.Encoded.AsMemory(0, length), item.Encoding);
+                var error = Record.Exception(() => item.Decode(reader));
+                Assert.IsType<Asn1Exception>(error);
+            }
+
+            var complete = new Asn1Reader(item.Encoded, item.Encoding);
+            item.Decode(complete);
+            Assert.True(complete.Eof);
+        }
+    }
+
+    [Fact]
+    public void StringEncode_RejectsInvalidUtf8BmpAndLatin1Values()
+    {
+        Assert.Throws<Asn1Exception>(() =>
+        {
+            var writer = new Asn1Writer(Asn1Encoding.Der);
+            writer.WriteString(Asn1Tag.Utf8String, "\uD800", Asn1StringForm.Utf8);
+        });
+        Assert.Throws<Asn1Exception>(() =>
+        {
+            var writer = new Asn1Writer(Asn1Encoding.Der);
+            writer.WriteString(Asn1Tag.BmpString, "\U0001F600", Asn1StringForm.Bmp);
+        });
+        Assert.Throws<Asn1Exception>(() =>
+        {
+            var writer = new Asn1Writer(Asn1Encoding.Der);
+            writer.WriteString(Asn1Tag.TeletexString, "\u0100", Asn1StringForm.Teletex);
+        });
+    }
+
+    [Fact]
+    public void GeneralizedTime_RoundingCarriesAcrossCalendarBoundaries()
+    {
+        var value = new DateTimeOffset(1999, 12, 31, 23, 59, 59, TimeSpan.Zero).AddTicks(9_999_999);
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteTime(Asn1Tag.GeneralizedTime, value, Asn1TimeForm.Generalized, fractionDigits: 6);
+        Assert.Equal(Hex.Parse("180F32303030303130313030303030305A"), writer.Encode());
+
+        value = new DateTimeOffset(2000, 2, 29, 23, 59, 59, TimeSpan.Zero).AddTicks(9_999_999);
+        writer.Reset();
+        writer.WriteTime(Asn1Tag.GeneralizedTime, value, Asn1TimeForm.Generalized, fractionDigits: 6);
+        Assert.Equal(Hex.Parse("180F32303030303330313030303030305A"), writer.Encode());
+    }
+
+    [Fact]
+    public void ObjectIdentifier_EnforcesIntArcDomainAndSupportsManyArcs()
+    {
+        Assert.Throws<Asn1Exception>(() => Asn1Oid.Parse("1.2.2147483648"));
+        Assert.Throws<Asn1Exception>(() => Asn1Oid.Parse("2.2147483568"));
+
+        var dotted = "1.2." + string.Join('.', Enumerable.Repeat("0", 128));
+        var oid = Asn1Oid.Parse(dotted);
+        Assert.Equal(dotted, oid.ToString());
+
+        var writer = new Asn1Writer(Asn1Encoding.Der);
+        writer.WriteObjectIdentifier(Asn1Tag.ObjectIdentifier, oid);
+        var reader = new Asn1Reader(writer.Encode(), Asn1Encoding.Der);
+        Assert.Equal(dotted, reader.ReadObjectIdentifier(Asn1Tag.ObjectIdentifier));
+        Assert.True(reader.Eof);
+    }
+
+    [Fact]
     public void Wrappers_SmokeEncodeDecode()
     {
         var writer = new Asn1Writer(Asn1Encoding.Der);

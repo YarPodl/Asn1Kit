@@ -63,7 +63,7 @@
 | Non-minimal INTEGER contents | `RejectNonMinimalInteger` |
 | BIT STRING nonzero trailing bits | `RejectBitStringTrailingBits` |
 
-Не soft (default reject): non-minimal length, OID overlong base-128. Всегда reject: BOOLEAN length≠1 / constructed; empty INTEGER; truncated EOC; indefinite в DER. BER: indefinite, constructed строки/BIT STRING, время без секунд / `±hhmm`. Hostile BER ограничен в обоих runtime: глубина рекурсивного indefinite scan и nested constructed materialization — 64, суммарный payload одного materialized constructed значения — 100 MiB; оба лимита настраиваются через reader options.
+Не soft (default reject): non-minimal length, OID overlong base-128. Всегда reject: BOOLEAN length≠1 / constructed; empty INTEGER; truncated EOC; indefinite в DER; невалидные Unicode scalar/BMP surrogate; невозможная Gregorian date; OID-дуга или первый subidentifier вне диапазона `int`. BER: indefinite, constructed строки/BIT STRING, время без секунд / `±hhmm`; offset корректно переносится через календарные границы. Hostile BER ограничен в обоих runtime: глубина рекурсивного indefinite scan и nested constructed materialization — 64, суммарный payload одного materialized constructed значения — 100 MiB; оба лимита настраиваются через reader options.
 
 ## Продуктовые артефакты
 

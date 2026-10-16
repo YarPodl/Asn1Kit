@@ -30,6 +30,28 @@
     "encode": false
   },
   {
+    "name": "octet-ber-nested-definite-indefinite-empty-segments",
+    "rules": "ber",
+    "op": "octetString",
+    "bytes": "2410040024800401AA040000000401BB0400",
+    "value": "AABB",
+    "encode": false
+  },
+  {
+    "name": "octet-rejects-wrong-child-tag",
+    "rules": "ber",
+    "op": "octetString",
+    "bytes": "24030101FF",
+    "reject": true
+  },
+  {
+    "name": "octet-rejects-nested-wrong-child-tag",
+    "rules": "ber",
+    "op": "octetString",
+    "bytes": "240524030101FF",
+    "reject": true
+  },
+  {
     "name": "octet-der-rejects-indefinite",
     "rules": "der",
     "op": "octetString",
@@ -41,6 +63,13 @@
     "rules": "ber",
     "op": "octetString",
     "bytes": "24800403416E6E00",
+    "reject": true
+  },
+  {
+    "name": "octet-rejects-truncated-nested-eoc",
+    "rules": "ber",
+    "op": "octetString",
+    "bytes": "248024800401AA0000",
     "reject": true
   }
 ]

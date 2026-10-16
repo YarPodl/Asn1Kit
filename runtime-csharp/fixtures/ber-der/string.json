@@ -8,6 +8,14 @@
     "value": "Hello"
   },
   {
+    "name": "string-utf8-supplementary-scalar",
+    "rules": "der",
+    "op": "string",
+    "form": "Utf8",
+    "bytes": "0C04F09F9880",
+    "value": "\uD83D\uDE00"
+  },
+  {
     "name": "string-printable",
     "rules": "der",
     "op": "string",
@@ -88,6 +96,14 @@
     "value": "AB"
   },
   {
+    "name": "string-universal-supplementary-scalar",
+    "rules": "der",
+    "op": "string",
+    "form": "Universal",
+    "bytes": "1C040001F600",
+    "value": "\uD83D\uDE00"
+  },
+  {
     "name": "string-universal",
     "rules": "der",
     "op": "string",
@@ -110,6 +126,102 @@
     "op": "string",
     "form": "Printable",
     "bytes": "130140",
+    "reject": true
+  },
+  {
+    "name": "string-utf8-rejects-overlong-two-byte",
+    "rules": "der",
+    "op": "string",
+    "form": "Utf8",
+    "bytes": "0C02C080",
+    "reject": true
+  },
+  {
+    "name": "string-utf8-rejects-overlong-three-byte",
+    "rules": "der",
+    "op": "string",
+    "form": "Utf8",
+    "bytes": "0C03E08080",
+    "reject": true
+  },
+  {
+    "name": "string-utf8-rejects-surrogate",
+    "rules": "der",
+    "op": "string",
+    "form": "Utf8",
+    "bytes": "0C03EDA080",
+    "reject": true
+  },
+  {
+    "name": "string-utf8-rejects-above-unicode-range",
+    "rules": "der",
+    "op": "string",
+    "form": "Utf8",
+    "bytes": "0C04F4908080",
+    "reject": true
+  },
+  {
+    "name": "string-utf8-rejects-stray-continuation",
+    "rules": "der",
+    "op": "string",
+    "form": "Utf8",
+    "bytes": "0C0180",
+    "reject": true
+  },
+  {
+    "name": "string-utf8-rejects-truncated-sequence",
+    "rules": "der",
+    "op": "string",
+    "form": "Utf8",
+    "bytes": "0C02E282",
+    "reject": true
+  },
+  {
+    "name": "string-bmp-rejects-high-surrogate",
+    "rules": "der",
+    "op": "string",
+    "form": "Bmp",
+    "bytes": "1E02D800",
+    "reject": true
+  },
+  {
+    "name": "string-bmp-rejects-low-surrogate",
+    "rules": "der",
+    "op": "string",
+    "form": "Bmp",
+    "bytes": "1E02DC00",
+    "reject": true
+  },
+  {
+    "name": "string-bmp-rejects-surrogate-pair",
+    "rules": "der",
+    "op": "string",
+    "form": "Bmp",
+    "bytes": "1E04D83DDE00",
+    "reject": true
+  },
+  {
+    "name": "string-universal-rejects-surrogate",
+    "rules": "der",
+    "op": "string",
+    "form": "Universal",
+    "bytes": "1C040000D800",
+    "reject": true
+  },
+  {
+    "name": "string-universal-rejects-above-unicode-range",
+    "rules": "der",
+    "op": "string",
+    "form": "Universal",
+    "bytes": "1C0400110000",
+    "reject": true
+  },
+  {
+    "name": "string-universal-rejects-non-multiple-of-four",
+    "rules": "der",
+    "op": "string",
+    "form": "Universal",
+    "bytes": "1C03000041",
     "reject": true
   }
 ]

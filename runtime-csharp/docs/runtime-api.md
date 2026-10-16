@@ -90,7 +90,9 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 - `EnterSequence` / `EnterSet` / `EnterExplicit` открывают обычные constructed значения; `EnterEncoded` открывает сохранённый TLV, `Read*Containing` — contents string-типа. Для encode scope-методы обязательны для structured значений и ручного OF; collection OF дополнительно использует `WriteSequenceOf<T>` / `WriteSetOf<T>` с `Action<Asn1Writer, T>`.
 - `Asn1ReaderScope.Dispose()` только восстанавливает внешнее окно и проверяет LIFO. Полное потребление проверяется явным `ThrowIfNotEmpty()` в успешной ветке decode, чтобы исключение при unwind не заменяло исходную ошибку.
 - `ReadInt32` / `TryGetInt32` (и UInt32/Int64/UInt64) разбирают short contents без `BigInteger`.
-- `ReadTime` парсит UTCTime/GeneralizedTime из contents octets без промежуточной `string` (`Asn1TextCodec.ParseTime(span)`).
+- Строковый codec требует корректные Unicode scalar values: UTF8String отвергает overlong/surrogate/out-of-range UTF-8, BMPString использует BMP/UCS-2 без surrogate code units, UniversalString допускает полный диапазон до `U+10FFFF`. Latin-1 формы при encode отвергают непредставимые символы без замены.
+- `ReadTime` парсит UTCTime/GeneralizedTime из contents octets без промежуточной `string` (`Asn1TextCodec.ParseTime(span)`), проверяет Gregorian calendar и нормализует BER offset через границы дня/месяца/года.
+- OID использует неотрицательные `int`-дуги; `40 * arc0 + arc1` также обязан помещаться в `int`. Переполнение и незавершённая base-128 continuation отклоняются.
 - Open-type DEFINED BY OID: codegen передаёт `Asn1Oid` и сравнивает со статическими константами (без `Oid.ToString()` на hot path).
 - `TryPeekTag` работает на копии cursor: malformed tag бросает `Asn1Exception`, не меняя позицию. `TryReadOctetString` коммитит cursor только при успехе.
 - Обычный `Read*` после исключения не гарантирует сохранение позиции: продолжать decode после ошибки входа нельзя.

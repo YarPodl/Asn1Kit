@@ -7,10 +7,13 @@ ASN.1 → JSON IR → генератор кода → runtime BER/DER. Слои 
 - Архитектура и карта репозитория: [docs/architecture.md](docs/architecture.md).
 - Контракт IR: [docs/ir-schema.md](docs/ir-schema.md).
 - Поддержанный профиль и backlog: [docs/status.md](docs/status.md).
+- Живое состояние рекомендаций тестового аудита: [docs/test-gap-status.md](docs/test-gap-status.md).
 - Архитектурные решения: [docs/decisions.md](docs/decisions.md).
 - Локальные сведения: [compiler/README.md](compiler/README.md), [runtime-csharp/README.md](runtime-csharp/README.md), [runtime-cpp/README.md](runtime-cpp/README.md); для агента также `compiler/AGENTS.md`, `runtime-csharp/AGENTS.md`, `runtime-cpp/AGENTS.md`.
 
 Читай только документы, относящиеся к текущей задаче. Для пошаговой реализации используй соответствующий playbook из `compiler/docs/playbooks/` или `runtime-csharp/docs/playbooks/`.
+
+Перед работой по gap `Gxxx` сначала читай `docs/test-gap-status.md`. `docs/test-audit.md` и его CSV — исторический снимок: gap со статусом `done` не переоценивай без изменения контракта, утраты указанного evidence или нового аудита; для `partial` анализируй только явно записанный остаток. Статус и evidence обновляй в том же изменении, где меняются соответствующие тесты.
 
 По умолчанию не ищи в generated C# и больших IR golden, исключённых через `.ignore`. Читай их только для задач codegen, fixtures, регенерации или проверки diff; для целевого поиска используй явный путь или `rg --no-ignore`.
 

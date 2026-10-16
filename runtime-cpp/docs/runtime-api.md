@@ -82,6 +82,10 @@ Default принимает: non-minimal INTEGER, nonzero BIT STRING trailing bit
 Default отклоняет: non-minimal length, overlong OID base-128.  
 Constructed OCTET/BIT/string soft-accept и под DER (как у эталонного runtime).
 
+Строковые значения в `std::string` содержат валидный UTF-8. UTF8String отвергает overlong, surrogate и scalar выше `U+10FFFF`; BMPString — BMP/UCS-2 без surrogate code units; UniversalString поддерживает scalar до `U+10FFFF`. Latin-1 формы при encode отвергают непредставимые символы.
+
+UTCTime/GeneralizedTime проверяют Gregorian calendar; BER offset и округление GeneralizedTime корректно переносятся через границы дня, месяца, високосного года и года. OID использует неотрицательные `int`-дуги, включая ограничение `40 * arc0 + arc1 <= INT_MAX`.
+
 Encode всегда канонический DER (definite length).
 
 ## Лимиты hostile BER

@@ -14,6 +14,20 @@
     "value": "1.2.3"
   },
   {
+    "name": "oid-max-supported-arc",
+    "rules": "der",
+    "op": "oid",
+    "bytes": "06062A87FFFFFF7F",
+    "value": "1.2.2147483647"
+  },
+  {
+    "name": "oid-max-supported-first-subidentifier",
+    "rules": "der",
+    "op": "oid",
+    "bytes": "060587FFFFFF7F",
+    "value": "2.2147483567"
+  },
+  {
     "name": "oid-rejects-empty",
     "rules": "der",
     "op": "oid",
@@ -25,6 +39,27 @@
     "rules": "der",
     "op": "oid",
     "bytes": "06032A86",
+    "reject": true
+  },
+  {
+    "name": "oid-rejects-truncated-max-continuation",
+    "rules": "der",
+    "op": "oid",
+    "bytes": "06062A87FFFFFF80",
+    "reject": true
+  },
+  {
+    "name": "oid-rejects-arc-overflow",
+    "rules": "der",
+    "op": "oid",
+    "bytes": "06062A8880808000",
+    "reject": true
+  },
+  {
+    "name": "oid-rejects-first-subidentifier-overflow",
+    "rules": "der",
+    "op": "oid",
+    "bytes": "06058880808000",
     "reject": true
   },
   {

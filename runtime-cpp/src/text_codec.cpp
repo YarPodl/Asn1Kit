@@ -63,92 +63,76 @@ int read4(std::span<const std::uint8_t> text, int index) {
         + (text[static_cast<std::size_t>(index + 3)] - '0');
 }
 
+std::uint32_t decode_utf8_codepoint(std::string_view value, std::size_t& i) {
+    if (i >= value.size()) {
+        throw exception("Invalid UTF-8 string.");
+    }
+
+    const auto c0 = static_cast<unsigned char>(value[i]);
+    if (c0 <= 0x7F) {
+        ++i;
+        return c0;
+    }
+    if (c0 >= 0xC2 && c0 <= 0xDF) {
+        if (i + 1 >= value.size()) {
+            throw exception("Invalid UTF-8 string.");
+        }
+        const auto c1 = static_cast<unsigned char>(value[i + 1]);
+        if ((c1 & 0xC0) != 0x80) {
+            throw exception("Invalid UTF-8 string.");
+        }
+        i += 2;
+        return ((c0 & 0x1F) << 6) | (c1 & 0x3F);
+    }
+    if (c0 >= 0xE0 && c0 <= 0xEF) {
+        if (i + 2 >= value.size()) {
+            throw exception("Invalid UTF-8 string.");
+        }
+        const auto c1 = static_cast<unsigned char>(value[i + 1]);
+        const auto c2 = static_cast<unsigned char>(value[i + 2]);
+        if ((c1 & 0xC0) != 0x80 || (c2 & 0xC0) != 0x80
+            || (c0 == 0xE0 && c1 < 0xA0)
+            || (c0 == 0xED && c1 > 0x9F)) {
+            throw exception("Invalid UTF-8 string.");
+        }
+        i += 3;
+        return ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
+    }
+    if (c0 >= 0xF0 && c0 <= 0xF4) {
+        if (i + 3 >= value.size()) {
+            throw exception("Invalid UTF-8 string.");
+        }
+        const auto c1 = static_cast<unsigned char>(value[i + 1]);
+        const auto c2 = static_cast<unsigned char>(value[i + 2]);
+        const auto c3 = static_cast<unsigned char>(value[i + 3]);
+        if ((c1 & 0xC0) != 0x80 || (c2 & 0xC0) != 0x80 || (c3 & 0xC0) != 0x80
+            || (c0 == 0xF0 && c1 < 0x90)
+            || (c0 == 0xF4 && c1 > 0x8F)) {
+            throw exception("Invalid UTF-8 string.");
+        }
+        i += 4;
+        return ((c0 & 0x07) << 18) | ((c1 & 0x3F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
+    }
+    throw exception("Invalid UTF-8 string.");
+}
+
 int count_utf8_bytes(std::string_view value) {
     int count = 0;
     for (std::size_t i = 0; i < value.size();) {
-        const auto c = static_cast<unsigned char>(value[i]);
-        int len = 0;
-        if (c <= 0x7F) {
-            len = 1;
-        } else if ((c & 0xE0) == 0xC0) {
-            len = 2;
-        } else if ((c & 0xF0) == 0xE0) {
-            len = 3;
-        } else if ((c & 0xF8) == 0xF0) {
-            len = 4;
-        } else {
-            throw exception("Invalid UTF-8 string.");
-        }
-        if (i + static_cast<std::size_t>(len) > value.size()) {
-            throw exception("Invalid UTF-8 string.");
-        }
-        for (int j = 1; j < len; ++j) {
-            if ((static_cast<unsigned char>(value[i + static_cast<std::size_t>(j)]) & 0xC0) != 0x80) {
-                throw exception("Invalid UTF-8 string.");
-            }
-        }
-        i += static_cast<std::size_t>(len);
-        count += len;
+        const auto start = i;
+        (void)decode_utf8_codepoint(value, i);
+        count += static_cast<int>(i - start);
     }
     return count;
 }
 
 int count_universal_code_points(std::string_view value) {
     int count = 0;
-    for (std::size_t i = 0; i < value.size(); ++i) {
-        const auto c = static_cast<unsigned char>(value[i]);
-        if ((c & 0xF8) == 0xF0) {
-            if (i + 3 >= value.size()) {
-                throw exception("UniversalString contains an incomplete surrogate pair.");
-            }
-            ++count;
-            i += 3;
-        } else if ((c & 0xF0) == 0xE0) {
-            if (i + 2 >= value.size()) {
-                throw exception("UniversalString contains an incomplete surrogate pair.");
-            }
-            ++count;
-            i += 2;
-        } else if ((c & 0xE0) == 0xC0) {
-            if (i + 1 >= value.size()) {
-                throw exception("UniversalString contains an incomplete surrogate pair.");
-            }
-            ++count;
-            i += 1;
-        } else if (c <= 0x7F) {
-            ++count;
-        } else {
-            throw exception("Invalid UTF-8 string.");
-        }
+    for (std::size_t i = 0; i < value.size();) {
+        (void)decode_utf8_codepoint(value, i);
+        ++count;
     }
     return count;
-}
-
-std::uint32_t decode_utf8_codepoint(std::string_view value, std::size_t& i) {
-    const auto c0 = static_cast<unsigned char>(value[i]);
-    if (c0 <= 0x7F) {
-        ++i;
-        return c0;
-    }
-    if ((c0 & 0xE0) == 0xC0) {
-        const auto c1 = static_cast<unsigned char>(value[i + 1]);
-        i += 2;
-        return ((c0 & 0x1F) << 6) | (c1 & 0x3F);
-    }
-    if ((c0 & 0xF0) == 0xE0) {
-        const auto c1 = static_cast<unsigned char>(value[i + 1]);
-        const auto c2 = static_cast<unsigned char>(value[i + 2]);
-        i += 3;
-        return ((c0 & 0x0F) << 12) | ((c1 & 0x3F) << 6) | (c2 & 0x3F);
-    }
-    if ((c0 & 0xF8) == 0xF0) {
-        const auto c1 = static_cast<unsigned char>(value[i + 1]);
-        const auto c2 = static_cast<unsigned char>(value[i + 2]);
-        const auto c3 = static_cast<unsigned char>(value[i + 3]);
-        i += 4;
-        return ((c0 & 0x07) << 18) | ((c1 & 0x3F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
-    }
-    throw exception("Invalid UTF-8 string.");
 }
 
 void append_utf8(std::string& out, std::uint32_t cp) {
@@ -169,21 +153,15 @@ void append_utf8(std::string& out, std::uint32_t cp) {
     }
 }
 
-// BMPString is encoded as UTF-16BE code units; API input is UTF-8.
+// BMPString is UCS-2BE; API input is UTF-8 and supplementary scalars are not representable.
 std::u16string to_utf16(std::string_view utf8) {
     std::u16string result;
     for (std::size_t i = 0; i < utf8.size();) {
         const auto cp = decode_utf8_codepoint(utf8, i);
-        if (cp <= 0xFFFF) {
-            if (cp >= 0xD800 && cp <= 0xDFFF) {
-                throw exception("Invalid UTF-8 string.");
-            }
-            result.push_back(static_cast<char16_t>(cp));
-        } else {
-            const auto v = cp - 0x10000;
-            result.push_back(static_cast<char16_t>(0xD800 + (v >> 10)));
-            result.push_back(static_cast<char16_t>(0xDC00 + (v & 0x3FF)));
+        if (cp > 0xFFFF || (cp >= 0xD800 && cp <= 0xDFFF)) {
+            throw exception("BMPString cannot contain supplementary or surrogate code points.");
         }
+        result.push_back(static_cast<char16_t>(cp));
     }
     return result;
 }
@@ -192,23 +170,10 @@ std::string from_utf16(std::span<const char16_t> units) {
     std::string out;
     for (std::size_t i = 0; i < units.size(); ++i) {
         const auto u = units[i];
-        if (u >= 0xD800 && u <= 0xDBFF) {
-            if (i + 1 >= units.size()) {
-                throw exception("BMPString contents length must be even.");
-            }
-            const auto low = units[++i];
-            if (low < 0xDC00 || low > 0xDFFF) {
-                throw exception("UniversalString contains an incomplete surrogate pair.");
-            }
-            const std::uint32_t cp = 0x10000
-                + ((static_cast<std::uint32_t>(u - 0xD800) << 10)
-                   | static_cast<std::uint32_t>(low - 0xDC00));
-            append_utf8(out, cp);
-        } else if (u >= 0xDC00 && u <= 0xDFFF) {
-            throw exception("UniversalString contains an unpaired low surrogate.");
-        } else {
-            append_utf8(out, u);
+        if (u >= 0xD800 && u <= 0xDFFF) {
+            throw exception("BMPString cannot contain surrogate code units.");
         }
+        append_utf8(out, u);
     }
     return out;
 }
@@ -251,23 +216,83 @@ std::string decode_ascii_checked(
 
 constexpr int fractions_per_second = time_fraction::period::den; // 10'000'000
 
+bool is_leap_year(int year) {
+    return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
+}
+
+int days_in_month(int year, int month) {
+    static constexpr int month_days[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    if (month < 1 || month > 12) {
+        return 0;
+    }
+    return month == 2 && is_leap_year(year) ? 29 : month_days[month];
+}
+
+void ensure_valid_date_time(const utc_date_time& value) {
+    if (value.year < 1 || value.year > 9999 || value.month < 1 || value.month > 12
+        || value.day < 1 || value.day > days_in_month(value.year, value.month)
+        || value.hour < 0 || value.hour > 23 || value.minute < 0 || value.minute > 59
+        || value.second < 0 || value.second > 59 || value.fraction.count() < 0
+        || value.fraction.count() >= fractions_per_second) {
+        throw exception("Invalid date/time components.");
+    }
+}
+
+void increment_day(utc_date_time& value) {
+    ++value.day;
+    if (value.day <= days_in_month(value.year, value.month)) {
+        return;
+    }
+    value.day = 1;
+    ++value.month;
+    if (value.month <= 12) {
+        return;
+    }
+    value.month = 1;
+    ++value.year;
+    if (value.year > 9999) {
+        throw exception("Date/time value exceeds the supported year range.");
+    }
+}
+
+void decrement_day(utc_date_time& value) {
+    --value.day;
+    if (value.day >= 1) {
+        return;
+    }
+    --value.month;
+    if (value.month < 1) {
+        value.month = 12;
+        --value.year;
+        if (value.year < 1) {
+            throw exception("Date/time value exceeds the supported year range.");
+        }
+    }
+    value.day = days_in_month(value.year, value.month);
+}
+
+void increment_second(utc_date_time& value) {
+    if (++value.second < 60) {
+        return;
+    }
+    value.second = 0;
+    if (++value.minute < 60) {
+        return;
+    }
+    value.minute = 0;
+    if (++value.hour < 24) {
+        return;
+    }
+    value.hour = 0;
+    increment_day(value);
+}
+
 utc_date_time round_to_fraction_digits(utc_date_time utc, int fraction_digits) {
+    ensure_valid_date_time(utc);
     // Round the sub-second fraction to `fraction_digits` decimal places (X.690 / IR).
     if (fraction_digits == 0) {
         if (utc.fraction.count() * 2 >= fractions_per_second) {
-            utc.second += 1;
-            if (utc.second >= 60) {
-                utc.second = 0;
-                utc.minute += 1;
-                if (utc.minute >= 60) {
-                    utc.minute = 0;
-                    utc.hour += 1;
-                    if (utc.hour >= 24) {
-                        utc.hour = 0;
-                        utc.day += 1; // fixtures don't hit month/day rollover on encode
-                    }
-                }
-            }
+            increment_second(utc);
         }
         utc.fraction = time_fraction{0};
         return utc;
@@ -282,15 +307,7 @@ utc_date_time round_to_fraction_digits(utc_date_time utc, int fraction_digits) {
 
     if (rounded >= fractions_per_second) {
         utc.fraction = time_fraction{0};
-        utc.second += 1;
-        if (utc.second >= 60) {
-            utc.second = 0;
-            utc.minute += 1;
-            if (utc.minute >= 60) {
-                utc.minute = 0;
-                utc.hour += 1;
-            }
-        }
+        increment_second(utc);
         return utc;
     }
     utc.fraction = time_fraction{static_cast<std::int32_t>(rounded)};
@@ -416,31 +433,10 @@ void apply_offset_to_utc(utc_date_time& dt, int offset_minutes) {
     }
     dt.hour = total_minutes / 60;
     dt.minute = total_minutes % 60;
-    dt.day += day_delta;
-    // Day/month/year carry is rare in fixtures; implement basic Gregorian carry.
-    auto days_in_month = [](int year, int month) {
-        static const int mdays[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-        if (month == 2) {
-            const bool leap = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
-            return leap ? 29 : 28;
-        }
-        return mdays[month];
-    };
-    while (dt.day < 1) {
-        --dt.month;
-        if (dt.month < 1) {
-            dt.month = 12;
-            --dt.year;
-        }
-        dt.day += days_in_month(dt.year, dt.month);
-    }
-    while (dt.day > days_in_month(dt.year, dt.month)) {
-        dt.day -= days_in_month(dt.year, dt.month);
-        ++dt.month;
-        if (dt.month > 12) {
-            dt.month = 1;
-            ++dt.year;
-        }
+    if (day_delta < 0) {
+        decrement_day(dt);
+    } else if (day_delta > 0) {
+        increment_day(dt);
     }
 }
 
@@ -453,13 +449,8 @@ utc_date_time create_date_time(
     int second,
     time_fraction fraction,
     int offset_minutes) {
-    if (fraction.count() < 0 || fraction.count() >= fractions_per_second) {
-        throw exception("Fractional second is out of range.");
-    }
-    if (month < 1 || month > 12 || day < 1 || day > 31 || hour > 23 || minute > 59 || second > 59) {
-        throw exception("Invalid date/time components.");
-    }
     utc_date_time dt{year, month, day, hour, minute, second, fraction};
+    ensure_valid_date_time(dt);
     apply_offset_to_utc(dt, offset_minutes);
     return dt;
 }

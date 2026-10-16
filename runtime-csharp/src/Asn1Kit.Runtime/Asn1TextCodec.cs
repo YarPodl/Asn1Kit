@@ -53,12 +53,12 @@ internal static class Asn1TextCodec
         return form switch
         {
             Asn1StringForm.Utf8 => GetUtf8ByteCount(value),
-            Asn1StringForm.Bmp => value.Length * 2,
+            Asn1StringForm.Bmp => GetBmpByteCount(value),
             Asn1StringForm.Universal => CountUniversalCodePoints(value) * 4,
             Asn1StringForm.Numeric or Asn1StringForm.Printable or Asn1StringForm.Ia5 or Asn1StringForm.Visible =>
                 value.Length,
             Asn1StringForm.Teletex or Asn1StringForm.T61 or Asn1StringForm.Videotex
-                or Asn1StringForm.Graphic or Asn1StringForm.General => Latin1.GetByteCount(value),
+                or Asn1StringForm.Graphic or Asn1StringForm.General => GetLatin1ByteCount(value),
             _ => throw new Asn1Exception($"Unknown string form '{form}'.")
         };
     }
@@ -244,6 +244,11 @@ internal static class Asn1TextCodec
         for (var i = 0; i < value.Length; i++)
         {
             var c = value[i];
+            if (char.IsSurrogate(c))
+            {
+                throw new Asn1Exception("BMPString cannot contain surrogate code units.");
+            }
+
             destination[i * 2] = (byte)(c >> 8);
             destination[i * 2 + 1] = (byte)c;
         }
@@ -260,6 +265,10 @@ internal static class Asn1TextCodec
         for (var i = 0; i < chars.Length; i++)
         {
             chars[i] = (char)((contents[i * 2] << 8) | contents[i * 2 + 1]);
+            if (char.IsSurrogate(chars[i]))
+            {
+                throw new Asn1Exception("BMPString cannot contain surrogate code units.");
+            }
         }
 
         return new string(chars);
@@ -379,11 +388,49 @@ internal static class Asn1TextCodec
 
     private static void EncodeLatin1(string value, Span<byte> destination)
     {
-        var written = Latin1.GetBytes(value, destination);
-        if (written != destination.Length)
+        if (destination.Length != value.Length)
         {
             throw new Asn1Exception("Latin-1 encode destination size mismatch.");
         }
+
+        for (var i = 0; i < value.Length; i++)
+        {
+            var c = value[i];
+            if (c > byte.MaxValue)
+            {
+                throw new Asn1Exception(
+                    $"Character U+{((int)c).ToString("X4", CultureInfo.InvariantCulture)} is not representable in Latin-1.");
+            }
+
+            destination[i] = (byte)c;
+        }
+    }
+
+    private static int GetBmpByteCount(string value)
+    {
+        foreach (var c in value)
+        {
+            if (char.IsSurrogate(c))
+            {
+                throw new Asn1Exception("BMPString cannot contain surrogate code units.");
+            }
+        }
+
+        return value.Length * 2;
+    }
+
+    private static int GetLatin1ByteCount(string value)
+    {
+        foreach (var c in value)
+        {
+            if (c > byte.MaxValue)
+            {
+                throw new Asn1Exception(
+                    $"Character U+{((int)c).ToString("X4", CultureInfo.InvariantCulture)} is not representable in Latin-1.");
+            }
+        }
+
+        return value.Length;
     }
 
     private static string DecodeAsciiChecked(ReadOnlySpan<byte> contents, Func<char, bool> allowed, string name)

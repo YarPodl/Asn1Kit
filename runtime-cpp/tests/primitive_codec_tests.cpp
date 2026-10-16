@@ -385,4 +385,100 @@ TEST(PrimitiveCodecExtra, TryEncode_CopiesWhenDestinationFits) {
     EXPECT_EQ(0x00, dest[1]);
 }
 
+TEST(PrimitiveCodecExtra, EveryProperPrefixOfRepresentativeTlvsThrowsDomainException) {
+    std::vector<std::uint8_t> long_octet(131, 0xA5);
+    long_octet[0] = 0x04;
+    long_octet[1] = 0x81;
+    long_octet[2] = 0x80;
+
+    struct prefix_case {
+        std::vector<std::uint8_t> encoded;
+        encoding rules;
+        std::function<void(reader&)> decode;
+    };
+    const std::vector<prefix_case> cases{
+        {parse_hex("9F81490100"), encoding::der, [](reader& r) { (void)r.read_any(); }},
+        {parse_hex("020101"), encoding::der,
+         [](reader& r) { (void)r.read_integer_decimal(tag::integer); }},
+        {std::move(long_octet), encoding::der,
+         [](reader& r) { (void)r.read_octet_string(tag::octet_string); }},
+        {parse_hex("248024800401AA00000000"), encoding::ber,
+         [](reader& r) { (void)r.read_octet_string(tag::octet_string); }},
+    };
+
+    for (const auto& item : cases) {
+        for (std::size_t length = 0; length < item.encoded.size(); ++length) {
+            const std::vector<std::uint8_t> prefix(item.encoded.begin(), item.encoded.begin() + length);
+            reader truncated(prefix, item.rules);
+            EXPECT_THROW(item.decode(truncated), exception)
+                << "prefix length " << length << " of " << format_hex(item.encoded);
+        }
+
+        reader complete(item.encoded, item.rules);
+        item.decode(complete);
+        EXPECT_TRUE(complete.eof());
+    }
+}
+
+TEST(PrimitiveCodecExtra, ConstructedOctetMaterializationDetachesFromBorrowedInput) {
+    auto storage = parse_hex("24800403416E6E0000");
+    reader r(bytes::borrow(storage), encoding::ber);
+    const auto decoded = r.read_octet_string(tag::octet_string);
+    ASSERT_EQ((std::vector<std::uint8_t>{0x41, 0x6E, 0x6E}), decoded.to_vector());
+
+    storage[4] = 0x00;
+    EXPECT_EQ((std::vector<std::uint8_t>{0x41, 0x6E, 0x6E}), decoded.to_vector());
+}
+
+TEST(PrimitiveCodecExtra, StringEncodeRejectsInvalidUtf8BmpAndLatin1Values) {
+    writer utf8(encoding::der);
+    EXPECT_THROW(utf8.write_string(tag::utf8_string, "\xC0\x80", string_form::utf8), exception);
+
+    writer bmp(encoding::der);
+    EXPECT_THROW(
+        bmp.write_string(tag::bmp_string, "\xF0\x9F\x98\x80", string_form::bmp),
+        exception);
+
+    writer latin1(encoding::der);
+    EXPECT_THROW(
+        latin1.write_string(tag::teletex_string, "\xC4\x80", string_form::teletex),
+        exception);
+}
+
+TEST(PrimitiveCodecExtra, GeneralizedTimeRoundingCarriesAcrossCalendarBoundaries) {
+    writer year_boundary(encoding::der);
+    year_boundary.write_time(
+        tag::generalized_time,
+        utc_date_time{1999, 12, 31, 23, 59, 59, time_fraction{9'999'999}},
+        time_form::generalized,
+        6);
+    EXPECT_EQ(parse_hex("180F32303030303130313030303030305A"), year_boundary.encode());
+
+    writer leap_boundary(encoding::der);
+    leap_boundary.write_time(
+        tag::generalized_time,
+        utc_date_time{2000, 2, 29, 23, 59, 59, time_fraction{9'999'999}},
+        time_form::generalized,
+        6);
+    EXPECT_EQ(parse_hex("180F32303030303330313030303030305A"), leap_boundary.encode());
+}
+
+TEST(PrimitiveCodecExtra, OidEnforcesIntArcDomainAndSupportsManyArcs) {
+    EXPECT_THROW((void)oid::parse("1.2.2147483648"), exception);
+    EXPECT_THROW((void)oid::parse("2.2147483568"), exception);
+
+    std::string dotted = "1.2";
+    for (int i = 0; i < 128; ++i) {
+        dotted += ".0";
+    }
+    const auto value = oid::parse(dotted);
+    EXPECT_EQ(dotted, value.to_string());
+
+    writer w(encoding::der);
+    w.write_object_identifier(tag::object_identifier, value);
+    reader r(w.encode(), encoding::der);
+    EXPECT_EQ(dotted, r.read_object_identifier(tag::object_identifier));
+    EXPECT_TRUE(r.eof());
+}
+
 } // namespace

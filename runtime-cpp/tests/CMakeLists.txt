@@ -45,6 +45,13 @@ target_compile_definitions(asn1kit_tests
         "ASN1KIT_BER_DER_FIXTURES_DIR=\"${_asn1kit_fixtures_dir}\""
 )
 
+# Fixture contents determine the parameterized test list discovered after linking.
+# Rebuild the fixture loader when JSON changes so incremental builds refresh CTest.
+file(GLOB _asn1kit_ber_der_fixture_files CONFIGURE_DEPENDS
+    "${ASN1KIT_BER_DER_FIXTURES_DIR}/*.json")
+set_property(SOURCE ber_der_fixtures.cpp APPEND PROPERTY
+    OBJECT_DEPENDS "${_asn1kit_ber_der_fixture_files}")
+
 if(MSVC)
     target_compile_options(asn1kit_tests PRIVATE /W4 /permissive- /utf-8)
 else()

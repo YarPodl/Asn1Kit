@@ -33,6 +33,59 @@
     "encode": false
   },
   {
+    "name": "bitstring-ber-constructed-empty-primitive-segment",
+    "rules": "ber",
+    "op": "bitString",
+    "bytes": "2303030100",
+    "value": "",
+    "unusedBits": 0,
+    "encode": false
+  },
+  {
+    "name": "bitstring-ber-nested-constructed-segments",
+    "rules": "ber",
+    "op": "bitString",
+    "bytes": "230D2307030100030200A003020500",
+    "value": "A000",
+    "unusedBits": 5,
+    "encode": false
+  },
+  {
+    "name": "bitstring-rejects-nonfinal-unused-bits",
+    "rules": "ber",
+    "op": "bitString",
+    "bytes": "23080302018003020000",
+    "reject": true
+  },
+  {
+    "name": "bitstring-rejects-empty-constructed-definite",
+    "rules": "ber",
+    "op": "bitString",
+    "bytes": "2300",
+    "reject": true
+  },
+  {
+    "name": "bitstring-rejects-empty-constructed-indefinite",
+    "rules": "ber",
+    "op": "bitString",
+    "bytes": "23800000",
+    "reject": true
+  },
+  {
+    "name": "bitstring-rejects-wrong-child-tag",
+    "rules": "ber",
+    "op": "bitString",
+    "bytes": "2303040100",
+    "reject": true
+  },
+  {
+    "name": "bitstring-rejects-segment-without-unused-bits-octet",
+    "rules": "ber",
+    "op": "bitString",
+    "bytes": "23020300",
+    "reject": true
+  },
+  {
     "name": "bitstring-soft-trailing-bits",
     "rules": "der",
     "op": "bitString",
