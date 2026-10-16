@@ -5,7 +5,8 @@
 
 #include "asn1kit/exception.hpp"
 
-#include <cmath>
+#include <array>
+#include <chrono>
 #include <cstring>
 #include <sstream>
 
@@ -116,14 +117,10 @@ std::uint32_t decode_utf8_codepoint(std::string_view value, std::size_t& i) {
     throw exception("Invalid UTF-8 string.");
 }
 
-int count_utf8_bytes(std::string_view value) {
-    int count = 0;
+void validate_utf8(std::string_view value) {
     for (std::size_t i = 0; i < value.size();) {
-        const auto start = i;
         (void)decode_utf8_codepoint(value, i);
-        count += static_cast<int>(i - start);
     }
-    return count;
 }
 
 int count_universal_code_points(std::string_view value) {
@@ -154,7 +151,7 @@ void append_utf8(std::string& out, std::uint32_t cp) {
 }
 
 // BMPString is UCS-2BE; API input is UTF-8 and supplementary scalars are not representable.
-std::u16string to_utf16(std::string_view utf8) {
+std::u16string to_bmp_units(std::string_view utf8) {
     std::u16string result;
     for (std::size_t i = 0; i < utf8.size();) {
         const auto cp = decode_utf8_codepoint(utf8, i);
@@ -166,7 +163,7 @@ std::u16string to_utf16(std::string_view utf8) {
     return result;
 }
 
-std::string from_utf16(std::span<const char16_t> units) {
+std::string from_bmp_units(std::span<const char16_t> units) {
     std::string out;
     for (std::size_t i = 0; i < units.size(); ++i) {
         const auto u = units[i];
@@ -216,21 +213,11 @@ std::string decode_ascii_checked(
 
 constexpr int fractions_per_second = time_fraction::period::den; // 10'000'000
 
-bool is_leap_year(int year) {
-    return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
-}
-
-int days_in_month(int year, int month) {
-    static constexpr int month_days[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-    if (month < 1 || month > 12) {
-        return 0;
-    }
-    return month == 2 && is_leap_year(year) ? 29 : month_days[month];
-}
-
 void ensure_valid_date_time(const utc_date_time& value) {
-    if (value.year < 1 || value.year > 9999 || value.month < 1 || value.month > 12
-        || value.day < 1 || value.day > days_in_month(value.year, value.month)
+    const auto date = std::chrono::year{value.year}
+        / std::chrono::month{static_cast<unsigned>(value.month)}
+        / std::chrono::day{static_cast<unsigned>(value.day)};
+    if (value.year < 1 || value.year > 9999 || !date.ok()
         || value.hour < 0 || value.hour > 23 || value.minute < 0 || value.minute > 59
         || value.second < 0 || value.second > 59 || value.fraction.count() < 0
         || value.fraction.count() >= fractions_per_second) {
@@ -238,83 +225,36 @@ void ensure_valid_date_time(const utc_date_time& value) {
     }
 }
 
-void increment_day(utc_date_time& value) {
-    ++value.day;
-    if (value.day <= days_in_month(value.year, value.month)) {
-        return;
-    }
-    value.day = 1;
-    ++value.month;
-    if (value.month <= 12) {
-        return;
-    }
-    value.month = 1;
-    ++value.year;
-    if (value.year > 9999) {
+utc_date_time from_supported_time_point(utc_time_point value) {
+    auto result = utc_date_time::from_sys_time(value);
+    if (result.year < 1 || result.year > 9999) {
         throw exception("Date/time value exceeds the supported year range.");
     }
-}
-
-void decrement_day(utc_date_time& value) {
-    --value.day;
-    if (value.day >= 1) {
-        return;
-    }
-    --value.month;
-    if (value.month < 1) {
-        value.month = 12;
-        --value.year;
-        if (value.year < 1) {
-            throw exception("Date/time value exceeds the supported year range.");
-        }
-    }
-    value.day = days_in_month(value.year, value.month);
-}
-
-void increment_second(utc_date_time& value) {
-    if (++value.second < 60) {
-        return;
-    }
-    value.second = 0;
-    if (++value.minute < 60) {
-        return;
-    }
-    value.minute = 0;
-    if (++value.hour < 24) {
-        return;
-    }
-    value.hour = 0;
-    increment_day(value);
+    return result;
 }
 
 utc_date_time round_to_fraction_digits(utc_date_time utc, int fraction_digits) {
     ensure_valid_date_time(utc);
     // Round the sub-second fraction to `fraction_digits` decimal places (X.690 / IR).
-    if (fraction_digits == 0) {
-        if (utc.fraction.count() * 2 >= fractions_per_second) {
-            increment_second(utc);
-        }
-        utc.fraction = time_fraction{0};
-        return utc;
-    }
-
-    const long long unit = static_cast<long long>(std::pow(10.0, 7 - fraction_digits));
-    // Round half away from zero.
-    const double div = static_cast<double>(utc.fraction.count()) / static_cast<double>(unit);
-    const double abs_div = div >= 0 ? div : -div;
-    const auto abs_rounded = static_cast<long long>(abs_div + 0.5);
-    auto rounded = (div >= 0 ? abs_rounded : -abs_rounded) * unit;
+    static constexpr std::array<std::int32_t, 8> units{
+        10'000'000, 1'000'000, 100'000, 10'000, 1'000, 100, 10, 1};
+    const auto unit = units[static_cast<std::size_t>(fraction_digits)];
+    const auto fraction = utc.fraction.count();
+    const auto rounded = ((fraction + unit / 2) / unit) * unit;
 
     if (rounded >= fractions_per_second) {
-        utc.fraction = time_fraction{0};
-        increment_second(utc);
-        return utc;
+        return from_supported_time_point(
+            utc.to_sys_time() + time_fraction{fractions_per_second - fraction});
     }
-    utc.fraction = time_fraction{static_cast<std::int32_t>(rounded)};
+    utc.fraction = time_fraction{rounded};
     return utc;
 }
 
 int encode_utc_time(const utc_date_time& utc, std::span<std::uint8_t> destination) {
+    ensure_valid_date_time(utc);
+    if (utc.year < 1950 || utc.year > 2049) {
+        throw exception("UTCTime year must be in 1950..2049.");
+    }
     if (destination.size() < 13) {
         throw exception("UTCTime encode destination is too small.");
     }
@@ -421,23 +361,7 @@ int parse_zone_minutes(std::span<const std::uint8_t> text, int index, encoding e
 
 void apply_offset_to_utc(utc_date_time& dt, int offset_minutes) {
     // local - offset = UTC => UTC = local - offset_minutes
-    int total_minutes = dt.hour * 60 + dt.minute - offset_minutes;
-    int day_delta = 0;
-    while (total_minutes < 0) {
-        total_minutes += 24 * 60;
-        --day_delta;
-    }
-    while (total_minutes >= 24 * 60) {
-        total_minutes -= 24 * 60;
-        ++day_delta;
-    }
-    dt.hour = total_minutes / 60;
-    dt.minute = total_minutes % 60;
-    if (day_delta < 0) {
-        decrement_day(dt);
-    } else if (day_delta > 0) {
-        increment_day(dt);
-    }
+    dt = from_supported_time_point(dt.to_sys_time() - std::chrono::minutes{offset_minutes});
 }
 
 utc_date_time create_date_time(
@@ -579,9 +503,10 @@ tag text_codec::default_time_tag(time_form form) {
 std::size_t text_codec::get_encoded_byte_count(std::string_view value, string_form form) {
     switch (form) {
     case string_form::utf8:
-        return static_cast<std::size_t>(count_utf8_bytes(value));
+        validate_utf8(value);
+        return value.size();
     case string_form::bmp:
-        return to_utf16(value).size() * 2;
+        return to_bmp_units(value).size() * 2;
     case string_form::universal:
         return static_cast<std::size_t>(count_universal_code_points(value)) * 4;
     case string_form::numeric:
@@ -594,13 +519,7 @@ std::size_t text_codec::get_encoded_byte_count(std::string_view value, string_fo
     case string_form::videotex:
     case string_form::graphic:
     case string_form::general:
-        // Latin-1: each char must be <= 0xFF; UTF-8 input for Latin-1 range is 1 byte per char.
-        for (unsigned char c : value) {
-            if (c >= 0x80) {
-                // Multi-byte UTF-8 for Latin-1: decode to code points
-                break;
-            }
-        }
+        // The API accepts UTF-8; each scalar must fit in one Latin-1 output byte.
         {
             std::size_t count = 0;
             for (std::size_t i = 0; i < value.size();) {
@@ -619,14 +538,15 @@ std::size_t text_codec::get_encoded_byte_count(std::string_view value, string_fo
 void text_codec::encode_string(std::string_view value, string_form form, std::span<std::uint8_t> destination) {
     switch (form) {
     case string_form::utf8: {
-        if (static_cast<int>(destination.size()) != count_utf8_bytes(value)) {
+        validate_utf8(value);
+        if (destination.size() != value.size()) {
             throw exception("UTF-8 encode destination size mismatch.");
         }
         std::memcpy(destination.data(), value.data(), value.size());
         break;
     }
     case string_form::bmp: {
-        const auto u16 = to_utf16(value);
+        const auto u16 = to_bmp_units(value);
         if (destination.size() != u16.size() * 2) {
             throw exception("BMPString encode destination size mismatch.");
         }
@@ -694,7 +614,7 @@ std::string text_codec::decode_string(std::span<const std::uint8_t> contents, st
     case string_form::utf8: {
         // Validate then copy
         std::string_view view(reinterpret_cast<const char*>(contents.data()), contents.size());
-        (void)count_utf8_bytes(view);
+        validate_utf8(view);
         return std::string(view);
     }
     case string_form::bmp: {
@@ -706,7 +626,7 @@ std::string text_codec::decode_string(std::span<const std::uint8_t> contents, st
             units[i] = static_cast<char16_t>(
                 (contents[i * 2] << 8) | contents[i * 2 + 1]);
         }
-        return from_utf16(units);
+        return from_bmp_units(units);
     }
     case string_form::universal: {
         if ((contents.size() & 3) != 0) {

@@ -3,6 +3,8 @@
 
 #include "asn1kit/utc_date_time.hpp"
 
+#include "asn1kit/exception.hpp"
+
 #include <gtest/gtest.h>
 
 #include <chrono>
@@ -69,6 +71,18 @@ TEST(UtcDateTime, IsoConsistency) {
     EXPECT_EQ(dt.to_iso(), iso);
     EXPECT_EQ(utc_date_time::from_sys_time(dt.to_sys_time()).to_iso(), iso);
     EXPECT_EQ(utc_date_time::from_system_clock(dt.to_system_clock()).to_iso(), iso);
+}
+
+TEST(UtcDateTime, ParseIsoRejectsInvalidCalendarAndFraction) {
+    for (const auto* text : {
+             "2023-02-29T12:30:45Z",
+             "2024-13-01T12:30:45Z",
+             "2024-01-01T24:00:00Z",
+             "2024-01-01T00:00:00.Z",
+             "2024-01-01T00:00:00.12345678Z",
+         }) {
+        EXPECT_THROW((void)utc_date_time::parse_iso(text), exception) << text;
+    }
 }
 
 TEST(UtcDateTime, FractionPrecision) {

@@ -84,7 +84,7 @@ Constructed OCTET/BIT/string soft-accept и под DER (как у эталонн
 
 Строковые значения в `std::string` содержат валидный UTF-8. UTF8String отвергает overlong, surrogate и scalar выше `U+10FFFF`; BMPString — BMP/UCS-2 без surrogate code units; UniversalString поддерживает scalar до `U+10FFFF`. Latin-1 формы при encode отвергают непредставимые символы.
 
-UTCTime/GeneralizedTime проверяют Gregorian calendar; BER offset и округление GeneralizedTime корректно переносятся через границы дня, месяца, високосного года и года. OID использует неотрицательные `int`-дуги, включая ограничение `40 * arc0 + arc1 <= INT_MAX`.
+UTCTime/GeneralizedTime проверяют Gregorian calendar; при записи UTCTime допустимы только годы `1950…2049`, однозначно представимые его двузначным годом. BER offset и округление GeneralizedTime корректно переносятся через границы дня, месяца, високосного года и года. OID использует неотрицательные `int`-дуги, включая ограничение `40 * arc0 + arc1 <= INT_MAX`.
 
 Encode всегда канонический DER (definite length).
 

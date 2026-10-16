@@ -463,6 +463,29 @@ TEST(PrimitiveCodecExtra, GeneralizedTimeRoundingCarriesAcrossCalendarBoundaries
     EXPECT_EQ(parse_hex("180F32303030303330313030303030305A"), leap_boundary.encode());
 }
 
+TEST(PrimitiveCodecExtra, TimeEncodeRejectsInvalidCalendarAndUtcYear) {
+    writer invalid_calendar(encoding::der);
+    EXPECT_THROW(
+        invalid_calendar.write_time(
+            tag::generalized_time,
+            utc_date_time{2023, 2, 29, 12, 0, 0, time_fraction{0}},
+            time_form::generalized,
+            3),
+        exception);
+
+    for (int year : {1949, 2050}) {
+        writer out_of_range(encoding::der);
+        EXPECT_THROW(
+            out_of_range.write_time(
+                tag::utc_time,
+                utc_date_time{year, 1, 1, 0, 0, 0, time_fraction{0}},
+                time_form::utc,
+                3),
+            exception)
+            << "year=" << year;
+    }
+}
+
 TEST(PrimitiveCodecExtra, OidEnforcesIntArcDomainAndSupportsManyArcs) {
     EXPECT_THROW((void)oid::parse("1.2.2147483648"), exception);
     EXPECT_THROW((void)oid::parse("2.2147483568"), exception);

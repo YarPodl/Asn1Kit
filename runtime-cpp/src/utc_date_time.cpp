@@ -26,7 +26,7 @@ int parse_int(std::string_view s) {
 } // namespace
 
 utc_date_time utc_date_time::parse_iso(std::string_view text) {
-    // Accept: YYYY-MM-DDTHH:MM:SS[.fffffffff]Z
+    // Accept: YYYY-MM-DDTHH:MM:SS[.fffffff]Z
     if (text.size() < 20 || text.back() != 'Z') {
         throw exception("Invalid ISO date/time.");
     }
@@ -50,17 +50,27 @@ utc_date_time utc_date_time::parse_iso(std::string_view text) {
             ++index;
         }
         const auto digits = text.substr(start, index - start);
+        if (digits.empty() || digits.size() > 7) {
+            throw exception("Invalid ISO date/time.");
+        }
         int frac = 0;
-        const std::size_t take = digits.size() > 7 ? 7 : digits.size();
-        for (std::size_t i = 0; i < take; ++i) {
+        for (std::size_t i = 0; i < digits.size(); ++i) {
             frac = frac * 10 + (digits[i] - '0');
         }
-        for (std::size_t i = take; i < 7; ++i) {
+        for (std::size_t i = digits.size(); i < 7; ++i) {
             frac *= 10;
         }
         dt.fraction = time_fraction{frac};
     }
     if (index != text.size() - 1 || text.back() != 'Z') {
+        throw exception("Invalid ISO date/time.");
+    }
+    const auto date = std::chrono::year{dt.year}
+        / std::chrono::month{static_cast<unsigned>(dt.month)}
+        / std::chrono::day{static_cast<unsigned>(dt.day)};
+    if (dt.year < 1 || dt.year > 9999 || !date.ok()
+        || dt.hour < 0 || dt.hour > 23 || dt.minute < 0 || dt.minute > 59
+        || dt.second < 0 || dt.second > 59) {
         throw exception("Invalid ISO date/time.");
     }
     return dt;
