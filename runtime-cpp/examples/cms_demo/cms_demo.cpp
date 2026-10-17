@@ -6,6 +6,7 @@
 
 #include "CryptographicMessageSyntax2009.hpp"
 #include "PKIX1Explicit2009.hpp"
+#include "PKIXCommonTypes2009.hpp"
 
 #include "asn1kit/bytes.hpp"
 #include "asn1kit/codec.hpp"
@@ -26,17 +27,10 @@ namespace Cms = asn1kit::modern::CryptographicMessageSyntax2009;
 namespace Pkix = asn1kit::modern::PKIX1Explicit2009;
 namespace Common = asn1kit::modern::PKIXCommonTypes2009;
 namespace Alg = asn1kit::modern::AlgorithmInformation2009;
+namespace PssOaep = asn1kit::modern::PKIX1PSSOAEPAlgorithms2009;
+namespace PkixAlgs = asn1kit::modern::PKIXAlgs2009;
 
 using CmsOids = Cms::CryptographicMessageSyntax2009Oids;
-using PkixOids = Pkix::PKIX1Explicit2009Oids;
-
-[[nodiscard]] asn1kit::oid sha256_oid() {
-    return asn1kit::oid::parse("2.16.840.1.101.3.4.2.1");
-}
-
-[[nodiscard]] asn1kit::oid rsa_encryption_oid() {
-    return asn1kit::oid::parse("1.2.840.113549.1.1.1");
-}
 
 [[nodiscard]] std::string hex_bytes(std::span<const std::uint8_t> data, std::size_t max = 16) {
     std::ostringstream out;
@@ -48,16 +42,6 @@ using PkixOids = Pkix::PKIX1Explicit2009Oids;
         out << "...";
     }
     return out.str();
-}
-
-[[nodiscard]] const char* short_attr_name(const asn1kit::oid& type) {
-    if (type == PkixOids::IdAtCommonName.get()) return "CN";
-    if (type == PkixOids::IdAtCountryName.get()) return "C";
-    if (type == PkixOids::IdAtLocalityName.get()) return "L";
-    if (type == PkixOids::IdAtStateOrProvinceName.get()) return "ST";
-    if (type == PkixOids::IdAtOrganizationName.get()) return "O";
-    if (type == PkixOids::IdAtOrganizationalUnitName.get()) return "OU";
-    return nullptr;
 }
 
 [[nodiscard]] bool looks_like_text(std::span<const std::uint8_t> bytes) {
@@ -73,26 +57,48 @@ using PkixOids = Pkix::PKIX1Explicit2009Oids;
 }
 
 [[nodiscard]] std::string format_attribute(const Common::SingleAttribute& attr) {
-    const char* short_name = short_attr_name(attr.type);
-    const std::string label = short_name != nullptr ? short_name : attr.type.to_string();
-
     try {
-        if (attr.type == PkixOids::IdAtCountryName.get()
-            || attr.type == PkixOids::IdAtSerialNumber.get()) {
-            const auto printable =
-                asn1kit::decode_open<asn1kit::asn_string<asn1kit::string_form::printable>>(attr.value_);
-            return label + "=" + printable.value;
+        const auto values = attr.supported_attributes();
+        if (const auto value = values.x520_common_name()) return "CN=" + value->value;
+        if (const auto value = values.x520country_name()) return "C=" + value->value;
+        if (const auto value = values.x520_locality_name()) return "L=" + value->value;
+        if (const auto value = values.x520_state_or_province_name()) return "ST=" + value->value;
+        if (const auto value = values.x520_organization_name()) return "O=" + value->value;
+        if (const auto value = values.x520_organizational_unit_name()) return "OU=" + value->value;
+        if (const auto value = values.name()) return attr.type.to_string() + "=" + value->value;
+        if (const auto value = values.surname()) return attr.type.to_string() + "=" + value->value;
+        if (const auto value = values.given_name()) return attr.type.to_string() + "=" + value->value;
+        if (const auto value = values.initials()) return attr.type.to_string() + "=" + value->value;
+        if (const auto value = values.generation_qualifier()) {
+            return attr.type.to_string() + "=" + value->value;
         }
-        const auto directory = asn1kit::decode_open<Pkix::DirectoryString>(attr.value_);
-        return label + "=" + directory.value;
+        if (const auto value = values.x520_title()) return attr.type.to_string() + "=" + value->value;
+        if (const auto value = values.x520_pseudonym()) {
+            return attr.type.to_string() + "=" + value->value;
+        }
+        if (const auto value = values.x520dn_qualifier()) {
+            return attr.type.to_string() + "=" + value->value;
+        }
+        if (const auto value = values.x520_serial_number()) {
+            return attr.type.to_string() + "=" + value->value;
+        }
+        if (const auto value = values.domain_component()) {
+            return "DC=" + value->value;
+        }
+        if (const auto value = values.email_address()) {
+            return "emailAddress=" + value->value;
+        }
     } catch (const asn1kit::exception&) {
-        // Wire may use IA5String (or other forms) outside DirectoryString; show ASCII when obvious.
-        const auto contents = attr.value_.contents().span();
-        if (looks_like_text(contents)) {
-            return label + "=" + std::string(contents.begin(), contents.end());
-        }
-        return label + "=#" + hex_bytes(contents, 32);
+        // Fall through to the opaque representation for a malformed known value.
     }
+
+    // Unknown attributes may still carry a readable string value.
+    const auto label = attr.type.to_string();
+    const auto contents = attr.value_.contents().span();
+    if (looks_like_text(contents)) {
+        return label + "=" + std::string(contents.begin(), contents.end());
+    }
+    return label + "=#" + hex_bytes(contents, 32);
 }
 
 [[nodiscard]] std::string format_name(
@@ -116,13 +122,10 @@ using PkixOids = Pkix::PKIX1Explicit2009Oids;
     return out.str();
 }
 
-[[nodiscard]] Cms::SignedData decode_signed_data(Cms::ContentInfo info) {
-    if (info.contentType != CmsOids::IdSignedData.get()) {
-        throw std::runtime_error("ContentInfo must be id-signedData.");
-    }
+[[nodiscard]] Cms::SignedData decode_signed_data(Cms::ContentInfo&& info) {
     auto signed_data = std::move(info).content_set().ct_signed_data();
     if (!signed_data) {
-        throw std::runtime_error("ContentInfo must contain SignedData.");
+        throw std::runtime_error("ContentInfo must be id-signedData and contain SignedData.");
     }
     return std::move(*signed_data);
 }
@@ -220,8 +223,8 @@ using PkixOids = Pkix::PKIX1Explicit2009Oids;
 } // namespace
 
 std::vector<SignerResult> verify_attached(std::span<const std::uint8_t> encoded) {
-    const auto content_info = asn1kit::decode<Cms::ContentInfo>(encoded, asn1kit::encoding::der);
-    const auto signed_data = decode_signed_data(content_info);
+    auto signed_data = decode_signed_data(
+        asn1kit::decode<Cms::ContentInfo>(encoded, asn1kit::encoding::der));
     const auto content = require_econtent(signed_data);
     if (signed_data.signerInfos.empty()) {
         throw std::runtime_error("SignedData has no signers.");
@@ -284,11 +287,11 @@ void print_certificate(std::span<const std::uint8_t> encoded, std::ostream& out)
 }
 
 void print_cms(std::span<const std::uint8_t> encoded, std::ostream& out) {
-    const auto content_info = asn1kit::decode<Cms::ContentInfo>(encoded, asn1kit::encoding::der);
+    auto content_info = asn1kit::decode<Cms::ContentInfo>(encoded, asn1kit::encoding::der);
     out << "CMS_ContentInfo:\n";
     out << "  contentType: " << content_info.contentType.to_string() << "\n";
 
-    const auto signed_data = decode_signed_data(content_info);
+    auto signed_data = decode_signed_data(std::move(content_info));
     out << "  d.signedData:\n";
     out << "    version: " << signed_data.version << "\n";
     out << "    digestAlgorithms: " << signed_data.digestAlgorithms.size() << "\n";
@@ -344,14 +347,14 @@ std::vector<std::uint8_t> build_attached_signed_data(
     const auto certificate = asn1kit::decode<Pkix::Certificate>(certificate_der, asn1kit::encoding::der);
     const auto& tbs = certificate.toBeSigned.get();
 
-    const auto digest_vec = sha256(content);
-    const auto digest = asn1kit::bytes::copy_from(digest_vec);
+    auto digest_vec = sha256(content);
+    const auto digest = asn1kit::bytes::from_vector(std::move(digest_vec));
 
     Alg::AlgorithmIdentifier digest_algorithm{};
-    digest_algorithm.algorithm = sha256_oid();
+    digest_algorithm.algorithm = PssOaep::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256.get();
 
     Alg::AlgorithmIdentifier signature_algorithm{};
-    signature_algorithm.algorithm = rsa_encryption_oid();
+    signature_algorithm.algorithm = PkixAlgs::PKIXAlgs2009Oids::RsaEncryption.get();
 
     Cms::IssuerAndSerialNumber ias{};
     ias.issuer = tbs.issuer;
@@ -373,7 +376,7 @@ std::vector<std::uint8_t> build_attached_signed_data(
     signed_data.version = Cms::CMSVersion::V1;
     signed_data.digestAlgorithms = {digest_algorithm};
     signed_data.encapContentInfo.eContentType = CmsOids::IdData.get();
-    signed_data.encapContentInfo.eContent = asn1kit::bytes::copy_from(content);
+    signed_data.encapContentInfo.eContent = asn1kit::bytes::borrow(content);
     signed_data.certificates = std::vector<Cms::CertificateChoices>{
         Cms::CertificateChoices::from_certificate(certificate)};
     signed_data.signerInfos = {std::move(signer)};

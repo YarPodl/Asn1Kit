@@ -3,6 +3,7 @@
 
 #include "encode_samples.hpp"
 
+#include "AlgorithmInformation2009.hpp"
 #include "PKIX1Implicit2009.hpp"
 #include "PKIXCommonTypes2009.hpp"
 
@@ -23,6 +24,7 @@ namespace Pkix = asn1kit::modern::PKIX1Explicit2009;
 namespace Implicit = asn1kit::modern::PKIX1Implicit2009;
 namespace Common = asn1kit::modern::PKIXCommonTypes2009;
 namespace Alg = asn1kit::modern::AlgorithmInformation2009;
+namespace PssOaep = asn1kit::modern::PKIX1PSSOAEPAlgorithms2009;
 
 using Attr = Common::SingleAttribute;
 using Name = std::vector<std::vector<Attr>>;
@@ -44,17 +46,14 @@ using Name = std::vector<std::vector<Attr>>;
 }
 
 [[nodiscard]] Alg::AlgorithmIdentifier sha256_with_rsa() {
-    Alg::AlgorithmIdentifier alg{};
-    alg.algorithm = asn1kit::oid_literal<"1.2.840.113549.1.1.11">().get();
-    alg.parameters = asn1kit::encode_open(asn1kit::null_value::value());
-    return alg;
+    const auto binding = Alg::AlgorithmIdentifier::open_binding<asn1kit::null_value>(
+        PssOaep::PKIX1PSSOAEPAlgorithms2009Oids::Sha256WithRSAEncryption.get());
+    return Alg::AlgorithmIdentifier::create(binding, asn1kit::null_value::value());
 }
 
-[[nodiscard]] Alg::AlgorithmIdentifier rsa_encryption() {
-    Alg::AlgorithmIdentifier alg{};
-    alg.algorithm = asn1kit::oid_literal<"1.2.840.113549.1.1.1">().get();
-    alg.parameters = asn1kit::encode_open(asn1kit::null_value::value());
-    return alg;
+[[nodiscard]] Alg::AlgorithmIdentifier rsa_public_key() {
+    return Alg::AlgorithmIdentifier::make_public_key_algorithms().kt_rsa(
+        asn1kit::null_value::value());
 }
 
 [[nodiscard]] Name make_name(const char* common_name) {
@@ -85,9 +84,9 @@ using Name = std::vector<std::vector<Attr>>;
 
 [[nodiscard]] Pkix::SubjectPublicKeyInfo create_spki() {
     Pkix::SubjectPublicKeyInfo spki{};
-    spki.algorithm = rsa_encryption();
-    spki.subjectPublicKey =
-        asn1kit::bit_string::copy_from(filled(270, 0x30), 0);
+    spki.algorithm = rsa_public_key();
+    spki.subjectPublicKey = asn1kit::bit_string(
+        asn1kit::bytes::from_vector(filled(270, 0x30)), 0);
     return spki;
 }
 
@@ -102,23 +101,21 @@ using Name = std::vector<std::vector<Attr>>;
 } // namespace
 
 Pkix::Certificate create_certificate() {
-    const auto name = make_name("Trust Anchor");
     const auto signature_algorithm = sha256_with_rsa();
 
     Pkix::TBSCertificate tbs{};
     tbs.version = Pkix::Version::V3;
     tbs.serialNumber = asn1kit::integer::from_int32(1);
     tbs.signature = signature_algorithm;
-    tbs.issuer = asn1kit::value<Name>::from_value(name);
+    tbs.issuer = asn1kit::value<Name>::from_value(make_name("Trust Anchor"));
     tbs.validity.notBefore = Pkix::Time::from_utcTime(not_before());
     tbs.validity.notAfter = Pkix::Time::from_utcTime(not_after());
     tbs.subject = asn1kit::value<Name>::from_value(make_name("Trust Anchor"));
     tbs.subjectPublicKeyInfo = asn1kit::value<Pkix::SubjectPublicKeyInfo>::from_value(create_spki());
 
-    const auto ski_bytes = filled(20, 0xE4);
     std::vector<Common::Extension> extensions{
         Common::Extension::make_cert_extensions().subject_key_identifier(
-            asn1kit::bytes::copy_from(ski_bytes)),
+            asn1kit::bytes::from_vector(filled(20, 0xE4))),
         with_critical(
             Common::Extension::make_cert_extensions().key_usage(Implicit::KeyUsage::from_flags(
                 Implicit::KeyUsageFlags::keyCertSign | Implicit::KeyUsageFlags::cRLSign)),
@@ -133,7 +130,8 @@ Pkix::Certificate create_certificate() {
     Pkix::Certificate cert{};
     cert.toBeSigned = asn1kit::value<Pkix::TBSCertificate>::from_value(std::move(tbs));
     cert.algorithmIdentifier = signature_algorithm;
-    cert.signature = asn1kit::bit_string::copy_from(filled(256, 0xC5), 0);
+    cert.signature = asn1kit::bit_string(
+        asn1kit::bytes::from_vector(filled(256, 0xC5)), 0);
     return cert;
 }
 
@@ -152,7 +150,7 @@ Pkix::CertificateList create_certificate_list() {
     };
 
     Implicit::AuthorityKeyIdentifier aki{};
-    aki.keyIdentifier = asn1kit::bytes::copy_from(filled(20, 0x58));
+    aki.keyIdentifier = asn1kit::bytes::from_vector(filled(20, 0x58));
     tbs.crlExtensions = std::vector<Common::Extension>{
         Common::Extension::make_crl_extensions().authority_key_identifier(aki),
         Common::Extension::make_crl_extensions().crl_number(asn1kit::integer::from_int32(1)),
@@ -161,7 +159,8 @@ Pkix::CertificateList create_certificate_list() {
     Pkix::CertificateList crl{};
     crl.toBeSigned = std::move(tbs);
     crl.algorithmIdentifier = signature_algorithm;
-    crl.signature = asn1kit::bit_string::copy_from(filled(256, 0xC5), 0);
+    crl.signature = asn1kit::bit_string(
+        asn1kit::bytes::from_vector(filled(256, 0xC5)), 0);
     return crl;
 }
 
