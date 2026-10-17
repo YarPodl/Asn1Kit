@@ -43,15 +43,38 @@ struct CryptographicMessageSyntax2009Oids {
     static constexpr auto IdCountersignature = asn1kit::oid_literal<"1.2.840.113549.1.9.6">();
 };
 
+namespace detail {
 struct authAttributeSet_open_type_entries;
 struct signedAttributesSet_open_type_entries;
 struct unsignedAttributes_open_type_entries;
-struct Attribute_open_types;
+} // namespace detail
+template <typename Target>
+struct AttributeAuthAttributeSetOpenView;
+template <typename Target>
+struct AttributeSignedAttributesSetOpenView;
+template <typename Target>
+struct AttributeUnsignedAttributesOpenView;
 struct Attribute {
-    using open_types = Attribute_open_types;
-
     asn1kit::oid attrType{};
     std::vector<asn1kit::any> attrValues{};
+
+    [[nodiscard]] AttributeAuthAttributeSetOpenView<Attribute> auth_attribute_set() &;
+    [[nodiscard]] AttributeAuthAttributeSetOpenView<const Attribute> auth_attribute_set() const &;
+    [[nodiscard]] AttributeAuthAttributeSetOpenView<asn1kit::open_owned_target<Attribute>> auth_attribute_set() &&;
+    AttributeAuthAttributeSetOpenView<const Attribute> auth_attribute_set() const && = delete;
+    [[nodiscard]] static AttributeAuthAttributeSetOpenView<asn1kit::open_factory_target<Attribute>> make_auth_attribute_set();
+
+    [[nodiscard]] AttributeSignedAttributesSetOpenView<Attribute> signed_attributes_set() &;
+    [[nodiscard]] AttributeSignedAttributesSetOpenView<const Attribute> signed_attributes_set() const &;
+    [[nodiscard]] AttributeSignedAttributesSetOpenView<asn1kit::open_owned_target<Attribute>> signed_attributes_set() &&;
+    AttributeSignedAttributesSetOpenView<const Attribute> signed_attributes_set() const && = delete;
+    [[nodiscard]] static AttributeSignedAttributesSetOpenView<asn1kit::open_factory_target<Attribute>> make_signed_attributes_set();
+
+    [[nodiscard]] AttributeUnsignedAttributesOpenView<Attribute> unsigned_attributes() &;
+    [[nodiscard]] AttributeUnsignedAttributesOpenView<const Attribute> unsigned_attributes() const &;
+    [[nodiscard]] AttributeUnsignedAttributesOpenView<asn1kit::open_owned_target<Attribute>> unsigned_attributes() &&;
+    AttributeUnsignedAttributesOpenView<const Attribute> unsigned_attributes() const && = delete;
+    [[nodiscard]] static AttributeUnsignedAttributesOpenView<asn1kit::open_factory_target<Attribute>> make_unsigned_attributes();
 
     template <typename T>
     [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, std::vector<T>> open_binding(asn1kit::oid key) {
@@ -123,13 +146,20 @@ struct CMSVersion {
     static constexpr std::int32_t V5 = 5;
 };
 
+namespace detail {
 struct contentSet_content_open_type_entries;
-struct ContentInfo_open_types;
+} // namespace detail
+template <typename Target>
+struct ContentInfoContentSetOpenView;
 struct ContentInfo {
-    using open_types = ContentInfo_open_types;
-
     asn1kit::oid contentType{};
     asn1kit::any content{};
+
+    [[nodiscard]] ContentInfoContentSetOpenView<ContentInfo> content_set() &;
+    [[nodiscard]] ContentInfoContentSetOpenView<const ContentInfo> content_set() const &;
+    [[nodiscard]] ContentInfoContentSetOpenView<asn1kit::open_owned_target<ContentInfo>> content_set() &&;
+    ContentInfoContentSetOpenView<const ContentInfo> content_set() const && = delete;
+    [[nodiscard]] static ContentInfoContentSetOpenView<asn1kit::open_factory_target<ContentInfo>> make_content_set();
 
     template <typename T>
     [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, T> open_binding(asn1kit::oid key) {
@@ -184,13 +214,20 @@ struct ContentInfo {
     }
 };
 
+namespace detail {
 struct contentSet_eContent_open_type_entries;
-struct EncapsulatedContentInfo_open_types;
+} // namespace detail
+template <typename Target>
+struct EncapsulatedContentInfoContentSetOpenView;
 struct EncapsulatedContentInfo {
-    using open_types = EncapsulatedContentInfo_open_types;
-
     asn1kit::oid eContentType{};
     std::optional<asn1kit::bytes> eContent{};
+
+    [[nodiscard]] EncapsulatedContentInfoContentSetOpenView<EncapsulatedContentInfo> content_set() &;
+    [[nodiscard]] EncapsulatedContentInfoContentSetOpenView<const EncapsulatedContentInfo> content_set() const &;
+    [[nodiscard]] EncapsulatedContentInfoContentSetOpenView<asn1kit::open_owned_target<EncapsulatedContentInfo>> content_set() &&;
+    EncapsulatedContentInfoContentSetOpenView<const EncapsulatedContentInfo> content_set() const && = delete;
+    [[nodiscard]] static EncapsulatedContentInfoContentSetOpenView<asn1kit::open_factory_target<EncapsulatedContentInfo>> make_content_set();
 
     template <typename T>
     [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, T> open_binding(asn1kit::oid key) {
@@ -298,13 +335,17 @@ struct DigestedData {
     }
 };
 
-struct EncryptedContentInfo_open_types;
+template <typename Target>
+struct EncryptedContentInfoContentEncryptionAlgorithmSetOpenView;
 struct EncryptedContentInfo {
-    using open_types = EncryptedContentInfo_open_types;
-
     asn1kit::oid contentType{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier contentEncryptionAlgorithm{};
     std::optional<asn1kit::bytes> encryptedContent{};
+
+    [[nodiscard]] EncryptedContentInfoContentEncryptionAlgorithmSetOpenView<EncryptedContentInfo> content_encryption_algorithm_set() &;
+    [[nodiscard]] EncryptedContentInfoContentEncryptionAlgorithmSetOpenView<const EncryptedContentInfo> content_encryption_algorithm_set() const &;
+    [[nodiscard]] EncryptedContentInfoContentEncryptionAlgorithmSetOpenView<asn1kit::open_owned_target<EncryptedContentInfo>> content_encryption_algorithm_set() &&;
+    EncryptedContentInfoContentEncryptionAlgorithmSetOpenView<const EncryptedContentInfo> content_encryption_algorithm_set() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_content_encryption_algorithm(
@@ -558,12 +599,16 @@ struct IssuerAndSerialNumber {
     }
 };
 
-struct OriginatorPublicKey_open_types;
+template <typename Target>
+struct OriginatorPublicKeyOriginatorKeySetOpenView;
 struct OriginatorPublicKey {
-    using open_types = OriginatorPublicKey_open_types;
-
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithm{};
     asn1kit::bit_string publicKey{};
+
+    [[nodiscard]] OriginatorPublicKeyOriginatorKeySetOpenView<OriginatorPublicKey> originator_key_set() &;
+    [[nodiscard]] OriginatorPublicKeyOriginatorKeySetOpenView<const OriginatorPublicKey> originator_key_set() const &;
+    [[nodiscard]] OriginatorPublicKeyOriginatorKeySetOpenView<asn1kit::open_owned_target<OriginatorPublicKey>> originator_key_set() &&;
+    OriginatorPublicKeyOriginatorKeySetOpenView<const OriginatorPublicKey> originator_key_set() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_algorithm(
@@ -763,14 +808,18 @@ struct KEKIdentifier {
     }
 };
 
-struct KEKRecipientInfo_open_types;
+template <typename Target>
+struct KEKRecipientInfoKeyEncryptionAlgorithmSetOpenView;
 struct KEKRecipientInfo {
-    using open_types = KEKRecipientInfo_open_types;
-
     std::int32_t version{};
     KEKIdentifier kekid{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier keyEncryptionAlgorithm{};
     asn1kit::bytes encryptedKey{};
+
+    [[nodiscard]] KEKRecipientInfoKeyEncryptionAlgorithmSetOpenView<KEKRecipientInfo> key_encryption_algorithm_set() &;
+    [[nodiscard]] KEKRecipientInfoKeyEncryptionAlgorithmSetOpenView<const KEKRecipientInfo> key_encryption_algorithm_set() const &;
+    [[nodiscard]] KEKRecipientInfoKeyEncryptionAlgorithmSetOpenView<asn1kit::open_owned_target<KEKRecipientInfo>> key_encryption_algorithm_set() &&;
+    KEKRecipientInfoKeyEncryptionAlgorithmSetOpenView<const KEKRecipientInfo> key_encryption_algorithm_set() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_key_encryption_algorithm(
@@ -850,14 +899,25 @@ struct OtherRevocationInfoFormat {
     }
 };
 
-struct PasswordRecipientInfo_open_types;
+template <typename Target>
+struct PasswordRecipientInfoKeyEncryptionAlgorithmSetOpenView;
+template <typename Target>
+struct PasswordRecipientInfoLocalOpenView;
 struct PasswordRecipientInfo {
-    using open_types = PasswordRecipientInfo_open_types;
-
     std::int32_t version{};
     std::optional<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> keyDerivationAlgorithm{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier keyEncryptionAlgorithm{};
     asn1kit::bytes encryptedKey{};
+
+    [[nodiscard]] PasswordRecipientInfoKeyEncryptionAlgorithmSetOpenView<PasswordRecipientInfo> key_encryption_algorithm_set() &;
+    [[nodiscard]] PasswordRecipientInfoKeyEncryptionAlgorithmSetOpenView<const PasswordRecipientInfo> key_encryption_algorithm_set() const &;
+    [[nodiscard]] PasswordRecipientInfoKeyEncryptionAlgorithmSetOpenView<asn1kit::open_owned_target<PasswordRecipientInfo>> key_encryption_algorithm_set() &&;
+    PasswordRecipientInfoKeyEncryptionAlgorithmSetOpenView<const PasswordRecipientInfo> key_encryption_algorithm_set() const && = delete;
+
+    [[nodiscard]] PasswordRecipientInfoLocalOpenView<PasswordRecipientInfo> local() &;
+    [[nodiscard]] PasswordRecipientInfoLocalOpenView<const PasswordRecipientInfo> local() const &;
+    [[nodiscard]] PasswordRecipientInfoLocalOpenView<asn1kit::open_owned_target<PasswordRecipientInfo>> local() &&;
+    PasswordRecipientInfoLocalOpenView<const PasswordRecipientInfo> local() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_key_derivation_algorithm(
@@ -984,14 +1044,18 @@ struct RecipientIdentifier {
     }
 };
 
-struct KeyTransRecipientInfo_open_types;
+template <typename Target>
+struct KeyTransRecipientInfoKeyTransportAlgorithmSetOpenView;
 struct KeyTransRecipientInfo {
-    using open_types = KeyTransRecipientInfo_open_types;
-
     std::int32_t version{};
     RecipientIdentifier rid{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier keyEncryptionAlgorithm{};
     asn1kit::bytes encryptedKey{};
+
+    [[nodiscard]] KeyTransRecipientInfoKeyTransportAlgorithmSetOpenView<KeyTransRecipientInfo> key_transport_algorithm_set() &;
+    [[nodiscard]] KeyTransRecipientInfoKeyTransportAlgorithmSetOpenView<const KeyTransRecipientInfo> key_transport_algorithm_set() const &;
+    [[nodiscard]] KeyTransRecipientInfoKeyTransportAlgorithmSetOpenView<asn1kit::open_owned_target<KeyTransRecipientInfo>> key_transport_algorithm_set() &&;
+    KeyTransRecipientInfoKeyTransportAlgorithmSetOpenView<const KeyTransRecipientInfo> key_transport_algorithm_set() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_key_encryption_algorithm(
@@ -1153,15 +1217,19 @@ struct RecipientEncryptedKey {
     }
 };
 
-struct KeyAgreeRecipientInfo_open_types;
+template <typename Target>
+struct KeyAgreeRecipientInfoKeyAgreementAlgorithmSetOpenView;
 struct KeyAgreeRecipientInfo {
-    using open_types = KeyAgreeRecipientInfo_open_types;
-
     std::int32_t version{};
     OriginatorIdentifierOrKey originator{};
     std::optional<asn1kit::bytes> ukm{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier keyEncryptionAlgorithm{};
     std::vector<RecipientEncryptedKey> recipientEncryptedKeys{};
+
+    [[nodiscard]] KeyAgreeRecipientInfoKeyAgreementAlgorithmSetOpenView<KeyAgreeRecipientInfo> key_agreement_algorithm_set() &;
+    [[nodiscard]] KeyAgreeRecipientInfoKeyAgreementAlgorithmSetOpenView<const KeyAgreeRecipientInfo> key_agreement_algorithm_set() const &;
+    [[nodiscard]] KeyAgreeRecipientInfoKeyAgreementAlgorithmSetOpenView<asn1kit::open_owned_target<KeyAgreeRecipientInfo>> key_agreement_algorithm_set() &&;
+    KeyAgreeRecipientInfoKeyAgreementAlgorithmSetOpenView<const KeyAgreeRecipientInfo> key_agreement_algorithm_set() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_key_encryption_algorithm(
@@ -1519,10 +1587,11 @@ struct SignerIdentifier {
     }
 };
 
-struct SignerInfo_open_types;
+template <typename Target>
+struct SignerInfoSignedAttributesSetOpenView;
+template <typename Target>
+struct SignerInfoUnsignedAttributesOpenView;
 struct SignerInfo {
-    using open_types = SignerInfo_open_types;
-
     std::int32_t version{};
     SignerIdentifier sid{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier digestAlgorithm{};
@@ -1530,6 +1599,16 @@ struct SignerInfo {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signatureAlgorithm{};
     asn1kit::bytes signature{};
     std::optional<std::vector<Attribute>> unsignedAttrs{};
+
+    [[nodiscard]] SignerInfoSignedAttributesSetOpenView<SignerInfo> signed_attributes_set() &;
+    [[nodiscard]] SignerInfoSignedAttributesSetOpenView<const SignerInfo> signed_attributes_set() const &;
+    [[nodiscard]] SignerInfoSignedAttributesSetOpenView<asn1kit::open_owned_target<SignerInfo>> signed_attributes_set() &&;
+    SignerInfoSignedAttributesSetOpenView<const SignerInfo> signed_attributes_set() const && = delete;
+
+    [[nodiscard]] SignerInfoUnsignedAttributesOpenView<SignerInfo> unsigned_attributes() &;
+    [[nodiscard]] SignerInfoUnsignedAttributesOpenView<const SignerInfo> unsigned_attributes() const &;
+    [[nodiscard]] SignerInfoUnsignedAttributesOpenView<asn1kit::open_owned_target<SignerInfo>> unsigned_attributes() &&;
+    SignerInfoUnsignedAttributesOpenView<const SignerInfo> unsigned_attributes() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<std::vector<T>> try_decode_signed_attrs(
@@ -1841,10 +1920,11 @@ struct OriginatorInfo {
     }
 };
 
-struct AuthenticatedData_open_types;
+template <typename Target>
+struct AuthenticatedDataAuthAttributeSetOpenView;
+template <typename Target>
+struct AuthenticatedDataMessageAuthenticationCodeAlgorithmSetOpenView;
 struct AuthenticatedData {
-    using open_types = AuthenticatedData_open_types;
-
     std::int32_t version{};
     std::optional<OriginatorInfo> originatorInfo{};
     std::vector<RecipientInfo> recipientInfos{};
@@ -1854,6 +1934,16 @@ struct AuthenticatedData {
     std::optional<std::vector<Attribute>> authAttrs{};
     asn1kit::bytes mac{};
     std::optional<std::vector<Attribute>> unauthAttrs{};
+
+    [[nodiscard]] AuthenticatedDataAuthAttributeSetOpenView<AuthenticatedData> auth_attribute_set() &;
+    [[nodiscard]] AuthenticatedDataAuthAttributeSetOpenView<const AuthenticatedData> auth_attribute_set() const &;
+    [[nodiscard]] AuthenticatedDataAuthAttributeSetOpenView<asn1kit::open_owned_target<AuthenticatedData>> auth_attribute_set() &&;
+    AuthenticatedDataAuthAttributeSetOpenView<const AuthenticatedData> auth_attribute_set() const && = delete;
+
+    [[nodiscard]] AuthenticatedDataMessageAuthenticationCodeAlgorithmSetOpenView<AuthenticatedData> message_authentication_code_algorithm_set() &;
+    [[nodiscard]] AuthenticatedDataMessageAuthenticationCodeAlgorithmSetOpenView<const AuthenticatedData> message_authentication_code_algorithm_set() const &;
+    [[nodiscard]] AuthenticatedDataMessageAuthenticationCodeAlgorithmSetOpenView<asn1kit::open_owned_target<AuthenticatedData>> message_authentication_code_algorithm_set() &&;
+    AuthenticatedDataMessageAuthenticationCodeAlgorithmSetOpenView<const AuthenticatedData> message_authentication_code_algorithm_set() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_mac_algorithm(

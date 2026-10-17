@@ -55,13 +55,38 @@ namespace asn1kit {
 namespace modern {
 namespace PKIX1PSSOAEPAlgorithms2009 {
 
-struct RSAESOAEPParams_open_types;
+template <typename Target>
+struct RSAESOAEPParamsHashAlgorithmsHashFuncOpenView;
+template <typename Target>
+struct RSAESOAEPParamsHashAlgorithmsMaskGenFuncOpenView;
+template <typename Target>
+struct RSAESOAEPParamsPkcs1MgfAlgorithmsOpenView;
+template <typename Target>
+struct RSAESOAEPParamsPssSourceAlgorithmsOpenView;
 struct RSAESOAEPParams {
-    using open_types = RSAESOAEPParams_open_types;
-
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashFunc = default_hashFunc();
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier maskGenFunc = default_maskGenFunc();
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier pSourceFunc = default_pSourceFunc();
+
+    [[nodiscard]] RSAESOAEPParamsHashAlgorithmsHashFuncOpenView<RSAESOAEPParams> hash_algorithms_hash_func() &;
+    [[nodiscard]] RSAESOAEPParamsHashAlgorithmsHashFuncOpenView<const RSAESOAEPParams> hash_algorithms_hash_func() const &;
+    [[nodiscard]] RSAESOAEPParamsHashAlgorithmsHashFuncOpenView<asn1kit::open_owned_target<RSAESOAEPParams>> hash_algorithms_hash_func() &&;
+    RSAESOAEPParamsHashAlgorithmsHashFuncOpenView<const RSAESOAEPParams> hash_algorithms_hash_func() const && = delete;
+
+    [[nodiscard]] RSAESOAEPParamsHashAlgorithmsMaskGenFuncOpenView<RSAESOAEPParams> hash_algorithms_mask_gen_func() &;
+    [[nodiscard]] RSAESOAEPParamsHashAlgorithmsMaskGenFuncOpenView<const RSAESOAEPParams> hash_algorithms_mask_gen_func() const &;
+    [[nodiscard]] RSAESOAEPParamsHashAlgorithmsMaskGenFuncOpenView<asn1kit::open_owned_target<RSAESOAEPParams>> hash_algorithms_mask_gen_func() &&;
+    RSAESOAEPParamsHashAlgorithmsMaskGenFuncOpenView<const RSAESOAEPParams> hash_algorithms_mask_gen_func() const && = delete;
+
+    [[nodiscard]] RSAESOAEPParamsPkcs1MgfAlgorithmsOpenView<RSAESOAEPParams> pkcs1_mgf_algorithms() &;
+    [[nodiscard]] RSAESOAEPParamsPkcs1MgfAlgorithmsOpenView<const RSAESOAEPParams> pkcs1_mgf_algorithms() const &;
+    [[nodiscard]] RSAESOAEPParamsPkcs1MgfAlgorithmsOpenView<asn1kit::open_owned_target<RSAESOAEPParams>> pkcs1_mgf_algorithms() &&;
+    RSAESOAEPParamsPkcs1MgfAlgorithmsOpenView<const RSAESOAEPParams> pkcs1_mgf_algorithms() const && = delete;
+
+    [[nodiscard]] RSAESOAEPParamsPssSourceAlgorithmsOpenView<RSAESOAEPParams> pss_source_algorithms() &;
+    [[nodiscard]] RSAESOAEPParamsPssSourceAlgorithmsOpenView<const RSAESOAEPParams> pss_source_algorithms() const &;
+    [[nodiscard]] RSAESOAEPParamsPssSourceAlgorithmsOpenView<asn1kit::open_owned_target<RSAESOAEPParams>> pss_source_algorithms() &&;
+    RSAESOAEPParamsPssSourceAlgorithmsOpenView<const RSAESOAEPParams> pss_source_algorithms() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_hash_func(
@@ -194,14 +219,32 @@ struct RSAESOAEPParams {
     }
 };
 
-struct RSASSAPSSParams_open_types;
+template <typename Target>
+struct RSASSAPSSParamsHashAlgorithmsHashAlgorithmOpenView;
+template <typename Target>
+struct RSASSAPSSParamsHashAlgorithmsMaskGenAlgorithmOpenView;
+template <typename Target>
+struct RSASSAPSSParamsPkcs1MgfAlgorithmsOpenView;
 struct RSASSAPSSParams {
-    using open_types = RSASSAPSSParams_open_types;
-
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm = default_hashAlgorithm();
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier maskGenAlgorithm = default_maskGenAlgorithm();
     asn1kit::integer saltLength = asn1kit::integer::from_int64(20ll);
     asn1kit::integer trailerField = asn1kit::integer::from_int64(1ll);
+
+    [[nodiscard]] RSASSAPSSParamsHashAlgorithmsHashAlgorithmOpenView<RSASSAPSSParams> hash_algorithms_hash_algorithm() &;
+    [[nodiscard]] RSASSAPSSParamsHashAlgorithmsHashAlgorithmOpenView<const RSASSAPSSParams> hash_algorithms_hash_algorithm() const &;
+    [[nodiscard]] RSASSAPSSParamsHashAlgorithmsHashAlgorithmOpenView<asn1kit::open_owned_target<RSASSAPSSParams>> hash_algorithms_hash_algorithm() &&;
+    RSASSAPSSParamsHashAlgorithmsHashAlgorithmOpenView<const RSASSAPSSParams> hash_algorithms_hash_algorithm() const && = delete;
+
+    [[nodiscard]] RSASSAPSSParamsHashAlgorithmsMaskGenAlgorithmOpenView<RSASSAPSSParams> hash_algorithms_mask_gen_algorithm() &;
+    [[nodiscard]] RSASSAPSSParamsHashAlgorithmsMaskGenAlgorithmOpenView<const RSASSAPSSParams> hash_algorithms_mask_gen_algorithm() const &;
+    [[nodiscard]] RSASSAPSSParamsHashAlgorithmsMaskGenAlgorithmOpenView<asn1kit::open_owned_target<RSASSAPSSParams>> hash_algorithms_mask_gen_algorithm() &&;
+    RSASSAPSSParamsHashAlgorithmsMaskGenAlgorithmOpenView<const RSASSAPSSParams> hash_algorithms_mask_gen_algorithm() const && = delete;
+
+    [[nodiscard]] RSASSAPSSParamsPkcs1MgfAlgorithmsOpenView<RSASSAPSSParams> pkcs1_mgf_algorithms() &;
+    [[nodiscard]] RSASSAPSSParamsPkcs1MgfAlgorithmsOpenView<const RSASSAPSSParams> pkcs1_mgf_algorithms() const &;
+    [[nodiscard]] RSASSAPSSParamsPkcs1MgfAlgorithmsOpenView<asn1kit::open_owned_target<RSASSAPSSParams>> pkcs1_mgf_algorithms() &&;
+    RSASSAPSSParamsPkcs1MgfAlgorithmsOpenView<const RSASSAPSSParams> pkcs1_mgf_algorithms() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_hash_algorithm(

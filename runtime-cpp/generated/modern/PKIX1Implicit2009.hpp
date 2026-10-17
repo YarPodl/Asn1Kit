@@ -32,74 +32,72 @@ namespace asn1kit {
 namespace modern {
 namespace PKIX1Implicit2009 {
 
+namespace detail {
+
 struct policyQualifierId_qualifier_open_type_entries {
-    inline static const asn1kit::open_binding<
+    template <typename T>
+    using binding_type = asn1kit::open_binding<
         asn1kit::open_context<"PKIX1Implicit-2009.policyQualifierId_qualifier">,
-        asn1kit::oid, asn1kit::asn_string<asn1kit::string_form::ia5>> pqid_cps{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdQtCps.get()};
+        asn1kit::oid, T>;
 
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX1Implicit-2009.policyQualifierId_qualifier">,
-        asn1kit::oid, UserNotice> pqid_unotice{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdQtUnotice.get()};
+    inline static const binding_type<asn1kit::asn_string<asn1kit::string_form::ia5>> pqid_cps{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdQtCps.get()};
+    inline static const binding_type<UserNotice> pqid_unotice{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdQtUnotice.get()};
 
 };
 
-struct AddExtensions_open_types {
-    struct supported_attributes {
-        using values = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_open_type_entries;
+} // namespace detail
 
-    };
+#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+#error "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY is reserved for generated headers"
+#endif
+#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding) \
+    template <typename... Args> \
+    decltype(auto) Name(Args&&... args) const \
+        requires requires(const base& view, Args&&... values) { \
+            view.template invoke<open_entries::Binding>(std::forward<Args>(values)...); \
+        } \
+    { return view_.template invoke<open_entries::Binding>(std::forward<Args>(args)...); }
 
+template <typename Target>
+struct PolicyQualifierInfoPolicyQualifierIdOpenView {
+    using open_entries = detail::policyQualifierId_qualifier_open_type_entries;
+
+    using access = asn1kit::open_direct_access;
+
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit PolicyQualifierInfoPolicyQualifierIdOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit PolicyQualifierInfoPolicyQualifierIdOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    PolicyQualifierInfoPolicyQualifierIdOpenView()
+        requires asn1kit::is_open_factory_target_v<Target> = default;
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(pqid_cps, pqid_cps)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(pqid_unotice, pqid_unotice)
+
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct CertTemplate_open_types {
-    struct supported_attributes {
-        using values = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_open_type_entries;
+#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
 
-    };
-
-};
-
-struct CertificationRequest_open_types {
-    struct supported_attributes {
-        using values = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_open_type_entries;
-
-    };
-
-};
-
-struct ExtensionReq_open_types {
-    struct supported_attributes {
-        using values = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_open_type_entries;
-
-    };
-
-};
-
-struct PolicyQualifierInfo_open_types {
-    struct policy_qualifier_id {
-        using qualifier = policyQualifierId_qualifier_open_type_entries;
-
-    };
-
-};
-
-struct SubjectDirectoryAttributes_open_types {
-    struct supported_attributes {
-        using values = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_open_type_entries;
-
-    };
-
-};
-
-struct TBSCertificate_open_types {
-    struct supported_attributes {
-        using values = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_open_type_entries;
-
-    };
-
-};
+inline PolicyQualifierInfoPolicyQualifierIdOpenView<PolicyQualifierInfo> PolicyQualifierInfo::policy_qualifier_id() & {
+    return PolicyQualifierInfoPolicyQualifierIdOpenView<PolicyQualifierInfo>{*this};
+}
+inline PolicyQualifierInfoPolicyQualifierIdOpenView<const PolicyQualifierInfo> PolicyQualifierInfo::policy_qualifier_id() const & {
+    return PolicyQualifierInfoPolicyQualifierIdOpenView<const PolicyQualifierInfo>{*this};
+}
+inline PolicyQualifierInfoPolicyQualifierIdOpenView<asn1kit::open_owned_target<PolicyQualifierInfo>> PolicyQualifierInfo::policy_qualifier_id() && {
+    return PolicyQualifierInfoPolicyQualifierIdOpenView<asn1kit::open_owned_target<PolicyQualifierInfo>>{std::move(*this)};
+}
+inline PolicyQualifierInfoPolicyQualifierIdOpenView<asn1kit::open_factory_target<PolicyQualifierInfo>> PolicyQualifierInfo::make_policy_qualifier_id() {
+    return PolicyQualifierInfoPolicyQualifierIdOpenView<asn1kit::open_factory_target<PolicyQualifierInfo>>{};
+}
 
 } // namespace PKIX1Implicit2009
 } // namespace modern

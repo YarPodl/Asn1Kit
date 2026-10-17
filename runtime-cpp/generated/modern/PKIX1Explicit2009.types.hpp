@@ -197,12 +197,16 @@ namespace asn1kit {
 namespace modern {
 namespace PKIX1Explicit2009 {
 
-struct SubjectPublicKeyInfo_open_types;
+template <typename Target>
+struct SubjectPublicKeyInfoPublicKeyAlgorithmsOpenView;
 struct SubjectPublicKeyInfo {
-    using open_types = SubjectPublicKeyInfo_open_types;
-
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithm{};
     asn1kit::bit_string subjectPublicKey{};
+
+    [[nodiscard]] SubjectPublicKeyInfoPublicKeyAlgorithmsOpenView<SubjectPublicKeyInfo> public_key_algorithms() &;
+    [[nodiscard]] SubjectPublicKeyInfoPublicKeyAlgorithmsOpenView<const SubjectPublicKeyInfo> public_key_algorithms() const &;
+    [[nodiscard]] SubjectPublicKeyInfoPublicKeyAlgorithmsOpenView<asn1kit::open_owned_target<SubjectPublicKeyInfo>> public_key_algorithms() &&;
+    SubjectPublicKeyInfoPublicKeyAlgorithmsOpenView<const SubjectPublicKeyInfo> public_key_algorithms() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_algorithm(
@@ -352,10 +356,13 @@ struct TBSCertList_RevokedCertificates_Item {
     }
 };
 
-struct TBSCertList_open_types;
+template <typename Target>
+struct TBSCertListCrlExtensionsOpenView;
+template <typename Target>
+struct TBSCertListSignatureAlgorithmsOpenView;
+template <typename Target>
+struct TBSCertListSupportedAttributesOpenView;
 struct TBSCertList {
-    using open_types = TBSCertList_open_types;
-
     std::optional<std::int32_t> version{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signature{};
     std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> issuer{};
@@ -363,6 +370,21 @@ struct TBSCertList {
     std::optional<Time> nextUpdate{};
     std::optional<std::vector<TBSCertList_RevokedCertificates_Item>> revokedCertificates{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> crlExtensions{};
+
+    [[nodiscard]] TBSCertListCrlExtensionsOpenView<TBSCertList> crl_extensions() &;
+    [[nodiscard]] TBSCertListCrlExtensionsOpenView<const TBSCertList> crl_extensions() const &;
+    [[nodiscard]] TBSCertListCrlExtensionsOpenView<asn1kit::open_owned_target<TBSCertList>> crl_extensions() &&;
+    TBSCertListCrlExtensionsOpenView<const TBSCertList> crl_extensions() const && = delete;
+
+    [[nodiscard]] TBSCertListSignatureAlgorithmsOpenView<TBSCertList> signature_algorithms() &;
+    [[nodiscard]] TBSCertListSignatureAlgorithmsOpenView<const TBSCertList> signature_algorithms() const &;
+    [[nodiscard]] TBSCertListSignatureAlgorithmsOpenView<asn1kit::open_owned_target<TBSCertList>> signature_algorithms() &&;
+    TBSCertListSignatureAlgorithmsOpenView<const TBSCertList> signature_algorithms() const && = delete;
+
+    [[nodiscard]] TBSCertListSupportedAttributesOpenView<TBSCertList> supported_attributes() &;
+    [[nodiscard]] TBSCertListSupportedAttributesOpenView<const TBSCertList> supported_attributes() const &;
+    [[nodiscard]] TBSCertListSupportedAttributesOpenView<asn1kit::open_owned_target<TBSCertList>> supported_attributes() &&;
+    TBSCertListSupportedAttributesOpenView<const TBSCertList> supported_attributes() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_signature(
@@ -450,14 +472,21 @@ struct TBSCertList {
     }
 };
 
+namespace detail {
 struct signatureAlgorithms_signature_certificateList_open_type_entries;
-struct CertificateList_open_types;
+} // namespace detail
+template <typename Target>
+struct CertificateListSignatureAlgorithmsOpenView;
 struct CertificateList {
-    using open_types = CertificateList_open_types;
-
     TBSCertList toBeSigned{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::bit_string signature{};
+
+    [[nodiscard]] CertificateListSignatureAlgorithmsOpenView<CertificateList> signature_algorithms() &;
+    [[nodiscard]] CertificateListSignatureAlgorithmsOpenView<const CertificateList> signature_algorithms() const &;
+    [[nodiscard]] CertificateListSignatureAlgorithmsOpenView<asn1kit::open_owned_target<CertificateList>> signature_algorithms() &&;
+    CertificateListSignatureAlgorithmsOpenView<const CertificateList> signature_algorithms() const && = delete;
+    [[nodiscard]] static CertificateListSignatureAlgorithmsOpenView<asn1kit::open_factory_target<CertificateList>> make_signature_algorithms();
 
     template <typename T>
     [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, T> open_binding(asn1kit::oid key) {
@@ -537,10 +566,15 @@ struct Validity {
     }
 };
 
-struct TBSCertificate_open_types;
+template <typename Target>
+struct TBSCertificateCertExtensionsOpenView;
+template <typename Target>
+struct TBSCertificateSignatureAlgorithmsOpenView;
+template <typename Target>
+struct TBSCertificateSupportedAttributesIssuerOpenView;
+template <typename Target>
+struct TBSCertificateSupportedAttributesSubjectOpenView;
 struct TBSCertificate {
-    using open_types = TBSCertificate_open_types;
-
     std::int32_t version = 0;
     asn1kit::integer serialNumber{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signature{};
@@ -551,6 +585,26 @@ struct TBSCertificate {
     std::optional<asn1kit::bit_string> issuerUniqueID{};
     std::optional<asn1kit::bit_string> subjectUniqueID{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> extensions{};
+
+    [[nodiscard]] TBSCertificateCertExtensionsOpenView<TBSCertificate> cert_extensions() &;
+    [[nodiscard]] TBSCertificateCertExtensionsOpenView<const TBSCertificate> cert_extensions() const &;
+    [[nodiscard]] TBSCertificateCertExtensionsOpenView<asn1kit::open_owned_target<TBSCertificate>> cert_extensions() &&;
+    TBSCertificateCertExtensionsOpenView<const TBSCertificate> cert_extensions() const && = delete;
+
+    [[nodiscard]] TBSCertificateSignatureAlgorithmsOpenView<TBSCertificate> signature_algorithms() &;
+    [[nodiscard]] TBSCertificateSignatureAlgorithmsOpenView<const TBSCertificate> signature_algorithms() const &;
+    [[nodiscard]] TBSCertificateSignatureAlgorithmsOpenView<asn1kit::open_owned_target<TBSCertificate>> signature_algorithms() &&;
+    TBSCertificateSignatureAlgorithmsOpenView<const TBSCertificate> signature_algorithms() const && = delete;
+
+    [[nodiscard]] TBSCertificateSupportedAttributesIssuerOpenView<TBSCertificate> supported_attributes_issuer() &;
+    [[nodiscard]] TBSCertificateSupportedAttributesIssuerOpenView<const TBSCertificate> supported_attributes_issuer() const &;
+    [[nodiscard]] TBSCertificateSupportedAttributesIssuerOpenView<asn1kit::open_owned_target<TBSCertificate>> supported_attributes_issuer() &&;
+    TBSCertificateSupportedAttributesIssuerOpenView<const TBSCertificate> supported_attributes_issuer() const && = delete;
+
+    [[nodiscard]] TBSCertificateSupportedAttributesSubjectOpenView<TBSCertificate> supported_attributes_subject() &;
+    [[nodiscard]] TBSCertificateSupportedAttributesSubjectOpenView<const TBSCertificate> supported_attributes_subject() const &;
+    [[nodiscard]] TBSCertificateSupportedAttributesSubjectOpenView<asn1kit::open_owned_target<TBSCertificate>> supported_attributes_subject() &&;
+    TBSCertificateSupportedAttributesSubjectOpenView<const TBSCertificate> supported_attributes_subject() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_signature(
@@ -684,14 +738,21 @@ struct TBSCertificate {
     }
 };
 
+namespace detail {
 struct signatureAlgorithms_signature_open_type_entries;
-struct Certificate_open_types;
+} // namespace detail
+template <typename Target>
+struct CertificateSignatureAlgorithmsOpenView;
 struct Certificate {
-    using open_types = Certificate_open_types;
-
     asn1kit::value<TBSCertificate> toBeSigned{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::bit_string signature{};
+
+    [[nodiscard]] CertificateSignatureAlgorithmsOpenView<Certificate> signature_algorithms() &;
+    [[nodiscard]] CertificateSignatureAlgorithmsOpenView<const Certificate> signature_algorithms() const &;
+    [[nodiscard]] CertificateSignatureAlgorithmsOpenView<asn1kit::open_owned_target<Certificate>> signature_algorithms() &&;
+    CertificateSignatureAlgorithmsOpenView<const Certificate> signature_algorithms() const && = delete;
+    [[nodiscard]] static CertificateSignatureAlgorithmsOpenView<asn1kit::open_factory_target<Certificate>> make_signature_algorithms();
 
     template <typename T>
     [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, T> open_binding(asn1kit::oid key) {

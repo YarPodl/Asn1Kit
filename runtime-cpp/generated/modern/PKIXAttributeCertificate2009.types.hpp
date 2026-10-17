@@ -106,13 +106,17 @@ namespace asn1kit {
 namespace modern {
 namespace PKIXAttributeCertificate2009 {
 
-struct ACClearAttrs_open_types;
+template <typename Target>
+struct ACClearAttrsAttributesDefinedOpenView;
 struct ACClearAttrs {
-    using open_types = ACClearAttrs_open_types;
-
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName acIssuer{};
     asn1kit::integer acSerial{};
     std::vector<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet> attrs{};
+
+    [[nodiscard]] ACClearAttrsAttributesDefinedOpenView<ACClearAttrs> attributes_defined() &;
+    [[nodiscard]] ACClearAttrsAttributesDefinedOpenView<const ACClearAttrs> attributes_defined() const &;
+    [[nodiscard]] ACClearAttrsAttributesDefinedOpenView<asn1kit::open_owned_target<ACClearAttrs>> attributes_defined() &&;
+    ACClearAttrsAttributesDefinedOpenView<const ACClearAttrs> attributes_defined() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<std::vector<T>> try_decode_attrs(
@@ -931,10 +935,13 @@ struct AttCertIssuer {
     }
 };
 
-struct AttributeCertificateInfo_open_types;
+template <typename Target>
+struct AttributeCertificateInfoAttributeCertExtensionsOpenView;
+template <typename Target>
+struct AttributeCertificateInfoAttributesDefinedOpenView;
+template <typename Target>
+struct AttributeCertificateInfoSignatureAlgorithmsOpenView;
 struct AttributeCertificateInfo {
-    using open_types = AttributeCertificateInfo_open_types;
-
     std::int32_t version{};
     Holder holder{};
     AttCertIssuer issuer{};
@@ -944,6 +951,21 @@ struct AttributeCertificateInfo {
     std::vector<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet> attributes{};
     std::optional<asn1kit::bit_string> issuerUniqueID{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> extensions{};
+
+    [[nodiscard]] AttributeCertificateInfoAttributeCertExtensionsOpenView<AttributeCertificateInfo> attribute_cert_extensions() &;
+    [[nodiscard]] AttributeCertificateInfoAttributeCertExtensionsOpenView<const AttributeCertificateInfo> attribute_cert_extensions() const &;
+    [[nodiscard]] AttributeCertificateInfoAttributeCertExtensionsOpenView<asn1kit::open_owned_target<AttributeCertificateInfo>> attribute_cert_extensions() &&;
+    AttributeCertificateInfoAttributeCertExtensionsOpenView<const AttributeCertificateInfo> attribute_cert_extensions() const && = delete;
+
+    [[nodiscard]] AttributeCertificateInfoAttributesDefinedOpenView<AttributeCertificateInfo> attributes_defined() &;
+    [[nodiscard]] AttributeCertificateInfoAttributesDefinedOpenView<const AttributeCertificateInfo> attributes_defined() const &;
+    [[nodiscard]] AttributeCertificateInfoAttributesDefinedOpenView<asn1kit::open_owned_target<AttributeCertificateInfo>> attributes_defined() &&;
+    AttributeCertificateInfoAttributesDefinedOpenView<const AttributeCertificateInfo> attributes_defined() const && = delete;
+
+    [[nodiscard]] AttributeCertificateInfoSignatureAlgorithmsOpenView<AttributeCertificateInfo> signature_algorithms() &;
+    [[nodiscard]] AttributeCertificateInfoSignatureAlgorithmsOpenView<const AttributeCertificateInfo> signature_algorithms() const &;
+    [[nodiscard]] AttributeCertificateInfoSignatureAlgorithmsOpenView<asn1kit::open_owned_target<AttributeCertificateInfo>> signature_algorithms() &&;
+    AttributeCertificateInfoSignatureAlgorithmsOpenView<const AttributeCertificateInfo> signature_algorithms() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_signature(
@@ -1006,14 +1028,21 @@ struct AttributeCertificateInfo {
     }
 };
 
+namespace detail {
 struct signatureAlgorithms_signature_open_type_entries;
-struct AttributeCertificate_open_types;
+} // namespace detail
+template <typename Target>
+struct AttributeCertificateSignatureAlgorithmsOpenView;
 struct AttributeCertificate {
-    using open_types = AttributeCertificate_open_types;
-
     AttributeCertificateInfo toBeSigned{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::bit_string signature{};
+
+    [[nodiscard]] AttributeCertificateSignatureAlgorithmsOpenView<AttributeCertificate> signature_algorithms() &;
+    [[nodiscard]] AttributeCertificateSignatureAlgorithmsOpenView<const AttributeCertificate> signature_algorithms() const &;
+    [[nodiscard]] AttributeCertificateSignatureAlgorithmsOpenView<asn1kit::open_owned_target<AttributeCertificate>> signature_algorithms() &&;
+    AttributeCertificateSignatureAlgorithmsOpenView<const AttributeCertificate> signature_algorithms() const && = delete;
+    [[nodiscard]] static AttributeCertificateSignatureAlgorithmsOpenView<asn1kit::open_factory_target<AttributeCertificate>> make_signature_algorithms();
 
     template <typename T>
     [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, T> open_binding(asn1kit::oid key) {

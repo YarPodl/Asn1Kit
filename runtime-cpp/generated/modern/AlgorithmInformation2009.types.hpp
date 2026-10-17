@@ -29,6 +29,7 @@ namespace asn1kit {
 namespace modern {
 namespace AlgorithmInformation2009 {
 
+namespace detail {
 struct algorithmIdentifier_parameters_algorithmIdentifier_open_type_entries;
 struct algorithmIdentifier_parameters_open_type_entries;
 struct contentEncryptionAlgorithmSet_parameters_open_type_entries;
@@ -46,12 +47,146 @@ struct password_mACAlgorithms_parameters_open_type_entries;
 struct publicKeyAlgorithms_parameters_open_type_entries;
 struct signatureAlgorithms_parameters_open_type_entries;
 struct witnessAlgs_parameters_open_type_entries;
-struct AlgorithmIdentifier_open_types;
+} // namespace detail
+template <typename Target>
+struct AlgorithmIdentifierContentEncryptionAlgorithmSetOpenView;
+template <typename Target>
+struct AlgorithmIdentifierHashAlgorithmsAlgorithmIdentifierOpenView;
+template <typename Target>
+struct AlgorithmIdentifierHashAlgorithmsHashAlgorithmOpenView;
+template <typename Target>
+struct AlgorithmIdentifierKeyAgreementAlgorithmSetOpenView;
+template <typename Target>
+struct AlgorithmIdentifierKeyTransportAlgorithmSetOpenView;
+template <typename Target>
+struct AlgorithmIdentifierKeyWrapAlgsOpenView;
+template <typename Target>
+struct AlgorithmIdentifierLocalAlgorithmIdentifierOpenView;
+template <typename Target>
+struct AlgorithmIdentifierLocalKeyDerivationAlgorithmOpenView;
+template <typename Target>
+struct AlgorithmIdentifierLocalSignatureAlgorithmOpenView;
+template <typename Target>
+struct AlgorithmIdentifierMessageAuthenticationCodeAlgorithmSetOpenView;
+template <typename Target>
+struct AlgorithmIdentifierOriginatorKeySetOpenView;
+template <typename Target>
+struct AlgorithmIdentifierPasswordMacAlgorithmsOpenView;
+template <typename Target>
+struct AlgorithmIdentifierPkcs1MgfAlgorithmsOpenView;
+template <typename Target>
+struct AlgorithmIdentifierPssSourceAlgorithmsOpenView;
+template <typename Target>
+struct AlgorithmIdentifierPublicKeyAlgorithmsOpenView;
+template <typename Target>
+struct AlgorithmIdentifierSignatureAlgorithmsOpenView;
+template <typename Target>
+struct AlgorithmIdentifierWitnessAlgsOpenView;
 struct AlgorithmIdentifier {
-    using open_types = AlgorithmIdentifier_open_types;
-
     asn1kit::oid algorithm{};
     std::optional<asn1kit::any> parameters{};
+
+    [[nodiscard]] AlgorithmIdentifierContentEncryptionAlgorithmSetOpenView<AlgorithmIdentifier> content_encryption_algorithm_set() &;
+    [[nodiscard]] AlgorithmIdentifierContentEncryptionAlgorithmSetOpenView<const AlgorithmIdentifier> content_encryption_algorithm_set() const &;
+    [[nodiscard]] AlgorithmIdentifierContentEncryptionAlgorithmSetOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> content_encryption_algorithm_set() &&;
+    AlgorithmIdentifierContentEncryptionAlgorithmSetOpenView<const AlgorithmIdentifier> content_encryption_algorithm_set() const && = delete;
+    [[nodiscard]] static AlgorithmIdentifierContentEncryptionAlgorithmSetOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_content_encryption_algorithm_set();
+
+    [[nodiscard]] AlgorithmIdentifierHashAlgorithmsAlgorithmIdentifierOpenView<AlgorithmIdentifier> hash_algorithms_algorithm_identifier() &;
+    [[nodiscard]] AlgorithmIdentifierHashAlgorithmsAlgorithmIdentifierOpenView<const AlgorithmIdentifier> hash_algorithms_algorithm_identifier() const &;
+    [[nodiscard]] AlgorithmIdentifierHashAlgorithmsAlgorithmIdentifierOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> hash_algorithms_algorithm_identifier() &&;
+    AlgorithmIdentifierHashAlgorithmsAlgorithmIdentifierOpenView<const AlgorithmIdentifier> hash_algorithms_algorithm_identifier() const && = delete;
+    [[nodiscard]] static AlgorithmIdentifierHashAlgorithmsAlgorithmIdentifierOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_hash_algorithms_algorithm_identifier();
+
+    [[nodiscard]] AlgorithmIdentifierHashAlgorithmsHashAlgorithmOpenView<AlgorithmIdentifier> hash_algorithms_hash_algorithm() &;
+    [[nodiscard]] AlgorithmIdentifierHashAlgorithmsHashAlgorithmOpenView<const AlgorithmIdentifier> hash_algorithms_hash_algorithm() const &;
+    [[nodiscard]] AlgorithmIdentifierHashAlgorithmsHashAlgorithmOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> hash_algorithms_hash_algorithm() &&;
+    AlgorithmIdentifierHashAlgorithmsHashAlgorithmOpenView<const AlgorithmIdentifier> hash_algorithms_hash_algorithm() const && = delete;
+    [[nodiscard]] static AlgorithmIdentifierHashAlgorithmsHashAlgorithmOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_hash_algorithms_hash_algorithm();
+
+    [[nodiscard]] AlgorithmIdentifierKeyAgreementAlgorithmSetOpenView<AlgorithmIdentifier> key_agreement_algorithm_set() &;
+    [[nodiscard]] AlgorithmIdentifierKeyAgreementAlgorithmSetOpenView<const AlgorithmIdentifier> key_agreement_algorithm_set() const &;
+    [[nodiscard]] AlgorithmIdentifierKeyAgreementAlgorithmSetOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> key_agreement_algorithm_set() &&;
+    AlgorithmIdentifierKeyAgreementAlgorithmSetOpenView<const AlgorithmIdentifier> key_agreement_algorithm_set() const && = delete;
+    [[nodiscard]] static AlgorithmIdentifierKeyAgreementAlgorithmSetOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_key_agreement_algorithm_set();
+
+    [[nodiscard]] AlgorithmIdentifierKeyTransportAlgorithmSetOpenView<AlgorithmIdentifier> key_transport_algorithm_set() &;
+    [[nodiscard]] AlgorithmIdentifierKeyTransportAlgorithmSetOpenView<const AlgorithmIdentifier> key_transport_algorithm_set() const &;
+    [[nodiscard]] AlgorithmIdentifierKeyTransportAlgorithmSetOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> key_transport_algorithm_set() &&;
+    AlgorithmIdentifierKeyTransportAlgorithmSetOpenView<const AlgorithmIdentifier> key_transport_algorithm_set() const && = delete;
+    [[nodiscard]] static AlgorithmIdentifierKeyTransportAlgorithmSetOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_key_transport_algorithm_set();
+
+    [[nodiscard]] AlgorithmIdentifierKeyWrapAlgsOpenView<AlgorithmIdentifier> key_wrap_algs() &;
+    [[nodiscard]] AlgorithmIdentifierKeyWrapAlgsOpenView<const AlgorithmIdentifier> key_wrap_algs() const &;
+    [[nodiscard]] AlgorithmIdentifierKeyWrapAlgsOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> key_wrap_algs() &&;
+    AlgorithmIdentifierKeyWrapAlgsOpenView<const AlgorithmIdentifier> key_wrap_algs() const && = delete;
+    [[nodiscard]] static AlgorithmIdentifierKeyWrapAlgsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_key_wrap_algs();
+
+    [[nodiscard]] AlgorithmIdentifierLocalAlgorithmIdentifierOpenView<AlgorithmIdentifier> local_algorithm_identifier() &;
+    [[nodiscard]] AlgorithmIdentifierLocalAlgorithmIdentifierOpenView<const AlgorithmIdentifier> local_algorithm_identifier() const &;
+    [[nodiscard]] AlgorithmIdentifierLocalAlgorithmIdentifierOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> local_algorithm_identifier() &&;
+    AlgorithmIdentifierLocalAlgorithmIdentifierOpenView<const AlgorithmIdentifier> local_algorithm_identifier() const && = delete;
+    [[nodiscard]] static AlgorithmIdentifierLocalAlgorithmIdentifierOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_local_algorithm_identifier();
+
+    [[nodiscard]] AlgorithmIdentifierLocalKeyDerivationAlgorithmOpenView<AlgorithmIdentifier> local_key_derivation_algorithm() &;
+    [[nodiscard]] AlgorithmIdentifierLocalKeyDerivationAlgorithmOpenView<const AlgorithmIdentifier> local_key_derivation_algorithm() const &;
+    [[nodiscard]] AlgorithmIdentifierLocalKeyDerivationAlgorithmOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> local_key_derivation_algorithm() &&;
+    AlgorithmIdentifierLocalKeyDerivationAlgorithmOpenView<const AlgorithmIdentifier> local_key_derivation_algorithm() const && = delete;
+    [[nodiscard]] static AlgorithmIdentifierLocalKeyDerivationAlgorithmOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_local_key_derivation_algorithm();
+
+    [[nodiscard]] AlgorithmIdentifierLocalSignatureAlgorithmOpenView<AlgorithmIdentifier> local_signature_algorithm() &;
+    [[nodiscard]] AlgorithmIdentifierLocalSignatureAlgorithmOpenView<const AlgorithmIdentifier> local_signature_algorithm() const &;
+    [[nodiscard]] AlgorithmIdentifierLocalSignatureAlgorithmOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> local_signature_algorithm() &&;
+    AlgorithmIdentifierLocalSignatureAlgorithmOpenView<const AlgorithmIdentifier> local_signature_algorithm() const && = delete;
+    [[nodiscard]] static AlgorithmIdentifierLocalSignatureAlgorithmOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_local_signature_algorithm();
+
+    [[nodiscard]] AlgorithmIdentifierMessageAuthenticationCodeAlgorithmSetOpenView<AlgorithmIdentifier> message_authentication_code_algorithm_set() &;
+    [[nodiscard]] AlgorithmIdentifierMessageAuthenticationCodeAlgorithmSetOpenView<const AlgorithmIdentifier> message_authentication_code_algorithm_set() const &;
+    [[nodiscard]] AlgorithmIdentifierMessageAuthenticationCodeAlgorithmSetOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> message_authentication_code_algorithm_set() &&;
+    AlgorithmIdentifierMessageAuthenticationCodeAlgorithmSetOpenView<const AlgorithmIdentifier> message_authentication_code_algorithm_set() const && = delete;
+    [[nodiscard]] static AlgorithmIdentifierMessageAuthenticationCodeAlgorithmSetOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_message_authentication_code_algorithm_set();
+
+    [[nodiscard]] AlgorithmIdentifierOriginatorKeySetOpenView<AlgorithmIdentifier> originator_key_set() &;
+    [[nodiscard]] AlgorithmIdentifierOriginatorKeySetOpenView<const AlgorithmIdentifier> originator_key_set() const &;
+    [[nodiscard]] AlgorithmIdentifierOriginatorKeySetOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> originator_key_set() &&;
+    AlgorithmIdentifierOriginatorKeySetOpenView<const AlgorithmIdentifier> originator_key_set() const && = delete;
+    [[nodiscard]] static AlgorithmIdentifierOriginatorKeySetOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_originator_key_set();
+
+    [[nodiscard]] AlgorithmIdentifierPasswordMacAlgorithmsOpenView<AlgorithmIdentifier> password_mac_algorithms() &;
+    [[nodiscard]] AlgorithmIdentifierPasswordMacAlgorithmsOpenView<const AlgorithmIdentifier> password_mac_algorithms() const &;
+    [[nodiscard]] AlgorithmIdentifierPasswordMacAlgorithmsOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> password_mac_algorithms() &&;
+    AlgorithmIdentifierPasswordMacAlgorithmsOpenView<const AlgorithmIdentifier> password_mac_algorithms() const && = delete;
+    [[nodiscard]] static AlgorithmIdentifierPasswordMacAlgorithmsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_password_mac_algorithms();
+
+    [[nodiscard]] AlgorithmIdentifierPkcs1MgfAlgorithmsOpenView<AlgorithmIdentifier> pkcs1_mgf_algorithms() &;
+    [[nodiscard]] AlgorithmIdentifierPkcs1MgfAlgorithmsOpenView<const AlgorithmIdentifier> pkcs1_mgf_algorithms() const &;
+    [[nodiscard]] AlgorithmIdentifierPkcs1MgfAlgorithmsOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> pkcs1_mgf_algorithms() &&;
+    AlgorithmIdentifierPkcs1MgfAlgorithmsOpenView<const AlgorithmIdentifier> pkcs1_mgf_algorithms() const && = delete;
+    [[nodiscard]] static AlgorithmIdentifierPkcs1MgfAlgorithmsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_pkcs1_mgf_algorithms();
+
+    [[nodiscard]] AlgorithmIdentifierPssSourceAlgorithmsOpenView<AlgorithmIdentifier> pss_source_algorithms() &;
+    [[nodiscard]] AlgorithmIdentifierPssSourceAlgorithmsOpenView<const AlgorithmIdentifier> pss_source_algorithms() const &;
+    [[nodiscard]] AlgorithmIdentifierPssSourceAlgorithmsOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> pss_source_algorithms() &&;
+    AlgorithmIdentifierPssSourceAlgorithmsOpenView<const AlgorithmIdentifier> pss_source_algorithms() const && = delete;
+    [[nodiscard]] static AlgorithmIdentifierPssSourceAlgorithmsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_pss_source_algorithms();
+
+    [[nodiscard]] AlgorithmIdentifierPublicKeyAlgorithmsOpenView<AlgorithmIdentifier> public_key_algorithms() &;
+    [[nodiscard]] AlgorithmIdentifierPublicKeyAlgorithmsOpenView<const AlgorithmIdentifier> public_key_algorithms() const &;
+    [[nodiscard]] AlgorithmIdentifierPublicKeyAlgorithmsOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> public_key_algorithms() &&;
+    AlgorithmIdentifierPublicKeyAlgorithmsOpenView<const AlgorithmIdentifier> public_key_algorithms() const && = delete;
+    [[nodiscard]] static AlgorithmIdentifierPublicKeyAlgorithmsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_public_key_algorithms();
+
+    [[nodiscard]] AlgorithmIdentifierSignatureAlgorithmsOpenView<AlgorithmIdentifier> signature_algorithms() &;
+    [[nodiscard]] AlgorithmIdentifierSignatureAlgorithmsOpenView<const AlgorithmIdentifier> signature_algorithms() const &;
+    [[nodiscard]] AlgorithmIdentifierSignatureAlgorithmsOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> signature_algorithms() &&;
+    AlgorithmIdentifierSignatureAlgorithmsOpenView<const AlgorithmIdentifier> signature_algorithms() const && = delete;
+    [[nodiscard]] static AlgorithmIdentifierSignatureAlgorithmsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_signature_algorithms();
+
+    [[nodiscard]] AlgorithmIdentifierWitnessAlgsOpenView<AlgorithmIdentifier> witness_algs() &;
+    [[nodiscard]] AlgorithmIdentifierWitnessAlgsOpenView<const AlgorithmIdentifier> witness_algs() const &;
+    [[nodiscard]] AlgorithmIdentifierWitnessAlgsOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> witness_algs() &&;
+    AlgorithmIdentifierWitnessAlgsOpenView<const AlgorithmIdentifier> witness_algs() const && = delete;
+    [[nodiscard]] static AlgorithmIdentifierWitnessAlgsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_witness_algs();
 
     template <typename T>
     [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, T> open_binding(asn1kit::oid key) {
@@ -129,13 +264,20 @@ inline ParamOptions decode_ParamOptions(asn1kit::reader& r, const asn1kit::tag& 
     throw asn1kit::exception("Unknown ENUMERATED value.");
 }
 
+namespace detail {
 struct sMimeCapsSet_parameters_open_type_entries;
-struct SMIMECapability_open_types;
+} // namespace detail
+template <typename Target>
+struct SMIMECapabilitySMimeCapsSetOpenView;
 struct SMIMECapability {
-    using open_types = SMIMECapability_open_types;
-
     asn1kit::oid capabilityID{};
     std::optional<asn1kit::any> parameters{};
+
+    [[nodiscard]] SMIMECapabilitySMimeCapsSetOpenView<SMIMECapability> s_mime_caps_set() &;
+    [[nodiscard]] SMIMECapabilitySMimeCapsSetOpenView<const SMIMECapability> s_mime_caps_set() const &;
+    [[nodiscard]] SMIMECapabilitySMimeCapsSetOpenView<asn1kit::open_owned_target<SMIMECapability>> s_mime_caps_set() &&;
+    SMIMECapabilitySMimeCapsSetOpenView<const SMIMECapability> s_mime_caps_set() const && = delete;
+    [[nodiscard]] static SMIMECapabilitySMimeCapsSetOpenView<asn1kit::open_factory_target<SMIMECapability>> make_s_mime_caps_set();
 
     template <typename T>
     [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, T> open_binding(asn1kit::oid key) {

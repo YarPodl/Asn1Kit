@@ -32,37 +32,118 @@ namespace asn1kit {
 namespace modern {
 namespace SMIMESymmetricKeyDistribution2009 {
 
+namespace detail {
+
 struct skdQuerySet_glaRequestValue_open_type_entries {
-    inline static const asn1kit::open_binding<
+    template <typename T>
+    using binding_type = asn1kit::open_binding<
         asn1kit::open_context<"SMIMESymmetricKeyDistribution-2009.skdQuerySet_glaRequestValue">,
-        asn1kit::oid, asn1kit::null_value> skd_alg_request{
-        SMIMESymmetricKeyDistribution2009Oids::IdCmcGlaSkdAlgRequest.get()};
+        asn1kit::oid, T>;
+
+    inline static const binding_type<asn1kit::null_value> skd_alg_request{SMIMESymmetricKeyDistribution2009Oids::IdCmcGlaSkdAlgRequest.get()};
 
 };
 
 struct skdResponseSet_glaResponseValue_open_type_entries {
-    inline static const asn1kit::open_binding<
+    template <typename T>
+    using binding_type = asn1kit::open_binding<
         asn1kit::open_context<"SMIMESymmetricKeyDistribution-2009.skdResponseSet_glaResponseValue">,
-        asn1kit::oid, ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability> skd_alg_response{
-        SMIMESymmetricKeyDistribution2009Oids::IdCmcGlaSkdAlgResponse.get()};
+        asn1kit::oid, T>;
+
+    inline static const binding_type<::asn1kit::modern::AlgorithmInformation2009::SMIMECapability> skd_alg_response{SMIMESymmetricKeyDistribution2009Oids::IdCmcGlaSkdAlgResponse.get()};
 
 };
 
-struct GLAQueryRequest_open_types {
-    struct skd_query_set {
-        using gla_request_value = skdQuerySet_glaRequestValue_open_type_entries;
+} // namespace detail
 
-    };
+#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+#error "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY is reserved for generated headers"
+#endif
+#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding) \
+    template <typename... Args> \
+    decltype(auto) Name(Args&&... args) const \
+        requires requires(const base& view, Args&&... values) { \
+            view.template invoke<open_entries::Binding>(std::forward<Args>(values)...); \
+        } \
+    { return view_.template invoke<open_entries::Binding>(std::forward<Args>(args)...); }
 
+template <typename Target>
+struct GLAQueryRequestSkdQuerySetOpenView {
+    using open_entries = detail::skdQuerySet_glaRequestValue_open_type_entries;
+
+    using access = asn1kit::open_direct_access;
+
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit GLAQueryRequestSkdQuerySetOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit GLAQueryRequestSkdQuerySetOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    GLAQueryRequestSkdQuerySetOpenView()
+        requires asn1kit::is_open_factory_target_v<Target> = default;
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(skd_alg_request, skd_alg_request)
+
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct GLAQueryResponse_open_types {
-    struct skd_response_set {
-        using gla_response_value = skdResponseSet_glaResponseValue_open_type_entries;
+template <typename Target>
+struct GLAQueryResponseSkdResponseSetOpenView {
+    using open_entries = detail::skdResponseSet_glaResponseValue_open_type_entries;
 
-    };
+    using access = asn1kit::open_direct_access;
 
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit GLAQueryResponseSkdResponseSetOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit GLAQueryResponseSkdResponseSetOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    GLAQueryResponseSkdResponseSetOpenView()
+        requires asn1kit::is_open_factory_target_v<Target> = default;
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(skd_alg_response, skd_alg_response)
+
+private:
+    [[no_unique_address]] base view_;
 };
+
+#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+
+inline GLAQueryRequestSkdQuerySetOpenView<GLAQueryRequest> GLAQueryRequest::skd_query_set() & {
+    return GLAQueryRequestSkdQuerySetOpenView<GLAQueryRequest>{*this};
+}
+inline GLAQueryRequestSkdQuerySetOpenView<const GLAQueryRequest> GLAQueryRequest::skd_query_set() const & {
+    return GLAQueryRequestSkdQuerySetOpenView<const GLAQueryRequest>{*this};
+}
+inline GLAQueryRequestSkdQuerySetOpenView<asn1kit::open_owned_target<GLAQueryRequest>> GLAQueryRequest::skd_query_set() && {
+    return GLAQueryRequestSkdQuerySetOpenView<asn1kit::open_owned_target<GLAQueryRequest>>{std::move(*this)};
+}
+inline GLAQueryRequestSkdQuerySetOpenView<asn1kit::open_factory_target<GLAQueryRequest>> GLAQueryRequest::make_skd_query_set() {
+    return GLAQueryRequestSkdQuerySetOpenView<asn1kit::open_factory_target<GLAQueryRequest>>{};
+}
+
+inline GLAQueryResponseSkdResponseSetOpenView<GLAQueryResponse> GLAQueryResponse::skd_response_set() & {
+    return GLAQueryResponseSkdResponseSetOpenView<GLAQueryResponse>{*this};
+}
+inline GLAQueryResponseSkdResponseSetOpenView<const GLAQueryResponse> GLAQueryResponse::skd_response_set() const & {
+    return GLAQueryResponseSkdResponseSetOpenView<const GLAQueryResponse>{*this};
+}
+inline GLAQueryResponseSkdResponseSetOpenView<asn1kit::open_owned_target<GLAQueryResponse>> GLAQueryResponse::skd_response_set() && {
+    return GLAQueryResponseSkdResponseSetOpenView<asn1kit::open_owned_target<GLAQueryResponse>>{std::move(*this)};
+}
+inline GLAQueryResponseSkdResponseSetOpenView<asn1kit::open_factory_target<GLAQueryResponse>> GLAQueryResponse::make_skd_response_set() {
+    return GLAQueryResponseSkdResponseSetOpenView<asn1kit::open_factory_target<GLAQueryResponse>>{};
+}
 
 } // namespace SMIMESymmetricKeyDistribution2009
 } // namespace modern

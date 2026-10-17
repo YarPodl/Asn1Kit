@@ -32,272 +32,744 @@ namespace asn1kit {
 namespace modern {
 namespace PKIX1Explicit2009 {
 
+namespace detail {
+
 struct signatureAlgorithms_signature_open_type_entries {
-    inline static const asn1kit::open_binding<
+    template <typename T>
+    using binding_type = asn1kit::open_binding<
         asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
-        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha1{
-        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha1.get()};
+        asn1kit::oid, T>;
 
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
-        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha1{
-        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA1.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
-        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha224{
-        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha224.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
-        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha256{
-        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha256.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
-        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha224{
-        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA224.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
-        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha256{
-        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA256.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
-        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha384{
-        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA384.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
-        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha512{
-        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA512.get()};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha1.get()};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA1.get()};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha224{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha224.get()};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha256{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha256.get()};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha224{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA224.get()};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha256{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA256.get()};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha384{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA384.get()};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha512{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA512.get()};
 
 };
 
 struct signatureAlgorithms_signature_certificateList_open_type_entries {
-    inline static const asn1kit::open_binding<
+    template <typename T>
+    using binding_type = asn1kit::open_binding<
         asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
-        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha1{
-        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha1.get()};
+        asn1kit::oid, T>;
 
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
-        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha1{
-        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA1.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
-        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha224{
-        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha224.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
-        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha256{
-        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha256.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
-        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha224{
-        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA224.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
-        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha256{
-        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA256.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
-        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha384{
-        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA384.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
-        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha512{
-        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA512.get()};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha1.get()};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA1.get()};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha224{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha224.get()};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha256{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha256.get()};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha224{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA224.get()};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha256{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA256.get()};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha384{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA384.get()};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha512{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA512.get()};
 
 };
 
-struct CertTemplate_open_types {
-    struct supported_attributes {
-        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+} // namespace detail
 
+#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+#error "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY is reserved for generated headers"
+#endif
+#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding) \
+    template <typename... Args> \
+    decltype(auto) Name(Args&&... args) const \
+        requires requires(const base& view, Args&&... values) { \
+            view.template invoke<open_entries::Binding>(std::forward<Args>(values)...); \
+        } \
+    { return view_.template invoke<open_entries::Binding>(std::forward<Args>(args)...); }
+
+template <typename Target>
+struct CertificateSignatureAlgorithmsOpenViewParameters {
+    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::signatureAlgorithms_parameters_open_type_entries;
+
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_algorithm_identifier(binding);
+        }
     };
 
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit CertificateSignatureAlgorithmsOpenViewParameters(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit CertificateSignatureAlgorithmsOpenViewParameters(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_md2, sa_rsa_with_md2)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_md5, sa_rsa_with_md5)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_sha1, sa_rsa_with_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha1, sa_dsa_with_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha1, sa_ecdsa_with_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha224, sa_dsa_with_sha224)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha256, sa_dsa_with_sha256)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha224, sa_ecdsa_with_sha224)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha256, sa_ecdsa_with_sha256)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha384, sa_ecdsa_with_sha384)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha512, sa_ecdsa_with_sha512)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_ssa_pss, sa_rsa_ssa_pss)
+
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct Certificate_open_types {
-    struct signature_algorithms {
-        using parameters = ::asn1kit::modern::AlgorithmInformation2009::signatureAlgorithms_parameters_open_type_entries;
+template <typename Target>
+struct CertificateSignatureAlgorithmsOpenViewSignature {
+    using open_entries = detail::signatureAlgorithms_signature_open_type_entries;
 
-        using signature = signatureAlgorithms_signature_open_type_entries;
+    using access = asn1kit::open_direct_access;
 
-    };
+    using base = asn1kit::open_function_view<Target, access>;
 
+    explicit CertificateSignatureAlgorithmsOpenViewSignature(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit CertificateSignatureAlgorithmsOpenViewSignature(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    CertificateSignatureAlgorithmsOpenViewSignature()
+        requires asn1kit::is_open_factory_target_v<Target> = default;
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha1, sa_dsa_with_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha1, sa_ecdsa_with_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha224, sa_dsa_with_sha224)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha256, sa_dsa_with_sha256)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha224, sa_ecdsa_with_sha224)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha256, sa_ecdsa_with_sha256)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha384, sa_ecdsa_with_sha384)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha512, sa_ecdsa_with_sha512)
+
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct CertificateList_open_types {
-    struct signature_algorithms {
-        using parameters = ::asn1kit::modern::AlgorithmInformation2009::signatureAlgorithms_parameters_open_type_entries;
+template <typename Target>
+struct CertificateSignatureAlgorithmsOpenView {
+    explicit CertificateSignatureAlgorithmsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : target_(target) {}
 
-        using signature = signatureAlgorithms_signature_certificateList_open_type_entries;
+    explicit CertificateSignatureAlgorithmsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : target_(std::move(owner)) {}
 
-    };
+    CertificateSignatureAlgorithmsOpenView()
+        requires asn1kit::is_open_factory_target_v<Target> = default;
 
+    [[nodiscard]] auto parameters() const &
+        requires (!asn1kit::is_open_factory_target_v<Target>)
+    {
+        if constexpr (asn1kit::is_open_factory_target_v<Target>)
+            return CertificateSignatureAlgorithmsOpenViewParameters<Target>{};
+        else if constexpr (asn1kit::is_open_owned_target_v<Target>)
+            return CertificateSignatureAlgorithmsOpenViewParameters<const asn1kit::open_owner_t<Target>>{target_.get()};
+        else
+            return CertificateSignatureAlgorithmsOpenViewParameters<Target>{target_.get()};
+    }
+
+    [[nodiscard]] auto parameters() &&
+        requires (!asn1kit::is_open_factory_target_v<Target>)
+    {
+        if constexpr (asn1kit::is_open_factory_target_v<Target>)
+            return CertificateSignatureAlgorithmsOpenViewParameters<Target>{};
+        else if constexpr (asn1kit::is_open_owned_target_v<Target>)
+            return CertificateSignatureAlgorithmsOpenViewParameters<Target>{std::move(target_).take()};
+        else
+            return CertificateSignatureAlgorithmsOpenViewParameters<Target>{target_.get()};
+    }
+
+    void parameters() const && = delete;
+
+    [[nodiscard]] auto signature() const &
+    {
+        if constexpr (asn1kit::is_open_factory_target_v<Target>)
+            return CertificateSignatureAlgorithmsOpenViewSignature<Target>{};
+        else if constexpr (asn1kit::is_open_owned_target_v<Target>)
+            return CertificateSignatureAlgorithmsOpenViewSignature<const asn1kit::open_owner_t<Target>>{target_.get()};
+        else
+            return CertificateSignatureAlgorithmsOpenViewSignature<Target>{target_.get()};
+    }
+
+    [[nodiscard]] auto signature() &&
+    {
+        if constexpr (asn1kit::is_open_factory_target_v<Target>)
+            return CertificateSignatureAlgorithmsOpenViewSignature<Target>{};
+        else if constexpr (asn1kit::is_open_owned_target_v<Target>)
+            return CertificateSignatureAlgorithmsOpenViewSignature<Target>{std::move(target_).take()};
+        else
+            return CertificateSignatureAlgorithmsOpenViewSignature<Target>{target_.get()};
+    }
+
+    void signature() const && = delete;
+
+private:
+    asn1kit::open_view_target<Target> target_;
 };
 
-struct CertificationRequest_open_types {
-    struct supported_attributes {
-        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+template <typename Target>
+struct CertificateListSignatureAlgorithmsOpenViewParameters {
+    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::signatureAlgorithms_parameters_open_type_entries;
 
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_algorithm_identifier(binding);
+        }
     };
 
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit CertificateListSignatureAlgorithmsOpenViewParameters(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit CertificateListSignatureAlgorithmsOpenViewParameters(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_md2, sa_rsa_with_md2)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_md5, sa_rsa_with_md5)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_sha1, sa_rsa_with_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha1, sa_dsa_with_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha1, sa_ecdsa_with_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha224, sa_dsa_with_sha224)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha256, sa_dsa_with_sha256)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha224, sa_ecdsa_with_sha224)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha256, sa_ecdsa_with_sha256)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha384, sa_ecdsa_with_sha384)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha512, sa_ecdsa_with_sha512)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_ssa_pss, sa_rsa_ssa_pss)
+
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct CertificationRequestInfo_open_types {
-    struct supported_attributes {
-        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+template <typename Target>
+struct CertificateListSignatureAlgorithmsOpenViewSignature {
+    using open_entries = detail::signatureAlgorithms_signature_certificateList_open_type_entries;
 
-    };
+    using access = asn1kit::open_direct_access;
 
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit CertificateListSignatureAlgorithmsOpenViewSignature(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit CertificateListSignatureAlgorithmsOpenViewSignature(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    CertificateListSignatureAlgorithmsOpenViewSignature()
+        requires asn1kit::is_open_factory_target_v<Target> = default;
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha1, sa_dsa_with_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha1, sa_ecdsa_with_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha224, sa_dsa_with_sha224)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha256, sa_dsa_with_sha256)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha224, sa_ecdsa_with_sha224)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha256, sa_ecdsa_with_sha256)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha384, sa_ecdsa_with_sha384)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha512, sa_ecdsa_with_sha512)
+
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct DistinguishedName_open_types {
-    struct supported_attributes {
-        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+template <typename Target>
+struct CertificateListSignatureAlgorithmsOpenView {
+    explicit CertificateListSignatureAlgorithmsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : target_(target) {}
 
-    };
+    explicit CertificateListSignatureAlgorithmsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : target_(std::move(owner)) {}
 
+    CertificateListSignatureAlgorithmsOpenView()
+        requires asn1kit::is_open_factory_target_v<Target> = default;
+
+    [[nodiscard]] auto parameters() const &
+        requires (!asn1kit::is_open_factory_target_v<Target>)
+    {
+        if constexpr (asn1kit::is_open_factory_target_v<Target>)
+            return CertificateListSignatureAlgorithmsOpenViewParameters<Target>{};
+        else if constexpr (asn1kit::is_open_owned_target_v<Target>)
+            return CertificateListSignatureAlgorithmsOpenViewParameters<const asn1kit::open_owner_t<Target>>{target_.get()};
+        else
+            return CertificateListSignatureAlgorithmsOpenViewParameters<Target>{target_.get()};
+    }
+
+    [[nodiscard]] auto parameters() &&
+        requires (!asn1kit::is_open_factory_target_v<Target>)
+    {
+        if constexpr (asn1kit::is_open_factory_target_v<Target>)
+            return CertificateListSignatureAlgorithmsOpenViewParameters<Target>{};
+        else if constexpr (asn1kit::is_open_owned_target_v<Target>)
+            return CertificateListSignatureAlgorithmsOpenViewParameters<Target>{std::move(target_).take()};
+        else
+            return CertificateListSignatureAlgorithmsOpenViewParameters<Target>{target_.get()};
+    }
+
+    void parameters() const && = delete;
+
+    [[nodiscard]] auto signature() const &
+    {
+        if constexpr (asn1kit::is_open_factory_target_v<Target>)
+            return CertificateListSignatureAlgorithmsOpenViewSignature<Target>{};
+        else if constexpr (asn1kit::is_open_owned_target_v<Target>)
+            return CertificateListSignatureAlgorithmsOpenViewSignature<const asn1kit::open_owner_t<Target>>{target_.get()};
+        else
+            return CertificateListSignatureAlgorithmsOpenViewSignature<Target>{target_.get()};
+    }
+
+    [[nodiscard]] auto signature() &&
+    {
+        if constexpr (asn1kit::is_open_factory_target_v<Target>)
+            return CertificateListSignatureAlgorithmsOpenViewSignature<Target>{};
+        else if constexpr (asn1kit::is_open_owned_target_v<Target>)
+            return CertificateListSignatureAlgorithmsOpenViewSignature<Target>{std::move(target_).take()};
+        else
+            return CertificateListSignatureAlgorithmsOpenViewSignature<Target>{target_.get()};
+    }
+
+    void signature() const && = delete;
+
+private:
+    asn1kit::open_view_target<Target> target_;
 };
 
-struct DistributionPointName_open_types {
-    struct supported_attributes {
-        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+template <typename Target>
+struct SubjectPublicKeyInfoPublicKeyAlgorithmsOpenView {
+    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::publicKeyAlgorithms_parameters_open_type_entries;
 
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_algorithm(binding);
+        }
     };
 
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit SubjectPublicKeyInfoPublicKeyAlgorithmsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit SubjectPublicKeyInfoPublicKeyAlgorithmsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(kt_rsa, kt_rsa)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(pk_dsa, pk_dsa)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(pk_dh, pk_dh)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(pk_kea, pk_kea)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(pk_ec, pk_ec)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(pk_ec_dh, pk_ec_dh)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(pk_ec_mqv, pk_ec_mqv)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_ssa_pss, sa_rsa_ssa_pss)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(pk_rsa_es_oaep, pk_rsa_es_oaep)
+
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct GeneralName_open_types {
-    struct supported_attributes {
-        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+template <typename Target>
+struct TBSCertListCrlExtensionsOpenView {
+    using open_entries = ::asn1kit::modern::PKIXCommonTypes2009::detail::crlExtensions_open_type_entries;
 
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_crl_extensions(binding);
+        }
     };
 
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit TBSCertListCrlExtensionsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit TBSCertListCrlExtensionsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(authority_key_identifier, authority_key_identifier)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(issuer_alt_name, issuer_alt_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(crl_number, crl_number)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(delta_crl_indicator, delta_crl_indicator)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(issuing_distribution_point, issuing_distribution_point)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(freshest_crl, freshest_crl)
+
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct GetCRL_open_types {
-    struct supported_attributes {
-        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+template <typename Target>
+struct TBSCertListSignatureAlgorithmsOpenView {
+    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::signatureAlgorithms_parameters_open_type_entries;
 
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_signature(binding);
+        }
     };
 
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit TBSCertListSignatureAlgorithmsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit TBSCertListSignatureAlgorithmsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_md2, sa_rsa_with_md2)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_md5, sa_rsa_with_md5)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_sha1, sa_rsa_with_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha1, sa_dsa_with_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha1, sa_ecdsa_with_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha224, sa_dsa_with_sha224)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha256, sa_dsa_with_sha256)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha224, sa_ecdsa_with_sha224)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha256, sa_ecdsa_with_sha256)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha384, sa_ecdsa_with_sha384)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha512, sa_ecdsa_with_sha512)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_ssa_pss, sa_rsa_ssa_pss)
+
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct IssuerAndSerialNumber_open_types {
-    struct supported_attributes {
-        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+template <typename Target>
+struct TBSCertListSupportedAttributesOpenView {
+    using open_entries = ::asn1kit::modern::PKIXCommonTypes2009::detail::supportedAttributes_value_open_type_entries;
 
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_issuer(binding);
+        }
     };
 
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit TBSCertListSupportedAttributesOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit TBSCertListSupportedAttributesOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(name, name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(surname, surname)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(given_name, given_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(initials, initials)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(generation_qualifier, generation_qualifier)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_common_name, x520_common_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_locality_name, x520_locality_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_state_or_province_name, x520_state_or_province_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_organization_name, x520_organization_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_organizational_unit_name, x520_organizational_unit_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_title, x520_title)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520dn_qualifier, x520dn_qualifier)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520country_name, x520country_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_serial_number, x520_serial_number)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_pseudonym, x520_pseudonym)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(domain_component, domain_component)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(email_address, email_address)
+
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct Name_open_types {
-    struct supported_attributes {
-        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+template <typename Target>
+struct TBSCertificateCertExtensionsOpenView {
+    using open_entries = ::asn1kit::modern::PKIXCommonTypes2009::detail::certExtensions_open_type_entries;
 
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_extensions(binding);
+        }
     };
 
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit TBSCertificateCertExtensionsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit TBSCertificateCertExtensionsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(authority_key_identifier, authority_key_identifier)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(subject_key_identifier, subject_key_identifier)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(key_usage, key_usage)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(private_key_usage_period, private_key_usage_period)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(certificate_policies, certificate_policies)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(policy_mappings, policy_mappings)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(subject_alt_name, subject_alt_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(issuer_alt_name, issuer_alt_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(subject_directory_attributes, subject_directory_attributes)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(basic_constraints, basic_constraints)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(name_constraints, name_constraints)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(policy_constraints, policy_constraints)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ext_key_usage, ext_key_usage)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(crl_distribution_points, crl_distribution_points)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(inhibit_any_policy, inhibit_any_policy)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(freshest_crl, freshest_crl)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(authority_info_access, authority_info_access)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(subject_info_access_syntax, subject_info_access_syntax)
+
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct RDNSequence_open_types {
-    struct supported_attributes {
-        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+template <typename Target>
+struct TBSCertificateSignatureAlgorithmsOpenView {
+    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::signatureAlgorithms_parameters_open_type_entries;
 
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_signature(binding);
+        }
     };
 
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit TBSCertificateSignatureAlgorithmsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit TBSCertificateSignatureAlgorithmsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_md2, sa_rsa_with_md2)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_md5, sa_rsa_with_md5)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_sha1, sa_rsa_with_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha1, sa_dsa_with_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha1, sa_ecdsa_with_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha224, sa_dsa_with_sha224)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha256, sa_dsa_with_sha256)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha224, sa_ecdsa_with_sha224)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha256, sa_ecdsa_with_sha256)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha384, sa_ecdsa_with_sha384)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha512, sa_ecdsa_with_sha512)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_ssa_pss, sa_rsa_ssa_pss)
+
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct RelativeDistinguishedName_open_types {
-    struct supported_attributes {
-        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+template <typename Target>
+struct TBSCertificateSupportedAttributesIssuerOpenView {
+    using open_entries = ::asn1kit::modern::PKIXCommonTypes2009::detail::supportedAttributes_value_open_type_entries;
 
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_issuer(binding);
+        }
     };
 
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit TBSCertificateSupportedAttributesIssuerOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit TBSCertificateSupportedAttributesIssuerOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(name, name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(surname, surname)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(given_name, given_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(initials, initials)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(generation_qualifier, generation_qualifier)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_common_name, x520_common_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_locality_name, x520_locality_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_state_or_province_name, x520_state_or_province_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_organization_name, x520_organization_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_organizational_unit_name, x520_organizational_unit_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_title, x520_title)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520dn_qualifier, x520dn_qualifier)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520country_name, x520country_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_serial_number, x520_serial_number)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_pseudonym, x520_pseudonym)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(domain_component, domain_component)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(email_address, email_address)
+
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct ResponderID_open_types {
-    struct supported_attributes {
-        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+template <typename Target>
+struct TBSCertificateSupportedAttributesSubjectOpenView {
+    using open_entries = ::asn1kit::modern::PKIXCommonTypes2009::detail::supportedAttributes_value_open_type_entries;
 
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_subject(binding);
+        }
     };
 
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit TBSCertificateSupportedAttributesSubjectOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit TBSCertificateSupportedAttributesSubjectOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(name, name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(surname, surname)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(given_name, given_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(initials, initials)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(generation_qualifier, generation_qualifier)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_common_name, x520_common_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_locality_name, x520_locality_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_state_or_province_name, x520_state_or_province_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_organization_name, x520_organization_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_organizational_unit_name, x520_organizational_unit_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_title, x520_title)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520dn_qualifier, x520dn_qualifier)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520country_name, x520country_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_serial_number, x520_serial_number)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_pseudonym, x520_pseudonym)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(domain_component, domain_component)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(email_address, email_address)
+
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct RevokeRequest_open_types {
-    struct supported_attributes {
-        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
 
-    };
+inline CertificateSignatureAlgorithmsOpenView<Certificate> Certificate::signature_algorithms() & {
+    return CertificateSignatureAlgorithmsOpenView<Certificate>{*this};
+}
+inline CertificateSignatureAlgorithmsOpenView<const Certificate> Certificate::signature_algorithms() const & {
+    return CertificateSignatureAlgorithmsOpenView<const Certificate>{*this};
+}
+inline CertificateSignatureAlgorithmsOpenView<asn1kit::open_owned_target<Certificate>> Certificate::signature_algorithms() && {
+    return CertificateSignatureAlgorithmsOpenView<asn1kit::open_owned_target<Certificate>>{std::move(*this)};
+}
+inline CertificateSignatureAlgorithmsOpenView<asn1kit::open_factory_target<Certificate>> Certificate::make_signature_algorithms() {
+    return CertificateSignatureAlgorithmsOpenView<asn1kit::open_factory_target<Certificate>>{};
+}
 
-};
+inline CertificateListSignatureAlgorithmsOpenView<CertificateList> CertificateList::signature_algorithms() & {
+    return CertificateListSignatureAlgorithmsOpenView<CertificateList>{*this};
+}
+inline CertificateListSignatureAlgorithmsOpenView<const CertificateList> CertificateList::signature_algorithms() const & {
+    return CertificateListSignatureAlgorithmsOpenView<const CertificateList>{*this};
+}
+inline CertificateListSignatureAlgorithmsOpenView<asn1kit::open_owned_target<CertificateList>> CertificateList::signature_algorithms() && {
+    return CertificateListSignatureAlgorithmsOpenView<asn1kit::open_owned_target<CertificateList>>{std::move(*this)};
+}
+inline CertificateListSignatureAlgorithmsOpenView<asn1kit::open_factory_target<CertificateList>> CertificateList::make_signature_algorithms() {
+    return CertificateListSignatureAlgorithmsOpenView<asn1kit::open_factory_target<CertificateList>>{};
+}
 
-struct ServiceLocator_open_types {
-    struct supported_attributes {
-        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+inline SubjectPublicKeyInfoPublicKeyAlgorithmsOpenView<SubjectPublicKeyInfo> SubjectPublicKeyInfo::public_key_algorithms() & {
+    return SubjectPublicKeyInfoPublicKeyAlgorithmsOpenView<SubjectPublicKeyInfo>{*this};
+}
+inline SubjectPublicKeyInfoPublicKeyAlgorithmsOpenView<const SubjectPublicKeyInfo> SubjectPublicKeyInfo::public_key_algorithms() const & {
+    return SubjectPublicKeyInfoPublicKeyAlgorithmsOpenView<const SubjectPublicKeyInfo>{*this};
+}
+inline SubjectPublicKeyInfoPublicKeyAlgorithmsOpenView<asn1kit::open_owned_target<SubjectPublicKeyInfo>> SubjectPublicKeyInfo::public_key_algorithms() && {
+    return SubjectPublicKeyInfoPublicKeyAlgorithmsOpenView<asn1kit::open_owned_target<SubjectPublicKeyInfo>>{std::move(*this)};
+}
 
-    };
+inline TBSCertListCrlExtensionsOpenView<TBSCertList> TBSCertList::crl_extensions() & {
+    return TBSCertListCrlExtensionsOpenView<TBSCertList>{*this};
+}
+inline TBSCertListCrlExtensionsOpenView<const TBSCertList> TBSCertList::crl_extensions() const & {
+    return TBSCertListCrlExtensionsOpenView<const TBSCertList>{*this};
+}
+inline TBSCertListCrlExtensionsOpenView<asn1kit::open_owned_target<TBSCertList>> TBSCertList::crl_extensions() && {
+    return TBSCertListCrlExtensionsOpenView<asn1kit::open_owned_target<TBSCertList>>{std::move(*this)};
+}
 
-};
+inline TBSCertListSignatureAlgorithmsOpenView<TBSCertList> TBSCertList::signature_algorithms() & {
+    return TBSCertListSignatureAlgorithmsOpenView<TBSCertList>{*this};
+}
+inline TBSCertListSignatureAlgorithmsOpenView<const TBSCertList> TBSCertList::signature_algorithms() const & {
+    return TBSCertListSignatureAlgorithmsOpenView<const TBSCertList>{*this};
+}
+inline TBSCertListSignatureAlgorithmsOpenView<asn1kit::open_owned_target<TBSCertList>> TBSCertList::signature_algorithms() && {
+    return TBSCertListSignatureAlgorithmsOpenView<asn1kit::open_owned_target<TBSCertList>>{std::move(*this)};
+}
 
-struct SubjectPublicKeyInfo_open_types {
-    struct public_key_algorithms {
-        using parameters = ::asn1kit::modern::AlgorithmInformation2009::publicKeyAlgorithms_parameters_open_type_entries;
+inline TBSCertListSupportedAttributesOpenView<TBSCertList> TBSCertList::supported_attributes() & {
+    return TBSCertListSupportedAttributesOpenView<TBSCertList>{*this};
+}
+inline TBSCertListSupportedAttributesOpenView<const TBSCertList> TBSCertList::supported_attributes() const & {
+    return TBSCertListSupportedAttributesOpenView<const TBSCertList>{*this};
+}
+inline TBSCertListSupportedAttributesOpenView<asn1kit::open_owned_target<TBSCertList>> TBSCertList::supported_attributes() && {
+    return TBSCertListSupportedAttributesOpenView<asn1kit::open_owned_target<TBSCertList>>{std::move(*this)};
+}
 
-    };
+inline TBSCertificateCertExtensionsOpenView<TBSCertificate> TBSCertificate::cert_extensions() & {
+    return TBSCertificateCertExtensionsOpenView<TBSCertificate>{*this};
+}
+inline TBSCertificateCertExtensionsOpenView<const TBSCertificate> TBSCertificate::cert_extensions() const & {
+    return TBSCertificateCertExtensionsOpenView<const TBSCertificate>{*this};
+}
+inline TBSCertificateCertExtensionsOpenView<asn1kit::open_owned_target<TBSCertificate>> TBSCertificate::cert_extensions() && {
+    return TBSCertificateCertExtensionsOpenView<asn1kit::open_owned_target<TBSCertificate>>{std::move(*this)};
+}
 
-};
+inline TBSCertificateSignatureAlgorithmsOpenView<TBSCertificate> TBSCertificate::signature_algorithms() & {
+    return TBSCertificateSignatureAlgorithmsOpenView<TBSCertificate>{*this};
+}
+inline TBSCertificateSignatureAlgorithmsOpenView<const TBSCertificate> TBSCertificate::signature_algorithms() const & {
+    return TBSCertificateSignatureAlgorithmsOpenView<const TBSCertificate>{*this};
+}
+inline TBSCertificateSignatureAlgorithmsOpenView<asn1kit::open_owned_target<TBSCertificate>> TBSCertificate::signature_algorithms() && {
+    return TBSCertificateSignatureAlgorithmsOpenView<asn1kit::open_owned_target<TBSCertificate>>{std::move(*this)};
+}
 
-struct TBSCertList_open_types {
-    struct crl_entry_extensions {
-        using extn_value = ::asn1kit::modern::PKIXCommonTypes2009::crlEntryExtensions_open_type_entries;
+inline TBSCertificateSupportedAttributesIssuerOpenView<TBSCertificate> TBSCertificate::supported_attributes_issuer() & {
+    return TBSCertificateSupportedAttributesIssuerOpenView<TBSCertificate>{*this};
+}
+inline TBSCertificateSupportedAttributesIssuerOpenView<const TBSCertificate> TBSCertificate::supported_attributes_issuer() const & {
+    return TBSCertificateSupportedAttributesIssuerOpenView<const TBSCertificate>{*this};
+}
+inline TBSCertificateSupportedAttributesIssuerOpenView<asn1kit::open_owned_target<TBSCertificate>> TBSCertificate::supported_attributes_issuer() && {
+    return TBSCertificateSupportedAttributesIssuerOpenView<asn1kit::open_owned_target<TBSCertificate>>{std::move(*this)};
+}
 
-    };
-
-    struct crl_extensions {
-        using extn_value = ::asn1kit::modern::PKIXCommonTypes2009::crlExtensions_open_type_entries;
-
-    };
-
-    struct signature_algorithms {
-        using parameters = ::asn1kit::modern::AlgorithmInformation2009::signatureAlgorithms_parameters_open_type_entries;
-
-    };
-
-    struct supported_attributes {
-        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
-
-    };
-
-};
-
-struct TBSCertificate_open_types {
-    struct cert_extensions {
-        using extn_value = ::asn1kit::modern::PKIXCommonTypes2009::certExtensions_open_type_entries;
-
-    };
-
-    struct signature_algorithms {
-        using parameters = ::asn1kit::modern::AlgorithmInformation2009::signatureAlgorithms_parameters_open_type_entries;
-
-    };
-
-    struct supported_attributes {
-        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
-
-    };
-
-};
+inline TBSCertificateSupportedAttributesSubjectOpenView<TBSCertificate> TBSCertificate::supported_attributes_subject() & {
+    return TBSCertificateSupportedAttributesSubjectOpenView<TBSCertificate>{*this};
+}
+inline TBSCertificateSupportedAttributesSubjectOpenView<const TBSCertificate> TBSCertificate::supported_attributes_subject() const & {
+    return TBSCertificateSupportedAttributesSubjectOpenView<const TBSCertificate>{*this};
+}
+inline TBSCertificateSupportedAttributesSubjectOpenView<asn1kit::open_owned_target<TBSCertificate>> TBSCertificate::supported_attributes_subject() && {
+    return TBSCertificateSupportedAttributesSubjectOpenView<asn1kit::open_owned_target<TBSCertificate>>{std::move(*this)};
+}
 
 } // namespace PKIX1Explicit2009
 } // namespace modern

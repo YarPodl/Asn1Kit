@@ -217,13 +217,20 @@ struct CountryName {
     }
 };
 
+namespace detail {
 struct supportedExtensionAttributes_extension_attribute_value_open_type_entries;
-struct ExtensionAttribute_open_types;
+} // namespace detail
+template <typename Target>
+struct ExtensionAttributeSupportedExtensionAttributesOpenView;
 struct ExtensionAttribute {
-    using open_types = ExtensionAttribute_open_types;
-
     std::int32_t extension_attribute_type{};
     asn1kit::any extension_attribute_value{};
+
+    [[nodiscard]] ExtensionAttributeSupportedExtensionAttributesOpenView<ExtensionAttribute> supported_extension_attributes() &;
+    [[nodiscard]] ExtensionAttributeSupportedExtensionAttributesOpenView<const ExtensionAttribute> supported_extension_attributes() const &;
+    [[nodiscard]] ExtensionAttributeSupportedExtensionAttributesOpenView<asn1kit::open_owned_target<ExtensionAttribute>> supported_extension_attributes() &&;
+    ExtensionAttributeSupportedExtensionAttributesOpenView<const ExtensionAttribute> supported_extension_attributes() const && = delete;
+    [[nodiscard]] static ExtensionAttributeSupportedExtensionAttributesOpenView<asn1kit::open_factory_target<ExtensionAttribute>> make_supported_extension_attributes();
 
     template <typename T>
     [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, std::int32_t, T> open_binding(std::int32_t key) {

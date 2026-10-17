@@ -201,14 +201,21 @@ struct AttributeCertificateInfoV1 {
     }
 };
 
+namespace detail {
 struct signatureAlgorithms_signature_open_type_entries;
-struct AttributeCertificateV1_open_types;
+} // namespace detail
+template <typename Target>
+struct AttributeCertificateV1SignatureAlgorithmsOpenView;
 struct AttributeCertificateV1 {
-    using open_types = AttributeCertificateV1_open_types;
-
     AttributeCertificateInfoV1 toBeSigned{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::bit_string signature{};
+
+    [[nodiscard]] AttributeCertificateV1SignatureAlgorithmsOpenView<AttributeCertificateV1> signature_algorithms() &;
+    [[nodiscard]] AttributeCertificateV1SignatureAlgorithmsOpenView<const AttributeCertificateV1> signature_algorithms() const &;
+    [[nodiscard]] AttributeCertificateV1SignatureAlgorithmsOpenView<asn1kit::open_owned_target<AttributeCertificateV1>> signature_algorithms() &&;
+    AttributeCertificateV1SignatureAlgorithmsOpenView<const AttributeCertificateV1> signature_algorithms() const && = delete;
+    [[nodiscard]] static AttributeCertificateV1SignatureAlgorithmsOpenView<asn1kit::open_factory_target<AttributeCertificateV1>> make_signature_algorithms();
 
     template <typename T>
     [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, T> open_binding(asn1kit::oid key) {

@@ -176,12 +176,16 @@ namespace asn1kit {
 namespace modern {
 namespace OCSP2009 {
 
-struct Request_open_types;
+template <typename Target>
+struct RequestLocalOpenView;
 struct Request {
-    using open_types = Request_open_types;
-
     CertID reqCert{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> singleRequestExtensions{};
+
+    [[nodiscard]] RequestLocalOpenView<Request> local() &;
+    [[nodiscard]] RequestLocalOpenView<const Request> local() const &;
+    [[nodiscard]] RequestLocalOpenView<asn1kit::open_owned_target<Request>> local() &&;
+    RequestLocalOpenView<const Request> local() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_single_request_extensions(
@@ -310,13 +314,20 @@ struct ResponderID {
     }
 };
 
+namespace detail {
 struct responseSet_response_open_type_entries;
-struct ResponseBytes_open_types;
+} // namespace detail
+template <typename Target>
+struct ResponseBytesResponseSetOpenView;
 struct ResponseBytes {
-    using open_types = ResponseBytes_open_types;
-
     asn1kit::oid responseType{};
     asn1kit::bytes response{};
+
+    [[nodiscard]] ResponseBytesResponseSetOpenView<ResponseBytes> response_set() &;
+    [[nodiscard]] ResponseBytesResponseSetOpenView<const ResponseBytes> response_set() const &;
+    [[nodiscard]] ResponseBytesResponseSetOpenView<asn1kit::open_owned_target<ResponseBytes>> response_set() &&;
+    ResponseBytesResponseSetOpenView<const ResponseBytes> response_set() const && = delete;
+    [[nodiscard]] static ResponseBytesResponseSetOpenView<asn1kit::open_factory_target<ResponseBytes>> make_response_set();
 
     template <typename T>
     [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, T> open_binding(asn1kit::oid key) {
@@ -609,15 +620,19 @@ struct Signature {
     }
 };
 
-struct SingleResponse_open_types;
+template <typename Target>
+struct SingleResponseLocalOpenView;
 struct SingleResponse {
-    using open_types = SingleResponse_open_types;
-
     CertID certID{};
     CertStatus certStatus{};
     asn1kit::utc_date_time thisUpdate{};
     std::optional<asn1kit::utc_date_time> nextUpdate{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> singleExtensions{};
+
+    [[nodiscard]] SingleResponseLocalOpenView<SingleResponse> local() &;
+    [[nodiscard]] SingleResponseLocalOpenView<const SingleResponse> local() const &;
+    [[nodiscard]] SingleResponseLocalOpenView<asn1kit::open_owned_target<SingleResponse>> local() &&;
+    SingleResponseLocalOpenView<const SingleResponse> local() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_single_extensions(
@@ -674,15 +689,19 @@ struct SingleResponse {
     }
 };
 
-struct ResponseData_open_types;
+template <typename Target>
+struct ResponseDataLocalOpenView;
 struct ResponseData {
-    using open_types = ResponseData_open_types;
-
     std::int32_t version = 0;
     ResponderID responderID{};
     asn1kit::utc_date_time producedAt{};
     std::vector<SingleResponse> responses{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> responseExtensions{};
+
+    [[nodiscard]] ResponseDataLocalOpenView<ResponseData> local() &;
+    [[nodiscard]] ResponseDataLocalOpenView<const ResponseData> local() const &;
+    [[nodiscard]] ResponseDataLocalOpenView<asn1kit::open_owned_target<ResponseData>> local() &&;
+    ResponseDataLocalOpenView<const ResponseData> local() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_response_extensions(
@@ -742,14 +761,18 @@ struct ResponseData {
     }
 };
 
-struct BasicOCSPResponse_open_types;
+template <typename Target>
+struct BasicOCSPResponseLocalOpenView;
 struct BasicOCSPResponse {
-    using open_types = BasicOCSPResponse_open_types;
-
     ResponseData tbsResponseData{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signatureAlgorithm{};
     asn1kit::bit_string signature{};
     std::optional<std::vector<::asn1kit::modern::PKIX1Explicit2009::Certificate>> certs{};
+
+    [[nodiscard]] BasicOCSPResponseLocalOpenView<BasicOCSPResponse> local() &;
+    [[nodiscard]] BasicOCSPResponseLocalOpenView<const BasicOCSPResponse> local() const &;
+    [[nodiscard]] BasicOCSPResponseLocalOpenView<asn1kit::open_owned_target<BasicOCSPResponse>> local() &&;
+    BasicOCSPResponseLocalOpenView<const BasicOCSPResponse> local() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_signature_algorithm(
@@ -792,14 +815,18 @@ struct BasicOCSPResponse {
     }
 };
 
-struct TBSRequest_open_types;
+template <typename Target>
+struct TBSRequestLocalOpenView;
 struct TBSRequest {
-    using open_types = TBSRequest_open_types;
-
     std::int32_t version = 0;
     std::optional<::asn1kit::modern::PKIX1Implicit2009::GeneralName> requestorName{};
     std::vector<Request> requestList{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> requestExtensions{};
+
+    [[nodiscard]] TBSRequestLocalOpenView<TBSRequest> local() &;
+    [[nodiscard]] TBSRequestLocalOpenView<const TBSRequest> local() const &;
+    [[nodiscard]] TBSRequestLocalOpenView<asn1kit::open_owned_target<TBSRequest>> local() &&;
+    TBSRequestLocalOpenView<const TBSRequest> local() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_request_extensions(

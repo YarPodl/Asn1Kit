@@ -45,6 +45,152 @@ struct open_binding {
     Key key{};
 };
 
+/// Marks an open-type view that creates a new carrier instead of binding to an
+/// existing object.
+template <typename Owner>
+struct open_factory_target final {
+    using owner_type = Owner;
+};
+
+/// Marks an open-type view that owns a moved carrier and supports decode only.
+template <typename Owner>
+struct open_owned_target final {
+    using owner_type = Owner;
+};
+
+template <typename T>
+inline constexpr bool is_open_factory_target_v = false;
+
+template <typename Owner>
+inline constexpr bool is_open_factory_target_v<open_factory_target<Owner>> = true;
+
+template <typename T>
+inline constexpr bool is_open_owned_target_v = false;
+
+template <typename Owner>
+inline constexpr bool is_open_owned_target_v<open_owned_target<Owner>> = true;
+
+template <typename T>
+struct open_owner {
+    using type = std::remove_cv_t<T>;
+};
+
+template <typename Owner>
+struct open_owner<open_factory_target<Owner>> {
+    using type = Owner;
+};
+
+template <typename Owner>
+struct open_owner<open_owned_target<Owner>> {
+    using type = Owner;
+};
+
+template <typename T>
+using open_owner_t = typename open_owner<T>::type;
+
+/// Default access policy for carriers whose open-type operations use the
+/// unsuffixed try_decode/set/create API.
+struct open_direct_access {
+    template <typename Source, typename Binding>
+    static auto decode(const Source& source, const Binding& binding) {
+        return source.try_decode(binding);
+    }
+
+    template <typename Source, typename Binding, typename Value>
+    static void set(Source& source, const Binding& binding, Value&& value) {
+        source.set(binding, std::forward<Value>(value));
+    }
+
+    template <typename Source, typename Binding, typename Value>
+    static Source create(const Binding& binding, Value&& value) {
+        return Source::create(binding, std::forward<Value>(value));
+    }
+};
+
+template <typename Target>
+class open_view_target {
+public:
+    constexpr explicit open_view_target(Target& target) noexcept : target_(&target) {}
+    [[nodiscard]] constexpr Target& get() const noexcept { return *target_; }
+
+private:
+    Target* target_;
+};
+
+template <typename Owner>
+class open_view_target<open_factory_target<Owner>> {
+public:
+    constexpr open_view_target() noexcept = default;
+};
+
+template <typename Owner>
+class open_view_target<open_owned_target<Owner>> {
+public:
+    constexpr explicit open_view_target(Owner&& owner) noexcept(
+        std::is_nothrow_move_constructible_v<Owner>)
+        : owner_(std::move(owner)) {}
+
+    [[nodiscard]] constexpr Owner& get() noexcept { return owner_; }
+    [[nodiscard]] constexpr const Owner& get() const noexcept { return owner_; }
+    [[nodiscard]] constexpr Owner&& take() && noexcept { return std::move(owner_); }
+
+private:
+    Owner owner_;
+};
+
+/// Shared implementation for generated open-type views. A bound view stores a
+/// single carrier pointer regardless of its number of named entries; an owned
+/// view stores the carrier by value; a factory view is empty. Generated entry
+/// functions select their static binding through a reference non-type template
+/// parameter.
+template <typename Target, typename Access>
+class open_function_view {
+public:
+    constexpr explicit open_function_view(Target& target) noexcept
+        requires (!is_open_factory_target_v<Target> && !is_open_owned_target_v<Target>)
+        : target_(target) {}
+
+    constexpr explicit open_function_view(open_owner_t<Target>&& owner) noexcept(
+        std::is_nothrow_move_constructible_v<open_owner_t<Target>>)
+        requires is_open_owned_target_v<Target>
+        : target_(std::move(owner)) {}
+
+    constexpr open_function_view() noexcept
+        requires is_open_factory_target_v<Target> = default;
+
+    template <const auto& Binding>
+    [[nodiscard]] auto invoke() const
+        requires (!is_open_factory_target_v<Target> &&
+                  requires(const open_owner_t<Target>& target) {
+                      Access::decode(target, Binding);
+                  }) {
+        return Access::decode(static_cast<const open_owner_t<Target>&>(target_.get()), Binding);
+    }
+
+    template <const auto& Binding, typename Value>
+    void invoke(Value&& value) const
+        requires (!is_open_factory_target_v<Target> && !is_open_owned_target_v<Target> &&
+                  !std::is_const_v<Target> &&
+                  requires(Target& target, Value&& candidate) {
+                      Access::set(target, Binding, std::forward<Value>(candidate));
+                  }) {
+        Access::set(target_.get(), Binding, std::forward<Value>(value));
+    }
+
+    template <const auto& Binding, typename Value>
+    [[nodiscard]] open_owner_t<Target> invoke(Value&& value) const
+        requires (is_open_factory_target_v<Target> && requires(Value&& candidate) {
+            Access::template create<open_owner_t<Target>>(
+                Binding, std::forward<Value>(candidate));
+        }) {
+        return Access::template create<open_owner_t<Target>>(
+            Binding, std::forward<Value>(value));
+    }
+
+private:
+    [[no_unique_address]] open_view_target<Target> target_;
+};
+
 template <typename T>
 void merge_unique(std::optional<T>& result, std::optional<T> candidate) {
     if (!candidate.has_value()) return;

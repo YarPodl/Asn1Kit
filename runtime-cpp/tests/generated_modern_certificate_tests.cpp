@@ -29,6 +29,12 @@ using GeneralName = asn1kit::modern::PKIX1Implicit2009::GeneralName;
 using GeneralNameKind = asn1kit::modern::PKIX1Implicit2009::GeneralName_kind;
 using CountryName = asn1kit::modern::PKIXX400Address2009::CountryName;
 using CountryNameKind = asn1kit::modern::PKIXX400Address2009::CountryName_kind;
+using TBSCertificate = asn1kit::modern::PKIX1Explicit2009::TBSCertificate;
+
+static_assert(requires(TBSCertificate& certificate) {
+    certificate.supported_attributes_issuer();
+    certificate.supported_attributes_subject();
+});
 
 static_assert(std::is_same_v<decltype(Time::value), asn1kit::utc_date_time>);
 static_assert(std::is_same_v<decltype(DirectoryString::value), std::string>);
@@ -67,6 +73,13 @@ TEST(GeneratedModernCertificateTests, DirectoryStringPreservesStringForm) {
     const std::vector<std::uint8_t> invalid{0x02, 1, 1};
     reader r(invalid, encoding::der);
     EXPECT_THROW(DirectoryString::decode(r), asn1kit::exception);
+}
+
+TEST(GeneratedModernCertificateTests, StoredNestedRvalueOpenViewOwnsCarrier) {
+    auto signature = Certificate{}
+        .signature_algorithms()
+        .signature();
+    EXPECT_FALSE(signature.sa_dsa_with_sha1().has_value());
 }
 
 static_assert(std::string_view(PkixOids::IdPkix.text()) == "1.3.6.1.5.5.7");

@@ -42,17 +42,18 @@ public sealed partial class CppBackend
             _ => false
         };
 
-        var openRegistry = OpenRegistryName(module, typeName);
-        foreach (var entries in OpenCatalogEntryNames(module, typeName))
-            sb.AppendLine($"struct {entries};");
-        if (openRegistry is not null)
-            sb.AppendLine($"struct {openRegistry};");
-        sb.AppendLine($"struct {typeName} {{");
-        if (openRegistry is not null)
+        // Forward-declare detail catalogs here so peer modules that only
+        // include *.types.hpp can form cross-module open_entries aliases.
+        var openCatalogEntries = OpenCatalogEntryNames(module, typeName).ToList();
+        if (openCatalogEntries.Count > 0)
         {
-            sb.AppendLine($"    using open_types = {openRegistry};");
-            sb.AppendLine();
+            sb.AppendLine("namespace detail {");
+            foreach (var entries in openCatalogEntries)
+                sb.AppendLine($"struct {entries};");
+            sb.AppendLine("} // namespace detail");
         }
+        EmitOpenViewForwardDeclarations(sb, module, typeName);
+        sb.AppendLine($"struct {typeName} {{");
         foreach (var field in components)
         {
             var optional = (field.Optional || field.ExtensionAddition == true) && field.Default is null;
@@ -64,6 +65,7 @@ public sealed partial class CppBackend
         }
 
         sb.AppendLine();
+        EmitOpenViewAccessors(sb, module, typeName);
         EmitOpenOwnerMethods(sb, document, module, typeName);
         EmitStructuredDefaultHelpers(sb, document, module, typeName, components);
         var naturalTag = UniversalTag(document, module, type);

@@ -935,13 +935,20 @@ struct PolicyMappings_Item {
     }
 };
 
+namespace detail {
 struct policyQualifierId_qualifier_open_type_entries;
-struct PolicyQualifierInfo_open_types;
+} // namespace detail
+template <typename Target>
+struct PolicyQualifierInfoPolicyQualifierIdOpenView;
 struct PolicyQualifierInfo {
-    using open_types = PolicyQualifierInfo_open_types;
-
     asn1kit::oid policyQualifierId{};
     asn1kit::any qualifier{};
+
+    [[nodiscard]] PolicyQualifierInfoPolicyQualifierIdOpenView<PolicyQualifierInfo> policy_qualifier_id() &;
+    [[nodiscard]] PolicyQualifierInfoPolicyQualifierIdOpenView<const PolicyQualifierInfo> policy_qualifier_id() const &;
+    [[nodiscard]] PolicyQualifierInfoPolicyQualifierIdOpenView<asn1kit::open_owned_target<PolicyQualifierInfo>> policy_qualifier_id() &&;
+    PolicyQualifierInfoPolicyQualifierIdOpenView<const PolicyQualifierInfo> policy_qualifier_id() const && = delete;
+    [[nodiscard]] static PolicyQualifierInfoPolicyQualifierIdOpenView<asn1kit::open_factory_target<PolicyQualifierInfo>> make_policy_qualifier_id();
 
     template <typename T>
     [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, T> open_binding(asn1kit::oid key) {

@@ -39,597 +39,858 @@ namespace asn1kit {
 namespace modern {
 namespace PKIXCommonTypes2009 {
 
+namespace detail {
+
 struct attributeCertExtensions_open_type_entries {
-    inline static const asn1kit::open_binding<
+    template <typename T>
+    using binding_type = asn1kit::open_binding<
         asn1kit::open_context<"PKIX-CommonTypes-2009.attributeCertExtensions">,
-        asn1kit::oid, asn1kit::bytes> audit_identity{
-        ::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdPeAcAuditIdentity.get()};
+        asn1kit::oid, T>;
 
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.attributeCertExtensions">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::Target>> target_information{
-        ::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdCeTargetInformation.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.attributeCertExtensions">,
-        asn1kit::oid, ::asn1kit::modern::PKIX1Implicit2009::AuthorityKeyIdentifier> authority_key_identifier{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeAuthorityKeyIdentifier.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.attributeCertExtensions">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Implicit2009::AccessDescription>> authority_info_access{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdPeAuthorityInfoAccess.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.attributeCertExtensions">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Implicit2009::DistributionPoint>> crl_distribution_points{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeCRLDistributionPoints.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.attributeCertExtensions">,
-        asn1kit::oid, asn1kit::null_value> no_rev_avail{
-        ::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdCeNoRevAvail.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.attributeCertExtensions">,
-        asn1kit::oid, std::vector<std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::Target>>> ac_proxying{
-        ::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdPeAcProxying.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.attributeCertExtensions">,
-        asn1kit::oid, ::asn1kit::modern::PKIXAttributeCertificate2009::AAControls> aa_controls{
-        ::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdPeAaControls.get()};
+    inline static const binding_type<asn1kit::bytes> audit_identity{::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdPeAcAuditIdentity.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::Target>> target_information{::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdCeTargetInformation.get()};
+    inline static const binding_type<::asn1kit::modern::PKIX1Implicit2009::AuthorityKeyIdentifier> authority_key_identifier{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeAuthorityKeyIdentifier.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Implicit2009::AccessDescription>> authority_info_access{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdPeAuthorityInfoAccess.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Implicit2009::DistributionPoint>> crl_distribution_points{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeCRLDistributionPoints.get()};
+    inline static const binding_type<asn1kit::null_value> no_rev_avail{::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdCeNoRevAvail.get()};
+    inline static const binding_type<std::vector<std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::Target>>> ac_proxying{::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdPeAcProxying.get()};
+    inline static const binding_type<::asn1kit::modern::PKIXAttributeCertificate2009::AAControls> aa_controls{::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdPeAaControls.get()};
 
 };
 
 struct attributeList_open_type_entries {
-    inline static const asn1kit::open_binding<
+    template <typename T>
+    using binding_type = asn1kit::open_binding<
         asn1kit::open_context<"PKIX-CommonTypes-2009.attributeList">,
-        asn1kit::oid, std::vector<std::vector<Extension>>> extension_req{
-        ::asn1kit::modern::EnrollmentMessageSyntax2009::EnrollmentMessageSyntax2009Oids::IdExtensionReq.get()};
+        asn1kit::oid, T>;
+
+    inline static const binding_type<std::vector<std::vector<Extension>>> extension_req{::asn1kit::modern::EnrollmentMessageSyntax2009::EnrollmentMessageSyntax2009Oids::IdExtensionReq.get()};
 
 };
 
 struct attributesDefined_open_type_entries {
-    inline static const asn1kit::open_binding<
+    template <typename T>
+    using binding_type = asn1kit::open_binding<
         asn1kit::open_context<"PKIX-CommonTypes-2009.attributesDefined">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::SvceAuthInfo>> authentication_info{
-        ::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAcaAuthenticationInfo.get()};
+        asn1kit::oid, T>;
 
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.attributesDefined">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::SvceAuthInfo>> acces_identity{
-        ::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAcaAccessIdentity.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.attributesDefined">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::IetfAttrSyntax>> charging_identity{
-        ::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAcaChargingIdentity.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.attributesDefined">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::IetfAttrSyntax>> group{
-        ::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAcaGroup.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.attributesDefined">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::RoleSyntax>> role{
-        ::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAtRole.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.attributesDefined">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::Clearance>> clearance{
-        ::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAtClearance.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.attributesDefined">,
-        asn1kit::oid, std::vector<::asn1kit::modern::CryptographicMessageSyntax2009::ContentInfo>> enc_attrs{
-        ::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAcaEncAttrs.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::SvceAuthInfo>> authentication_info{::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAcaAuthenticationInfo.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::SvceAuthInfo>> acces_identity{::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAcaAccessIdentity.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::IetfAttrSyntax>> charging_identity{::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAcaChargingIdentity.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::IetfAttrSyntax>> group{::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAcaGroup.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::RoleSyntax>> role{::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAtRole.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::Clearance>> clearance{::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAtClearance.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::CryptographicMessageSyntax2009::ContentInfo>> enc_attrs{::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAcaEncAttrs.get()};
 
 };
 
 struct certExtensions_open_type_entries {
-    inline static const asn1kit::open_binding<
+    template <typename T>
+    using binding_type = asn1kit::open_binding<
         asn1kit::open_context<"PKIX-CommonTypes-2009.certExtensions">,
-        asn1kit::oid, ::asn1kit::modern::PKIX1Implicit2009::AuthorityKeyIdentifier> authority_key_identifier{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeAuthorityKeyIdentifier.get()};
+        asn1kit::oid, T>;
 
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.certExtensions">,
-        asn1kit::oid, asn1kit::bytes> subject_key_identifier{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeSubjectKeyIdentifier.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.certExtensions">,
-        asn1kit::oid, ::asn1kit::modern::PKIX1Implicit2009::KeyUsage> key_usage{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeKeyUsage.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.certExtensions">,
-        asn1kit::oid, ::asn1kit::modern::PKIX1Implicit2009::PrivateKeyUsagePeriod> private_key_usage_period{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCePrivateKeyUsagePeriod.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.certExtensions">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Implicit2009::PolicyInformation>> certificate_policies{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeCertificatePolicies.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.certExtensions">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Implicit2009::PolicyMappings_Item>> policy_mappings{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCePolicyMappings.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.certExtensions">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> subject_alt_name{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeSubjectAltName.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.certExtensions">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> issuer_alt_name{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeIssuerAltName.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.certExtensions">,
-        asn1kit::oid, std::vector<AttributeSet>> subject_directory_attributes{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeSubjectDirectoryAttributes.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.certExtensions">,
-        asn1kit::oid, ::asn1kit::modern::PKIX1Implicit2009::BasicConstraints> basic_constraints{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeBasicConstraints.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.certExtensions">,
-        asn1kit::oid, ::asn1kit::modern::PKIX1Implicit2009::NameConstraints> name_constraints{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeNameConstraints.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.certExtensions">,
-        asn1kit::oid, ::asn1kit::modern::PKIX1Implicit2009::PolicyConstraints> policy_constraints{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCePolicyConstraints.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.certExtensions">,
-        asn1kit::oid, std::vector<asn1kit::oid>> ext_key_usage{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeExtKeyUsage.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.certExtensions">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Implicit2009::DistributionPoint>> crl_distribution_points{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeCRLDistributionPoints.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.certExtensions">,
-        asn1kit::oid, asn1kit::integer> inhibit_any_policy{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeInhibitAnyPolicy.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.certExtensions">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Implicit2009::DistributionPoint>> freshest_crl{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeFreshestCRL.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.certExtensions">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Implicit2009::AccessDescription>> authority_info_access{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdPeAuthorityInfoAccess.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.certExtensions">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Implicit2009::AccessDescription>> subject_info_access_syntax{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdPeSubjectInfoAccess.get()};
+    inline static const binding_type<::asn1kit::modern::PKIX1Implicit2009::AuthorityKeyIdentifier> authority_key_identifier{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeAuthorityKeyIdentifier.get()};
+    inline static const binding_type<asn1kit::bytes> subject_key_identifier{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeSubjectKeyIdentifier.get()};
+    inline static const binding_type<::asn1kit::modern::PKIX1Implicit2009::KeyUsage> key_usage{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeKeyUsage.get()};
+    inline static const binding_type<::asn1kit::modern::PKIX1Implicit2009::PrivateKeyUsagePeriod> private_key_usage_period{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCePrivateKeyUsagePeriod.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Implicit2009::PolicyInformation>> certificate_policies{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeCertificatePolicies.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Implicit2009::PolicyMappings_Item>> policy_mappings{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCePolicyMappings.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> subject_alt_name{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeSubjectAltName.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> issuer_alt_name{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeIssuerAltName.get()};
+    inline static const binding_type<std::vector<AttributeSet>> subject_directory_attributes{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeSubjectDirectoryAttributes.get()};
+    inline static const binding_type<::asn1kit::modern::PKIX1Implicit2009::BasicConstraints> basic_constraints{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeBasicConstraints.get()};
+    inline static const binding_type<::asn1kit::modern::PKIX1Implicit2009::NameConstraints> name_constraints{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeNameConstraints.get()};
+    inline static const binding_type<::asn1kit::modern::PKIX1Implicit2009::PolicyConstraints> policy_constraints{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCePolicyConstraints.get()};
+    inline static const binding_type<std::vector<asn1kit::oid>> ext_key_usage{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeExtKeyUsage.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Implicit2009::DistributionPoint>> crl_distribution_points{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeCRLDistributionPoints.get()};
+    inline static const binding_type<asn1kit::integer> inhibit_any_policy{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeInhibitAnyPolicy.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Implicit2009::DistributionPoint>> freshest_crl{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeFreshestCRL.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Implicit2009::AccessDescription>> authority_info_access{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdPeAuthorityInfoAccess.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Implicit2009::AccessDescription>> subject_info_access_syntax{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdPeSubjectInfoAccess.get()};
 
 };
 
 struct crlEntryExtensions_open_type_entries {
-    inline static const asn1kit::open_binding<
+    template <typename T>
+    using binding_type = asn1kit::open_binding<
         asn1kit::open_context<"PKIX-CommonTypes-2009.crlEntryExtensions">,
-        asn1kit::oid, ::asn1kit::modern::PKIX1Implicit2009::CRLReason> crl_reason{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeCRLReasons.get()};
+        asn1kit::oid, T>;
 
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.crlEntryExtensions">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> certificate_issuer{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeCertificateIssuer.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.crlEntryExtensions">,
-        asn1kit::oid, asn1kit::oid> hold_instruction_code{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeHoldInstructionCode.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.crlEntryExtensions">,
-        asn1kit::oid, asn1kit::asn_time<asn1kit::time_form::generalized>> invalidity_date{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeInvalidityDate.get()};
+    inline static const binding_type<::asn1kit::modern::PKIX1Implicit2009::CRLReason> crl_reason{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeCRLReasons.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> certificate_issuer{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeCertificateIssuer.get()};
+    inline static const binding_type<asn1kit::oid> hold_instruction_code{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeHoldInstructionCode.get()};
+    inline static const binding_type<asn1kit::asn_time<asn1kit::time_form::generalized>> invalidity_date{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeInvalidityDate.get()};
 
 };
 
 struct crlExtensions_open_type_entries {
-    inline static const asn1kit::open_binding<
+    template <typename T>
+    using binding_type = asn1kit::open_binding<
         asn1kit::open_context<"PKIX-CommonTypes-2009.crlExtensions">,
-        asn1kit::oid, ::asn1kit::modern::PKIX1Implicit2009::AuthorityKeyIdentifier> authority_key_identifier{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeAuthorityKeyIdentifier.get()};
+        asn1kit::oid, T>;
 
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.crlExtensions">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> issuer_alt_name{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeIssuerAltName.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.crlExtensions">,
-        asn1kit::oid, asn1kit::integer> crl_number{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeCRLNumber.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.crlExtensions">,
-        asn1kit::oid, asn1kit::integer> delta_crl_indicator{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeDeltaCRLIndicator.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.crlExtensions">,
-        asn1kit::oid, ::asn1kit::modern::PKIX1Implicit2009::IssuingDistributionPoint> issuing_distribution_point{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeIssuingDistributionPoint.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.crlExtensions">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Implicit2009::DistributionPoint>> freshest_crl{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeFreshestCRL.get()};
+    inline static const binding_type<::asn1kit::modern::PKIX1Implicit2009::AuthorityKeyIdentifier> authority_key_identifier{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeAuthorityKeyIdentifier.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> issuer_alt_name{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeIssuerAltName.get()};
+    inline static const binding_type<asn1kit::integer> crl_number{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeCRLNumber.get()};
+    inline static const binding_type<asn1kit::integer> delta_crl_indicator{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeDeltaCRLIndicator.get()};
+    inline static const binding_type<::asn1kit::modern::PKIX1Implicit2009::IssuingDistributionPoint> issuing_distribution_point{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeIssuingDistributionPoint.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Implicit2009::DistributionPoint>> freshest_crl{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeFreshestCRL.get()};
 
 };
 
 struct extension_extnValue_open_type_entries {
-    inline static const asn1kit::open_binding<
+    template <typename T>
+    using binding_type = asn1kit::open_binding<
         asn1kit::open_context<"PKIX-CommonTypes-2009.extension_extnValue">,
-        asn1kit::oid, asn1kit::bytes> re_ocsp_nonce{
-        ::asn1kit::modern::OCSP2009::OCSP2009Oids::IdPkixOcspNonce.get()};
+        asn1kit::oid, T>;
 
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.extension_extnValue">,
-        asn1kit::oid, std::vector<asn1kit::oid>> re_ocsp_response{
-        ::asn1kit::modern::OCSP2009::OCSP2009Oids::IdPkixOcspResponse.get()};
+    inline static const binding_type<asn1kit::bytes> re_ocsp_nonce{::asn1kit::modern::OCSP2009::OCSP2009Oids::IdPkixOcspNonce.get()};
+    inline static const binding_type<std::vector<asn1kit::oid>> re_ocsp_response{::asn1kit::modern::OCSP2009::OCSP2009Oids::IdPkixOcspResponse.get()};
 
 };
 
 struct extension_extnValue_extension_open_type_entries {
-    inline static const asn1kit::open_binding<
+    template <typename T>
+    using binding_type = asn1kit::open_binding<
         asn1kit::open_context<"PKIX-CommonTypes-2009.extension_extnValue_extension">,
-        asn1kit::oid, ::asn1kit::modern::OCSP2009::ServiceLocator> re_ocsp_service_locator{
-        ::asn1kit::modern::OCSP2009::OCSP2009Oids::IdPkixOcspServiceLocator.get()};
+        asn1kit::oid, T>;
+
+    inline static const binding_type<::asn1kit::modern::OCSP2009::ServiceLocator> re_ocsp_service_locator{::asn1kit::modern::OCSP2009::OCSP2009Oids::IdPkixOcspServiceLocator.get()};
 
 };
 
 struct extension_extnValue_extension_2_open_type_entries {
-    inline static const asn1kit::open_binding<
+    template <typename T>
+    using binding_type = asn1kit::open_binding<
         asn1kit::open_context<"PKIX-CommonTypes-2009.extension_extnValue_extension_2">,
-        asn1kit::oid, asn1kit::bytes> re_ocsp_nonce{
-        ::asn1kit::modern::OCSP2009::OCSP2009Oids::IdPkixOcspNonce.get()};
+        asn1kit::oid, T>;
+
+    inline static const binding_type<asn1kit::bytes> re_ocsp_nonce{::asn1kit::modern::OCSP2009::OCSP2009Oids::IdPkixOcspNonce.get()};
 
 };
 
 struct extension_extnValue_extension_3_open_type_entries {
-    inline static const asn1kit::open_binding<
+    template <typename T>
+    using binding_type = asn1kit::open_binding<
         asn1kit::open_context<"PKIX-CommonTypes-2009.extension_extnValue_extension_3">,
-        asn1kit::oid, ::asn1kit::modern::OCSP2009::CrlID> re_ocsp_crl{
-        ::asn1kit::modern::OCSP2009::OCSP2009Oids::IdPkixOcspCrl.get()};
+        asn1kit::oid, T>;
 
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.extension_extnValue_extension_3">,
-        asn1kit::oid, asn1kit::asn_time<asn1kit::time_form::generalized>> re_ocsp_archive_cutoff{
-        ::asn1kit::modern::OCSP2009::OCSP2009Oids::IdPkixOcspArchiveCutoff.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.extension_extnValue_extension_3">,
-        asn1kit::oid, ::asn1kit::modern::PKIX1Implicit2009::CRLReason> crl_reason{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeCRLReasons.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.extension_extnValue_extension_3">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> certificate_issuer{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeCertificateIssuer.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.extension_extnValue_extension_3">,
-        asn1kit::oid, asn1kit::oid> hold_instruction_code{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeHoldInstructionCode.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.extension_extnValue_extension_3">,
-        asn1kit::oid, asn1kit::asn_time<asn1kit::time_form::generalized>> invalidity_date{
-        ::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeInvalidityDate.get()};
+    inline static const binding_type<::asn1kit::modern::OCSP2009::CrlID> re_ocsp_crl{::asn1kit::modern::OCSP2009::OCSP2009Oids::IdPkixOcspCrl.get()};
+    inline static const binding_type<asn1kit::asn_time<asn1kit::time_form::generalized>> re_ocsp_archive_cutoff{::asn1kit::modern::OCSP2009::OCSP2009Oids::IdPkixOcspArchiveCutoff.get()};
+    inline static const binding_type<::asn1kit::modern::PKIX1Implicit2009::CRLReason> crl_reason{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeCRLReasons.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> certificate_issuer{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeCertificateIssuer.get()};
+    inline static const binding_type<asn1kit::oid> hold_instruction_code{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeHoldInstructionCode.get()};
+    inline static const binding_type<asn1kit::asn_time<asn1kit::time_form::generalized>> invalidity_date{::asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids::IdCeInvalidityDate.get()};
 
 };
 
 struct regControlSet_value_open_type_entries {
-    inline static const asn1kit::open_binding<
+    template <typename T>
+    using binding_type = asn1kit::open_binding<
         asn1kit::open_context<"PKIX-CommonTypes-2009.regControlSet_value">,
-        asn1kit::oid, asn1kit::asn_string<asn1kit::string_form::utf8>> reg_ctrl_reg_token{
-        ::asn1kit::modern::PKIXCRMF2009::PKIXCRMF2009Oids::IdRegCtrlRegToken.get()};
+        asn1kit::oid, T>;
 
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.regControlSet_value">,
-        asn1kit::oid, asn1kit::asn_string<asn1kit::string_form::utf8>> reg_ctrl_authenticator{
-        ::asn1kit::modern::PKIXCRMF2009::PKIXCRMF2009Oids::IdRegCtrlAuthenticator.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.regControlSet_value">,
-        asn1kit::oid, ::asn1kit::modern::PKIXCRMF2009::PKIPublicationInfo> reg_ctrl_pki_publication_info{
-        ::asn1kit::modern::PKIXCRMF2009::PKIXCRMF2009Oids::IdRegCtrlPkiPublicationInfo.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.regControlSet_value">,
-        asn1kit::oid, ::asn1kit::modern::PKIXCRMF2009::PKIArchiveOptions> reg_ctrl_pki_archive_options{
-        ::asn1kit::modern::PKIXCRMF2009::PKIXCRMF2009Oids::IdRegCtrlPkiArchiveOptions.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.regControlSet_value">,
-        asn1kit::oid, ::asn1kit::modern::PKIXCRMF2009::CertId> reg_ctrl_old_cert_id{
-        ::asn1kit::modern::PKIXCRMF2009::PKIXCRMF2009Oids::IdRegCtrlOldCertID.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.regControlSet_value">,
-        asn1kit::oid, ::asn1kit::modern::PKCS10::SubjectPublicKeyInfo> reg_ctrl_protocol_encr_key{
-        ::asn1kit::modern::PKIXCRMF2009::PKIXCRMF2009Oids::IdRegCtrlProtocolEncrKey.get()};
+    inline static const binding_type<asn1kit::asn_string<asn1kit::string_form::utf8>> reg_ctrl_reg_token{::asn1kit::modern::PKIXCRMF2009::PKIXCRMF2009Oids::IdRegCtrlRegToken.get()};
+    inline static const binding_type<asn1kit::asn_string<asn1kit::string_form::utf8>> reg_ctrl_authenticator{::asn1kit::modern::PKIXCRMF2009::PKIXCRMF2009Oids::IdRegCtrlAuthenticator.get()};
+    inline static const binding_type<::asn1kit::modern::PKIXCRMF2009::PKIPublicationInfo> reg_ctrl_pki_publication_info{::asn1kit::modern::PKIXCRMF2009::PKIXCRMF2009Oids::IdRegCtrlPkiPublicationInfo.get()};
+    inline static const binding_type<::asn1kit::modern::PKIXCRMF2009::PKIArchiveOptions> reg_ctrl_pki_archive_options{::asn1kit::modern::PKIXCRMF2009::PKIXCRMF2009Oids::IdRegCtrlPkiArchiveOptions.get()};
+    inline static const binding_type<::asn1kit::modern::PKIXCRMF2009::CertId> reg_ctrl_old_cert_id{::asn1kit::modern::PKIXCRMF2009::PKIXCRMF2009Oids::IdRegCtrlOldCertID.get()};
+    inline static const binding_type<::asn1kit::modern::PKCS10::SubjectPublicKeyInfo> reg_ctrl_protocol_encr_key{::asn1kit::modern::PKIXCRMF2009::PKIXCRMF2009Oids::IdRegCtrlProtocolEncrKey.get()};
 
 };
 
 struct regInfoSet_value_open_type_entries {
-    inline static const asn1kit::open_binding<
+    template <typename T>
+    using binding_type = asn1kit::open_binding<
         asn1kit::open_context<"PKIX-CommonTypes-2009.regInfoSet_value">,
-        asn1kit::oid, asn1kit::asn_string<asn1kit::string_form::utf8>> reg_info_utf8_pairs{
-        ::asn1kit::modern::PKIXCRMF2009::PKIXCRMF2009Oids::IdRegInfoUtf8Pairs.get()};
+        asn1kit::oid, T>;
 
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.regInfoSet_value">,
-        asn1kit::oid, ::asn1kit::modern::PKIXCRMF2009::CertRequest> reg_info_cert_req{
-        ::asn1kit::modern::PKIXCRMF2009::PKIXCRMF2009Oids::IdRegInfoCertReq.get()};
+    inline static const binding_type<asn1kit::asn_string<asn1kit::string_form::utf8>> reg_info_utf8_pairs{::asn1kit::modern::PKIXCRMF2009::PKIXCRMF2009Oids::IdRegInfoUtf8Pairs.get()};
+    inline static const binding_type<::asn1kit::modern::PKIXCRMF2009::CertRequest> reg_info_cert_req{::asn1kit::modern::PKIXCRMF2009::PKIXCRMF2009Oids::IdRegInfoCertReq.get()};
 
 };
 
 struct supportedAttributes_open_type_entries {
-    inline static const asn1kit::open_binding<
+    template <typename T>
+    using binding_type = asn1kit::open_binding<
         asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> name{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtName.get()};
+        asn1kit::oid, T>;
 
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> surname{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtSurname.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> given_name{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtGivenName.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> initials{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtInitials.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> generation_qualifier{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtGenerationQualifier.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> x520_common_name{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtCommonName.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> x520_locality_name{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtLocalityName.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> x520_state_or_province_name{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtStateOrProvinceName.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> x520_organization_name{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtOrganizationName.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> x520_organizational_unit_name{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtOrganizationalUnitName.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> x520_title{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtTitle.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes">,
-        asn1kit::oid, std::vector<asn1kit::asn_string<asn1kit::string_form::printable>>> x520dn_qualifier{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtDnQualifier.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes">,
-        asn1kit::oid, std::vector<asn1kit::asn_string<asn1kit::string_form::printable>>> x520country_name{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtCountryName.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes">,
-        asn1kit::oid, std::vector<asn1kit::asn_string<asn1kit::string_form::printable>>> x520_serial_number{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtSerialNumber.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes">,
-        asn1kit::oid, std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> x520_pseudonym{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtPseudonym.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes">,
-        asn1kit::oid, std::vector<asn1kit::asn_string<asn1kit::string_form::ia5>>> domain_component{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdDomainComponent.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes">,
-        asn1kit::oid, std::vector<asn1kit::asn_string<asn1kit::string_form::ia5>>> email_address{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdEmailAddress.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> name{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtName.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> surname{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtSurname.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> given_name{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtGivenName.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> initials{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtInitials.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> generation_qualifier{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtGenerationQualifier.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> x520_common_name{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtCommonName.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> x520_locality_name{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtLocalityName.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> x520_state_or_province_name{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtStateOrProvinceName.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> x520_organization_name{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtOrganizationName.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> x520_organizational_unit_name{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtOrganizationalUnitName.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> x520_title{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtTitle.get()};
+    inline static const binding_type<std::vector<asn1kit::asn_string<asn1kit::string_form::printable>>> x520dn_qualifier{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtDnQualifier.get()};
+    inline static const binding_type<std::vector<asn1kit::asn_string<asn1kit::string_form::printable>>> x520country_name{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtCountryName.get()};
+    inline static const binding_type<std::vector<asn1kit::asn_string<asn1kit::string_form::printable>>> x520_serial_number{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtSerialNumber.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> x520_pseudonym{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtPseudonym.get()};
+    inline static const binding_type<std::vector<asn1kit::asn_string<asn1kit::string_form::ia5>>> domain_component{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdDomainComponent.get()};
+    inline static const binding_type<std::vector<asn1kit::asn_string<asn1kit::string_form::ia5>>> email_address{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdEmailAddress.get()};
 
 };
 
 struct supportedAttributes_value_open_type_entries {
-    inline static const asn1kit::open_binding<
+    template <typename T>
+    using binding_type = asn1kit::open_binding<
         asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes_value">,
-        asn1kit::oid, ::asn1kit::modern::PKIX1Explicit2009::DirectoryString> name{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtName.get()};
+        asn1kit::oid, T>;
 
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes_value">,
-        asn1kit::oid, ::asn1kit::modern::PKIX1Explicit2009::DirectoryString> surname{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtSurname.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes_value">,
-        asn1kit::oid, ::asn1kit::modern::PKIX1Explicit2009::DirectoryString> given_name{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtGivenName.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes_value">,
-        asn1kit::oid, ::asn1kit::modern::PKIX1Explicit2009::DirectoryString> initials{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtInitials.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes_value">,
-        asn1kit::oid, ::asn1kit::modern::PKIX1Explicit2009::DirectoryString> generation_qualifier{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtGenerationQualifier.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes_value">,
-        asn1kit::oid, ::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_common_name{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtCommonName.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes_value">,
-        asn1kit::oid, ::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_locality_name{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtLocalityName.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes_value">,
-        asn1kit::oid, ::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_state_or_province_name{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtStateOrProvinceName.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes_value">,
-        asn1kit::oid, ::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_organization_name{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtOrganizationName.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes_value">,
-        asn1kit::oid, ::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_organizational_unit_name{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtOrganizationalUnitName.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes_value">,
-        asn1kit::oid, ::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_title{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtTitle.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes_value">,
-        asn1kit::oid, asn1kit::asn_string<asn1kit::string_form::printable>> x520dn_qualifier{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtDnQualifier.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes_value">,
-        asn1kit::oid, asn1kit::asn_string<asn1kit::string_form::printable>> x520country_name{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtCountryName.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes_value">,
-        asn1kit::oid, asn1kit::asn_string<asn1kit::string_form::printable>> x520_serial_number{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtSerialNumber.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes_value">,
-        asn1kit::oid, ::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_pseudonym{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtPseudonym.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes_value">,
-        asn1kit::oid, asn1kit::asn_string<asn1kit::string_form::ia5>> domain_component{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdDomainComponent.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes_value">,
-        asn1kit::oid, asn1kit::asn_string<asn1kit::string_form::ia5>> email_address{
-        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdEmailAddress.get()};
+    inline static const binding_type<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> name{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtName.get()};
+    inline static const binding_type<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> surname{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtSurname.get()};
+    inline static const binding_type<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> given_name{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtGivenName.get()};
+    inline static const binding_type<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> initials{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtInitials.get()};
+    inline static const binding_type<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> generation_qualifier{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtGenerationQualifier.get()};
+    inline static const binding_type<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_common_name{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtCommonName.get()};
+    inline static const binding_type<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_locality_name{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtLocalityName.get()};
+    inline static const binding_type<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_state_or_province_name{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtStateOrProvinceName.get()};
+    inline static const binding_type<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_organization_name{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtOrganizationName.get()};
+    inline static const binding_type<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_organizational_unit_name{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtOrganizationalUnitName.get()};
+    inline static const binding_type<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_title{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtTitle.get()};
+    inline static const binding_type<asn1kit::asn_string<asn1kit::string_form::printable>> x520dn_qualifier{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtDnQualifier.get()};
+    inline static const binding_type<asn1kit::asn_string<asn1kit::string_form::printable>> x520country_name{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtCountryName.get()};
+    inline static const binding_type<asn1kit::asn_string<asn1kit::string_form::printable>> x520_serial_number{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtSerialNumber.get()};
+    inline static const binding_type<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> x520_pseudonym{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtPseudonym.get()};
+    inline static const binding_type<asn1kit::asn_string<asn1kit::string_form::ia5>> domain_component{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdDomainComponent.get()};
+    inline static const binding_type<asn1kit::asn_string<asn1kit::string_form::ia5>> email_address{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdEmailAddress.get()};
 
 };
 
-struct AttributeSet_open_types {
-    struct attribute_list {
-        using values = attributeList_open_type_entries;
+} // namespace detail
 
-    };
+#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+#error "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY is reserved for generated headers"
+#endif
+#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding) \
+    template <typename... Args> \
+    decltype(auto) Name(Args&&... args) const \
+        requires requires(const base& view, Args&&... values) { \
+            view.template invoke<open_entries::Binding>(std::forward<Args>(values)...); \
+        } \
+    { return view_.template invoke<open_entries::Binding>(std::forward<Args>(args)...); }
 
-    struct attributes_defined {
-        using values = attributesDefined_open_type_entries;
+template <typename Target>
+struct AttributeSetAttributeListOpenView {
+    using open_entries = detail::attributeList_open_type_entries;
 
-    };
+    using access = asn1kit::open_direct_access;
 
-    struct supported_attributes {
-        using values = supportedAttributes_open_type_entries;
+    using base = asn1kit::open_function_view<Target, access>;
 
-    };
+    explicit AttributeSetAttributeListOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
 
+    explicit AttributeSetAttributeListOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    AttributeSetAttributeListOpenView()
+        requires asn1kit::is_open_factory_target_v<Target> = default;
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(extension_req, extension_req)
+
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct Extension_open_types {
-    struct attribute_cert_extensions {
-        using extn_value = attributeCertExtensions_open_type_entries;
+template <typename Target>
+struct AttributeSetAttributesDefinedOpenView {
+    using open_entries = detail::attributesDefined_open_type_entries;
 
-    };
+    using access = asn1kit::open_direct_access;
 
-    struct cert_extensions {
-        using extn_value = certExtensions_open_type_entries;
+    using base = asn1kit::open_function_view<Target, access>;
 
-    };
+    explicit AttributeSetAttributesDefinedOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
 
-    struct crl_entry_extensions {
-        using extn_value = crlEntryExtensions_open_type_entries;
+    explicit AttributeSetAttributesDefinedOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
 
-    };
+    AttributeSetAttributesDefinedOpenView()
+        requires asn1kit::is_open_factory_target_v<Target> = default;
 
-    struct crl_extensions {
-        using extn_value = crlExtensions_open_type_entries;
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(authentication_info, authentication_info)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(acces_identity, acces_identity)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(charging_identity, charging_identity)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(group, group)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(role, role)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(clearance, clearance)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(enc_attrs, enc_attrs)
 
-    };
-
-    struct local {
-        using extn_value = extension_extnValue_open_type_entries;
-
-        using extn_value_response_extensions_extn_value = extension_extnValue_extension_2_open_type_entries;
-
-        using extn_value_single_extensions_extn_value = extension_extnValue_extension_3_open_type_entries;
-
-        using extn_value_single_request_extensions_extn_value = extension_extnValue_extension_open_type_entries;
-
-    };
-
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct SingleAttribute_open_types {
-    struct reg_control_set {
-        using value_ = regControlSet_value_open_type_entries;
+template <typename Target>
+struct AttributeSetSupportedAttributesOpenView {
+    using open_entries = detail::supportedAttributes_open_type_entries;
 
-    };
+    using access = asn1kit::open_direct_access;
 
-    struct reg_info_set {
-        using value_ = regInfoSet_value_open_type_entries;
+    using base = asn1kit::open_function_view<Target, access>;
 
-    };
+    explicit AttributeSetSupportedAttributesOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
 
-    struct supported_attributes {
-        using value_ = supportedAttributes_value_open_type_entries;
+    explicit AttributeSetSupportedAttributesOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
 
-    };
+    AttributeSetSupportedAttributesOpenView()
+        requires asn1kit::is_open_factory_target_v<Target> = default;
 
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(name, name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(surname, surname)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(given_name, given_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(initials, initials)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(generation_qualifier, generation_qualifier)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_common_name, x520_common_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_locality_name, x520_locality_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_state_or_province_name, x520_state_or_province_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_organization_name, x520_organization_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_organizational_unit_name, x520_organizational_unit_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_title, x520_title)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520dn_qualifier, x520dn_qualifier)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520country_name, x520country_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_serial_number, x520_serial_number)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_pseudonym, x520_pseudonym)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(domain_component, domain_component)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(email_address, email_address)
+
+private:
+    [[no_unique_address]] base view_;
 };
+
+template <typename Target>
+struct ExtensionAttributeCertExtensionsOpenView {
+    using open_entries = detail::attributeCertExtensions_open_type_entries;
+
+    using access = asn1kit::open_direct_access;
+
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit ExtensionAttributeCertExtensionsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit ExtensionAttributeCertExtensionsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ExtensionAttributeCertExtensionsOpenView()
+        requires asn1kit::is_open_factory_target_v<Target> = default;
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(audit_identity, audit_identity)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(target_information, target_information)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(authority_key_identifier, authority_key_identifier)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(authority_info_access, authority_info_access)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(crl_distribution_points, crl_distribution_points)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(no_rev_avail, no_rev_avail)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ac_proxying, ac_proxying)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(aa_controls, aa_controls)
+
+private:
+    [[no_unique_address]] base view_;
+};
+
+template <typename Target>
+struct ExtensionCertExtensionsOpenView {
+    using open_entries = detail::certExtensions_open_type_entries;
+
+    using access = asn1kit::open_direct_access;
+
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit ExtensionCertExtensionsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit ExtensionCertExtensionsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ExtensionCertExtensionsOpenView()
+        requires asn1kit::is_open_factory_target_v<Target> = default;
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(authority_key_identifier, authority_key_identifier)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(subject_key_identifier, subject_key_identifier)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(key_usage, key_usage)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(private_key_usage_period, private_key_usage_period)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(certificate_policies, certificate_policies)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(policy_mappings, policy_mappings)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(subject_alt_name, subject_alt_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(issuer_alt_name, issuer_alt_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(subject_directory_attributes, subject_directory_attributes)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(basic_constraints, basic_constraints)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(name_constraints, name_constraints)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(policy_constraints, policy_constraints)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ext_key_usage, ext_key_usage)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(crl_distribution_points, crl_distribution_points)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(inhibit_any_policy, inhibit_any_policy)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(freshest_crl, freshest_crl)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(authority_info_access, authority_info_access)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(subject_info_access_syntax, subject_info_access_syntax)
+
+private:
+    [[no_unique_address]] base view_;
+};
+
+template <typename Target>
+struct ExtensionCrlEntryExtensionsOpenView {
+    using open_entries = detail::crlEntryExtensions_open_type_entries;
+
+    using access = asn1kit::open_direct_access;
+
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit ExtensionCrlEntryExtensionsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit ExtensionCrlEntryExtensionsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ExtensionCrlEntryExtensionsOpenView()
+        requires asn1kit::is_open_factory_target_v<Target> = default;
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(crl_reason, crl_reason)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(certificate_issuer, certificate_issuer)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(hold_instruction_code, hold_instruction_code)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(invalidity_date, invalidity_date)
+
+private:
+    [[no_unique_address]] base view_;
+};
+
+template <typename Target>
+struct ExtensionCrlExtensionsOpenView {
+    using open_entries = detail::crlExtensions_open_type_entries;
+
+    using access = asn1kit::open_direct_access;
+
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit ExtensionCrlExtensionsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit ExtensionCrlExtensionsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ExtensionCrlExtensionsOpenView()
+        requires asn1kit::is_open_factory_target_v<Target> = default;
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(authority_key_identifier, authority_key_identifier)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(issuer_alt_name, issuer_alt_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(crl_number, crl_number)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(delta_crl_indicator, delta_crl_indicator)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(issuing_distribution_point, issuing_distribution_point)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(freshest_crl, freshest_crl)
+
+private:
+    [[no_unique_address]] base view_;
+};
+
+template <typename Target>
+struct ExtensionLocalRequestExtensionsOpenView {
+    using open_entries = detail::extension_extnValue_open_type_entries;
+
+    using access = asn1kit::open_direct_access;
+
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit ExtensionLocalRequestExtensionsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit ExtensionLocalRequestExtensionsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ExtensionLocalRequestExtensionsOpenView()
+        requires asn1kit::is_open_factory_target_v<Target> = default;
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(re_ocsp_nonce, re_ocsp_nonce)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(re_ocsp_response, re_ocsp_response)
+
+private:
+    [[no_unique_address]] base view_;
+};
+
+template <typename Target>
+struct ExtensionLocalResponseExtensionsOpenView {
+    using open_entries = detail::extension_extnValue_extension_2_open_type_entries;
+
+    using access = asn1kit::open_direct_access;
+
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit ExtensionLocalResponseExtensionsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit ExtensionLocalResponseExtensionsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ExtensionLocalResponseExtensionsOpenView()
+        requires asn1kit::is_open_factory_target_v<Target> = default;
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(re_ocsp_nonce, re_ocsp_nonce)
+
+private:
+    [[no_unique_address]] base view_;
+};
+
+template <typename Target>
+struct ExtensionLocalSingleExtensionsOpenView {
+    using open_entries = detail::extension_extnValue_extension_3_open_type_entries;
+
+    using access = asn1kit::open_direct_access;
+
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit ExtensionLocalSingleExtensionsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit ExtensionLocalSingleExtensionsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ExtensionLocalSingleExtensionsOpenView()
+        requires asn1kit::is_open_factory_target_v<Target> = default;
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(re_ocsp_crl, re_ocsp_crl)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(re_ocsp_archive_cutoff, re_ocsp_archive_cutoff)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(crl_reason, crl_reason)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(certificate_issuer, certificate_issuer)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(hold_instruction_code, hold_instruction_code)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(invalidity_date, invalidity_date)
+
+private:
+    [[no_unique_address]] base view_;
+};
+
+template <typename Target>
+struct ExtensionLocalSingleRequestExtensionsOpenView {
+    using open_entries = detail::extension_extnValue_extension_open_type_entries;
+
+    using access = asn1kit::open_direct_access;
+
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit ExtensionLocalSingleRequestExtensionsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit ExtensionLocalSingleRequestExtensionsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ExtensionLocalSingleRequestExtensionsOpenView()
+        requires asn1kit::is_open_factory_target_v<Target> = default;
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(re_ocsp_service_locator, re_ocsp_service_locator)
+
+private:
+    [[no_unique_address]] base view_;
+};
+
+template <typename Target>
+struct SingleAttributeRegControlSetOpenView {
+    using open_entries = detail::regControlSet_value_open_type_entries;
+
+    using access = asn1kit::open_direct_access;
+
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit SingleAttributeRegControlSetOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit SingleAttributeRegControlSetOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    SingleAttributeRegControlSetOpenView()
+        requires asn1kit::is_open_factory_target_v<Target> = default;
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(reg_ctrl_reg_token, reg_ctrl_reg_token)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(reg_ctrl_authenticator, reg_ctrl_authenticator)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(reg_ctrl_pki_publication_info, reg_ctrl_pki_publication_info)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(reg_ctrl_pki_archive_options, reg_ctrl_pki_archive_options)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(reg_ctrl_old_cert_id, reg_ctrl_old_cert_id)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(reg_ctrl_protocol_encr_key, reg_ctrl_protocol_encr_key)
+
+private:
+    [[no_unique_address]] base view_;
+};
+
+template <typename Target>
+struct SingleAttributeRegInfoSetOpenView {
+    using open_entries = detail::regInfoSet_value_open_type_entries;
+
+    using access = asn1kit::open_direct_access;
+
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit SingleAttributeRegInfoSetOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit SingleAttributeRegInfoSetOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    SingleAttributeRegInfoSetOpenView()
+        requires asn1kit::is_open_factory_target_v<Target> = default;
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(reg_info_utf8_pairs, reg_info_utf8_pairs)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(reg_info_cert_req, reg_info_cert_req)
+
+private:
+    [[no_unique_address]] base view_;
+};
+
+template <typename Target>
+struct SingleAttributeSupportedAttributesOpenView {
+    using open_entries = detail::supportedAttributes_value_open_type_entries;
+
+    using access = asn1kit::open_direct_access;
+
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit SingleAttributeSupportedAttributesOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit SingleAttributeSupportedAttributesOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    SingleAttributeSupportedAttributesOpenView()
+        requires asn1kit::is_open_factory_target_v<Target> = default;
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(name, name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(surname, surname)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(given_name, given_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(initials, initials)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(generation_qualifier, generation_qualifier)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_common_name, x520_common_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_locality_name, x520_locality_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_state_or_province_name, x520_state_or_province_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_organization_name, x520_organization_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_organizational_unit_name, x520_organizational_unit_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_title, x520_title)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520dn_qualifier, x520dn_qualifier)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520country_name, x520country_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_serial_number, x520_serial_number)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_pseudonym, x520_pseudonym)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(domain_component, domain_component)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(email_address, email_address)
+
+private:
+    [[no_unique_address]] base view_;
+};
+
+#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+
+inline AttributeSetAttributeListOpenView<AttributeSet> AttributeSet::attribute_list() & {
+    return AttributeSetAttributeListOpenView<AttributeSet>{*this};
+}
+inline AttributeSetAttributeListOpenView<const AttributeSet> AttributeSet::attribute_list() const & {
+    return AttributeSetAttributeListOpenView<const AttributeSet>{*this};
+}
+inline AttributeSetAttributeListOpenView<asn1kit::open_owned_target<AttributeSet>> AttributeSet::attribute_list() && {
+    return AttributeSetAttributeListOpenView<asn1kit::open_owned_target<AttributeSet>>{std::move(*this)};
+}
+inline AttributeSetAttributeListOpenView<asn1kit::open_factory_target<AttributeSet>> AttributeSet::make_attribute_list() {
+    return AttributeSetAttributeListOpenView<asn1kit::open_factory_target<AttributeSet>>{};
+}
+
+inline AttributeSetAttributesDefinedOpenView<AttributeSet> AttributeSet::attributes_defined() & {
+    return AttributeSetAttributesDefinedOpenView<AttributeSet>{*this};
+}
+inline AttributeSetAttributesDefinedOpenView<const AttributeSet> AttributeSet::attributes_defined() const & {
+    return AttributeSetAttributesDefinedOpenView<const AttributeSet>{*this};
+}
+inline AttributeSetAttributesDefinedOpenView<asn1kit::open_owned_target<AttributeSet>> AttributeSet::attributes_defined() && {
+    return AttributeSetAttributesDefinedOpenView<asn1kit::open_owned_target<AttributeSet>>{std::move(*this)};
+}
+inline AttributeSetAttributesDefinedOpenView<asn1kit::open_factory_target<AttributeSet>> AttributeSet::make_attributes_defined() {
+    return AttributeSetAttributesDefinedOpenView<asn1kit::open_factory_target<AttributeSet>>{};
+}
+
+inline AttributeSetSupportedAttributesOpenView<AttributeSet> AttributeSet::supported_attributes() & {
+    return AttributeSetSupportedAttributesOpenView<AttributeSet>{*this};
+}
+inline AttributeSetSupportedAttributesOpenView<const AttributeSet> AttributeSet::supported_attributes() const & {
+    return AttributeSetSupportedAttributesOpenView<const AttributeSet>{*this};
+}
+inline AttributeSetSupportedAttributesOpenView<asn1kit::open_owned_target<AttributeSet>> AttributeSet::supported_attributes() && {
+    return AttributeSetSupportedAttributesOpenView<asn1kit::open_owned_target<AttributeSet>>{std::move(*this)};
+}
+inline AttributeSetSupportedAttributesOpenView<asn1kit::open_factory_target<AttributeSet>> AttributeSet::make_supported_attributes() {
+    return AttributeSetSupportedAttributesOpenView<asn1kit::open_factory_target<AttributeSet>>{};
+}
+
+inline ExtensionAttributeCertExtensionsOpenView<Extension> Extension::attribute_cert_extensions() & {
+    return ExtensionAttributeCertExtensionsOpenView<Extension>{*this};
+}
+inline ExtensionAttributeCertExtensionsOpenView<const Extension> Extension::attribute_cert_extensions() const & {
+    return ExtensionAttributeCertExtensionsOpenView<const Extension>{*this};
+}
+inline ExtensionAttributeCertExtensionsOpenView<asn1kit::open_owned_target<Extension>> Extension::attribute_cert_extensions() && {
+    return ExtensionAttributeCertExtensionsOpenView<asn1kit::open_owned_target<Extension>>{std::move(*this)};
+}
+inline ExtensionAttributeCertExtensionsOpenView<asn1kit::open_factory_target<Extension>> Extension::make_attribute_cert_extensions() {
+    return ExtensionAttributeCertExtensionsOpenView<asn1kit::open_factory_target<Extension>>{};
+}
+
+inline ExtensionCertExtensionsOpenView<Extension> Extension::cert_extensions() & {
+    return ExtensionCertExtensionsOpenView<Extension>{*this};
+}
+inline ExtensionCertExtensionsOpenView<const Extension> Extension::cert_extensions() const & {
+    return ExtensionCertExtensionsOpenView<const Extension>{*this};
+}
+inline ExtensionCertExtensionsOpenView<asn1kit::open_owned_target<Extension>> Extension::cert_extensions() && {
+    return ExtensionCertExtensionsOpenView<asn1kit::open_owned_target<Extension>>{std::move(*this)};
+}
+inline ExtensionCertExtensionsOpenView<asn1kit::open_factory_target<Extension>> Extension::make_cert_extensions() {
+    return ExtensionCertExtensionsOpenView<asn1kit::open_factory_target<Extension>>{};
+}
+
+inline ExtensionCrlEntryExtensionsOpenView<Extension> Extension::crl_entry_extensions() & {
+    return ExtensionCrlEntryExtensionsOpenView<Extension>{*this};
+}
+inline ExtensionCrlEntryExtensionsOpenView<const Extension> Extension::crl_entry_extensions() const & {
+    return ExtensionCrlEntryExtensionsOpenView<const Extension>{*this};
+}
+inline ExtensionCrlEntryExtensionsOpenView<asn1kit::open_owned_target<Extension>> Extension::crl_entry_extensions() && {
+    return ExtensionCrlEntryExtensionsOpenView<asn1kit::open_owned_target<Extension>>{std::move(*this)};
+}
+inline ExtensionCrlEntryExtensionsOpenView<asn1kit::open_factory_target<Extension>> Extension::make_crl_entry_extensions() {
+    return ExtensionCrlEntryExtensionsOpenView<asn1kit::open_factory_target<Extension>>{};
+}
+
+inline ExtensionCrlExtensionsOpenView<Extension> Extension::crl_extensions() & {
+    return ExtensionCrlExtensionsOpenView<Extension>{*this};
+}
+inline ExtensionCrlExtensionsOpenView<const Extension> Extension::crl_extensions() const & {
+    return ExtensionCrlExtensionsOpenView<const Extension>{*this};
+}
+inline ExtensionCrlExtensionsOpenView<asn1kit::open_owned_target<Extension>> Extension::crl_extensions() && {
+    return ExtensionCrlExtensionsOpenView<asn1kit::open_owned_target<Extension>>{std::move(*this)};
+}
+inline ExtensionCrlExtensionsOpenView<asn1kit::open_factory_target<Extension>> Extension::make_crl_extensions() {
+    return ExtensionCrlExtensionsOpenView<asn1kit::open_factory_target<Extension>>{};
+}
+
+inline ExtensionLocalRequestExtensionsOpenView<Extension> Extension::local_request_extensions() & {
+    return ExtensionLocalRequestExtensionsOpenView<Extension>{*this};
+}
+inline ExtensionLocalRequestExtensionsOpenView<const Extension> Extension::local_request_extensions() const & {
+    return ExtensionLocalRequestExtensionsOpenView<const Extension>{*this};
+}
+inline ExtensionLocalRequestExtensionsOpenView<asn1kit::open_owned_target<Extension>> Extension::local_request_extensions() && {
+    return ExtensionLocalRequestExtensionsOpenView<asn1kit::open_owned_target<Extension>>{std::move(*this)};
+}
+inline ExtensionLocalRequestExtensionsOpenView<asn1kit::open_factory_target<Extension>> Extension::make_local_request_extensions() {
+    return ExtensionLocalRequestExtensionsOpenView<asn1kit::open_factory_target<Extension>>{};
+}
+
+inline ExtensionLocalResponseExtensionsOpenView<Extension> Extension::local_response_extensions() & {
+    return ExtensionLocalResponseExtensionsOpenView<Extension>{*this};
+}
+inline ExtensionLocalResponseExtensionsOpenView<const Extension> Extension::local_response_extensions() const & {
+    return ExtensionLocalResponseExtensionsOpenView<const Extension>{*this};
+}
+inline ExtensionLocalResponseExtensionsOpenView<asn1kit::open_owned_target<Extension>> Extension::local_response_extensions() && {
+    return ExtensionLocalResponseExtensionsOpenView<asn1kit::open_owned_target<Extension>>{std::move(*this)};
+}
+inline ExtensionLocalResponseExtensionsOpenView<asn1kit::open_factory_target<Extension>> Extension::make_local_response_extensions() {
+    return ExtensionLocalResponseExtensionsOpenView<asn1kit::open_factory_target<Extension>>{};
+}
+
+inline ExtensionLocalSingleExtensionsOpenView<Extension> Extension::local_single_extensions() & {
+    return ExtensionLocalSingleExtensionsOpenView<Extension>{*this};
+}
+inline ExtensionLocalSingleExtensionsOpenView<const Extension> Extension::local_single_extensions() const & {
+    return ExtensionLocalSingleExtensionsOpenView<const Extension>{*this};
+}
+inline ExtensionLocalSingleExtensionsOpenView<asn1kit::open_owned_target<Extension>> Extension::local_single_extensions() && {
+    return ExtensionLocalSingleExtensionsOpenView<asn1kit::open_owned_target<Extension>>{std::move(*this)};
+}
+inline ExtensionLocalSingleExtensionsOpenView<asn1kit::open_factory_target<Extension>> Extension::make_local_single_extensions() {
+    return ExtensionLocalSingleExtensionsOpenView<asn1kit::open_factory_target<Extension>>{};
+}
+
+inline ExtensionLocalSingleRequestExtensionsOpenView<Extension> Extension::local_single_request_extensions() & {
+    return ExtensionLocalSingleRequestExtensionsOpenView<Extension>{*this};
+}
+inline ExtensionLocalSingleRequestExtensionsOpenView<const Extension> Extension::local_single_request_extensions() const & {
+    return ExtensionLocalSingleRequestExtensionsOpenView<const Extension>{*this};
+}
+inline ExtensionLocalSingleRequestExtensionsOpenView<asn1kit::open_owned_target<Extension>> Extension::local_single_request_extensions() && {
+    return ExtensionLocalSingleRequestExtensionsOpenView<asn1kit::open_owned_target<Extension>>{std::move(*this)};
+}
+inline ExtensionLocalSingleRequestExtensionsOpenView<asn1kit::open_factory_target<Extension>> Extension::make_local_single_request_extensions() {
+    return ExtensionLocalSingleRequestExtensionsOpenView<asn1kit::open_factory_target<Extension>>{};
+}
+
+inline SingleAttributeRegControlSetOpenView<SingleAttribute> SingleAttribute::reg_control_set() & {
+    return SingleAttributeRegControlSetOpenView<SingleAttribute>{*this};
+}
+inline SingleAttributeRegControlSetOpenView<const SingleAttribute> SingleAttribute::reg_control_set() const & {
+    return SingleAttributeRegControlSetOpenView<const SingleAttribute>{*this};
+}
+inline SingleAttributeRegControlSetOpenView<asn1kit::open_owned_target<SingleAttribute>> SingleAttribute::reg_control_set() && {
+    return SingleAttributeRegControlSetOpenView<asn1kit::open_owned_target<SingleAttribute>>{std::move(*this)};
+}
+inline SingleAttributeRegControlSetOpenView<asn1kit::open_factory_target<SingleAttribute>> SingleAttribute::make_reg_control_set() {
+    return SingleAttributeRegControlSetOpenView<asn1kit::open_factory_target<SingleAttribute>>{};
+}
+
+inline SingleAttributeRegInfoSetOpenView<SingleAttribute> SingleAttribute::reg_info_set() & {
+    return SingleAttributeRegInfoSetOpenView<SingleAttribute>{*this};
+}
+inline SingleAttributeRegInfoSetOpenView<const SingleAttribute> SingleAttribute::reg_info_set() const & {
+    return SingleAttributeRegInfoSetOpenView<const SingleAttribute>{*this};
+}
+inline SingleAttributeRegInfoSetOpenView<asn1kit::open_owned_target<SingleAttribute>> SingleAttribute::reg_info_set() && {
+    return SingleAttributeRegInfoSetOpenView<asn1kit::open_owned_target<SingleAttribute>>{std::move(*this)};
+}
+inline SingleAttributeRegInfoSetOpenView<asn1kit::open_factory_target<SingleAttribute>> SingleAttribute::make_reg_info_set() {
+    return SingleAttributeRegInfoSetOpenView<asn1kit::open_factory_target<SingleAttribute>>{};
+}
+
+inline SingleAttributeSupportedAttributesOpenView<SingleAttribute> SingleAttribute::supported_attributes() & {
+    return SingleAttributeSupportedAttributesOpenView<SingleAttribute>{*this};
+}
+inline SingleAttributeSupportedAttributesOpenView<const SingleAttribute> SingleAttribute::supported_attributes() const & {
+    return SingleAttributeSupportedAttributesOpenView<const SingleAttribute>{*this};
+}
+inline SingleAttributeSupportedAttributesOpenView<asn1kit::open_owned_target<SingleAttribute>> SingleAttribute::supported_attributes() && {
+    return SingleAttributeSupportedAttributesOpenView<asn1kit::open_owned_target<SingleAttribute>>{std::move(*this)};
+}
+inline SingleAttributeSupportedAttributesOpenView<asn1kit::open_factory_target<SingleAttribute>> SingleAttribute::make_supported_attributes() {
+    return SingleAttributeSupportedAttributesOpenView<asn1kit::open_factory_target<SingleAttribute>>{};
+}
 
 } // namespace PKIXCommonTypes2009
 } // namespace modern

@@ -59,11 +59,11 @@ using Name = std::vector<std::vector<Attr>>;
 
 [[nodiscard]] Name make_name(const char* common_name) {
     Name name;
-    name.push_back({Common::SingleAttribute::create(Common::SingleAttribute::open_types::supported_attributes::value_::x520country_name,
+    name.push_back({Common::SingleAttribute::make_supported_attributes().x520country_name(
         asn1kit::asn_string<asn1kit::string_form::printable>{"US"})});
-    name.push_back({Common::SingleAttribute::create(Common::SingleAttribute::open_types::supported_attributes::value_::x520_organization_name,
+    name.push_back({Common::SingleAttribute::make_supported_attributes().x520_organization_name(
         Pkix::DirectoryString::from_printableString("Test Certificates 2011"))});
-    name.push_back({Common::SingleAttribute::create(Common::SingleAttribute::open_types::supported_attributes::value_::x520_common_name,
+    name.push_back({Common::SingleAttribute::make_supported_attributes().x520_common_name(
         Pkix::DirectoryString::from_printableString(common_name))});
     return name;
 }
@@ -117,14 +117,14 @@ Pkix::Certificate create_certificate() {
 
     const auto ski_bytes = filled(20, 0xE4);
     std::vector<Common::Extension> extensions{
-        Common::Extension::create(Common::Extension::open_types::cert_extensions::extn_value::subject_key_identifier,
+        Common::Extension::make_cert_extensions().subject_key_identifier(
             asn1kit::bytes::copy_from(ski_bytes)),
         with_critical(
-            Common::Extension::create(Common::Extension::open_types::cert_extensions::extn_value::key_usage, Implicit::KeyUsage::from_flags(
+            Common::Extension::make_cert_extensions().key_usage(Implicit::KeyUsage::from_flags(
                 Implicit::KeyUsageFlags::keyCertSign | Implicit::KeyUsageFlags::cRLSign)),
             true),
         with_critical(
-            Common::Extension::create(Common::Extension::open_types::cert_extensions::extn_value::basic_constraints,
+            Common::Extension::make_cert_extensions().basic_constraints(
                 Implicit::BasicConstraints{true, std::nullopt}),
             true),
     };
@@ -154,8 +154,8 @@ Pkix::CertificateList create_certificate_list() {
     Implicit::AuthorityKeyIdentifier aki{};
     aki.keyIdentifier = asn1kit::bytes::copy_from(filled(20, 0x58));
     tbs.crlExtensions = std::vector<Common::Extension>{
-        Common::Extension::create(Common::Extension::open_types::crl_extensions::extn_value::authority_key_identifier, aki),
-        Common::Extension::create(Common::Extension::open_types::crl_extensions::extn_value::crl_number, asn1kit::integer::from_int32(1)),
+        Common::Extension::make_crl_extensions().authority_key_identifier(aki),
+        Common::Extension::make_crl_extensions().crl_number(asn1kit::integer::from_int32(1)),
     };
 
     Pkix::CertificateList crl{};

@@ -3,6 +3,10 @@
 
 #include "M.hpp"
 
+#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+#error "generated open-view helper macro leaked into consumer code"
+#endif
+
 #include "asn1kit/codec.hpp"
 #include "asn1kit/exception.hpp"
 #include "asn1kit/null.hpp"
@@ -14,35 +18,52 @@
 
 #include <cstdint>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 using namespace asn1kit;
 using namespace M;
-
-using algorithm_open_types = AlgorithmIdentifier::open_types::mixed::parameters;
-using attribute_open_types = Attribute::open_types::mixed::values;
-using extension_open_types = Extension::open_types::mixed::extn_value;
-using nested_open_types = Outer::open_types::mixed::value_;
 
 template <typename Owner, typename Binding>
 concept supports_nested_open_decode = requires(const Owner& owner, const Binding& binding) {
     owner.try_decode_nested(binding);
 };
 
+template <typename Owner>
+concept supports_rvalue_mixed_view = requires(Owner&& owner) {
+    std::move(owner).mixed();
+};
+
+template <typename View>
+concept supports_data_entry_set = requires(View view) {
+    view.data_entry(std::int32_t{42});
+};
+
+static_assert(supports_rvalue_mixed_view<AlgorithmIdentifier>);
+static_assert(sizeof(decltype(std::declval<AlgorithmIdentifier&>().mixed())) ==
+              sizeof(void*));
+static_assert(sizeof(decltype(AlgorithmIdentifier::make_mixed())) == 1);
+static_assert(supports_data_entry_set<
+    decltype(std::declval<AlgorithmIdentifier&>().mixed())>);
+static_assert(!supports_data_entry_set<
+    decltype(std::declval<const AlgorithmIdentifier&>().mixed())>);
+static_assert(!supports_data_entry_set<
+    decltype(std::declval<AlgorithmIdentifier&&>().mixed())>);
+
 TEST(OpenBinding, SetTryDecodeRoundTripNullAndInt32) {
-    auto info = AlgorithmIdentifier::create(algorithm_open_types::empty_entry, null_value::value());
+    auto info = AlgorithmIdentifier::make_mixed().empty_entry(null_value::value());
     EXPECT_EQ(info.algorithm, oid::parse("1.2.3"));
     ASSERT_TRUE(info.parameters.has_value());
 
-    const auto decoded_null = info.try_decode(algorithm_open_types::empty_entry);
+    const auto decoded_null = std::as_const(info).mixed().empty_entry();
     ASSERT_TRUE(decoded_null.has_value());
     EXPECT_EQ(*decoded_null, null_value::value());
 
-    EXPECT_FALSE(info.try_decode(algorithm_open_types::data_entry).has_value());
+    EXPECT_FALSE(info.mixed().data_entry().has_value());
 
-    info.set(algorithm_open_types::data_entry, 42);
+    info.mixed().data_entry(42);
     EXPECT_EQ(info.algorithm, oid::parse("1.2.4"));
-    const auto decoded = info.try_decode(algorithm_open_types::data_entry);
+    const auto decoded = info.mixed().data_entry();
     ASSERT_TRUE(decoded.has_value());
     EXPECT_EQ(*decoded, 42);
 
@@ -50,7 +71,15 @@ TEST(OpenBinding, SetTryDecodeRoundTripNullAndInt32) {
     info.encode(w);
     reader r(bytes::from_vector(w.encode()), encoding::der);
     const auto round_trip = AlgorithmIdentifier::decode(r);
-    EXPECT_EQ(round_trip.try_decode(algorithm_open_types::data_entry), 42);
+    EXPECT_EQ(round_trip.mixed().data_entry(), 42);
+}
+
+TEST(OpenBinding, RvalueViewDecodesOwnedCarrier) {
+    auto info = AlgorithmIdentifier::make_mixed().data_entry(42);
+    writer w(encoding::der);
+    info.encode(w);
+    reader r(bytes::from_vector(w.encode()), encoding::der);
+    EXPECT_EQ(AlgorithmIdentifier::decode(r).mixed().data_entry(), 42);
 }
 
 TEST(OpenBinding, UnknownKeyKeepsRaw) {
@@ -58,8 +87,8 @@ TEST(OpenBinding, UnknownKeyKeepsRaw) {
     info.algorithm = oid::parse("1.2.9");
     info.parameters = encode_open(std::int32_t{7});
 
-    EXPECT_FALSE(info.try_decode(algorithm_open_types::empty_entry).has_value());
-    EXPECT_FALSE(info.try_decode(algorithm_open_types::data_entry).has_value());
+    EXPECT_FALSE(info.mixed().empty_entry().has_value());
+    EXPECT_FALSE(info.mixed().data_entry().has_value());
     ASSERT_TRUE(info.parameters.has_value());
     EXPECT_EQ(decode_open<std::int32_t>(*info.parameters, encoding::der), 7);
 }
@@ -70,22 +99,22 @@ TEST(OpenBinding, KnownKeyWireMismatchRejects) {
     info.parameters = encode_open(std::int32_t{1});
 
     EXPECT_THROW(
-        (void)info.try_decode(algorithm_open_types::empty_entry), exception);
+        (void)info.mixed().empty_entry(), exception);
 }
 
 TEST(OpenBinding, ContainedSetTryDecodeRoundTrip) {
-    auto ext = Extension::create(extension_open_types::data_entry, std::int32_t{7});
+    auto ext = Extension::make_mixed().data_entry(std::int32_t{7});
     EXPECT_EQ(ext.extnID, oid::parse("1.2.4"));
 
-    EXPECT_EQ(ext.try_decode(extension_open_types::data_entry), 7);
+    EXPECT_EQ(ext.mixed().data_entry(), 7);
 
-    EXPECT_FALSE(ext.try_decode(extension_open_types::empty_entry).has_value());
+    EXPECT_FALSE(ext.mixed().empty_entry().has_value());
 
     writer w(encoding::der);
     ext.encode(w);
     reader r(bytes::from_vector(w.encode()), encoding::der);
     const auto round_trip = Extension::decode(r);
-    EXPECT_EQ(round_trip.try_decode(extension_open_types::data_entry), 7);
+    EXPECT_EQ(round_trip.mixed().data_entry(), 7);
 }
 
 TEST(OpenBinding, UserDefinedContainedBindingSupportsLocalCarrierOperations) {
@@ -112,18 +141,18 @@ TEST(OpenBinding, UserDefinedBindingRejectsMatchingKeyWithInvalidWireValue) {
 }
 
 TEST(OpenBinding, SetOfSetTryDecodeRoundTrip) {
-    auto attr = Attribute::create(attribute_open_types::data_entry,
+    auto attr = Attribute::make_mixed().data_entry(
         std::vector<std::int32_t>{1, 2});
     EXPECT_EQ(attr.type, oid::parse("1.2.4"));
     ASSERT_EQ(attr.values.size(), 2u);
 
-    const auto decoded = attr.try_decode(attribute_open_types::data_entry);
+    const auto decoded = attr.mixed().data_entry();
     ASSERT_TRUE(decoded.has_value());
     EXPECT_EQ(*decoded, (std::vector<std::int32_t>{1, 2}));
 
-    attr.set(attribute_open_types::empty_entry, null_value::value());
+    attr.mixed().empty_entry(null_value::value());
     EXPECT_EQ(attr.type, oid::parse("1.2.3"));
-    const auto nulls = attr.try_decode(attribute_open_types::empty_entry);
+    const auto nulls = attr.mixed().empty_entry();
     ASSERT_TRUE(nulls.has_value());
     ASSERT_EQ(nulls->size(), 1u);
 }
@@ -142,12 +171,12 @@ TEST(OpenBinding, AncestorSelectorUsesParentKey) {
     outer.id = oid::parse("1.2.4");
     outer.nested.push_back(Outer_Nested_Item{});
     outer.nested.back().value_ = encode_open(std::int32_t{9});
-    const auto decoded = outer.try_decode_nested(nested_open_types::data_entry);
+    const auto decoded = outer.mixed().data_entry();
     ASSERT_TRUE(decoded.has_value());
     EXPECT_EQ(*decoded, 9);
 
     outer.id = oid::parse("1.2.3");
-    EXPECT_FALSE(outer.try_decode_nested(nested_open_types::data_entry).has_value());
+    EXPECT_FALSE(outer.mixed().data_entry().has_value());
 }
 
 TEST(OpenBinding, DefaultContextDoesNotBypassContextualOwnerProtection) {
@@ -163,5 +192,5 @@ TEST(OpenBinding, ContextualDecodeRejectsMultipleMatches) {
     outer.nested[1].value_ = encode_open(std::int32_t{2});
 
     EXPECT_THROW(
-        (void)outer.try_decode_nested(nested_open_types::data_entry), exception);
+        (void)outer.mixed().data_entry(), exception);
 }

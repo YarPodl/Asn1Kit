@@ -32,268 +32,565 @@ namespace asn1kit {
 namespace modern {
 namespace EnrollmentMessageSyntax2009 {
 
+namespace detail {
+
 struct cmc_control_set_attrValues_open_type_entries {
-    inline static const asn1kit::open_binding<
+    template <typename T>
+    using binding_type = asn1kit::open_binding<
         asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<asn1kit::bytes>> cmc_identity_proof{
-        EnrollmentMessageSyntax2009Oids::IdCmcIdentityProof.get()};
+        asn1kit::oid, T>;
 
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<asn1kit::bytes>> cmc_data_return{
-        EnrollmentMessageSyntax2009Oids::IdCmcDataReturn.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<asn1kit::bytes>> cmc_reg_info{
-        EnrollmentMessageSyntax2009Oids::IdCmcRegInfo.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<asn1kit::bytes>> cmc_response_info{
-        EnrollmentMessageSyntax2009Oids::IdCmcResponseInfo.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<asn1kit::bytes>> cmc_query_pending{
-        EnrollmentMessageSyntax2009Oids::IdCmcQueryPending.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<asn1kit::bytes>> cmc_pop_link_random{
-        EnrollmentMessageSyntax2009Oids::IdCmcPopLinkRandom.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<asn1kit::bytes>> cmc_pop_link_witness{
-        EnrollmentMessageSyntax2009Oids::IdCmcPopLinkWitness.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<asn1kit::asn_string<asn1kit::string_form::utf8>>> cmc_identification{
-        EnrollmentMessageSyntax2009Oids::IdCmcIdentification.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<asn1kit::integer>> cmc_transaction_id{
-        EnrollmentMessageSyntax2009Oids::IdCmcTransactionId.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<asn1kit::bytes>> cmc_sender_nonce{
-        EnrollmentMessageSyntax2009Oids::IdCmcSenderNonce.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<asn1kit::bytes>> cmc_recipient_nonce{
-        EnrollmentMessageSyntax2009Oids::IdCmcRecipientNonce.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<CMCStatusInfo>> cmc_status_info{
-        EnrollmentMessageSyntax2009Oids::IdCmcStatusInfo.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<AddExtensions>> cmc_add_extensions{
-        EnrollmentMessageSyntax2009Oids::IdCmcAddExtensions.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<EncryptedPOP>> cmc_encrypted_pop{
-        EnrollmentMessageSyntax2009Oids::IdCmcEncryptedPOP.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<DecryptedPOP>> cmc_decrypted_pop{
-        EnrollmentMessageSyntax2009Oids::IdCmcDecryptedPOP.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<LraPopWitness>> cmc_lra_pop_witness{
-        EnrollmentMessageSyntax2009Oids::IdCmcLraPOPWitness.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<GetCert>> cmc_get_cert{
-        EnrollmentMessageSyntax2009Oids::IdCmcGetCert.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<GetCRL>> cmc_get_crl{
-        EnrollmentMessageSyntax2009Oids::IdCmcGetCRL.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<RevokeRequest>> cmc_revoke_request{
-        EnrollmentMessageSyntax2009Oids::IdCmcRevokeRequest.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<::asn1kit::modern::CryptographicMessageSyntax2009::IssuerAndSerialNumber>> cmc_confirm_cert_acceptance{
-        EnrollmentMessageSyntax2009Oids::IdCmcConfirmCertAcceptance.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<CMCStatusInfoV2>> cmc_status_info_v2{
-        EnrollmentMessageSyntax2009Oids::IdCmcStatusInfoV2.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<PublishTrustAnchors>> cmc_trusted_anchors{
-        EnrollmentMessageSyntax2009Oids::IdCmcTrustedAnchors.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<std::uint32_t>> cmc_auth_data{
-        EnrollmentMessageSyntax2009Oids::IdCmcAuthData.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<std::vector<std::uint32_t>>> cmc_batch_requests{
-        EnrollmentMessageSyntax2009Oids::IdCmcBatchRequests.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<std::vector<std::uint32_t>>> cmc_batch_responses{
-        EnrollmentMessageSyntax2009Oids::IdCmcBatchResponses.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<CMCPublicationInfo>> cmc_publish_cert{
-        EnrollmentMessageSyntax2009Oids::IdCmcPublishCert.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<ModCertTemplate>> cmc_mod_cert_template{
-        EnrollmentMessageSyntax2009Oids::IdCmcModCertTemplate.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<ControlsProcessed>> cmc_control_processed{
-        EnrollmentMessageSyntax2009Oids::IdCmcControlProcessed.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<IdentityProofV2>> cmc_identity_proof_v2{
-        EnrollmentMessageSyntax2009Oids::IdCmcIdentityProofV2.get()};
-
-    inline static const asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, std::vector<PopLinkWitnessV2>> cmc_pop_link_witness_v2{
-        EnrollmentMessageSyntax2009Oids::IdCmcPopLinkWitnessV2.get()};
+    inline static const binding_type<std::vector<asn1kit::bytes>> cmc_identity_proof{EnrollmentMessageSyntax2009Oids::IdCmcIdentityProof.get()};
+    inline static const binding_type<std::vector<asn1kit::bytes>> cmc_data_return{EnrollmentMessageSyntax2009Oids::IdCmcDataReturn.get()};
+    inline static const binding_type<std::vector<asn1kit::bytes>> cmc_reg_info{EnrollmentMessageSyntax2009Oids::IdCmcRegInfo.get()};
+    inline static const binding_type<std::vector<asn1kit::bytes>> cmc_response_info{EnrollmentMessageSyntax2009Oids::IdCmcResponseInfo.get()};
+    inline static const binding_type<std::vector<asn1kit::bytes>> cmc_query_pending{EnrollmentMessageSyntax2009Oids::IdCmcQueryPending.get()};
+    inline static const binding_type<std::vector<asn1kit::bytes>> cmc_pop_link_random{EnrollmentMessageSyntax2009Oids::IdCmcPopLinkRandom.get()};
+    inline static const binding_type<std::vector<asn1kit::bytes>> cmc_pop_link_witness{EnrollmentMessageSyntax2009Oids::IdCmcPopLinkWitness.get()};
+    inline static const binding_type<std::vector<asn1kit::asn_string<asn1kit::string_form::utf8>>> cmc_identification{EnrollmentMessageSyntax2009Oids::IdCmcIdentification.get()};
+    inline static const binding_type<std::vector<asn1kit::integer>> cmc_transaction_id{EnrollmentMessageSyntax2009Oids::IdCmcTransactionId.get()};
+    inline static const binding_type<std::vector<asn1kit::bytes>> cmc_sender_nonce{EnrollmentMessageSyntax2009Oids::IdCmcSenderNonce.get()};
+    inline static const binding_type<std::vector<asn1kit::bytes>> cmc_recipient_nonce{EnrollmentMessageSyntax2009Oids::IdCmcRecipientNonce.get()};
+    inline static const binding_type<std::vector<CMCStatusInfo>> cmc_status_info{EnrollmentMessageSyntax2009Oids::IdCmcStatusInfo.get()};
+    inline static const binding_type<std::vector<AddExtensions>> cmc_add_extensions{EnrollmentMessageSyntax2009Oids::IdCmcAddExtensions.get()};
+    inline static const binding_type<std::vector<EncryptedPOP>> cmc_encrypted_pop{EnrollmentMessageSyntax2009Oids::IdCmcEncryptedPOP.get()};
+    inline static const binding_type<std::vector<DecryptedPOP>> cmc_decrypted_pop{EnrollmentMessageSyntax2009Oids::IdCmcDecryptedPOP.get()};
+    inline static const binding_type<std::vector<LraPopWitness>> cmc_lra_pop_witness{EnrollmentMessageSyntax2009Oids::IdCmcLraPOPWitness.get()};
+    inline static const binding_type<std::vector<GetCert>> cmc_get_cert{EnrollmentMessageSyntax2009Oids::IdCmcGetCert.get()};
+    inline static const binding_type<std::vector<GetCRL>> cmc_get_crl{EnrollmentMessageSyntax2009Oids::IdCmcGetCRL.get()};
+    inline static const binding_type<std::vector<RevokeRequest>> cmc_revoke_request{EnrollmentMessageSyntax2009Oids::IdCmcRevokeRequest.get()};
+    inline static const binding_type<std::vector<::asn1kit::modern::CryptographicMessageSyntax2009::IssuerAndSerialNumber>> cmc_confirm_cert_acceptance{EnrollmentMessageSyntax2009Oids::IdCmcConfirmCertAcceptance.get()};
+    inline static const binding_type<std::vector<CMCStatusInfoV2>> cmc_status_info_v2{EnrollmentMessageSyntax2009Oids::IdCmcStatusInfoV2.get()};
+    inline static const binding_type<std::vector<PublishTrustAnchors>> cmc_trusted_anchors{EnrollmentMessageSyntax2009Oids::IdCmcTrustedAnchors.get()};
+    inline static const binding_type<std::vector<std::uint32_t>> cmc_auth_data{EnrollmentMessageSyntax2009Oids::IdCmcAuthData.get()};
+    inline static const binding_type<std::vector<std::vector<std::uint32_t>>> cmc_batch_requests{EnrollmentMessageSyntax2009Oids::IdCmcBatchRequests.get()};
+    inline static const binding_type<std::vector<std::vector<std::uint32_t>>> cmc_batch_responses{EnrollmentMessageSyntax2009Oids::IdCmcBatchResponses.get()};
+    inline static const binding_type<std::vector<CMCPublicationInfo>> cmc_publish_cert{EnrollmentMessageSyntax2009Oids::IdCmcPublishCert.get()};
+    inline static const binding_type<std::vector<ModCertTemplate>> cmc_mod_cert_template{EnrollmentMessageSyntax2009Oids::IdCmcModCertTemplate.get()};
+    inline static const binding_type<std::vector<ControlsProcessed>> cmc_control_processed{EnrollmentMessageSyntax2009Oids::IdCmcControlProcessed.get()};
+    inline static const binding_type<std::vector<IdentityProofV2>> cmc_identity_proof_v2{EnrollmentMessageSyntax2009Oids::IdCmcIdentityProofV2.get()};
+    inline static const binding_type<std::vector<PopLinkWitnessV2>> cmc_pop_link_witness_v2{EnrollmentMessageSyntax2009Oids::IdCmcPopLinkWitnessV2.get()};
 
 };
 
-struct AddExtensions_open_types {
-    struct cert_extensions {
-        using extn_value = ::asn1kit::modern::PKIXCommonTypes2009::certExtensions_open_type_entries;
+} // namespace detail
 
+#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+#error "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY is reserved for generated headers"
+#endif
+#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding) \
+    template <typename... Args> \
+    decltype(auto) Name(Args&&... args) const \
+        requires requires(const base& view, Args&&... values) { \
+            view.template invoke<open_entries::Binding>(std::forward<Args>(values)...); \
+        } \
+    { return view_.template invoke<open_entries::Binding>(std::forward<Args>(args)...); }
+
+template <typename Target>
+struct AddExtensionsCertExtensionsOpenView {
+    using open_entries = ::asn1kit::modern::PKIXCommonTypes2009::detail::certExtensions_open_type_entries;
+
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_extensions(binding);
+        }
     };
 
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit AddExtensionsCertExtensionsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit AddExtensionsCertExtensionsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(authority_key_identifier, authority_key_identifier)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(subject_key_identifier, subject_key_identifier)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(key_usage, key_usage)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(private_key_usage_period, private_key_usage_period)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(certificate_policies, certificate_policies)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(policy_mappings, policy_mappings)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(subject_alt_name, subject_alt_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(issuer_alt_name, issuer_alt_name)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(subject_directory_attributes, subject_directory_attributes)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(basic_constraints, basic_constraints)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(name_constraints, name_constraints)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(policy_constraints, policy_constraints)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ext_key_usage, ext_key_usage)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(crl_distribution_points, crl_distribution_points)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(inhibit_any_policy, inhibit_any_policy)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(freshest_crl, freshest_crl)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(authority_info_access, authority_info_access)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(subject_info_access_syntax, subject_info_access_syntax)
+
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct CMCPublicationInfo_open_types {
-    struct hash_algorithms {
-        using parameters = ::asn1kit::modern::AlgorithmInformation2009::hashAlgorithms_parameters_open_type_entries;
+template <typename Target>
+struct CMCPublicationInfoHashAlgorithmsOpenView {
+    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::hashAlgorithms_parameters_open_type_entries;
 
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_hash_alg(binding);
+        }
     };
 
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit CMCPublicationInfoHashAlgorithmsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit CMCPublicationInfoHashAlgorithmsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha1, mda_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha256, mda_sha256)
+
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct CertificationRequest_open_types {
-    struct attribute_list {
-        using values = ::asn1kit::modern::PKIXCommonTypes2009::attributeList_open_type_entries;
+template <typename Target>
+struct CertificationRequestSignatureAlgorithmsOpenView {
+    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::signatureAlgorithms_parameters_open_type_entries;
 
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_signature_algorithm(binding);
+        }
     };
 
-    struct cert_extensions {
-        using extn_value = ::asn1kit::modern::PKIXCommonTypes2009::certExtensions_open_type_entries;
+    using base = asn1kit::open_function_view<Target, access>;
 
-    };
+    explicit CertificationRequestSignatureAlgorithmsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
 
-    struct public_key_algorithms {
-        using parameters = ::asn1kit::modern::AlgorithmInformation2009::publicKeyAlgorithms_parameters_open_type_entries;
+    explicit CertificationRequestSignatureAlgorithmsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
 
-    };
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_md2, sa_rsa_with_md2)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_md5, sa_rsa_with_md5)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_sha1, sa_rsa_with_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha1, sa_dsa_with_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha1, sa_ecdsa_with_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha224, sa_dsa_with_sha224)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha256, sa_dsa_with_sha256)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha224, sa_ecdsa_with_sha224)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha256, sa_ecdsa_with_sha256)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha384, sa_ecdsa_with_sha384)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha512, sa_ecdsa_with_sha512)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_ssa_pss, sa_rsa_ssa_pss)
 
-    struct signature_algorithms {
-        using parameters = ::asn1kit::modern::AlgorithmInformation2009::signatureAlgorithms_parameters_open_type_entries;
-
-    };
-
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct DecryptedPOP_open_types {
-    struct pop_algs {
-        using parameters = ::asn1kit::modern::AlgorithmInformation2009::pOPAlgs_parameters_open_type_entries;
+template <typename Target>
+struct DecryptedPOPPopAlgsOpenView {
+    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::pOPAlgs_parameters_open_type_entries;
 
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_the_pop_alg_id(binding);
+        }
     };
 
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit DecryptedPOPPopAlgsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit DecryptedPOPPopAlgsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(maca_h_mac_sha1, maca_h_mac_sha1)
+
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct EncryptedPOP_open_types {
-    struct pop_algs {
-        using parameters = ::asn1kit::modern::AlgorithmInformation2009::pOPAlgs_parameters_open_type_entries;
+template <typename Target>
+struct EncryptedPOPPopAlgsOpenView {
+    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::pOPAlgs_parameters_open_type_entries;
 
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_the_pop_alg_id(binding);
+        }
     };
 
-    struct witness_algs {
-        using parameters = ::asn1kit::modern::AlgorithmInformation2009::witnessAlgs_parameters_open_type_entries;
+    using base = asn1kit::open_function_view<Target, access>;
 
-    };
+    explicit EncryptedPOPPopAlgsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
 
+    explicit EncryptedPOPPopAlgsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(maca_h_mac_sha1, maca_h_mac_sha1)
+
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct ExtensionReq_open_types {
-    struct cert_extensions {
-        using extn_value = ::asn1kit::modern::PKIXCommonTypes2009::certExtensions_open_type_entries;
+template <typename Target>
+struct EncryptedPOPWitnessAlgsOpenView {
+    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::witnessAlgs_parameters_open_type_entries;
 
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_witness_alg_id(binding);
+        }
     };
 
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit EncryptedPOPWitnessAlgsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit EncryptedPOPWitnessAlgsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha1, mda_sha1)
+
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct IdentityProofV2_open_types {
-    struct pop_algs {
-        using parameters = ::asn1kit::modern::AlgorithmInformation2009::pOPAlgs_parameters_open_type_entries;
+template <typename Target>
+struct IdentityProofV2PopAlgsOpenView {
+    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::pOPAlgs_parameters_open_type_entries;
 
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_mac_alg_id(binding);
+        }
     };
 
-    struct witness_algs {
-        using parameters = ::asn1kit::modern::AlgorithmInformation2009::witnessAlgs_parameters_open_type_entries;
+    using base = asn1kit::open_function_view<Target, access>;
 
-    };
+    explicit IdentityProofV2PopAlgsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
 
+    explicit IdentityProofV2PopAlgsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(maca_h_mac_sha1, maca_h_mac_sha1)
+
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct PopLinkWitnessV2_open_types {
-    struct key_dev_algs {
-        using parameters = ::asn1kit::modern::AlgorithmInformation2009::keyDevAlgs_parameters_open_type_entries;
+template <typename Target>
+struct IdentityProofV2WitnessAlgsOpenView {
+    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::witnessAlgs_parameters_open_type_entries;
 
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_proof_alg_id(binding);
+        }
     };
 
-    struct pop_algs {
-        using parameters = ::asn1kit::modern::AlgorithmInformation2009::pOPAlgs_parameters_open_type_entries;
+    using base = asn1kit::open_function_view<Target, access>;
 
-    };
+    explicit IdentityProofV2WitnessAlgsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
 
+    explicit IdentityProofV2WitnessAlgsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha1, mda_sha1)
+
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct PublishTrustAnchors_open_types {
-    struct hash_algorithms {
-        using parameters = ::asn1kit::modern::AlgorithmInformation2009::hashAlgorithms_parameters_open_type_entries;
+template <typename Target>
+struct PopLinkWitnessV2KeyDevAlgsOpenView {
+    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::keyDevAlgs_parameters_open_type_entries;
 
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_key_gen_algorithm(binding);
+        }
     };
 
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit PopLinkWitnessV2KeyDevAlgsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit PopLinkWitnessV2KeyDevAlgsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(kda_pbkdf2, kda_pbkdf2)
+
+private:
+    [[no_unique_address]] base view_;
 };
 
-struct TaggedAttribute_open_types {
-    struct cmc_control_set {
-        using attr_values = cmc_control_set_attrValues_open_type_entries;
+template <typename Target>
+struct PopLinkWitnessV2PopAlgsOpenView {
+    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::pOPAlgs_parameters_open_type_entries;
 
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_mac_algorithm(binding);
+        }
     };
 
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit PopLinkWitnessV2PopAlgsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit PopLinkWitnessV2PopAlgsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(maca_h_mac_sha1, maca_h_mac_sha1)
+
+private:
+    [[no_unique_address]] base view_;
 };
+
+template <typename Target>
+struct PublishTrustAnchorsHashAlgorithmsOpenView {
+    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::hashAlgorithms_parameters_open_type_entries;
+
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_hash_algorithm(binding);
+        }
+    };
+
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit PublishTrustAnchorsHashAlgorithmsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit PublishTrustAnchorsHashAlgorithmsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha1, mda_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha256, mda_sha256)
+
+private:
+    [[no_unique_address]] base view_;
+};
+
+template <typename Target>
+struct TaggedAttributeCmcControlSetOpenView {
+    using open_entries = detail::cmc_control_set_attrValues_open_type_entries;
+
+    using access = asn1kit::open_direct_access;
+
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit TaggedAttributeCmcControlSetOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit TaggedAttributeCmcControlSetOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    TaggedAttributeCmcControlSetOpenView()
+        requires asn1kit::is_open_factory_target_v<Target> = default;
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_identity_proof, cmc_identity_proof)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_data_return, cmc_data_return)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_reg_info, cmc_reg_info)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_response_info, cmc_response_info)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_query_pending, cmc_query_pending)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_pop_link_random, cmc_pop_link_random)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_pop_link_witness, cmc_pop_link_witness)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_identification, cmc_identification)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_transaction_id, cmc_transaction_id)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_sender_nonce, cmc_sender_nonce)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_recipient_nonce, cmc_recipient_nonce)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_status_info, cmc_status_info)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_add_extensions, cmc_add_extensions)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_encrypted_pop, cmc_encrypted_pop)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_decrypted_pop, cmc_decrypted_pop)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_lra_pop_witness, cmc_lra_pop_witness)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_get_cert, cmc_get_cert)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_get_crl, cmc_get_crl)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_revoke_request, cmc_revoke_request)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_confirm_cert_acceptance, cmc_confirm_cert_acceptance)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_status_info_v2, cmc_status_info_v2)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_trusted_anchors, cmc_trusted_anchors)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_auth_data, cmc_auth_data)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_batch_requests, cmc_batch_requests)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_batch_responses, cmc_batch_responses)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_publish_cert, cmc_publish_cert)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_mod_cert_template, cmc_mod_cert_template)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_control_processed, cmc_control_processed)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_identity_proof_v2, cmc_identity_proof_v2)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_pop_link_witness_v2, cmc_pop_link_witness_v2)
+
+private:
+    [[no_unique_address]] base view_;
+};
+
+#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+
+inline AddExtensionsCertExtensionsOpenView<AddExtensions> AddExtensions::cert_extensions() & {
+    return AddExtensionsCertExtensionsOpenView<AddExtensions>{*this};
+}
+inline AddExtensionsCertExtensionsOpenView<const AddExtensions> AddExtensions::cert_extensions() const & {
+    return AddExtensionsCertExtensionsOpenView<const AddExtensions>{*this};
+}
+inline AddExtensionsCertExtensionsOpenView<asn1kit::open_owned_target<AddExtensions>> AddExtensions::cert_extensions() && {
+    return AddExtensionsCertExtensionsOpenView<asn1kit::open_owned_target<AddExtensions>>{std::move(*this)};
+}
+
+inline CMCPublicationInfoHashAlgorithmsOpenView<CMCPublicationInfo> CMCPublicationInfo::hash_algorithms() & {
+    return CMCPublicationInfoHashAlgorithmsOpenView<CMCPublicationInfo>{*this};
+}
+inline CMCPublicationInfoHashAlgorithmsOpenView<const CMCPublicationInfo> CMCPublicationInfo::hash_algorithms() const & {
+    return CMCPublicationInfoHashAlgorithmsOpenView<const CMCPublicationInfo>{*this};
+}
+inline CMCPublicationInfoHashAlgorithmsOpenView<asn1kit::open_owned_target<CMCPublicationInfo>> CMCPublicationInfo::hash_algorithms() && {
+    return CMCPublicationInfoHashAlgorithmsOpenView<asn1kit::open_owned_target<CMCPublicationInfo>>{std::move(*this)};
+}
+
+inline CertificationRequestSignatureAlgorithmsOpenView<CertificationRequest> CertificationRequest::signature_algorithms() & {
+    return CertificationRequestSignatureAlgorithmsOpenView<CertificationRequest>{*this};
+}
+inline CertificationRequestSignatureAlgorithmsOpenView<const CertificationRequest> CertificationRequest::signature_algorithms() const & {
+    return CertificationRequestSignatureAlgorithmsOpenView<const CertificationRequest>{*this};
+}
+inline CertificationRequestSignatureAlgorithmsOpenView<asn1kit::open_owned_target<CertificationRequest>> CertificationRequest::signature_algorithms() && {
+    return CertificationRequestSignatureAlgorithmsOpenView<asn1kit::open_owned_target<CertificationRequest>>{std::move(*this)};
+}
+
+inline DecryptedPOPPopAlgsOpenView<DecryptedPOP> DecryptedPOP::pop_algs() & {
+    return DecryptedPOPPopAlgsOpenView<DecryptedPOP>{*this};
+}
+inline DecryptedPOPPopAlgsOpenView<const DecryptedPOP> DecryptedPOP::pop_algs() const & {
+    return DecryptedPOPPopAlgsOpenView<const DecryptedPOP>{*this};
+}
+inline DecryptedPOPPopAlgsOpenView<asn1kit::open_owned_target<DecryptedPOP>> DecryptedPOP::pop_algs() && {
+    return DecryptedPOPPopAlgsOpenView<asn1kit::open_owned_target<DecryptedPOP>>{std::move(*this)};
+}
+
+inline EncryptedPOPPopAlgsOpenView<EncryptedPOP> EncryptedPOP::pop_algs() & {
+    return EncryptedPOPPopAlgsOpenView<EncryptedPOP>{*this};
+}
+inline EncryptedPOPPopAlgsOpenView<const EncryptedPOP> EncryptedPOP::pop_algs() const & {
+    return EncryptedPOPPopAlgsOpenView<const EncryptedPOP>{*this};
+}
+inline EncryptedPOPPopAlgsOpenView<asn1kit::open_owned_target<EncryptedPOP>> EncryptedPOP::pop_algs() && {
+    return EncryptedPOPPopAlgsOpenView<asn1kit::open_owned_target<EncryptedPOP>>{std::move(*this)};
+}
+
+inline EncryptedPOPWitnessAlgsOpenView<EncryptedPOP> EncryptedPOP::witness_algs() & {
+    return EncryptedPOPWitnessAlgsOpenView<EncryptedPOP>{*this};
+}
+inline EncryptedPOPWitnessAlgsOpenView<const EncryptedPOP> EncryptedPOP::witness_algs() const & {
+    return EncryptedPOPWitnessAlgsOpenView<const EncryptedPOP>{*this};
+}
+inline EncryptedPOPWitnessAlgsOpenView<asn1kit::open_owned_target<EncryptedPOP>> EncryptedPOP::witness_algs() && {
+    return EncryptedPOPWitnessAlgsOpenView<asn1kit::open_owned_target<EncryptedPOP>>{std::move(*this)};
+}
+
+inline IdentityProofV2PopAlgsOpenView<IdentityProofV2> IdentityProofV2::pop_algs() & {
+    return IdentityProofV2PopAlgsOpenView<IdentityProofV2>{*this};
+}
+inline IdentityProofV2PopAlgsOpenView<const IdentityProofV2> IdentityProofV2::pop_algs() const & {
+    return IdentityProofV2PopAlgsOpenView<const IdentityProofV2>{*this};
+}
+inline IdentityProofV2PopAlgsOpenView<asn1kit::open_owned_target<IdentityProofV2>> IdentityProofV2::pop_algs() && {
+    return IdentityProofV2PopAlgsOpenView<asn1kit::open_owned_target<IdentityProofV2>>{std::move(*this)};
+}
+
+inline IdentityProofV2WitnessAlgsOpenView<IdentityProofV2> IdentityProofV2::witness_algs() & {
+    return IdentityProofV2WitnessAlgsOpenView<IdentityProofV2>{*this};
+}
+inline IdentityProofV2WitnessAlgsOpenView<const IdentityProofV2> IdentityProofV2::witness_algs() const & {
+    return IdentityProofV2WitnessAlgsOpenView<const IdentityProofV2>{*this};
+}
+inline IdentityProofV2WitnessAlgsOpenView<asn1kit::open_owned_target<IdentityProofV2>> IdentityProofV2::witness_algs() && {
+    return IdentityProofV2WitnessAlgsOpenView<asn1kit::open_owned_target<IdentityProofV2>>{std::move(*this)};
+}
+
+inline PopLinkWitnessV2KeyDevAlgsOpenView<PopLinkWitnessV2> PopLinkWitnessV2::key_dev_algs() & {
+    return PopLinkWitnessV2KeyDevAlgsOpenView<PopLinkWitnessV2>{*this};
+}
+inline PopLinkWitnessV2KeyDevAlgsOpenView<const PopLinkWitnessV2> PopLinkWitnessV2::key_dev_algs() const & {
+    return PopLinkWitnessV2KeyDevAlgsOpenView<const PopLinkWitnessV2>{*this};
+}
+inline PopLinkWitnessV2KeyDevAlgsOpenView<asn1kit::open_owned_target<PopLinkWitnessV2>> PopLinkWitnessV2::key_dev_algs() && {
+    return PopLinkWitnessV2KeyDevAlgsOpenView<asn1kit::open_owned_target<PopLinkWitnessV2>>{std::move(*this)};
+}
+
+inline PopLinkWitnessV2PopAlgsOpenView<PopLinkWitnessV2> PopLinkWitnessV2::pop_algs() & {
+    return PopLinkWitnessV2PopAlgsOpenView<PopLinkWitnessV2>{*this};
+}
+inline PopLinkWitnessV2PopAlgsOpenView<const PopLinkWitnessV2> PopLinkWitnessV2::pop_algs() const & {
+    return PopLinkWitnessV2PopAlgsOpenView<const PopLinkWitnessV2>{*this};
+}
+inline PopLinkWitnessV2PopAlgsOpenView<asn1kit::open_owned_target<PopLinkWitnessV2>> PopLinkWitnessV2::pop_algs() && {
+    return PopLinkWitnessV2PopAlgsOpenView<asn1kit::open_owned_target<PopLinkWitnessV2>>{std::move(*this)};
+}
+
+inline PublishTrustAnchorsHashAlgorithmsOpenView<PublishTrustAnchors> PublishTrustAnchors::hash_algorithms() & {
+    return PublishTrustAnchorsHashAlgorithmsOpenView<PublishTrustAnchors>{*this};
+}
+inline PublishTrustAnchorsHashAlgorithmsOpenView<const PublishTrustAnchors> PublishTrustAnchors::hash_algorithms() const & {
+    return PublishTrustAnchorsHashAlgorithmsOpenView<const PublishTrustAnchors>{*this};
+}
+inline PublishTrustAnchorsHashAlgorithmsOpenView<asn1kit::open_owned_target<PublishTrustAnchors>> PublishTrustAnchors::hash_algorithms() && {
+    return PublishTrustAnchorsHashAlgorithmsOpenView<asn1kit::open_owned_target<PublishTrustAnchors>>{std::move(*this)};
+}
+
+inline TaggedAttributeCmcControlSetOpenView<TaggedAttribute> TaggedAttribute::cmc_control_set() & {
+    return TaggedAttributeCmcControlSetOpenView<TaggedAttribute>{*this};
+}
+inline TaggedAttributeCmcControlSetOpenView<const TaggedAttribute> TaggedAttribute::cmc_control_set() const & {
+    return TaggedAttributeCmcControlSetOpenView<const TaggedAttribute>{*this};
+}
+inline TaggedAttributeCmcControlSetOpenView<asn1kit::open_owned_target<TaggedAttribute>> TaggedAttribute::cmc_control_set() && {
+    return TaggedAttributeCmcControlSetOpenView<asn1kit::open_owned_target<TaggedAttribute>>{std::move(*this)};
+}
+inline TaggedAttributeCmcControlSetOpenView<asn1kit::open_factory_target<TaggedAttribute>> TaggedAttribute::make_cmc_control_set() {
+    return TaggedAttributeCmcControlSetOpenView<asn1kit::open_factory_target<TaggedAttribute>>{};
+}
 
 } // namespace EnrollmentMessageSyntax2009
 } // namespace modern

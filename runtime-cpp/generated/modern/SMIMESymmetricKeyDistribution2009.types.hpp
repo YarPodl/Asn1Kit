@@ -130,13 +130,20 @@ struct Date {
     }
 };
 
+namespace detail {
 struct skdQuerySet_glaRequestValue_open_type_entries;
-struct GLAQueryRequest_open_types;
+} // namespace detail
+template <typename Target>
+struct GLAQueryRequestSkdQuerySetOpenView;
 struct GLAQueryRequest {
-    using open_types = GLAQueryRequest_open_types;
-
     asn1kit::oid glaRequestType{};
     asn1kit::any glaRequestValue{};
+
+    [[nodiscard]] GLAQueryRequestSkdQuerySetOpenView<GLAQueryRequest> skd_query_set() &;
+    [[nodiscard]] GLAQueryRequestSkdQuerySetOpenView<const GLAQueryRequest> skd_query_set() const &;
+    [[nodiscard]] GLAQueryRequestSkdQuerySetOpenView<asn1kit::open_owned_target<GLAQueryRequest>> skd_query_set() &&;
+    GLAQueryRequestSkdQuerySetOpenView<const GLAQueryRequest> skd_query_set() const && = delete;
+    [[nodiscard]] static GLAQueryRequestSkdQuerySetOpenView<asn1kit::open_factory_target<GLAQueryRequest>> make_skd_query_set();
 
     template <typename T>
     [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, T> open_binding(asn1kit::oid key) {
@@ -184,13 +191,20 @@ struct GLAQueryRequest {
     }
 };
 
+namespace detail {
 struct skdResponseSet_glaResponseValue_open_type_entries;
-struct GLAQueryResponse_open_types;
+} // namespace detail
+template <typename Target>
+struct GLAQueryResponseSkdResponseSetOpenView;
 struct GLAQueryResponse {
-    using open_types = GLAQueryResponse_open_types;
-
     asn1kit::oid glaResponseType{};
     asn1kit::any glaResponseValue{};
+
+    [[nodiscard]] GLAQueryResponseSkdResponseSetOpenView<GLAQueryResponse> skd_response_set() &;
+    [[nodiscard]] GLAQueryResponseSkdResponseSetOpenView<const GLAQueryResponse> skd_response_set() const &;
+    [[nodiscard]] GLAQueryResponseSkdResponseSetOpenView<asn1kit::open_owned_target<GLAQueryResponse>> skd_response_set() &&;
+    GLAQueryResponseSkdResponseSetOpenView<const GLAQueryResponse> skd_response_set() const && = delete;
+    [[nodiscard]] static GLAQueryResponseSkdResponseSetOpenView<asn1kit::open_factory_target<GLAQueryResponse>> make_skd_response_set();
 
     template <typename T>
     [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, T> open_binding(asn1kit::oid key) {

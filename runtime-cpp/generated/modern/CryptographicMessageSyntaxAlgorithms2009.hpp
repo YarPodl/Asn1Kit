@@ -121,14 +121,18 @@ struct PBKDF2Params_Salt {
     }
 };
 
-struct PBKDF2Params_open_types;
+template <typename Target>
+struct PBKDF2ParamsPbkdf2PrFsOpenView;
 struct PBKDF2Params {
-    using open_types = PBKDF2Params_open_types;
-
     PBKDF2Params_Salt salt{};
     asn1kit::integer iterationCount{};
     std::optional<asn1kit::integer> keyLength{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier prf = default_prf();
+
+    [[nodiscard]] PBKDF2ParamsPbkdf2PrFsOpenView<PBKDF2Params> pbkdf2_pr_fs() &;
+    [[nodiscard]] PBKDF2ParamsPbkdf2PrFsOpenView<const PBKDF2Params> pbkdf2_pr_fs() const &;
+    [[nodiscard]] PBKDF2ParamsPbkdf2PrFsOpenView<asn1kit::open_owned_target<PBKDF2Params>> pbkdf2_pr_fs() &&;
+    PBKDF2ParamsPbkdf2PrFsOpenView<const PBKDF2Params> pbkdf2_pr_fs() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_prf(

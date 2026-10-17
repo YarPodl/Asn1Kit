@@ -29,15 +29,38 @@ namespace asn1kit {
 namespace modern {
 namespace PKIXCommonTypes2009 {
 
+namespace detail {
 struct attributeList_open_type_entries;
 struct attributesDefined_open_type_entries;
 struct supportedAttributes_open_type_entries;
-struct AttributeSet_open_types;
+} // namespace detail
+template <typename Target>
+struct AttributeSetAttributeListOpenView;
+template <typename Target>
+struct AttributeSetAttributesDefinedOpenView;
+template <typename Target>
+struct AttributeSetSupportedAttributesOpenView;
 struct AttributeSet {
-    using open_types = AttributeSet_open_types;
-
     asn1kit::oid type{};
     std::vector<asn1kit::any> values{};
+
+    [[nodiscard]] AttributeSetAttributeListOpenView<AttributeSet> attribute_list() &;
+    [[nodiscard]] AttributeSetAttributeListOpenView<const AttributeSet> attribute_list() const &;
+    [[nodiscard]] AttributeSetAttributeListOpenView<asn1kit::open_owned_target<AttributeSet>> attribute_list() &&;
+    AttributeSetAttributeListOpenView<const AttributeSet> attribute_list() const && = delete;
+    [[nodiscard]] static AttributeSetAttributeListOpenView<asn1kit::open_factory_target<AttributeSet>> make_attribute_list();
+
+    [[nodiscard]] AttributeSetAttributesDefinedOpenView<AttributeSet> attributes_defined() &;
+    [[nodiscard]] AttributeSetAttributesDefinedOpenView<const AttributeSet> attributes_defined() const &;
+    [[nodiscard]] AttributeSetAttributesDefinedOpenView<asn1kit::open_owned_target<AttributeSet>> attributes_defined() &&;
+    AttributeSetAttributesDefinedOpenView<const AttributeSet> attributes_defined() const && = delete;
+    [[nodiscard]] static AttributeSetAttributesDefinedOpenView<asn1kit::open_factory_target<AttributeSet>> make_attributes_defined();
+
+    [[nodiscard]] AttributeSetSupportedAttributesOpenView<AttributeSet> supported_attributes() &;
+    [[nodiscard]] AttributeSetSupportedAttributesOpenView<const AttributeSet> supported_attributes() const &;
+    [[nodiscard]] AttributeSetSupportedAttributesOpenView<asn1kit::open_owned_target<AttributeSet>> supported_attributes() &&;
+    AttributeSetSupportedAttributesOpenView<const AttributeSet> supported_attributes() const && = delete;
+    [[nodiscard]] static AttributeSetSupportedAttributesOpenView<asn1kit::open_factory_target<AttributeSet>> make_supported_attributes();
 
     template <typename T>
     [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, std::vector<T>> open_binding(asn1kit::oid key) {
@@ -100,6 +123,7 @@ struct AttributeSet {
     }
 };
 
+namespace detail {
 struct attributeCertExtensions_open_type_entries;
 struct certExtensions_open_type_entries;
 struct crlEntryExtensions_open_type_entries;
@@ -108,13 +132,75 @@ struct extension_extnValue_extension_2_open_type_entries;
 struct extension_extnValue_extension_3_open_type_entries;
 struct extension_extnValue_extension_open_type_entries;
 struct extension_extnValue_open_type_entries;
-struct Extension_open_types;
+} // namespace detail
+template <typename Target>
+struct ExtensionAttributeCertExtensionsOpenView;
+template <typename Target>
+struct ExtensionCertExtensionsOpenView;
+template <typename Target>
+struct ExtensionCrlEntryExtensionsOpenView;
+template <typename Target>
+struct ExtensionCrlExtensionsOpenView;
+template <typename Target>
+struct ExtensionLocalRequestExtensionsOpenView;
+template <typename Target>
+struct ExtensionLocalResponseExtensionsOpenView;
+template <typename Target>
+struct ExtensionLocalSingleExtensionsOpenView;
+template <typename Target>
+struct ExtensionLocalSingleRequestExtensionsOpenView;
 struct Extension {
-    using open_types = Extension_open_types;
-
     asn1kit::oid extnID{};
     bool critical = false;
     asn1kit::bytes extnValue{};
+
+    [[nodiscard]] ExtensionAttributeCertExtensionsOpenView<Extension> attribute_cert_extensions() &;
+    [[nodiscard]] ExtensionAttributeCertExtensionsOpenView<const Extension> attribute_cert_extensions() const &;
+    [[nodiscard]] ExtensionAttributeCertExtensionsOpenView<asn1kit::open_owned_target<Extension>> attribute_cert_extensions() &&;
+    ExtensionAttributeCertExtensionsOpenView<const Extension> attribute_cert_extensions() const && = delete;
+    [[nodiscard]] static ExtensionAttributeCertExtensionsOpenView<asn1kit::open_factory_target<Extension>> make_attribute_cert_extensions();
+
+    [[nodiscard]] ExtensionCertExtensionsOpenView<Extension> cert_extensions() &;
+    [[nodiscard]] ExtensionCertExtensionsOpenView<const Extension> cert_extensions() const &;
+    [[nodiscard]] ExtensionCertExtensionsOpenView<asn1kit::open_owned_target<Extension>> cert_extensions() &&;
+    ExtensionCertExtensionsOpenView<const Extension> cert_extensions() const && = delete;
+    [[nodiscard]] static ExtensionCertExtensionsOpenView<asn1kit::open_factory_target<Extension>> make_cert_extensions();
+
+    [[nodiscard]] ExtensionCrlEntryExtensionsOpenView<Extension> crl_entry_extensions() &;
+    [[nodiscard]] ExtensionCrlEntryExtensionsOpenView<const Extension> crl_entry_extensions() const &;
+    [[nodiscard]] ExtensionCrlEntryExtensionsOpenView<asn1kit::open_owned_target<Extension>> crl_entry_extensions() &&;
+    ExtensionCrlEntryExtensionsOpenView<const Extension> crl_entry_extensions() const && = delete;
+    [[nodiscard]] static ExtensionCrlEntryExtensionsOpenView<asn1kit::open_factory_target<Extension>> make_crl_entry_extensions();
+
+    [[nodiscard]] ExtensionCrlExtensionsOpenView<Extension> crl_extensions() &;
+    [[nodiscard]] ExtensionCrlExtensionsOpenView<const Extension> crl_extensions() const &;
+    [[nodiscard]] ExtensionCrlExtensionsOpenView<asn1kit::open_owned_target<Extension>> crl_extensions() &&;
+    ExtensionCrlExtensionsOpenView<const Extension> crl_extensions() const && = delete;
+    [[nodiscard]] static ExtensionCrlExtensionsOpenView<asn1kit::open_factory_target<Extension>> make_crl_extensions();
+
+    [[nodiscard]] ExtensionLocalRequestExtensionsOpenView<Extension> local_request_extensions() &;
+    [[nodiscard]] ExtensionLocalRequestExtensionsOpenView<const Extension> local_request_extensions() const &;
+    [[nodiscard]] ExtensionLocalRequestExtensionsOpenView<asn1kit::open_owned_target<Extension>> local_request_extensions() &&;
+    ExtensionLocalRequestExtensionsOpenView<const Extension> local_request_extensions() const && = delete;
+    [[nodiscard]] static ExtensionLocalRequestExtensionsOpenView<asn1kit::open_factory_target<Extension>> make_local_request_extensions();
+
+    [[nodiscard]] ExtensionLocalResponseExtensionsOpenView<Extension> local_response_extensions() &;
+    [[nodiscard]] ExtensionLocalResponseExtensionsOpenView<const Extension> local_response_extensions() const &;
+    [[nodiscard]] ExtensionLocalResponseExtensionsOpenView<asn1kit::open_owned_target<Extension>> local_response_extensions() &&;
+    ExtensionLocalResponseExtensionsOpenView<const Extension> local_response_extensions() const && = delete;
+    [[nodiscard]] static ExtensionLocalResponseExtensionsOpenView<asn1kit::open_factory_target<Extension>> make_local_response_extensions();
+
+    [[nodiscard]] ExtensionLocalSingleExtensionsOpenView<Extension> local_single_extensions() &;
+    [[nodiscard]] ExtensionLocalSingleExtensionsOpenView<const Extension> local_single_extensions() const &;
+    [[nodiscard]] ExtensionLocalSingleExtensionsOpenView<asn1kit::open_owned_target<Extension>> local_single_extensions() &&;
+    ExtensionLocalSingleExtensionsOpenView<const Extension> local_single_extensions() const && = delete;
+    [[nodiscard]] static ExtensionLocalSingleExtensionsOpenView<asn1kit::open_factory_target<Extension>> make_local_single_extensions();
+
+    [[nodiscard]] ExtensionLocalSingleRequestExtensionsOpenView<Extension> local_single_request_extensions() &;
+    [[nodiscard]] ExtensionLocalSingleRequestExtensionsOpenView<const Extension> local_single_request_extensions() const &;
+    [[nodiscard]] ExtensionLocalSingleRequestExtensionsOpenView<asn1kit::open_owned_target<Extension>> local_single_request_extensions() &&;
+    ExtensionLocalSingleRequestExtensionsOpenView<const Extension> local_single_request_extensions() const && = delete;
+    [[nodiscard]] static ExtensionLocalSingleRequestExtensionsOpenView<asn1kit::open_factory_target<Extension>> make_local_single_request_extensions();
 
     template <typename T>
     [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, T> open_binding(asn1kit::oid key) {
@@ -202,15 +288,38 @@ struct SecurityCategory {
     }
 };
 
+namespace detail {
 struct regControlSet_value_open_type_entries;
 struct regInfoSet_value_open_type_entries;
 struct supportedAttributes_value_open_type_entries;
-struct SingleAttribute_open_types;
+} // namespace detail
+template <typename Target>
+struct SingleAttributeRegControlSetOpenView;
+template <typename Target>
+struct SingleAttributeRegInfoSetOpenView;
+template <typename Target>
+struct SingleAttributeSupportedAttributesOpenView;
 struct SingleAttribute {
-    using open_types = SingleAttribute_open_types;
-
     asn1kit::oid type{};
     asn1kit::any value_{};
+
+    [[nodiscard]] SingleAttributeRegControlSetOpenView<SingleAttribute> reg_control_set() &;
+    [[nodiscard]] SingleAttributeRegControlSetOpenView<const SingleAttribute> reg_control_set() const &;
+    [[nodiscard]] SingleAttributeRegControlSetOpenView<asn1kit::open_owned_target<SingleAttribute>> reg_control_set() &&;
+    SingleAttributeRegControlSetOpenView<const SingleAttribute> reg_control_set() const && = delete;
+    [[nodiscard]] static SingleAttributeRegControlSetOpenView<asn1kit::open_factory_target<SingleAttribute>> make_reg_control_set();
+
+    [[nodiscard]] SingleAttributeRegInfoSetOpenView<SingleAttribute> reg_info_set() &;
+    [[nodiscard]] SingleAttributeRegInfoSetOpenView<const SingleAttribute> reg_info_set() const &;
+    [[nodiscard]] SingleAttributeRegInfoSetOpenView<asn1kit::open_owned_target<SingleAttribute>> reg_info_set() &&;
+    SingleAttributeRegInfoSetOpenView<const SingleAttribute> reg_info_set() const && = delete;
+    [[nodiscard]] static SingleAttributeRegInfoSetOpenView<asn1kit::open_factory_target<SingleAttribute>> make_reg_info_set();
+
+    [[nodiscard]] SingleAttributeSupportedAttributesOpenView<SingleAttribute> supported_attributes() &;
+    [[nodiscard]] SingleAttributeSupportedAttributesOpenView<const SingleAttribute> supported_attributes() const &;
+    [[nodiscard]] SingleAttributeSupportedAttributesOpenView<asn1kit::open_owned_target<SingleAttribute>> supported_attributes() &&;
+    SingleAttributeSupportedAttributesOpenView<const SingleAttribute> supported_attributes() const && = delete;
+    [[nodiscard]] static SingleAttributeSupportedAttributesOpenView<asn1kit::open_factory_target<SingleAttribute>> make_supported_attributes();
 
     template <typename T>
     [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, T> open_binding(asn1kit::oid key) {

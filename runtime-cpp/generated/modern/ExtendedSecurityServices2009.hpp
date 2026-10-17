@@ -316,13 +316,17 @@ namespace asn1kit {
 namespace modern {
 namespace ExtendedSecurityServices2009 {
 
-struct ESSCertIDv2_open_types;
+template <typename Target>
+struct ESSCertIDv2LocalOpenView;
 struct ESSCertIDv2 {
-    using open_types = ESSCertIDv2_open_types;
-
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm = default_hashAlgorithm();
     asn1kit::bytes certHash{};
     std::optional<IssuerSerial> issuerSerial{};
+
+    [[nodiscard]] ESSCertIDv2LocalOpenView<ESSCertIDv2> local() &;
+    [[nodiscard]] ESSCertIDv2LocalOpenView<const ESSCertIDv2> local() const &;
+    [[nodiscard]] ESSCertIDv2LocalOpenView<asn1kit::open_owned_target<ESSCertIDv2>> local() &&;
+    ESSCertIDv2LocalOpenView<const ESSCertIDv2> local() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_hash_algorithm(

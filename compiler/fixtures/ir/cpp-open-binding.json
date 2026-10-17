@@ -61,6 +61,27 @@
                           }
                         }
                       }
+                    },
+                    {
+                      "key": "1.2.5",
+                      "name": "base",
+                      "type": {
+                        "kind": "boolean"
+                      }
+                    },
+                    {
+                      "key": "1.2.6",
+                      "name": "access",
+                      "type": {
+                        "kind": "null"
+                      }
+                    },
+                    {
+                      "key": "1.2.7",
+                      "name": "open-entries",
+                      "type": {
+                        "kind": "boolean"
+                      }
                     }
                   ],
                   "selector": {
@@ -124,6 +145,27 @@
                               "max": 100
                             }
                           }
+                        }
+                      },
+                      {
+                        "key": "1.2.5",
+                        "name": "base",
+                        "type": {
+                          "kind": "boolean"
+                        }
+                      },
+                      {
+                        "key": "1.2.6",
+                        "name": "access",
+                        "type": {
+                          "kind": "null"
+                        }
+                      },
+                      {
+                        "key": "1.2.7",
+                        "name": "open-entries",
+                        "type": {
+                          "kind": "boolean"
                         }
                       }
                     ],
@@ -190,6 +232,27 @@
                               "max": 100
                             }
                           }
+                        }
+                      },
+                      {
+                        "key": "1.2.5",
+                        "name": "base",
+                        "type": {
+                          "kind": "boolean"
+                        }
+                      },
+                      {
+                        "key": "1.2.6",
+                        "name": "access",
+                        "type": {
+                          "kind": "null"
+                        }
+                      },
+                      {
+                        "key": "1.2.7",
+                        "name": "open-entries",
+                        "type": {
+                          "kind": "boolean"
                         }
                       }
                     ],
@@ -293,6 +356,27 @@
                                     "max": 100
                                   }
                                 }
+                              }
+                            },
+                            {
+                              "key": "1.2.5",
+                              "name": "base",
+                              "type": {
+                                "kind": "boolean"
+                              }
+                            },
+                            {
+                              "key": "1.2.6",
+                              "name": "access",
+                              "type": {
+                                "kind": "null"
+                              }
+                            },
+                            {
+                              "key": "1.2.7",
+                              "name": "open-entries",
+                              "type": {
+                                "kind": "boolean"
                               }
                             }
                           ],

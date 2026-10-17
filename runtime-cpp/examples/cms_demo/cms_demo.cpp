@@ -116,12 +116,11 @@ using PkixOids = Pkix::PKIX1Explicit2009Oids;
     return out.str();
 }
 
-[[nodiscard]] Cms::SignedData decode_signed_data(const Cms::ContentInfo& info) {
+[[nodiscard]] Cms::SignedData decode_signed_data(Cms::ContentInfo info) {
     if (info.contentType != CmsOids::IdSignedData.get()) {
         throw std::runtime_error("ContentInfo must be id-signedData.");
     }
-    auto signed_data = info.try_decode(
-        Cms::ContentInfo::open_types::content_set::content::ct_signed_data);
+    auto signed_data = std::move(info).content_set().ct_signed_data();
     if (!signed_data) {
         throw std::runtime_error("ContentInfo must contain SignedData.");
     }
@@ -193,10 +192,8 @@ using PkixOids = Pkix::PKIX1Explicit2009Oids;
         throw std::runtime_error("SignedAttrs requires contentType and messageDigest.");
     }
 
-    const auto types = signer.try_decode_signed_attrs(
-        Cms::Attribute::open_types::signed_attributes_set::attr_values::content_type);
-    const auto digests = signer.try_decode_signed_attrs(
-        Cms::Attribute::open_types::signed_attributes_set::attr_values::message_digest);
+    const auto types = signer.signed_attributes_set().content_type();
+    const auto digests = signer.signed_attributes_set().message_digest();
     if (!types || !digests) {
         throw std::runtime_error("SignedAttrs requires contentType and messageDigest.");
     }
@@ -365,11 +362,9 @@ std::vector<std::uint8_t> build_attached_signed_data(
     signer.sid = Cms::SignerIdentifier::from_issuerAndSerialNumber(std::move(ias));
     signer.digestAlgorithm = digest_algorithm;
     signer.signedAttrs = asn1kit::value<std::vector<Cms::Attribute>>::from_value({
-        Cms::Attribute::create(
-            Cms::Attribute::open_types::signed_attributes_set::attr_values::content_type,
+        Cms::Attribute::make_signed_attributes_set().content_type(
             CmsOids::IdData.get()),
-        Cms::Attribute::create(
-            Cms::Attribute::open_types::signed_attributes_set::attr_values::message_digest, digest),
+        Cms::Attribute::make_signed_attributes_set().message_digest(digest),
     });
     signer.signatureAlgorithm = signature_algorithm;
     signer.signature = asn1kit::bytes::from_vector(std::vector<std::uint8_t>(32, 0x01));
@@ -383,8 +378,8 @@ std::vector<std::uint8_t> build_attached_signed_data(
         Cms::CertificateChoices::from_certificate(certificate)};
     signed_data.signerInfos = {std::move(signer)};
 
-    const auto content_info = Cms::ContentInfo::create(
-        Cms::ContentInfo::open_types::content_set::content::ct_signed_data, signed_data);
+    const auto content_info =
+        Cms::ContentInfo::make_content_set().ct_signed_data(signed_data);
     return asn1kit::encode(content_info, asn1kit::encoding::der);
 }
 

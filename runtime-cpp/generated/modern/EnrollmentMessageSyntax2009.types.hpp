@@ -80,13 +80,17 @@ namespace asn1kit {
 namespace modern {
 namespace EnrollmentMessageSyntax2009 {
 
-struct AddExtensions_open_types;
+template <typename Target>
+struct AddExtensionsCertExtensionsOpenView;
 struct AddExtensions {
-    using open_types = AddExtensions_open_types;
-
     std::uint32_t pkiDataReference{};
     std::vector<std::uint32_t> certReferences{};
     std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension> extensions{};
+
+    [[nodiscard]] AddExtensionsCertExtensionsOpenView<AddExtensions> cert_extensions() &;
+    [[nodiscard]] AddExtensionsCertExtensionsOpenView<const AddExtensions> cert_extensions() const &;
+    [[nodiscard]] AddExtensionsCertExtensionsOpenView<asn1kit::open_owned_target<AddExtensions>> cert_extensions() &&;
+    AddExtensionsCertExtensionsOpenView<const AddExtensions> cert_extensions() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_extensions(
@@ -215,13 +219,17 @@ namespace asn1kit {
 namespace modern {
 namespace EnrollmentMessageSyntax2009 {
 
-struct CMCPublicationInfo_open_types;
+template <typename Target>
+struct CMCPublicationInfoHashAlgorithmsOpenView;
 struct CMCPublicationInfo {
-    using open_types = CMCPublicationInfo_open_types;
-
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlg{};
     std::vector<asn1kit::bytes> certHashes{};
     ::asn1kit::modern::PKIXCRMF2009::PKIPublicationInfo pubInfo{};
+
+    [[nodiscard]] CMCPublicationInfoHashAlgorithmsOpenView<CMCPublicationInfo> hash_algorithms() &;
+    [[nodiscard]] CMCPublicationInfoHashAlgorithmsOpenView<const CMCPublicationInfo> hash_algorithms() const &;
+    [[nodiscard]] CMCPublicationInfoHashAlgorithmsOpenView<asn1kit::open_owned_target<CMCPublicationInfo>> hash_algorithms() &&;
+    CMCPublicationInfoHashAlgorithmsOpenView<const CMCPublicationInfo> hash_algorithms() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_hash_alg(
@@ -370,13 +378,17 @@ struct CertificationRequest_CertificationRequestInfo {
     }
 };
 
-struct CertificationRequest_open_types;
+template <typename Target>
+struct CertificationRequestSignatureAlgorithmsOpenView;
 struct CertificationRequest {
-    using open_types = CertificationRequest_open_types;
-
     CertificationRequest_CertificationRequestInfo certificationRequestInfo{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signatureAlgorithm{};
     asn1kit::bit_string signature{};
+
+    [[nodiscard]] CertificationRequestSignatureAlgorithmsOpenView<CertificationRequest> signature_algorithms() &;
+    [[nodiscard]] CertificationRequestSignatureAlgorithmsOpenView<const CertificationRequest> signature_algorithms() const &;
+    [[nodiscard]] CertificationRequestSignatureAlgorithmsOpenView<asn1kit::open_owned_target<CertificationRequest>> signature_algorithms() &&;
+    CertificationRequestSignatureAlgorithmsOpenView<const CertificationRequest> signature_algorithms() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_signature_algorithm(
@@ -427,13 +439,17 @@ struct ControlsProcessed {
     }
 };
 
-struct DecryptedPOP_open_types;
+template <typename Target>
+struct DecryptedPOPPopAlgsOpenView;
 struct DecryptedPOP {
-    using open_types = DecryptedPOP_open_types;
-
     std::uint32_t bodyPartID{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier thePOPAlgID{};
     asn1kit::bytes thePOP{};
+
+    [[nodiscard]] DecryptedPOPPopAlgsOpenView<DecryptedPOP> pop_algs() &;
+    [[nodiscard]] DecryptedPOPPopAlgsOpenView<const DecryptedPOP> pop_algs() const &;
+    [[nodiscard]] DecryptedPOPPopAlgsOpenView<asn1kit::open_owned_target<DecryptedPOP>> pop_algs() &&;
+    DecryptedPOPPopAlgsOpenView<const DecryptedPOP> pop_algs() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_the_pop_alg_id(
@@ -543,13 +559,24 @@ struct GetCert {
     }
 };
 
-struct IdentityProofV2_open_types;
+template <typename Target>
+struct IdentityProofV2PopAlgsOpenView;
+template <typename Target>
+struct IdentityProofV2WitnessAlgsOpenView;
 struct IdentityProofV2 {
-    using open_types = IdentityProofV2_open_types;
-
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier proofAlgID{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier macAlgId{};
     asn1kit::bytes witness{};
+
+    [[nodiscard]] IdentityProofV2PopAlgsOpenView<IdentityProofV2> pop_algs() &;
+    [[nodiscard]] IdentityProofV2PopAlgsOpenView<const IdentityProofV2> pop_algs() const &;
+    [[nodiscard]] IdentityProofV2PopAlgsOpenView<asn1kit::open_owned_target<IdentityProofV2>> pop_algs() &&;
+    IdentityProofV2PopAlgsOpenView<const IdentityProofV2> pop_algs() const && = delete;
+
+    [[nodiscard]] IdentityProofV2WitnessAlgsOpenView<IdentityProofV2> witness_algs() &;
+    [[nodiscard]] IdentityProofV2WitnessAlgsOpenView<const IdentityProofV2> witness_algs() const &;
+    [[nodiscard]] IdentityProofV2WitnessAlgsOpenView<asn1kit::open_owned_target<IdentityProofV2>> witness_algs() &&;
+    IdentityProofV2WitnessAlgsOpenView<const IdentityProofV2> witness_algs() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_proof_alg_id(
@@ -933,13 +960,24 @@ struct CMCStatusInfo {
     }
 };
 
-struct PopLinkWitnessV2_open_types;
+template <typename Target>
+struct PopLinkWitnessV2KeyDevAlgsOpenView;
+template <typename Target>
+struct PopLinkWitnessV2PopAlgsOpenView;
 struct PopLinkWitnessV2 {
-    using open_types = PopLinkWitnessV2_open_types;
-
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier keyGenAlgorithm{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier macAlgorithm{};
     asn1kit::bytes witness{};
+
+    [[nodiscard]] PopLinkWitnessV2KeyDevAlgsOpenView<PopLinkWitnessV2> key_dev_algs() &;
+    [[nodiscard]] PopLinkWitnessV2KeyDevAlgsOpenView<const PopLinkWitnessV2> key_dev_algs() const &;
+    [[nodiscard]] PopLinkWitnessV2KeyDevAlgsOpenView<asn1kit::open_owned_target<PopLinkWitnessV2>> key_dev_algs() &&;
+    PopLinkWitnessV2KeyDevAlgsOpenView<const PopLinkWitnessV2> key_dev_algs() const && = delete;
+
+    [[nodiscard]] PopLinkWitnessV2PopAlgsOpenView<PopLinkWitnessV2> pop_algs() &;
+    [[nodiscard]] PopLinkWitnessV2PopAlgsOpenView<const PopLinkWitnessV2> pop_algs() const &;
+    [[nodiscard]] PopLinkWitnessV2PopAlgsOpenView<asn1kit::open_owned_target<PopLinkWitnessV2>> pop_algs() &&;
+    PopLinkWitnessV2PopAlgsOpenView<const PopLinkWitnessV2> pop_algs() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_key_gen_algorithm(
@@ -975,13 +1013,17 @@ struct PopLinkWitnessV2 {
     }
 };
 
-struct PublishTrustAnchors_open_types;
+template <typename Target>
+struct PublishTrustAnchorsHashAlgorithmsOpenView;
 struct PublishTrustAnchors {
-    using open_types = PublishTrustAnchors_open_types;
-
     asn1kit::integer seqNumber{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm{};
     std::vector<asn1kit::bytes> anchorHashes{};
+
+    [[nodiscard]] PublishTrustAnchorsHashAlgorithmsOpenView<PublishTrustAnchors> hash_algorithms() &;
+    [[nodiscard]] PublishTrustAnchorsHashAlgorithmsOpenView<const PublishTrustAnchors> hash_algorithms() const &;
+    [[nodiscard]] PublishTrustAnchorsHashAlgorithmsOpenView<asn1kit::open_owned_target<PublishTrustAnchors>> hash_algorithms() &&;
+    PublishTrustAnchorsHashAlgorithmsOpenView<const PublishTrustAnchors> hash_algorithms() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_hash_algorithm(
@@ -1063,14 +1105,21 @@ struct RevokeRequest {
     }
 };
 
+namespace detail {
 struct cmc_control_set_attrValues_open_type_entries;
-struct TaggedAttribute_open_types;
+} // namespace detail
+template <typename Target>
+struct TaggedAttributeCmcControlSetOpenView;
 struct TaggedAttribute {
-    using open_types = TaggedAttribute_open_types;
-
     std::uint32_t bodyPartID{};
     asn1kit::oid attrType{};
     std::vector<asn1kit::any> attrValues{};
+
+    [[nodiscard]] TaggedAttributeCmcControlSetOpenView<TaggedAttribute> cmc_control_set() &;
+    [[nodiscard]] TaggedAttributeCmcControlSetOpenView<const TaggedAttribute> cmc_control_set() const &;
+    [[nodiscard]] TaggedAttributeCmcControlSetOpenView<asn1kit::open_owned_target<TaggedAttribute>> cmc_control_set() &&;
+    TaggedAttributeCmcControlSetOpenView<const TaggedAttribute> cmc_control_set() const && = delete;
+    [[nodiscard]] static TaggedAttributeCmcControlSetOpenView<asn1kit::open_factory_target<TaggedAttribute>> make_cmc_control_set();
 
     template <typename T>
     [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, std::vector<T>> open_binding(asn1kit::oid key) {
@@ -1336,15 +1385,26 @@ struct TaggedRequest {
     }
 };
 
-struct EncryptedPOP_open_types;
+template <typename Target>
+struct EncryptedPOPPopAlgsOpenView;
+template <typename Target>
+struct EncryptedPOPWitnessAlgsOpenView;
 struct EncryptedPOP {
-    using open_types = EncryptedPOP_open_types;
-
     TaggedRequest request{};
     ::asn1kit::modern::CryptographicMessageSyntax2009::ContentInfo cms{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier thePOPAlgID{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier witnessAlgID{};
     asn1kit::bytes witness{};
+
+    [[nodiscard]] EncryptedPOPPopAlgsOpenView<EncryptedPOP> pop_algs() &;
+    [[nodiscard]] EncryptedPOPPopAlgsOpenView<const EncryptedPOP> pop_algs() const &;
+    [[nodiscard]] EncryptedPOPPopAlgsOpenView<asn1kit::open_owned_target<EncryptedPOP>> pop_algs() &&;
+    EncryptedPOPPopAlgsOpenView<const EncryptedPOP> pop_algs() const && = delete;
+
+    [[nodiscard]] EncryptedPOPWitnessAlgsOpenView<EncryptedPOP> witness_algs() &;
+    [[nodiscard]] EncryptedPOPWitnessAlgsOpenView<const EncryptedPOP> witness_algs() const &;
+    [[nodiscard]] EncryptedPOPWitnessAlgsOpenView<asn1kit::open_owned_target<EncryptedPOP>> witness_algs() &&;
+    EncryptedPOPWitnessAlgsOpenView<const EncryptedPOP> witness_algs() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_the_pop_alg_id(

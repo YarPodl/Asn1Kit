@@ -3,7 +3,10 @@ M DEFINITIONS ::= BEGIN
   NoData ::= NULL
   emptyEntry C ::= { NoData IDENTIFIED BY {1 2 3} }
   dataEntry C ::= { INTEGER (0..100) IDENTIFIED BY {1 2 4} }
-  Mixed C ::= {emptyEntry | dataEntry}
+  base C ::= { BOOLEAN IDENTIFIED BY {1 2 5} }
+  access C ::= { NULL IDENTIFIED BY {1 2 6} }
+  open-entries C ::= { BOOLEAN IDENTIFIED BY {1 2 7} }
+  Mixed C ::= {emptyEntry | dataEntry | base | access | open-entries}
   AlgorithmIdentifier{C:S} ::= SEQUENCE {
     algorithm C.&id({S}), parameters C.&T({S}{@algorithm}) OPTIONAL }
   Extension{C:S} ::= SEQUENCE {

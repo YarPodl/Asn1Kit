@@ -207,18 +207,51 @@ END
         Assert.Contains("return asn1kit::decode_open<T>(", source);
         Assert.Contains("parameters = asn1kit::encode_open(value);", source);
         Assert.Contains("static AlgorithmIdentifier create(", source);
-        Assert.Contains("using open_types = AlgorithmIdentifier_open_types;", source);
-        Assert.Contains("struct AlgorithmIdentifier_open_types", source);
-        Assert.Contains("struct mixed", source);
-        Assert.Contains("using parameters = mixed_parameters_open_type_entries;", source);
+        Assert.DoesNotContain("using open_types =", source);
+        Assert.Contains("namespace detail {", source);
+        Assert.DoesNotContain("struct AlgorithmIdentifier_open_types", source);
+        Assert.Contains(
+            "using open_entries = detail::mixed_parameters_open_type_entries;",
+            source);
         Assert.Contains("empty_entry{", source);
         Assert.Contains("data_entry{", source);
+        Assert.Contains(
+            "AlgorithmIdentifierMixedOpenView<AlgorithmIdentifier> mixed() &;",
+            source);
+        Assert.Contains(
+            "AlgorithmIdentifierMixedOpenView<const AlgorithmIdentifier> mixed() const &;",
+            source);
+        Assert.Contains(
+            "AlgorithmIdentifierMixedOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> mixed() &&;",
+            source);
+        Assert.Contains(
+            "static AlgorithmIdentifierMixedOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_mixed();",
+            source);
+        Assert.Contains(
+            "inline AlgorithmIdentifierMixedOpenView<AlgorithmIdentifier> AlgorithmIdentifier::mixed() & {",
+            source);
+        Assert.Contains(
+            "inline AlgorithmIdentifierMixedOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> AlgorithmIdentifier::mixed() && {",
+            source);
+        Assert.Contains("using access = asn1kit::open_direct_access;", source);
+        Assert.Contains(
+            "using base = asn1kit::open_function_view<Target, access>;",
+            source);
+        Assert.Contains(
+            "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(data_entry, data_entry)",
+            source);
+        Assert.Contains("#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding)", source);
+        Assert.Contains("#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY", source);
+        Assert.DoesNotContain("std::conditional_t<true,", source);
+        Assert.DoesNotContain("asn1kit::open_entry_proxy", source);
+        Assert.DoesNotContain("set_data_entry", source);
+        Assert.DoesNotContain("OpenFactory", source);
         Assert.DoesNotContain("_bindings", source);
         Assert.DoesNotContain("std::function", source);
     }
 
     [Fact]
-    public void OpenTypeRegistryGroupsTableFieldsAndDisambiguatesLocalCatalogs()
+    public void OpenTypeViewsGroupTableFieldsAndDisambiguateLocalCatalogs()
     {
         const string asn = @"
 M DEFINITIONS ::= BEGIN
@@ -238,22 +271,32 @@ END
         var document = new Asn1Compiler().CompileText(asn);
         var source = CppSource(document);
 
-        Assert.Contains("using open_types = Pair_open_types;", source);
-        Assert.Contains("struct http_items_a", source);
-        Assert.Contains("struct http_items_b", source);
-        Assert.Contains("using first = ", source);
-        Assert.Contains("using second = ", source);
+        Assert.DoesNotContain("using open_types =", source);
+        Assert.Contains("namespace detail {", source);
+        Assert.DoesNotContain("struct Pair_open_types", source);
+        Assert.Contains("struct hTTPItemsA_first_open_type_entries", source);
+        Assert.Contains("struct hTTPItemsB_second_open_type_entries", source);
+        Assert.Contains("using open_entries = detail::hTTPItemsA_first_open_type_entries;", source);
+        Assert.Contains("using open_entries = detail::hTTPItemsA_second_open_type_entries;", source);
+        Assert.Contains("http_items_a() &;", source);
+        Assert.Contains("static ", source);
+        Assert.Contains("make_http_items_a();", source);
+        Assert.Contains("first() const", source);
+        Assert.Contains("second() const", source);
+        Assert.Contains("first() &&", source);
+        Assert.Contains("std::move(target_).take()", source);
+        Assert.Contains("ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(item_a, item_a)", source);
+        Assert.DoesNotContain("set_item_a", source);
         Assert.DoesNotContain("_bindings", source);
 
         foreach (var definition in document.Modules[0].Types)
             ClearTables(definition.Type);
 
         source = CppSource(document);
-        Assert.Contains("struct local", source);
-        Assert.Contains("using first = ", source);
-        Assert.Contains("using second = ", source);
-        Assert.Matches(@"using first_[a-z0-9_]+ = ", source);
-        Assert.Matches(@"using second_[a-z0-9_]+ = ", source);
+        Assert.Contains("local_pair_a() &;", source);
+        Assert.Contains("local_pair_b() &;", source);
+        Assert.Contains("using open_entries = detail::", source);
+        Assert.DoesNotContain("_open_types", source);
         Assert.Equal(source, CppSource(document));
         Assert.DoesNotContain("_bindings", source);
 
@@ -293,6 +336,52 @@ END
                     break;
             }
         }
+    }
+
+    [Fact]
+    public void OpenTypeViewsKeepRepeatedContextRoutesDistinct()
+    {
+        const string asn = @"
+M DEFINITIONS ::= BEGIN
+  C ::= CLASS { &id OBJECT IDENTIFIER UNIQUE, &T } WITH SYNTAX { &T IDENTIFIED BY &id }
+  item C ::= { INTEGER IDENTIFIED BY {1 2 3} }
+  Items C ::= {item}
+  Owner ::= SEQUENCE {
+    id OBJECT IDENTIFIER,
+    first SEQUENCE OF SEQUENCE { value C.&T({Items}{@id}) },
+    second SEQUENCE OF SEQUENCE { value C.&T({Items}{@id}) } }
+END
+";
+        var source = CppSource(new Asn1Compiler().CompileText(asn));
+
+        Assert.Contains("items_first() &;", source);
+        Assert.Contains("items_second() &;", source);
+        Assert.Contains("return source.try_decode_first(binding);", source);
+        Assert.Contains("return source.try_decode_second(binding);", source);
+        Assert.DoesNotContain("struct Owner_open_types", source);
+    }
+
+    [Fact]
+    public void OpenTypeEntryMethodsAvoidViewImplementationNames()
+    {
+        const string asn = @"
+M DEFINITIONS ::= BEGIN
+  C ::= CLASS { &id OBJECT IDENTIFIER UNIQUE, &T } WITH SYNTAX { &T IDENTIFIED BY &id }
+  base C ::= { INTEGER IDENTIFIED BY {1 2 3} }
+  access C ::= { NULL IDENTIFIED BY {1 2 4} }
+  open-entries C ::= { BOOLEAN IDENTIFIED BY {1 2 5} }
+  Items C ::= {base | access | open-entries}
+  Value{C:S} ::= SEQUENCE {
+    id C.&id({S}), value C.&T({S}{@id}) }
+  Holder ::= SEQUENCE { value Value{Items} }
+END
+";
+        var source = CppSource(new Asn1Compiler().CompileText(asn));
+
+        Assert.Contains("ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(base_entry, base)", source);
+        Assert.Contains("ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(access_entry, access)", source);
+        Assert.Contains(
+            "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(open_entries_entry, open_entries)", source);
     }
 
     [Fact]
@@ -359,10 +448,14 @@ END
             source);
         Assert.Contains("return asn1kit::decode_each<T>(", source);
         Assert.Contains("values = asn1kit::encode_each(value);", source);
-        Assert.Contains("using open_types = Extension_open_types;", source);
-        Assert.Contains("using open_types = Attribute_open_types;", source);
-        Assert.Contains("using extn_value = mixed_extnValue_open_type_entries;", source);
-        Assert.Contains("using values = mixed_values_open_type_entries;", source);
+        Assert.DoesNotContain("using open_types =", source);
+        Assert.DoesNotContain("struct Extension_open_types", source);
+        Assert.DoesNotContain("struct Attribute_open_types", source);
+        Assert.Contains("using open_entries = detail::mixed_extnValue_open_type_entries;", source);
+        Assert.Contains("using open_entries = detail::mixed_values_open_type_entries;", source);
+        Assert.Contains("mixed() &;", source);
+        Assert.Contains("ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(data_entry, data_entry)", source);
+        Assert.Contains("make_mixed();", source);
         Assert.DoesNotContain("_bindings", source);
     }
 
@@ -387,11 +480,38 @@ END
             source);
         Assert.Contains("if (!((*this).id == binding.key)) return result;", source);
         Assert.DoesNotContain("static Outer_Nested_Item create(", source);
-        Assert.Contains("using open_types = Outer_open_types;", source);
-        Assert.Contains("struct Outer_open_types", source);
-        Assert.Contains("struct items", source);
-        Assert.Contains("using value_ = items_value_open_type_entries;", source);
+        Assert.DoesNotContain("using open_types =", source);
+        Assert.DoesNotContain("struct Outer_open_types", source);
+        Assert.Contains("using open_entries = detail::items_value_open_type_entries;", source);
+        Assert.Contains("items() &;", source);
+        Assert.Contains("return source.try_decode_nested(binding);", source);
+        Assert.Contains("ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(item, item)", source);
+        Assert.DoesNotContain("OuterItemsOpenFactory", source);
         Assert.DoesNotContain("_bindings", source);
+    }
+
+    [Fact]
+    public void OpenTypeViewAccessorsDisambiguateCarrierMemberAndReservedNames()
+    {
+        const string asn = @"
+M DEFINITIONS ::= BEGIN
+  C ::= CLASS { &id OBJECT IDENTIFIER UNIQUE, &T } WITH SYNTAX { &T IDENTIFIED BY &id }
+  itemA C ::= { INTEGER IDENTIFIED BY {1 2 3} }
+  itemD C ::= { NULL IDENTIFIED BY {1 2 4} }
+  Algorithm C ::= {itemA}
+  Match-Tag C ::= {itemD}
+  Carrier{C:S} ::= SEQUENCE {
+    algorithm C.&id({S}), parameters C.&T({S}{@algorithm}) }
+  Holder ::= SEQUENCE { a Carrier{Algorithm}, d Carrier{Match-Tag} }
+END
+";
+        var source = CppSource(new Asn1Compiler().CompileText(asn));
+
+        Assert.Contains("algorithm_view() &;", source);
+        Assert.Contains("make_algorithm_view();", source);
+        Assert.Contains("match_tag_() &;", source);
+        Assert.Contains("make_match_tag_();", source);
+        Assert.Equal(source, CppSource(new Asn1Compiler().CompileText(asn)));
     }
 
     [Fact]
@@ -422,7 +542,8 @@ END
 
         Assert.Contains("this->algorithmIdentifier.algorithm", source);
         Assert.Contains("(*this).algorithmIdentifier.algorithm", source);
-        Assert.Contains("std::int32_t, asn1kit::null_value", source);
+        Assert.Contains("std::int32_t, T>;", source);
+        Assert.Contains("binding_type<asn1kit::null_value>", source);
         Assert.Contains("std::int32_t{7}", source);
         Assert.Contains(
             "static asn1kit::open_binding<asn1kit::default_open_context, std::int32_t, T> open_binding(std::int32_t key)",

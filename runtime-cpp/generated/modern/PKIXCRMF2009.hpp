@@ -355,10 +355,11 @@ namespace asn1kit {
 namespace modern {
 namespace PKIXCRMF2009 {
 
-struct CertTemplate_open_types;
+template <typename Target>
+struct CertTemplateCertExtensionsOpenView;
+template <typename Target>
+struct CertTemplateSignatureAlgorithmsOpenView;
 struct CertTemplate {
-    using open_types = CertTemplate_open_types;
-
     std::optional<std::int32_t> version{};
     std::optional<asn1kit::integer> serialNumber{};
     std::optional<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> signingAlg{};
@@ -369,6 +370,16 @@ struct CertTemplate {
     std::optional<asn1kit::bit_string> issuerUID{};
     std::optional<asn1kit::bit_string> subjectUID{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> extensions{};
+
+    [[nodiscard]] CertTemplateCertExtensionsOpenView<CertTemplate> cert_extensions() &;
+    [[nodiscard]] CertTemplateCertExtensionsOpenView<const CertTemplate> cert_extensions() const &;
+    [[nodiscard]] CertTemplateCertExtensionsOpenView<asn1kit::open_owned_target<CertTemplate>> cert_extensions() &&;
+    CertTemplateCertExtensionsOpenView<const CertTemplate> cert_extensions() const && = delete;
+
+    [[nodiscard]] CertTemplateSignatureAlgorithmsOpenView<CertTemplate> signature_algorithms() &;
+    [[nodiscard]] CertTemplateSignatureAlgorithmsOpenView<const CertTemplate> signature_algorithms() const &;
+    [[nodiscard]] CertTemplateSignatureAlgorithmsOpenView<asn1kit::open_owned_target<CertTemplate>> signature_algorithms() &&;
+    CertTemplateSignatureAlgorithmsOpenView<const CertTemplate> signature_algorithms() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_signing_alg(
@@ -482,13 +493,17 @@ struct CertTemplate {
     }
 };
 
-struct CertRequest_open_types;
+template <typename Target>
+struct CertRequestRegControlSetOpenView;
 struct CertRequest {
-    using open_types = CertRequest_open_types;
-
     asn1kit::integer certReqId{};
     CertTemplate certTemplate{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> controls{};
+
+    [[nodiscard]] CertRequestRegControlSetOpenView<CertRequest> reg_control_set() &;
+    [[nodiscard]] CertRequestRegControlSetOpenView<const CertRequest> reg_control_set() const &;
+    [[nodiscard]] CertRequestRegControlSetOpenView<asn1kit::open_owned_target<CertRequest>> reg_control_set() &&;
+    CertRequestRegControlSetOpenView<const CertRequest> reg_control_set() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_controls(
@@ -523,14 +538,25 @@ struct CertRequest {
     }
 };
 
-struct PBMParameter_open_types;
+template <typename Target>
+struct PBMParameterDigestAlgorithmsOpenView;
+template <typename Target>
+struct PBMParameterMacAlgorithmsOpenView;
 struct PBMParameter {
-    using open_types = PBMParameter_open_types;
-
     asn1kit::bytes salt{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier owf{};
     asn1kit::integer iterationCount{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier mac{};
+
+    [[nodiscard]] PBMParameterDigestAlgorithmsOpenView<PBMParameter> digest_algorithms() &;
+    [[nodiscard]] PBMParameterDigestAlgorithmsOpenView<const PBMParameter> digest_algorithms() const &;
+    [[nodiscard]] PBMParameterDigestAlgorithmsOpenView<asn1kit::open_owned_target<PBMParameter>> digest_algorithms() &&;
+    PBMParameterDigestAlgorithmsOpenView<const PBMParameter> digest_algorithms() const && = delete;
+
+    [[nodiscard]] PBMParameterMacAlgorithmsOpenView<PBMParameter> mac_algorithms() &;
+    [[nodiscard]] PBMParameterMacAlgorithmsOpenView<const PBMParameter> mac_algorithms() const &;
+    [[nodiscard]] PBMParameterMacAlgorithmsOpenView<asn1kit::open_owned_target<PBMParameter>> mac_algorithms() &&;
+    PBMParameterMacAlgorithmsOpenView<const PBMParameter> mac_algorithms() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_owf(
@@ -669,12 +695,16 @@ struct PKIPublicationInfo_Action {
     static constexpr std::int32_t PleasePublish = 1;
 };
 
-struct PKMACValue_open_types;
+template <typename Target>
+struct PKMACValuePasswordMacAlgorithmsOpenView;
 struct PKMACValue {
-    using open_types = PKMACValue_open_types;
-
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algId{};
     asn1kit::bit_string value_{};
+
+    [[nodiscard]] PKMACValuePasswordMacAlgorithmsOpenView<PKMACValue> password_mac_algorithms() &;
+    [[nodiscard]] PKMACValuePasswordMacAlgorithmsOpenView<const PKMACValue> password_mac_algorithms() const &;
+    [[nodiscard]] PKMACValuePasswordMacAlgorithmsOpenView<asn1kit::open_owned_target<PKMACValue>> password_mac_algorithms() &&;
+    PKMACValuePasswordMacAlgorithmsOpenView<const PKMACValue> password_mac_algorithms() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_alg_id(
@@ -929,13 +959,17 @@ struct POPOSigningKeyInput {
     }
 };
 
-struct POPOSigningKey_open_types;
+template <typename Target>
+struct POPOSigningKeySignatureAlgorithmsOpenView;
 struct POPOSigningKey {
-    using open_types = POPOSigningKey_open_types;
-
     std::optional<POPOSigningKeyInput> poposkInput{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::bit_string signature{};
+
+    [[nodiscard]] POPOSigningKeySignatureAlgorithmsOpenView<POPOSigningKey> signature_algorithms() &;
+    [[nodiscard]] POPOSigningKeySignatureAlgorithmsOpenView<const POPOSigningKey> signature_algorithms() const &;
+    [[nodiscard]] POPOSigningKeySignatureAlgorithmsOpenView<asn1kit::open_owned_target<POPOSigningKey>> signature_algorithms() &&;
+    POPOSigningKeySignatureAlgorithmsOpenView<const POPOSigningKey> signature_algorithms() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_algorithm_identifier(
@@ -1152,13 +1186,17 @@ struct ProofOfPossession {
     }
 };
 
-struct CertReqMsg_open_types;
+template <typename Target>
+struct CertReqMsgRegInfoSetOpenView;
 struct CertReqMsg {
-    using open_types = CertReqMsg_open_types;
-
     CertRequest certReq{};
     std::optional<ProofOfPossession> popo{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> regInfo{};
+
+    [[nodiscard]] CertReqMsgRegInfoSetOpenView<CertReqMsg> reg_info_set() &;
+    [[nodiscard]] CertReqMsgRegInfoSetOpenView<const CertReqMsg> reg_info_set() const &;
+    [[nodiscard]] CertReqMsgRegInfoSetOpenView<asn1kit::open_owned_target<CertReqMsg>> reg_info_set() &&;
+    CertReqMsgRegInfoSetOpenView<const CertReqMsg> reg_info_set() const && = delete;
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_reg_info(
