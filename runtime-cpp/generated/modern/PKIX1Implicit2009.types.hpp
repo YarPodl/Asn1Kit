@@ -935,7 +935,11 @@ struct PolicyMappings_Item {
     }
 };
 
+struct policyQualifierId_qualifier_open_type_entries;
+struct PolicyQualifierInfo_open_types;
 struct PolicyQualifierInfo {
+    using open_types = PolicyQualifierInfo_open_types;
+
     asn1kit::oid policyQualifierId{};
     asn1kit::any qualifier{};
 

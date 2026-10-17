@@ -197,7 +197,10 @@ namespace asn1kit {
 namespace modern {
 namespace PKIX1Explicit2009 {
 
+struct SubjectPublicKeyInfo_open_types;
 struct SubjectPublicKeyInfo {
+    using open_types = SubjectPublicKeyInfo_open_types;
+
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithm{};
     asn1kit::bit_string subjectPublicKey{};
 
@@ -349,7 +352,10 @@ struct TBSCertList_RevokedCertificates_Item {
     }
 };
 
+struct TBSCertList_open_types;
 struct TBSCertList {
+    using open_types = TBSCertList_open_types;
+
     std::optional<std::int32_t> version{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signature{};
     std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> issuer{};
@@ -444,7 +450,11 @@ struct TBSCertList {
     }
 };
 
+struct signatureAlgorithms_signature_certificateList_open_type_entries;
+struct CertificateList_open_types;
 struct CertificateList {
+    using open_types = CertificateList_open_types;
+
     TBSCertList toBeSigned{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::bit_string signature{};
@@ -527,7 +537,10 @@ struct Validity {
     }
 };
 
+struct TBSCertificate_open_types;
 struct TBSCertificate {
+    using open_types = TBSCertificate_open_types;
+
     std::int32_t version = 0;
     asn1kit::integer serialNumber{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signature{};
@@ -671,7 +684,11 @@ struct TBSCertificate {
     }
 };
 
+struct signatureAlgorithms_signature_open_type_entries;
+struct Certificate_open_types;
 struct Certificate {
+    using open_types = Certificate_open_types;
+
     asn1kit::value<TBSCertificate> toBeSigned{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::bit_string signature{};

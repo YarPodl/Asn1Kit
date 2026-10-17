@@ -120,7 +120,8 @@ using PkixOids = Pkix::PKIX1Explicit2009Oids;
     if (info.contentType != CmsOids::IdSignedData.get()) {
         throw std::runtime_error("ContentInfo must be id-signedData.");
     }
-    auto signed_data = info.try_decode(Cms::contentSet_content_bindings::ct_signed_data);
+    auto signed_data = info.try_decode(
+        Cms::ContentInfo::open_types::content_set::content::ct_signed_data);
     if (!signed_data) {
         throw std::runtime_error("ContentInfo must contain SignedData.");
     }
@@ -193,9 +194,9 @@ using PkixOids = Pkix::PKIX1Explicit2009Oids;
     }
 
     const auto types = signer.try_decode_signed_attrs(
-        Cms::signedAttributesSet_bindings::content_type);
+        Cms::Attribute::open_types::signed_attributes_set::attr_values::content_type);
     const auto digests = signer.try_decode_signed_attrs(
-        Cms::signedAttributesSet_bindings::message_digest);
+        Cms::Attribute::open_types::signed_attributes_set::attr_values::message_digest);
     if (!types || !digests) {
         throw std::runtime_error("SignedAttrs requires contentType and messageDigest.");
     }
@@ -364,8 +365,11 @@ std::vector<std::uint8_t> build_attached_signed_data(
     signer.sid = Cms::SignerIdentifier::from_issuerAndSerialNumber(std::move(ias));
     signer.digestAlgorithm = digest_algorithm;
     signer.signedAttrs = asn1kit::value<std::vector<Cms::Attribute>>::from_value({
-        Cms::Attribute::create(Cms::signedAttributesSet_bindings::content_type, CmsOids::IdData.get()),
-        Cms::Attribute::create(Cms::signedAttributesSet_bindings::message_digest, digest),
+        Cms::Attribute::create(
+            Cms::Attribute::open_types::signed_attributes_set::attr_values::content_type,
+            CmsOids::IdData.get()),
+        Cms::Attribute::create(
+            Cms::Attribute::open_types::signed_attributes_set::attr_values::message_digest, digest),
     });
     signer.signatureAlgorithm = signature_algorithm;
     signer.signature = asn1kit::bytes::from_vector(std::vector<std::uint8_t>(32, 0x01));
@@ -380,7 +384,7 @@ std::vector<std::uint8_t> build_attached_signed_data(
     signed_data.signerInfos = {std::move(signer)};
 
     const auto content_info = Cms::ContentInfo::create(
-        Cms::contentSet_content_bindings::ct_signed_data, signed_data);
+        Cms::ContentInfo::open_types::content_set::content::ct_signed_data, signed_data);
     return asn1kit::encode(content_info, asn1kit::encoding::der);
 }
 

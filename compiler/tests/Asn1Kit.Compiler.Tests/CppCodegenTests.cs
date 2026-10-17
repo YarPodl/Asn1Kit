@@ -207,10 +207,92 @@ END
         Assert.Contains("return asn1kit::decode_open<T>(", source);
         Assert.Contains("parameters = asn1kit::encode_open(value);", source);
         Assert.Contains("static AlgorithmIdentifier create(", source);
-        Assert.Contains("namespace mixed_parameters_bindings", source);
+        Assert.Contains("using open_types = AlgorithmIdentifier_open_types;", source);
+        Assert.Contains("struct AlgorithmIdentifier_open_types", source);
+        Assert.Contains("struct mixed", source);
+        Assert.Contains("using parameters = mixed_parameters_open_type_entries;", source);
         Assert.Contains("empty_entry{", source);
         Assert.Contains("data_entry{", source);
+        Assert.DoesNotContain("_bindings", source);
         Assert.DoesNotContain("std::function", source);
+    }
+
+    [Fact]
+    public void OpenTypeRegistryGroupsTableFieldsAndDisambiguatesLocalCatalogs()
+    {
+        const string asn = @"
+M DEFINITIONS ::= BEGIN
+  C ::= CLASS { &id OBJECT IDENTIFIER UNIQUE, &First, &Second } WITH SYNTAX {
+    FIRST &First SECOND &Second IDENTIFIED BY &id }
+  itemA C ::= { FIRST INTEGER SECOND NULL IDENTIFIED BY {1 2 3} }
+  itemB C ::= { FIRST BOOLEAN SECOND OCTET STRING IDENTIFIED BY {1 2 4} }
+  HTTPItemsA C ::= {itemA}
+  HTTPItemsB C ::= {itemB}
+  Pair{C:S} ::= SEQUENCE {
+    id C.&id({S}),
+    first C.&First({S}{@id}),
+    second C.&Second({S}{@id}) }
+  Holder ::= SEQUENCE { pairA Pair{HTTPItemsA}, pairB Pair{HTTPItemsB} }
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        var source = CppSource(document);
+
+        Assert.Contains("using open_types = Pair_open_types;", source);
+        Assert.Contains("struct http_items_a", source);
+        Assert.Contains("struct http_items_b", source);
+        Assert.Contains("using first = ", source);
+        Assert.Contains("using second = ", source);
+        Assert.DoesNotContain("_bindings", source);
+
+        foreach (var definition in document.Modules[0].Types)
+            ClearTables(definition.Type);
+
+        source = CppSource(document);
+        Assert.Contains("struct local", source);
+        Assert.Contains("using first = ", source);
+        Assert.Contains("using second = ", source);
+        Assert.Matches(@"using first_[a-z0-9_]+ = ", source);
+        Assert.Matches(@"using second_[a-z0-9_]+ = ", source);
+        Assert.Equal(source, CppSource(document));
+        Assert.DoesNotContain("_bindings", source);
+
+        static void ClearTables(TypeExpr type)
+        {
+            if (type is RefType { OpenTypes: { } uses })
+            {
+                foreach (var use in uses)
+                    use.Table = null;
+            }
+
+            switch (type)
+            {
+                case AnyType any:
+                    any.Table = null;
+                    break;
+                case SequenceType sequence:
+                    foreach (var component in sequence.Components) ClearTables(component.Type);
+                    break;
+                case SetType set:
+                    foreach (var component in set.Components) ClearTables(component.Type);
+                    break;
+                case ChoiceType choice:
+                    foreach (var component in choice.Components) ClearTables(component.Type);
+                    break;
+                case SequenceOfType sequenceOf:
+                    ClearTables(sequenceOf.Element);
+                    break;
+                case SetOfType setOf:
+                    ClearTables(setOf.Element);
+                    break;
+                case OctetStringType { Containing: { } containing }:
+                    ClearTables(containing);
+                    break;
+                case BitStringType { Containing: { } containing }:
+                    ClearTables(containing);
+                    break;
+            }
+        }
     }
 
     [Fact]
@@ -277,8 +359,11 @@ END
             source);
         Assert.Contains("return asn1kit::decode_each<T>(", source);
         Assert.Contains("values = asn1kit::encode_each(value);", source);
-        Assert.Contains("namespace mixed_extnValue_bindings", source);
-        Assert.Contains("namespace mixed_values_bindings", source);
+        Assert.Contains("using open_types = Extension_open_types;", source);
+        Assert.Contains("using open_types = Attribute_open_types;", source);
+        Assert.Contains("using extn_value = mixed_extnValue_open_type_entries;", source);
+        Assert.Contains("using values = mixed_values_open_type_entries;", source);
+        Assert.DoesNotContain("_bindings", source);
     }
 
     [Fact]
@@ -302,7 +387,11 @@ END
             source);
         Assert.Contains("if (!((*this).id == binding.key)) return result;", source);
         Assert.DoesNotContain("static Outer_Nested_Item create(", source);
-        Assert.Contains("namespace items_value_bindings", source);
+        Assert.Contains("using open_types = Outer_open_types;", source);
+        Assert.Contains("struct Outer_open_types", source);
+        Assert.Contains("struct items", source);
+        Assert.Contains("using value_ = items_value_open_type_entries;", source);
+        Assert.DoesNotContain("_bindings", source);
     }
 
     [Fact]

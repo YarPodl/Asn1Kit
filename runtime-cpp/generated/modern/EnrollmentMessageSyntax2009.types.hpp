@@ -80,7 +80,10 @@ namespace asn1kit {
 namespace modern {
 namespace EnrollmentMessageSyntax2009 {
 
+struct AddExtensions_open_types;
 struct AddExtensions {
+    using open_types = AddExtensions_open_types;
+
     std::uint32_t pkiDataReference{};
     std::vector<std::uint32_t> certReferences{};
     std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension> extensions{};
@@ -212,7 +215,10 @@ namespace asn1kit {
 namespace modern {
 namespace EnrollmentMessageSyntax2009 {
 
+struct CMCPublicationInfo_open_types;
 struct CMCPublicationInfo {
+    using open_types = CMCPublicationInfo_open_types;
+
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlg{};
     std::vector<asn1kit::bytes> certHashes{};
     ::asn1kit::modern::PKIXCRMF2009::PKIPublicationInfo pubInfo{};
@@ -364,7 +370,10 @@ struct CertificationRequest_CertificationRequestInfo {
     }
 };
 
+struct CertificationRequest_open_types;
 struct CertificationRequest {
+    using open_types = CertificationRequest_open_types;
+
     CertificationRequest_CertificationRequestInfo certificationRequestInfo{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signatureAlgorithm{};
     asn1kit::bit_string signature{};
@@ -418,13 +427,16 @@ struct ControlsProcessed {
     }
 };
 
+struct DecryptedPOP_open_types;
 struct DecryptedPOP {
+    using open_types = DecryptedPOP_open_types;
+
     std::uint32_t bodyPartID{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier thePOPAlgID{};
     asn1kit::bytes thePOP{};
 
     template <typename T>
-    [[nodiscard]] std::optional<T> try_decode_the_p_o_p_alg_i_d(
+    [[nodiscard]] std::optional<T> try_decode_the_pop_alg_id(
         const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.pOPAlgs_parameters">, asn1kit::oid, T>& binding) const {
         return asn1kit::try_decode_unique((*this).thePOPAlgID, binding);
     }
@@ -531,13 +543,16 @@ struct GetCert {
     }
 };
 
+struct IdentityProofV2_open_types;
 struct IdentityProofV2 {
+    using open_types = IdentityProofV2_open_types;
+
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier proofAlgID{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier macAlgId{};
     asn1kit::bytes witness{};
 
     template <typename T>
-    [[nodiscard]] std::optional<T> try_decode_proof_alg_i_d(
+    [[nodiscard]] std::optional<T> try_decode_proof_alg_id(
         const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.witnessAlgs_parameters">, asn1kit::oid, T>& binding) const {
         return asn1kit::try_decode_unique((*this).proofAlgID, binding);
     }
@@ -918,7 +933,10 @@ struct CMCStatusInfo {
     }
 };
 
+struct PopLinkWitnessV2_open_types;
 struct PopLinkWitnessV2 {
+    using open_types = PopLinkWitnessV2_open_types;
+
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier keyGenAlgorithm{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier macAlgorithm{};
     asn1kit::bytes witness{};
@@ -957,7 +975,10 @@ struct PopLinkWitnessV2 {
     }
 };
 
+struct PublishTrustAnchors_open_types;
 struct PublishTrustAnchors {
+    using open_types = PublishTrustAnchors_open_types;
+
     asn1kit::integer seqNumber{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm{};
     std::vector<asn1kit::bytes> anchorHashes{};
@@ -1042,7 +1063,11 @@ struct RevokeRequest {
     }
 };
 
+struct cmc_control_set_attrValues_open_type_entries;
+struct TaggedAttribute_open_types;
 struct TaggedAttribute {
+    using open_types = TaggedAttribute_open_types;
+
     std::uint32_t bodyPartID{};
     asn1kit::oid attrType{};
     std::vector<asn1kit::any> attrValues{};
@@ -1311,7 +1336,10 @@ struct TaggedRequest {
     }
 };
 
+struct EncryptedPOP_open_types;
 struct EncryptedPOP {
+    using open_types = EncryptedPOP_open_types;
+
     TaggedRequest request{};
     ::asn1kit::modern::CryptographicMessageSyntax2009::ContentInfo cms{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier thePOPAlgID{};
@@ -1319,13 +1347,13 @@ struct EncryptedPOP {
     asn1kit::bytes witness{};
 
     template <typename T>
-    [[nodiscard]] std::optional<T> try_decode_the_p_o_p_alg_i_d(
+    [[nodiscard]] std::optional<T> try_decode_the_pop_alg_id(
         const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.pOPAlgs_parameters">, asn1kit::oid, T>& binding) const {
         return asn1kit::try_decode_unique((*this).thePOPAlgID, binding);
     }
 
     template <typename T>
-    [[nodiscard]] std::optional<T> try_decode_witness_alg_i_d(
+    [[nodiscard]] std::optional<T> try_decode_witness_alg_id(
         const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.witnessAlgs_parameters">, asn1kit::oid, T>& binding) const {
         return asn1kit::try_decode_unique((*this).witnessAlgID, binding);
     }

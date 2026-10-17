@@ -201,7 +201,11 @@ struct AttributeCertificateInfoV1 {
     }
 };
 
+struct signatureAlgorithms_signature_open_type_entries;
+struct AttributeCertificateV1_open_types;
 struct AttributeCertificateV1 {
+    using open_types = AttributeCertificateV1_open_types;
+
     AttributeCertificateInfoV1 toBeSigned{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::bit_string signature{};

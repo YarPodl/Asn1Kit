@@ -217,7 +217,11 @@ struct CountryName {
     }
 };
 
+struct supportedExtensionAttributes_extension_attribute_value_open_type_entries;
+struct ExtensionAttribute_open_types;
 struct ExtensionAttribute {
+    using open_types = ExtensionAttribute_open_types;
+
     std::int32_t extension_attribute_type{};
     asn1kit::any extension_attribute_value{};
 

@@ -30,105 +30,274 @@ namespace asn1kit {
 namespace modern {
 namespace CryptographicMessageSyntax2009 {
 
-namespace authAttributeSet_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"CryptographicMessageSyntax-2009.authAttributeSet">,
-    asn1kit::oid, std::vector<asn1kit::oid>> content_type{
-    CryptographicMessageSyntax2009Oids::IdContentType.get()};
+struct authAttributeSet_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"CryptographicMessageSyntax-2009.authAttributeSet">,
+        asn1kit::oid, std::vector<asn1kit::oid>> content_type{
+        CryptographicMessageSyntax2009Oids::IdContentType.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"CryptographicMessageSyntax-2009.authAttributeSet">,
-    asn1kit::oid, std::vector<asn1kit::bytes>> message_digest{
-    CryptographicMessageSyntax2009Oids::IdMessageDigest.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"CryptographicMessageSyntax-2009.authAttributeSet">,
+        asn1kit::oid, std::vector<asn1kit::bytes>> message_digest{
+        CryptographicMessageSyntax2009Oids::IdMessageDigest.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"CryptographicMessageSyntax-2009.authAttributeSet">,
-    asn1kit::oid, std::vector<Time>> signing_time{
-    CryptographicMessageSyntax2009Oids::IdSigningTime.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"CryptographicMessageSyntax-2009.authAttributeSet">,
+        asn1kit::oid, std::vector<Time>> signing_time{
+        CryptographicMessageSyntax2009Oids::IdSigningTime.get()};
 
-} // namespace authAttributeSet_bindings
+};
 
-namespace contentSet_content_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_content">,
-    asn1kit::oid, SignedData> ct_signed_data{
-    CryptographicMessageSyntax2009Oids::IdSignedData.get()};
+struct contentSet_content_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_content">,
+        asn1kit::oid, SignedData> ct_signed_data{
+        CryptographicMessageSyntax2009Oids::IdSignedData.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_content">,
-    asn1kit::oid, EncryptedData> ct_encrypted_data{
-    CryptographicMessageSyntax2009Oids::IdEncryptedData.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_content">,
+        asn1kit::oid, EncryptedData> ct_encrypted_data{
+        CryptographicMessageSyntax2009Oids::IdEncryptedData.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_content">,
-    asn1kit::oid, EnvelopedData> ct_enveloped_data{
-    CryptographicMessageSyntax2009Oids::IdEnvelopedData.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_content">,
+        asn1kit::oid, EnvelopedData> ct_enveloped_data{
+        CryptographicMessageSyntax2009Oids::IdEnvelopedData.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_content">,
-    asn1kit::oid, AuthenticatedData> ct_authenticated_data{
-    CryptographicMessageSyntax2009Oids::IdCtAuthData.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_content">,
+        asn1kit::oid, AuthenticatedData> ct_authenticated_data{
+        CryptographicMessageSyntax2009Oids::IdCtAuthData.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_content">,
-    asn1kit::oid, DigestedData> ct_digested_data{
-    CryptographicMessageSyntax2009Oids::IdDigestedData.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_content">,
+        asn1kit::oid, DigestedData> ct_digested_data{
+        CryptographicMessageSyntax2009Oids::IdDigestedData.get()};
 
-} // namespace contentSet_content_bindings
+};
 
-namespace contentSet_eContent_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_eContent">,
-    asn1kit::oid, SignedData> ct_signed_data{
-    CryptographicMessageSyntax2009Oids::IdSignedData.get()};
+struct contentSet_eContent_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_eContent">,
+        asn1kit::oid, SignedData> ct_signed_data{
+        CryptographicMessageSyntax2009Oids::IdSignedData.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_eContent">,
-    asn1kit::oid, EncryptedData> ct_encrypted_data{
-    CryptographicMessageSyntax2009Oids::IdEncryptedData.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_eContent">,
+        asn1kit::oid, EncryptedData> ct_encrypted_data{
+        CryptographicMessageSyntax2009Oids::IdEncryptedData.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_eContent">,
-    asn1kit::oid, EnvelopedData> ct_enveloped_data{
-    CryptographicMessageSyntax2009Oids::IdEnvelopedData.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_eContent">,
+        asn1kit::oid, EnvelopedData> ct_enveloped_data{
+        CryptographicMessageSyntax2009Oids::IdEnvelopedData.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_eContent">,
-    asn1kit::oid, AuthenticatedData> ct_authenticated_data{
-    CryptographicMessageSyntax2009Oids::IdCtAuthData.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_eContent">,
+        asn1kit::oid, AuthenticatedData> ct_authenticated_data{
+        CryptographicMessageSyntax2009Oids::IdCtAuthData.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_eContent">,
-    asn1kit::oid, DigestedData> ct_digested_data{
-    CryptographicMessageSyntax2009Oids::IdDigestedData.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_eContent">,
+        asn1kit::oid, DigestedData> ct_digested_data{
+        CryptographicMessageSyntax2009Oids::IdDigestedData.get()};
 
-} // namespace contentSet_eContent_bindings
+};
 
-namespace signedAttributesSet_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"CryptographicMessageSyntax-2009.signedAttributesSet">,
-    asn1kit::oid, std::vector<Time>> signing_time{
-    CryptographicMessageSyntax2009Oids::IdSigningTime.get()};
+struct signedAttributesSet_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"CryptographicMessageSyntax-2009.signedAttributesSet">,
+        asn1kit::oid, std::vector<Time>> signing_time{
+        CryptographicMessageSyntax2009Oids::IdSigningTime.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"CryptographicMessageSyntax-2009.signedAttributesSet">,
-    asn1kit::oid, std::vector<asn1kit::bytes>> message_digest{
-    CryptographicMessageSyntax2009Oids::IdMessageDigest.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"CryptographicMessageSyntax-2009.signedAttributesSet">,
+        asn1kit::oid, std::vector<asn1kit::bytes>> message_digest{
+        CryptographicMessageSyntax2009Oids::IdMessageDigest.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"CryptographicMessageSyntax-2009.signedAttributesSet">,
-    asn1kit::oid, std::vector<asn1kit::oid>> content_type{
-    CryptographicMessageSyntax2009Oids::IdContentType.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"CryptographicMessageSyntax-2009.signedAttributesSet">,
+        asn1kit::oid, std::vector<asn1kit::oid>> content_type{
+        CryptographicMessageSyntax2009Oids::IdContentType.get()};
 
-} // namespace signedAttributesSet_bindings
+};
 
-namespace unsignedAttributes_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"CryptographicMessageSyntax-2009.unsignedAttributes">,
-    asn1kit::oid, std::vector<SignerInfo>> countersignature{
-    CryptographicMessageSyntax2009Oids::IdCountersignature.get()};
+struct unsignedAttributes_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"CryptographicMessageSyntax-2009.unsignedAttributes">,
+        asn1kit::oid, std::vector<SignerInfo>> countersignature{
+        CryptographicMessageSyntax2009Oids::IdCountersignature.get()};
 
-} // namespace unsignedAttributes_bindings
+};
+
+struct Attribute_open_types {
+    struct auth_attribute_set {
+        using attr_values = authAttributeSet_open_type_entries;
+
+    };
+
+    struct signed_attributes_set {
+        using attr_values = signedAttributesSet_open_type_entries;
+
+    };
+
+    struct unsigned_attributes {
+        using attr_values = unsignedAttributes_open_type_entries;
+
+    };
+
+};
+
+struct AuthAttributes_open_types {
+    struct auth_attribute_set {
+        using attr_values = authAttributeSet_open_type_entries;
+
+    };
+
+};
+
+struct AuthEnvelopedData_open_types {
+    struct auth_attribute_set {
+        using attr_values = authAttributeSet_open_type_entries;
+
+    };
+
+};
+
+struct AuthenticatedData_open_types {
+    struct auth_attribute_set {
+        using attr_values = authAttributeSet_open_type_entries;
+
+    };
+
+    struct message_authentication_code_algorithm_set {
+        using parameters = ::asn1kit::modern::AlgorithmInformation2009::pOPAlgs_parameters_open_type_entries;
+
+    };
+
+};
+
+struct ContentEncryptionAlgorithmIdentifier_open_types {
+    struct content_encryption_algorithm_set {
+        using parameters = ::asn1kit::modern::AlgorithmInformation2009::contentEncryptionAlgorithmSet_parameters_open_type_entries;
+
+    };
+
+};
+
+struct ContentInfo_open_types {
+    struct content_set {
+        using content = contentSet_content_open_type_entries;
+
+    };
+
+};
+
+struct EncapsulatedContentInfo_open_types {
+    struct content_set {
+        using e_content = contentSet_eContent_open_type_entries;
+
+    };
+
+};
+
+struct EncryptedContentInfo_open_types {
+    struct content_encryption_algorithm_set {
+        using parameters = ::asn1kit::modern::AlgorithmInformation2009::contentEncryptionAlgorithmSet_parameters_open_type_entries;
+
+    };
+
+};
+
+struct KEKRecipientInfo_open_types {
+    struct key_encryption_algorithm_set {
+        using parameters = ::asn1kit::modern::AlgorithmInformation2009::keyWrapAlgs_parameters_open_type_entries;
+
+    };
+
+};
+
+struct KeyAgreeRecipientInfo_open_types {
+    struct key_agreement_algorithm_set {
+        using parameters = ::asn1kit::modern::AlgorithmInformation2009::keyAgreementAlgorithmSet_parameters_open_type_entries;
+
+    };
+
+};
+
+struct KeyDerivationAlgorithmIdentifier_open_types {
+    struct local {
+        using parameters = ::asn1kit::modern::AlgorithmInformation2009::keyDevAlgs_parameters_open_type_entries;
+
+    };
+
+};
+
+struct KeyEncryptionAlgorithmIdentifier_open_types {
+    struct key_encryption_algorithm_set {
+        using parameters = ::asn1kit::modern::AlgorithmInformation2009::keyWrapAlgs_parameters_open_type_entries;
+
+    };
+
+};
+
+struct KeyTransRecipientInfo_open_types {
+    struct key_transport_algorithm_set {
+        using parameters = ::asn1kit::modern::AlgorithmInformation2009::keyTransportAlgorithmSet_parameters_open_type_entries;
+
+    };
+
+};
+
+struct MessageAuthenticationCodeAlgorithm_open_types {
+    struct message_authentication_code_algorithm_set {
+        using parameters = ::asn1kit::modern::AlgorithmInformation2009::pOPAlgs_parameters_open_type_entries;
+
+    };
+
+};
+
+struct OriginatorPublicKey_open_types {
+    struct originator_key_set {
+        using parameters = ::asn1kit::modern::AlgorithmInformation2009::originatorKeySet_parameters_open_type_entries;
+
+    };
+
+};
+
+struct PasswordRecipientInfo_open_types {
+    struct key_encryption_algorithm_set {
+        using parameters = ::asn1kit::modern::AlgorithmInformation2009::keyWrapAlgs_parameters_open_type_entries;
+
+    };
+
+    struct local {
+        using parameters = ::asn1kit::modern::AlgorithmInformation2009::keyDevAlgs_parameters_open_type_entries;
+
+    };
+
+};
+
+struct SignedAttributes_open_types {
+    struct signed_attributes_set {
+        using attr_values = signedAttributesSet_open_type_entries;
+
+    };
+
+};
+
+struct SignerInfo_open_types {
+    struct signed_attributes_set {
+        using attr_values = signedAttributesSet_open_type_entries;
+
+    };
+
+    struct unsigned_attributes {
+        using attr_values = unsignedAttributes_open_type_entries;
+
+    };
+
+};
 
 } // namespace CryptographicMessageSyntax2009
 } // namespace modern

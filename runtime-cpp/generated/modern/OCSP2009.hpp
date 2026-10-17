@@ -30,13 +30,61 @@ namespace asn1kit {
 namespace modern {
 namespace OCSP2009 {
 
-namespace responseSet_response_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"OCSP-2009.responseSet_response">,
-    asn1kit::oid, BasicOCSPResponse> basic_response{
-    OCSP2009Oids::IdPkixOcspBasic.get()};
+struct responseSet_response_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"OCSP-2009.responseSet_response">,
+        asn1kit::oid, BasicOCSPResponse> basic_response{
+        OCSP2009Oids::IdPkixOcspBasic.get()};
 
-} // namespace responseSet_response_bindings
+};
+
+struct BasicOCSPResponse_open_types {
+    struct local {
+        using parameters = ::asn1kit::modern::AlgorithmInformation2009::algorithmIdentifier_parameters_algorithmIdentifier_open_type_entries;
+
+    };
+
+};
+
+struct Request_open_types {
+    struct local {
+        using extn_value = ::asn1kit::modern::PKIXCommonTypes2009::extension_extnValue_extension_open_type_entries;
+
+    };
+
+};
+
+struct ResponseBytes_open_types {
+    struct response_set {
+        using response = responseSet_response_open_type_entries;
+
+    };
+
+};
+
+struct ResponseData_open_types {
+    struct local {
+        using extn_value = ::asn1kit::modern::PKIXCommonTypes2009::extension_extnValue_extension_2_open_type_entries;
+
+    };
+
+};
+
+struct SingleResponse_open_types {
+    struct local {
+        using extn_value = ::asn1kit::modern::PKIXCommonTypes2009::extension_extnValue_extension_3_open_type_entries;
+
+    };
+
+};
+
+struct TBSRequest_open_types {
+    struct local {
+        using extn_value = ::asn1kit::modern::PKIXCommonTypes2009::extension_extnValue_open_type_entries;
+
+    };
+
+};
 
 } // namespace OCSP2009
 } // namespace modern

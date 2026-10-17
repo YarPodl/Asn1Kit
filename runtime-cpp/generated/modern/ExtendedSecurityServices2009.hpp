@@ -316,7 +316,10 @@ namespace asn1kit {
 namespace modern {
 namespace ExtendedSecurityServices2009 {
 
+struct ESSCertIDv2_open_types;
 struct ESSCertIDv2 {
+    using open_types = ESSCertIDv2_open_types;
+
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm = default_hashAlgorithm();
     asn1kit::bytes certHash{};
     std::optional<IssuerSerial> issuerSerial{};

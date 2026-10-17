@@ -29,7 +29,27 @@ namespace asn1kit {
 namespace modern {
 namespace AlgorithmInformation2009 {
 
+struct algorithmIdentifier_parameters_algorithmIdentifier_open_type_entries;
+struct algorithmIdentifier_parameters_open_type_entries;
+struct contentEncryptionAlgorithmSet_parameters_open_type_entries;
+struct hashAlgorithms_parameters_algorithmIdentifier_open_type_entries;
+struct hashAlgorithms_parameters_open_type_entries;
+struct keyAgreementAlgorithmSet_parameters_open_type_entries;
+struct keyDevAlgs_parameters_open_type_entries;
+struct keyTransportAlgorithmSet_parameters_open_type_entries;
+struct keyWrapAlgs_parameters_open_type_entries;
+struct originatorKeySet_parameters_open_type_entries;
+struct pKCS1MGFAlgorithms_parameters_open_type_entries;
+struct pOPAlgs_parameters_open_type_entries;
+struct pSS_sourceAlgorithms_parameters_open_type_entries;
+struct password_mACAlgorithms_parameters_open_type_entries;
+struct publicKeyAlgorithms_parameters_open_type_entries;
+struct signatureAlgorithms_parameters_open_type_entries;
+struct witnessAlgs_parameters_open_type_entries;
+struct AlgorithmIdentifier_open_types;
 struct AlgorithmIdentifier {
+    using open_types = AlgorithmIdentifier_open_types;
+
     asn1kit::oid algorithm{};
     std::optional<asn1kit::any> parameters{};
 
@@ -109,7 +129,11 @@ inline ParamOptions decode_ParamOptions(asn1kit::reader& r, const asn1kit::tag& 
     throw asn1kit::exception("Unknown ENUMERATED value.");
 }
 
+struct sMimeCapsSet_parameters_open_type_entries;
+struct SMIMECapability_open_types;
 struct SMIMECapability {
+    using open_types = SMIMECapability_open_types;
+
     asn1kit::oid capabilityID{};
     std::optional<asn1kit::any> parameters{};
 

@@ -130,7 +130,11 @@ struct Date {
     }
 };
 
+struct skdQuerySet_glaRequestValue_open_type_entries;
+struct GLAQueryRequest_open_types;
 struct GLAQueryRequest {
+    using open_types = GLAQueryRequest_open_types;
+
     asn1kit::oid glaRequestType{};
     asn1kit::any glaRequestValue{};
 
@@ -180,7 +184,11 @@ struct GLAQueryRequest {
     }
 };
 
+struct skdResponseSet_glaResponseValue_open_type_entries;
+struct GLAQueryResponse_open_types;
 struct GLAQueryResponse {
+    using open_types = GLAQueryResponse_open_types;
+
     asn1kit::oid glaResponseType{};
     asn1kit::any glaResponseValue{};
 

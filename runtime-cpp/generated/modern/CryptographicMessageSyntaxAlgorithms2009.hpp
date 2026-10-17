@@ -121,7 +121,10 @@ struct PBKDF2Params_Salt {
     }
 };
 
+struct PBKDF2Params_open_types;
 struct PBKDF2Params {
+    using open_types = PBKDF2Params_open_types;
+
     PBKDF2Params_Salt salt{};
     asn1kit::integer iterationCount{};
     std::optional<asn1kit::integer> keyLength{};

@@ -32,91 +32,272 @@ namespace asn1kit {
 namespace modern {
 namespace PKIX1Explicit2009 {
 
-namespace signatureAlgorithms_signature_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
-    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a1{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha1.get()};
+struct signatureAlgorithms_signature_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
+        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha1{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha1.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
-    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a1{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA1.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
+        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha1{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA1.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
-    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a224{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha224.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
+        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha224{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha224.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
-    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a256{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha256.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
+        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha256{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha256.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
-    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a224{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA224.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
+        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha224{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA224.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
-    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a256{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA256.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
+        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha256{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA256.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
-    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a384{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA384.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
+        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha384{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA384.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
-    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a512{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA512.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
+        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha512{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA512.get()};
 
-} // namespace signatureAlgorithms_signature_bindings
+};
 
-namespace signatureAlgorithms_signature_certificateList_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
-    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a1{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha1.get()};
+struct signatureAlgorithms_signature_certificateList_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
+        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha1{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha1.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
-    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a1{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA1.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
+        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha1{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA1.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
-    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a224{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha224.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
+        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha224{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha224.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
-    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_s_h_a256{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha256.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
+        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha256{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha256.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
-    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a224{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA224.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
+        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha224{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA224.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
-    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a256{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA256.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
+        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha256{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA256.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
-    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a384{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA384.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
+        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha384{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA384.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
-    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_s_h_a512{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA512.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
+        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha512{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA512.get()};
 
-} // namespace signatureAlgorithms_signature_certificateList_bindings
+};
+
+struct CertTemplate_open_types {
+    struct supported_attributes {
+        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+
+    };
+
+};
+
+struct Certificate_open_types {
+    struct signature_algorithms {
+        using parameters = ::asn1kit::modern::AlgorithmInformation2009::signatureAlgorithms_parameters_open_type_entries;
+
+        using signature = signatureAlgorithms_signature_open_type_entries;
+
+    };
+
+};
+
+struct CertificateList_open_types {
+    struct signature_algorithms {
+        using parameters = ::asn1kit::modern::AlgorithmInformation2009::signatureAlgorithms_parameters_open_type_entries;
+
+        using signature = signatureAlgorithms_signature_certificateList_open_type_entries;
+
+    };
+
+};
+
+struct CertificationRequest_open_types {
+    struct supported_attributes {
+        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+
+    };
+
+};
+
+struct CertificationRequestInfo_open_types {
+    struct supported_attributes {
+        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+
+    };
+
+};
+
+struct DistinguishedName_open_types {
+    struct supported_attributes {
+        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+
+    };
+
+};
+
+struct DistributionPointName_open_types {
+    struct supported_attributes {
+        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+
+    };
+
+};
+
+struct GeneralName_open_types {
+    struct supported_attributes {
+        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+
+    };
+
+};
+
+struct GetCRL_open_types {
+    struct supported_attributes {
+        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+
+    };
+
+};
+
+struct IssuerAndSerialNumber_open_types {
+    struct supported_attributes {
+        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+
+    };
+
+};
+
+struct Name_open_types {
+    struct supported_attributes {
+        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+
+    };
+
+};
+
+struct RDNSequence_open_types {
+    struct supported_attributes {
+        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+
+    };
+
+};
+
+struct RelativeDistinguishedName_open_types {
+    struct supported_attributes {
+        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+
+    };
+
+};
+
+struct ResponderID_open_types {
+    struct supported_attributes {
+        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+
+    };
+
+};
+
+struct RevokeRequest_open_types {
+    struct supported_attributes {
+        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+
+    };
+
+};
+
+struct ServiceLocator_open_types {
+    struct supported_attributes {
+        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+
+    };
+
+};
+
+struct SubjectPublicKeyInfo_open_types {
+    struct public_key_algorithms {
+        using parameters = ::asn1kit::modern::AlgorithmInformation2009::publicKeyAlgorithms_parameters_open_type_entries;
+
+    };
+
+};
+
+struct TBSCertList_open_types {
+    struct crl_entry_extensions {
+        using extn_value = ::asn1kit::modern::PKIXCommonTypes2009::crlEntryExtensions_open_type_entries;
+
+    };
+
+    struct crl_extensions {
+        using extn_value = ::asn1kit::modern::PKIXCommonTypes2009::crlExtensions_open_type_entries;
+
+    };
+
+    struct signature_algorithms {
+        using parameters = ::asn1kit::modern::AlgorithmInformation2009::signatureAlgorithms_parameters_open_type_entries;
+
+    };
+
+    struct supported_attributes {
+        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+
+    };
+
+};
+
+struct TBSCertificate_open_types {
+    struct cert_extensions {
+        using extn_value = ::asn1kit::modern::PKIXCommonTypes2009::certExtensions_open_type_entries;
+
+    };
+
+    struct signature_algorithms {
+        using parameters = ::asn1kit::modern::AlgorithmInformation2009::signatureAlgorithms_parameters_open_type_entries;
+
+    };
+
+    struct supported_attributes {
+        using value_ = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_value_open_type_entries;
+
+    };
+
+};
 
 } // namespace PKIX1Explicit2009
 } // namespace modern

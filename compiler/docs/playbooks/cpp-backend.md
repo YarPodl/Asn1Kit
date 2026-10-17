@@ -31,7 +31,8 @@
   - Contextual read API эмитится на общем владельце selector/value: `try_decode_<route>(binding) -> std::optional<Value>`. Он проходит OPTIONAL/deferred/OF-маршрут, требует phantom-context своей таблицы и отклоняет несколько совпадений. Contextual `set` не эмитится.
   - Ancestor (`selector.levels > 0`) декодируется contextual-методом без явных parent-параметров; низкоуровневые `set/create` для такого carrier не эмитятся.
   - String/time в binding — `asn_string<form>` / `asn_time<form>` (форма в типе, не runtime-codec).
-  - Каталог — `namespace {table}_{field}_bindings` с `inline const` members (`{ key }`).
+  - Каждый carrier/contextual owner публикует `using open_types = <registry>`; registry определяется в facade после полных payload-типов. Путь descriptor: `Carrier::open_types::<table>::<field>::<entry>`, где table/field/entry нормализованы в `snake_case`; безымянная definition-scoped таблица использует `local`. Узлы — вложенные `struct`, members — `inline static const open_binding`.
+  - Старые плоские синтетические namespace каталогов не эмитятся. Registry-типы предварительно объявляются рядом с carrier, поэтому open-type payload не становится layout-зависимостью для `*.types.hpp` и cycle-amalgam.
   - Policy: unknown/wrong key → `std::nullopt` (raw живёт); match + bad wire → reject.
   - Selector: OID и INTEGER; nested path (`path.Count > 1`) через поля SEQUENCE/SET (нужно для Certificate/SIGNED parameters).
   - Inline SEQUENCE/SET, совпадающие с typedef, уже схлопнуты в IR (`InlineCompositeDeduper`) → общие типы вроде `AlgorithmIdentifier`, без `Owner_AlgorithmIdentifier`.

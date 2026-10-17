@@ -43,7 +43,13 @@ struct CryptographicMessageSyntax2009Oids {
     static constexpr auto IdCountersignature = asn1kit::oid_literal<"1.2.840.113549.1.9.6">();
 };
 
+struct authAttributeSet_open_type_entries;
+struct signedAttributesSet_open_type_entries;
+struct unsignedAttributes_open_type_entries;
+struct Attribute_open_types;
 struct Attribute {
+    using open_types = Attribute_open_types;
+
     asn1kit::oid attrType{};
     std::vector<asn1kit::any> attrValues{};
 
@@ -117,7 +123,11 @@ struct CMSVersion {
     static constexpr std::int32_t V5 = 5;
 };
 
+struct contentSet_content_open_type_entries;
+struct ContentInfo_open_types;
 struct ContentInfo {
+    using open_types = ContentInfo_open_types;
+
     asn1kit::oid contentType{};
     asn1kit::any content{};
 
@@ -174,7 +184,11 @@ struct ContentInfo {
     }
 };
 
+struct contentSet_eContent_open_type_entries;
+struct EncapsulatedContentInfo_open_types;
 struct EncapsulatedContentInfo {
+    using open_types = EncapsulatedContentInfo_open_types;
+
     asn1kit::oid eContentType{};
     std::optional<asn1kit::bytes> eContent{};
 
@@ -284,7 +298,10 @@ struct DigestedData {
     }
 };
 
+struct EncryptedContentInfo_open_types;
 struct EncryptedContentInfo {
+    using open_types = EncryptedContentInfo_open_types;
+
     asn1kit::oid contentType{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier contentEncryptionAlgorithm{};
     std::optional<asn1kit::bytes> encryptedContent{};
@@ -541,7 +558,10 @@ struct IssuerAndSerialNumber {
     }
 };
 
+struct OriginatorPublicKey_open_types;
 struct OriginatorPublicKey {
+    using open_types = OriginatorPublicKey_open_types;
+
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithm{};
     asn1kit::bit_string publicKey{};
 
@@ -743,7 +763,10 @@ struct KEKIdentifier {
     }
 };
 
+struct KEKRecipientInfo_open_types;
 struct KEKRecipientInfo {
+    using open_types = KEKRecipientInfo_open_types;
+
     std::int32_t version{};
     KEKIdentifier kekid{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier keyEncryptionAlgorithm{};
@@ -827,7 +850,10 @@ struct OtherRevocationInfoFormat {
     }
 };
 
+struct PasswordRecipientInfo_open_types;
 struct PasswordRecipientInfo {
+    using open_types = PasswordRecipientInfo_open_types;
+
     std::int32_t version{};
     std::optional<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> keyDerivationAlgorithm{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier keyEncryptionAlgorithm{};
@@ -958,7 +984,10 @@ struct RecipientIdentifier {
     }
 };
 
+struct KeyTransRecipientInfo_open_types;
 struct KeyTransRecipientInfo {
+    using open_types = KeyTransRecipientInfo_open_types;
+
     std::int32_t version{};
     RecipientIdentifier rid{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier keyEncryptionAlgorithm{};
@@ -1124,7 +1153,10 @@ struct RecipientEncryptedKey {
     }
 };
 
+struct KeyAgreeRecipientInfo_open_types;
 struct KeyAgreeRecipientInfo {
+    using open_types = KeyAgreeRecipientInfo_open_types;
+
     std::int32_t version{};
     OriginatorIdentifierOrKey originator{};
     std::optional<asn1kit::bytes> ukm{};
@@ -1487,7 +1519,10 @@ struct SignerIdentifier {
     }
 };
 
+struct SignerInfo_open_types;
 struct SignerInfo {
+    using open_types = SignerInfo_open_types;
+
     std::int32_t version{};
     SignerIdentifier sid{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier digestAlgorithm{};
@@ -1806,7 +1841,10 @@ struct OriginatorInfo {
     }
 };
 
+struct AuthenticatedData_open_types;
 struct AuthenticatedData {
+    using open_types = AuthenticatedData_open_types;
+
     std::int32_t version{};
     std::optional<OriginatorInfo> originatorInfo{};
     std::vector<RecipientInfo> recipientInfos{};

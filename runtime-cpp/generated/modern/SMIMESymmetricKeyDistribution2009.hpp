@@ -32,21 +32,37 @@ namespace asn1kit {
 namespace modern {
 namespace SMIMESymmetricKeyDistribution2009 {
 
-namespace skdQuerySet_glaRequestValue_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"SMIMESymmetricKeyDistribution-2009.skdQuerySet_glaRequestValue">,
-    asn1kit::oid, asn1kit::null_value> skd_alg_request{
-    SMIMESymmetricKeyDistribution2009Oids::IdCmcGlaSkdAlgRequest.get()};
+struct skdQuerySet_glaRequestValue_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"SMIMESymmetricKeyDistribution-2009.skdQuerySet_glaRequestValue">,
+        asn1kit::oid, asn1kit::null_value> skd_alg_request{
+        SMIMESymmetricKeyDistribution2009Oids::IdCmcGlaSkdAlgRequest.get()};
 
-} // namespace skdQuerySet_glaRequestValue_bindings
+};
 
-namespace skdResponseSet_glaResponseValue_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"SMIMESymmetricKeyDistribution-2009.skdResponseSet_glaResponseValue">,
-    asn1kit::oid, ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability> skd_alg_response{
-    SMIMESymmetricKeyDistribution2009Oids::IdCmcGlaSkdAlgResponse.get()};
+struct skdResponseSet_glaResponseValue_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"SMIMESymmetricKeyDistribution-2009.skdResponseSet_glaResponseValue">,
+        asn1kit::oid, ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability> skd_alg_response{
+        SMIMESymmetricKeyDistribution2009Oids::IdCmcGlaSkdAlgResponse.get()};
 
-} // namespace skdResponseSet_glaResponseValue_bindings
+};
+
+struct GLAQueryRequest_open_types {
+    struct skd_query_set {
+        using gla_request_value = skdQuerySet_glaRequestValue_open_type_entries;
+
+    };
+
+};
+
+struct GLAQueryResponse_open_types {
+    struct skd_response_set {
+        using gla_response_value = skdResponseSet_glaResponseValue_open_type_entries;
+
+    };
+
+};
 
 } // namespace SMIMESymmetricKeyDistribution2009
 } // namespace modern

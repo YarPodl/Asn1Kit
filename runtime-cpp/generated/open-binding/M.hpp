@@ -26,7 +26,11 @@
 
 namespace M {
 
+struct mixed_parameters_open_type_entries;
+struct AlgorithmIdentifier_open_types;
 struct AlgorithmIdentifier {
+    using open_types = AlgorithmIdentifier_open_types;
+
     asn1kit::oid algorithm{};
     std::optional<asn1kit::any> parameters{};
 
@@ -81,7 +85,11 @@ struct AlgorithmIdentifier {
     }
 };
 
+struct mixed_values_open_type_entries;
+struct Attribute_open_types;
 struct Attribute {
+    using open_types = Attribute_open_types;
+
     asn1kit::oid type{};
     std::vector<asn1kit::any> values{};
 
@@ -146,7 +154,11 @@ struct Attribute {
     }
 };
 
+struct mixed_extnValue_open_type_entries;
+struct Extension_open_types;
 struct Extension {
+    using open_types = Extension_open_types;
+
     asn1kit::oid extnID{};
     asn1kit::bytes extnValue{};
 
@@ -223,7 +235,11 @@ struct Holder {
     }
 };
 
+struct mixed_value_open_type_entries;
+struct Outer_Nested_Item_open_types;
 struct Outer_Nested_Item {
+    using open_types = Outer_Nested_Item_open_types;
+
     asn1kit::any value_{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -244,7 +260,10 @@ struct Outer_Nested_Item {
     }
 };
 
+struct Outer_open_types;
 struct Outer {
+    using open_types = Outer_open_types;
+
     asn1kit::oid id{};
     std::vector<Outer_Nested_Item> nested{};
 
@@ -281,57 +300,97 @@ struct Outer {
     }
 };
 
-namespace mixed_extnValue_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"M.mixed_extnValue">,
-    asn1kit::oid, asn1kit::null_value> empty_entry{
-    asn1kit::oid_literal<"1.2.3">().get()};
+struct mixed_extnValue_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"M.mixed_extnValue">,
+        asn1kit::oid, asn1kit::null_value> empty_entry{
+        asn1kit::oid_literal<"1.2.3">().get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"M.mixed_extnValue">,
-    asn1kit::oid, std::int32_t> data_entry{
-    asn1kit::oid_literal<"1.2.4">().get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"M.mixed_extnValue">,
+        asn1kit::oid, std::int32_t> data_entry{
+        asn1kit::oid_literal<"1.2.4">().get()};
 
-} // namespace mixed_extnValue_bindings
+};
 
-namespace mixed_parameters_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"M.mixed_parameters">,
-    asn1kit::oid, asn1kit::null_value> empty_entry{
-    asn1kit::oid_literal<"1.2.3">().get()};
+struct mixed_parameters_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"M.mixed_parameters">,
+        asn1kit::oid, asn1kit::null_value> empty_entry{
+        asn1kit::oid_literal<"1.2.3">().get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"M.mixed_parameters">,
-    asn1kit::oid, std::int32_t> data_entry{
-    asn1kit::oid_literal<"1.2.4">().get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"M.mixed_parameters">,
+        asn1kit::oid, std::int32_t> data_entry{
+        asn1kit::oid_literal<"1.2.4">().get()};
 
-} // namespace mixed_parameters_bindings
+};
 
-namespace mixed_value_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"M.mixed_value">,
-    asn1kit::oid, asn1kit::null_value> empty_entry{
-    asn1kit::oid_literal<"1.2.3">().get()};
+struct mixed_value_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"M.mixed_value">,
+        asn1kit::oid, asn1kit::null_value> empty_entry{
+        asn1kit::oid_literal<"1.2.3">().get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"M.mixed_value">,
-    asn1kit::oid, std::int32_t> data_entry{
-    asn1kit::oid_literal<"1.2.4">().get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"M.mixed_value">,
+        asn1kit::oid, std::int32_t> data_entry{
+        asn1kit::oid_literal<"1.2.4">().get()};
 
-} // namespace mixed_value_bindings
+};
 
-namespace mixed_values_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"M.mixed_values">,
-    asn1kit::oid, std::vector<asn1kit::null_value>> empty_entry{
-    asn1kit::oid_literal<"1.2.3">().get()};
+struct mixed_values_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"M.mixed_values">,
+        asn1kit::oid, std::vector<asn1kit::null_value>> empty_entry{
+        asn1kit::oid_literal<"1.2.3">().get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"M.mixed_values">,
-    asn1kit::oid, std::vector<std::int32_t>> data_entry{
-    asn1kit::oid_literal<"1.2.4">().get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"M.mixed_values">,
+        asn1kit::oid, std::vector<std::int32_t>> data_entry{
+        asn1kit::oid_literal<"1.2.4">().get()};
 
-} // namespace mixed_values_bindings
+};
+
+struct AlgorithmIdentifier_open_types {
+    struct mixed {
+        using parameters = mixed_parameters_open_type_entries;
+
+    };
+
+};
+
+struct Attribute_open_types {
+    struct mixed {
+        using values = mixed_values_open_type_entries;
+
+    };
+
+};
+
+struct Extension_open_types {
+    struct mixed {
+        using extn_value = mixed_extnValue_open_type_entries;
+
+    };
+
+};
+
+struct Outer_open_types {
+    struct mixed {
+        using value_ = mixed_value_open_type_entries;
+
+    };
+
+};
+
+struct Outer_Nested_Item_open_types {
+    struct mixed {
+        using value_ = mixed_value_open_type_entries;
+
+    };
+
+};
 
 } // namespace M
 #endif // ASN1KIT_GENERATED_M_HPP

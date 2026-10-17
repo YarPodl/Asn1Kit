@@ -170,6 +170,14 @@
 
 **Последствие.** Граф deps — только layout. `cycle_*.hpp` содержит только членов нетривиального SCC и `#include`-ит `Module.types.hpp` / `Module.hpp` / другие cycle по DAG конденсации, но не facade с cycle-includes. `Module.types.hpp` (нециклические типы + OID) создаётся только когда модулю нужен facade (owned cycle / post / open-type); иначе всё в одном `Module.hpp`. Facade не дублирует OID, если они уже в `*.types.hpp`. Peer `#include` в types/facade **откладываются** до первого owning-типа; типы с reentrant peer (include-triangle CMS→AttrCert→ESS→CMS) и их in-module потомки эмитятся после остальных, чтобы локальные типы (например `IssuerAndSerialNumber`) были полны до реentrant include.
 
+## C++ open types — registry доступен от carrier/owner-типа
+
+**Причина.** Плоские синтетические namespace каталогов требовали знания внутреннего алгоритма именования и не могли быть сокращены обычным type alias или переданы шаблону.
+
+**Решение.** Каждый generated carrier и contextual owner публикует `using open_types = <registry>`. Registry состоит из вложенных типов `<table>::<field>` и статических descriptor-members; путь начинается от известного model-типа, например `ContentInfo::open_types::content_set::content::ct_signed_data`. Безымянные таблицы находятся под `local`. Старые синтетические namespace удалены как намеренный breaking change без compatibility aliases.
+
+**Последствие.** Registry предварительно объявляется рядом с model-типом, но определяется только в facade после полных payload-типов. Поэтому descriptors остаются типобезопасными, а open-type payload не добавляет layout-рёбра в `*.types.hpp` и cycle-amalgam.
+
 ## C++ codegen — глубокий debug-формат в отдельных `Module.format.hpp`
 
 **Причина.** Плоский `Asn1Formatting` в C# не подходит для отладки нативных структур: нужен рекурсивный многострочный дамп с отступами без промежуточной `std::string`.

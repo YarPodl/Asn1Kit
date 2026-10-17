@@ -176,7 +176,10 @@ namespace asn1kit {
 namespace modern {
 namespace OCSP2009 {
 
+struct Request_open_types;
 struct Request {
+    using open_types = Request_open_types;
+
     CertID reqCert{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> singleRequestExtensions{};
 
@@ -307,7 +310,11 @@ struct ResponderID {
     }
 };
 
+struct responseSet_response_open_type_entries;
+struct ResponseBytes_open_types;
 struct ResponseBytes {
+    using open_types = ResponseBytes_open_types;
+
     asn1kit::oid responseType{};
     asn1kit::bytes response{};
 
@@ -602,7 +609,10 @@ struct Signature {
     }
 };
 
+struct SingleResponse_open_types;
 struct SingleResponse {
+    using open_types = SingleResponse_open_types;
+
     CertID certID{};
     CertStatus certStatus{};
     asn1kit::utc_date_time thisUpdate{};
@@ -664,7 +674,10 @@ struct SingleResponse {
     }
 };
 
+struct ResponseData_open_types;
 struct ResponseData {
+    using open_types = ResponseData_open_types;
+
     std::int32_t version = 0;
     ResponderID responderID{};
     asn1kit::utc_date_time producedAt{};
@@ -729,7 +742,10 @@ struct ResponseData {
     }
 };
 
+struct BasicOCSPResponse_open_types;
 struct BasicOCSPResponse {
+    using open_types = BasicOCSPResponse_open_types;
+
     ResponseData tbsResponseData{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signatureAlgorithm{};
     asn1kit::bit_string signature{};
@@ -776,7 +792,10 @@ struct BasicOCSPResponse {
     }
 };
 
+struct TBSRequest_open_types;
 struct TBSRequest {
+    using open_types = TBSRequest_open_types;
+
     std::int32_t version = 0;
     std::optional<::asn1kit::modern::PKIX1Implicit2009::GeneralName> requestorName{};
     std::vector<Request> requestList{};

@@ -355,7 +355,10 @@ namespace asn1kit {
 namespace modern {
 namespace PKIXCRMF2009 {
 
+struct CertTemplate_open_types;
 struct CertTemplate {
+    using open_types = CertTemplate_open_types;
+
     std::optional<std::int32_t> version{};
     std::optional<asn1kit::integer> serialNumber{};
     std::optional<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> signingAlg{};
@@ -479,7 +482,10 @@ struct CertTemplate {
     }
 };
 
+struct CertRequest_open_types;
 struct CertRequest {
+    using open_types = CertRequest_open_types;
+
     asn1kit::integer certReqId{};
     CertTemplate certTemplate{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> controls{};
@@ -517,7 +523,10 @@ struct CertRequest {
     }
 };
 
+struct PBMParameter_open_types;
 struct PBMParameter {
+    using open_types = PBMParameter_open_types;
+
     asn1kit::bytes salt{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier owf{};
     asn1kit::integer iterationCount{};
@@ -660,7 +669,10 @@ struct PKIPublicationInfo_Action {
     static constexpr std::int32_t PleasePublish = 1;
 };
 
+struct PKMACValue_open_types;
 struct PKMACValue {
+    using open_types = PKMACValue_open_types;
+
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algId{};
     asn1kit::bit_string value_{};
 
@@ -917,7 +929,10 @@ struct POPOSigningKeyInput {
     }
 };
 
+struct POPOSigningKey_open_types;
 struct POPOSigningKey {
+    using open_types = POPOSigningKey_open_types;
+
     std::optional<POPOSigningKeyInput> poposkInput{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::bit_string signature{};
@@ -1137,7 +1152,10 @@ struct ProofOfPossession {
     }
 };
 
+struct CertReqMsg_open_types;
 struct CertReqMsg {
+    using open_types = CertReqMsg_open_types;
+
     CertRequest certReq{};
     std::optional<ProofOfPossession> popo{};
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> regInfo{};

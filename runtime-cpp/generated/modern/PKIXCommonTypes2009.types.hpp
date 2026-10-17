@@ -29,7 +29,13 @@ namespace asn1kit {
 namespace modern {
 namespace PKIXCommonTypes2009 {
 
+struct attributeList_open_type_entries;
+struct attributesDefined_open_type_entries;
+struct supportedAttributes_open_type_entries;
+struct AttributeSet_open_types;
 struct AttributeSet {
+    using open_types = AttributeSet_open_types;
+
     asn1kit::oid type{};
     std::vector<asn1kit::any> values{};
 
@@ -94,7 +100,18 @@ struct AttributeSet {
     }
 };
 
+struct attributeCertExtensions_open_type_entries;
+struct certExtensions_open_type_entries;
+struct crlEntryExtensions_open_type_entries;
+struct crlExtensions_open_type_entries;
+struct extension_extnValue_extension_2_open_type_entries;
+struct extension_extnValue_extension_3_open_type_entries;
+struct extension_extnValue_extension_open_type_entries;
+struct extension_extnValue_open_type_entries;
+struct Extension_open_types;
 struct Extension {
+    using open_types = Extension_open_types;
+
     asn1kit::oid extnID{};
     bool critical = false;
     asn1kit::bytes extnValue{};
@@ -185,7 +202,13 @@ struct SecurityCategory {
     }
 };
 
+struct regControlSet_value_open_type_entries;
+struct regInfoSet_value_open_type_entries;
+struct supportedAttributes_value_open_type_entries;
+struct SingleAttribute_open_types;
 struct SingleAttribute {
+    using open_types = SingleAttribute_open_types;
+
     asn1kit::oid type{};
     asn1kit::any value_{};
 

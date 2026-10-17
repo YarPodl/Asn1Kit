@@ -36,304 +36,399 @@ namespace asn1kit {
 namespace modern {
 namespace AlgorithmInformation2009 {
 
-namespace algorithmIdentifier_parameters_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.algorithmIdentifier_parameters">,
-    asn1kit::oid, asn1kit::null_value> mda_sha256{
-    ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256.get()};
-
-} // namespace algorithmIdentifier_parameters_bindings
-
-namespace algorithmIdentifier_parameters_algorithmIdentifier_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.algorithmIdentifier_parameters_algorithmIdentifier">,
-    asn1kit::oid, asn1kit::null_value> sa_dsa_with_s_h_a1{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha1.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.algorithmIdentifier_parameters_algorithmIdentifier">,
-    asn1kit::oid, asn1kit::null_value> sa_rsa_with_s_h_a1{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::Sha1WithRSAEncryption.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.algorithmIdentifier_parameters_algorithmIdentifier">,
-    asn1kit::oid, asn1kit::null_value> sa_rsa_with_m_d5{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::Md5WithRSAEncryption.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.algorithmIdentifier_parameters_algorithmIdentifier">,
-    asn1kit::oid, asn1kit::null_value> sa_rsa_with_m_d2{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::Md2WithRSAEncryption.get()};
-
-} // namespace algorithmIdentifier_parameters_algorithmIdentifier_bindings
-
-namespace contentEncryptionAlgorithmSet_parameters_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.contentEncryptionAlgorithmSet_parameters">,
-    asn1kit::oid, asn1kit::bytes> cea_3_d_e_s_cbc{
-    ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::DesEde3Cbc.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.contentEncryptionAlgorithmSet_parameters">,
-    asn1kit::oid, ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::RC2CBCParameter> cea_r_c2_cbc{
-    ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::Rc2Cbc.get()};
-
-} // namespace contentEncryptionAlgorithmSet_parameters_bindings
-
-namespace hashAlgorithms_parameters_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.hashAlgorithms_parameters">,
-    asn1kit::oid, asn1kit::null_value> mda_sha1{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdSha1.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.hashAlgorithms_parameters">,
-    asn1kit::oid, asn1kit::null_value> mda_sha256{
-    ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256.get()};
-
-} // namespace hashAlgorithms_parameters_bindings
-
-namespace hashAlgorithms_parameters_algorithmIdentifier_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.hashAlgorithms_parameters_algorithmIdentifier">,
-    asn1kit::oid, asn1kit::null_value> mda_sha1{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdSha1.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.hashAlgorithms_parameters_algorithmIdentifier">,
-    asn1kit::oid, asn1kit::null_value> oid_2_16_840_1_101_3_4_2_4{
-    ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha224.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.hashAlgorithms_parameters_algorithmIdentifier">,
-    asn1kit::oid, asn1kit::null_value> mda_sha256{
-    ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.hashAlgorithms_parameters_algorithmIdentifier">,
-    asn1kit::oid, asn1kit::null_value> oid_2_16_840_1_101_3_4_2_2{
-    ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha384.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.hashAlgorithms_parameters_algorithmIdentifier">,
-    asn1kit::oid, asn1kit::null_value> oid_2_16_840_1_101_3_4_2_3{
-    ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha512.get()};
-
-} // namespace hashAlgorithms_parameters_algorithmIdentifier_bindings
-
-namespace keyAgreementAlgorithmSet_parameters_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.keyAgreementAlgorithmSet_parameters">,
-    asn1kit::oid, ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> kaa_esdh{
-    ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdAlgESDH.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.keyAgreementAlgorithmSet_parameters">,
-    asn1kit::oid, ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> kaa_ssdh{
-    ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdAlgSSDH.get()};
-
-} // namespace keyAgreementAlgorithmSet_parameters_bindings
-
-namespace keyDevAlgs_parameters_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.keyDevAlgs_parameters">,
-    asn1kit::oid, ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::PBKDF2Params> kda_p_b_k_d_f2{
-    ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdPBKDF2.get()};
-
-} // namespace keyDevAlgs_parameters_bindings
-
-namespace keyTransportAlgorithmSet_parameters_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.keyTransportAlgorithmSet_parameters">,
-    asn1kit::oid, asn1kit::null_value> kt_rsa{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::RsaEncryption.get()};
-
-} // namespace keyTransportAlgorithmSet_parameters_bindings
-
-namespace keyWrapAlgs_parameters_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.keyWrapAlgs_parameters">,
-    asn1kit::oid, asn1kit::null_value> kwa_3_d_e_s_wrap{
-    ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdAlgCMS3DESwrap.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.keyWrapAlgs_parameters">,
-    asn1kit::oid, asn1kit::integer> kwa_r_c2_wrap{
-    ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdAlgCMSRC2wrap.get()};
-
-} // namespace keyWrapAlgs_parameters_bindings
-
-namespace originatorKeySet_parameters_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.originatorKeySet_parameters">,
-    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DomainParameters> pk_dh{
-    ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::DhPublicNumber.get()};
-
-} // namespace originatorKeySet_parameters_bindings
-
-namespace pKCS1MGFAlgorithms_parameters_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.pKCS1MGFAlgorithms_parameters">,
-    asn1kit::oid, ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> hash_algorithm{
-    ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdMgf1.get()};
-
-} // namespace pKCS1MGFAlgorithms_parameters_bindings
-
-namespace pOPAlgs_parameters_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.pOPAlgs_parameters">,
-    asn1kit::oid, asn1kit::null_value> maca_h_m_a_c_s_h_a1{
-    ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::HMACSHA1.get()};
-
-} // namespace pOPAlgs_parameters_bindings
-
-namespace pSS_sourceAlgorithms_parameters_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.pSS_sourceAlgorithms_parameters">,
-    asn1kit::oid, asn1kit::bytes> encoding_parameters{
-    ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdPSpecified.get()};
-
-} // namespace pSS_sourceAlgorithms_parameters_bindings
-
-namespace password_mACAlgorithms_parameters_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.password_mACAlgorithms_parameters">,
-    asn1kit::oid, ::asn1kit::modern::PKIXCRMF2009::PBMParameter> p_b_m_parameter{
-    ::asn1kit::modern::PKIXCMP2009::PKIXCMP2009Oids::IdPasswordBasedMac.get()};
-
-} // namespace password_mACAlgorithms_parameters_bindings
-
-namespace publicKeyAlgorithms_parameters_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.publicKeyAlgorithms_parameters">,
-    asn1kit::oid, asn1kit::null_value> kt_rsa{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::RsaEncryption.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.publicKeyAlgorithms_parameters">,
-    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSAParams> pk_dsa{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdDsa.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.publicKeyAlgorithms_parameters">,
-    asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DomainParameters> pk_dh{
-    ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::DhPublicNumber.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.publicKeyAlgorithms_parameters">,
-    asn1kit::oid, asn1kit::bytes> pk_kea{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdKeyExchangeAlgorithm.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.publicKeyAlgorithms_parameters">,
-    asn1kit::oid, asn1kit::oid> pk_ec{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdEcPublicKey.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.publicKeyAlgorithms_parameters">,
-    asn1kit::oid, asn1kit::oid> pk_ec_d_h{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdEcDH.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.publicKeyAlgorithms_parameters">,
-    asn1kit::oid, asn1kit::oid> pk_ec_m_q_v{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdEcMQV.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.publicKeyAlgorithms_parameters">,
-    asn1kit::oid, ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::RSASSAPSSParams> sa_rsa_s_s_a_p_s_s{
-    ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdRSASSAPSS.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.publicKeyAlgorithms_parameters">,
-    asn1kit::oid, ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::RSAESOAEPParams> pk_rsa_e_s_o_a_e_p{
-    ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdRSAESOAEP.get()};
-
-} // namespace publicKeyAlgorithms_parameters_bindings
-
-namespace sMimeCapsSet_parameters_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.sMimeCapsSet_parameters">,
-    asn1kit::oid, asn1kit::integer> cap_r_c2_c_b_c{
-    ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::Rc2Cbc.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.sMimeCapsSet_parameters">,
-    asn1kit::oid, ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> smime_caps{
-    ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdAlgESDH.get()};
-
-} // namespace sMimeCapsSet_parameters_bindings
-
-namespace signatureAlgorithms_parameters_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
-    asn1kit::oid, asn1kit::null_value> sa_rsa_with_m_d2{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::Md2WithRSAEncryption.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
-    asn1kit::oid, asn1kit::null_value> sa_rsa_with_m_d5{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::Md5WithRSAEncryption.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
-    asn1kit::oid, asn1kit::null_value> sa_rsa_with_s_h_a1{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::Sha1WithRSAEncryption.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
-    asn1kit::oid, asn1kit::null_value> sa_dsa_with_s_h_a1{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha1.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
-    asn1kit::oid, asn1kit::null_value> sa_ecdsa_with_s_h_a1{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA1.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
-    asn1kit::oid, asn1kit::null_value> sa_dsa_with_s_h_a224{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha224.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
-    asn1kit::oid, asn1kit::null_value> sa_dsa_with_s_h_a256{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha256.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
-    asn1kit::oid, asn1kit::null_value> sa_ecdsa_with_s_h_a224{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA224.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
-    asn1kit::oid, asn1kit::null_value> sa_ecdsa_with_s_h_a256{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA256.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
-    asn1kit::oid, asn1kit::null_value> sa_ecdsa_with_s_h_a384{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA384.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
-    asn1kit::oid, asn1kit::null_value> sa_ecdsa_with_s_h_a512{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA512.get()};
-
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
-    asn1kit::oid, ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::RSASSAPSSParams> sa_rsa_s_s_a_p_s_s{
-    ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdRSASSAPSS.get()};
-
-} // namespace signatureAlgorithms_parameters_bindings
-
-namespace witnessAlgs_parameters_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"AlgorithmInformation-2009.witnessAlgs_parameters">,
-    asn1kit::oid, asn1kit::null_value> mda_sha1{
-    ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdSha1.get()};
-
-} // namespace witnessAlgs_parameters_bindings
+struct algorithmIdentifier_parameters_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.algorithmIdentifier_parameters">,
+        asn1kit::oid, asn1kit::null_value> mda_sha256{
+        ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256.get()};
+
+};
+
+struct algorithmIdentifier_parameters_algorithmIdentifier_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.algorithmIdentifier_parameters_algorithmIdentifier">,
+        asn1kit::oid, asn1kit::null_value> sa_dsa_with_sha1{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha1.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.algorithmIdentifier_parameters_algorithmIdentifier">,
+        asn1kit::oid, asn1kit::null_value> sa_rsa_with_sha1{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::Sha1WithRSAEncryption.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.algorithmIdentifier_parameters_algorithmIdentifier">,
+        asn1kit::oid, asn1kit::null_value> sa_rsa_with_md5{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::Md5WithRSAEncryption.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.algorithmIdentifier_parameters_algorithmIdentifier">,
+        asn1kit::oid, asn1kit::null_value> sa_rsa_with_md2{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::Md2WithRSAEncryption.get()};
+
+};
+
+struct contentEncryptionAlgorithmSet_parameters_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.contentEncryptionAlgorithmSet_parameters">,
+        asn1kit::oid, asn1kit::bytes> cea_3_des_cbc{
+        ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::DesEde3Cbc.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.contentEncryptionAlgorithmSet_parameters">,
+        asn1kit::oid, ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::RC2CBCParameter> cea_rc2_cbc{
+        ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::Rc2Cbc.get()};
+
+};
+
+struct hashAlgorithms_parameters_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.hashAlgorithms_parameters">,
+        asn1kit::oid, asn1kit::null_value> mda_sha1{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdSha1.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.hashAlgorithms_parameters">,
+        asn1kit::oid, asn1kit::null_value> mda_sha256{
+        ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256.get()};
+
+};
+
+struct hashAlgorithms_parameters_algorithmIdentifier_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.hashAlgorithms_parameters_algorithmIdentifier">,
+        asn1kit::oid, asn1kit::null_value> mda_sha1{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdSha1.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.hashAlgorithms_parameters_algorithmIdentifier">,
+        asn1kit::oid, asn1kit::null_value> oid_2_16_840_1_101_3_4_2_4{
+        ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha224.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.hashAlgorithms_parameters_algorithmIdentifier">,
+        asn1kit::oid, asn1kit::null_value> mda_sha256{
+        ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.hashAlgorithms_parameters_algorithmIdentifier">,
+        asn1kit::oid, asn1kit::null_value> oid_2_16_840_1_101_3_4_2_2{
+        ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha384.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.hashAlgorithms_parameters_algorithmIdentifier">,
+        asn1kit::oid, asn1kit::null_value> oid_2_16_840_1_101_3_4_2_3{
+        ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha512.get()};
+
+};
+
+struct keyAgreementAlgorithmSet_parameters_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.keyAgreementAlgorithmSet_parameters">,
+        asn1kit::oid, ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> kaa_esdh{
+        ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdAlgESDH.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.keyAgreementAlgorithmSet_parameters">,
+        asn1kit::oid, ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> kaa_ssdh{
+        ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdAlgSSDH.get()};
+
+};
+
+struct keyDevAlgs_parameters_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.keyDevAlgs_parameters">,
+        asn1kit::oid, ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::PBKDF2Params> kda_pbkdf2{
+        ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdPBKDF2.get()};
+
+};
+
+struct keyTransportAlgorithmSet_parameters_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.keyTransportAlgorithmSet_parameters">,
+        asn1kit::oid, asn1kit::null_value> kt_rsa{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::RsaEncryption.get()};
+
+};
+
+struct keyWrapAlgs_parameters_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.keyWrapAlgs_parameters">,
+        asn1kit::oid, asn1kit::null_value> kwa_3_des_wrap{
+        ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdAlgCMS3DESwrap.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.keyWrapAlgs_parameters">,
+        asn1kit::oid, asn1kit::integer> kwa_rc2_wrap{
+        ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdAlgCMSRC2wrap.get()};
+
+};
+
+struct originatorKeySet_parameters_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.originatorKeySet_parameters">,
+        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DomainParameters> pk_dh{
+        ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::DhPublicNumber.get()};
+
+};
+
+struct pKCS1MGFAlgorithms_parameters_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.pKCS1MGFAlgorithms_parameters">,
+        asn1kit::oid, ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> hash_algorithm{
+        ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdMgf1.get()};
+
+};
+
+struct pOPAlgs_parameters_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.pOPAlgs_parameters">,
+        asn1kit::oid, asn1kit::null_value> maca_h_mac_sha1{
+        ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::HMACSHA1.get()};
+
+};
+
+struct pSS_sourceAlgorithms_parameters_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.pSS_sourceAlgorithms_parameters">,
+        asn1kit::oid, asn1kit::bytes> encoding_parameters{
+        ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdPSpecified.get()};
+
+};
+
+struct password_mACAlgorithms_parameters_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.password_mACAlgorithms_parameters">,
+        asn1kit::oid, ::asn1kit::modern::PKIXCRMF2009::PBMParameter> pbm_parameter{
+        ::asn1kit::modern::PKIXCMP2009::PKIXCMP2009Oids::IdPasswordBasedMac.get()};
+
+};
+
+struct publicKeyAlgorithms_parameters_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.publicKeyAlgorithms_parameters">,
+        asn1kit::oid, asn1kit::null_value> kt_rsa{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::RsaEncryption.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.publicKeyAlgorithms_parameters">,
+        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSAParams> pk_dsa{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdDsa.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.publicKeyAlgorithms_parameters">,
+        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DomainParameters> pk_dh{
+        ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::DhPublicNumber.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.publicKeyAlgorithms_parameters">,
+        asn1kit::oid, asn1kit::bytes> pk_kea{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdKeyExchangeAlgorithm.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.publicKeyAlgorithms_parameters">,
+        asn1kit::oid, asn1kit::oid> pk_ec{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdEcPublicKey.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.publicKeyAlgorithms_parameters">,
+        asn1kit::oid, asn1kit::oid> pk_ec_dh{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdEcDH.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.publicKeyAlgorithms_parameters">,
+        asn1kit::oid, asn1kit::oid> pk_ec_mqv{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdEcMQV.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.publicKeyAlgorithms_parameters">,
+        asn1kit::oid, ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::RSASSAPSSParams> sa_rsa_ssa_pss{
+        ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdRSASSAPSS.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.publicKeyAlgorithms_parameters">,
+        asn1kit::oid, ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::RSAESOAEPParams> pk_rsa_es_oaep{
+        ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdRSAESOAEP.get()};
+
+};
+
+struct sMimeCapsSet_parameters_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.sMimeCapsSet_parameters">,
+        asn1kit::oid, asn1kit::integer> cap_rc2_cbc{
+        ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::Rc2Cbc.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.sMimeCapsSet_parameters">,
+        asn1kit::oid, ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> smime_caps{
+        ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdAlgESDH.get()};
+
+};
+
+struct signatureAlgorithms_parameters_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
+        asn1kit::oid, asn1kit::null_value> sa_rsa_with_md2{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::Md2WithRSAEncryption.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
+        asn1kit::oid, asn1kit::null_value> sa_rsa_with_md5{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::Md5WithRSAEncryption.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
+        asn1kit::oid, asn1kit::null_value> sa_rsa_with_sha1{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::Sha1WithRSAEncryption.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
+        asn1kit::oid, asn1kit::null_value> sa_dsa_with_sha1{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha1.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
+        asn1kit::oid, asn1kit::null_value> sa_ecdsa_with_sha1{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA1.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
+        asn1kit::oid, asn1kit::null_value> sa_dsa_with_sha224{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha224.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
+        asn1kit::oid, asn1kit::null_value> sa_dsa_with_sha256{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha256.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
+        asn1kit::oid, asn1kit::null_value> sa_ecdsa_with_sha224{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA224.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
+        asn1kit::oid, asn1kit::null_value> sa_ecdsa_with_sha256{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA256.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
+        asn1kit::oid, asn1kit::null_value> sa_ecdsa_with_sha384{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA384.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
+        asn1kit::oid, asn1kit::null_value> sa_ecdsa_with_sha512{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA512.get()};
+
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
+        asn1kit::oid, ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::RSASSAPSSParams> sa_rsa_ssa_pss{
+        ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdRSASSAPSS.get()};
+
+};
+
+struct witnessAlgs_parameters_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"AlgorithmInformation-2009.witnessAlgs_parameters">,
+        asn1kit::oid, asn1kit::null_value> mda_sha1{
+        ::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdSha1.get()};
+
+};
+
+struct AlgorithmIdentifier_open_types {
+    struct content_encryption_algorithm_set {
+        using parameters = contentEncryptionAlgorithmSet_parameters_open_type_entries;
+
+    };
+
+    struct hash_algorithms {
+        using parameters = hashAlgorithms_parameters_open_type_entries;
+
+        using parameters_parameters = hashAlgorithms_parameters_algorithmIdentifier_open_type_entries;
+
+    };
+
+    struct key_agreement_algorithm_set {
+        using parameters = keyAgreementAlgorithmSet_parameters_open_type_entries;
+
+    };
+
+    struct key_transport_algorithm_set {
+        using parameters = keyTransportAlgorithmSet_parameters_open_type_entries;
+
+    };
+
+    struct key_wrap_algs {
+        using parameters = keyWrapAlgs_parameters_open_type_entries;
+
+    };
+
+    struct local {
+        using parameters = algorithmIdentifier_parameters_open_type_entries;
+
+        using parameters_key_derivation_algorithm_parameters = keyDevAlgs_parameters_open_type_entries;
+
+        using parameters_signature_algorithm_parameters = algorithmIdentifier_parameters_algorithmIdentifier_open_type_entries;
+
+    };
+
+    struct message_authentication_code_algorithm_set {
+        using parameters = pOPAlgs_parameters_open_type_entries;
+
+    };
+
+    struct originator_key_set {
+        using parameters = originatorKeySet_parameters_open_type_entries;
+
+    };
+
+    struct password_mac_algorithms {
+        using parameters = password_mACAlgorithms_parameters_open_type_entries;
+
+    };
+
+    struct pkcs1_mgf_algorithms {
+        using parameters = pKCS1MGFAlgorithms_parameters_open_type_entries;
+
+    };
+
+    struct pss_source_algorithms {
+        using parameters = pSS_sourceAlgorithms_parameters_open_type_entries;
+
+    };
+
+    struct public_key_algorithms {
+        using parameters = publicKeyAlgorithms_parameters_open_type_entries;
+
+    };
+
+    struct signature_algorithms {
+        using parameters = signatureAlgorithms_parameters_open_type_entries;
+
+    };
+
+    struct witness_algs {
+        using parameters = witnessAlgs_parameters_open_type_entries;
+
+    };
+
+};
+
+struct SMIMECapabilities_open_types {
+    struct s_mime_caps_set {
+        using parameters = sMimeCapsSet_parameters_open_type_entries;
+
+    };
+
+};
+
+struct SMIMECapability_open_types {
+    struct s_mime_caps_set {
+        using parameters = sMimeCapsSet_parameters_open_type_entries;
+
+    };
+
+};
 
 } // namespace AlgorithmInformation2009
 } // namespace modern

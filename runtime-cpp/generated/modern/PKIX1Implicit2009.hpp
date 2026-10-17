@@ -32,18 +32,74 @@ namespace asn1kit {
 namespace modern {
 namespace PKIX1Implicit2009 {
 
-namespace policyQualifierId_qualifier_bindings {
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"PKIX1Implicit-2009.policyQualifierId_qualifier">,
-    asn1kit::oid, asn1kit::asn_string<asn1kit::string_form::ia5>> pqid_cps{
-    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdQtCps.get()};
+struct policyQualifierId_qualifier_open_type_entries {
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"PKIX1Implicit-2009.policyQualifierId_qualifier">,
+        asn1kit::oid, asn1kit::asn_string<asn1kit::string_form::ia5>> pqid_cps{
+        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdQtCps.get()};
 
-inline const asn1kit::open_binding<
-    asn1kit::open_context<"PKIX1Implicit-2009.policyQualifierId_qualifier">,
-    asn1kit::oid, UserNotice> pqid_unotice{
-    ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdQtUnotice.get()};
+    inline static const asn1kit::open_binding<
+        asn1kit::open_context<"PKIX1Implicit-2009.policyQualifierId_qualifier">,
+        asn1kit::oid, UserNotice> pqid_unotice{
+        ::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdQtUnotice.get()};
 
-} // namespace policyQualifierId_qualifier_bindings
+};
+
+struct AddExtensions_open_types {
+    struct supported_attributes {
+        using values = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_open_type_entries;
+
+    };
+
+};
+
+struct CertTemplate_open_types {
+    struct supported_attributes {
+        using values = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_open_type_entries;
+
+    };
+
+};
+
+struct CertificationRequest_open_types {
+    struct supported_attributes {
+        using values = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_open_type_entries;
+
+    };
+
+};
+
+struct ExtensionReq_open_types {
+    struct supported_attributes {
+        using values = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_open_type_entries;
+
+    };
+
+};
+
+struct PolicyQualifierInfo_open_types {
+    struct policy_qualifier_id {
+        using qualifier = policyQualifierId_qualifier_open_type_entries;
+
+    };
+
+};
+
+struct SubjectDirectoryAttributes_open_types {
+    struct supported_attributes {
+        using values = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_open_type_entries;
+
+    };
+
+};
+
+struct TBSCertificate_open_types {
+    struct supported_attributes {
+        using values = ::asn1kit::modern::PKIXCommonTypes2009::supportedAttributes_open_type_entries;
+
+    };
+
+};
 
 } // namespace PKIX1Implicit2009
 } // namespace modern

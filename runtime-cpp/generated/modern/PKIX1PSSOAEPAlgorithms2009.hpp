@@ -55,7 +55,10 @@ namespace asn1kit {
 namespace modern {
 namespace PKIX1PSSOAEPAlgorithms2009 {
 
+struct RSAESOAEPParams_open_types;
 struct RSAESOAEPParams {
+    using open_types = RSAESOAEPParams_open_types;
+
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashFunc = default_hashFunc();
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier maskGenFunc = default_maskGenFunc();
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier pSourceFunc = default_pSourceFunc();
@@ -191,7 +194,10 @@ struct RSAESOAEPParams {
     }
 };
 
+struct RSASSAPSSParams_open_types;
 struct RSASSAPSSParams {
+    using open_types = RSASSAPSSParams_open_types;
+
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm = default_hashAlgorithm();
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier maskGenAlgorithm = default_maskGenAlgorithm();
     asn1kit::integer saltLength = asn1kit::integer::from_int64(20ll);

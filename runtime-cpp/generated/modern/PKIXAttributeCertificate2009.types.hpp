@@ -106,7 +106,10 @@ namespace asn1kit {
 namespace modern {
 namespace PKIXAttributeCertificate2009 {
 
+struct ACClearAttrs_open_types;
 struct ACClearAttrs {
+    using open_types = ACClearAttrs_open_types;
+
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName acIssuer{};
     asn1kit::integer acSerial{};
     std::vector<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet> attrs{};
@@ -928,7 +931,10 @@ struct AttCertIssuer {
     }
 };
 
+struct AttributeCertificateInfo_open_types;
 struct AttributeCertificateInfo {
+    using open_types = AttributeCertificateInfo_open_types;
+
     std::int32_t version{};
     Holder holder{};
     AttCertIssuer issuer{};
@@ -1000,7 +1006,11 @@ struct AttributeCertificateInfo {
     }
 };
 
+struct signatureAlgorithms_signature_open_type_entries;
+struct AttributeCertificate_open_types;
 struct AttributeCertificate {
+    using open_types = AttributeCertificate_open_types;
+
     AttributeCertificateInfo toBeSigned{};
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::bit_string signature{};

@@ -36,7 +36,6 @@ public sealed partial class CppBackend
     {
         public string BindingStem { get; set; } = "";
         public string CatalogStem { get; set; } = "";
-        public bool EmitCatalog { get; set; }
     }
 
     private sealed record OpenBinding(string MemberName, IrOpenTypeBinding Binding, OpenSite Site);
@@ -48,11 +47,19 @@ public sealed partial class CppBackend
     }
 
     private readonly Dictionary<(string Module, string Type), List<OpenSite>> _openSitesByType = new();
+    private readonly Dictionary<(string Module, string Type), string> _openRegistryNamesByType = new();
+    private readonly Dictionary<(string Module, string Type, string Catalog), (string Table, string Field)>
+        _openRegistryPaths = new();
+    private readonly Dictionary<(string Module, string Catalog), string> _openCatalogEntryNames = new();
 
     private void ConfigureOpenTypeEmission(IEnumerable<ModulePlan> plans)
     {
         _openSitesByType.Clear();
-        foreach (var plan in plans)
+        _openRegistryNamesByType.Clear();
+        _openRegistryPaths.Clear();
+        _openCatalogEntryNames.Clear();
+        var materializedPlans = plans.ToList();
+        foreach (var plan in materializedPlans)
         foreach (var site in plan.Open.Sites)
         {
             Add(site.Container.Module.Name, site.Container.TypeName, site);
@@ -66,6 +73,74 @@ public sealed partial class CppBackend
             if (!_openSitesByType.TryGetValue(key, out var sites))
                 _openSitesByType.Add(key, sites = new List<OpenSite>());
             if (!sites.Contains(site)) sites.Add(site);
+        }
+
+        foreach (var plan in materializedPlans)
+        {
+            var usedNames = new HashSet<string>(plan.EmittedNames, StringComparer.Ordinal)
+            {
+                OidCatalogName(plan.Module)
+            };
+            foreach (var site in plan.Open.Sites
+                         .Where(site => site.Container.Module.Name == plan.Module.Name)
+                         .GroupBy(static site => site.CatalogStem, StringComparer.Ordinal)
+                         .Select(static group => group.First())
+                         .OrderBy(static site => site.CatalogStem, StringComparer.Ordinal))
+            {
+                var baseName = site.CatalogStem + "_open_type_entries";
+                var name = baseName;
+                for (var suffix = 2; !usedNames.Add(name); suffix++)
+                    name = baseName + "_" + suffix.ToString(CultureInfo.InvariantCulture);
+                _openCatalogEntryNames.Add((plan.Module.Name, site.CatalogStem), name);
+            }
+
+            foreach (var owner in _openSitesByType.Keys
+                         .Where(key => key.Module == plan.Module.Name)
+                         .OrderBy(static key => key.Type, StringComparer.Ordinal))
+            {
+                var baseName = owner.Type + "_open_types";
+                var name = baseName;
+                for (var suffix = 2; !usedNames.Add(name); suffix++)
+                    name = baseName + "_" + suffix.ToString(CultureInfo.InvariantCulture);
+                _openRegistryNamesByType.Add(owner, name);
+
+                var sites = _openSitesByType[owner]
+                    .GroupBy(static site => site.CatalogStem, StringComparer.Ordinal)
+                    .Select(static group => group.First())
+                    .OrderBy(static site => site.CatalogStem, StringComparer.Ordinal)
+                    .ToList();
+                var usedPaths = new HashSet<string>(StringComparer.Ordinal);
+                foreach (var site in sites)
+                {
+                    var tableBase = CppNames.SanitizeFieldName(ToSnakeCaseIdentifier(
+                        string.IsNullOrEmpty(site.Table) ? "local" : site.Table));
+                    var fieldBase = CppNames.SanitizeFieldName(ToSnakeCaseIdentifier(OpenStemName(site.Field)));
+                    var table = tableBase;
+                    var field = fieldBase;
+                    var path = table + "\n" + field;
+                    if (!usedPaths.Add(path))
+                    {
+                        var route = string.Join("_", site.ContextPath
+                            .Where(static part => part is not "[]" and not "containing")
+                            .Select(ToSnakeCaseIdentifier));
+                        var semantic = route.Length == 0
+                            ? ToSnakeCaseIdentifier(site.Container.TypeName)
+                            : route;
+                        field = CppNames.SanitizeFieldName(fieldBase + "_" + semantic);
+                        path = table + "\n" + field;
+                        for (var suffix = 2; !usedPaths.Add(path); suffix++)
+                        {
+                            field = CppNames.SanitizeFieldName(
+                                fieldBase + "_" + semantic + "_" +
+                                suffix.ToString(CultureInfo.InvariantCulture));
+                            path = table + "\n" + field;
+                        }
+                    }
+
+                    _openRegistryPaths.Add(
+                        (owner.Module, owner.Type, site.CatalogStem), (table, field));
+                }
+            }
         }
     }
 
@@ -494,16 +569,16 @@ public sealed partial class CppBackend
                 .First();
             var stemBase = PreferredOpenTableStem(preferred);
             var stem = stemBase;
-            var catalogName = stem + "_bindings";
+            var catalogName = stem + "_open_type_entries";
             if (!names.Add(catalogName))
             {
                 var disambiguated = stemBase + "_" + CppNames.SanitizeFieldName(preferred.Container.TypeName);
                 stem = disambiguated;
-                catalogName = stem + "_bindings";
+                catalogName = stem + "_open_type_entries";
                 for (var suffix = 2; !names.Add(catalogName); suffix++)
                 {
                     stem = disambiguated + "_" + suffix.ToString(CultureInfo.InvariantCulture);
-                    catalogName = stem + "_bindings";
+                    catalogName = stem + "_open_type_entries";
                 }
             }
 
@@ -511,12 +586,6 @@ public sealed partial class CppBackend
                 site.CatalogStem = stem;
         }
 
-        var emitted = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var site in plan.Sites.OrderBy(static s => s.CatalogStem, StringComparer.Ordinal))
-        {
-            if (emitted.Add(site.CatalogStem))
-                site.EmitCatalog = true;
-        }
     }
 
     private static string PreferredOpenTableStem(OpenSite site)
@@ -533,7 +602,7 @@ public sealed partial class CppBackend
 
     /// <summary>
     /// Stem for binding/catalog names. Field identifiers may end with '_' (C++ keywords);
-    /// strip that before appending "_binding" / "_bindings".
+    /// strip that before appending the generated open-type suffix.
     /// </summary>
     private static string OpenStemName(IrComponent field)
     {
@@ -587,7 +656,11 @@ public sealed partial class CppBackend
 
             if (char.IsUpper(c))
             {
-                if (i > 0 && sb[^1] != '_') sb.Append('_');
+                var previous = i > 0 ? name[i - 1] : '\0';
+                var next = i + 1 < name.Length ? name[i + 1] : '\0';
+                var startsWord = char.IsLower(previous) || char.IsDigit(previous) ||
+                                 char.IsUpper(previous) && char.IsLower(next);
+                if (startsWord && sb.Length > 0 && sb[^1] != '_') sb.Append('_');
                 sb.Append(char.ToLowerInvariant(c));
                 continue;
             }
@@ -679,14 +752,33 @@ public sealed partial class CppBackend
         IrModule module,
         OpenPlan plan)
     {
-        if (plan.Sites.Count == 0) return;
+        _ = plan;
+        foreach (var site in _openSitesByType
+                     .Where(pair => pair.Key.Module == module.Name)
+                     .SelectMany(static pair => pair.Value)
+                     .Where(site => site.Container.Module.Name == module.Name)
+                     .GroupBy(static site => site.CatalogStem, StringComparer.Ordinal)
+                     .Select(static group => group.First())
+                     .OrderBy(static site => site.CatalogStem, StringComparer.Ordinal))
+            EmitOpenCatalogEntries(sb, document, module, site);
 
-        foreach (var site in plan.Sites.Where(static s => s.EmitCatalog)
-                     .OrderBy(static s => s.CatalogStem, StringComparer.Ordinal))
-        {
-            EmitOpenCatalog(sb, document, module, site);
-        }
+        foreach (var owner in _openRegistryNamesByType
+                     .Where(pair => pair.Key.Module == module.Name)
+                     .OrderBy(static pair => pair.Key.Type, StringComparer.Ordinal))
+            EmitOpenRegistry(sb, document, module, owner.Key.Type, owner.Value);
     }
+
+    private string? OpenRegistryName(IrModule module, string typeName) =>
+        _openRegistryNamesByType.TryGetValue((module.Name, typeName), out var name) ? name : null;
+
+    private IEnumerable<string> OpenCatalogEntryNames(IrModule module, string typeName) =>
+        _openSitesByType.TryGetValue((module.Name, typeName), out var sites)
+            ? sites.Where(site => site.Container.Module.Name == module.Name &&
+                                  site.Container.TypeName == typeName)
+                .Select(site => _openCatalogEntryNames[(module.Name, site.CatalogStem)])
+                .Distinct(StringComparer.Ordinal)
+                .OrderBy(static name => name, StringComparer.Ordinal)
+            : Enumerable.Empty<string>();
 
     private void EmitOpenOwnerMethods(
         StringBuilder sb, IrDocument document, IrModule module, string typeName)
@@ -962,12 +1054,54 @@ public sealed partial class CppBackend
         value.Replace("\\", "\\\\", StringComparison.Ordinal)
             .Replace("\"", "\\\"", StringComparison.Ordinal);
 
-    private void EmitOpenCatalog(
+    private void EmitOpenRegistry(
+        StringBuilder sb, IrDocument document, IrModule module, string owner, string registryName)
+    {
+        var sites = _openSitesByType[(module.Name, owner)]
+            .GroupBy(static site => site.CatalogStem, StringComparer.Ordinal)
+            .Select(static group => group.First())
+            .OrderBy(site => _openRegistryPaths[(module.Name, owner, site.CatalogStem)].Table,
+                StringComparer.Ordinal)
+            .ThenBy(site => _openRegistryPaths[(module.Name, owner, site.CatalogStem)].Field,
+                StringComparer.Ordinal)
+            .ToList();
+
+        sb.AppendLine($"struct {registryName} {{");
+        foreach (var tableGroup in sites.GroupBy(
+                     site => _openRegistryPaths[(module.Name, owner, site.CatalogStem)].Table,
+                     StringComparer.Ordinal))
+        {
+            sb.AppendLine($"    struct {tableGroup.Key} {{");
+            foreach (var site in tableGroup)
+            {
+                var path = _openRegistryPaths[(module.Name, owner, site.CatalogStem)];
+                var entriesName = _openCatalogEntryNames[
+                    (site.Container.Module.Name, site.CatalogStem)];
+                var qualifiedEntries = QualifyCrossModule(
+                    module, site.Container.Module, entriesName);
+                sb.AppendLine($"        using {path.Field} = {qualifiedEntries};");
+                sb.AppendLine();
+            }
+            sb.AppendLine("    };");
+            sb.AppendLine();
+        }
+        sb.AppendLine("};");
+        sb.AppendLine();
+    }
+
+    private void EmitOpenCatalogEntries(
         StringBuilder sb, IrDocument document, IrModule module, OpenSite site)
     {
-        var catalog = site.CatalogStem + "_bindings";
-        var stem = site.BindingStem;
-        sb.AppendLine($"namespace {catalog} {{");
+        var entriesName = _openCatalogEntryNames[(module.Name, site.CatalogStem)];
+        sb.AppendLine($"struct {entriesName} {{");
+        EmitOpenCatalogMembers(sb, document, module, site, "    ");
+        sb.AppendLine("};");
+        sb.AppendLine();
+    }
+
+    private void EmitOpenCatalogMembers(
+        StringBuilder sb, IrDocument document, IrModule module, OpenSite site, string indent)
+    {
         var memberNames = new HashSet<string>(StringComparer.Ordinal);
         foreach (var binding in site.Bindings)
         {
@@ -981,16 +1115,13 @@ public sealed partial class CppBackend
                 ? $"std::vector<{leafType}>"
                 : leafType;
             var keyExpr = OpenBindingKeyExpression(document, module, site, binding.Binding.Key);
-            var contextName = module.Name + "." + site.CatalogStem;
-            sb.AppendLine($"inline const asn1kit::open_binding<");
-            sb.AppendLine($"    asn1kit::open_context<\"{EscapeCppString(contextName)}\">,");
-            sb.AppendLine($"    {OpenKeyCppType(document, site)}, {valueType}> {member}{{");
-            sb.AppendLine($"    {keyExpr}}};");
+            var contextName = site.Container.Module.Name + "." + site.CatalogStem;
+            sb.AppendLine($"{indent}inline static const asn1kit::open_binding<");
+            sb.AppendLine($"{indent}    asn1kit::open_context<\"{EscapeCppString(contextName)}\">,");
+            sb.AppendLine($"{indent}    {OpenKeyCppType(document, site)}, {valueType}> {member}{{");
+            sb.AppendLine($"{indent}    {keyExpr}}};");
             sb.AppendLine();
         }
-
-        sb.AppendLine($"}} // namespace {catalog}");
-        sb.AppendLine();
     }
 
     private string OpenKeyExpression(IrDocument document, OpenSite site)

@@ -42,7 +42,17 @@ public sealed partial class CppBackend
             _ => false
         };
 
+        var openRegistry = OpenRegistryName(module, typeName);
+        foreach (var entries in OpenCatalogEntryNames(module, typeName))
+            sb.AppendLine($"struct {entries};");
+        if (openRegistry is not null)
+            sb.AppendLine($"struct {openRegistry};");
         sb.AppendLine($"struct {typeName} {{");
+        if (openRegistry is not null)
+        {
+            sb.AppendLine($"    using open_types = {openRegistry};");
+            sb.AppendLine();
+        }
         foreach (var field in components)
         {
             var optional = (field.Optional || field.ExtensionAddition == true) && field.Default is null;
