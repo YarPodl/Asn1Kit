@@ -30,7 +30,7 @@ Codegen C++ (`Asn1Kit.Codegen.Cpp`, `--lang cpp`) — MVP; golden и Person roun
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-runtime-cpp.ps1
 ```
 
-Скрипт по умолчанию использует `fetch-default`, на Windows находит CMake и Ninja из Visual Studio 2022, если их нет в `PATH`, и считает отсутствие тестов ошибкой. Один вызов `ctest` не пересобирает изменённый код и не заменяет этот цикл.
+Скрипт по умолчанию использует `fetch-default`. На Windows его следует запускать из обычного PowerShell: он находит Visual Studio 2022 через `vswhere` (с резервным поиском стандартных редакций), сам загружает MSVC x64 environment и находит CMake и Ninja из Visual Studio, если их нет в `PATH`. Предварительно открывать Developer Shell или повторять из него упавшую проверку не требуется. Отсутствие MSVC, CMake, CTest или тестов завершается явной ошибкой. Один вызов `ctest` не пересобирает изменённый код и не заменяет этот цикл.
 
 Для уже подготовленного Conan build передайте preset явно:
 

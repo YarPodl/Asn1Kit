@@ -12,7 +12,88 @@ $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $runtimeRoot = Join-Path $repositoryRoot 'runtime-cpp'
 $runningOnWindows = $env:OS -eq 'Windows_NT'
 
+function Find-VisualStudioInstallation {
+    if (-not $runningOnWindows) {
+        return $null
+    }
+
+    $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
+    if (Test-Path -LiteralPath $vswhere) {
+        $installationPath = & $vswhere `
+            -latest `
+            -products '*' `
+            -version '[17.0,18.0)' `
+            -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
+            -property installationPath
+        if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($installationPath)) {
+            return [string] ($installationPath | Select-Object -First 1)
+        }
+    }
+
+    $visualStudioRoot = Join-Path ${env:ProgramFiles} 'Microsoft Visual Studio/2022'
+    foreach ($edition in @('Community', 'Professional', 'Enterprise', 'BuildTools')) {
+        $candidate = Join-Path $visualStudioRoot $edition
+        if (Test-Path -LiteralPath (Join-Path $candidate 'Common7/Tools/VsDevCmd.bat')) {
+            return $candidate
+        }
+    }
+
+    return $null
+}
+
+function Initialize-MsvcEnvironment {
+    param([AllowNull()] [string] $VisualStudioInstallation)
+
+    if (-not $runningOnWindows) {
+        return
+    }
+
+    $cl = Get-Command cl.exe -ErrorAction SilentlyContinue
+    if ($null -ne $cl -and
+        -not [string]::IsNullOrWhiteSpace($env:INCLUDE) -and
+        -not [string]::IsNullOrWhiteSpace($env:LIB)) {
+        Write-Host "MSVC environment: already initialized ($($cl.Source))"
+        return
+    }
+
+    if ([string]::IsNullOrWhiteSpace($VisualStudioInstallation)) {
+        throw 'Visual Studio 2022 with the MSVC x64 tools was not found. Install the Microsoft.VisualStudio.Component.VC.Tools.x86.x64 component.'
+    }
+
+    $vsDevCmd = Join-Path $VisualStudioInstallation 'Common7/Tools/VsDevCmd.bat'
+    if (-not (Test-Path -LiteralPath $vsDevCmd)) {
+        throw "Visual Studio developer environment script was not found: $vsDevCmd"
+    }
+
+    $environmentLines = & $env:ComSpec /d /s /c "call `"$vsDevCmd`" -no_logo -arch=x64 -host_arch=x64 >nul && set"
+    if ($LASTEXITCODE -ne 0) {
+        throw "VsDevCmd.bat failed to initialize the MSVC x64 environment with exit code $LASTEXITCODE."
+    }
+
+    foreach ($line in $environmentLines) {
+        $separator = $line.IndexOf('=')
+        if ($separator -le 0) {
+            continue
+        }
+
+        $name = $line.Substring(0, $separator)
+        $value = $line.Substring($separator + 1)
+        [Environment]::SetEnvironmentVariable($name, $value, 'Process')
+    }
+
+    $cl = Get-Command cl.exe -ErrorAction SilentlyContinue
+    if ($null -eq $cl -or
+        [string]::IsNullOrWhiteSpace($env:INCLUDE) -or
+        [string]::IsNullOrWhiteSpace($env:LIB)) {
+        throw 'VsDevCmd.bat completed, but the MSVC x64 environment is incomplete: cl.exe, INCLUDE, or LIB is missing.'
+    }
+
+    Write-Host "MSVC environment: initialized ($($cl.Source))"
+}
+
 function Find-CMake {
+    param([AllowNull()] [string] $VisualStudioInstallation)
+
     $command = Get-Command cmake -ErrorAction SilentlyContinue
     if ($null -ne $command) {
         return $command.Source
@@ -22,9 +103,8 @@ function Find-CMake {
         throw 'cmake was not found in PATH.'
     }
 
-    $visualStudioRoot = Join-Path ${env:ProgramFiles} 'Microsoft Visual Studio/2022'
-    foreach ($edition in @('Community', 'Professional', 'Enterprise', 'BuildTools')) {
-        $candidate = Join-Path $visualStudioRoot "$edition/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe"
+    if (-not [string]::IsNullOrWhiteSpace($VisualStudioInstallation)) {
+        $candidate = Join-Path $VisualStudioInstallation 'Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe'
         if (Test-Path -LiteralPath $candidate) {
             return $candidate
         }
@@ -45,7 +125,10 @@ function Invoke-NativeTool {
     }
 }
 
-$cmake = Find-CMake
+$visualStudioInstallation = Find-VisualStudioInstallation
+Initialize-MsvcEnvironment $visualStudioInstallation
+
+$cmake = Find-CMake $visualStudioInstallation
 $cmakeBin = Split-Path -Parent $cmake
 $ctest = Join-Path $cmakeBin $(if ($runningOnWindows) { 'ctest.exe' } else { 'ctest' })
 if (-not (Test-Path -LiteralPath $ctest)) {
@@ -56,8 +139,8 @@ if (-not (Test-Path -LiteralPath $ctest)) {
     $ctest = $ctestCommand.Source
 }
 
-if ($cmake -like '*Microsoft Visual Studio*') {
-    $ninjaDirectory = Join-Path (Split-Path -Parent (Split-Path -Parent $cmakeBin)) 'Ninja'
+if ($runningOnWindows -and -not [string]::IsNullOrWhiteSpace($visualStudioInstallation)) {
+    $ninjaDirectory = Join-Path $visualStudioInstallation 'Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja'
     if (Test-Path -LiteralPath (Join-Path $ninjaDirectory 'ninja.exe')) {
         $env:Path = "$ninjaDirectory$([IO.Path]::PathSeparator)$env:Path"
     }
