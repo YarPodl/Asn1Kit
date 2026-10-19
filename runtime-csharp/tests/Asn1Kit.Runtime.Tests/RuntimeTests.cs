@@ -269,6 +269,7 @@ public sealed class RuntimeTests
         Assert.Equal(
             100 * 1024 * 1024,
             Asn1ReaderOptions.Default.MaxMaterializedConstructedValueBytes);
+        Assert.Equal(4096, Asn1ReaderOptions.Default.MaxConstructedSegments);
         Assert.Throws<ArgumentOutOfRangeException>(() => new Asn1ReaderOptions
         {
             MaxRecursionDepth = 0
@@ -277,6 +278,66 @@ public sealed class RuntimeTests
         {
             MaxMaterializedConstructedValueBytes = -1
         });
+        Assert.Throws<ArgumentOutOfRangeException>(() => new Asn1ReaderOptions
+        {
+            MaxConstructedSegments = -1
+        });
+    }
+
+    [Fact]
+    public void Ber_DefiniteSequenceNesting_EnforcesRecursionDepth()
+    {
+        // SEQUENCE { SEQUENCE { INTEGER 1 } }
+        var nested = new byte[] { 0x30, 0x05, 0x30, 0x03, 0x02, 0x01, 0x01 };
+        var allowed = new Asn1Reader(nested, Asn1Encoding.Der, new Asn1ReaderOptions
+        {
+            MaxRecursionDepth = 2
+        });
+        using (allowed.EnterSequence(Asn1Tag.Sequence))
+        using (allowed.EnterSequence(Asn1Tag.Sequence))
+        {
+            Assert.Equal(1, allowed.ReadInteger(Asn1Tag.Integer));
+        }
+
+        var rejected = new Asn1Reader(nested, Asn1Encoding.Der, new Asn1ReaderOptions
+        {
+            MaxRecursionDepth = 1
+        });
+        using (rejected.EnterSequence(Asn1Tag.Sequence))
+        {
+            var error = Assert.Throws<Asn1Exception>(() => rejected.EnterSequence(Asn1Tag.Sequence).Dispose());
+            Assert.Contains("recursion depth exceeds limit 1", error.Message);
+        }
+    }
+
+    [Fact]
+    public void ConstructedOctetString_EnforcesSegmentLimit()
+    {
+        // Constructed OCTET: two 1-byte leaf segments.
+        var ber = new byte[]
+        {
+            0x24, 0x06,
+            0x04, 0x01, 0x41,
+            0x04, 0x01, 0x42
+        };
+        var allowed = new Asn1Reader(ber, Asn1Encoding.Ber, new Asn1ReaderOptions
+        {
+            MaxConstructedSegments = 2
+        });
+        Assert.Equal(new byte[] { 0x41, 0x42 }, allowed.ReadOctetString(Asn1Tag.OctetString).ToArray());
+
+        var rejected = new Asn1Reader(ber, Asn1Encoding.Ber, new Asn1ReaderOptions
+        {
+            MaxConstructedSegments = 1
+        });
+        var error = Assert.Throws<Asn1Exception>(() => rejected.ReadOctetString(Asn1Tag.OctetString));
+        Assert.Contains("segment limit 1", error.Message);
+
+        var emptyOnly = new Asn1Reader(new byte[] { 0x24, 0x00 }, Asn1Encoding.Ber, new Asn1ReaderOptions
+        {
+            MaxConstructedSegments = 0
+        });
+        Assert.Empty(emptyOnly.ReadOctetString(Asn1Tag.OctetString).ToArray());
     }
 
     [Fact]

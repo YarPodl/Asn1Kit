@@ -94,6 +94,7 @@ ctest --preset conan-default
 | `ASN1KIT_BUILD_TESTS` | `ON` | Сборка gtest-таргета |
 | `ASN1KIT_BUILD_EXAMPLES` | `ON` | Сборка примеров (`examples/cms_demo`) |
 | `ASN1KIT_BUILD_BENCHMARKS` | `OFF` | Сборка Google Benchmark suite ([benchmarks/](benchmarks/)) |
+| `ASN1KIT_BUILD_FUZZ` | `OFF` | Optional libFuzzer decode harness ([fuzz/](fuzz/); только Clang) |
 | `ASN1KIT_FETCH_TEST_DEPS` | `OFF` | FetchContent вместо `find_package` (пресеты `fetch-default` / `fetch-release`) |
 | `ASN1KIT_BER_DER_FIXTURES_DIR` | `../runtime-csharp/fixtures/ber-der` | Каталог JSON-фикстур |
 
@@ -101,6 +102,18 @@ ctest --preset conan-default
 `conan install . -o "&:build_tests=False" …`. Без Conan используйте
 `-DASN1KIT_BUILD_TESTS=OFF`. Без примеров: `-DASN1KIT_BUILD_EXAMPLES=OFF`.
 Бенчмарки: `-DASN1KIT_BUILD_BENCHMARKS=ON` или Conan `-o "&:build_benchmarks=True"`; Release — пресет `fetch-release` / `conan-release`. См. [benchmarks/README.md](benchmarks/README.md).
+
+Fuzz (не gate; нужен Clang с `-fsanitize=fuzzer`):
+
+```bash
+cmake -S . -B build-fuzz -DASN1KIT_BUILD_FUZZ=ON -DASN1KIT_BUILD_TESTS=OFF -DASN1KIT_BUILD_EXAMPLES=OFF -DCMAKE_CXX_COMPILER=clang++
+cmake --build build-fuzz --target asn1kit_decode_fuzz
+cmake --build build-fuzz --target asn1kit_fuzz_run   # ~10s against seeded corpus
+```
+
+Найденные crashers / интересные reject переносите в
+[`runtime-csharp/fixtures/ber-der/hostile-ber.json`](../runtime-csharp/fixtures/ber-der/hostile-ber.json);
+gate replay — `BoundedDecoderFuzz_CorpusRegressions`.
 
 CMS demo (Modern generated): [examples/cms_demo](examples/cms_demo/).
 

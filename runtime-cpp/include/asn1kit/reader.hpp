@@ -365,6 +365,7 @@ private:
     detail::decode_cursor cursor_;
     std::uint64_t active_scope_token_{0};
     std::uint64_t next_scope_token_{0};
+    std::size_t structural_depth_{0};
 };
 
 [[nodiscard]] tag default_string_tag(string_form form);

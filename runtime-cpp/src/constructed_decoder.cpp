@@ -46,6 +46,18 @@ void add_materialized_length(
     total += length;
 }
 
+void ensure_segment_count(
+    const reader_options& options,
+    std::size_t current_count,
+    std::size_t offset) {
+    if (current_count >= options.max_constructed_segments) {
+        throw exception(
+            "Constructed value exceeds segment limit "
+                + std::to_string(options.max_constructed_segments) + ".",
+            offset);
+    }
+}
+
 void collect_octet_like_segments(
     decode_cursor& parent,
     bytes constructed_contents,
@@ -69,6 +81,7 @@ void collect_octet_like_segments(
                 depth + 1);
             continue;
         }
+        ensure_segment_count(parent.options(), segments.size(), tlv_start);
         add_materialized_length(parent.options(), total_length, tlv.contents.size(), tlv_start);
         segments.push_back(std::move(tlv.contents));
     }
@@ -146,6 +159,7 @@ void collect_bit_string_segments(
                 tlv_start);
         }
         auto segment = bit_string::parse_primitive(std::move(tlv.contents), reject_trailing_bits);
+        ensure_segment_count(parent.options(), segments.size(), tlv_start);
         add_materialized_length(parent.options(), total_length, segment.span().size(), tlv_start);
         segments.push_back(std::move(segment));
     }

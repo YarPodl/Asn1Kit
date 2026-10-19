@@ -25,6 +25,7 @@ static_assert(default_reader_options.reject_non_minimal_length);
 static_assert(default_reader_options.reject_overlong_oid_base128);
 static_assert(default_reader_options.max_recursion_depth == 64);
 static_assert(default_reader_options.max_materialized_constructed_value_bytes == 100u * 1024u * 1024u);
+static_assert(default_reader_options.max_constructed_segments == 4096);
 
 constexpr auto strict_reader_options = reader_options::strict();
 static_assert(strict_reader_options.reject_non_minimal_integer);

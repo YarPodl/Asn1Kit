@@ -39,7 +39,7 @@ Evidence записывается стабильными именами test met
 | G003 | `tlv.truncated` | partial | C#, C++ primitive runtime | Exhaustive prefixes сертификатов, CRL и CMS; проверки Legacy/Modern. |
 | G004 | `octet.nested-segments` | done | C#, C++ runtime | — |
 | G005 | `bit.segment-padding` | done | C#, C++ runtime | — |
-| G006 | `quality.fuzz` | open | — | Весь исходный критерий. |
+| G006 | `quality.fuzz` | done | C#, C++ runtime + optional libFuzzer | Continuous fuzz в CI не требуется; gate — corpus replay. |
 | G007 | `der.constructed-strings` | deferred | soft-read policy | Намеренный soft-accept; отдельный strict-reject не планируется — [решение](decisions.md#constraints-схемы--описательные-без-runtime-enforcement). |
 | G008 | `setof.decode-sort` | deferred | soft-read policy | Порядок при decode намеренно не валидируется; encode сортирует DER — [решение](decisions.md#constraints-схемы--описательные-без-runtime-enforcement). |
 | G009 | `integer.raw-preserve` | open | — | Весь исходный критерий. |
@@ -71,24 +71,32 @@ Evidence записывается стабильными именами test met
 
 ### G001 — `ber.depth-limit`
 
-- C#: `Ber_IndefiniteScan_EnforcesRecursionDepth` и связанные hostile-BER
+- C#: `Ber_IndefiniteScan_EnforcesRecursionDepth`,
+  `Ber_DefiniteSequenceNesting_EnforcesRecursionDepth` и связанные hostile-BER
   проверки в [RuntimeTests.cs](../runtime-csharp/tests/Asn1Kit.Runtime.Tests/RuntimeTests.cs).
-- C++: `HostileBer_IndefiniteScanEnforcesRecursionDepth` и
+- C++: `HostileBer_IndefiniteScanEnforcesRecursionDepth`,
+  `HostileBer_DefiniteSequenceNestingEnforcesRecursionDepth` и
   `HostileBer_RejectsZeroRecursionDepth` в
   [primitive_codec_tests.cpp](../runtime-cpp/tests/primitive_codec_tests.cpp).
-- Реализация: commit `b8f72a8`.
+- Корпус: [hostile-ber.json](../runtime-csharp/fixtures/ber-der/hostile-ber.json)
+  (`nestedSequence` / indefinite depth cases).
+- Реализация: commit `b8f72a8`; structural depth — MaxRecursionDepth на
+  `PushContentsWindow` / `push_contents_window`.
 
 ### G002 — `ber.size-limit`
 
 - C#: `ConstructedOctetString_EnforcesMaterializationLimitAndKeepsTryAtomic`,
+  `ConstructedOctetString_EnforcesSegmentLimit`,
   `ConstructedBitString_EnforcesMaterializationLimit` и
   `ConstructedString_EnforcesMaterializationLimit` в
   [RuntimeTests.cs](../runtime-csharp/tests/Asn1Kit.Runtime.Tests/RuntimeTests.cs).
 - C++: `HostileBer_ConstructedOctetEnforcesLimitsAndKeepsTryAtomic`,
+  `HostileBer_ConstructedOctetEnforcesSegmentLimit`,
   `HostileBer_PrimitiveOctetDoesNotConsumeMaterializationBudget` и
   `HostileBer_ConstructedBitStringAndStringEnforceMaterializationLimit` в
   [primitive_codec_tests.cpp](../runtime-cpp/tests/primitive_codec_tests.cpp).
-- Реализация: commit `b8f72a8`.
+- Реализация: commit `b8f72a8`; segment storm — `MaxConstructedSegments` /
+  `max_constructed_segments` (default 4096).
 
 ### G003 — `tlv.truncated`
 
@@ -113,6 +121,17 @@ Evidence записывается стабильными именами test met
 - Общие success/reject cases с префиксами `bitstring-ber-` и
   `bitstring-rejects-` в
   [bit-string.json](../runtime-csharp/fixtures/ber-der/bit-string.json).
+
+### G006 — `quality.fuzz`
+
+- Optional C++ libFuzzer: [runtime-cpp/fuzz/](../runtime-cpp/fuzz/)
+  (`ASN1KIT_BUILD_FUZZ=ON`, Clang, `asn1kit_decode_fuzz` / `asn1kit_fuzz_run`).
+- Gate replay: `BoundedDecoderFuzz_CorpusRegressions` в
+  [HostileBerCorpusTests.cs](../runtime-csharp/tests/Asn1Kit.Runtime.Tests/HostileBerCorpusTests.cs)
+  и [hostile_ber_corpus_tests.cpp](../runtime-cpp/tests/hostile_ber_corpus_tests.cpp)
+  по корпусу
+  [hostile-ber.json](../runtime-csharp/fixtures/ber-der/hostile-ber.json).
+- Continuous fuzz в CI не требуется; новые находки переносятся в корпус.
 
 ### G010 — `string.unicode-invalid`
 
@@ -145,8 +164,8 @@ Evidence записывается стабильными именами test met
 
 ## Последняя проверка
 
-На 2026-10-16:
+На 2026-10-19:
 
-- `dotnet test Asn1Kit.sln` — 668 тестов, ошибок нет;
+- `dotnet test Asn1Kit.sln` — 706 тестов, ошибок нет;
 - `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-runtime-cpp.ps1`
-  — 261 тест, ошибок нет.
+  — 279 тестов, ошибок нет.

@@ -33,7 +33,7 @@
 | Область | API |
 | --- | --- |
 | Tag / encoding | `tag`, `tag_class`, `encoding`, `string_form`, `time_form`, `exception` |
-| Soft-read / hostile BER | `reader_options` — `default_profile`, `strict`, `allow_non_minimal_length`, `allow_overlong_oid_base128`; `max_recursion_depth`, `max_materialized_constructed_value_bytes` |
+| Soft-read / hostile BER | `reader_options` — `default_profile`, `strict`, `allow_non_minimal_length`, `allow_overlong_oid_base128`; `max_recursion_depth`, `max_materialized_constructed_value_bytes`, `max_constructed_segments` |
 | Writer primitives | `write_boolean`, `write_integer` (i32/u32/i64/u64/`integer`), `write_integer_decimal`, `write_enumerated_decimal`, `write_octet_string`, `write_null`, `write_object_identifier`, `write_bit_string`, `write_string`, `write_time`, `write_raw`, `encode` / `try_encode` / `reset` |
 | Writer scopes | `enter_sequence` / `enter_set` / `enter_sequence_of` / `enter_set_of` / `enter_explicit` → `writer_scope`; `write_sequence_of` / `write_set_of` (template + range + invocable) |
 | Reader primitives | соответствующие `read_*`, `try_peek_tag`, `next_is`, `next_matches<T>`, `eof`, `throw_if_not_empty` |
@@ -96,11 +96,13 @@ Encode всегда канонический DER (definite length).
 
 ## Лимиты hostile BER
 
-`reader_options::max_recursion_depth` ограничивает рекурсивный поиск EOC во вложенных indefinite-length TLV и вложенность constructed OCTET STRING / BIT STRING / строк при materialize. Default `reader_options::default_max_recursion_depth` равен 64; значение должно быть положительным. Ровно 64 уровня разрешены, следующий уровень отклоняется с `asn1kit::exception`.
+`reader_options::max_recursion_depth` ограничивает рекурсивный поиск EOC во вложенных indefinite-length TLV, definite-вложенность SEQUENCE/SET/EXPLICIT/OF через `push_contents_window` и вложенность constructed OCTET STRING / BIT STRING / строк при materialize. Default `reader_options::default_max_recursion_depth` равен 64; значение должно быть положительным. Ровно 64 уровня разрешены, следующий уровень отклоняется с `asn1kit::exception`. Бюджеты indefinite/materialize и structural nesting независимы, но сравниваются с одним и тем же лимитом.
 
 `reader_options::max_materialized_constructed_value_bytes` ограничивает сумму payload всех primitive-сегментов одного materialized constructed OCTET STRING, BIT STRING, строкового или временного значения. Default `reader_options::default_max_materialized_constructed_value_bytes` равен 100 MiB; ноль разрешает только пустой constructed payload. Граница включительна, превышение отклоняется до выделения результирующего `std::vector`. Primitive values остаются `bytes`-view исходного буфера и этот бюджет не расходуют.
 
-Лимиты действуют одинаково для definite и indefinite constructed materialization и наследуются вложенными reader-окнами. `try_read_octet_string` при превышении лимита бросает `asn1kit::exception` без продвижения reader; `false` означает только короткий destination.
+`reader_options::max_constructed_segments` ограничивает число leaf primitive-сегментов при concat одного constructed OCTET STRING / BIT STRING / строки / времени. Default `reader_options::default_max_constructed_segments` равен 4096; ноль разрешает только пустой constructed payload без leaf-сегментов. Превышение отклоняется до выделения результата.
+
+Лимиты действуют одинаково для definite и indefinite constructed materialization и наследуются вложенными reader-окнами. `try_read_octet_string` при превышении лимита бросает `asn1kit::exception` без продвижения reader; `false` означает только короткий destination. Регрессионный корпус — [hostile-ber.json](../../runtime-csharp/fixtures/ber-der/hostile-ber.json); optional libFuzzer — [`fuzz/`](../fuzz/) (`ASN1KIT_BUILD_FUZZ`, Clang).
 
 ## `exception`
 

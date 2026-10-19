@@ -11,6 +11,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 option(ASN1KIT_BUILD_TESTS "Build asn1kit unit tests" ON)
 option(ASN1KIT_BUILD_EXAMPLES "Build asn1kit example programs" ON)
 option(ASN1KIT_BUILD_BENCHMARKS "Build asn1kit Google Benchmark suite (not a test gate)" OFF)
+option(ASN1KIT_BUILD_FUZZ "Build optional libFuzzer decode harness (Clang; not a test gate)" OFF)
 option(ASN1KIT_FETCH_TEST_DEPS
     "Fetch gtest, nlohmann_json, and (if benchmarks) Google Benchmark via FetchContent instead of find_package (no Conan)"
     OFF)
@@ -102,4 +103,8 @@ if(ASN1KIT_BUILD_BENCHMARKS)
         find_package(benchmark REQUIRED)
     endif()
     add_subdirectory(benchmarks)
+endif()
+
+if(ASN1KIT_BUILD_FUZZ)
+    add_subdirectory(fuzz)
 endif()

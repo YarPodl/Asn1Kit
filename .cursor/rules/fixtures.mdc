@@ -15,6 +15,7 @@ alwaysApply: false
 - `runtime-csharp/generated/**/*.g.cs` — generated C#; вручную не правится.
 - `runtime-cpp/generated/**/*.hpp` — generated C++ (единственный SoT, как `runtime-csharp/generated`); вручную не правится (`scripts/regenerate-cpp-golden.ps1`, `scripts/regenerate-modern-cpp.ps1`).
 - Формат BER/DER-векторов описан в `runtime-csharp/fixtures/ber-der/README.md`.
+- `hostile-ber.json` — корпус hostile BER (depth / segment storm / fuzz regressions); gate — `BoundedDecoderFuzz_CorpusRegressions` в C# и C++.
 
 ## Workflow
 

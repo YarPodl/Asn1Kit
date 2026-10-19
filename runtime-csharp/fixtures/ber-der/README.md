@@ -29,7 +29,14 @@ Each JSON file is an array of cases:
 | `unusedBits` | For `bitString` |
 | `fractionDigits` | For GeneralizedTime encode |
 | `readerProfile` | `default` (omit), `strict`, `allowNonMinimalLength`, `allowOverlongOid` |
+| `maxRecursionDepth` | Optional override for hostile-BER corpus (`hostile-ber.json`) |
+| `maxConstructedSegments` | Optional override for hostile-BER corpus |
+| `maxMaterializedConstructedValueBytes` | Optional override for hostile-BER corpus |
 | `source` | Provenance for layer-3 external vectors |
+
+Hostile limits and fuzz regressions live in [`hostile-ber.json`](hostile-ber.json)
+(`op`: `nestedSequence` / `octetString` / `any`); gate tests replay them without
+running the fuzzer. Optional C++ libFuzzer: `runtime-cpp/fuzz/`.
 
 ## Layers
 

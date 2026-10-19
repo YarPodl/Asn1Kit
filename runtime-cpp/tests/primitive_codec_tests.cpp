@@ -311,6 +311,50 @@ TEST(PrimitiveCodecExtra, HostileBer_RejectsZeroRecursionDepth) {
     EXPECT_THROW(reader(parse_hex("0500"), encoding::ber, options), std::invalid_argument);
 }
 
+TEST(PrimitiveCodecExtra, HostileBer_DefiniteSequenceNestingEnforcesRecursionDepth) {
+    // SEQUENCE { SEQUENCE { INTEGER 1 } }
+    const auto nested = parse_hex("30053003020101");
+
+    auto allowed_options = reader_options::default_profile();
+    allowed_options.max_recursion_depth = 2;
+    reader allowed(nested, encoding::der, allowed_options);
+    allowed.with_sequence(tag::sequence, [&](reader& outer) {
+        outer.with_sequence(tag::sequence, [&](reader& inner) {
+            EXPECT_EQ(1, inner.read_int32(tag::integer));
+        });
+    });
+
+    auto rejected_options = reader_options::default_profile();
+    rejected_options.max_recursion_depth = 1;
+    reader rejected(nested, encoding::der, rejected_options);
+    EXPECT_THROW(
+        rejected.with_sequence(tag::sequence, [&](reader& outer) {
+            outer.with_sequence(tag::sequence, [&](reader&) {});
+        }),
+        exception);
+}
+
+TEST(PrimitiveCodecExtra, HostileBer_ConstructedOctetEnforcesSegmentLimit) {
+    const auto ber = parse_hex("2406040141040142");
+
+    auto allowed_options = reader_options::default_profile();
+    allowed_options.max_constructed_segments = 2;
+    reader allowed(ber, encoding::ber, allowed_options);
+    EXPECT_EQ(
+        (std::vector<std::uint8_t>{0x41, 0x42}),
+        allowed.read_octet_string(tag::octet_string).to_vector());
+
+    auto rejected_options = reader_options::default_profile();
+    rejected_options.max_constructed_segments = 1;
+    reader rejected(ber, encoding::ber, rejected_options);
+    EXPECT_THROW((void)rejected.read_octet_string(tag::octet_string), exception);
+
+    auto empty_options = reader_options::default_profile();
+    empty_options.max_constructed_segments = 0;
+    reader empty_only(parse_hex("2400"), encoding::ber, empty_options);
+    EXPECT_TRUE(empty_only.read_octet_string(tag::octet_string).empty());
+}
+
 TEST(PrimitiveCodecExtra, HostileBer_ConstructedOctetEnforcesLimitsAndKeepsTryAtomic) {
     const auto encoded = parse_hex("24080401412403040142");
 

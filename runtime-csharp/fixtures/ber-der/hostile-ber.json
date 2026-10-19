@@ -1,0 +1,62 @@
+[
+  {
+    "name": "hostile-nested-sequence-depth-reject",
+    "rules": "der",
+    "op": "nestedSequence",
+    "bytes": "30053003020101",
+    "maxRecursionDepth": 1,
+    "reject": true,
+    "encode": false,
+    "source": "Asn1Kit hostile-BER corpus: definite SEQUENCE nesting past MaxRecursionDepth"
+  },
+  {
+    "name": "hostile-nested-sequence-depth-ok",
+    "rules": "der",
+    "op": "nestedSequence",
+    "bytes": "30053003020101",
+    "maxRecursionDepth": 2,
+    "value": 1,
+    "encode": false,
+    "source": "Asn1Kit hostile-BER corpus: definite SEQUENCE nesting at MaxRecursionDepth"
+  },
+  {
+    "name": "hostile-octet-segment-storm-reject",
+    "rules": "ber",
+    "op": "octetString",
+    "bytes": "2406040141040142",
+    "maxConstructedSegments": 1,
+    "reject": true,
+    "encode": false,
+    "source": "Asn1Kit hostile-BER corpus: constructed OCTET segment count past MaxConstructedSegments"
+  },
+  {
+    "name": "hostile-octet-segment-storm-ok",
+    "rules": "ber",
+    "op": "octetString",
+    "bytes": "2406040141040142",
+    "maxConstructedSegments": 2,
+    "value": "4142",
+    "encode": false,
+    "source": "Asn1Kit hostile-BER corpus: constructed OCTET segment count at MaxConstructedSegments"
+  },
+  {
+    "name": "hostile-indefinite-depth-reject",
+    "rules": "ber",
+    "op": "any",
+    "bytes": "2480248004014100000000",
+    "maxRecursionDepth": 1,
+    "reject": true,
+    "encode": false,
+    "source": "Asn1Kit hostile-BER corpus: indefinite EOC scan past MaxRecursionDepth"
+  },
+  {
+    "name": "hostile-indefinite-depth-ok",
+    "rules": "ber",
+    "op": "octetString",
+    "bytes": "2480248004014100000000",
+    "maxRecursionDepth": 2,
+    "value": "41",
+    "encode": false,
+    "source": "Asn1Kit hostile-BER corpus: indefinite EOC scan at MaxRecursionDepth"
+  }
+]

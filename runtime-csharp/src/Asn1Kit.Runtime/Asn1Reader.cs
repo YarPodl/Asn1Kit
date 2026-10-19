@@ -9,6 +9,7 @@ namespace Asn1Kit.Runtime;
 public sealed class Asn1Reader
 {
     private Asn1DecodeCursor _cursor;
+    private int _structuralDepth;
 
     /// <summary>Initializes a new instance of <c>Asn1Reader</c>.</summary>
     public Asn1Reader(byte[] data, Asn1Encoding encoding = Asn1Encoding.Ber, Asn1ReaderOptions? options = null)
@@ -375,6 +376,12 @@ public sealed class Asn1Reader
 
     internal Asn1ReaderScope PushContentsWindow(ReadOnlyMemory<byte> contents)
     {
+        if (_structuralDepth >= Options.MaxRecursionDepth)
+        {
+            throw new Asn1Exception($"ASN.1 recursion depth exceeds limit {Options.MaxRecursionDepth}.");
+        }
+
+        _structuralDepth++;
         var savedCursor = _cursor;
         _cursor = _cursor.CreateNested(contents);
         return Asn1ReaderScope.Create(this, savedCursor, _cursor.ScopeToken);
@@ -390,6 +397,7 @@ public sealed class Asn1Reader
         }
 
         _cursor = savedCursor;
+        _structuralDepth--;
     }
 
     private ReadOnlyMemory<byte> ReadPrimitiveContents(Asn1Tag expected)

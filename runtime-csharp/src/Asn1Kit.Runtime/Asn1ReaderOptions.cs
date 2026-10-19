@@ -6,14 +6,18 @@ namespace Asn1Kit.Runtime;
 /// </summary>
 public sealed class Asn1ReaderOptions
 {
-    /// <summary>Default maximum depth for recursive indefinite scans and constructed materialization.</summary>
+    /// <summary>Default maximum depth for recursive indefinite scans, structural nesting, and constructed materialization.</summary>
     public const int DefaultMaxRecursionDepth = 64;
 
     /// <summary>Default maximum payload allocated for one materialized constructed value.</summary>
     public const int DefaultMaxMaterializedConstructedValueBytes = 100 * 1024 * 1024;
 
+    /// <summary>Default maximum leaf segments concatenated for one constructed string or BIT STRING.</summary>
+    public const int DefaultMaxConstructedSegments = 4096;
+
     private int _maxRecursionDepth = DefaultMaxRecursionDepth;
     private int _maxMaterializedConstructedValueBytes = DefaultMaxMaterializedConstructedValueBytes;
+    private int _maxConstructedSegments = DefaultMaxConstructedSegments;
 
     /// <summary>
     /// Soft profile: non-minimal INTEGER and nonzero BIT STRING trailing bits are accepted;
@@ -71,8 +75,9 @@ public sealed class Asn1ReaderOptions
     public bool RejectOverlongOidBase128 { get; init; } = true;
 
     /// <summary>
-    /// Maximum recursive constructed-value depth. This bounds BER indefinite-length EOC scans and
-    /// nested constructed string materialization. Default 64.
+    /// Maximum recursive constructed-value depth. This bounds BER indefinite-length EOC scans,
+    /// definite SEQUENCE/SET/EXPLICIT/OF nesting via reader scopes, and nested constructed string
+    /// materialization. Default 64.
     /// </summary>
     public int MaxRecursionDepth
     {
@@ -92,5 +97,18 @@ public sealed class Asn1ReaderOptions
         init => _maxMaterializedConstructedValueBytes = value >= 0
             ? value
             : throw new ArgumentOutOfRangeException(nameof(value), "Materialized size limit cannot be negative.");
+    }
+
+    /// <summary>
+    /// Maximum number of leaf primitive segments concatenated for one constructed OCTET STRING,
+    /// BIT STRING, string, or time value. Default 4096. Zero permits only empty constructed payloads
+    /// (no leaf segments).
+    /// </summary>
+    public int MaxConstructedSegments
+    {
+        get => _maxConstructedSegments;
+        init => _maxConstructedSegments = value >= 0
+            ? value
+            : throw new ArgumentOutOfRangeException(nameof(value), "Constructed segment limit cannot be negative.");
     }
 }

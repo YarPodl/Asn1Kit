@@ -127,6 +127,7 @@ internal static class Asn1ConstructedDecoder
                 continue;
             }
 
+            EnsureSegmentCount(parent.Options, segments.Count);
             AddMaterializedLength(parent.Options, ref totalLength, tlv.Contents.Length);
             segments.Add(tlv.Contents);
         }
@@ -207,6 +208,7 @@ internal static class Asn1ConstructedDecoder
             }
 
             var segment = Asn1BitString.ParsePrimitive(tlv.Contents, rejectTrailingBits);
+            EnsureSegmentCount(parent.Options, segments.Count);
             AddMaterializedLength(parent.Options, ref totalLength, segment.Span.Length);
             segments.Add(segment);
         }
@@ -222,6 +224,15 @@ internal static class Asn1ConstructedDecoder
         if (depth >= options.MaxRecursionDepth)
         {
             throw new Asn1Exception($"ASN.1 recursion depth exceeds limit {options.MaxRecursionDepth}.");
+        }
+    }
+
+    private static void EnsureSegmentCount(Asn1ReaderOptions options, int currentCount)
+    {
+        if (currentCount >= options.MaxConstructedSegments)
+        {
+            throw new Asn1Exception(
+                $"Constructed value exceeds segment limit {options.MaxConstructedSegments}.");
         }
     }
 

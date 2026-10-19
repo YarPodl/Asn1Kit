@@ -56,7 +56,7 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `Asn1Reader(byte[]\|offset/length\|ReadOnlyMemory, encoding, options?)` / `Remaining` / `Options` / `ThrowIfNotEmpty()` | hot | входной `ReadOnlyMemory` не копируется; `Remaining` — байты до конца текущего окна; `ThrowIfNotEmpty` отвергает непрочитанный хвост без продвижения; options сохраняются во вложенных окнах |
 | `Asn1ReaderScope` | hot | публично только `Dispose`; произвольного `Push` и доступа к reader через scope нет |
 | `Asn1WriterScope` | hot | публично только `Dispose`; `Encode` / `TryEncode` / `Reset` запрещены, пока открыт хотя бы один scope |
-| `Asn1ReaderOptions` (`Default` / `Strict` / `AllowNonMinimalLength` / `AllowOverlongOidBase128`; `MaxRecursionDepth` / `MaxMaterializedConstructedValueBytes`) | warm | immutable flags; hostile BER по умолчанию ограничен глубиной 64 и одним materialized payload 100 MiB |
+| `Asn1ReaderOptions` (`Default` / `Strict` / `AllowNonMinimalLength` / `AllowOverlongOidBase128`; `MaxRecursionDepth` / `MaxMaterializedConstructedValueBytes` / `MaxConstructedSegments`) | warm | immutable flags; hostile BER по умолчанию: глубина 64, materialized payload 100 MiB, до 4096 leaf-сегментов |
 | `ReadOctetString → ReadOnlyMemory` / `TryReadOctetString(Span)` | hot | primitive view / copy-out; short destination → `false`, `bytesWritten=0`, reader не продвигается; constructed BER — owned |
 | `ReadAny` | hot/cold | единственный raw TLV escape hatch: tag + encoded/contents views |
 | `Asn1Any.EncodedMemory` / `ContentsMemory` / `ToArray` / `DecodeValue<T>` | hot/warm | view полного TLV / срез V / detach; `DecodeValue<T>` создаёт reader поверх TLV без копии и требует полного потребления |
@@ -99,11 +99,13 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 
 ## Лимиты hostile BER
 
-`Asn1ReaderOptions.MaxRecursionDepth` ограничивает рекурсивный поиск EOC во вложенных indefinite-length TLV и вложенность constructed OCTET STRING / BIT STRING / строк при materialize. Значение по умолчанию — `DefaultMaxRecursionDepth` = 64; значение должно быть положительным. Ровно 64 уровня разрешены, следующий уровень отклоняется с `Asn1Exception`.
+`Asn1ReaderOptions.MaxRecursionDepth` ограничивает рекурсивный поиск EOC во вложенных indefinite-length TLV, definite-вложенность SEQUENCE/SET/EXPLICIT/OF через reader scopes (`PushContentsWindow`) и вложенность constructed OCTET STRING / BIT STRING / строк при materialize. Значение по умолчанию — `DefaultMaxRecursionDepth` = 64; значение должно быть положительным. Ровно 64 уровня разрешены, следующий уровень отклоняется с `Asn1Exception`. Бюджеты indefinite/materialize и structural nesting независимы, но сравниваются с одним и тем же лимитом.
 
 `Asn1ReaderOptions.MaxMaterializedConstructedValueBytes` ограничивает сумму payload всех primitive-сегментов одного materialized constructed OCTET STRING, BIT STRING, строкового или временного значения. Значение по умолчанию — `DefaultMaxMaterializedConstructedValueBytes` = 100 MiB; ноль разрешает только пустой constructed payload. Граница включительна, превышение отклоняется до выделения результирующего массива. Primitive values остаются view исходного буфера и этот бюджет не расходуют.
 
-Лимиты действуют одинаково для definite и indefinite constructed materialization и наследуются всеми вложенными окнами reader. `TryReadOctetString` при превышении лимита бросает `Asn1Exception` без продвижения reader; `false` зарезервирован только для короткого destination.
+`Asn1ReaderOptions.MaxConstructedSegments` ограничивает число leaf primitive-сегментов при concat одного constructed OCTET STRING / BIT STRING / строки / времени. Значение по умолчанию — `DefaultMaxConstructedSegments` = 4096; ноль разрешает только пустой constructed payload без leaf-сегментов. Превышение отклоняется до выделения результата.
+
+Лимиты действуют одинаково для definite и indefinite constructed materialization и наследуются всеми вложенными окнами reader. `TryReadOctetString` при превышении лимита бросает `Asn1Exception` без продвижения reader; `false` зарезервирован только для короткого destination. Регрессионный корпус — [hostile-ber.json](../fixtures/ber-der/hostile-ber.json); optional C++ libFuzzer — `runtime-cpp/fuzz/` (`ASN1KIT_BUILD_FUZZ`).
 
 ## Soft-read и строгие опции
 

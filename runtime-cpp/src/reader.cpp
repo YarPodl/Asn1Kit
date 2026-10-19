@@ -207,6 +207,13 @@ reader_scope reader::enter_encoded(bytes encoded) {
 }
 
 reader_scope reader::push_contents_window(bytes contents) {
+    if (structural_depth_ >= options().max_recursion_depth) {
+        throw exception(
+            "ASN.1 recursion depth exceeds limit " + std::to_string(options().max_recursion_depth)
+                + ".",
+            cursor_.absolute_offset());
+    }
+    ++structural_depth_;
     auto nested = cursor_.create_nested(std::move(contents));
     detail::decode_cursor saved = std::move(cursor_);
     cursor_ = std::move(nested);
@@ -225,6 +232,7 @@ void reader::pop_contents_window(
     }
     cursor_ = std::move(saved_cursor);
     active_scope_token_ = parent_scope_token;
+    --structural_depth_;
 }
 
 bytes reader::read_constructed_contents(const tag& expected) {
