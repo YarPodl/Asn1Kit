@@ -252,6 +252,12 @@ struct asn_time {
 namespace detail {
 
 template <typename T>
+concept generated_enumerated = requires(writer& w, reader& r, T value, const tag& t) {
+    { encode_enumerated(w, value, t) } -> std::same_as<void>;
+    { decode_enumerated(r, std::type_identity<T>{}, t) } -> std::same_as<T>;
+};
+
+template <typename T>
 inline constexpr bool is_asn_string_v = false;
 template <string_form Form>
 inline constexpr bool is_asn_string_v<asn_string<Form>> = true;
@@ -292,6 +298,8 @@ template <typename T>
 void encode_open_value(writer& w, T& value) {
     if constexpr (asn1_encodable<T>) {
         value.encode(w);
+    } else if constexpr (generated_enumerated<T>) {
+        encode_enumerated(w, value, tag::enumerated);
     } else if constexpr (std::is_same_v<T, null_value>) {
         null_value::encode(w, tag::null);
     } else if constexpr (std::is_same_v<T, any>) {
@@ -307,6 +315,8 @@ template <typename T>
 [[nodiscard]] T decode_open_value(reader& r) {
     if constexpr (asn1_decodable<T>) {
         return T::decode(r);
+    } else if constexpr (generated_enumerated<T>) {
+        return decode_enumerated(r, std::type_identity<T>{}, tag::enumerated);
     } else if constexpr (std::is_same_v<T, null_value>) {
         return null_value::decode(r, tag::null);
     } else if constexpr (std::is_same_v<T, any>) {
@@ -323,7 +333,8 @@ template <typename T>
 /// Types whose open-type wire form is fully determined at compile time.
 template <typename T>
 concept open_typed = (asn1_decodable<T> && asn1_encodable<T>) || detail::open_primitive<T>
-    || detail::is_asn_string_v<T> || detail::is_asn_time_v<T>;
+    || detail::generated_enumerated<T> || detail::is_asn_string_v<T>
+    || detail::is_asn_time_v<T>;
 
 /// Encodes one value as a complete DER TLV; wire rules come from `T`.
 template <open_typed T>

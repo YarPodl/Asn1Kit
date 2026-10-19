@@ -226,8 +226,7 @@ public sealed partial class CppBackend
         var encodeTag = forceTag ?? TagExpr(document, module, type);
         if (IsEnumeratedRefOrType(document, module, type))
         {
-            var enumName = EnumeratedCodecName(document, module, owner, hint, type, "encode");
-            sb.AppendLine($"{indent}{enumName}({writer}, {expr}, {encodeTag});");
+            sb.AppendLine($"{indent}encode_enumerated({writer}, {expr}, {encodeTag});");
             return;
         }
 
@@ -801,8 +800,9 @@ public sealed partial class CppBackend
         var decodeTag = forceTag ?? TagExpr(document, module, type);
         if (IsEnumeratedRefOrType(document, module, type))
         {
-            var enumName = EnumeratedCodecName(document, module, owner, hint, type, "decode");
-            sb.AppendLine($"{indent}{target} = {enumName}({reader}, {decodeTag});");
+            var enumType = CppType(document, module, owner, hint, original, optional: false);
+            sb.AppendLine(
+                $"{indent}{target} = decode_enumerated({reader}, std::type_identity<{enumType}>{{}}, {decodeTag});");
             return;
         }
 

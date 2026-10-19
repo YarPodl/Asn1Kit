@@ -623,13 +623,13 @@ public sealed partial class CppBackend
 
         sb.AppendLine("};");
         sb.AppendLine();
-        sb.AppendLine($"inline void encode_{typeName}(asn1kit::writer& w, {typeName} value, const asn1kit::tag& t = asn1kit::tag::enumerated) {{");
+        sb.AppendLine($"inline void encode_enumerated(asn1kit::writer& w, {typeName} value, const asn1kit::tag& t = asn1kit::tag::enumerated) {{");
         sb.AppendLine(
             $"    w.write_enumerated_decimal(t, std::to_string(static_cast<{(useLong ? "std::int64_t" : "std::int32_t")}>(value)));");
         sb.AppendLine("}");
         sb.AppendLine();
         sb.AppendLine(
-            $"inline {typeName} decode_{typeName}(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::enumerated) {{");
+            $"inline {typeName} decode_enumerated(asn1kit::reader& r, std::type_identity<{typeName}>, const asn1kit::tag& t = asn1kit::tag::enumerated) {{");
         sb.AppendLine("    const auto text = r.read_enumerated_decimal(t);");
         sb.AppendLine($"    const auto number = std::stoll(text);");
         foreach (var value in type.Values)

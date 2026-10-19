@@ -4,6 +4,7 @@
 #include "PKIX1Explicit2009.hpp"
 #include "PKIX1Implicit2009.hpp"
 #include "PKIXAlgs2009.hpp"
+#include "PKIXCommonTypes2009.hpp"
 #include "PKIXX400Address2009.types.hpp"
 
 #include "asn1kit/encode_decode.hpp"
@@ -34,6 +35,14 @@ using CountryName = asn1kit::modern::PKIXX400Address2009::CountryName;
 using CountryNameKind = asn1kit::modern::PKIXX400Address2009::CountryName_kind;
 using TBSCertificate = asn1kit::modern::PKIX1Explicit2009::TBSCertificate;
 using DSASigValue = asn1kit::modern::PKIXAlgs2009::DSASigValue;
+using Extension = asn1kit::modern::PKIXCommonTypes2009::Extension;
+using CRLReason = asn1kit::modern::PKIX1Implicit2009::CRLReason;
+using ImplicitOids = asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids;
+
+enum class UnregisteredEnum { value };
+
+static_assert(asn1kit::open_typed<CRLReason>);
+static_assert(!asn1kit::open_typed<UnregisteredEnum>);
 
 static_assert(requires(TBSCertificate& certificate) {
     certificate.supported_attributes_issuer();
@@ -102,6 +111,33 @@ TEST(GeneratedModernCertificateTests, StoredNestedRvalueOpenViewOwnsCarrier) {
     ASSERT_TRUE(from_chain.has_value());
     EXPECT_EQ(from_chain->r, expected.r);
     EXPECT_EQ(from_chain->s, expected.s);
+}
+
+TEST(GeneratedModernCertificateTests, CrlReasonOpenTypeCreatesAndRoundTripsExtension) {
+    auto extension = Extension::make_crl_entry_extensions().crl_reason(CRLReason::keyCompromise);
+    EXPECT_EQ(extension.extnID, ImplicitOids::IdCeCRLReasons.get());
+    EXPECT_FALSE(extension.critical);
+    EXPECT_EQ(extension.extnValue.to_vector(),
+              (std::vector<std::uint8_t>{0x0a, 0x01, 0x01}));
+
+    const std::vector<std::uint8_t> expected{
+        0x30, 0x0a, 0x06, 0x03, 0x55, 0x1d, 0x15, 0x04, 0x03, 0x0a, 0x01, 0x01};
+    EXPECT_EQ(asn1kit::encode(extension), expected);
+
+    const auto decoded = asn1kit::decode<Extension>(expected, encoding::der);
+    EXPECT_EQ(decoded.crl_entry_extensions().crl_reason(), CRLReason::keyCompromise);
+    EXPECT_EQ(asn1kit::encode(decoded), expected);
+}
+
+TEST(GeneratedModernCertificateTests, CrlReasonOpenTypeRejectsUnknownValueAndWrongTag) {
+    Extension extension{};
+    extension.extnID = ImplicitOids::IdCeCRLReasons.get();
+
+    extension.extnValue = asn1kit::bytes::from_vector({0x0a, 0x01, 0x07});
+    EXPECT_THROW((void)extension.crl_entry_extensions().crl_reason(), asn1kit::exception);
+
+    extension.extnValue = asn1kit::bytes::from_vector({0x02, 0x01, 0x01});
+    EXPECT_THROW((void)extension.crl_entry_extensions().crl_reason(), asn1kit::exception);
 }
 
 static_assert(std::string_view(PkixOids::IdPkix.text()) == "1.3.6.1.5.5.7");

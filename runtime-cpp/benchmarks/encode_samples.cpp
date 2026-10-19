@@ -72,16 +72,6 @@ using Name = std::vector<std::vector<Attr>>;
     return ext;
 }
 
-[[nodiscard]] Common::Extension crl_reason_extension() {
-    asn1kit::writer w(asn1kit::encoding::der);
-    Implicit::encode_CRLReason(w, Implicit::CRLReason::keyCompromise);
-    Common::Extension ext{};
-    ext.extnID = Implicit::PKIX1Implicit2009Oids::IdCeCRLReasons.get();
-    ext.critical = false;
-    ext.extnValue = asn1kit::bytes::from_vector(w.encode());
-    return ext;
-}
-
 [[nodiscard]] Pkix::SubjectPublicKeyInfo create_spki() {
     Pkix::SubjectPublicKeyInfo spki{};
     spki.algorithm = rsa_public_key();
@@ -94,7 +84,9 @@ using Name = std::vector<std::vector<Attr>>;
     Pkix::TBSCertList_RevokedCertificates_Item item{};
     item.userCertificate = asn1kit::integer::from_int32(serial);
     item.revocationDate = Pkix::Time::from_utcTime(not_before());
-    item.crlEntryExtensions = std::vector<Common::Extension>{crl_reason_extension()};
+    item.crlEntryExtensions = std::vector<Common::Extension>{
+        Common::Extension::make_crl_entry_extensions().crl_reason(
+            Implicit::CRLReason::keyCompromise)};
     return item;
 }
 

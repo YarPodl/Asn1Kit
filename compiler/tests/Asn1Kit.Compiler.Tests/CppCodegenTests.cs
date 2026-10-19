@@ -705,7 +705,12 @@ END
         Assert.Contains("read_set_of<Bag>(asn1kit::tag::context(1, true));", source);
         Assert.DoesNotContain("read_sequence_of<Pair>(asn1kit::tag::context(0, true), [&]", source);
         Assert.Contains("std::optional", source);
-        Assert.Contains("encode_Color", source);
+        Assert.Contains("inline void encode_enumerated(asn1kit::writer& w, Color value", source);
+        Assert.Contains(
+            "inline Color decode_enumerated(asn1kit::reader& r, std::type_identity<Color>",
+            source);
+        Assert.DoesNotContain("encode_Color", source);
+        Assert.DoesNotContain("decode_Color", source);
         Assert.Contains("Color::red", source);
         Assert.Contains("asn1kit::tag::context(", source);
         Assert.Contains("Flags(asn1kit::bit_string bits)", source);
@@ -1596,13 +1601,21 @@ END
         Assert.Contains(
             "::asn1kit::modern::PKIXCRMF2009::CertRequest>",
             files["PKIXCommonTypes2009.hpp"]);
-        // Cross-module ENUMERATED codec helper names.
+        // Cross-module ENUMERATED decode carries the qualified type while ADL selects the codec.
         Assert.Contains(
-            "::asn1kit::modern::PKIX1Implicit2009::decode_CRLReason(",
+            "std::type_identity<::asn1kit::modern::PKIX1Implicit2009::CRLReason>{}",
             files["OCSP2009.types.hpp"]);
         Assert.Contains(
-            "::asn1kit::modern::PKIX1Implicit2009::encode_CRLReason(",
+            "encode_enumerated(w, this->reason, asn1kit::tag::enumerated);",
             files["EnrollmentMessageSyntax2009.types.hpp"]);
+        Assert.Contains(
+            "inline void encode_enumerated(asn1kit::writer& w, CRLReason value",
+            files["PKIX1Implicit2009.types.hpp"]);
+        Assert.Contains(
+            "decode_enumerated(asn1kit::reader& r, std::type_identity<CRLReason>",
+            files["PKIX1Implicit2009.types.hpp"]);
+        Assert.DoesNotContain("encode_CRLReason", files["PKIX1Implicit2009.types.hpp"]);
+        Assert.DoesNotContain("decode_CRLReason", files["PKIX1Implicit2009.types.hpp"]);
 
         Assert.Contains(
             "ExtensionAttribute_EaTeletexPersonalName>",

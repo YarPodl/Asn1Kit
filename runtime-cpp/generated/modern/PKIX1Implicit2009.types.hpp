@@ -21,6 +21,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -117,11 +118,11 @@ enum class CRLReason {
     aACompromise = 10
 };
 
-inline void encode_CRLReason(asn1kit::writer& w, CRLReason value, const asn1kit::tag& t = asn1kit::tag::enumerated) {
+inline void encode_enumerated(asn1kit::writer& w, CRLReason value, const asn1kit::tag& t = asn1kit::tag::enumerated) {
     w.write_enumerated_decimal(t, std::to_string(static_cast<std::int32_t>(value)));
 }
 
-inline CRLReason decode_CRLReason(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::enumerated) {
+inline CRLReason decode_enumerated(asn1kit::reader& r, std::type_identity<CRLReason>, const asn1kit::tag& t = asn1kit::tag::enumerated) {
     const auto text = r.read_enumerated_decimal(t);
     const auto number = std::stoll(text);
     if (number == 0) return CRLReason::unspecified;

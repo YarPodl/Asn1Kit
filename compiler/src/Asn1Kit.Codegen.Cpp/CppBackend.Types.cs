@@ -331,8 +331,8 @@ public sealed partial class CppBackend
     /// <summary>
     /// Qualifies a generated name relative to the module that owns the declaration.
     /// Used for synthesized nested-type owners (e.g. <c>PolicyMappings_Item</c> from
-    /// PKIX1Implicit2009) and cross-module ENUMERATED codec helpers (e.g.
-    /// <c>decode_CRLReason</c>) referenced from a different module.
+    /// PKIX1Implicit2009) referenced from a different module. ENUMERATED codecs use
+    /// ADL instead; their decode type token is qualified through <c>CppType</c>.
     /// </summary>
     private static string QualifyCrossModule(IrModule emitting, IrModule owning, string name)
     {
@@ -537,30 +537,6 @@ public sealed partial class CppBackend
     private bool IsEnumeratedRefOrType(IrDocument document, IrModule module, TypeExpr type) =>
         type is EnumeratedType ||
         (type is RefType reference && Find(document, module, reference)?.Type is EnumeratedType);
-
-    /// <summary>
-    /// Resolves the generated ENUMERATED codec function name
-    /// (<c>encode_…</c>/<c>decode_…</c>) and qualifies it when the owning module
-    /// differs from the emitting one. Inline enums keep the <c>Owner_Field</c> name.
-    /// </summary>
-    private string EnumeratedCodecName(
-        IrDocument document, IrModule module, string owner, string hint, TypeExpr type, string operation)
-    {
-        if (type is RefType reference)
-        {
-            var found = FindWithModule(document, module, reference);
-            if (found is not null)
-            {
-                var (definingModule, def) = ResolveAliasOfTarget(document, found.Value.Module, found.Value.Def);
-                var name = IrOptions.CppTypeName(def.Options) ?? CppNames.SanitizeTypeName(def.Name);
-                return QualifyCrossModule(module, definingModule, operation + "_" + name);
-            }
-
-            return operation + "_" + CppNames.SanitizeTypeName(reference.Name);
-        }
-
-        return operation + "_" + owner + "_" + CppNames.SanitizeTypeName(hint);
-    }
 
     private TypeExpr UnwrapAliases(IrDocument document, IrModule module, TypeExpr type) =>
         UnwrapAliases(document, ref module, type);

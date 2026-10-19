@@ -20,6 +20,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -91,11 +92,11 @@ enum class FirmwarePackageLoadErrorCode {
     otherError = 99
 };
 
-inline void encode_FirmwarePackageLoadErrorCode(asn1kit::writer& w, FirmwarePackageLoadErrorCode value, const asn1kit::tag& t = asn1kit::tag::enumerated) {
+inline void encode_enumerated(asn1kit::writer& w, FirmwarePackageLoadErrorCode value, const asn1kit::tag& t = asn1kit::tag::enumerated) {
     w.write_enumerated_decimal(t, std::to_string(static_cast<std::int32_t>(value)));
 }
 
-inline FirmwarePackageLoadErrorCode decode_FirmwarePackageLoadErrorCode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::enumerated) {
+inline FirmwarePackageLoadErrorCode decode_enumerated(asn1kit::reader& r, std::type_identity<FirmwarePackageLoadErrorCode>, const asn1kit::tag& t = asn1kit::tag::enumerated) {
     const auto text = r.read_enumerated_decimal(t);
     const auto number = std::stoll(text);
     if (number == 1) return FirmwarePackageLoadErrorCode::decodeFailure;
@@ -648,7 +649,7 @@ struct FirmwarePackageLoadError {
             }
             value.hwType = inner.read_oid(asn1kit::tag::object_identifier);
             value.hwSerialNum = inner.read_octet_string(asn1kit::tag::octet_string);
-            value.errorCode = decode_FirmwarePackageLoadErrorCode(inner, asn1kit::tag::enumerated);
+            value.errorCode = decode_enumerated(inner, std::type_identity<FirmwarePackageLoadErrorCode>{}, asn1kit::tag::enumerated);
             if (inner.next_is(asn1kit::tag::integer)) {
                 value.vendorErrorCode = inner.read_integer_value(asn1kit::tag::integer);
             }
@@ -669,7 +670,7 @@ struct FirmwarePackageLoadError {
         }
         w.write_object_identifier(asn1kit::tag::object_identifier, this->hwType);
         w.write_octet_string(asn1kit::tag::octet_string, this->hwSerialNum.span());
-        encode_FirmwarePackageLoadErrorCode(w, this->errorCode, asn1kit::tag::enumerated);
+        encode_enumerated(w, this->errorCode, asn1kit::tag::enumerated);
         if (this->vendorErrorCode.has_value()) {
             w.write_integer(asn1kit::tag::integer, (*this->vendorErrorCode));
         }

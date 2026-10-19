@@ -21,6 +21,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -1072,7 +1073,7 @@ struct RevokeRequest {
                 return inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
             });
             value.serialNumber = inner.read_integer_value(asn1kit::tag::integer);
-            value.reason = ::asn1kit::modern::PKIX1Implicit2009::decode_CRLReason(inner, asn1kit::tag::enumerated);
+            value.reason = decode_enumerated(inner, std::type_identity<::asn1kit::modern::PKIX1Implicit2009::CRLReason>{}, asn1kit::tag::enumerated);
             if (inner.next_is(asn1kit::tag::generalized_time)) {
                 value.invalidityDate = inner.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
             }
@@ -1092,7 +1093,7 @@ struct RevokeRequest {
             inner.write_set_of(asn1kit::tag::set, item);
         });
         w.write_integer(asn1kit::tag::integer, this->serialNumber);
-        ::asn1kit::modern::PKIX1Implicit2009::encode_CRLReason(w, this->reason, asn1kit::tag::enumerated);
+        encode_enumerated(w, this->reason, asn1kit::tag::enumerated);
         if (this->invalidityDate.has_value()) {
             w.write_time(asn1kit::tag::generalized_time, (*this->invalidityDate), asn1kit::time_form::generalized, 3);
         }

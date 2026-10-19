@@ -21,6 +21,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -456,11 +457,11 @@ enum class ObjectDigestInfo_DigestedObjectType {
     otherObjectTypes = 2
 };
 
-inline void encode_ObjectDigestInfo_DigestedObjectType(asn1kit::writer& w, ObjectDigestInfo_DigestedObjectType value, const asn1kit::tag& t = asn1kit::tag::enumerated) {
+inline void encode_enumerated(asn1kit::writer& w, ObjectDigestInfo_DigestedObjectType value, const asn1kit::tag& t = asn1kit::tag::enumerated) {
     w.write_enumerated_decimal(t, std::to_string(static_cast<std::int32_t>(value)));
 }
 
-inline ObjectDigestInfo_DigestedObjectType decode_ObjectDigestInfo_DigestedObjectType(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::enumerated) {
+inline ObjectDigestInfo_DigestedObjectType decode_enumerated(asn1kit::reader& r, std::type_identity<ObjectDigestInfo_DigestedObjectType>, const asn1kit::tag& t = asn1kit::tag::enumerated) {
     const auto text = r.read_enumerated_decimal(t);
     const auto number = std::stoll(text);
     if (number == 0) return ObjectDigestInfo_DigestedObjectType::publicKey;
@@ -492,7 +493,7 @@ struct ObjectDigestInfo {
     static ObjectDigestInfo decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         ObjectDigestInfo value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.digestedObjectType = decode_ObjectDigestInfo_DigestedObjectType(inner, asn1kit::tag::enumerated);
+            value.digestedObjectType = decode_enumerated(inner, std::type_identity<ObjectDigestInfo_DigestedObjectType>{}, asn1kit::tag::enumerated);
             if (inner.next_is(asn1kit::tag::object_identifier)) {
                 value.otherObjectTypeID = inner.read_oid(asn1kit::tag::object_identifier);
             }
@@ -504,7 +505,7 @@ struct ObjectDigestInfo {
 
     void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
-        encode_ObjectDigestInfo_DigestedObjectType(w, this->digestedObjectType, asn1kit::tag::enumerated);
+        encode_enumerated(w, this->digestedObjectType, asn1kit::tag::enumerated);
         if (this->otherObjectTypeID.has_value()) {
             w.write_object_identifier(asn1kit::tag::object_identifier, (*this->otherObjectTypeID));
         }

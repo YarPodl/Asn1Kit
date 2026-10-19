@@ -21,6 +21,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -248,11 +249,11 @@ enum class ParamOptions {
     optional = 5
 };
 
-inline void encode_ParamOptions(asn1kit::writer& w, ParamOptions value, const asn1kit::tag& t = asn1kit::tag::enumerated) {
+inline void encode_enumerated(asn1kit::writer& w, ParamOptions value, const asn1kit::tag& t = asn1kit::tag::enumerated) {
     w.write_enumerated_decimal(t, std::to_string(static_cast<std::int32_t>(value)));
 }
 
-inline ParamOptions decode_ParamOptions(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::enumerated) {
+inline ParamOptions decode_enumerated(asn1kit::reader& r, std::type_identity<ParamOptions>, const asn1kit::tag& t = asn1kit::tag::enumerated) {
     const auto text = r.read_enumerated_decimal(t);
     const auto number = std::stoll(text);
     if (number == 0) return ParamOptions::required;

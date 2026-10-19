@@ -21,6 +21,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -150,11 +151,11 @@ enum class OCSPResponseStatus {
     unauthorized = 6
 };
 
-inline void encode_OCSPResponseStatus(asn1kit::writer& w, OCSPResponseStatus value, const asn1kit::tag& t = asn1kit::tag::enumerated) {
+inline void encode_enumerated(asn1kit::writer& w, OCSPResponseStatus value, const asn1kit::tag& t = asn1kit::tag::enumerated) {
     w.write_enumerated_decimal(t, std::to_string(static_cast<std::int32_t>(value)));
 }
 
-inline OCSPResponseStatus decode_OCSPResponseStatus(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::enumerated) {
+inline OCSPResponseStatus decode_enumerated(asn1kit::reader& r, std::type_identity<OCSPResponseStatus>, const asn1kit::tag& t = asn1kit::tag::enumerated) {
     const auto text = r.read_enumerated_decimal(t);
     const auto number = std::stoll(text);
     if (number == 0) return OCSPResponseStatus::successful;
@@ -386,7 +387,7 @@ struct OCSPResponse {
     static OCSPResponse decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
         OCSPResponse value{};
         r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.responseStatus = decode_OCSPResponseStatus(inner, asn1kit::tag::enumerated);
+            value.responseStatus = decode_enumerated(inner, std::type_identity<OCSPResponseStatus>{}, asn1kit::tag::enumerated);
             if (inner.next_is(asn1kit::tag::context(0, true))) {
                 ResponseBytes tmp_responseBytes{};
                 inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
@@ -400,7 +401,7 @@ struct OCSPResponse {
 
     void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
         auto scope = w.enter_sequence(t);
-        encode_OCSPResponseStatus(w, this->responseStatus, asn1kit::tag::enumerated);
+        encode_enumerated(w, this->responseStatus, asn1kit::tag::enumerated);
         if (this->responseBytes.has_value()) {
             {
                 auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
@@ -435,7 +436,7 @@ struct RevokedInfo {
             if (inner.next_is(asn1kit::tag::context(0, true))) {
                 ::asn1kit::modern::PKIX1Implicit2009::CRLReason tmp_revocationReason{};
                 inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
-                    tmp_revocationReason = ::asn1kit::modern::PKIX1Implicit2009::decode_CRLReason(scoped, asn1kit::tag::enumerated);
+                    tmp_revocationReason = decode_enumerated(scoped, std::type_identity<::asn1kit::modern::PKIX1Implicit2009::CRLReason>{}, asn1kit::tag::enumerated);
                 });
                 value.revocationReason = std::move(tmp_revocationReason);
             }
@@ -449,7 +450,7 @@ struct RevokedInfo {
         if (this->revocationReason.has_value()) {
             {
                 auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
-                ::asn1kit::modern::PKIX1Implicit2009::encode_CRLReason(w, (*this->revocationReason), asn1kit::tag::enumerated);
+                encode_enumerated(w, (*this->revocationReason), asn1kit::tag::enumerated);
             }
         }
     }

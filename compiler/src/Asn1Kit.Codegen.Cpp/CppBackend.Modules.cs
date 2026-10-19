@@ -1389,6 +1389,7 @@ public sealed partial class CppBackend
         builder.AppendLine("#include <cstdint>");
         builder.AppendLine("#include <optional>");
         builder.AppendLine("#include <string>");
+        builder.AppendLine("#include <type_traits>");
         builder.AppendLine("#include <utility>");
         builder.AppendLine("#include <variant>");
         builder.AppendLine("#include <vector>");
