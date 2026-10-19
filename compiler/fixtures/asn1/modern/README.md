@@ -1,6 +1,8 @@
 # Современный корпус PKIX/CMS
 
-**26** ASN.1-модуля из [RFC 5911](https://www.rfc-editor.org/rfc/rfc5911), [RFC 5912](https://www.rfc-editor.org/rfc/rfc5912), [RFC 6268](https://www.rfc-editor.org/rfc/rfc6268), [RFC 8410 §9](https://www.rfc-editor.org/rfc/rfc8410#section-9) и [RFC 9215](https://www.rfc-editor.org/rfc/rfc9215) (GOST R 34.10-2012 / RuStrongCerts). Один модуль — один `.asn`; исходные CLASS, WITH SYNTAX, object sets, параметризация, imports и constraints сохранены. Поддержка не зависит от специальных имён PKIX-типов или алгоритмов.
+**27** ASN.1-модулей из [RFC 5911](https://www.rfc-editor.org/rfc/rfc5911), [RFC 5912](https://www.rfc-editor.org/rfc/rfc5912), [RFC 6268](https://www.rfc-editor.org/rfc/rfc6268), [RFC 8410 §9](https://www.rfc-editor.org/rfc/rfc8410#section-9), [RFC 9215](https://www.rfc-editor.org/rfc/rfc9215) (GOST R 34.10-2012 / RuStrongCerts) и curated [RFC 3161](https://www.rfc-editor.org/rfc/rfc3161) TSP (`PKIXTSP-2009`). Один модуль — один `.asn`; исходные CLASS, WITH SYNTAX, object sets, параметризация, imports и constraints сохранены. Поддержка не зависит от специальных имён PKIX-типов или алгоритмов.
+
+TSP не входит в RFC 5911/5912: исходник Appendix C лежит в [sources/PKIXTSP.rfc3161.asn](sources/PKIXTSP.rfc3161.asn); корпусный файл получает [scripts/patch-pkixtsp-modern.ps1](../../../../scripts/patch-pkixtsp-modern.ps1) (IMPORTS на Modern PKIX/CMS/CMP, `DigestAlgorithmIdentifier`, `Extensions{{...}}`).
 
 Извлечение удаляет оформление страниц RFC (заголовки, номера страниц, form feed). При совпадении имени модуля приоритет имеют RFC 5912, затем 5911, 6268, 8410, 9215: общий `AlgorithmInformation-2009` хранится один раз. Из корпуса исключены CMS-2010-стек, нишевые расширения (`WLANCertExtn-2010`, `IPAddrAndASCertExtn-2010`, `BinarySigningTimeModule-2010`, `HMAC-2010`, `SCVP-2009`) и `CMS-AES-CCM-and-AES-GCM-2009`; product CMS — `CryptographicMessageSyntax-2009`. Skip задаёт [import-modern-rfc.ps1](../../../../scripts/import-modern-rfc.ps1). Иллюстративная незавершённая заготовка `ModuleNumbers` из RFC 6268 не является полным модулем и не включается. Модули ГОСТ из RFC 9215 — 1988-стиль без `IMPORTS` на `AlgorithmInformation-2009` (OID и параметры ключей; не CLASS-регистрация 5912).
 
@@ -29,8 +31,9 @@ foreach ($number in @(5911, 5912, 6268, 8410, 9215)) {
     Invoke-WebRequest -UseBasicParsing "https://www.rfc-editor.org/rfc/rfc$number.txt" -OutFile ".cache/rfc/rfc$number.txt"
 }
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/import-modern-rfc.ps1 -InputDirectory .cache/rfc
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/patch-pkixtsp-modern.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-modern.ps1
 dotnet test Asn1Kit.sln
 ```
 
-Регенерация IR/C# использует уже сохранённые `.asn` и не требует сети. Порядок входных файлов — ordinal; namespace назначается отдельно каждому модулю. JSON golden и `*.g.cs` вручную не правятся. `ModernRfcTests` читает весь корпус, сверяет артефакты и собирает C# через Roslyn. Поддержанный профиль и отложенная проверка constraints — [docs/status.md](../../../../docs/status.md).
+Регенерация IR/C# использует уже сохранённые `.asn` и не требует сети. `patch-pkixtsp-modern.ps1` обновляет только `PKIXTSP-2009.asn` из `sources/PKIXTSP.rfc3161.asn`. Порядок входных файлов — ordinal; namespace назначается отдельно каждому модулю. JSON golden и `*.g.cs` вручную не правятся. `ModernRfcTests` читает весь корпус, сверяет артефакты и собирает C# через Roslyn. Поддержанный профиль и отложенная проверка constraints — [docs/status.md](../../../../docs/status.md).

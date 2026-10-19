@@ -23,6 +23,7 @@
     "PKIXAttributeCertificate-2009.asn",
     "PKIXCMP-2009.asn",
     "PKIXCRMF-2009.asn",
+    "PKIXTSP-2009.asn",
     "RuStrongCertsSyntax.asn",
     "SMIMESymmetricKeyDistribution-2009.asn",
     "Safecurves-pkix-18.asn",
@@ -22069,6 +22070,468 @@
           "value": {
             "kind": "oid",
             "value": "1.3.6.1.5.5.7.5.2.2"
+          }
+        }
+      ]
+    },
+    {
+      "name": "PKIXTSP-2009",
+      "oid": "1.3.6.1.5.5.7.0.13",
+      "tagDefault": "implicit",
+      "imports": [
+        {
+          "module": "PKIX1Implicit-2009",
+          "types": [
+            "GeneralName"
+          ]
+        },
+        {
+          "module": "CryptographicMessageSyntax-2009",
+          "types": [
+            "ContentInfo",
+            "DigestAlgorithmIdentifier"
+          ]
+        },
+        {
+          "module": "PKIXCMP-2009",
+          "types": [
+            "PKIFreeText"
+          ]
+        }
+      ],
+      "options": {
+        "csharp": {
+          "namespace": "Asn1Kit.Modern.PKIXTSP2009"
+        }
+      },
+      "types": [
+        {
+          "name": "TimeStampReq",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "version",
+                "type": {
+                  "kind": "integer",
+                  "namedValues": [
+                    {
+                      "name": "v1",
+                      "value": 1
+                    }
+                  ]
+                },
+                "optional": false
+              },
+              {
+                "name": "messageImprint",
+                "type": {
+                  "kind": "ref",
+                  "name": "MessageImprint"
+                },
+                "optional": false
+              },
+              {
+                "name": "reqPolicy",
+                "type": {
+                  "kind": "ref",
+                  "name": "TSAPolicyId"
+                },
+                "optional": true
+              },
+              {
+                "name": "nonce",
+                "type": {
+                  "kind": "integer"
+                },
+                "optional": true
+              },
+              {
+                "name": "certReq",
+                "type": {
+                  "kind": "boolean"
+                },
+                "optional": true,
+                "default": {
+                  "kind": "boolean",
+                  "value": false
+                }
+              },
+              {
+                "name": "extensions",
+                "type": {
+                  "kind": "ref",
+                  "name": "Extensions",
+                  "module": "PKIX-CommonTypes-2009",
+                  "openTypes": [
+                    {
+                      "path": [
+                        "[]",
+                        "extnValue",
+                        "containing"
+                      ],
+                      "bindings": [],
+                      "tableExtensible": true
+                    }
+                  ],
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "MessageImprint",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "hashAlgorithm",
+                "type": {
+                  "kind": "ref",
+                  "name": "DigestAlgorithmIdentifier"
+                },
+                "optional": false
+              },
+              {
+                "name": "hashedMessage",
+                "type": {
+                  "kind": "octetString"
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "TSAPolicyId",
+          "type": {
+            "kind": "oid"
+          }
+        },
+        {
+          "name": "TimeStampResp",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "status",
+                "type": {
+                  "kind": "ref",
+                  "name": "PKIStatusInfo"
+                },
+                "optional": false
+              },
+              {
+                "name": "timeStampToken",
+                "type": {
+                  "kind": "ref",
+                  "name": "TimeStampToken"
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "PKIStatusInfo",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "status",
+                "type": {
+                  "kind": "ref",
+                  "name": "PKIStatus"
+                },
+                "optional": false
+              },
+              {
+                "name": "statusString",
+                "type": {
+                  "kind": "ref",
+                  "name": "PKIFreeText"
+                },
+                "optional": true
+              },
+              {
+                "name": "failInfo",
+                "type": {
+                  "kind": "ref",
+                  "name": "PKIFailureInfo"
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "PKIStatus",
+          "type": {
+            "kind": "integer",
+            "namedValues": [
+              {
+                "name": "granted",
+                "value": 0
+              },
+              {
+                "name": "grantedWithMods",
+                "value": 1
+              },
+              {
+                "name": "rejection",
+                "value": 2
+              },
+              {
+                "name": "waiting",
+                "value": 3
+              },
+              {
+                "name": "revocationWarning",
+                "value": 4
+              },
+              {
+                "name": "revocationNotification",
+                "value": 5
+              }
+            ]
+          }
+        },
+        {
+          "name": "PKIFailureInfo",
+          "type": {
+            "kind": "bitString",
+            "namedBits": [
+              {
+                "name": "badAlg",
+                "value": 0
+              },
+              {
+                "name": "badRequest",
+                "value": 2
+              },
+              {
+                "name": "badDataFormat",
+                "value": 5
+              },
+              {
+                "name": "timeNotAvailable",
+                "value": 14
+              },
+              {
+                "name": "unacceptedPolicy",
+                "value": 15
+              },
+              {
+                "name": "unacceptedExtension",
+                "value": 16
+              },
+              {
+                "name": "addInfoNotAvailable",
+                "value": 17
+              },
+              {
+                "name": "systemFailure",
+                "value": 25
+              }
+            ]
+          }
+        },
+        {
+          "name": "TimeStampToken",
+          "type": {
+            "kind": "ref",
+            "name": "ContentInfo"
+          }
+        },
+        {
+          "name": "TSTInfo",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "version",
+                "type": {
+                  "kind": "integer",
+                  "namedValues": [
+                    {
+                      "name": "v1",
+                      "value": 1
+                    }
+                  ]
+                },
+                "optional": false
+              },
+              {
+                "name": "policy",
+                "type": {
+                  "kind": "ref",
+                  "name": "TSAPolicyId"
+                },
+                "optional": false
+              },
+              {
+                "name": "messageImprint",
+                "type": {
+                  "kind": "ref",
+                  "name": "MessageImprint"
+                },
+                "optional": false
+              },
+              {
+                "name": "serialNumber",
+                "type": {
+                  "kind": "integer"
+                },
+                "optional": false
+              },
+              {
+                "name": "genTime",
+                "type": {
+                  "kind": "time",
+                  "timeType": "generalized"
+                },
+                "optional": false
+              },
+              {
+                "name": "accuracy",
+                "type": {
+                  "kind": "ref",
+                  "name": "Accuracy"
+                },
+                "optional": true
+              },
+              {
+                "name": "ordering",
+                "type": {
+                  "kind": "boolean"
+                },
+                "optional": true,
+                "default": {
+                  "kind": "boolean",
+                  "value": false
+                }
+              },
+              {
+                "name": "nonce",
+                "type": {
+                  "kind": "integer"
+                },
+                "optional": true
+              },
+              {
+                "name": "tsa",
+                "type": {
+                  "kind": "ref",
+                  "name": "GeneralName",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "explicit"
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "extensions",
+                "type": {
+                  "kind": "ref",
+                  "name": "Extensions",
+                  "module": "PKIX-CommonTypes-2009",
+                  "openTypes": [
+                    {
+                      "path": [
+                        "[]",
+                        "extnValue",
+                        "containing"
+                      ],
+                      "bindings": [],
+                      "tableExtensible": true
+                    }
+                  ],
+                  "tag": {
+                    "class": "context",
+                    "number": 1,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "Accuracy",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "seconds",
+                "type": {
+                  "kind": "integer"
+                },
+                "optional": true
+              },
+              {
+                "name": "millis",
+                "type": {
+                  "kind": "integer",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "implicit"
+                  },
+                  "constraint": {
+                    "value": {
+                      "min": 1,
+                      "max": 999
+                    }
+                  }
+                },
+                "optional": true
+              },
+              {
+                "name": "micros",
+                "type": {
+                  "kind": "integer",
+                  "tag": {
+                    "class": "context",
+                    "number": 1,
+                    "mode": "implicit"
+                  },
+                  "constraint": {
+                    "value": {
+                      "min": 1,
+                      "max": 999
+                    }
+                  }
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        }
+      ],
+      "values": [
+        {
+          "name": "id-ct-TSTInfo",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "1.2.840.113549.1.9.16.1.4"
           }
         }
       ]

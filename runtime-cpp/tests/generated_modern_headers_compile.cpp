@@ -22,6 +22,7 @@
 #include "PKIXCMP2009.format.hpp"
 #include "PKIXCommonTypes2009.format.hpp"
 #include "PKIXCRMF2009.format.hpp"
+#include "PKIXTSP2009.format.hpp"
 #include "PKIXX400Address2009.format.hpp"
 #include "RuStrongCertsSyntax.format.hpp"
 #include "SecureMimeMessageV3dot12009.format.hpp"

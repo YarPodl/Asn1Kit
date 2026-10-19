@@ -140,6 +140,12 @@
 
 **Последствие.** Фикстура [cms-2004.asn](../compiler/fixtures/asn1/cms-2004.asn): IMPORTS только из PKIX1Explicit88; в `CertificateChoices` оставлены `certificate` / `extendedCertificate` / `other` (ветки `[1]`/`[2]` attr-cert отложены). Golden IR [cms-2004.json](../compiler/fixtures/ir/cms-2004.json) — Explicit + Implicit + CMS; C# CMS в `Asn1Kit.Legacy.Cms`, PKIX в `Asn1Kit.Legacy.Pkix` (сборка `Asn1Kit.Legacy`). Open-type `ContentInfo.content` — [cms-bindings.json](../compiler/fixtures/opentype/cms-bindings.json). IrBuilder резолвит типы/значения **по модулю** (одно имя в разных модулях допустимо).
 
+## TSP — RFC 3161 Appendix C + ASN-патч в Modern
+
+**Причина.** В RFC 5911/5912 нет IOC-модуля TSP; полный rewrite Appendix C «в стиле 5912» дублирует wire-контракт и размывает происхождение. As-published IMPORTS ссылаются на старые module OID и `CryptographicMessageSyntax {cms(1)}`, которых нет в корпусе Modern.
+
+**Последствие.** Источник — [sources/PKIXTSP.rfc3161.asn](../compiler/fixtures/asn1/modern/sources/PKIXTSP.rfc3161.asn); курированный [PKIXTSP-2009.asn](../compiler/fixtures/asn1/modern/PKIXTSP-2009.asn) собирает [patch-pkixtsp-modern.ps1](../scripts/patch-pkixtsp-modern.ps1): IMPORTS на `PKIX-CommonTypes-2009` / `PKIX1Implicit-2009` / `CryptographicMessageSyntax-2009` / `PKIXCMP-2009`, `AlgorithmIdentifier` → `DigestAlgorithmIdentifier`, `Extensions` → `Extensions{{...}}`, починка оборванных RFC-комментариев. Module OID `id-mod-tsp(13)` и `IMPLICIT TAGS` сохранены. Namespace — `Asn1Kit.Modern.PKIXTSP2009`. `eContent` с `id-ct-TSTInfo` остаётся opaque в CMS `ContentSet` (как у ESS `ct-receipt`); typed decode — `TSTInfo.Decode` по октетам.
+
 ## DVCS — RFC 3029 и исходный граф ASN.1:1988 без отдельного golden IR
 
 **Причина.** RFC 3029 Appendix E соответствует поддерживаемому профилю, но зависит от CMP, CRMF, OCSP, ESS, S/MIME и CMS. Опубликованный модуль имеет verified errata на импорты `DigestAlgorithmIdentifier` и `GeneralNames`, использует разные написания `CertID` / `ESSCertID` и ссылается на старые X.509/CMS module identifiers. RFC 2510, в свою очередь, оставляет модуль для `CertificationRequest` на стороне реализации.
