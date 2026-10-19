@@ -15,7 +15,7 @@ The repository is organized into the following directories:
 ## Components
 
 1. **Compiler** — converts ASN.1 text into JSON IR (`irVersion` plus the [schemas/asn1kit-ir-v1.json](schemas/asn1kit-ir-v1.json) schema). The resulting file can be edited to configure `options.csharp.namespace`, type names, and `generate: false`.
-2. **Generator** — converts IR into source code. C# and C++ (`--lang csharp` / `--lang cpp`) are supported; C++ MVP covers constructed types and primitives (no open-type/`any` yet).
+2. **Generator** — converts IR into source code. C# and C++ (`--lang csharp` / `--lang cpp`) are supported; both cover constructed types, primitives, `any`, and generated open-type bindings.
 3. **Runtime** — provides BER and DER primitives for the target language. Generated code calls this library.
 
 ## Get started

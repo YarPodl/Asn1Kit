@@ -104,6 +104,14 @@
 
 **Последствие.** Encode всегда канонический DER. Decode по умолчанию принимает зафиксированные soft-формы; строгий режим — через `Asn1ReaderOptions` (`Default` / `Strict` / точечные профили), не через ветвление только по `Asn1Encoding`. Полный инвентарь soft-accept и флагов — [runtime-api.md](../runtime-csharp/docs/runtime-api.md) (срез — [status.md](status.md) § Runtime); новый soft-accept без записи туда — регрессия процесса.
 
+## Constraints схемы — описательные, без runtime enforcement
+
+**Причина.** Реальные PKIX/CMS-объекты встречаются с нарушениями декларативных ограничений ASN.1-модуля. Автоматический отказ по `SIZE`, диапазону значения, `WITH COMPONENTS`, presence или закрытости object set сделал бы такие структурно корректные BER-объекты нечитаемыми. Тот же tolerant-контракт нужен при построении значения: generated API не должен скрыто превращаться в валидатор прикладного профиля.
+
+**Решение.** Schema constraints сохраняются в IR как описательные метаданные, но generated decode и encode их не исполняют. Это относится к `constraint.size`, `constraint.value`, `constraint.unsupported`, `WITH COMPONENTS`, `PRESENT` / `ABSENT` / constraint-`OPTIONAL`, `FROM`, `PATTERN` и признаку закрытого object set. Неизвестный ключ любой open-type таблицы остаётся raw; известный ключ с payload, который нельзя декодировать объявленным типом, по-прежнему вызывает ошибку. Будущая эмиссия constraints в комментарии generated C# и C++ должна явно отмечать, что они не проверяются.
+
+**Граница решения.** Wire-корректность и ресурсная безопасность не являются schema constraints: runtime продолжает проверять теги, длины, границы входа, EOC, обязательное полное потребление typed value, корректность Unicode/BIT STRING/OID/календаря, числовой overflow и hostile-input limits. Запись остаётся каноническим DER. При чтении намеренно не планируется отдельный reject для constructed OCTET/BIT/string, порядка `SET OF` и явно записанного `DEFAULT`: корректный поддержанный BER принимается, а повторная запись канонизирует значение.
+
 ## Decode — `options.lazy` и `Asn1Lazy<T>`
 
 **Причина.** Глубокие PKIX/CMS деревья (например `Certificate` → `TBSCertificate`) часто нужны лишь частично; полный eager-decode платит за неиспользуемые ветки.

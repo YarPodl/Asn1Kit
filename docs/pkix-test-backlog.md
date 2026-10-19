@@ -11,6 +11,8 @@
 - `expected.json` — из независимых дампов тех же байтов (`certutil`, `X509Certificate2`, `System.Formats.Asn1`);
 - round-trip: `Decode` → `Encode` → byte-identical к исходному DER;
 - **запрещено** брать expected fields из `Asn1Kit.*.Decode` или эталонные байты из `Asn1Kit.*.Encode` при отладке.
+- schema constraints (`SIZE`, диапазоны, `WITH COMPONENTS`, presence, закрытость object sets) не являются reject-критериями: тесты проверяют поля и безопасный decode, а не прикладную валидацию;
+- для поддержанной неканонической BER-формы ожидается успешный decode и канонический последующий DER encode; byte-identical round-trip обязателен только для исходного канонического DER.
 
 Статусы: `todo` | `done` | `deferred` (нет внешнего вектора / нет модуля).
 

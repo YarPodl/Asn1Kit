@@ -40,8 +40,8 @@ Evidence записывается стабильными именами test met
 | G004 | `octet.nested-segments` | done | C#, C++ runtime | — |
 | G005 | `bit.segment-padding` | done | C#, C++ runtime | — |
 | G006 | `quality.fuzz` | open | — | Весь исходный критерий. |
-| G007 | `der.constructed-strings` | open | — | Требуется решение о политике DER/Strict. |
-| G008 | `setof.decode-sort` | open | — | Требуется решение о политике проверки порядка. |
+| G007 | `der.constructed-strings` | deferred | soft-read policy | Намеренный soft-accept; отдельный strict-reject не планируется — [решение](decisions.md#constraints-схемы--описательные-без-runtime-enforcement). |
+| G008 | `setof.decode-sort` | deferred | soft-read policy | Порядок при decode намеренно не валидируется; encode сортирует DER — [решение](decisions.md#constraints-схемы--описательные-без-runtime-enforcement). |
 | G009 | `integer.raw-preserve` | open | — | Весь исходный критерий. |
 | G010 | `string.unicode-invalid` | done | C#, C++ runtime | — |
 | G011 | `time.invalid-calendar` | done | C#, C++ runtime | — |
@@ -59,13 +59,13 @@ Evidence записывается стабильными именами test met
 | G023 | `cms.multiple-signers` | open | — | Весь исходный критерий. |
 | G024 | `cms.enveloped` | open | — | Весь исходный критерий. |
 | G025 | `dvcs.response` | open | — | Весь исходный критерий. |
-| G026 | `default.explicit-reject` | open | — | Требуется решение о строгой политике DEFAULT. |
+| G026 | `default.explicit-reject` | deferred | soft-read policy | Явно записанный DEFAULT принимается и нормализуется при DER encode; strict-reject не планируется — [решение](decisions.md#constraints-схемы--описательные-без-runtime-enforcement). |
 | G027 | `api.zero-copy-callback` | open | — | Весь исходный критерий. |
 | G028 | `api.capacity` | open | — | Весь исходный критерий. |
 | G029 | `quality.property` | open | — | Весь исходный критерий. |
 | G030 | `quality.second-oracle` | open | — | Весь исходный критерий. |
 | G031 | `api.redecode-error` | open | — | Весь исходный критерий. |
-| G032 | `constraint.enforcement` | open | — | Требует расширения поддержанного профиля constraints. |
+| G032 | `constraint.enforcement` | deferred | descriptive constraints | Schema constraints намеренно не исполняются при decode/encode; планируется только их публикация в комментариях generated-кода — [решение](decisions.md#constraints-схемы--описательные-без-runtime-enforcement). |
 
 ## Evidence закрытых и частично закрытых gaps
 

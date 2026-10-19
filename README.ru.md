@@ -15,7 +15,7 @@
 ## Компоненты
 
 1. **Компилятор** — текст ASN.1 → JSON IR (`irVersion` + схема [schemas/asn1kit-ir-v1.json](schemas/asn1kit-ir-v1.json)). Файл можно править: `options.csharp.namespace`, имена типов, `generate: false`.
-2. **Генератор** — IR → исходный код. C# и C++ (`--lang csharp` / `--lang cpp`); C++ MVP без open-type/`any`.
+2. **Генератор** — IR → исходный код. C# и C++ (`--lang csharp` / `--lang cpp`) поддерживают составные и примитивные типы, `any` и сгенерированные open-type bindings.
 3. **Runtime** — примитивы BER и DER на языке цели. Сгенерированный код вызывает эту библиотеку.
 
 ## Начало работы

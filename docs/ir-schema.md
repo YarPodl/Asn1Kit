@@ -55,7 +55,7 @@ CLASS, WITH SYNTAX, information objects/sets и формальные парам�
 | Поле | Где | Контракт |
 | --- | --- | --- |
 | `selector: { levels, path[] }` | `any` | `levels = 0` — владелец, `1` — его родитель и т.д.; считаются SEQUENCE/SET/CHOICE, OF прозрачен. `path` — непустой путь имён компонентов к OID/INTEGER. |
-| `tableExtensible: boolean` | `any`, `ref.openTypes[]` | Наличие поля включает modern open-type policy (Binding API; unknown→raw; known mismatch→reject). Значение сохраняет ASN.1 `...` набора; закрытость пока не исполняется. |
+| `tableExtensible: boolean` | `any`, `ref.openTypes[]` | Наличие поля включает modern open-type policy (Binding API; unknown→raw; known mismatch→reject). Значение описательно сохраняет ASN.1 `...` набора: неизвестный ключ остаётся raw и для закрытой таблицы, автоматического reject по закрытости нет. |
 | `table: string` | `any`, `ref.openTypes[]` | Имя именованного object set, породившего bindings. Для codegen — человекочитаемый stem каталога; на идентичность таблицы не влияет. |
 | `containing: type` | `octetString`, `bitString` | Содержимое закодировано внутри contents внешнего string-типа; может быть `any` с selector/bindings. BIT STRING с типизированным содержимым выровнен по октетам. |
 | `extensionAddition: true` | компонент | Компонент между первой и второй границами расширения; компоненты trailing root не получают эту метку. |
@@ -89,6 +89,8 @@ CLASS, WITH SYNTAX, information objects/sets и формальные парам�
 - `size` / `value`: `{ min, max? }` — отсутствие `max` означает `MAX`.
 - Ссылки на value assignments (`ub-name`) разрешаются компилятором в числа.
 - Немоделируемые формы (например `FROM`) сохраняются в `unsupported`.
+- Все schema constraints в IR описательны: generated decode и encode не обязаны проверять `size`, `value` или `unsupported`. Wire-корректность и защитные лимиты runtime этим правилом не отменяются.
+- Планируемая эмиссия constraints в комментарии generated C# и C++ не меняет IR v1, публичные типы или wire-поведение; до её реализации источником метаданных остаётся IR.
 
 ## Компонент SEQUENCE / SET / CHOICE
 

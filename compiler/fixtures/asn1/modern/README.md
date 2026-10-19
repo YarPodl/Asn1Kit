@@ -36,4 +36,4 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-modern.ps
 dotnet test Asn1Kit.sln
 ```
 
-Регенерация IR/C# использует уже сохранённые `.asn` и не требует сети. `patch-pkixtsp-modern.ps1` обновляет только `PKIXTSP-2009.asn` из `sources/PKIXTSP.rfc3161.asn`. Порядок входных файлов — ordinal; namespace назначается отдельно каждому модулю. JSON golden и `*.g.cs` вручную не правятся. `ModernRfcTests` читает весь корпус, сверяет артефакты и собирает C# через Roslyn. Поддержанный профиль и отложенная проверка constraints — [docs/status.md](../../../../docs/status.md).
+Регенерация IR/C# использует уже сохранённые `.asn` и не требует сети. `patch-pkixtsp-modern.ps1` обновляет только `PKIXTSP-2009.asn` из `sources/PKIXTSP.rfc3161.asn`. Порядок входных файлов — ordinal; namespace назначается отдельно каждому модулю. JSON golden и `*.g.cs` вручную не правятся. `ModernRfcTests` читает весь корпус, сверяет артефакты и собирает C# через Roslyn. Поддержанный профиль и описательная политика constraints — [docs/status.md](../../../../docs/status.md).

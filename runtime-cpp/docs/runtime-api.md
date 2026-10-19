@@ -88,6 +88,12 @@ UTCTime/GeneralizedTime проверяют Gregorian calendar; при запис
 
 Encode всегда канонический DER (definite length).
 
+## Constraints схемы и обязательная wire-валидация
+
+`constraint.size`, `constraint.value`, `constraint.unsupported`, `WITH COMPONENTS`, presence и закрытость object set — описательные свойства ASN.1-схемы. Generated decode и encode их не проверяют: значения сторонних реализаций остаются читаемыми, а неизвестный ключ open type сохраняется как `asn1kit::any`. Известный ключ с payload, который не декодируется объявленным типом, остаётся ошибкой. Эмиссия constraint-метаданных в комментарии generated-кода находится в backlog.
+
+Эта политика не ослабляет wire-валидацию. Runtime по-прежнему проверяет теги и длины поддержанного BER-профиля, границы входа, EOC, полное потребление typed value, Unicode, BIT STRING padding согласно активным reader options, OID и числовой overflow, календарь и hostile-input limits. Constructed strings, порядок `SET OF` и явно записанный `DEFAULT` отдельно не отклоняются: чтение tolerant, последующая запись канонизирует значение в DER.
+
 ## Лимиты hostile BER
 
 `reader_options::max_recursion_depth` ограничивает рекурсивный поиск EOC во вложенных indefinite-length TLV и вложенность constructed OCTET STRING / BIT STRING / строк при materialize. Default `reader_options::default_max_recursion_depth` равен 64; значение должно быть положительным. Ровно 64 уровня разрешены, следующий уровень отклоняется с `asn1kit::exception`.

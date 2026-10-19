@@ -118,4 +118,10 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 
 `Asn1Reader` / nested readers наследуют `Options` родителя.
 
+## Constraints схемы и обязательная wire-валидация
+
+`constraint.size`, `constraint.value`, `constraint.unsupported`, `WITH COMPONENTS`, presence и закрытость object set — описательные свойства ASN.1-схемы. Generated decode и encode их не проверяют: значения сторонних реализаций остаются читаемыми, а неизвестный ключ open type сохраняется как `Asn1Any`. Известный ключ с payload, который не декодируется объявленным типом, остаётся ошибкой. Эмиссия constraint-метаданных в комментарии generated-кода находится в backlog.
+
+Эта политика не ослабляет wire-валидацию. Runtime по-прежнему проверяет теги и длины поддержанного BER-профиля, границы входа, EOC, полное потребление typed value, Unicode scalar/BMP surrogate, BIT STRING padding согласно активным reader options, OID и числовой overflow, календарь, recursion/materialization limits. Constructed strings, порядок `SET OF` и явно записанный `DEFAULT` отдельно не отклоняются: чтение tolerant, последующая запись канонизирует значение в DER.
+
 Минимум покрытия API по тестам — [playbooks/runtime.md](playbooks/runtime.md) § Чеклист.
