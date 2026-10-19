@@ -56,6 +56,7 @@ struct AttributeSignedAttributesSetOpenView;
 template <typename Target>
 struct AttributeUnsignedAttributesOpenView;
 struct Attribute {
+    // ASN.1 constraint unsupported:  table({ AttrList }). Not enforced by runtime.
     asn1kit::oid attrType{};
     std::vector<asn1kit::any> attrValues{};
 
@@ -153,7 +154,9 @@ struct contentSet_content_open_type_entries;
 template <typename Target>
 struct ContentInfoContentSetOpenView;
 struct ContentInfo {
+    // ASN.1 constraint unsupported:  table({ ContentSet }). Not enforced by runtime.
     asn1kit::oid contentType{};
+    // ASN.1 object set ContentSet (extensible). Membership not enforced by runtime.
     asn1kit::any content{};
 
     [[nodiscard]] ContentInfoContentSetOpenView<ContentInfo> content_set() &;
@@ -221,7 +224,9 @@ struct contentSet_eContent_open_type_entries;
 template <typename Target>
 struct EncapsulatedContentInfoContentSetOpenView;
 struct EncapsulatedContentInfo {
+    // ASN.1 constraint unsupported:  table({ ContentSet }). Not enforced by runtime.
     asn1kit::oid eContentType{};
+    // ASN.1 object set ContentSet (extensible). Membership not enforced by runtime.
     std::optional<asn1kit::bytes> eContent{};
 
     [[nodiscard]] EncapsulatedContentInfoContentSetOpenView<EncapsulatedContentInfo> content_set() &;
@@ -300,8 +305,10 @@ namespace CryptographicMessageSyntax2009 {
 
 struct DigestedData {
     std::int32_t version{};
+    // ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set DigestAlgorithmSet (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier digestAlgorithm{};
     EncapsulatedContentInfo encapContentInfo{};
+    // ASN.1 alias Digest ::= OCTET STRING.
     asn1kit::bytes digest{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -339,7 +346,9 @@ struct DigestedData {
 template <typename Target>
 struct EncryptedContentInfoContentEncryptionAlgorithmSetOpenView;
 struct EncryptedContentInfo {
+    // ASN.1 constraint unsupported:  table({ ContentSet }). Not enforced by runtime.
     asn1kit::oid contentType{};
+    // ASN.1 alias ContentEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set ContentEncryptionAlgorithmSet (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier contentEncryptionAlgorithm{};
     std::optional<asn1kit::bytes> encryptedContent{};
 
@@ -383,6 +392,7 @@ struct EncryptedContentInfo {
 struct EncryptedData {
     std::int32_t version{};
     EncryptedContentInfo encryptedContentInfo{};
+    // ASN.1 alias Attributes ::= SET OF Attribute. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set UnprotectedAttributes (extensible). Membership not enforced by runtime.
     std::optional<std::vector<Attribute>> unprotectedAttrs{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -434,6 +444,7 @@ namespace CryptographicMessageSyntax2009 {
 struct ExtendedCertificateInfo {
     std::int32_t version{};
     ::asn1kit::modern::PKIX1Explicit2009::Certificate certificate{};
+    // ASN.1 alias UnauthAttributes ::= SET OF Attribute. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::vector<Attribute> attributes{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -460,7 +471,9 @@ struct ExtendedCertificateInfo {
 
 struct ExtendedCertificate {
     ExtendedCertificateInfo extendedCertificateInfo{};
+    // ASN.1 alias SignatureAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set SignatureAlgorithmSet (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signatureAlgorithm{};
+    // ASN.1 alias Signature ::= BIT STRING.
     asn1kit::bit_string signature{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -567,7 +580,9 @@ namespace modern {
 namespace CryptographicMessageSyntax2009 {
 
 struct IssuerAndSerialNumber {
+    // ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.
     asn1kit::value<std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>> issuer{};
+    // ASN.1 alias CertificateSerialNumber ::= INTEGER.
     asn1kit::integer serialNumber{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -603,6 +618,7 @@ struct IssuerAndSerialNumber {
 template <typename Target>
 struct OriginatorPublicKeyOriginatorKeySetOpenView;
 struct OriginatorPublicKey {
+    // ASN.1 object set OriginatorKeySet (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithm{};
     asn1kit::bit_string publicKey{};
 
@@ -654,6 +670,7 @@ struct OriginatorIdentifierOrKey {
         return result;
     }
 
+    // ASN.1 alias SubjectKeyIdentifier ::= OCTET STRING.
     static OriginatorIdentifierOrKey from_subjectKeyIdentifier(asn1kit::bytes v) {
         OriginatorIdentifierOrKey result{};
         result.kind = OriginatorIdentifierOrKey_kind::subjectKeyIdentifier;
@@ -727,7 +744,9 @@ struct OriginatorIdentifierOrKey {
 };
 
 struct OtherCertificateFormat {
+    // ASN.1 constraint unsupported:  table({ SupportedCertFormats }). Not enforced by runtime.
     asn1kit::oid otherCertFormat{};
+    // ASN.1 object set SupportedCertFormats (extensible). Membership not enforced by runtime.
     asn1kit::any otherCert{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -751,7 +770,9 @@ struct OtherCertificateFormat {
 };
 
 struct OtherKeyAttribute {
+    // ASN.1 constraint unsupported:  table({ SupportedKeyAttributes }). Not enforced by runtime.
     asn1kit::oid keyAttrId{};
+    // ASN.1 object set SupportedKeyAttributes (extensible). Membership not enforced by runtime.
     asn1kit::any keyAttr{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -814,7 +835,9 @@ struct KEKRecipientInfoKeyEncryptionAlgorithmSetOpenView;
 struct KEKRecipientInfo {
     std::int32_t version{};
     KEKIdentifier kekid{};
+    // ASN.1 alias KeyEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set KeyEncryptionAlgorithmSet (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier keyEncryptionAlgorithm{};
+    // ASN.1 alias EncryptedKey ::= OCTET STRING.
     asn1kit::bytes encryptedKey{};
 
     [[nodiscard]] KEKRecipientInfoKeyEncryptionAlgorithmSetOpenView<KEKRecipientInfo> key_encryption_algorithm_set() &;
@@ -853,7 +876,9 @@ struct KEKRecipientInfo {
 };
 
 struct OtherRecipientInfo {
+    // ASN.1 constraint unsupported:  table({ SupportedOtherRecipInfo }). Not enforced by runtime.
     asn1kit::oid oriType{};
+    // ASN.1 object set SupportedOtherRecipInfo (extensible). Membership not enforced by runtime.
     asn1kit::any oriValue{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -877,7 +902,9 @@ struct OtherRecipientInfo {
 };
 
 struct OtherRevocationInfoFormat {
+    // ASN.1 constraint unsupported:  table({ SupportedOtherRevokInfo }). Not enforced by runtime.
     asn1kit::oid otherRevInfoFormat{};
+    // ASN.1 object set SupportedOtherRevokInfo (extensible). Membership not enforced by runtime.
     asn1kit::any otherRevInfo{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -906,8 +933,11 @@ template <typename Target>
 struct PasswordRecipientInfoLocalOpenView;
 struct PasswordRecipientInfo {
     std::int32_t version{};
+    // ASN.1 alias KeyDerivationAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set (extensible). Membership not enforced by runtime.
     std::optional<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> keyDerivationAlgorithm{};
+    // ASN.1 alias KeyEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set KeyEncryptionAlgorithmSet (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier keyEncryptionAlgorithm{};
+    // ASN.1 alias EncryptedKey ::= OCTET STRING.
     asn1kit::bytes encryptedKey{};
 
     [[nodiscard]] PasswordRecipientInfoKeyEncryptionAlgorithmSetOpenView<PasswordRecipientInfo> key_encryption_algorithm_set() &;
@@ -979,6 +1009,7 @@ struct RecipientIdentifier {
         return result;
     }
 
+    // ASN.1 alias SubjectKeyIdentifier ::= OCTET STRING.
     static RecipientIdentifier from_subjectKeyIdentifier(asn1kit::bytes v) {
         RecipientIdentifier result{};
         result.kind = RecipientIdentifier_kind::subjectKeyIdentifier;
@@ -1050,7 +1081,9 @@ struct KeyTransRecipientInfoKeyTransportAlgorithmSetOpenView;
 struct KeyTransRecipientInfo {
     std::int32_t version{};
     RecipientIdentifier rid{};
+    // ASN.1 object set KeyTransportAlgorithmSet (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier keyEncryptionAlgorithm{};
+    // ASN.1 alias EncryptedKey ::= OCTET STRING.
     asn1kit::bytes encryptedKey{};
 
     [[nodiscard]] KeyTransRecipientInfoKeyTransportAlgorithmSetOpenView<KeyTransRecipientInfo> key_transport_algorithm_set() &;
@@ -1089,6 +1122,7 @@ struct KeyTransRecipientInfo {
 };
 
 struct RecipientKeyIdentifier {
+    // ASN.1 alias SubjectKeyIdentifier ::= OCTET STRING.
     asn1kit::bytes subjectKeyIdentifier{};
     std::optional<asn1kit::utc_date_time> date{};
     std::optional<OtherKeyAttribute> other{};
@@ -1196,6 +1230,7 @@ struct KeyAgreeRecipientIdentifier {
 
 struct RecipientEncryptedKey {
     KeyAgreeRecipientIdentifier rid{};
+    // ASN.1 alias EncryptedKey ::= OCTET STRING.
     asn1kit::bytes encryptedKey{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -1223,8 +1258,11 @@ struct KeyAgreeRecipientInfoKeyAgreementAlgorithmSetOpenView;
 struct KeyAgreeRecipientInfo {
     std::int32_t version{};
     OriginatorIdentifierOrKey originator{};
+    // ASN.1 alias UserKeyingMaterial ::= OCTET STRING.
     std::optional<asn1kit::bytes> ukm{};
+    // ASN.1 object set KeyAgreementAlgorithmSet (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier keyEncryptionAlgorithm{};
+    // ASN.1 alias RecipientEncryptedKeys ::= SEQUENCE OF RecipientEncryptedKey.
     std::vector<RecipientEncryptedKey> recipientEncryptedKeys{};
 
     [[nodiscard]] KeyAgreeRecipientInfoKeyAgreementAlgorithmSetOpenView<KeyAgreeRecipientInfo> key_agreement_algorithm_set() &;
@@ -1522,6 +1560,7 @@ struct SignerIdentifier {
         return result;
     }
 
+    // ASN.1 alias SubjectKeyIdentifier ::= OCTET STRING.
     static SignerIdentifier from_subjectKeyIdentifier(asn1kit::bytes v) {
         SignerIdentifier result{};
         result.kind = SignerIdentifier_kind::subjectKeyIdentifier;
@@ -1595,10 +1634,15 @@ struct SignerInfoUnsignedAttributesOpenView;
 struct SignerInfo {
     std::int32_t version{};
     SignerIdentifier sid{};
+    // ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set DigestAlgorithmSet (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier digestAlgorithm{};
+    // ASN.1 alias SignedAttributes ::= Attributes. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set SignedAttributesSet (extensible). Membership not enforced by runtime.
     std::optional<asn1kit::value<std::vector<Attribute>>> signedAttrs{};
+    // ASN.1 alias SignatureAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set SignatureAlgorithmSet (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signatureAlgorithm{};
+    // ASN.1 alias SignatureValue ::= OCTET STRING.
     asn1kit::bytes signature{};
+    // ASN.1 alias Attributes ::= SET OF Attribute. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set UnsignedAttributes (extensible). Membership not enforced by runtime.
     std::optional<std::vector<Attribute>> unsignedAttrs{};
 
     [[nodiscard]] SignerInfoSignedAttributesSetOpenView<SignerInfo> signed_attributes_set() &;
@@ -1786,6 +1830,7 @@ struct CertificateChoices {
         return result;
     }
 
+    // ASN.1 alias AttributeCertificateV2 ::= AttributeCertificate.
     static CertificateChoices from_v2AttrCert(::asn1kit::modern::PKIXAttributeCertificate2009::AttributeCertificate v) {
         CertificateChoices result{};
         result.kind = CertificateChoices_kind::v2AttrCert;
@@ -1890,7 +1935,9 @@ struct CertificateChoices {
 };
 
 struct OriginatorInfo {
+    // ASN.1 alias CertificateSet ::= SET OF CertificateChoices.
     std::optional<std::vector<CertificateChoices>> certs{};
+    // ASN.1 alias RevocationInfoChoices ::= SET OF RevocationInfoChoice.
     std::optional<std::vector<RevocationInfoChoice>> crls{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -1928,12 +1975,18 @@ struct AuthenticatedDataMessageAuthenticationCodeAlgorithmSetOpenView;
 struct AuthenticatedData {
     std::int32_t version{};
     std::optional<OriginatorInfo> originatorInfo{};
+    // ASN.1 alias RecipientInfos ::= SET OF RecipientInfo. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::vector<RecipientInfo> recipientInfos{};
+    // ASN.1 alias MessageAuthenticationCodeAlgorithm ::= AlgorithmIdentifier. ASN.1 object set MessageAuthenticationCodeAlgorithmSet (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier macAlgorithm{};
+    // ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set DigestAlgorithmSet (extensible). Membership not enforced by runtime.
     std::optional<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> digestAlgorithm{};
     EncapsulatedContentInfo encapContentInfo{};
+    // ASN.1 alias AuthAttributes ::= SET OF Attribute. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<Attribute>> authAttrs{};
+    // ASN.1 alias MessageAuthenticationCode ::= OCTET STRING.
     asn1kit::bytes mac{};
+    // ASN.1 alias UnauthAttributes ::= SET OF Attribute. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<Attribute>> unauthAttrs{};
 
     [[nodiscard]] AuthenticatedDataAuthAttributeSetOpenView<AuthenticatedData> auth_attribute_set() &;
@@ -2012,8 +2065,10 @@ struct AuthenticatedData {
 struct EnvelopedData {
     std::int32_t version{};
     std::optional<OriginatorInfo> originatorInfo{};
+    // ASN.1 alias RecipientInfos ::= SET OF RecipientInfo. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::vector<RecipientInfo> recipientInfos{};
     EncryptedContentInfo encryptedContentInfo{};
+    // ASN.1 alias Attributes ::= SET OF Attribute. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set UnprotectedAttributes (extensible). Membership not enforced by runtime.
     std::optional<std::vector<Attribute>> unprotectedAttrs{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -2064,8 +2119,11 @@ struct SignedData {
     std::int32_t version{};
     std::vector<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> digestAlgorithms{};
     EncapsulatedContentInfo encapContentInfo{};
+    // ASN.1 alias CertificateSet ::= SET OF CertificateChoices.
     std::optional<std::vector<CertificateChoices>> certificates{};
+    // ASN.1 alias RevocationInfoChoices ::= SET OF RevocationInfoChoice.
     std::optional<std::vector<RevocationInfoChoice>> crls{};
+    // ASN.1 alias SignerInfos ::= SET OF SignerInfo.
     std::vector<SignerInfo> signerInfos{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {

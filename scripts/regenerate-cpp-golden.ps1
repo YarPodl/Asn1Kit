@@ -39,4 +39,13 @@ dotnet run --project compiler/src/Asn1Kit.Cli -- generate `
   -o $defOut
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-Write-Host "Updated $out, $openOut, $extOut, $defOut"
+$constraintsOut = "runtime-cpp/generated/schema-constraints"
+New-Item -ItemType Directory -Force -Path $constraintsOut | Out-Null
+Get-ChildItem -LiteralPath $constraintsOut -Filter '*.hpp' -ErrorAction SilentlyContinue | Remove-Item -Force
+dotnet run --project compiler/src/Asn1Kit.Cli -- generate `
+  -i compiler/fixtures/ir/schema-constraints.json `
+  --lang cpp `
+  -o $constraintsOut
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+Write-Host "Updated $out, $openOut, $extOut, $defOut, $constraintsOut"

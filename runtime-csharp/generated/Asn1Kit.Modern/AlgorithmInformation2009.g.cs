@@ -26,6 +26,7 @@ public enum ParamOptions
 
 public sealed class AlgorithmIdentifier
 {
+    /// <summary>ASN.1 constraint unsupported:  table({ AlgorithmSet }). Not enforced by runtime.</summary>
     public Asn1Oid Algorithm { get; set; }
     public Asn1Any? Parameters { get; set; }
 
@@ -65,6 +66,7 @@ public sealed class AlgorithmIdentifier
 
 public sealed class SMIMECapability
 {
+    /// <summary>ASN.1 constraint unsupported:  table({ CapabilitySet }). Not enforced by runtime.</summary>
     public Asn1Oid CapabilityID { get; set; }
     public Asn1Any? Parameters { get; set; }
 

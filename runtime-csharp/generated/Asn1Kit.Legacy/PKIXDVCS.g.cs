@@ -76,7 +76,7 @@ public static class PKIXDVCSOids
 
 public sealed class DigestInfo
 {
-    /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier DigestAlgorithm { get; set; }
     /// <summary>ASN.1 alias Digest ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> Digest { get; set; }
@@ -119,6 +119,7 @@ public sealed class DVCSTime
 {
     public DVCSTimeKind Kind { get; private set; }
     public DateTimeOffset? GenTime { get; private set; }
+    /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Cms.ContentInfo? TimeStampToken { get; private set; }
 
     public static DVCSTime FromGenTime(DateTimeOffset genTime) => new DVCSTime
@@ -179,6 +180,7 @@ public sealed class DVCSTime
 public sealed class TargetEtcChain
 {
     public CertEtcToken Target { get; set; }
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public CertEtcToken[]? Chain { get; set; }
     public PathProcInput? PathProcInput { get; set; }
 
@@ -229,6 +231,7 @@ public sealed class TargetEtcChain
 
 public sealed class PathProcInput
 {
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.PolicyInformation[] AcceptablePolicySet { get; set; } = Array.Empty<Asn1Kit.Legacy.Pkix.PolicyInformation>();
     public bool InhibitPolicyMapping { get; set; } = false;
     public bool ExplicitPolicyReqd { get; set; } = false;
@@ -298,6 +301,7 @@ public sealed class CertEtcToken
     public Asn1Kit.Legacy.Pkix.Certificate? Certificate { get; private set; }
     public Asn1Kit.Legacy.Ess.ESSCertID? Esscertid { get; private set; }
     public Asn1Kit.Legacy.Cmp.PKIStatusInfo? Pkistatus { get; private set; }
+    /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Cms.ContentInfo? Assertion { get; private set; }
     public Asn1Kit.Legacy.Pkix.CertificateList? Crl { get; private set; }
     public Asn1Kit.Legacy.Ocsp.CertStatus? Ocspcertstatus { get; private set; }
@@ -492,14 +496,14 @@ public sealed class DVCSRequestInformation
     /// <summary>ASN.1 alias Nonce ::= INTEGER.</summary>
     public Asn1Integer? Nonce { get; set; }
     public DVCSTime? RequestTime { get; set; }
-    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName.</summary>
+    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.GeneralName[]? Requester { get; set; }
     public Asn1Kit.Legacy.Pkix.PolicyInformation? RequestPolicy { get; set; }
-    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName.</summary>
+    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.GeneralName[]? Dvcs { get; set; }
-    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName.</summary>
+    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.GeneralName[]? DataLocations { get; set; }
-    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.Extension[]? Extensions { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -670,6 +674,7 @@ public sealed class Data
     public DataKind Kind { get; private set; }
     public ReadOnlyMemory<byte>? Message { get; private set; }
     public DigestInfo? MessageImprint { get; private set; }
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public TargetEtcChain[]? Certs { get; private set; }
 
     public static Data FromMessage(ReadOnlyMemory<byte> message) => new Data
@@ -823,8 +828,9 @@ public sealed class DVCSCertInfo
     public Asn1Kit.Legacy.Pkix.PolicyInformation? Policy { get; set; }
     /// <summary>ASN.1 alias SignerInfos ::= SET OF SignerInfo.</summary>
     public Asn1Kit.Legacy.Cms.SignerInfo[]? ReqSignature { get; set; }
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public TargetEtcChain[]? Certs { get; set; }
-    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.Extension[]? Extensions { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);

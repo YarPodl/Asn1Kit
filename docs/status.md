@@ -33,7 +33,7 @@
 - `EXPLICIT` / `IMPLICIT` / `AUTOMATIC TAGS`; `IMPORTS` между переданными файлами; тег без mode на `CHOICE` → `EXPLICIT`.
 - Open-type overlay: CLI `--bindings`, ключи `Module.Type.field`. Options patch: CLI `--patch` / `IrOptionsPatch`; продуктовый PKIX/CMS — [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json).
 - Open-type (overlay и IOC): неизвестный ключ — raw `Asn1Any`; известный mismatch — reject. Soft/universal-tag fallback для open types снят. Детали эмиссии — [csharp-backend.md](../compiler/docs/playbooks/csharp-backend.md).
-- `SIZE` / диапазоны → `constraint.size` / `constraint.value`; прочее → `constraint.unsupported`. Constraints описательны: decode и encode их не исполняют.
+- `SIZE` / диапазоны → `constraint.size` / `constraint.value`; прочее → `constraint.unsupported`. Constraints описательны: decode и encode их не исполняют. Generated C# (`///`) и C++ (`//`) выводят рядом с полем нормализованные size/value, исходный `unsupported` и closed/extensible object-set metadata с пометкой, что runtime их не проверяет.
 - Вне профиля (`CompileException`): конструкции из списка «Не реализовано, поскольку не потребовалось» ниже.
 
 ## Современные PKIX/CMS
@@ -44,7 +44,7 @@
 
 **Open-type (C#):** один Binding-путь для Modern и Legacy (`Asn1Kit.Legacy.*`): raw-контейнер + `Binding<T>` / table-каталог / `TryDecode`·`Set`·`TryGet` / `Create` (local selector) / `AsString`; неизвестный ключ — raw; mismatch известного — reject. Overlay — источник таблиц (`OpenTypeBindings` → normalize). Потребительский срез — [Asn1Kit.Modern](../runtime-csharp/generated/Asn1Kit.Modern/README.md); правила эмиссии — [csharp-backend.md](../compiler/docs/playbooks/csharp-backend.md).
 
-**Намеренно не исполняется:** schema constraints (`SIZE`, диапазоны значений, `WITH COMPONENTS`, `PRESENT` / `ABSENT` / constraint-`OPTIONAL`, `FROM`, `PATTERN`) и закрытость object sets. Они сохраняются в IR как описательные метаданные, но generated decode и encode их не проверяют: структурно корректные объекты сторонних реализаций должны оставаться читаемыми. Неизвестный open-type ключ сохраняется raw даже для закрытой таблицы; известный ключ с несовместимым payload отклоняется. Эмиссия этих метаданных в комментарии generated-кода остаётся в backlog.
+**Намеренно не исполняется:** schema constraints (`SIZE`, диапазоны значений, `WITH COMPONENTS`, `PRESENT` / `ABSENT` / constraint-`OPTIONAL`, `FROM`, `PATTERN`) и закрытость object sets. Они сохраняются в IR как описательные метаданные, но generated decode и encode их не проверяют: структурно корректные объекты сторонних реализаций должны оставаться читаемыми. Неизвестный open-type ключ сохраняется raw даже для закрытой таблицы; известный ключ с несовместимым payload отклоняется. Метаданные эмитятся в комментариях generated C# и C++ (см. § «Значения, теги, constraints»).
 
 **Не реализовано, поскольку не потребовалось активному корпусу из 27 модулей:** переменные governors, параметризованные CLASS/объекты/наборы, пересечения/разности object sets, неоднозначные optional templates `WITH SYNTAX`, обобщённый `INSTANCE OF`, сложный перенос selector relation через отдельный typedef, `COMPONENTS OF`, `REAL`, `EXTERNAL`. При появлении реального входного модуля конструкция добавляется с его fixture и явной диагностикой соседних неподдержанных форм.
 
@@ -82,21 +82,20 @@ Open types в C++ доступны через functional view (`info.content_set
 
 ### Открыто
 
-1. **Комментарии schema constraints в generated C# и C++.** Рядом с соответствующим типом или полем выводить нормализованные `constraint.size` / `constraint.value`, исходный `constraint.unsupported` и closed/extensible object-set metadata с явной пометкой «не проверяется runtime». Одинаковый контракт для обоих бэкендов; без изменения IR v1, публичных типов и wire-поведения; регрессия — golden обоих бэкендов.
-2. **Hostile BER: structural depth, segment storm и fuzz.** Ограничить глубину definite SEQUENCE/SET/OF и число tiny-сегментов до concat; добавить bounded fuzz-target и перенос найденных случаев в регрессионный корпус. Существующие лимиты покрывают только indefinite EOC-scan и nested constructed materialization (depth 64, payload 100 MiB).
-3. **`InlineCompositeDeduper` и field `options`.** Fingerprint снимает `options`, поэтому inline SEQUENCE/SET/CHOICE с разным `lazy` / `retainEncoded` / `integer.representation` при одинаковом wire-shape схлопываются в один typedef. Учитывать все codegen-значимые options в fingerprint.
-4. **Независимый CMS interop-корпус.** RFC 4134: field asserts и round-trip для `ContentInfo` / `SignedData`, `signedAttrs`, detached content и нескольких signers; expected не получать через Asn1Kit.
-5. **C++ modern headers: standalone self-containment.** Общая consumer translation unit компилирует все 25 `*.format.hpp`, но отдельное включение некоторых facade всё ещё упирается в ациклические type-deps при цикле модулей (CMS → AttributeCertificate → ESS → CMS). Это не type-SCC: нужен более мелкий layout header split или module-SCC amalgam без раздувания/поломки соседних facade.
-6. Curated **DVCS** с `IMPORTS` на modern (вместо legacy-графа).
-7. **GOST этап 2:** минимальный CPALGS-срез [RFC 4357](https://www.rfc-editor.org/rfc/rfc4357) (`Cryptographic-Gost-Useful-Definitions`, `GostR3410-2001-PKISyntax`, `GostR3411-94-DigestSyntax`, `Gost28147-89-EncryptionSyntax`) и [RFC 4490](https://www.rfc-editor.org/rfc/rfc4490) `GostR3410-EncryptionSyntax` с `SubjectPublicKeyInfo` из `PKIX1Explicit-2009`; без полных `*-ParamSetSyntax`. CMS EnvelopedData для R 34.12 (Kuznyechik/Magma) — вне IETF ASN.1.
-8. При необходимости — дальнейший trim Modern / дополнительные protocol-пакеты; typed `eContent`→`TSTInfo` (сейчас opaque + `TSTInfo.Decode`).
-9. Пул массивов (constructed BER concat, DER SET OF sort).
-10. Второй oracle — BouncyCastle (не gate `dotnet test`).
-11. **C++ `is_default_*` для CHOICE DEFAULT.** Сравнение идёт через `!=`, а у generated CHOICE нет `operator==`/`!=` (есть у named BIT STRING). В modern IR CHOICE DEFAULT нет — latent; при первом таком DEFAULT C++ не соберётся. Нужен `operator==` для CHOICE или отдельный compare в helper.
-12. **`asn1kit::value<T>::get()` non-const.** Любой non-const доступ сбрасывает retained TLV — footgun для bit-exact re-encode (CMS `signedAttrs` / `toBeSigned`). Усилить API/документацию и тест «inspect via non-const → `!has_original_encoding()`».
-13. **Ergonomic `asn1kit::encode` / `decode` и `reader_options`.** Обёртки всегда используют `default_profile()`; ужесточить/ослабить depth/materialize лимиты можно только через raw `reader`. Прокинуть options в API или явно оставить gap.
-14. **CONTAINING ADR.** Удаление `Asn1Contained` / `contained<T>` (typed → `T`, opaque → `ROM`/`bytes`/`bit_string`) зафиксировано в status/runtime-api, но без отдельной записи в [decisions.md](decisions.md).
-15. **BIT STRING CONTAINING success path (C#).** Есть write + reject unaligned; нет успешного read round-trip через `ReadBitStringContaining` (в отличие от OCTET).
+1. **Hostile BER: structural depth, segment storm и fuzz.** Ограничить глубину definite SEQUENCE/SET/OF и число tiny-сегментов до concat; добавить bounded fuzz-target и перенос найденных случаев в регрессионный корпус. Существующие лимиты покрывают только indefinite EOC-scan и nested constructed materialization (depth 64, payload 100 MiB).
+2. **`InlineCompositeDeduper` и field `options`.** Fingerprint снимает `options`, поэтому inline SEQUENCE/SET/CHOICE с разным `lazy` / `retainEncoded` / `integer.representation` при одинаковом wire-shape схлопываются в один typedef. Учитывать все codegen-значимые options в fingerprint.
+3. **Независимый CMS interop-корпус.** RFC 4134: field asserts и round-trip для `ContentInfo` / `SignedData`, `signedAttrs`, detached content и нескольких signers; expected не получать через Asn1Kit.
+4. **C++ modern headers: standalone self-containment.** Общая consumer translation unit компилирует все 25 `*.format.hpp`, но отдельное включение некоторых facade всё ещё упирается в ациклические type-deps при цикле модулей (CMS → AttributeCertificate → ESS → CMS). Это не type-SCC: нужен более мелкий layout header split или module-SCC amalgam без раздувания/поломки соседних facade.
+5. Curated **DVCS** с `IMPORTS` на modern (вместо legacy-графа).
+6. **GOST этап 2:** минимальный CPALGS-срез [RFC 4357](https://www.rfc-editor.org/rfc/rfc4357) (`Cryptographic-Gost-Useful-Definitions`, `GostR3410-2001-PKISyntax`, `GostR3411-94-DigestSyntax`, `Gost28147-89-EncryptionSyntax`) и [RFC 4490](https://www.rfc-editor.org/rfc/rfc4490) `GostR3410-EncryptionSyntax` с `SubjectPublicKeyInfo` из `PKIX1Explicit-2009`; без полных `*-ParamSetSyntax`. CMS EnvelopedData для R 34.12 (Kuznyechik/Magma) — вне IETF ASN.1.
+7. При необходимости — дальнейший trim Modern / дополнительные protocol-пакеты; typed `eContent`→`TSTInfo` (сейчас opaque + `TSTInfo.Decode`).
+8. Пул массивов (constructed BER concat, DER SET OF sort).
+9. Второй oracle — BouncyCastle (не gate `dotnet test`).
+10. **C++ `is_default_*` для CHOICE DEFAULT.** Сравнение идёт через `!=`, а у generated CHOICE нет `operator==`/`!=` (есть у named BIT STRING). В modern IR CHOICE DEFAULT нет — latent; при первом таком DEFAULT C++ не соберётся. Нужен `operator==` для CHOICE или отдельный compare в helper.
+11. **`asn1kit::value<T>::get()` non-const.** Любой non-const доступ сбрасывает retained TLV — footgun для bit-exact re-encode (CMS `signedAttrs` / `toBeSigned`). Усилить API/документацию и тест «inspect via non-const → `!has_original_encoding()`».
+12. **Ergonomic `asn1kit::encode` / `decode` и `reader_options`.** Обёртки всегда используют `default_profile()`; ужесточить/ослабить depth/materialize лимиты можно только через raw `reader`. Прокинуть options в API или явно оставить gap.
+13. **CONTAINING ADR.** Удаление `Asn1Contained` / `contained<T>` (typed → `T`, opaque → `ROM`/`bytes`/`bit_string`) зафиксировано в status/runtime-api, но без отдельной записи в [decisions.md](decisions.md).
+14. **BIT STRING CONTAINING success path (C#).** Есть write + reject unaligned; нет успешного read round-trip через `ReadBitStringContaining` (в отличие от OCTET).
 
 ### Крупные
 

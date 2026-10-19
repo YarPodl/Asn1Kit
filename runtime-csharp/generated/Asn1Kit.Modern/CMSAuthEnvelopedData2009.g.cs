@@ -24,14 +24,14 @@ public sealed class AuthEnvelopedData
 {
     public int Version { get; set; }
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.OriginatorInfo? OriginatorInfo { get; set; }
-    /// <summary>ASN.1 alias RecipientInfos ::= SET OF RecipientInfo.</summary>
+    /// <summary>ASN.1 alias RecipientInfos ::= SET OF RecipientInfo. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.RecipientInfo[] RecipientInfos { get; set; } = Array.Empty<Asn1Kit.Modern.CryptographicMessageSyntax2009.RecipientInfo>();
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.EncryptedContentInfo AuthEncryptedContentInfo { get; set; }
-    /// <summary>ASN.1 alias AuthAttributes ::= SET OF Attribute.</summary>
+    /// <summary>ASN.1 alias AuthAttributes ::= SET OF Attribute. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.Attribute[]? AuthAttrs { get; set; }
     /// <summary>ASN.1 alias MessageAuthenticationCode ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> Mac { get; set; }
-    /// <summary>ASN.1 alias UnauthAttributes ::= SET OF Attribute.</summary>
+    /// <summary>ASN.1 alias UnauthAttributes ::= SET OF Attribute. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.Attribute[]? UnauthAttrs { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);

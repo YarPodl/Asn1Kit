@@ -48,7 +48,9 @@ namespace modern {
 namespace ERS {
 
 struct ArchiveTimeStamp {
+    // ASN.1 object set (extensible). Membership not enforced by runtime.
     std::optional<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> digestAlgorithm{};
+    // ASN.1 alias Attributes ::= SET OF AttributeSet. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet>> attributes{};
     std::optional<std::vector<std::vector<asn1kit::bytes>>> reducedHashtree{};
     ::asn1kit::modern::CryptographicMessageSyntax2009::ContentInfo timeStamp{};
@@ -94,7 +96,9 @@ struct ArchiveTimeStamp {
 };
 
 struct EncryptionInfo {
+    // ASN.1 constraint unsupported:  table({ SupportedEncryptionAlgorithms }). Not enforced by runtime.
     asn1kit::oid encryptionInfoType{};
+    // ASN.1 object set SupportedEncryptionAlgorithms (extensible). Membership not enforced by runtime.
     asn1kit::any encryptionInfoValue{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -124,8 +128,10 @@ struct EvidenceRecord_Version {
 struct EvidenceRecord {
     std::int32_t version{};
     std::vector<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> digestAlgorithms{};
+    // ASN.1 alias CryptoInfos ::= SEQUENCE OF AttributeSet. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet>> cryptoInfos{};
     std::optional<EncryptionInfo> encryptionInfo{};
+    // ASN.1 alias ArchiveTimeStampSequence ::= SEQUENCE OF ArchiveTimeStampChain.
     std::vector<std::vector<ArchiveTimeStamp>> archiveTimeStampSequence{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {

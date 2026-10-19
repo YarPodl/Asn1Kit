@@ -67,6 +67,7 @@ struct PBKDF2Params_Salt {
         return result;
     }
 
+    // ASN.1 alias PBKDF2-SaltSourcesAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set PBKDF2-SaltSources (extensible). Membership not enforced by runtime.
     static PBKDF2Params_Salt from_otherSource(::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v) {
         PBKDF2Params_Salt result{};
         result.kind = PBKDF2Params_Salt_kind::otherSource;
@@ -126,8 +127,11 @@ template <typename Target>
 struct PBKDF2ParamsPbkdf2PrFsOpenView;
 struct PBKDF2Params {
     PBKDF2Params_Salt salt{};
+    // ASN.1 value range (1..MAX). Not enforced by runtime.
     asn1kit::integer iterationCount{};
+    // ASN.1 value range (1..MAX). Not enforced by runtime.
     std::optional<asn1kit::integer> keyLength{};
+    // ASN.1 alias PBKDF2-PRFsAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set PBKDF2-PRFs (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier prf = default_prf();
 
     [[nodiscard]] PBKDF2ParamsPbkdf2PrFsOpenView<PBKDF2Params> pbkdf2_pr_fs() &;
@@ -188,6 +192,7 @@ struct PBKDF2Params {
 };
 
 struct RC2CBCParameter {
+    // ASN.1 value range (1..256). Not enforced by runtime.
     std::int32_t rc2ParameterVersion{};
     asn1kit::bytes iv{};
 

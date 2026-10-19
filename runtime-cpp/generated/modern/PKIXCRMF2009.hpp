@@ -163,9 +163,12 @@ namespace modern {
 namespace PKIXCRMF2009 {
 
 struct EncryptedValue {
+    // ASN.1 object set (extensible). Membership not enforced by runtime.
     std::optional<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> intendedAlg{};
+    // ASN.1 object set (extensible). Membership not enforced by runtime.
     std::optional<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> symmAlg{};
     std::optional<asn1kit::bit_string> encSymmKey{};
+    // ASN.1 object set (extensible). Membership not enforced by runtime.
     std::optional<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> keyAlg{};
     std::optional<asn1kit::bytes> valueHint{};
     asn1kit::bit_string encValue{};
@@ -363,13 +366,19 @@ struct CertTemplateSignatureAlgorithmsOpenView;
 struct CertTemplate {
     std::optional<std::int32_t> version{};
     std::optional<asn1kit::integer> serialNumber{};
+    // ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.
     std::optional<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> signingAlg{};
+    // ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.
     std::optional<std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>> issuer{};
     std::optional<OptionalValidity> validity{};
+    // ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.
     std::optional<std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>> subject{};
     std::optional<::asn1kit::modern::PKCS10::SubjectPublicKeyInfo> publicKey{};
+    // ASN.1 alias UniqueIdentifier ::= BIT STRING.
     std::optional<asn1kit::bit_string> issuerUID{};
+    // ASN.1 alias UniqueIdentifier ::= BIT STRING.
     std::optional<asn1kit::bit_string> subjectUID{};
+    // ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set CertExtensions (extensible). Membership not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> extensions{};
 
     [[nodiscard]] CertTemplateCertExtensionsOpenView<CertTemplate> cert_extensions() &;
@@ -499,6 +508,7 @@ struct CertRequestRegControlSetOpenView;
 struct CertRequest {
     asn1kit::integer certReqId{};
     CertTemplate certTemplate{};
+    // ASN.1 alias Controls ::= SEQUENCE OF SingleAttribute. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> controls{};
 
     [[nodiscard]] CertRequestRegControlSetOpenView<CertRequest> reg_control_set() &;
@@ -545,8 +555,10 @@ template <typename Target>
 struct PBMParameterMacAlgorithmsOpenView;
 struct PBMParameter {
     asn1kit::bytes salt{};
+    // ASN.1 object set DigestAlgorithms (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier owf{};
     asn1kit::integer iterationCount{};
+    // ASN.1 object set MACAlgorithms (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier mac{};
 
     [[nodiscard]] PBMParameterDigestAlgorithmsOpenView<PBMParameter> digest_algorithms() &;
@@ -612,6 +624,7 @@ struct PKIArchiveOptions {
         return result;
     }
 
+    // ASN.1 alias KeyGenParameters ::= OCTET STRING.
     static PKIArchiveOptions from_keyGenParameters(asn1kit::bytes v) {
         PKIArchiveOptions result{};
         result.kind = PKIArchiveOptions_kind::keyGenParameters;
@@ -699,6 +712,7 @@ struct PKIPublicationInfo_Action {
 template <typename Target>
 struct PKMACValuePasswordMacAlgorithmsOpenView;
 struct PKMACValue {
+    // ASN.1 object set Password-MACAlgorithms (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algId{};
     asn1kit::bit_string value_{};
 
@@ -964,6 +978,7 @@ template <typename Target>
 struct POPOSigningKeySignatureAlgorithmsOpenView;
 struct POPOSigningKey {
     std::optional<POPOSigningKeyInput> poposkInput{};
+    // ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::bit_string signature{};
 
@@ -1006,8 +1021,10 @@ struct POPOSigningKey {
 
 struct PrivateKeyInfo {
     asn1kit::integer version{};
+    // ASN.1 object set (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier privateKeyAlgorithm{};
     asn1kit::bytes privateKey{};
+    // ASN.1 alias Attributes ::= SET OF AttributeSet.
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet>> attributes{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -1192,6 +1209,7 @@ struct CertReqMsgRegInfoSetOpenView;
 struct CertReqMsg {
     CertRequest certReq{};
     std::optional<ProofOfPossession> popo{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> regInfo{};
 
     [[nodiscard]] CertReqMsgRegInfoSetOpenView<CertReqMsg> reg_info_set() &;
@@ -1273,6 +1291,7 @@ struct SinglePubInfo {
 
 struct PKIPublicationInfo {
     std::int32_t action{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<SinglePubInfo>> pubInfos{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {

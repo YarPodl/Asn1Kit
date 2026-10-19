@@ -66,7 +66,9 @@ namespace SMIMESymmetricKeyDistribution2009 {
 
 struct Certificates {
     std::optional<::asn1kit::modern::PKIX1Explicit2009::Certificate> pKC{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::AttributeCertificate>> aC{};
+    // ASN.1 alias CertificateSet ::= SET OF CertificateChoices.
     std::optional<std::vector<::asn1kit::modern::CryptographicMessageSyntax2009::CertificateChoices>> certPath{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -137,7 +139,9 @@ struct skdQuerySet_glaRequestValue_open_type_entries;
 template <typename Target>
 struct GLAQueryRequestSkdQuerySetOpenView;
 struct GLAQueryRequest {
+    // ASN.1 constraint unsupported:  table({ SkdQuerySet }). Not enforced by runtime.
     asn1kit::oid glaRequestType{};
+    // ASN.1 object set SkdQuerySet (extensible). Membership not enforced by runtime.
     asn1kit::any glaRequestValue{};
 
     [[nodiscard]] GLAQueryRequestSkdQuerySetOpenView<GLAQueryRequest> skd_query_set() &;
@@ -198,7 +202,9 @@ struct skdResponseSet_glaResponseValue_open_type_entries;
 template <typename Target>
 struct GLAQueryResponseSkdResponseSetOpenView;
 struct GLAQueryResponse {
+    // ASN.1 constraint unsupported:  table({ SkdResponseSet }). Not enforced by runtime.
     asn1kit::oid glaResponseType{};
+    // ASN.1 object set SkdResponseSet (extensible). Membership not enforced by runtime.
     asn1kit::any glaResponseValue{};
 
     [[nodiscard]] GLAQueryResponseSkdResponseSetOpenView<GLAQueryResponse> skd_response_set() &;
@@ -319,6 +325,7 @@ struct GLInfo {
 
 struct GLKRefresh {
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName glName{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::vector<Date> dates{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -354,7 +361,9 @@ namespace SMIMESymmetricKeyDistribution2009 {
 struct GLKey {
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName glName{};
     ::asn1kit::modern::CryptographicMessageSyntax2009::KEKIdentifier glIdentifier{};
+    // ASN.1 alias RecipientInfos ::= SET OF RecipientInfo. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::vector<::asn1kit::modern::CryptographicMessageSyntax2009::RecipientInfo> glkWrapped{};
+    // ASN.1 alias KeyWrapAlgorithm ::= SMIMECapability. ASN.1 object set SKD-Caps (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability glkAlgorithm{};
     asn1kit::utc_date_time glkNotBefore{};
     asn1kit::utc_date_time glkNotAfter{};
@@ -402,6 +411,7 @@ struct GLKeyAttributes {
     bool recipientsNotMutuallyAware = true;
     asn1kit::integer duration = asn1kit::integer::from_int64(0ll);
     asn1kit::integer generationCounter = asn1kit::integer::from_int64(2ll);
+    // ASN.1 alias KeyWrapAlgorithm ::= SMIMECapability. ASN.1 object set SKD-Caps (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability requestedAlgorithm = default_requestedAlgorithm();
 
     static ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability default_requestedAlgorithm() {
@@ -563,6 +573,7 @@ struct GLNewKeyAttributes {
     std::optional<bool> recipientsNotMutuallyAware{};
     std::optional<asn1kit::integer> duration{};
     std::optional<asn1kit::integer> generationCounter{};
+    // ASN.1 alias KeyWrapAlgorithm ::= SMIMECapability. ASN.1 object set SKD-Caps (extensible). Membership not enforced by runtime.
     std::optional<::asn1kit::modern::AlgorithmInformation2009::SMIMECapability> requestedAlgorithm{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -710,6 +721,7 @@ struct GLRekey {
 
 struct GLUseKEK {
     GLInfo glInfo{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::vector<GLOwnerInfo> glOwnerInfo{};
     std::int32_t glAdministration = 1;
     std::optional<GLKeyAttributes> glKeyAttributes{};

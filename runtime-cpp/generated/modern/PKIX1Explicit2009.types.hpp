@@ -75,6 +75,7 @@ struct DirectoryString {
     DirectoryString_kind kind{};
     std::string value{};
 
+    // ASN.1 SIZE (1..32768). Not enforced by runtime.
     static DirectoryString from_teletexString(std::string v) {
         DirectoryString result{};
         result.kind = DirectoryString_kind::teletexString;
@@ -82,6 +83,7 @@ struct DirectoryString {
         return result;
     }
 
+    // ASN.1 SIZE (1..32768). Not enforced by runtime.
     static DirectoryString from_printableString(std::string v) {
         DirectoryString result{};
         result.kind = DirectoryString_kind::printableString;
@@ -89,6 +91,7 @@ struct DirectoryString {
         return result;
     }
 
+    // ASN.1 SIZE (1..32768). Not enforced by runtime.
     static DirectoryString from_bmpString(std::string v) {
         DirectoryString result{};
         result.kind = DirectoryString_kind::bmpString;
@@ -96,6 +99,7 @@ struct DirectoryString {
         return result;
     }
 
+    // ASN.1 SIZE (1..32768). Not enforced by runtime.
     static DirectoryString from_universalString(std::string v) {
         DirectoryString result{};
         result.kind = DirectoryString_kind::universalString;
@@ -103,6 +107,7 @@ struct DirectoryString {
         return result;
     }
 
+    // ASN.1 SIZE (1..32768). Not enforced by runtime.
     static DirectoryString from_uTF8String(std::string v) {
         DirectoryString result{};
         result.kind = DirectoryString_kind::uTF8String;
@@ -201,6 +206,7 @@ namespace PKIX1Explicit2009 {
 template <typename Target>
 struct SubjectPublicKeyInfoPublicKeyAlgorithmsOpenView;
 struct SubjectPublicKeyInfo {
+    // ASN.1 object set PublicKeyAlgorithms (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithm{};
     asn1kit::bit_string subjectPublicKey{};
 
@@ -317,8 +323,10 @@ namespace modern {
 namespace PKIX1Explicit2009 {
 
 struct TBSCertList_RevokedCertificates_Item {
+    // ASN.1 alias CertificateSerialNumber ::= INTEGER.
     asn1kit::integer userCertificate{};
     Time revocationDate{};
+    // ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set CrlEntryExtensions (extensible). Membership not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> crlEntryExtensions{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -365,11 +373,15 @@ template <typename Target>
 struct TBSCertListSupportedAttributesOpenView;
 struct TBSCertList {
     std::optional<std::int32_t> version{};
+    // ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signature{};
+    // ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.
     std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> issuer{};
     Time thisUpdate{};
     std::optional<Time> nextUpdate{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<TBSCertList_RevokedCertificates_Item>> revokedCertificates{};
+    // ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set CrlExtensions (extensible). Membership not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> crlExtensions{};
 
     [[nodiscard]] TBSCertListCrlExtensionsOpenView<TBSCertList> crl_extensions() &;
@@ -480,7 +492,9 @@ template <typename Target>
 struct CertificateListSignatureAlgorithmsOpenView;
 struct CertificateList {
     TBSCertList toBeSigned{};
+    // ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
+    // ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.
     asn1kit::bit_string signature{};
 
     [[nodiscard]] CertificateListSignatureAlgorithmsOpenView<CertificateList> signature_algorithms() &;
@@ -577,14 +591,21 @@ template <typename Target>
 struct TBSCertificateSupportedAttributesSubjectOpenView;
 struct TBSCertificate {
     std::int32_t version = 0;
+    // ASN.1 alias CertificateSerialNumber ::= INTEGER.
     asn1kit::integer serialNumber{};
+    // ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signature{};
+    // ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.
     asn1kit::value<std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>> issuer{};
     Validity validity{};
+    // ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.
     asn1kit::value<std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>> subject{};
     asn1kit::value<SubjectPublicKeyInfo> subjectPublicKeyInfo{};
+    // ASN.1 alias UniqueIdentifier ::= BIT STRING.
     std::optional<asn1kit::bit_string> issuerUniqueID{};
+    // ASN.1 alias UniqueIdentifier ::= BIT STRING.
     std::optional<asn1kit::bit_string> subjectUniqueID{};
+    // ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set CertExtensions (extensible). Membership not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> extensions{};
 
     [[nodiscard]] TBSCertificateCertExtensionsOpenView<TBSCertificate> cert_extensions() &;
@@ -746,7 +767,9 @@ template <typename Target>
 struct CertificateSignatureAlgorithmsOpenView;
 struct Certificate {
     asn1kit::value<TBSCertificate> toBeSigned{};
+    // ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
+    // ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.
     asn1kit::bit_string signature{};
 
     [[nodiscard]] CertificateSignatureAlgorithmsOpenView<Certificate> signature_algorithms() &;

@@ -175,9 +175,13 @@ public static class RuStrongCertsSyntaxOids
 
 public sealed class IssuerSignTool
 {
+    /// <summary>ASN.1 SIZE (1..200). Not enforced by runtime.</summary>
     public string SignTool { get; set; } = "";
+    /// <summary>ASN.1 SIZE (1..200). Not enforced by runtime.</summary>
     public string CATool { get; set; } = "";
+    /// <summary>ASN.1 SIZE (1..100). Not enforced by runtime.</summary>
     public string SignToolCert { get; set; } = "";
+    /// <summary>ASN.1 SIZE (1..100). Not enforced by runtime.</summary>
     public string CAToolCert { get; set; } = "";
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);

@@ -30,7 +30,9 @@ namespace modern {
 namespace PKCS10 {
 
 struct Attribute {
+    // ASN.1 constraint unsupported:  table({ IOSet }). Not enforced by runtime.
     asn1kit::oid type{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::vector<asn1kit::any> values{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -72,6 +74,7 @@ namespace modern {
 namespace PKCS10 {
 
 struct SubjectPublicKeyInfo {
+    // ASN.1 object set PKInfoAlgorithms (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithm{};
     asn1kit::bit_string subjectPublicKey{};
 
@@ -106,9 +109,12 @@ namespace modern {
 namespace PKCS10 {
 
 struct CertificationRequestInfo {
+    // ASN.1 constraint unsupported: (v1 , ...). Not enforced by runtime.
     std::int32_t version{};
+    // ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.
     std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> subject{};
     SubjectPublicKeyInfo subjectPKInfo{};
+    // ASN.1 alias Attributes ::= SET OF Attribute.
     std::vector<Attribute> attributes{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -141,6 +147,7 @@ struct CertificationRequestInfo {
 
 struct CertificationRequest {
     CertificationRequestInfo certificationRequestInfo{};
+    // ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signatureAlgorithm{};
     asn1kit::bit_string signature{};
 

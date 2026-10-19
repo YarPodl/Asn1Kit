@@ -39,6 +39,7 @@ struct AdministrationDomainName {
     AdministrationDomainName_kind kind{};
     std::string value{};
 
+    // ASN.1 SIZE (0..16). Not enforced by runtime.
     static AdministrationDomainName from_numeric(std::string v) {
         AdministrationDomainName result{};
         result.kind = AdministrationDomainName_kind::numeric;
@@ -46,6 +47,7 @@ struct AdministrationDomainName {
         return result;
     }
 
+    // ASN.1 SIZE (0..16). Not enforced by runtime.
     static AdministrationDomainName from_printable(std::string v) {
         AdministrationDomainName result{};
         result.kind = AdministrationDomainName_kind::printable;
@@ -113,7 +115,9 @@ struct AdministrationDomainName {
 };
 
 struct BuiltInDomainDefinedAttribute {
+    // ASN.1 SIZE (1..8). Not enforced by runtime.
     std::string type{};
+    // ASN.1 SIZE (1..128). Not enforced by runtime.
     std::string value_{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -145,6 +149,7 @@ struct CountryName {
     CountryName_kind kind{};
     std::string value{};
 
+    // ASN.1 SIZE (3). Not enforced by runtime.
     static CountryName from_x121_dcc_code(std::string v) {
         CountryName result{};
         result.kind = CountryName_kind::x121_dcc_code;
@@ -152,6 +157,7 @@ struct CountryName {
         return result;
     }
 
+    // ASN.1 SIZE (2). Not enforced by runtime.
     static CountryName from_iso_3166_alpha2_code(std::string v) {
         CountryName result{};
         result.kind = CountryName_kind::iso_3166_alpha2_code;
@@ -224,7 +230,9 @@ struct supportedExtensionAttributes_extension_attribute_value_open_type_entries;
 template <typename Target>
 struct ExtensionAttributeSupportedExtensionAttributesOpenView;
 struct ExtensionAttribute {
+    // ASN.1 value range (0..256). ASN.1 constraint unsupported:  table({ SupportedExtensionAttributes }). Not enforced by runtime.
     std::int32_t extension_attribute_type{};
+    // ASN.1 object set SupportedExtensionAttributes (extensible). Membership not enforced by runtime.
     asn1kit::any extension_attribute_value{};
 
     [[nodiscard]] ExtensionAttributeSupportedExtensionAttributesOpenView<ExtensionAttribute> supported_extension_attributes() &;
@@ -287,7 +295,9 @@ struct ExtensionAttribute {
 };
 
 struct ExtensionAttribute_EaExtendedNetworkAddress_E1634Address {
+    // ASN.1 SIZE (1..15). Not enforced by runtime.
     std::string number{};
+    // ASN.1 SIZE (1..40). Not enforced by runtime.
     std::optional<std::string> sub_address{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -323,6 +333,7 @@ struct ExtensionAttribute_EaPhysicalDeliveryCountryName {
     ExtensionAttribute_EaPhysicalDeliveryCountryName_kind kind{};
     std::string value{};
 
+    // ASN.1 SIZE (3). Not enforced by runtime.
     static ExtensionAttribute_EaPhysicalDeliveryCountryName from_x121_dcc_code(std::string v) {
         ExtensionAttribute_EaPhysicalDeliveryCountryName result{};
         result.kind = ExtensionAttribute_EaPhysicalDeliveryCountryName_kind::x121_dcc_code;
@@ -330,6 +341,7 @@ struct ExtensionAttribute_EaPhysicalDeliveryCountryName {
         return result;
     }
 
+    // ASN.1 SIZE (2). Not enforced by runtime.
     static ExtensionAttribute_EaPhysicalDeliveryCountryName from_iso_3166_alpha2_code(std::string v) {
         ExtensionAttribute_EaPhysicalDeliveryCountryName result{};
         result.kind = ExtensionAttribute_EaPhysicalDeliveryCountryName_kind::iso_3166_alpha2_code;
@@ -394,6 +406,7 @@ struct ExtensionAttribute_EaPostalCode {
     ExtensionAttribute_EaPostalCode_kind kind{};
     std::string value{};
 
+    // ASN.1 SIZE (1..16). Not enforced by runtime.
     static ExtensionAttribute_EaPostalCode from_numeric_code(std::string v) {
         ExtensionAttribute_EaPostalCode result{};
         result.kind = ExtensionAttribute_EaPostalCode_kind::numeric_code;
@@ -401,6 +414,7 @@ struct ExtensionAttribute_EaPostalCode {
         return result;
     }
 
+    // ASN.1 SIZE (1..16). Not enforced by runtime.
     static ExtensionAttribute_EaPostalCode from_printable_code(std::string v) {
         ExtensionAttribute_EaPostalCode result{};
         result.kind = ExtensionAttribute_EaPostalCode_kind::printable_code;
@@ -457,9 +471,13 @@ struct ExtensionAttribute_EaPostalCode {
 };
 
 struct ExtensionAttribute_EaTeletexPersonalName {
+    // ASN.1 SIZE (1..40). Not enforced by runtime.
     std::string surname{};
+    // ASN.1 SIZE (1..16). Not enforced by runtime.
     std::optional<std::string> given_name{};
+    // ASN.1 SIZE (1..5). Not enforced by runtime.
     std::optional<std::string> initials{};
+    // ASN.1 SIZE (1..3). Not enforced by runtime.
     std::optional<std::string> generation_qualifier{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -522,7 +540,9 @@ struct ExtensionAttribute_EaTerminalType {
 };
 
 struct ExtensionAttribute_EaUnformattedPostalAddress {
+    // ASN.1 SIZE (1..6). Not enforced by runtime.
     std::optional<std::vector<std::string>> printable_address{};
+    // ASN.1 SIZE (1..180). Not enforced by runtime.
     std::optional<std::string> teletex_string{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -567,7 +587,9 @@ struct ExtensionAttribute_EaUnformattedPostalAddress {
 };
 
 struct PDSParameter {
+    // ASN.1 SIZE (1..30). Not enforced by runtime.
     std::optional<std::string> printable_string{};
+    // ASN.1 SIZE (1..30). Not enforced by runtime.
     std::optional<std::string> teletex_string{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -608,9 +630,13 @@ struct PDSParameter {
 };
 
 struct PersonalName {
+    // ASN.1 SIZE (1..40). Not enforced by runtime.
     std::string surname{};
+    // ASN.1 SIZE (1..16). Not enforced by runtime.
     std::optional<std::string> given_name{};
+    // ASN.1 SIZE (1..5). Not enforced by runtime.
     std::optional<std::string> initials{};
+    // ASN.1 SIZE (1..3). Not enforced by runtime.
     std::optional<std::string> generation_qualifier{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -667,6 +693,7 @@ struct PresentationAddress {
     std::optional<asn1kit::bytes> pSelector{};
     std::optional<asn1kit::bytes> sSelector{};
     std::optional<asn1kit::bytes> tSelector{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::vector<asn1kit::bytes> nAddresses{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -813,6 +840,7 @@ struct PrivateDomainName {
     PrivateDomainName_kind kind{};
     std::string value{};
 
+    // ASN.1 SIZE (1..16). Not enforced by runtime.
     static PrivateDomainName from_numeric(std::string v) {
         PrivateDomainName result{};
         result.kind = PrivateDomainName_kind::numeric;
@@ -820,6 +848,7 @@ struct PrivateDomainName {
         return result;
     }
 
+    // ASN.1 SIZE (1..16). Not enforced by runtime.
     static PrivateDomainName from_printable(std::string v) {
         PrivateDomainName result{};
         result.kind = PrivateDomainName_kind::printable;
@@ -878,12 +907,17 @@ struct PrivateDomainName {
 struct BuiltInStandardAttributes {
     std::optional<CountryName> country_name{};
     std::optional<AdministrationDomainName> administration_domain_name{};
+    // ASN.1 alias NetworkAddress ::= X121Address. ASN.1 SIZE (1..16). Not enforced by runtime.
     std::optional<std::string> network_address{};
+    // ASN.1 alias TerminalIdentifier ::= PrintableString. ASN.1 SIZE (1..24). Not enforced by runtime.
     std::optional<std::string> terminal_identifier{};
     std::optional<PrivateDomainName> private_domain_name{};
+    // ASN.1 alias OrganizationName ::= PrintableString. ASN.1 SIZE (1..64). Not enforced by runtime.
     std::optional<std::string> organization_name{};
+    // ASN.1 alias NumericUserIdentifier ::= NumericString. ASN.1 SIZE (1..32). Not enforced by runtime.
     std::optional<std::string> numeric_user_identifier{};
     std::optional<PersonalName> personal_name{};
+    // ASN.1 alias OrganizationalUnitNames ::= SEQUENCE OF OrganizationalUnitName. ASN.1 SIZE (1..4). Not enforced by runtime.
     std::optional<std::vector<std::string>> organizational_unit_names{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -969,7 +1003,9 @@ struct BuiltInStandardAttributes {
 
 struct ORAddress {
     BuiltInStandardAttributes built_in_standard_attributes{};
+    // ASN.1 alias BuiltInDomainDefinedAttributes ::= SEQUENCE OF BuiltInDomainDefinedAttribute. ASN.1 SIZE (1..4). Not enforced by runtime.
     std::optional<std::vector<BuiltInDomainDefinedAttribute>> built_in_domain_defined_attributes{};
+    // ASN.1 alias ExtensionAttributes ::= SET OF ExtensionAttribute. ASN.1 SIZE (1..256). Not enforced by runtime.
     std::optional<std::vector<ExtensionAttribute>> extension_attributes{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -1003,7 +1039,9 @@ struct ORAddress {
 };
 
 struct TeletexDomainDefinedAttribute {
+    // ASN.1 SIZE (1..8). Not enforced by runtime.
     std::string type{};
+    // ASN.1 SIZE (1..128). Not enforced by runtime.
     std::string value_{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {

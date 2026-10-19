@@ -185,6 +185,7 @@ public static class SMIMESymmetricKeyDistribution2009Oids
 public sealed class GLUseKEK
 {
     public GLInfo GlInfo { get; set; }
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public GLOwnerInfo[] GlOwnerInfo { get; set; } = Array.Empty<GLOwnerInfo>();
     public int GlAdministration { get; set; } = 1;
     public GLKeyAttributes? GlKeyAttributes { get; set; }
@@ -327,7 +328,7 @@ public sealed class GLKeyAttributes
     public bool RecipientsNotMutuallyAware { get; set; } = true;
     public Asn1Integer Duration { get; set; } = Asn1Integer.FromInt64(0L);
     public Asn1Integer GenerationCounter { get; set; } = Asn1Integer.FromInt64(2L);
-    /// <summary>ASN.1 alias KeyWrapAlgorithm ::= SMIMECapability.</summary>
+    /// <summary>ASN.1 alias KeyWrapAlgorithm ::= SMIMECapability. ASN.1 object set SKD-Caps (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability RequestedAlgorithm { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability { CapabilityID = global::Asn1Kit.Modern.CMSAesRsaesOaep2009.CMSAesRsaesOaep2009Oids.IdAes128Wrap };
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -478,6 +479,7 @@ public sealed class GLMember
 public sealed class Certificates
 {
     public Asn1Kit.Modern.PKIX1Explicit2009.Certificate? PKC { get; set; }
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIXAttributeCertificate2009.AttributeCertificate[]? AC { get; set; }
     /// <summary>ASN.1 alias CertificateSet ::= SET OF CertificateChoices.</summary>
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.CertificateChoices[]? CertPath { get; set; }
@@ -632,7 +634,7 @@ public sealed class GLNewKeyAttributes
     public bool? RecipientsNotMutuallyAware { get; set; }
     public Asn1Integer? Duration { get; set; }
     public Asn1Integer? GenerationCounter { get; set; }
-    /// <summary>ASN.1 alias KeyWrapAlgorithm ::= SMIMECapability.</summary>
+    /// <summary>ASN.1 alias KeyWrapAlgorithm ::= SMIMECapability. ASN.1 object set SKD-Caps (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability? RequestedAlgorithm { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -735,6 +737,7 @@ public sealed class GLOwnerAdministration
 public sealed class GLKRefresh
 {
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName GlName { get; set; }
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Date[] Dates { get; set; } = Array.Empty<Date>();
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -809,7 +812,9 @@ public sealed class Date
 
 public sealed class GLAQueryRequest
 {
+    /// <summary>ASN.1 constraint unsupported:  table({ SkdQuerySet }). Not enforced by runtime.</summary>
     public Asn1Oid GlaRequestType { get; set; }
+    /// <summary>ASN.1 object set SkdQuerySet (extensible). Membership not enforced by runtime.</summary>
     public Asn1Any GlaRequestValue { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -842,7 +847,9 @@ public sealed class GLAQueryRequest
 
 public sealed class GLAQueryResponse
 {
+    /// <summary>ASN.1 constraint unsupported:  table({ SkdResponseSet }). Not enforced by runtime.</summary>
     public Asn1Oid GlaResponseType { get; set; }
+    /// <summary>ASN.1 object set SkdResponseSet (extensible). Membership not enforced by runtime.</summary>
     public Asn1Any GlaResponseValue { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -910,9 +917,9 @@ public sealed class GLKey
 {
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName GlName { get; set; }
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.KEKIdentifier GlIdentifier { get; set; }
-    /// <summary>ASN.1 alias RecipientInfos ::= SET OF RecipientInfo.</summary>
+    /// <summary>ASN.1 alias RecipientInfos ::= SET OF RecipientInfo. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.RecipientInfo[] GlkWrapped { get; set; } = Array.Empty<Asn1Kit.Modern.CryptographicMessageSyntax2009.RecipientInfo>();
-    /// <summary>ASN.1 alias KeyWrapAlgorithm ::= SMIMECapability.</summary>
+    /// <summary>ASN.1 alias KeyWrapAlgorithm ::= SMIMECapability. ASN.1 object set SKD-Caps (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.SMIMECapability GlkAlgorithm { get; set; }
     public DateTimeOffset GlkNotBefore { get; set; }
     public DateTimeOffset GlkNotAfter { get; set; }

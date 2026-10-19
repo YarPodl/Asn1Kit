@@ -98,7 +98,7 @@ public sealed class Attribute
 public sealed class CertificationRequest
 {
     public CertificationRequestInfo CertificationRequestInfo { get; set; }
-    /// <summary>ASN.1 alias SignatureAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias SignatureAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier SignatureAlgorithm { get; set; }
     /// <summary>ASN.1 alias Signature ::= BIT STRING.</summary>
     public Asn1BitString Signature { get; set; }

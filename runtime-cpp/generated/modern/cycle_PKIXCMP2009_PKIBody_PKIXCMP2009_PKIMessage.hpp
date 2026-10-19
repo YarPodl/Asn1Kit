@@ -78,6 +78,7 @@ struct PKIBody {
     PKIBody_kind kind{};
     std::variant<std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg>, CertRepMessage, ::asn1kit::modern::EnrollmentMessageSyntax2009::CertificationRequest, std::vector<Challenge>, std::vector<asn1kit::integer>, KeyRecRepContent, std::vector<RevDetails>, RevRepContent, CAKeyUpdAnnContent, CMPCertificate, RevAnnContent, std::vector<::asn1kit::modern::PKIX1Explicit2009::CertificateList>, asn1kit::null_value, std::vector<PKIMessage>, std::vector<InfoTypeAndValue>, ErrorMsgContent, std::vector<CertStatus>, std::vector<PollReqContent_Item>, std::vector<PollRepContent_Item>> value{};
 
+    // ASN.1 alias CertReqMessages ::= SEQUENCE OF CertReqMsg. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     static PKIBody from_ir(std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::ir;
@@ -92,6 +93,7 @@ struct PKIBody {
         return result;
     }
 
+    // ASN.1 alias CertReqMessages ::= SEQUENCE OF CertReqMsg. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     static PKIBody from_cr(std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::cr;
@@ -113,6 +115,7 @@ struct PKIBody {
         return result;
     }
 
+    // ASN.1 alias POPODecKeyChallContent ::= SEQUENCE OF Challenge.
     static PKIBody from_popdecc(std::vector<Challenge> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::popdecc;
@@ -120,6 +123,7 @@ struct PKIBody {
         return result;
     }
 
+    // ASN.1 alias POPODecKeyRespContent ::= SEQUENCE OF INTEGER.
     static PKIBody from_popdecr(std::vector<asn1kit::integer> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::popdecr;
@@ -127,6 +131,7 @@ struct PKIBody {
         return result;
     }
 
+    // ASN.1 alias CertReqMessages ::= SEQUENCE OF CertReqMsg. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     static PKIBody from_kur(std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::kur;
@@ -141,6 +146,7 @@ struct PKIBody {
         return result;
     }
 
+    // ASN.1 alias CertReqMessages ::= SEQUENCE OF CertReqMsg. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     static PKIBody from_krr(std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::krr;
@@ -155,6 +161,7 @@ struct PKIBody {
         return result;
     }
 
+    // ASN.1 alias RevReqContent ::= SEQUENCE OF RevDetails.
     static PKIBody from_rr(std::vector<RevDetails> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::rr;
@@ -169,6 +176,7 @@ struct PKIBody {
         return result;
     }
 
+    // ASN.1 alias CertReqMessages ::= SEQUENCE OF CertReqMsg. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     static PKIBody from_ccr(std::vector<::asn1kit::modern::PKIXCRMF2009::CertReqMsg> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::ccr;
@@ -190,6 +198,7 @@ struct PKIBody {
         return result;
     }
 
+    // ASN.1 alias CertAnnContent ::= CMPCertificate.
     static PKIBody from_cann(CMPCertificate v) {
         PKIBody result{};
         result.kind = PKIBody_kind::cann;
@@ -204,6 +213,7 @@ struct PKIBody {
         return result;
     }
 
+    // ASN.1 alias CRLAnnContent ::= SEQUENCE OF CertificateList.
     static PKIBody from_crlann(std::vector<::asn1kit::modern::PKIX1Explicit2009::CertificateList> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::crlann;
@@ -211,6 +221,7 @@ struct PKIBody {
         return result;
     }
 
+    // ASN.1 alias PKIConfirmContent ::= NULL.
     static PKIBody from_pkiconf(asn1kit::null_value v) {
         PKIBody result{};
         result.kind = PKIBody_kind::pkiconf;
@@ -218,6 +229,7 @@ struct PKIBody {
         return result;
     }
 
+    // ASN.1 alias NestedMessageContent ::= PKIMessages. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     static PKIBody from_nested(std::vector<PKIMessage> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::nested;
@@ -225,6 +237,7 @@ struct PKIBody {
         return result;
     }
 
+    // ASN.1 alias GenMsgContent ::= SEQUENCE OF InfoTypeAndValue.
     static PKIBody from_genm(std::vector<InfoTypeAndValue> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::genm;
@@ -232,6 +245,7 @@ struct PKIBody {
         return result;
     }
 
+    // ASN.1 alias GenRepContent ::= SEQUENCE OF InfoTypeAndValue.
     static PKIBody from_genp(std::vector<InfoTypeAndValue> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::genp;
@@ -246,6 +260,7 @@ struct PKIBody {
         return result;
     }
 
+    // ASN.1 alias CertConfirmContent ::= SEQUENCE OF CertStatus.
     static PKIBody from_certConf(std::vector<CertStatus> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::certConf;
@@ -253,6 +268,7 @@ struct PKIBody {
         return result;
     }
 
+    // ASN.1 alias PollReqContent ::= SEQUENCE OF SEQUENCE.
     static PKIBody from_pollReq(std::vector<PollReqContent_Item> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::pollReq;
@@ -260,6 +276,7 @@ struct PKIBody {
         return result;
     }
 
+    // ASN.1 alias PollRepContent ::= SEQUENCE OF SEQUENCE.
     static PKIBody from_pollRep(std::vector<PollRepContent_Item> v) {
         PKIBody result{};
         result.kind = PKIBody_kind::pollRep;
@@ -280,7 +297,9 @@ struct PKIBody {
 struct PKIMessage {
     PKIHeader header{};
     PKIBody body{};
+    // ASN.1 alias PKIProtection ::= BIT STRING.
     std::optional<asn1kit::bit_string> protection{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<CMPCertificate>> extraCerts{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {

@@ -1,0 +1,39 @@
+SchemaConstraints DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+
+id-qt-cps OBJECT IDENTIFIER ::= { 1 3 6 1 5 5 7 2 1 }
+id-qt-unotice OBJECT IDENTIFIER ::= { 1 3 6 1 5 5 7 2 2 }
+
+OGRN ::= NumericString (SIZE (13))
+SignedAttrs ::= SET SIZE (1..MAX) OF INTEGER
+BodyPartID ::= INTEGER (0..255)
+PolicyQualifierId ::= OBJECT IDENTIFIER (id-qt-cps | id-qt-unotice)
+
+Sample ::= SEQUENCE {
+  ogrn    OGRN,
+  attrs   SignedAttrs,
+  part    BodyPartID,
+  policy  PolicyQualifierId,
+  note    UTF8String (SIZE (1..200))
+}
+
+C ::= CLASS {
+  &id OBJECT IDENTIFIER UNIQUE,
+  &Type
+} WITH SYNTAX { &Type IDENTIFIED BY &id }
+
+intEntry C ::= { INTEGER IDENTIFIED BY {1 2 1} }
+boolEntry C ::= { BOOLEAN IDENTIFIED BY {1 2 2} }
+ClosedSet C ::= { intEntry | boolEntry }
+OpenSet C ::= { intEntry | boolEntry, ... }
+
+ClosedCarrier ::= SEQUENCE {
+  id    OBJECT IDENTIFIER,
+  value C.&Type({ClosedSet}{@id}) OPTIONAL
+}
+
+OpenCarrier ::= SEQUENCE {
+  id    OBJECT IDENTIFIER,
+  value C.&Type({OpenSet}{@id}) OPTIONAL
+}
+
+END

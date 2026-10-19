@@ -42,7 +42,7 @@ public sealed class EvidenceRecord
 {
     public int Version { get; set; }
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier[] DigestAlgorithms { get; set; } = Array.Empty<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier>();
-    /// <summary>ASN.1 alias CryptoInfos ::= SEQUENCE OF AttributeSet.</summary>
+    /// <summary>ASN.1 alias CryptoInfos ::= SEQUENCE OF AttributeSet. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet[]? CryptoInfos { get; set; }
     public EncryptionInfo? EncryptionInfo { get; set; }
     /// <summary>ASN.1 alias ArchiveTimeStampSequence ::= SEQUENCE OF ArchiveTimeStampChain.</summary>
@@ -108,8 +108,9 @@ public sealed class EvidenceRecord
 
 public sealed class ArchiveTimeStamp
 {
+    /// <summary>ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? DigestAlgorithm { get; set; }
-    /// <summary>ASN.1 alias Attributes ::= SET OF AttributeSet.</summary>
+    /// <summary>ASN.1 alias Attributes ::= SET OF AttributeSet. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet[]? Attributes { get; set; }
     public ReadOnlyMemory<byte>[][]? ReducedHashtree { get; set; }
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.ContentInfo TimeStamp { get; set; }
@@ -175,7 +176,9 @@ public sealed class ArchiveTimeStamp
 
 public sealed class EncryptionInfo
 {
+    /// <summary>ASN.1 constraint unsupported:  table({ SupportedEncryptionAlgorithms }). Not enforced by runtime.</summary>
     public Asn1Oid EncryptionInfoType { get; set; }
+    /// <summary>ASN.1 object set SupportedEncryptionAlgorithms (extensible). Membership not enforced by runtime.</summary>
     public Asn1Any EncryptionInfoValue { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);

@@ -357,7 +357,7 @@ public sealed class AuthorityKeyIdentifier
 {
     /// <summary>ASN.1 alias KeyIdentifier ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte>? KeyIdentifier { get; set; }
-    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName.</summary>
+    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public GeneralName[]? AuthorityCertIssuer { get; set; }
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
     public Asn1Integer? AuthorityCertSerialNumber { get; set; }
@@ -548,6 +548,7 @@ public sealed class PolicyInformation
 {
     /// <summary>ASN.1 alias CertPolicyId ::= OBJECT IDENTIFIER.</summary>
     public Asn1Oid PolicyIdentifier { get; set; }
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public PolicyQualifierInfo[]? PolicyQualifiers { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -589,7 +590,7 @@ public sealed class PolicyInformation
 
 public sealed class PolicyQualifierInfo
 {
-    /// <summary>ASN.1 alias PolicyQualifierId ::= OBJECT IDENTIFIER.</summary>
+    /// <summary>ASN.1 alias PolicyQualifierId ::= OBJECT IDENTIFIER. ASN.1 constraint unsupported: (id-qt-cps | id-qt-unotice). Not enforced by runtime.</summary>
     public Asn1Oid PolicyQualifierId { get; set; }
     public Asn1Any Qualifier { get; set; }
 
@@ -851,6 +852,7 @@ public enum GeneralNameKind
 public sealed class GeneralName
 {
     public GeneralNameKind Kind { get; private set; }
+    /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public AnotherName? OtherName { get; private set; }
     public string? Rfc822Name { get; private set; }
     public string? DNSName { get; private set; }
@@ -1131,6 +1133,7 @@ public sealed class EDIPartyName
 public sealed class BasicConstraints
 {
     public bool CA { get; set; } = false;
+    /// <summary>ASN.1 value range (0..MAX). Not enforced by runtime.</summary>
     public Asn1Integer? PathLenConstraint { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1175,9 +1178,9 @@ public sealed class BasicConstraints
 
 public sealed class NameConstraints
 {
-    /// <summary>ASN.1 alias GeneralSubtrees ::= SEQUENCE OF GeneralSubtree.</summary>
+    /// <summary>ASN.1 alias GeneralSubtrees ::= SEQUENCE OF GeneralSubtree. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public GeneralSubtree[]? PermittedSubtrees { get; set; }
-    /// <summary>ASN.1 alias GeneralSubtrees ::= SEQUENCE OF GeneralSubtree.</summary>
+    /// <summary>ASN.1 alias GeneralSubtrees ::= SEQUENCE OF GeneralSubtree. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public GeneralSubtree[]? ExcludedSubtrees { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1229,9 +1232,9 @@ public sealed class NameConstraints
 public sealed class GeneralSubtree
 {
     public GeneralName Base { get; set; }
-    /// <summary>ASN.1 alias BaseDistance ::= INTEGER.</summary>
+    /// <summary>ASN.1 alias BaseDistance ::= INTEGER. ASN.1 value range (0..MAX). Not enforced by runtime.</summary>
     public Asn1Integer Minimum { get; set; } = Asn1Integer.FromInt64(0L);
-    /// <summary>ASN.1 alias BaseDistance ::= INTEGER.</summary>
+    /// <summary>ASN.1 alias BaseDistance ::= INTEGER. ASN.1 value range (0..MAX). Not enforced by runtime.</summary>
     public Asn1Integer? Maximum { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1278,9 +1281,9 @@ public sealed class GeneralSubtree
 
 public sealed class PolicyConstraints
 {
-    /// <summary>ASN.1 alias SkipCerts ::= INTEGER.</summary>
+    /// <summary>ASN.1 alias SkipCerts ::= INTEGER. ASN.1 value range (0..MAX). Not enforced by runtime.</summary>
     public Asn1Integer? RequireExplicitPolicy { get; set; }
-    /// <summary>ASN.1 alias SkipCerts ::= INTEGER.</summary>
+    /// <summary>ASN.1 alias SkipCerts ::= INTEGER. ASN.1 value range (0..MAX). Not enforced by runtime.</summary>
     public Asn1Integer? InhibitPolicyMapping { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1327,7 +1330,7 @@ public sealed class DistributionPoint
 {
     public DistributionPointName? DistributionPointValue { get; set; }
     public ReasonFlags? Reasons { get; set; }
-    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName.</summary>
+    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public GeneralName[]? CRLIssuer { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1397,9 +1400,9 @@ public enum DistributionPointNameKind
 public sealed class DistributionPointName
 {
     public DistributionPointNameKind Kind { get; private set; }
-    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName.</summary>
+    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public GeneralName[]? FullName { get; private set; }
-    /// <summary>ASN.1 alias RelativeDistinguishedName ::= SET OF AttributeTypeAndValue.</summary>
+    /// <summary>ASN.1 alias RelativeDistinguishedName ::= SET OF AttributeTypeAndValue. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public AttributeTypeAndValue[]? NameRelativeToCRLIssuer { get; private set; }
 
     public static DistributionPointName FromFullName(GeneralName[] fullName) => new DistributionPointName

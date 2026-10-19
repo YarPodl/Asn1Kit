@@ -183,7 +183,7 @@ public sealed class SMIMEEncryptionKeyPreference
 public sealed class RC2CBCParameter
 {
     public Asn1Integer Rc2ParameterVersion { get; set; }
-    /// <summary>ASN.1 alias IV ::= OCTET STRING.</summary>
+    /// <summary>ASN.1 alias IV ::= OCTET STRING. ASN.1 SIZE (8). Not enforced by runtime.</summary>
     public ReadOnlyMemory<byte> Iv { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);

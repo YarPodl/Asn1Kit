@@ -72,6 +72,7 @@ struct PKIX1Implicit2009Oids {
 
 struct BasicConstraints {
     bool cA = false;
+    // ASN.1 value range (0..MAX). Not enforced by runtime.
     std::optional<asn1kit::integer> pathLenConstraint{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -149,6 +150,7 @@ struct DisplayText {
     DisplayText_kind kind{};
     std::string value{};
 
+    // ASN.1 SIZE (1..200). Not enforced by runtime.
     static DisplayText from_ia5String(std::string v) {
         DisplayText result{};
         result.kind = DisplayText_kind::ia5String;
@@ -156,6 +158,7 @@ struct DisplayText {
         return result;
     }
 
+    // ASN.1 SIZE (1..200). Not enforced by runtime.
     static DisplayText from_visibleString(std::string v) {
         DisplayText result{};
         result.kind = DisplayText_kind::visibleString;
@@ -163,6 +166,7 @@ struct DisplayText {
         return result;
     }
 
+    // ASN.1 SIZE (1..200). Not enforced by runtime.
     static DisplayText from_bmpString(std::string v) {
         DisplayText result{};
         result.kind = DisplayText_kind::bmpString;
@@ -170,6 +174,7 @@ struct DisplayText {
         return result;
     }
 
+    // ASN.1 SIZE (1..200). Not enforced by runtime.
     static DisplayText from_utf8String(std::string v) {
         DisplayText result{};
         result.kind = DisplayText_kind::utf8String;
@@ -299,6 +304,7 @@ struct EDIPartyName {
 
 struct GeneralName_OtherName {
     asn1kit::oid type_id{};
+    // ASN.1 object set (extensible). Membership not enforced by runtime.
     asn1kit::any value_{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -383,6 +389,7 @@ struct GeneralName {
         return result;
     }
 
+    // ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.
     static GeneralName from_directoryName(std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> v) {
         GeneralName result{};
         result.kind = GeneralName_kind::directoryName;
@@ -572,8 +579,11 @@ struct AccessDescription {
 };
 
 struct AuthorityKeyIdentifier {
+    // ASN.1 alias KeyIdentifier ::= OCTET STRING.
     std::optional<asn1kit::bytes> keyIdentifier{};
+    // ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<GeneralName>> authorityCertIssuer{};
+    // ASN.1 alias CertificateSerialNumber ::= INTEGER.
     std::optional<asn1kit::integer> authorityCertSerialNumber{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -619,6 +629,7 @@ struct DistributionPointName {
     DistributionPointName_kind kind{};
     std::variant<std::vector<GeneralName>, std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> value{};
 
+    // ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     static DistributionPointName from_fullName(std::vector<GeneralName> v) {
         DistributionPointName result{};
         result.kind = DistributionPointName_kind::fullName;
@@ -626,6 +637,7 @@ struct DistributionPointName {
         return result;
     }
 
+    // ASN.1 alias RelativeDistinguishedName ::= SET OF SingleAttribute. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     static DistributionPointName from_nameRelativeToCRLIssuer(std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> v) {
         DistributionPointName result{};
         result.kind = DistributionPointName_kind::nameRelativeToCRLIssuer;
@@ -683,7 +695,9 @@ struct DistributionPointName {
 
 struct GeneralSubtree {
     GeneralName base{};
+    // ASN.1 alias BaseDistance ::= INTEGER. ASN.1 value range (0..MAX). Not enforced by runtime.
     asn1kit::integer minimum = asn1kit::integer::from_int64(0ll);
+    // ASN.1 alias BaseDistance ::= INTEGER. ASN.1 value range (0..MAX). Not enforced by runtime.
     std::optional<asn1kit::integer> maximum{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -825,7 +839,9 @@ struct KeyUsage {
 };
 
 struct NameConstraints {
+    // ASN.1 alias GeneralSubtrees ::= SEQUENCE OF GeneralSubtree. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<GeneralSubtree>> permittedSubtrees{};
+    // ASN.1 alias GeneralSubtrees ::= SEQUENCE OF GeneralSubtree. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<GeneralSubtree>> excludedSubtrees{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -881,7 +897,9 @@ struct NoticeReference {
 };
 
 struct PolicyConstraints {
+    // ASN.1 alias SkipCerts ::= INTEGER. ASN.1 value range (0..MAX). Not enforced by runtime.
     std::optional<asn1kit::integer> requireExplicitPolicy{};
+    // ASN.1 alias SkipCerts ::= INTEGER. ASN.1 value range (0..MAX). Not enforced by runtime.
     std::optional<asn1kit::integer> inhibitPolicyMapping{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -913,7 +931,9 @@ struct PolicyConstraints {
 };
 
 struct PolicyMappings_Item {
+    // ASN.1 alias CertPolicyId ::= OBJECT IDENTIFIER.
     asn1kit::oid issuerDomainPolicy{};
+    // ASN.1 alias CertPolicyId ::= OBJECT IDENTIFIER.
     asn1kit::oid subjectDomainPolicy{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -942,7 +962,9 @@ struct policyQualifierId_qualifier_open_type_entries;
 template <typename Target>
 struct PolicyQualifierInfoPolicyQualifierIdOpenView;
 struct PolicyQualifierInfo {
+    // ASN.1 constraint unsupported:  table({ PolicyQualifierId }). Not enforced by runtime.
     asn1kit::oid policyQualifierId{};
+    // ASN.1 object set PolicyQualifierId (extensible). Membership not enforced by runtime.
     asn1kit::any qualifier{};
 
     [[nodiscard]] PolicyQualifierInfoPolicyQualifierIdOpenView<PolicyQualifierInfo> policy_qualifier_id() &;
@@ -998,7 +1020,9 @@ struct PolicyQualifierInfo {
 };
 
 struct PolicyInformation {
+    // ASN.1 alias CertPolicyId ::= OBJECT IDENTIFIER.
     asn1kit::oid policyIdentifier{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<PolicyQualifierInfo>> policyQualifiers{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -1165,6 +1189,7 @@ struct ReasonFlags {
 struct DistributionPoint {
     std::optional<DistributionPointName> distributionPoint{};
     std::optional<ReasonFlags> reasons{};
+    // ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<GeneralName>> cRLIssuer{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {

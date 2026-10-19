@@ -33,7 +33,9 @@ struct mixed_parameters_open_type_entries;
 template <typename Target>
 struct AlgorithmIdentifierMixedOpenView;
 struct AlgorithmIdentifier {
+    // ASN.1 constraint unsupported:  table({ S }). Not enforced by runtime.
     asn1kit::oid algorithm{};
+    // ASN.1 object set Mixed (closed). Membership not enforced by runtime.
     std::optional<asn1kit::any> parameters{};
 
     [[nodiscard]] AlgorithmIdentifierMixedOpenView<AlgorithmIdentifier> mixed() &;
@@ -99,6 +101,7 @@ struct mixed_values_open_type_entries;
 template <typename Target>
 struct AttributeMixedOpenView;
 struct Attribute {
+    // ASN.1 constraint unsupported:  table({ S }). Not enforced by runtime.
     asn1kit::oid type{};
     std::vector<asn1kit::any> values{};
 
@@ -175,7 +178,9 @@ struct mixed_extnValue_open_type_entries;
 template <typename Target>
 struct ExtensionMixedOpenView;
 struct Extension {
+    // ASN.1 constraint unsupported:  table({ S }). Not enforced by runtime.
     asn1kit::oid extnID{};
+    // ASN.1 object set Mixed (closed). Membership not enforced by runtime.
     asn1kit::bytes extnValue{};
 
     [[nodiscard]] ExtensionMixedOpenView<Extension> mixed() &;
@@ -261,6 +266,7 @@ namespace detail {
 struct mixed_value_open_type_entries;
 } // namespace detail
 struct Outer_Nested_Item {
+    // ASN.1 object set Mixed (closed). Membership not enforced by runtime.
     asn1kit::any value_{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {

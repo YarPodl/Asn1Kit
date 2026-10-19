@@ -81,6 +81,13 @@ public sealed class CppCodegenTests
     }
 
     [Fact]
+    public void GenerateMatchesCommittedSchemaConstraintsGolden()
+    {
+        var document = TestData.LoadIr("compiler/fixtures/ir/schema-constraints.json");
+        AssertGolden(document, "runtime-cpp/generated/schema-constraints");
+    }
+
+    [Fact]
     public void GeneratesBareAnyFields()
     {
         const string asn = @"

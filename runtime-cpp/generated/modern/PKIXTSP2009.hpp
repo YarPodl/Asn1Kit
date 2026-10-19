@@ -35,7 +35,9 @@ struct PKIXTSP2009Oids {
 
 struct Accuracy {
     std::optional<asn1kit::integer> seconds{};
+    // ASN.1 value range (1..999). Not enforced by runtime.
     std::optional<std::int32_t> millis{};
+    // ASN.1 value range (1..999). Not enforced by runtime.
     std::optional<std::int32_t> micros{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -83,6 +85,7 @@ namespace modern {
 namespace PKIXTSP2009 {
 
 struct MessageImprint {
+    // ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set DigestAlgorithmSet (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm{};
     asn1kit::bytes hashedMessage{};
 
@@ -217,6 +220,7 @@ struct PKIStatus {
 
 struct PKIStatusInfo {
     std::int32_t status{};
+    // ASN.1 alias PKIFreeText ::= SEQUENCE OF UTF8String. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<std::string>> statusString{};
     std::optional<PKIFailureInfo> failInfo{};
 
@@ -271,6 +275,7 @@ namespace PKIXTSP2009 {
 
 struct TSTInfo {
     std::int32_t version{};
+    // ASN.1 alias TSAPolicyId ::= OBJECT IDENTIFIER.
     asn1kit::oid policy{};
     MessageImprint messageImprint{};
     asn1kit::integer serialNumber{};
@@ -279,6 +284,7 @@ struct TSTInfo {
     bool ordering = false;
     std::optional<asn1kit::integer> nonce{};
     std::optional<::asn1kit::modern::PKIX1Implicit2009::GeneralName> tsa{};
+    // ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set (extensible). Membership not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> extensions{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -354,9 +360,11 @@ struct TimeStampReq_Version {
 struct TimeStampReq {
     std::int32_t version{};
     MessageImprint messageImprint{};
+    // ASN.1 alias TSAPolicyId ::= OBJECT IDENTIFIER.
     std::optional<asn1kit::oid> reqPolicy{};
     std::optional<asn1kit::integer> nonce{};
     bool certReq = false;
+    // ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set (extensible). Membership not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> extensions{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -418,6 +426,7 @@ namespace PKIXTSP2009 {
 
 struct TimeStampResp {
     PKIStatusInfo status{};
+    // ASN.1 alias TimeStampToken ::= ContentInfo.
     std::optional<::asn1kit::modern::CryptographicMessageSyntax2009::ContentInfo> timeStampToken{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {

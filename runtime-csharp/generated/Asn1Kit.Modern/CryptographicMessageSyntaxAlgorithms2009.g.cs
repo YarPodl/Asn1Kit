@@ -94,6 +94,7 @@ public static class CryptographicMessageSyntaxAlgorithms2009Oids
 
 public sealed class RC2CBCParameter
 {
+    /// <summary>ASN.1 value range (1..256). Not enforced by runtime.</summary>
     public int Rc2ParameterVersion { get; set; }
     public ReadOnlyMemory<byte> Iv { get; set; }
 
@@ -128,9 +129,11 @@ public sealed class RC2CBCParameter
 public sealed class PBKDF2Params
 {
     public PBKDF2Params_Salt Salt { get; set; }
+    /// <summary>ASN.1 value range (1..MAX). Not enforced by runtime.</summary>
     public Asn1Integer IterationCount { get; set; }
+    /// <summary>ASN.1 value range (1..MAX). Not enforced by runtime.</summary>
     public Asn1Integer? KeyLength { get; set; }
-    /// <summary>ASN.1 alias PBKDF2-PRFsAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias PBKDF2-PRFsAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set PBKDF2-PRFs (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Prf { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.HMACSHA1, Parameters = CryptographicMessageSyntaxAlgorithms2009Defaults.Value0 };
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -187,7 +190,7 @@ public sealed class PBKDF2Params_Salt
 {
     public PBKDF2Params_SaltKind Kind { get; private set; }
     public ReadOnlyMemory<byte>? Specified { get; private set; }
-    /// <summary>ASN.1 alias PBKDF2-SaltSourcesAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias PBKDF2-SaltSourcesAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set PBKDF2-SaltSources (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? OtherSource { get; private set; }
 
     public static PBKDF2Params_Salt FromSpecified(ReadOnlyMemory<byte> specified) => new PBKDF2Params_Salt

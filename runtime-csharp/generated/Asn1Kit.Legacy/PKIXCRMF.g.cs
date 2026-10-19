@@ -123,6 +123,7 @@ public sealed class CertReqMsg
 {
     public CertRequest CertReq { get; set; }
     public ProofOfPossession? Pop { get; set; }
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public AttributeTypeAndValue[]? RegInfo { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -174,7 +175,7 @@ public sealed class CertRequest
 {
     public Asn1Integer CertReqId { get; set; }
     public CertTemplate CertTemplate { get; set; }
-    /// <summary>ASN.1 alias Controls ::= SEQUENCE OF AttributeTypeAndValue.</summary>
+    /// <summary>ASN.1 alias Controls ::= SEQUENCE OF AttributeTypeAndValue. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public AttributeTypeAndValue[]? Controls { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -220,6 +221,7 @@ public sealed class CertTemplate
 {
     public int? Version { get; set; }
     public Asn1Integer? SerialNumber { get; set; }
+    /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier? SigningAlg { get; set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
     public Asn1Kit.Legacy.Pkix.AttributeTypeAndValue[][]? Issuer { get; set; }
@@ -231,7 +233,7 @@ public sealed class CertTemplate
     public Asn1BitString? IssuerUID { get; set; }
     /// <summary>ASN.1 alias UniqueIdentifier ::= BIT STRING.</summary>
     public Asn1BitString? SubjectUID { get; set; }
-    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.Extension[]? Extensions { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -577,6 +579,7 @@ public sealed class ProofOfPossession
 public sealed class POPOSigningKey
 {
     public POPOSigningKeyInput? PoposkInput { get; set; }
+    /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier AlgorithmIdentifier { get; set; }
     public Asn1BitString Signature { get; set; }
 
@@ -651,6 +654,7 @@ public sealed class POPOSigningKeyInput
 
 public sealed class PKMACValue
 {
+    /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier AlgId { get; set; }
     public Asn1BitString Value { get; set; }
 
@@ -685,8 +689,10 @@ public sealed class PKMACValue
 public sealed class PBMParameter
 {
     public ReadOnlyMemory<byte> Salt { get; set; }
+    /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier Owf { get; set; }
     public Asn1Integer IterationCount { get; set; }
+    /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier Mac { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -816,6 +822,7 @@ public static class SubsequentMessage
 public sealed class PKIPublicationInfo
 {
     public int Action { get; set; }
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public SinglePubInfo[]? PubInfos { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1055,9 +1062,12 @@ public sealed class EncryptedKey
 
 public sealed class EncryptedValue
 {
+    /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier? IntendedAlg { get; set; }
+    /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier? SymmAlg { get; set; }
     public Asn1BitString? EncSymmKey { get; set; }
+    /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier? KeyAlg { get; set; }
     public ReadOnlyMemory<byte>? ValueHint { get; set; }
     public Asn1BitString EncValue { get; set; }

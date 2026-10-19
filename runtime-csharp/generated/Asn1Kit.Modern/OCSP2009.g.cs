@@ -143,7 +143,7 @@ public sealed class TBSRequest
     public int Version { get; set; } = 0;
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName? RequestorName { get; set; }
     public Request[] RequestList { get; set; } = Array.Empty<Request>();
-    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIXCommonTypes2009.Extension[]? RequestExtensions { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -225,6 +225,7 @@ public sealed class TBSRequest
 
 public sealed class Signature
 {
+    /// <summary>ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier SignatureAlgorithm { get; set; }
     public Asn1BitString SignatureValue { get; set; }
     public Asn1Kit.Modern.PKIX1Explicit2009.Certificate[]? Certs { get; set; }
@@ -284,7 +285,7 @@ public static class Version
 public sealed class Request
 {
     public CertID ReqCert { get; set; }
-    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIXCommonTypes2009.Extension[]? SingleRequestExtensions { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -333,6 +334,7 @@ public sealed class Request
 
 public sealed class CertID
 {
+    /// <summary>ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier HashAlgorithm { get; set; }
     public ReadOnlyMemory<byte> IssuerNameHash { get; set; }
     public ReadOnlyMemory<byte> IssuerKeyHash { get; set; }
@@ -435,7 +437,9 @@ public enum OCSPResponseStatus
 
 public sealed class ResponseBytes
 {
+    /// <summary>ASN.1 constraint unsupported:  table({ ResponseSet }). Not enforced by runtime.</summary>
     public Asn1Oid ResponseType { get; set; }
+    /// <summary>ASN.1 object set ResponseSet (extensible). Membership not enforced by runtime.</summary>
     public ReadOnlyMemory<byte> Response { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -469,6 +473,7 @@ public sealed class ResponseBytes
 public sealed class BasicOCSPResponse
 {
     public ResponseData TbsResponseData { get; set; }
+    /// <summary>ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier SignatureAlgorithm { get; set; }
     public Asn1BitString Signature { get; set; }
     public Asn1Kit.Modern.PKIX1Explicit2009.Certificate[]? Certs { get; set; }
@@ -527,7 +532,7 @@ public sealed class ResponseData
     public ResponderID ResponderID { get; set; }
     public DateTimeOffset ProducedAt { get; set; }
     public SingleResponse[] Responses { get; set; } = Array.Empty<SingleResponse>();
-    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIXCommonTypes2009.Extension[]? ResponseExtensions { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -691,7 +696,7 @@ public sealed class SingleResponse
     public CertStatus CertStatus { get; set; }
     public DateTimeOffset ThisUpdate { get; set; }
     public DateTimeOffset? NextUpdate { get; set; }
-    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIXCommonTypes2009.Extension[]? SingleExtensions { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -892,7 +897,7 @@ public sealed class ServiceLocator
 {
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
     public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[][] Issuer { get; set; } = Array.Empty<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[]>();
-    /// <summary>ASN.1 alias AuthorityInfoAccessSyntax ::= SEQUENCE OF AccessDescription.</summary>
+    /// <summary>ASN.1 alias AuthorityInfoAccessSyntax ::= SEQUENCE OF AccessDescription. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription[] Locator { get; set; } = Array.Empty<Asn1Kit.Modern.PKIX1Implicit2009.AccessDescription>();
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);

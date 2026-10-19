@@ -12,8 +12,9 @@ public sealed class AttributeCertificateInfoV1
 {
     public int Version { get; set; } = 0;
     public AttributeCertificateInfoV1_Subject Subject { get; set; }
-    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName.</summary>
+    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[] Issuer { get; set; } = Array.Empty<Asn1Kit.Modern.PKIX1Implicit2009.GeneralName>();
+    /// <summary>ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Signature { get; set; }
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
     public Asn1Integer SerialNumber { get; set; }
@@ -21,7 +22,7 @@ public sealed class AttributeCertificateInfoV1
     public Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet[] Attributes { get; set; } = Array.Empty<Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet>();
     /// <summary>ASN.1 alias UniqueIdentifier ::= BIT STRING.</summary>
     public Asn1BitString? IssuerUniqueID { get; set; }
-    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set AttributeCertExtensionsV1 (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIXCommonTypes2009.Extension[]? Extensions { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -109,7 +110,7 @@ public sealed class AttributeCertificateInfoV1_Subject
 {
     public AttributeCertificateInfoV1_SubjectKind Kind { get; private set; }
     public Asn1Kit.Modern.ExtendedSecurityServices2009.IssuerSerial? BaseCertificateID { get; private set; }
-    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName.</summary>
+    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]? SubjectName { get; private set; }
 
     public static AttributeCertificateInfoV1_Subject FromBaseCertificateID(Asn1Kit.Modern.ExtendedSecurityServices2009.IssuerSerial baseCertificateID) => new AttributeCertificateInfoV1_Subject

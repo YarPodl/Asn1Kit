@@ -72,6 +72,7 @@ struct SMIMEEncryptionKeyPreference {
         return result;
     }
 
+    // ASN.1 alias SubjectKeyIdentifier ::= OCTET STRING.
     static SMIMEEncryptionKeyPreference from_subjectAltKeyIdentifier(asn1kit::bytes v) {
         SMIMEEncryptionKeyPreference result{};
         result.kind = SMIMEEncryptionKeyPreference_kind::subjectAltKeyIdentifier;

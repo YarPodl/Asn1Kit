@@ -53,9 +53,11 @@ namespace modern {
 namespace OCSP2009 {
 
 struct CertID {
+    // ASN.1 object set (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm{};
     asn1kit::bytes issuerNameHash{};
     asn1kit::bytes issuerKeyHash{};
+    // ASN.1 alias CertificateSerialNumber ::= INTEGER.
     asn1kit::integer serialNumber{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -181,6 +183,7 @@ template <typename Target>
 struct RequestLocalOpenView;
 struct Request {
     CertID reqCert{};
+    // ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set (extensible). Membership not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> singleRequestExtensions{};
 
     [[nodiscard]] RequestLocalOpenView<Request> local() &;
@@ -235,6 +238,7 @@ struct ResponderID {
     ResponderID_kind kind{};
     std::variant<std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>, asn1kit::bytes> value{};
 
+    // ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.
     static ResponderID from_byName(std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> v) {
         ResponderID result{};
         result.kind = ResponderID_kind::byName;
@@ -242,6 +246,7 @@ struct ResponderID {
         return result;
     }
 
+    // ASN.1 alias KeyHash ::= OCTET STRING.
     static ResponderID from_byKey(asn1kit::bytes v) {
         ResponderID result{};
         result.kind = ResponderID_kind::byKey;
@@ -321,7 +326,9 @@ struct responseSet_response_open_type_entries;
 template <typename Target>
 struct ResponseBytesResponseSetOpenView;
 struct ResponseBytes {
+    // ASN.1 constraint unsupported:  table({ ResponseSet }). Not enforced by runtime.
     asn1kit::oid responseType{};
+    // ASN.1 object set ResponseSet (extensible). Membership not enforced by runtime.
     asn1kit::bytes response{};
 
     [[nodiscard]] ResponseBytesResponseSetOpenView<ResponseBytes> response_set() &;
@@ -480,6 +487,7 @@ struct CertStatus {
         return result;
     }
 
+    // ASN.1 alias UnknownInfo ::= NULL.
     static CertStatus from_unknown(asn1kit::null_value v) {
         CertStatus result{};
         result.kind = CertStatus_kind::unknown;
@@ -546,7 +554,9 @@ struct CertStatus {
 };
 
 struct ServiceLocator {
+    // ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.
     std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> issuer{};
+    // ASN.1 alias AuthorityInfoAccessSyntax ::= SEQUENCE OF AccessDescription. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::vector<::asn1kit::modern::PKIX1Implicit2009::AccessDescription> locator{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -584,6 +594,7 @@ namespace modern {
 namespace OCSP2009 {
 
 struct Signature {
+    // ASN.1 object set (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signatureAlgorithm{};
     asn1kit::bit_string signature{};
     std::optional<std::vector<::asn1kit::modern::PKIX1Explicit2009::Certificate>> certs{};
@@ -628,6 +639,7 @@ struct SingleResponse {
     CertStatus certStatus{};
     asn1kit::utc_date_time thisUpdate{};
     std::optional<asn1kit::utc_date_time> nextUpdate{};
+    // ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set (extensible). Membership not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> singleExtensions{};
 
     [[nodiscard]] SingleResponseLocalOpenView<SingleResponse> local() &;
@@ -697,6 +709,7 @@ struct ResponseData {
     ResponderID responderID{};
     asn1kit::utc_date_time producedAt{};
     std::vector<SingleResponse> responses{};
+    // ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set (extensible). Membership not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> responseExtensions{};
 
     [[nodiscard]] ResponseDataLocalOpenView<ResponseData> local() &;
@@ -766,6 +779,7 @@ template <typename Target>
 struct BasicOCSPResponseLocalOpenView;
 struct BasicOCSPResponse {
     ResponseData tbsResponseData{};
+    // ASN.1 object set (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signatureAlgorithm{};
     asn1kit::bit_string signature{};
     std::optional<std::vector<::asn1kit::modern::PKIX1Explicit2009::Certificate>> certs{};
@@ -822,6 +836,7 @@ struct TBSRequest {
     std::int32_t version = 0;
     std::optional<::asn1kit::modern::PKIX1Implicit2009::GeneralName> requestorName{};
     std::vector<Request> requestList{};
+    // ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set (extensible). Membership not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> requestExtensions{};
 
     [[nodiscard]] TBSRequestLocalOpenView<TBSRequest> local() &;

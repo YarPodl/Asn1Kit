@@ -355,9 +355,13 @@ public static class EnrollmentMessageSyntax2009Oids
 
 public sealed class PKIData
 {
+    /// <summary>ASN.1 SIZE (0..MAX). Not enforced by runtime.</summary>
     public TaggedAttribute[] ControlSequence { get; set; } = Array.Empty<TaggedAttribute>();
+    /// <summary>ASN.1 SIZE (0..MAX). Not enforced by runtime.</summary>
     public TaggedRequest[] ReqSequence { get; set; } = Array.Empty<TaggedRequest>();
+    /// <summary>ASN.1 SIZE (0..MAX). Not enforced by runtime.</summary>
     public TaggedContentInfo[] CmsSequence { get; set; } = Array.Empty<TaggedContentInfo>();
+    /// <summary>ASN.1 SIZE (0..MAX). Not enforced by runtime.</summary>
     public OtherMsg[] OtherMsgSequence { get; set; } = Array.Empty<OtherMsg>();
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -406,8 +410,9 @@ public sealed class PKIData
 
 public sealed class TaggedAttribute
 {
-    /// <summary>ASN.1 alias BodyPartID ::= INTEGER.</summary>
+    /// <summary>ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.</summary>
     public uint BodyPartID { get; set; }
+    /// <summary>ASN.1 constraint unsupported:  table({ Cmc-Control-Set }). Not enforced by runtime.</summary>
     public Asn1Oid AttrType { get; set; }
     public Asn1Any[] AttrValues { get; set; } = Array.Empty<Asn1Any>();
 
@@ -530,7 +535,7 @@ public sealed class TaggedRequest
 
 public sealed class TaggedCertificationRequest
 {
-    /// <summary>ASN.1 alias BodyPartID ::= INTEGER.</summary>
+    /// <summary>ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.</summary>
     public uint BodyPartID { get; set; }
     public CertificationRequest CertificationRequest { get; set; }
 
@@ -565,6 +570,7 @@ public sealed class TaggedCertificationRequest
 public sealed class CertificationRequest
 {
     public CertificationRequest_CertificationRequestInfo CertificationRequestInfo { get; set; }
+    /// <summary>ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier SignatureAlgorithm { get; set; }
     public Asn1BitString Signature { get; set; }
 
@@ -600,7 +606,7 @@ public sealed class CertificationRequest
 
 public sealed class TaggedContentInfo
 {
-    /// <summary>ASN.1 alias BodyPartID ::= INTEGER.</summary>
+    /// <summary>ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.</summary>
     public uint BodyPartID { get; set; }
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.ContentInfo ContentInfo { get; set; }
 
@@ -634,9 +640,11 @@ public sealed class TaggedContentInfo
 
 public sealed class OtherMsg
 {
-    /// <summary>ASN.1 alias BodyPartID ::= INTEGER.</summary>
+    /// <summary>ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.</summary>
     public uint BodyPartID { get; set; }
+    /// <summary>ASN.1 constraint unsupported:  table({ OtherMsgSet }). Not enforced by runtime.</summary>
     public Asn1Oid OtherMsgType { get; set; }
+    /// <summary>ASN.1 object set OtherMsgSet (extensible). Membership not enforced by runtime.</summary>
     public Asn1Any OtherMsgValue { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -671,8 +679,11 @@ public sealed class OtherMsg
 
 public sealed class PKIResponse
 {
+    /// <summary>ASN.1 SIZE (0..MAX). Not enforced by runtime.</summary>
     public TaggedAttribute[] ControlSequence { get; set; } = Array.Empty<TaggedAttribute>();
+    /// <summary>ASN.1 SIZE (0..MAX). Not enforced by runtime.</summary>
     public TaggedContentInfo[] CmsSequence { get; set; } = Array.Empty<TaggedContentInfo>();
+    /// <summary>ASN.1 SIZE (0..MAX). Not enforced by runtime.</summary>
     public OtherMsg[] OtherMsgSequence { get; set; } = Array.Empty<OtherMsg>();
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -717,6 +728,7 @@ public sealed class PKIResponse
 public sealed class CMCStatusInfo
 {
     public int CMCStatus { get; set; }
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public uint[] BodyList { get; set; } = Array.Empty<uint>();
     public string? StatusString { get; set; }
     public CMCStatusInfo_OtherInfo? OtherInfo { get; set; }
@@ -853,7 +865,7 @@ public static class CMCFailInfo
 
 public sealed class AddExtensions
 {
-    /// <summary>ASN.1 alias BodyPartID ::= INTEGER.</summary>
+    /// <summary>ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.</summary>
     public uint PkiDataReference { get; set; }
     public uint[] CertReferences { get; set; } = Array.Empty<uint>();
     public Asn1Kit.Modern.PKIXCommonTypes2009.Extension[] Extensions { get; set; } = Array.Empty<Asn1Kit.Modern.PKIXCommonTypes2009.Extension>();
@@ -898,7 +910,9 @@ public sealed class EncryptedPOP
 {
     public TaggedRequest Request { get; set; }
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.ContentInfo Cms { get; set; }
+    /// <summary>ASN.1 object set POPAlgs (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier ThePOPAlgID { get; set; }
+    /// <summary>ASN.1 object set WitnessAlgs (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier WitnessAlgID { get; set; }
     public ReadOnlyMemory<byte> Witness { get; set; }
 
@@ -938,8 +952,9 @@ public sealed class EncryptedPOP
 
 public sealed class DecryptedPOP
 {
-    /// <summary>ASN.1 alias BodyPartID ::= INTEGER.</summary>
+    /// <summary>ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.</summary>
     public uint BodyPartID { get; set; }
+    /// <summary>ASN.1 object set POPAlgs (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier ThePOPAlgID { get; set; }
     public ReadOnlyMemory<byte> ThePOP { get; set; }
 
@@ -975,7 +990,7 @@ public sealed class DecryptedPOP
 
 public sealed class LraPopWitness
 {
-    /// <summary>ASN.1 alias BodyPartID ::= INTEGER.</summary>
+    /// <summary>ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.</summary>
     public uint PkiDataBodyid { get; set; }
     public uint[] BodyIds { get; set; } = Array.Empty<uint>();
 
@@ -1179,9 +1194,10 @@ public sealed class RevokeRequest
 
 public sealed class CMCUnsignedData
 {
-    /// <summary>ASN.1 alias BodyPartPath ::= SEQUENCE OF BodyPartID.</summary>
+    /// <summary>ASN.1 alias BodyPartPath ::= SEQUENCE OF BodyPartID. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public uint[] BodyPartPath { get; set; } = Array.Empty<uint>();
     public Asn1Oid Identifier { get; set; }
+    /// <summary>ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
     public Asn1Any Content { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1220,6 +1236,7 @@ public sealed class CMCUnsignedData
 public sealed class CMCStatusInfoV2
 {
     public int CMCStatus { get; set; }
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public BodyPartReference[] BodyList { get; set; } = Array.Empty<BodyPartReference>();
     public string? StatusString { get; set; }
     public CMCStatusInfoV2_OtherInfo? OtherInfo { get; set; }
@@ -1280,9 +1297,9 @@ public enum BodyPartReferenceKind
 public sealed class BodyPartReference
 {
     public BodyPartReferenceKind Kind { get; private set; }
-    /// <summary>ASN.1 alias BodyPartID ::= INTEGER.</summary>
+    /// <summary>ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.</summary>
     public uint? BodyPartID { get; private set; }
-    /// <summary>ASN.1 alias BodyPartPath ::= SEQUENCE OF BodyPartID.</summary>
+    /// <summary>ASN.1 alias BodyPartPath ::= SEQUENCE OF BodyPartID. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public uint[]? BodyPartPath { get; private set; }
 
     public static BodyPartReference FromBodyPartID(uint bodyPartID) => new BodyPartReference
@@ -1346,6 +1363,7 @@ public sealed class BodyPartReference
 public sealed class PublishTrustAnchors
 {
     public Asn1Integer SeqNumber { get; set; }
+    /// <summary>ASN.1 object set HashAlgorithms (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier HashAlgorithm { get; set; }
     public ReadOnlyMemory<byte>[] AnchorHashes { get; set; } = Array.Empty<ReadOnlyMemory<byte>>();
 
@@ -1384,6 +1402,7 @@ public sealed class PublishTrustAnchors
 
 public sealed class CMCPublicationInfo
 {
+    /// <summary>ASN.1 object set HashAlgorithms (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier HashAlg { get; set; }
     public ReadOnlyMemory<byte>[] CertHashes { get; set; } = Array.Empty<ReadOnlyMemory<byte>>();
     public Asn1Kit.Modern.PKIXCRMF2009.PKIPublicationInfo PubInfo { get; set; }
@@ -1423,9 +1442,9 @@ public sealed class CMCPublicationInfo
 
 public sealed class ModCertTemplate
 {
-    /// <summary>ASN.1 alias BodyPartPath ::= SEQUENCE OF BodyPartID.</summary>
+    /// <summary>ASN.1 alias BodyPartPath ::= SEQUENCE OF BodyPartID. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public uint[] PkiDataReference { get; set; } = Array.Empty<uint>();
-    /// <summary>ASN.1 alias BodyPartList ::= SEQUENCE OF BodyPartID.</summary>
+    /// <summary>ASN.1 alias BodyPartList ::= SEQUENCE OF BodyPartID. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public uint[] CertReferences { get; set; } = Array.Empty<uint>();
     public bool Replace { get; set; } = true;
     public Asn1Kit.Modern.PKIXCRMF2009.CertTemplate CertTemplate { get; set; }
@@ -1476,6 +1495,7 @@ public sealed class ModCertTemplate
 
 public sealed class ControlsProcessed
 {
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public BodyPartReference[] BodyList { get; set; } = Array.Empty<BodyPartReference>();
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1509,7 +1529,9 @@ public sealed class ControlsProcessed
 
 public sealed class IdentityProofV2
 {
+    /// <summary>ASN.1 object set WitnessAlgs (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier ProofAlgID { get; set; }
+    /// <summary>ASN.1 object set POPAlgs (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier MacAlgId { get; set; }
     public ReadOnlyMemory<byte> Witness { get; set; }
 
@@ -1545,7 +1567,9 @@ public sealed class IdentityProofV2
 
 public sealed class PopLinkWitnessV2
 {
+    /// <summary>ASN.1 object set KeyDevAlgs (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier KeyGenAlgorithm { get; set; }
+    /// <summary>ASN.1 object set POPAlgs (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier MacAlgorithm { get; set; }
     public ReadOnlyMemory<byte> Witness { get; set; }
 
@@ -1581,9 +1605,11 @@ public sealed class PopLinkWitnessV2
 
 public sealed class TaggedRequest_Orm
 {
-    /// <summary>ASN.1 alias BodyPartID ::= INTEGER.</summary>
+    /// <summary>ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.</summary>
     public uint BodyPartID { get; set; }
+    /// <summary>ASN.1 constraint unsupported:  table({ OtherRequests }). Not enforced by runtime.</summary>
     public Asn1Oid RequestMessageType { get; set; }
+    /// <summary>ASN.1 object set OtherRequests (extensible). Membership not enforced by runtime.</summary>
     public Asn1Any RequestMessageValue { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1667,6 +1693,7 @@ public sealed class CertificationRequest_CertificationRequestInfo
 
 public sealed class CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo
 {
+    /// <summary>ASN.1 object set PublicKeyAlgorithms (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Algorithm { get; set; }
     public Asn1BitString SubjectPublicKey { get; set; }
 
@@ -1851,7 +1878,9 @@ public sealed class CMCStatusInfoV2_OtherInfo
 
 public sealed class CMCStatusInfoV2_OtherInfo_ExtendedFailInfo
 {
+    /// <summary>ASN.1 constraint unsupported:  table({ ExtendedFailures }). Not enforced by runtime.</summary>
     public Asn1Oid FailInfoOID { get; set; }
+    /// <summary>ASN.1 object set ExtendedFailures (extensible). Membership not enforced by runtime.</summary>
     public Asn1Any FailInfoValue { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);

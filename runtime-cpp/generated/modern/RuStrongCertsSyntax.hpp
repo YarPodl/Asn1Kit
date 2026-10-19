@@ -58,9 +58,13 @@ struct IdentificationKind {
 };
 
 struct IssuerSignTool {
+    // ASN.1 SIZE (1..200). Not enforced by runtime.
     std::string signTool{};
+    // ASN.1 SIZE (1..200). Not enforced by runtime.
     std::string cATool{};
+    // ASN.1 SIZE (1..100). Not enforced by runtime.
     std::string signToolCert{};
+    // ASN.1 SIZE (1..100). Not enforced by runtime.
     std::string cAToolCert{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {

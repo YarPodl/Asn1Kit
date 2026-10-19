@@ -380,6 +380,7 @@ struct PreferredOrLegacyStalePackageIdentifier {
     PreferredOrLegacyStalePackageIdentifier_kind kind{};
     std::variant<asn1kit::integer, asn1kit::bytes> value{};
 
+    // ASN.1 value range (0..MAX). Not enforced by runtime.
     static PreferredOrLegacyStalePackageIdentifier from_preferredStaleVerNum(asn1kit::integer v) {
         PreferredOrLegacyStalePackageIdentifier result{};
         result.kind = PreferredOrLegacyStalePackageIdentifier_kind::preferredStaleVerNum;
@@ -444,6 +445,7 @@ struct PreferredOrLegacyStalePackageIdentifier {
 
 struct PreferredPackageIdentifier {
     asn1kit::oid fwPkgID{};
+    // ASN.1 value range (0..MAX). Not enforced by runtime.
     asn1kit::integer verNum{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -630,6 +632,7 @@ struct FirmwarePackageLoadError {
     asn1kit::oid hwType{};
     asn1kit::bytes hwSerialNum{};
     FirmwarePackageLoadErrorCode errorCode{};
+    // ASN.1 alias VendorLoadErrorCode ::= INTEGER.
     std::optional<asn1kit::integer> vendorErrorCode{};
     std::optional<PreferredOrLegacyPackageIdentifier> fwPkgName{};
     std::optional<std::vector<CurrentFWConfig>> config{};

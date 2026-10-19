@@ -46,10 +46,14 @@ namespace CMSAuthEnvelopedData2009 {
 struct AuthEnvelopedData {
     std::int32_t version{};
     std::optional<::asn1kit::modern::CryptographicMessageSyntax2009::OriginatorInfo> originatorInfo{};
+    // ASN.1 alias RecipientInfos ::= SET OF RecipientInfo. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::vector<::asn1kit::modern::CryptographicMessageSyntax2009::RecipientInfo> recipientInfos{};
     ::asn1kit::modern::CryptographicMessageSyntax2009::EncryptedContentInfo authEncryptedContentInfo{};
+    // ASN.1 alias AuthAttributes ::= SET OF Attribute. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::CryptographicMessageSyntax2009::Attribute>> authAttrs{};
+    // ASN.1 alias MessageAuthenticationCode ::= OCTET STRING.
     asn1kit::bytes mac{};
+    // ASN.1 alias UnauthAttributes ::= SET OF Attribute. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::CryptographicMessageSyntax2009::Attribute>> unauthAttrs{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {

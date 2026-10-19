@@ -1,0 +1,284 @@
+{
+  "irVersion": 1,
+  "sourceFiles": [
+    "schema-constraints.asn"
+  ],
+  "modules": [
+    {
+      "name": "SchemaConstraints",
+      "tagDefault": "automatic",
+      "imports": [],
+      "options": {
+        "csharp": {
+          "namespace": "SchemaConstraints"
+        }
+      },
+      "types": [
+        {
+          "name": "OGRN",
+          "type": {
+            "kind": "string",
+            "stringType": "numeric",
+            "constraint": {
+              "size": {
+                "min": 13,
+                "max": 13
+              }
+            }
+          }
+        },
+        {
+          "name": "SignedAttrs",
+          "type": {
+            "kind": "setOf",
+            "element": {
+              "kind": "integer"
+            },
+            "constraint": {
+              "size": {
+                "min": 1
+              }
+            }
+          }
+        },
+        {
+          "name": "BodyPartID",
+          "type": {
+            "kind": "integer",
+            "constraint": {
+              "value": {
+                "min": 0,
+                "max": 255
+              }
+            }
+          }
+        },
+        {
+          "name": "PolicyQualifierId",
+          "type": {
+            "kind": "oid",
+            "constraint": {
+              "unsupported": "(id-qt-cps | id-qt-unotice)"
+            }
+          }
+        },
+        {
+          "name": "Sample",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "ogrn",
+                "type": {
+                  "kind": "ref",
+                  "name": "OGRN",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "attrs",
+                "type": {
+                  "kind": "ref",
+                  "name": "SignedAttrs",
+                  "tag": {
+                    "class": "context",
+                    "number": 1,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "part",
+                "type": {
+                  "kind": "ref",
+                  "name": "BodyPartID",
+                  "tag": {
+                    "class": "context",
+                    "number": 2,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "policy",
+                "type": {
+                  "kind": "ref",
+                  "name": "PolicyQualifierId",
+                  "tag": {
+                    "class": "context",
+                    "number": 3,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "note",
+                "type": {
+                  "kind": "string",
+                  "stringType": "utf8",
+                  "tag": {
+                    "class": "context",
+                    "number": 4,
+                    "mode": "implicit"
+                  },
+                  "constraint": {
+                    "size": {
+                      "min": 1,
+                      "max": 200
+                    }
+                  }
+                },
+                "optional": false
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "ClosedCarrier",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "id",
+                "type": {
+                  "kind": "oid",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "value",
+                "type": {
+                  "kind": "any",
+                  "bindings": [
+                    {
+                      "key": "1.2.1",
+                      "name": "intEntry",
+                      "type": {
+                        "kind": "integer"
+                      }
+                    },
+                    {
+                      "key": "1.2.2",
+                      "name": "boolEntry",
+                      "type": {
+                        "kind": "boolean"
+                      }
+                    }
+                  ],
+                  "selector": {
+                    "levels": 0,
+                    "path": [
+                      "id"
+                    ]
+                  },
+                  "table": "ClosedSet",
+                  "tableExtensible": false,
+                  "tag": {
+                    "class": "context",
+                    "number": 1,
+                    "mode": "explicit"
+                  }
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        },
+        {
+          "name": "OpenCarrier",
+          "type": {
+            "kind": "sequence",
+            "components": [
+              {
+                "name": "id",
+                "type": {
+                  "kind": "oid",
+                  "tag": {
+                    "class": "context",
+                    "number": 0,
+                    "mode": "implicit"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "value",
+                "type": {
+                  "kind": "any",
+                  "bindings": [
+                    {
+                      "key": "1.2.1",
+                      "name": "intEntry",
+                      "type": {
+                        "kind": "integer"
+                      }
+                    },
+                    {
+                      "key": "1.2.2",
+                      "name": "boolEntry",
+                      "type": {
+                        "kind": "boolean"
+                      }
+                    }
+                  ],
+                  "selector": {
+                    "levels": 0,
+                    "path": [
+                      "id"
+                    ]
+                  },
+                  "table": "OpenSet",
+                  "tableExtensible": true,
+                  "tag": {
+                    "class": "context",
+                    "number": 1,
+                    "mode": "explicit"
+                  }
+                },
+                "optional": true
+              }
+            ],
+            "extensible": false
+          }
+        }
+      ],
+      "values": [
+        {
+          "name": "id-qt-cps",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "1.3.6.1.5.5.7.2.1"
+          }
+        },
+        {
+          "name": "id-qt-unotice",
+          "type": {
+            "kind": "oid"
+          },
+          "value": {
+            "kind": "oid",
+            "value": "1.3.6.1.5.5.7.2.2"
+          }
+        }
+      ]
+    }
+  ]
+}

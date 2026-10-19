@@ -90,7 +90,7 @@ CLASS, WITH SYNTAX, information objects/sets и формальные парам�
 - Ссылки на value assignments (`ub-name`) разрешаются компилятором в числа.
 - Немоделируемые формы (например `FROM`) сохраняются в `unsupported`.
 - Все schema constraints в IR описательны: generated decode и encode не обязаны проверять `size`, `value` или `unsupported`. Wire-корректность и защитные лимиты runtime этим правилом не отменяются.
-- Планируемая эмиссия constraints в комментарии generated C# и C++ не меняет IR v1, публичные типы или wire-поведение; до её реализации источником метаданных остаётся IR.
+- Эмиссия constraints в комментарии generated C# и C++ не меняет IR v1, публичные типы или wire-поведение: рядом с полем выводятся нормализованные `size`/`value`, исходный `unsupported` и closed/extensible object-set metadata с пометкой, что runtime их не проверяет.
 
 ## Компонент SEQUENCE / SET / CHOICE
 

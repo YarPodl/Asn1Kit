@@ -65,8 +65,11 @@ struct RSAESOAEPParamsPkcs1MgfAlgorithmsOpenView;
 template <typename Target>
 struct RSAESOAEPParamsPssSourceAlgorithmsOpenView;
 struct RSAESOAEPParams {
+    // ASN.1 alias HashAlgorithm ::= AlgorithmIdentifier. ASN.1 object set HashAlgorithms (closed). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashFunc = default_hashFunc();
+    // ASN.1 alias MaskGenAlgorithm ::= AlgorithmIdentifier. ASN.1 object set PKCS1MGFAlgorithms (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier maskGenFunc = default_maskGenFunc();
+    // ASN.1 alias PSourceAlgorithm ::= AlgorithmIdentifier. ASN.1 object set PSS-SourceAlgorithms (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier pSourceFunc = default_pSourceFunc();
 
     [[nodiscard]] RSAESOAEPParamsHashAlgorithmsHashFuncOpenView<RSAESOAEPParams> hash_algorithms_hash_func() &;
@@ -227,7 +230,9 @@ struct RSASSAPSSParamsHashAlgorithmsMaskGenAlgorithmOpenView;
 template <typename Target>
 struct RSASSAPSSParamsPkcs1MgfAlgorithmsOpenView;
 struct RSASSAPSSParams {
+    // ASN.1 alias HashAlgorithm ::= AlgorithmIdentifier. ASN.1 object set HashAlgorithms (closed). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm = default_hashAlgorithm();
+    // ASN.1 alias MaskGenAlgorithm ::= AlgorithmIdentifier. ASN.1 object set PKCS1MGFAlgorithms (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier maskGenAlgorithm = default_maskGenAlgorithm();
     asn1kit::integer saltLength = asn1kit::integer::from_int64(20ll);
     asn1kit::integer trailerField = asn1kit::integer::from_int64(1ll);

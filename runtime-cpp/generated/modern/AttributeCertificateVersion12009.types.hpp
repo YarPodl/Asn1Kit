@@ -61,6 +61,7 @@ struct AttributeCertificateInfoV1_Subject {
         return result;
     }
 
+    // ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     static AttributeCertificateInfoV1_Subject from_subjectName(std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> v) {
         AttributeCertificateInfoV1_Subject result{};
         result.kind = AttributeCertificateInfoV1_Subject_kind::subjectName;
@@ -145,12 +146,17 @@ namespace AttributeCertificateVersion12009 {
 struct AttributeCertificateInfoV1 {
     std::int32_t version = 0;
     AttributeCertificateInfoV1_Subject subject{};
+    // ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> issuer{};
+    // ASN.1 object set (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signature{};
+    // ASN.1 alias CertificateSerialNumber ::= INTEGER.
     asn1kit::integer serialNumber{};
     ::asn1kit::modern::PKIXAttributeCertificate2009::AttCertValidityPeriod attCertValidityPeriod{};
     std::vector<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet> attributes{};
+    // ASN.1 alias UniqueIdentifier ::= BIT STRING.
     std::optional<asn1kit::bit_string> issuerUniqueID{};
+    // ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set AttributeCertExtensionsV1 (extensible). Membership not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> extensions{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -209,7 +215,9 @@ template <typename Target>
 struct AttributeCertificateV1SignatureAlgorithmsOpenView;
 struct AttributeCertificateV1 {
     AttributeCertificateInfoV1 toBeSigned{};
+    // ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
+    // ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.
     asn1kit::bit_string signature{};
 
     [[nodiscard]] AttributeCertificateV1SignatureAlgorithmsOpenView<AttributeCertificateV1> signature_algorithms() &;

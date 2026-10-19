@@ -84,6 +84,7 @@ struct AlgorithmIdentifierSignatureAlgorithmsOpenView;
 template <typename Target>
 struct AlgorithmIdentifierWitnessAlgsOpenView;
 struct AlgorithmIdentifier {
+    // ASN.1 constraint unsupported:  table({ AlgorithmSet }). Not enforced by runtime.
     asn1kit::oid algorithm{};
     std::optional<asn1kit::any> parameters{};
 
@@ -271,6 +272,7 @@ struct sMimeCapsSet_parameters_open_type_entries;
 template <typename Target>
 struct SMIMECapabilitySMimeCapsSetOpenView;
 struct SMIMECapability {
+    // ASN.1 constraint unsupported:  table({ CapabilitySet }). Not enforced by runtime.
     asn1kit::oid capabilityID{};
     std::optional<asn1kit::any> parameters{};
 

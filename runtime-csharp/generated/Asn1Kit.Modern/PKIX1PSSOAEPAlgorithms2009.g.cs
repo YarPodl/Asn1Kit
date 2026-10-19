@@ -130,9 +130,9 @@ public static class PKIX1PSSOAEPAlgorithms2009Oids
 
 public sealed class RSASSAPSSParams
 {
-    /// <summary>ASN.1 alias HashAlgorithm ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias HashAlgorithm ::= AlgorithmIdentifier. ASN.1 object set HashAlgorithms (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier HashAlgorithm { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdSha1, Parameters = PKIX1PSSOAEPAlgorithms2009Defaults.Value0 };
-    /// <summary>ASN.1 alias MaskGenAlgorithm ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias MaskGenAlgorithm ::= AlgorithmIdentifier. ASN.1 object set PKCS1MGFAlgorithms (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier MaskGenAlgorithm { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdMgf1, Parameters = PKIX1PSSOAEPAlgorithms2009Defaults.Value1 };
     public Asn1Integer SaltLength { get; set; } = Asn1Integer.FromInt64(20L);
     public Asn1Integer TrailerField { get; set; } = Asn1Integer.FromInt64(1L);
@@ -223,11 +223,11 @@ public sealed class RSASSAPSSParams
 
 public sealed class RSAESOAEPParams
 {
-    /// <summary>ASN.1 alias HashAlgorithm ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias HashAlgorithm ::= AlgorithmIdentifier. ASN.1 object set HashAlgorithms (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier HashFunc { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdSha1, Parameters = PKIX1PSSOAEPAlgorithms2009Defaults.Value0 };
-    /// <summary>ASN.1 alias MaskGenAlgorithm ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias MaskGenAlgorithm ::= AlgorithmIdentifier. ASN.1 object set PKCS1MGFAlgorithms (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier MaskGenFunc { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdMgf1, Parameters = PKIX1PSSOAEPAlgorithms2009Defaults.Value1 };
-    /// <summary>ASN.1 alias PSourceAlgorithm ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias PSourceAlgorithm ::= AlgorithmIdentifier. ASN.1 object set PSS-SourceAlgorithms (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier PSourceFunc { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdPSpecified, Parameters = PKIX1PSSOAEPAlgorithms2009Defaults.Value3 };
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);

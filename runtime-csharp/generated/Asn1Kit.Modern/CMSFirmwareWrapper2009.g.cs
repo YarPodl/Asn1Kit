@@ -228,6 +228,7 @@ public sealed class PreferredOrLegacyPackageIdentifier
 public sealed class PreferredPackageIdentifier
 {
     public Asn1Oid FwPkgID { get; set; }
+    /// <summary>ASN.1 value range (0..MAX). Not enforced by runtime.</summary>
     public Asn1Integer VerNum { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -267,6 +268,7 @@ public enum PreferredOrLegacyStalePackageIdentifierKind
 public sealed class PreferredOrLegacyStalePackageIdentifier
 {
     public PreferredOrLegacyStalePackageIdentifierKind Kind { get; private set; }
+    /// <summary>ASN.1 value range (0..MAX). Not enforced by runtime.</summary>
     public Asn1Integer? PreferredStaleVerNum { get; private set; }
     public ReadOnlyMemory<byte>? LegacyStaleVersion { get; private set; }
 

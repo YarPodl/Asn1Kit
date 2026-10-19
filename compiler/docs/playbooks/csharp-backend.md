@@ -47,6 +47,7 @@
 - Никаких лишних аллокаций: без промежуточных `MemoryStream` на поле, без `Func` на элемент `SEQUENCE OF`, коллекции с известной ёмкостью, где размер известен.
 - OID-каталог ленив по каждому значению: обращение к строковой константе не должно разбирать остальные OID модуля. Runtime остаётся единственным местом dotted-string ↔ DER contents codec.
 - Ломаный вход падает `Asn1Exception` (чужой тег, неизвестная альтернатива `CHOICE`, лишние байты) — это обеспечивает runtime, задача шаблона его не обходить.
+- Schema constraints / object-set metadata: `EmitFieldDoc` через общий `SchemaConstraintComments` эмитит `/// <summary>` рядом с полем (size/value/unsupported, closed/extensible table) с пометкой, что runtime их не проверяет.
 
 ## Тесты
 

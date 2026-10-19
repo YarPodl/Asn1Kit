@@ -84,6 +84,7 @@ namespace EnrollmentMessageSyntax2009 {
 template <typename Target>
 struct AddExtensionsCertExtensionsOpenView;
 struct AddExtensions {
+    // ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.
     std::uint32_t pkiDataReference{};
     std::vector<std::uint32_t> certReferences{};
     std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension> extensions{};
@@ -130,6 +131,7 @@ struct BodyPartReference {
     BodyPartReference_kind kind{};
     std::variant<std::uint32_t, std::vector<std::uint32_t>> value{};
 
+    // ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.
     static BodyPartReference from_bodyPartID(std::uint32_t v) {
         BodyPartReference result{};
         result.kind = BodyPartReference_kind::bodyPartID;
@@ -137,6 +139,7 @@ struct BodyPartReference {
         return result;
     }
 
+    // ASN.1 alias BodyPartPath ::= SEQUENCE OF BodyPartID. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     static BodyPartReference from_bodyPartPath(std::vector<std::uint32_t> v) {
         BodyPartReference result{};
         result.kind = BodyPartReference_kind::bodyPartPath;
@@ -223,6 +226,7 @@ namespace EnrollmentMessageSyntax2009 {
 template <typename Target>
 struct CMCPublicationInfoHashAlgorithmsOpenView;
 struct CMCPublicationInfo {
+    // ASN.1 object set HashAlgorithms (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlg{};
     std::vector<asn1kit::bytes> certHashes{};
     ::asn1kit::modern::PKIXCRMF2009::PKIPublicationInfo pubInfo{};
@@ -271,7 +275,9 @@ struct CMCStatus {
 };
 
 struct CMCStatusInfoV2_OtherInfo_ExtendedFailInfo {
+    // ASN.1 constraint unsupported:  table({ ExtendedFailures }). Not enforced by runtime.
     asn1kit::oid failInfoOID{};
+    // ASN.1 object set ExtendedFailures (extensible). Membership not enforced by runtime.
     asn1kit::any failInfoValue{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -295,8 +301,10 @@ struct CMCStatusInfoV2_OtherInfo_ExtendedFailInfo {
 };
 
 struct CMCUnsignedData {
+    // ASN.1 alias BodyPartPath ::= SEQUENCE OF BodyPartID. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::vector<std::uint32_t> bodyPartPath{};
     asn1kit::oid identifier{};
+    // ASN.1 object set (extensible). Membership not enforced by runtime.
     asn1kit::any content{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -322,6 +330,7 @@ struct CMCUnsignedData {
 };
 
 struct CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo {
+    // ASN.1 object set PublicKeyAlgorithms (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithm{};
     asn1kit::bit_string subjectPublicKey{};
 
@@ -347,6 +356,7 @@ struct CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo {
 
 struct CertificationRequest_CertificationRequestInfo {
     asn1kit::integer version{};
+    // ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.
     std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> subject{};
     CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo subjectPublicKeyInfo{};
     std::vector<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet> attributes{};
@@ -383,6 +393,7 @@ template <typename Target>
 struct CertificationRequestSignatureAlgorithmsOpenView;
 struct CertificationRequest {
     CertificationRequest_CertificationRequestInfo certificationRequestInfo{};
+    // ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signatureAlgorithm{};
     asn1kit::bit_string signature{};
 
@@ -420,6 +431,7 @@ struct CertificationRequest {
 };
 
 struct ControlsProcessed {
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::vector<BodyPartReference> bodyList{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -443,7 +455,9 @@ struct ControlsProcessed {
 template <typename Target>
 struct DecryptedPOPPopAlgsOpenView;
 struct DecryptedPOP {
+    // ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.
     std::uint32_t bodyPartID{};
+    // ASN.1 object set POPAlgs (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier thePOPAlgID{};
     asn1kit::bytes thePOP{};
 
@@ -491,6 +505,7 @@ namespace modern {
 namespace EnrollmentMessageSyntax2009 {
 
 struct GetCRL {
+    // ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.
     std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> issuerName{};
     std::optional<::asn1kit::modern::PKIX1Implicit2009::GeneralName> cRLName{};
     std::optional<asn1kit::utc_date_time> time{};
@@ -565,7 +580,9 @@ struct IdentityProofV2PopAlgsOpenView;
 template <typename Target>
 struct IdentityProofV2WitnessAlgsOpenView;
 struct IdentityProofV2 {
+    // ASN.1 object set WitnessAlgs (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier proofAlgID{};
+    // ASN.1 object set POPAlgs (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier macAlgId{};
     asn1kit::bytes witness{};
 
@@ -614,6 +631,7 @@ struct IdentityProofV2 {
 };
 
 struct LraPopWitness {
+    // ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.
     std::uint32_t pkiDataBodyid{};
     std::vector<std::uint32_t> bodyIds{};
 
@@ -638,7 +656,9 @@ struct LraPopWitness {
 };
 
 struct ModCertTemplate {
+    // ASN.1 alias BodyPartPath ::= SEQUENCE OF BodyPartID. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::vector<std::uint32_t> pkiDataReference{};
+    // ASN.1 alias BodyPartList ::= SEQUENCE OF BodyPartID. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::vector<std::uint32_t> certReferences{};
     bool replace = true;
     ::asn1kit::modern::PKIXCRMF2009::CertTemplate certTemplate{};
@@ -675,8 +695,11 @@ struct ModCertTemplate {
 };
 
 struct OtherMsg {
+    // ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.
     std::uint32_t bodyPartID{};
+    // ASN.1 constraint unsupported:  table({ OtherMsgSet }). Not enforced by runtime.
     asn1kit::oid otherMsgType{};
+    // ASN.1 object set OtherMsgSet (extensible). Membership not enforced by runtime.
     asn1kit::any otherMsgValue{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -816,6 +839,7 @@ struct CMCStatusInfoV2_OtherInfo {
 
 struct CMCStatusInfoV2 {
     std::int32_t cMCStatus{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::vector<BodyPartReference> bodyList{};
     std::optional<std::string> statusString{};
     std::optional<CMCStatusInfoV2_OtherInfo> otherInfo{};
@@ -925,6 +949,7 @@ struct CMCStatusInfo_OtherInfo {
 
 struct CMCStatusInfo {
     std::int32_t cMCStatus{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::vector<std::uint32_t> bodyList{};
     std::optional<std::string> statusString{};
     std::optional<CMCStatusInfo_OtherInfo> otherInfo{};
@@ -966,7 +991,9 @@ struct PopLinkWitnessV2KeyDevAlgsOpenView;
 template <typename Target>
 struct PopLinkWitnessV2PopAlgsOpenView;
 struct PopLinkWitnessV2 {
+    // ASN.1 object set KeyDevAlgs (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier keyGenAlgorithm{};
+    // ASN.1 object set POPAlgs (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier macAlgorithm{};
     asn1kit::bytes witness{};
 
@@ -1018,6 +1045,7 @@ template <typename Target>
 struct PublishTrustAnchorsHashAlgorithmsOpenView;
 struct PublishTrustAnchors {
     asn1kit::integer seqNumber{};
+    // ASN.1 object set HashAlgorithms (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm{};
     std::vector<asn1kit::bytes> anchorHashes{};
 
@@ -1055,6 +1083,7 @@ struct PublishTrustAnchors {
 };
 
 struct RevokeRequest {
+    // ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.
     std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> issuerName{};
     asn1kit::integer serialNumber{};
     ::asn1kit::modern::PKIX1Implicit2009::CRLReason reason{};
@@ -1112,7 +1141,9 @@ struct cmc_control_set_attrValues_open_type_entries;
 template <typename Target>
 struct TaggedAttributeCmcControlSetOpenView;
 struct TaggedAttribute {
+    // ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.
     std::uint32_t bodyPartID{};
+    // ASN.1 constraint unsupported:  table({ Cmc-Control-Set }). Not enforced by runtime.
     asn1kit::oid attrType{};
     std::vector<asn1kit::any> attrValues{};
 
@@ -1186,6 +1217,7 @@ struct TaggedAttribute {
 };
 
 struct TaggedCertificationRequest {
+    // ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.
     std::uint32_t bodyPartID{};
     CertificationRequest certificationRequest{};
 
@@ -1220,6 +1252,7 @@ namespace modern {
 namespace EnrollmentMessageSyntax2009 {
 
 struct TaggedContentInfo {
+    // ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.
     std::uint32_t bodyPartID{};
     ::asn1kit::modern::CryptographicMessageSyntax2009::ContentInfo contentInfo{};
 
@@ -1244,8 +1277,11 @@ struct TaggedContentInfo {
 };
 
 struct PKIResponse {
+    // ASN.1 SIZE (0..MAX). Not enforced by runtime.
     std::vector<TaggedAttribute> controlSequence{};
+    // ASN.1 SIZE (0..MAX). Not enforced by runtime.
     std::vector<TaggedContentInfo> cmsSequence{};
+    // ASN.1 SIZE (0..MAX). Not enforced by runtime.
     std::vector<OtherMsg> otherMsgSequence{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -1271,8 +1307,11 @@ struct PKIResponse {
 };
 
 struct TaggedRequest_Orm {
+    // ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.
     std::uint32_t bodyPartID{};
+    // ASN.1 constraint unsupported:  table({ OtherRequests }). Not enforced by runtime.
     asn1kit::oid requestMessageType{};
+    // ASN.1 object set OtherRequests (extensible). Membership not enforced by runtime.
     asn1kit::any requestMessageValue{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -1393,7 +1432,9 @@ struct EncryptedPOPWitnessAlgsOpenView;
 struct EncryptedPOP {
     TaggedRequest request{};
     ::asn1kit::modern::CryptographicMessageSyntax2009::ContentInfo cms{};
+    // ASN.1 object set POPAlgs (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier thePOPAlgID{};
+    // ASN.1 object set WitnessAlgs (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier witnessAlgID{};
     asn1kit::bytes witness{};
 
@@ -1446,9 +1487,13 @@ struct EncryptedPOP {
 };
 
 struct PKIData {
+    // ASN.1 SIZE (0..MAX). Not enforced by runtime.
     std::vector<TaggedAttribute> controlSequence{};
+    // ASN.1 SIZE (0..MAX). Not enforced by runtime.
     std::vector<TaggedRequest> reqSequence{};
+    // ASN.1 SIZE (0..MAX). Not enforced by runtime.
     std::vector<TaggedContentInfo> cmsSequence{};
+    // ASN.1 SIZE (0..MAX). Not enforced by runtime.
     std::vector<OtherMsg> otherMsgSequence{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {

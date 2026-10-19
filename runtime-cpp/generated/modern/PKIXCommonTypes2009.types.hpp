@@ -42,7 +42,9 @@ struct AttributeSetAttributesDefinedOpenView;
 template <typename Target>
 struct AttributeSetSupportedAttributesOpenView;
 struct AttributeSet {
+    // ASN.1 constraint unsupported:  table({ AttrSet }). Not enforced by runtime.
     asn1kit::oid type{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::vector<asn1kit::any> values{};
 
     [[nodiscard]] AttributeSetAttributeListOpenView<AttributeSet> attribute_list() &;
@@ -151,6 +153,7 @@ struct ExtensionLocalSingleExtensionsOpenView;
 template <typename Target>
 struct ExtensionLocalSingleRequestExtensionsOpenView;
 struct Extension {
+    // ASN.1 constraint unsupported:  table({ ExtensionSet }). Not enforced by runtime.
     asn1kit::oid extnID{};
     bool critical = false;
     asn1kit::bytes extnValue{};
@@ -259,6 +262,7 @@ struct Extension {
 };
 
 struct SecurityCategory {
+    // ASN.1 constraint unsupported:  table({ Supported }). Not enforced by runtime.
     asn1kit::oid type{};
     asn1kit::any value_{};
 
@@ -301,6 +305,7 @@ struct SingleAttributeRegInfoSetOpenView;
 template <typename Target>
 struct SingleAttributeSupportedAttributesOpenView;
 struct SingleAttribute {
+    // ASN.1 constraint unsupported:  table({ AttrSet }). Not enforced by runtime.
     asn1kit::oid type{};
     asn1kit::any value_{};
 

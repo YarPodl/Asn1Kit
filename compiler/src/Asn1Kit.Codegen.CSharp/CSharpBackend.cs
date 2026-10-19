@@ -1177,7 +1177,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
         bool privateSetter)
     {
         var prop = PropertyName(field, typeName);
-        EmitCollapsedAliasDoc(sb, document, module, field.Type);
+        EmitFieldDoc(sb, document, module, field.Type);
         var csType = CsType(document, module, typeName, field.Name, field.Type, optional, field.Options);
         var setter = privateSetter ? "private set" : "set";
         var initializer = privateSetter
@@ -1375,20 +1375,33 @@ public sealed partial class CSharpBackend : ILanguageBackend
         return $"Asn1BitString.CopyFrom(new byte[] {{ {byteLiteral} }}, {bytes.Length * 8 - bits.Length})";
     }
 
-    private void EmitCollapsedAliasDoc(StringBuilder sb, IrDocument document, IrModule module, TypeExpr type)
+    private void EmitFieldDoc(StringBuilder sb, IrDocument document, IrModule module, TypeExpr type)
     {
-        if (type is not RefType reference)
+        var parts = new List<string>();
+        if (type is RefType reference)
+        {
+            var found = Find(document, module, reference);
+            if (found is not null && IsCollapsibleAlias(found.Type))
+            {
+                parts.Add(
+                    $"ASN.1 alias {reference.Name} ::= {FormatAliasRhs(document, module, found.Type)}.");
+            }
+        }
+
+        var schema = SchemaConstraintComments.CollectForTypeExpr(
+            type,
+            reference => Find(document, module, reference));
+        if (schema is not null)
+        {
+            parts.Add(schema);
+        }
+
+        if (parts.Count == 0)
         {
             return;
         }
 
-        var found = Find(document, module, reference);
-        if (found is null || !IsCollapsibleAlias(found.Type))
-        {
-            return;
-        }
-
-        sb.AppendLine($"    /// <summary>ASN.1 alias {reference.Name} ::= {FormatAliasRhs(document, module, found.Type)}.</summary>");
+        sb.AppendLine($"    /// <summary>{string.Join(" ", parts)}</summary>");
     }
 
     private string FormatAliasRhs(IrDocument document, IrModule module, TypeExpr type) => type switch

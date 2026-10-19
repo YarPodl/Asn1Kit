@@ -106,6 +106,7 @@ public sealed class ReceiptRequest
     /// <summary>ASN.1 alias ContentIdentifier ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> SignedContentIdentifier { get; set; }
     public ReceiptsFrom ReceiptsFrom { get; set; }
+    /// <summary>ASN.1 SIZE (1..16). Not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.GeneralName[][] ReceiptsTo { get; set; } = Array.Empty<Asn1Kit.Legacy.Pkix.GeneralName[]>();
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -274,6 +275,7 @@ public static class ESSVersion
 
 public sealed class ContentHints
 {
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public string? ContentDescription { get; set; }
     /// <summary>ASN.1 alias ContentType ::= OBJECT IDENTIFIER.</summary>
     public Asn1Oid ContentType { get; set; }
@@ -356,7 +358,7 @@ public sealed class ESSSecurityLabel
     public Asn1Oid SecurityPolicyIdentifier { get; set; }
     public int? SecurityClassification { get; set; }
     public ESSPrivacyMark? PrivacyMark { get; set; }
-    /// <summary>ASN.1 alias SecurityCategories ::= SET OF SecurityCategory.</summary>
+    /// <summary>ASN.1 alias SecurityCategories ::= SET OF SecurityCategory. ASN.1 SIZE (1..64). Not enforced by runtime.</summary>
     public SecurityCategory[]? SecurityCategories { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -665,7 +667,9 @@ public sealed class MLReceiptPolicy
 {
     public MLReceiptPolicyKind Kind { get; private set; }
     public Asn1Null? None { get; private set; }
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.GeneralName[][]? InsteadOf { get; private set; }
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.GeneralName[][]? InAdditionTo { get; private set; }
 
     public static MLReceiptPolicy FromNone(Asn1Null none) => new MLReceiptPolicy
@@ -837,7 +841,7 @@ public sealed class ESSCertID
 
 public sealed class IssuerSerial
 {
-    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName.</summary>
+    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.GeneralName[] Issuer { get; set; } = Array.Empty<Asn1Kit.Legacy.Pkix.GeneralName>();
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
     public Asn1Integer SerialNumber { get; set; }

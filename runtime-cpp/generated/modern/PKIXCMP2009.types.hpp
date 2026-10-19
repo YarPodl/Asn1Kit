@@ -293,6 +293,7 @@ namespace modern {
 namespace PKIXCMP2009 {
 
 struct Challenge {
+    // ASN.1 object set (extensible). Membership not enforced by runtime.
     std::optional<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> owf{};
     asn1kit::bytes witness{};
     asn1kit::bytes challenge{};
@@ -324,7 +325,9 @@ struct Challenge {
 };
 
 struct DHBMParameter {
+    // ASN.1 object set (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier owf{};
+    // ASN.1 object set (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier mac{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -348,7 +351,9 @@ struct DHBMParameter {
 };
 
 struct InfoTypeAndValue {
+    // ASN.1 constraint unsupported:  table({ SupportedInfoSet }). Not enforced by runtime.
     asn1kit::oid infoType{};
+    // ASN.1 object set SupportedInfoSet (extensible). Membership not enforced by runtime.
     asn1kit::any infoValue{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -372,6 +377,7 @@ struct InfoTypeAndValue {
 };
 
 struct OOBCertHash {
+    // ASN.1 object set (extensible). Membership not enforced by runtime.
     std::optional<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> hashAlg{};
     std::optional<::asn1kit::modern::PKIXCRMF2009::CertId> certId{};
     asn1kit::bit_string hashVal{};
@@ -422,8 +428,10 @@ struct OOBCertHash {
 
 struct PBMParameter {
     asn1kit::bytes salt{};
+    // ASN.1 object set (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier owf{};
     asn1kit::integer iterationCount{};
+    // ASN.1 object set (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier mac{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -665,13 +673,18 @@ struct PKIHeader {
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName sender{};
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName recipient{};
     std::optional<asn1kit::utc_date_time> messageTime{};
+    // ASN.1 object set (extensible). Membership not enforced by runtime.
     std::optional<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> protectionAlg{};
+    // ASN.1 alias KeyIdentifier ::= OCTET STRING.
     std::optional<asn1kit::bytes> senderKID{};
+    // ASN.1 alias KeyIdentifier ::= OCTET STRING.
     std::optional<asn1kit::bytes> recipKID{};
     std::optional<asn1kit::bytes> transactionID{};
     std::optional<asn1kit::bytes> senderNonce{};
     std::optional<asn1kit::bytes> recipNonce{};
+    // ASN.1 alias PKIFreeText ::= SEQUENCE OF UTF8String. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<std::string>> freeText{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<InfoTypeAndValue>> generalInfo{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -829,6 +842,7 @@ struct PKIStatus {
 
 struct PKIStatusInfo {
     std::int32_t status{};
+    // ASN.1 alias PKIFreeText ::= SEQUENCE OF UTF8String. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<std::string>> statusString{};
     std::optional<PKIFailureInfo> failInfo{};
 
@@ -905,6 +919,7 @@ struct CertResponse {
 };
 
 struct CertRepMessage {
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<CMPCertificate>> caPubs{};
     std::vector<CertResponse> response{};
 
@@ -973,6 +988,7 @@ struct CertStatus {
 struct ErrorMsgContent {
     PKIStatusInfo pKIStatusInfo{};
     std::optional<asn1kit::integer> errorCode{};
+    // ASN.1 alias PKIFreeText ::= SEQUENCE OF UTF8String. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<std::string>> errorDetails{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -1012,7 +1028,9 @@ struct ErrorMsgContent {
 struct KeyRecRepContent {
     PKIStatusInfo status{};
     std::optional<CMPCertificate> newSigCert{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<CMPCertificate>> caCerts{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<CertifiedKeyPair>> keyPairHist{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -1075,6 +1093,7 @@ struct KeyRecRepContent {
 struct PollRepContent_Item {
     asn1kit::integer certReqId{};
     asn1kit::integer checkAfter{};
+    // ASN.1 alias PKIFreeText ::= SEQUENCE OF UTF8String. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<std::string>> reason{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -1143,6 +1162,7 @@ struct RevAnnContent {
     ::asn1kit::modern::PKIXCRMF2009::CertId certId{};
     asn1kit::utc_date_time willBeRevokedAt{};
     asn1kit::utc_date_time badSinceDate{};
+    // ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set (extensible). Membership not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> crlDetails{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -1177,6 +1197,7 @@ struct RevAnnContent {
 
 struct RevDetails {
     ::asn1kit::modern::PKIXCRMF2009::CertTemplate certDetails{};
+    // ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set (extensible). Membership not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> crlEntryDetails{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -1204,8 +1225,11 @@ struct RevDetails {
 };
 
 struct RevRepContent {
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::vector<PKIStatusInfo> status{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXCRMF2009::CertId>> revCerts{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIX1Explicit2009::CertificateList>> crls{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {

@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using Asn1Kit.Codegen;
 using Asn1Kit.Ir;
 
 namespace Asn1Kit.Codegen.Cpp;
@@ -56,6 +57,7 @@ public sealed partial class CppBackend
         sb.AppendLine($"struct {typeName} {{");
         foreach (var field in components)
         {
+            EmitFieldDoc(sb, document, module, field.Type);
             var optional = (field.Optional || field.ExtensionAddition == true) && field.Default is null;
             var fieldType = CppType(
                 document, module, typeName, field.Name, field.Type, optional, field.Options);
@@ -273,6 +275,7 @@ public sealed partial class CppBackend
 
         for (var i = 0; i < alts.Count; i++)
         {
+            EmitFieldDoc(sb, document, module, alts[i].Type);
             var factory = "from_" + kinds[i];
             var constexprKeyword = constexprFactories ? "constexpr " : "";
             sb.AppendLine($"    static {constexprKeyword}{typeName} {factory}({payloadTypes[i]} v) {{");
@@ -896,4 +899,72 @@ public sealed partial class CppBackend
 
         return "{}";
     }
+
+    private void EmitFieldDoc(StringBuilder sb, IrDocument document, IrModule module, TypeExpr type)
+    {
+        var parts = new List<string>();
+        if (type is RefType reference)
+        {
+            var found = Find(document, module, reference);
+            if (found is not null && IsCollapsibleAlias(found.Type))
+            {
+                parts.Add(
+                    $"ASN.1 alias {reference.Name} ::= {FormatAliasRhs(document, module, found.Type)}.");
+            }
+        }
+
+        var schema = SchemaConstraintComments.CollectForTypeExpr(
+            type,
+            reference => Find(document, module, reference));
+        if (schema is not null)
+        {
+            parts.Add(schema);
+        }
+
+        if (parts.Count == 0)
+        {
+            return;
+        }
+
+        sb.AppendLine($"    // {string.Join(" ", parts)}");
+    }
+
+    private string FormatAliasRhs(IrDocument document, IrModule module, TypeExpr type) => type switch
+    {
+        BooleanType => "BOOLEAN",
+        IntegerType => "INTEGER",
+        EnumeratedType => "ENUMERATED",
+        BitStringType => "BIT STRING",
+        OctetStringType => "OCTET STRING",
+        NullType => "NULL",
+        OidType => "OBJECT IDENTIFIER",
+        StringType stringType => stringType.Form switch
+        {
+            StringTypes.Utf8 => "UTF8String",
+            StringTypes.Numeric => "NumericString",
+            StringTypes.Printable => "PrintableString",
+            StringTypes.Teletex => "TeletexString",
+            StringTypes.T61 => "T61String",
+            StringTypes.Videotex => "VideotexString",
+            StringTypes.Ia5 => "IA5String",
+            StringTypes.Graphic => "GraphicString",
+            StringTypes.Visible => "VisibleString",
+            StringTypes.General => "GeneralString",
+            StringTypes.Universal => "UniversalString",
+            StringTypes.Bmp => "BMPString",
+            _ => "String"
+        },
+        TimeType timeType => timeType.Form == TimeTypes.Utc ? "UTCTime" : "GeneralizedTime",
+        AnyType => "ANY",
+        RefType reference => reference.Name,
+        SequenceType => "SEQUENCE",
+        SetType => "SET",
+        ChoiceType choice when IsSingleAlternativeChoice(choice) =>
+            "CHOICE { " + choice.Components[0].Name + " "
+            + FormatAliasRhs(document, module, choice.Components[0].Type) + " }",
+        ChoiceType => "CHOICE",
+        SequenceOfType sequenceOf => "SEQUENCE OF " + FormatAliasRhs(document, module, sequenceOf.Element),
+        SetOfType setOf => "SET OF " + FormatAliasRhs(document, module, setOf.Element),
+        _ => type.Kind
+    };
 }

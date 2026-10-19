@@ -10,6 +10,7 @@ namespace Asn1Kit.Modern.PKIXCommonTypes2009;
 
 public sealed class Extension
 {
+    /// <summary>ASN.1 constraint unsupported:  table({ ExtensionSet }). Not enforced by runtime.</summary>
     public Asn1Oid ExtnID { get; set; }
     public bool Critical { get; set; } = false;
     public ReadOnlyMemory<byte> ExtnValue { get; set; }
@@ -52,7 +53,9 @@ public sealed class Extension
 
 public sealed class AttributeSet
 {
+    /// <summary>ASN.1 constraint unsupported:  table({ AttrSet }). Not enforced by runtime.</summary>
     public Asn1Oid Type { get; set; }
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Any[] Values { get; set; } = Array.Empty<Asn1Any>();
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -88,6 +91,7 @@ public sealed class AttributeSet
 
 public sealed class SecurityCategory
 {
+    /// <summary>ASN.1 constraint unsupported:  table({ Supported }). Not enforced by runtime.</summary>
     public Asn1Oid Type { get; set; }
     public Asn1Any Value { get; set; }
 
@@ -128,6 +132,7 @@ public sealed class SecurityCategory
 
 public sealed class SingleAttribute
 {
+    /// <summary>ASN.1 constraint unsupported:  table({ AttrSet }). Not enforced by runtime.</summary>
     public Asn1Oid Type { get; set; }
     public Asn1Any Value { get; set; }
 

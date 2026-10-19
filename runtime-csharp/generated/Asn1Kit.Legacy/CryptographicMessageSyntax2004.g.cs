@@ -275,15 +275,15 @@ public sealed class SignerInfo
 {
     public int Version { get; set; }
     public SignerIdentifier Sid { get; set; }
-    /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier DigestAlgorithm { get; set; }
-    /// <summary>ASN.1 alias SignedAttributes ::= SET OF Attribute.</summary>
+    /// <summary>ASN.1 alias SignedAttributes ::= SET OF Attribute. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Value<Attribute[]>? SignedAttrs { get; set; }
-    /// <summary>ASN.1 alias SignatureAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias SignatureAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier SignatureAlgorithm { get; set; }
     /// <summary>ASN.1 alias SignatureValue ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> Signature { get; set; }
-    /// <summary>ASN.1 alias UnsignedAttributes ::= SET OF Attribute.</summary>
+    /// <summary>ASN.1 alias UnsignedAttributes ::= SET OF Attribute. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Attribute[]? UnsignedAttrs { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -453,10 +453,10 @@ public sealed class EnvelopedData
 {
     public int Version { get; set; }
     public OriginatorInfo? OriginatorInfo { get; set; }
-    /// <summary>ASN.1 alias RecipientInfos ::= SET OF RecipientInfo.</summary>
+    /// <summary>ASN.1 alias RecipientInfos ::= SET OF RecipientInfo. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public RecipientInfo[] RecipientInfos { get; set; } = Array.Empty<RecipientInfo>();
     public EncryptedContentInfo EncryptedContentInfo { get; set; }
-    /// <summary>ASN.1 alias UnprotectedAttributes ::= SET OF Attribute.</summary>
+    /// <summary>ASN.1 alias UnprotectedAttributes ::= SET OF Attribute. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Attribute[]? UnprotectedAttrs { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -568,7 +568,7 @@ public sealed class EncryptedContentInfo
 {
     /// <summary>ASN.1 alias ContentType ::= OBJECT IDENTIFIER.</summary>
     public Asn1Oid ContentType { get; set; }
-    /// <summary>ASN.1 alias ContentEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias ContentEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier ContentEncryptionAlgorithm { get; set; }
     /// <summary>ASN.1 alias EncryptedContent ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte>? EncryptedContent { get; set; }
@@ -731,7 +731,7 @@ public sealed class KeyTransRecipientInfo
 {
     public int Version { get; set; }
     public RecipientIdentifier Rid { get; set; }
-    /// <summary>ASN.1 alias KeyEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias KeyEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier KeyEncryptionAlgorithm { get; set; }
     /// <summary>ASN.1 alias EncryptedKey ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> EncryptedKey { get; set; }
@@ -842,7 +842,7 @@ public sealed class KeyAgreeRecipientInfo
     public OriginatorIdentifierOrKey Originator { get; set; }
     /// <summary>ASN.1 alias UserKeyingMaterial ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte>? Ukm { get; set; }
-    /// <summary>ASN.1 alias KeyEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias KeyEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier KeyEncryptionAlgorithm { get; set; }
     /// <summary>ASN.1 alias RecipientEncryptedKeys ::= SEQUENCE OF RecipientEncryptedKey.</summary>
     public RecipientEncryptedKey[] RecipientEncryptedKeys { get; set; } = Array.Empty<RecipientEncryptedKey>();
@@ -991,6 +991,7 @@ public sealed class OriginatorIdentifierOrKey
 
 public sealed class OriginatorPublicKey
 {
+    /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier Algorithm { get; set; }
     public Asn1BitString PublicKey { get; set; }
 
@@ -1176,7 +1177,7 @@ public sealed class KEKRecipientInfo
 {
     public int Version { get; set; }
     public KEKIdentifier Kekid { get; set; }
-    /// <summary>ASN.1 alias KeyEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias KeyEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier KeyEncryptionAlgorithm { get; set; }
     /// <summary>ASN.1 alias EncryptedKey ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> EncryptedKey { get; set; }
@@ -1264,9 +1265,9 @@ public sealed class KEKIdentifier
 public sealed class PasswordRecipientInfo
 {
     public int Version { get; set; }
-    /// <summary>ASN.1 alias KeyDerivationAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias KeyDerivationAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier? KeyDerivationAlgorithm { get; set; }
-    /// <summary>ASN.1 alias KeyEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias KeyEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier KeyEncryptionAlgorithm { get; set; }
     /// <summary>ASN.1 alias EncryptedKey ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> EncryptedKey { get; set; }
@@ -1345,7 +1346,7 @@ public sealed class OtherRecipientInfo
 public sealed class DigestedData
 {
     public int Version { get; set; }
-    /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier DigestAlgorithm { get; set; }
     public EncapsulatedContentInfo EncapContentInfo { get; set; }
     /// <summary>ASN.1 alias Digest ::= OCTET STRING.</summary>
@@ -1387,7 +1388,7 @@ public sealed class EncryptedData
 {
     public int Version { get; set; }
     public EncryptedContentInfo EncryptedContentInfo { get; set; }
-    /// <summary>ASN.1 alias UnprotectedAttributes ::= SET OF Attribute.</summary>
+    /// <summary>ASN.1 alias UnprotectedAttributes ::= SET OF Attribute. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Attribute[]? UnprotectedAttrs { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1433,18 +1434,18 @@ public sealed class AuthenticatedData
 {
     public int Version { get; set; }
     public OriginatorInfo? OriginatorInfo { get; set; }
-    /// <summary>ASN.1 alias RecipientInfos ::= SET OF RecipientInfo.</summary>
+    /// <summary>ASN.1 alias RecipientInfos ::= SET OF RecipientInfo. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public RecipientInfo[] RecipientInfos { get; set; } = Array.Empty<RecipientInfo>();
-    /// <summary>ASN.1 alias MessageAuthenticationCodeAlgorithm ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias MessageAuthenticationCodeAlgorithm ::= AlgorithmIdentifier. ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier MacAlgorithm { get; set; }
-    /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier? DigestAlgorithm { get; set; }
     public EncapsulatedContentInfo EncapContentInfo { get; set; }
-    /// <summary>ASN.1 alias AuthAttributes ::= SET OF Attribute.</summary>
+    /// <summary>ASN.1 alias AuthAttributes ::= SET OF Attribute. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Attribute[]? AuthAttrs { get; set; }
     /// <summary>ASN.1 alias MessageAuthenticationCode ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> Mac { get; set; }
-    /// <summary>ASN.1 alias UnauthAttributes ::= SET OF Attribute.</summary>
+    /// <summary>ASN.1 alias UnauthAttributes ::= SET OF Attribute. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Attribute[]? UnauthAttrs { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1984,7 +1985,7 @@ public sealed class ExtendedCertificateOrCertificate
 public sealed class ExtendedCertificate
 {
     public ExtendedCertificateInfo ExtendedCertificateInfo { get; set; }
-    /// <summary>ASN.1 alias SignatureAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias SignatureAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier SignatureAlgorithm { get; set; }
     /// <summary>ASN.1 alias Signature ::= BIT STRING.</summary>
     public Asn1BitString Signature { get; set; }
@@ -2023,7 +2024,7 @@ public sealed class ExtendedCertificateInfo
 {
     public int Version { get; set; }
     public Asn1Kit.Legacy.Pkix.Certificate Certificate { get; set; }
-    /// <summary>ASN.1 alias UnauthAttributes ::= SET OF Attribute.</summary>
+    /// <summary>ASN.1 alias UnauthAttributes ::= SET OF Attribute. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Attribute[] Attributes { get; set; } = Array.Empty<Attribute>();
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);

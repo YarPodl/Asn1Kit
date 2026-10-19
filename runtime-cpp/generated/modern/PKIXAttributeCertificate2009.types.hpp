@@ -48,8 +48,11 @@ struct PKIXAttributeCertificate2009Oids {
 };
 
 struct AAControls {
+    // ASN.1 value range (0..MAX). Not enforced by runtime.
     std::optional<asn1kit::integer> pathLenConstraint{};
+    // ASN.1 alias AttrSpec ::= SEQUENCE OF OBJECT IDENTIFIER.
     std::optional<std::vector<asn1kit::oid>> permittedAttrs{};
+    // ASN.1 alias AttrSpec ::= SEQUENCE OF OBJECT IDENTIFIER.
     std::optional<std::vector<asn1kit::oid>> excludedAttrs{};
     bool permitUnSpecified = true;
 
@@ -393,6 +396,7 @@ struct IetfAttrSyntax_Values_Item {
 };
 
 struct IetfAttrSyntax {
+    // ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> policyAuthority{};
     std::vector<IetfAttrSyntax_Values_Item> values{};
 
@@ -421,8 +425,11 @@ struct IetfAttrSyntax {
 };
 
 struct IssuerSerial {
+    // ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> issuer{};
+    // ASN.1 alias CertificateSerialNumber ::= INTEGER.
     asn1kit::integer serial{};
+    // ASN.1 alias UniqueIdentifier ::= BIT STRING.
     std::optional<asn1kit::bit_string> issuerUID{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -483,6 +490,7 @@ namespace PKIXAttributeCertificate2009 {
 struct ObjectDigestInfo {
     ObjectDigestInfo_DigestedObjectType digestedObjectType{};
     std::optional<asn1kit::oid> otherObjectTypeID{};
+    // ASN.1 object set (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier digestAlgorithm{};
     asn1kit::bit_string objectDigest{};
 
@@ -516,6 +524,7 @@ struct ObjectDigestInfo {
 
 struct Holder {
     std::optional<IssuerSerial> baseCertificateID{};
+    // ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> entityName{};
     std::optional<ObjectDigestInfo> objectDigestInfo{};
 
@@ -554,6 +563,7 @@ struct Holder {
 };
 
 struct RoleSyntax {
+    // ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> roleAuthority{};
     ::asn1kit::modern::PKIX1Implicit2009::GeneralName roleName{};
 
@@ -589,7 +599,9 @@ struct RoleSyntax {
 };
 
 struct SecurityCategoryRfc3281 {
+    // ASN.1 constraint unsupported:  table({ Supported }). Not enforced by runtime.
     asn1kit::oid type{};
+    // ASN.1 object set SupportedSecurityCategories (extensible). Membership not enforced by runtime.
     asn1kit::any value_{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -827,6 +839,7 @@ struct Target {
 };
 
 struct V2Form {
+    // ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> issuerName{};
     std::optional<IssuerSerial> baseCertificateID{};
     std::optional<ObjectDigestInfo> objectDigestInfo{};
@@ -874,6 +887,7 @@ struct AttCertIssuer {
     AttCertIssuer_kind kind{};
     std::variant<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>, V2Form> value{};
 
+    // ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     static AttCertIssuer from_v1Form(std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> v) {
         AttCertIssuer result{};
         result.kind = AttCertIssuer_kind::v1Form;
@@ -946,11 +960,15 @@ struct AttributeCertificateInfo {
     std::int32_t version{};
     Holder holder{};
     AttCertIssuer issuer{};
+    // ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signature{};
+    // ASN.1 alias CertificateSerialNumber ::= INTEGER.
     asn1kit::integer serialNumber{};
     AttCertValidityPeriod attrCertValidityPeriod{};
     std::vector<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet> attributes{};
+    // ASN.1 alias UniqueIdentifier ::= BIT STRING.
     std::optional<asn1kit::bit_string> issuerUniqueID{};
+    // ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set AttributeCertExtensions (extensible). Membership not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> extensions{};
 
     [[nodiscard]] AttributeCertificateInfoAttributeCertExtensionsOpenView<AttributeCertificateInfo> attribute_cert_extensions() &;
@@ -1036,7 +1054,9 @@ template <typename Target>
 struct AttributeCertificateSignatureAlgorithmsOpenView;
 struct AttributeCertificate {
     AttributeCertificateInfo toBeSigned{};
+    // ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
+    // ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.
     asn1kit::bit_string signature{};
 
     [[nodiscard]] AttributeCertificateSignatureAlgorithmsOpenView<AttributeCertificate> signature_algorithms() &;

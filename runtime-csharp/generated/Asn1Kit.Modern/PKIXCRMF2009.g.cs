@@ -150,6 +150,7 @@ public sealed class CertReqMsg
 {
     public CertRequest CertReq { get; set; }
     public ProofOfPossession? Popo { get; set; }
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[]? RegInfo { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -201,7 +202,7 @@ public sealed class CertRequest
 {
     public Asn1Integer CertReqId { get; set; }
     public CertTemplate CertTemplate { get; set; }
-    /// <summary>ASN.1 alias Controls ::= SEQUENCE OF SingleAttribute.</summary>
+    /// <summary>ASN.1 alias Controls ::= SEQUENCE OF SingleAttribute. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[]? Controls { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -247,6 +248,7 @@ public sealed class CertTemplate
 {
     public int? Version { get; set; }
     public Asn1Integer? SerialNumber { get; set; }
+    /// <summary>ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? SigningAlg { get; set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
     public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[][]? Issuer { get; set; }
@@ -258,7 +260,7 @@ public sealed class CertTemplate
     public Asn1BitString? IssuerUID { get; set; }
     /// <summary>ASN.1 alias UniqueIdentifier ::= BIT STRING.</summary>
     public Asn1BitString? SubjectUID { get; set; }
-    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set CertExtensions (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIXCommonTypes2009.Extension[]? Extensions { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -571,6 +573,7 @@ public sealed class ProofOfPossession
 public sealed class POPOSigningKey
 {
     public POPOSigningKeyInput? PoposkInput { get; set; }
+    /// <summary>ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier AlgorithmIdentifier { get; set; }
     public Asn1BitString Signature { get; set; }
 
@@ -645,6 +648,7 @@ public sealed class POPOSigningKeyInput
 
 public sealed class PKMACValue
 {
+    /// <summary>ASN.1 object set Password-MACAlgorithms (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier AlgId { get; set; }
     public Asn1BitString Value { get; set; }
 
@@ -679,8 +683,10 @@ public sealed class PKMACValue
 public sealed class PBMParameter
 {
     public ReadOnlyMemory<byte> Salt { get; set; }
+    /// <summary>ASN.1 object set DigestAlgorithms (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Owf { get; set; }
     public Asn1Integer IterationCount { get; set; }
+    /// <summary>ASN.1 object set MACAlgorithms (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Mac { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -883,6 +889,7 @@ public sealed class EncKeyWithID
 public sealed class PrivateKeyInfo
 {
     public Asn1Integer Version { get; set; }
+    /// <summary>ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier PrivateKeyAlgorithm { get; set; }
     public ReadOnlyMemory<byte> PrivateKey { get; set; }
     /// <summary>ASN.1 alias Attributes ::= SET OF AttributeSet.</summary>
@@ -932,6 +939,7 @@ public sealed class PrivateKeyInfo
 public sealed class PKIPublicationInfo
 {
     public int Action { get; set; }
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public SinglePubInfo[]? PubInfos { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1171,9 +1179,12 @@ public sealed class EncryptedKey
 
 public sealed class EncryptedValue
 {
+    /// <summary>ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? IntendedAlg { get; set; }
+    /// <summary>ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? SymmAlg { get; set; }
     public Asn1BitString? EncSymmKey { get; set; }
+    /// <summary>ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? KeyAlg { get; set; }
     public ReadOnlyMemory<byte>? ValueHint { get; set; }
     public Asn1BitString EncValue { get; set; }

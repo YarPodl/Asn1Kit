@@ -49,7 +49,9 @@ struct AllOrFirstTier {
 };
 
 struct ContentHints {
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::string> contentDescription{};
+    // ASN.1 alias ContentType ::= OBJECT IDENTIFIER.
     asn1kit::oid contentType{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -77,7 +79,9 @@ struct ContentHints {
 };
 
 struct ContentReference {
+    // ASN.1 alias ContentType ::= OBJECT IDENTIFIER.
     asn1kit::oid contentType{};
+    // ASN.1 alias ContentIdentifier ::= OCTET STRING.
     asn1kit::bytes signedContentIdentifier{};
     asn1kit::bytes originatorSignatureValue{};
 
@@ -112,6 +116,7 @@ struct ESSPrivacyMark {
     ESSPrivacyMark_kind kind{};
     std::string value{};
 
+    // ASN.1 SIZE (1..128). Not enforced by runtime.
     static ESSPrivacyMark from_pString(std::string v) {
         ESSPrivacyMark result{};
         result.kind = ESSPrivacyMark_kind::pString;
@@ -119,6 +124,7 @@ struct ESSPrivacyMark {
         return result;
     }
 
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     static ESSPrivacyMark from_utf8String(std::string v) {
         ESSPrivacyMark result{};
         result.kind = ESSPrivacyMark_kind::utf8String;
@@ -185,9 +191,11 @@ namespace modern {
 namespace ExtendedSecurityServices2009 {
 
 struct ESSSecurityLabel {
+    // ASN.1 alias SecurityPolicyIdentifier ::= OBJECT IDENTIFIER.
     asn1kit::oid security_policy_identifier{};
     std::optional<std::int32_t> security_classification{};
     std::optional<ESSPrivacyMark> privacy_mark{};
+    // ASN.1 alias SecurityCategories ::= SET OF SecurityCategory. ASN.1 SIZE (1..64). Not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SecurityCategory>> security_categories{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -255,7 +263,9 @@ namespace modern {
 namespace ExtendedSecurityServices2009 {
 
 struct IssuerSerial {
+    // ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> issuer{};
+    // ASN.1 alias CertificateSerialNumber ::= INTEGER.
     asn1kit::integer serialNumber{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -279,6 +289,7 @@ struct IssuerSerial {
 };
 
 struct ESSCertID {
+    // ASN.1 alias Hash ::= OCTET STRING.
     asn1kit::bytes certHash{};
     std::optional<IssuerSerial> issuerSerial{};
 
@@ -320,7 +331,9 @@ namespace ExtendedSecurityServices2009 {
 template <typename Target>
 struct ESSCertIDv2LocalOpenView;
 struct ESSCertIDv2 {
+    // ASN.1 alias HashAlgorithm ::= AlgorithmIdentifier. ASN.1 object set (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm = default_hashAlgorithm();
+    // ASN.1 alias Hash ::= OCTET STRING.
     asn1kit::bytes certHash{};
     std::optional<IssuerSerial> issuerSerial{};
 
@@ -395,6 +408,7 @@ struct MLReceiptPolicy {
         return result;
     }
 
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     static MLReceiptPolicy from_insteadOf(std::vector<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> v) {
         MLReceiptPolicy result{};
         result.kind = MLReceiptPolicy_kind::insteadOf;
@@ -402,6 +416,7 @@ struct MLReceiptPolicy {
         return result;
     }
 
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     static MLReceiptPolicy from_inAdditionTo(std::vector<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> v) {
         MLReceiptPolicy result{};
         result.kind = MLReceiptPolicy_kind::inAdditionTo;
@@ -477,7 +492,9 @@ struct MLReceiptPolicy {
 
 struct Receipt {
     std::int32_t version{};
+    // ASN.1 alias ContentType ::= OBJECT IDENTIFIER.
     asn1kit::oid contentType{};
+    // ASN.1 alias ContentIdentifier ::= OCTET STRING.
     asn1kit::bytes signedContentIdentifier{};
     asn1kit::bytes originatorSignatureValue{};
 
@@ -581,8 +598,10 @@ struct ReceiptsFrom {
 };
 
 struct ReceiptRequest {
+    // ASN.1 alias ContentIdentifier ::= OCTET STRING.
     asn1kit::bytes signedContentIdentifier{};
     ReceiptsFrom receiptsFrom{};
+    // ASN.1 SIZE (1..16). Not enforced by runtime.
     std::vector<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> receiptsTo{};
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
@@ -702,6 +721,7 @@ struct EntityIdentifier {
         return result;
     }
 
+    // ASN.1 alias SubjectKeyIdentifier ::= OCTET STRING.
     static EntityIdentifier from_subjectKeyIdentifier(asn1kit::bytes v) {
         EntityIdentifier result{};
         result.kind = EntityIdentifier_kind::subjectKeyIdentifier;

@@ -112,7 +112,9 @@ public static class CryptographicMessageSyntax2009Oids
 
 public sealed class ContentInfo
 {
+    /// <summary>ASN.1 constraint unsupported:  table({ ContentSet }). Not enforced by runtime.</summary>
     public Asn1Oid ContentType { get; set; }
+    /// <summary>ASN.1 object set ContentSet (extensible). Membership not enforced by runtime.</summary>
     public Asn1Any Content { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -224,7 +226,9 @@ public sealed class SignedData
 
 public sealed class EncapsulatedContentInfo
 {
+    /// <summary>ASN.1 constraint unsupported:  table({ ContentSet }). Not enforced by runtime.</summary>
     public Asn1Oid EContentType { get; set; }
+    /// <summary>ASN.1 object set ContentSet (extensible). Membership not enforced by runtime.</summary>
     public ReadOnlyMemory<byte>? EContent { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -272,15 +276,15 @@ public sealed class SignerInfo
 {
     public int Version { get; set; }
     public SignerIdentifier Sid { get; set; }
-    /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set DigestAlgorithmSet (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier DigestAlgorithm { get; set; }
-    /// <summary>ASN.1 alias SignedAttributes ::= Attributes.</summary>
+    /// <summary>ASN.1 alias SignedAttributes ::= Attributes. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set SignedAttributesSet (extensible). Membership not enforced by runtime.</summary>
     public Asn1Value<Attribute[]>? SignedAttrs { get; set; }
-    /// <summary>ASN.1 alias SignatureAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias SignatureAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set SignatureAlgorithmSet (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier SignatureAlgorithm { get; set; }
     /// <summary>ASN.1 alias SignatureValue ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> Signature { get; set; }
-    /// <summary>ASN.1 alias Attributes ::= SET OF Attribute.</summary>
+    /// <summary>ASN.1 alias Attributes ::= SET OF Attribute. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set UnsignedAttributes (extensible). Membership not enforced by runtime.</summary>
     public Attribute[]? UnsignedAttrs { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -418,6 +422,7 @@ public sealed class SignerIdentifier
 
 public sealed class Attribute
 {
+    /// <summary>ASN.1 constraint unsupported:  table({ AttrList }). Not enforced by runtime.</summary>
     public Asn1Oid AttrType { get; set; }
     public Asn1Any[] AttrValues { get; set; } = Array.Empty<Asn1Any>();
 
@@ -456,10 +461,10 @@ public sealed class EnvelopedData
 {
     public int Version { get; set; }
     public OriginatorInfo? OriginatorInfo { get; set; }
-    /// <summary>ASN.1 alias RecipientInfos ::= SET OF RecipientInfo.</summary>
+    /// <summary>ASN.1 alias RecipientInfos ::= SET OF RecipientInfo. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public RecipientInfo[] RecipientInfos { get; set; } = Array.Empty<RecipientInfo>();
     public EncryptedContentInfo EncryptedContentInfo { get; set; }
-    /// <summary>ASN.1 alias Attributes ::= SET OF Attribute.</summary>
+    /// <summary>ASN.1 alias Attributes ::= SET OF Attribute. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set UnprotectedAttributes (extensible). Membership not enforced by runtime.</summary>
     public Attribute[]? UnprotectedAttrs { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -578,8 +583,9 @@ public sealed class OriginatorInfo
 
 public sealed class EncryptedContentInfo
 {
+    /// <summary>ASN.1 constraint unsupported:  table({ ContentSet }). Not enforced by runtime.</summary>
     public Asn1Oid ContentType { get; set; }
-    /// <summary>ASN.1 alias ContentEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias ContentEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set ContentEncryptionAlgorithmSet (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier ContentEncryptionAlgorithm { get; set; }
     public ReadOnlyMemory<byte>? EncryptedContent { get; set; }
 
@@ -747,6 +753,7 @@ public sealed class KeyTransRecipientInfo
 {
     public int Version { get; set; }
     public RecipientIdentifier Rid { get; set; }
+    /// <summary>ASN.1 object set KeyTransportAlgorithmSet (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier KeyEncryptionAlgorithm { get; set; }
     /// <summary>ASN.1 alias EncryptedKey ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> EncryptedKey { get; set; }
@@ -863,6 +870,7 @@ public sealed class KeyAgreeRecipientInfo
     public OriginatorIdentifierOrKey Originator { get; set; }
     /// <summary>ASN.1 alias UserKeyingMaterial ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte>? Ukm { get; set; }
+    /// <summary>ASN.1 object set KeyAgreementAlgorithmSet (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier KeyEncryptionAlgorithm { get; set; }
     /// <summary>ASN.1 alias RecipientEncryptedKeys ::= SEQUENCE OF RecipientEncryptedKey.</summary>
     public RecipientEncryptedKey[] RecipientEncryptedKeys { get; set; } = Array.Empty<RecipientEncryptedKey>();
@@ -1011,6 +1019,7 @@ public sealed class OriginatorIdentifierOrKey
 
 public sealed class OriginatorPublicKey
 {
+    /// <summary>ASN.1 object set OriginatorKeySet (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Algorithm { get; set; }
     public Asn1BitString PublicKey { get; set; }
 
@@ -1196,7 +1205,7 @@ public sealed class KEKRecipientInfo
 {
     public int Version { get; set; }
     public KEKIdentifier Kekid { get; set; }
-    /// <summary>ASN.1 alias KeyEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias KeyEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set KeyEncryptionAlgorithmSet (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier KeyEncryptionAlgorithm { get; set; }
     /// <summary>ASN.1 alias EncryptedKey ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> EncryptedKey { get; set; }
@@ -1284,9 +1293,9 @@ public sealed class KEKIdentifier
 public sealed class PasswordRecipientInfo
 {
     public int Version { get; set; }
-    /// <summary>ASN.1 alias KeyDerivationAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias KeyDerivationAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? KeyDerivationAlgorithm { get; set; }
-    /// <summary>ASN.1 alias KeyEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias KeyEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set KeyEncryptionAlgorithmSet (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier KeyEncryptionAlgorithm { get; set; }
     /// <summary>ASN.1 alias EncryptedKey ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> EncryptedKey { get; set; }
@@ -1331,7 +1340,9 @@ public sealed class PasswordRecipientInfo
 
 public sealed class OtherRecipientInfo
 {
+    /// <summary>ASN.1 constraint unsupported:  table({ SupportedOtherRecipInfo }). Not enforced by runtime.</summary>
     public Asn1Oid OriType { get; set; }
+    /// <summary>ASN.1 object set SupportedOtherRecipInfo (extensible). Membership not enforced by runtime.</summary>
     public Asn1Any OriValue { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1365,7 +1376,7 @@ public sealed class OtherRecipientInfo
 public sealed class DigestedData
 {
     public int Version { get; set; }
-    /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set DigestAlgorithmSet (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier DigestAlgorithm { get; set; }
     public EncapsulatedContentInfo EncapContentInfo { get; set; }
     /// <summary>ASN.1 alias Digest ::= OCTET STRING.</summary>
@@ -1414,7 +1425,7 @@ public sealed class EncryptedData
 {
     public int Version { get; set; }
     public EncryptedContentInfo EncryptedContentInfo { get; set; }
-    /// <summary>ASN.1 alias Attributes ::= SET OF Attribute.</summary>
+    /// <summary>ASN.1 alias Attributes ::= SET OF Attribute. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set UnprotectedAttributes (extensible). Membership not enforced by runtime.</summary>
     public Attribute[]? UnprotectedAttrs { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1469,18 +1480,18 @@ public sealed class AuthenticatedData
 {
     public int Version { get; set; }
     public OriginatorInfo? OriginatorInfo { get; set; }
-    /// <summary>ASN.1 alias RecipientInfos ::= SET OF RecipientInfo.</summary>
+    /// <summary>ASN.1 alias RecipientInfos ::= SET OF RecipientInfo. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public RecipientInfo[] RecipientInfos { get; set; } = Array.Empty<RecipientInfo>();
-    /// <summary>ASN.1 alias MessageAuthenticationCodeAlgorithm ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias MessageAuthenticationCodeAlgorithm ::= AlgorithmIdentifier. ASN.1 object set MessageAuthenticationCodeAlgorithmSet (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier MacAlgorithm { get; set; }
-    /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set DigestAlgorithmSet (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? DigestAlgorithm { get; set; }
     public EncapsulatedContentInfo EncapContentInfo { get; set; }
-    /// <summary>ASN.1 alias AuthAttributes ::= SET OF Attribute.</summary>
+    /// <summary>ASN.1 alias AuthAttributes ::= SET OF Attribute. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Attribute[]? AuthAttrs { get; set; }
     /// <summary>ASN.1 alias MessageAuthenticationCode ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> Mac { get; set; }
-    /// <summary>ASN.1 alias UnauthAttributes ::= SET OF Attribute.</summary>
+    /// <summary>ASN.1 alias UnauthAttributes ::= SET OF Attribute. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Attribute[]? UnauthAttrs { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1633,7 +1644,9 @@ public sealed class RevocationInfoChoice
 
 public sealed class OtherRevocationInfoFormat
 {
+    /// <summary>ASN.1 constraint unsupported:  table({ SupportedOtherRevokInfo }). Not enforced by runtime.</summary>
     public Asn1Oid OtherRevInfoFormat { get; set; }
+    /// <summary>ASN.1 object set SupportedOtherRevokInfo (extensible). Membership not enforced by runtime.</summary>
     public Asn1Any OtherRevInfo { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1794,7 +1807,9 @@ public sealed class CertificateChoices
 
 public sealed class OtherCertificateFormat
 {
+    /// <summary>ASN.1 constraint unsupported:  table({ SupportedCertFormats }). Not enforced by runtime.</summary>
     public Asn1Oid OtherCertFormat { get; set; }
+    /// <summary>ASN.1 object set SupportedCertFormats (extensible). Membership not enforced by runtime.</summary>
     public Asn1Any OtherCert { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1887,7 +1902,9 @@ public static class CMSVersion
 
 public sealed class OtherKeyAttribute
 {
+    /// <summary>ASN.1 constraint unsupported:  table({ SupportedKeyAttributes }). Not enforced by runtime.</summary>
     public Asn1Oid KeyAttrId { get; set; }
+    /// <summary>ASN.1 object set SupportedKeyAttributes (extensible). Membership not enforced by runtime.</summary>
     public Asn1Any KeyAttr { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -2054,7 +2071,7 @@ public sealed class ExtendedCertificateOrCertificate
 public sealed class ExtendedCertificate
 {
     public ExtendedCertificateInfo ExtendedCertificateInfo { get; set; }
-    /// <summary>ASN.1 alias SignatureAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias SignatureAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set SignatureAlgorithmSet (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier SignatureAlgorithm { get; set; }
     /// <summary>ASN.1 alias Signature ::= BIT STRING.</summary>
     public Asn1BitString Signature { get; set; }
@@ -2093,7 +2110,7 @@ public sealed class ExtendedCertificateInfo
 {
     public int Version { get; set; }
     public Asn1Kit.Modern.PKIX1Explicit2009.Certificate Certificate { get; set; }
-    /// <summary>ASN.1 alias UnauthAttributes ::= SET OF Attribute.</summary>
+    /// <summary>ASN.1 alias UnauthAttributes ::= SET OF Attribute. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Attribute[] Attributes { get; set; } = Array.Empty<Attribute>();
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);

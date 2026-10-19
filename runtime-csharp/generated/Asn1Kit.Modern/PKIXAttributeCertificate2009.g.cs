@@ -142,6 +142,7 @@ public sealed class AttributeCertificateInfo
     public int Version { get; set; }
     public Holder Holder { get; set; }
     public AttCertIssuer Issuer { get; set; }
+    /// <summary>ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Signature { get; set; }
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
     public Asn1Integer SerialNumber { get; set; }
@@ -149,7 +150,7 @@ public sealed class AttributeCertificateInfo
     public Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet[] Attributes { get; set; } = Array.Empty<Asn1Kit.Modern.PKIXCommonTypes2009.AttributeSet>();
     /// <summary>ASN.1 alias UniqueIdentifier ::= BIT STRING.</summary>
     public Asn1BitString? IssuerUniqueID { get; set; }
-    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set AttributeCertExtensions (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIXCommonTypes2009.Extension[]? Extensions { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -221,7 +222,7 @@ public static class AttCertVersion
 public sealed class Holder
 {
     public IssuerSerial? BaseCertificateID { get; set; }
-    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName.</summary>
+    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]? EntityName { get; set; }
     public ObjectDigestInfo? ObjectDigestInfo { get; set; }
 
@@ -280,6 +281,7 @@ public sealed class ObjectDigestInfo
 {
     public ObjectDigestInfo_DigestedObjectType DigestedObjectType { get; set; }
     public Asn1Oid? OtherObjectTypeID { get; set; }
+    /// <summary>ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier DigestAlgorithm { get; set; }
     public Asn1BitString ObjectDigest { get; set; }
 
@@ -330,7 +332,7 @@ public enum AttCertIssuerKind
 public sealed class AttCertIssuer
 {
     public AttCertIssuerKind Kind { get; private set; }
-    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName.</summary>
+    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]? V1Form { get; private set; }
     public V2Form? V2Form { get; private set; }
 
@@ -394,7 +396,7 @@ public sealed class AttCertIssuer
 
 public sealed class V2Form
 {
-    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName.</summary>
+    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]? IssuerName { get; set; }
     public IssuerSerial? BaseCertificateID { get; set; }
     public ObjectDigestInfo? ObjectDigestInfo { get; set; }
@@ -452,7 +454,7 @@ public sealed class V2Form
 
 public sealed class IssuerSerial
 {
-    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName.</summary>
+    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[] Issuer { get; set; } = Array.Empty<Asn1Kit.Modern.PKIX1Implicit2009.GeneralName>();
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
     public Asn1Integer Serial { get; set; }
@@ -679,6 +681,7 @@ public sealed class TargetCert
 
 public sealed class AAControls
 {
+    /// <summary>ASN.1 value range (0..MAX). Not enforced by runtime.</summary>
     public Asn1Integer? PathLenConstraint { get; set; }
     /// <summary>ASN.1 alias AttrSpec ::= SEQUENCE OF OBJECT IDENTIFIER.</summary>
     public Asn1Oid[]? PermittedAttrs { get; set; }
@@ -750,7 +753,7 @@ public sealed class AAControls
 
 public sealed class IetfAttrSyntax
 {
-    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName.</summary>
+    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]? PolicyAuthority { get; set; }
     public IetfAttrSyntax_Values_Item[] Values { get; set; } = Array.Empty<IetfAttrSyntax_Values_Item>();
 
@@ -838,7 +841,7 @@ public sealed class SvceAuthInfo
 
 public sealed class RoleSyntax
 {
-    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName.</summary>
+    /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]? RoleAuthority { get; set; }
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName RoleName { get; set; }
 
@@ -941,7 +944,9 @@ public sealed class Clearance
 
 public sealed class SecurityCategoryRfc3281
 {
+    /// <summary>ASN.1 constraint unsupported:  table({ Supported }). Not enforced by runtime.</summary>
     public Asn1Oid Type { get; set; }
+    /// <summary>ASN.1 object set SupportedSecurityCategories (extensible). Membership not enforced by runtime.</summary>
     public Asn1Any Value { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);

@@ -11,6 +11,7 @@ alwaysApply: false
 - `pkix1-explicit88.json`, `pkix1-implicit88.json`, `cms-2004.json` — generated IR golden; вручную не правятся.
 - `dvcs.patch.json` — product options overlay (namespaces, lazy, retainEncoded, valueType) для generate `Asn1Kit.Pkix`.
 - `example.json` — ручная фикстура; сохраняй её `options` при точечных правках.
+- `schema-constraints.asn` / `schema-constraints.json` — узкая фикстура комментариев SIZE/value/unsupported/object-set; C++ golden — `runtime-cpp/generated/schema-constraints/`.
 - `runtime-csharp/generated/**/*.g.cs` — generated C#; вручную не правится.
 - `runtime-cpp/generated/**/*.hpp` — generated C++ (единственный SoT, как `runtime-csharp/generated`); вручную не правится (`scripts/regenerate-cpp-golden.ps1`, `scripts/regenerate-modern-cpp.ps1`).
 - Формат BER/DER-векторов описан в `runtime-csharp/fixtures/ber-der/README.md`.

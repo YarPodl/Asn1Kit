@@ -28,7 +28,7 @@ public sealed class TimeStampReq
     public Asn1Oid? ReqPolicy { get; set; }
     public Asn1Integer? Nonce { get; set; }
     public bool CertReq { get; set; } = false;
-    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIXCommonTypes2009.Extension[]? Extensions { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -96,7 +96,7 @@ public sealed class TimeStampReq
 
 public sealed class MessageImprint
 {
-    /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier.</summary>
+    /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set DigestAlgorithmSet (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier HashAlgorithm { get; set; }
     public ReadOnlyMemory<byte> HashedMessage { get; set; }
 
@@ -171,7 +171,7 @@ public sealed class TimeStampResp
 public sealed class PKIStatusInfo
 {
     public int Status { get; set; }
-    /// <summary>ASN.1 alias PKIFreeText ::= SEQUENCE OF UTF8String.</summary>
+    /// <summary>ASN.1 alias PKIFreeText ::= SEQUENCE OF UTF8String. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public string[]? StatusString { get; set; }
     public PKIFailureInfo? FailInfo { get; set; }
 
@@ -330,7 +330,7 @@ public sealed class TSTInfo
     public bool Ordering { get; set; } = false;
     public Asn1Integer? Nonce { get; set; }
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName? Tsa { get; set; }
-    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIXCommonTypes2009.Extension[]? Extensions { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -420,7 +420,9 @@ public sealed class TSTInfo
 public sealed class Accuracy
 {
     public Asn1Integer? Seconds { get; set; }
+    /// <summary>ASN.1 value range (1..999). Not enforced by runtime.</summary>
     public int? Millis { get; set; }
+    /// <summary>ASN.1 value range (1..999). Not enforced by runtime.</summary>
     public int? Micros { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);

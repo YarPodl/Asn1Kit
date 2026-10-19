@@ -423,6 +423,7 @@ public sealed class TBSCertificate
     public int Version { get; set; } = 0;
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
     public Asn1Integer SerialNumber { get; set; }
+    /// <summary>ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Signature { get; set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
     public Asn1Value<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[][]> Issuer { get; set; }
@@ -434,7 +435,7 @@ public sealed class TBSCertificate
     public Asn1BitString? IssuerUniqueID { get; set; }
     /// <summary>ASN.1 alias UniqueIdentifier ::= BIT STRING.</summary>
     public Asn1BitString? SubjectUniqueID { get; set; }
-    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set CertExtensions (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIXCommonTypes2009.Extension[]? Extensions { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -667,6 +668,7 @@ public sealed class Time
 
 public sealed class SubjectPublicKeyInfo
 {
+    /// <summary>ASN.1 object set PublicKeyAlgorithms (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Algorithm { get; set; }
     public Asn1BitString SubjectPublicKey { get; set; }
 
@@ -701,13 +703,15 @@ public sealed class SubjectPublicKeyInfo
 public sealed class TBSCertList
 {
     public int? Version { get; set; }
+    /// <summary>ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Signature { get; set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
     public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[][] Issuer { get; set; } = Array.Empty<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[]>();
     public Time ThisUpdate { get; set; }
     public Time? NextUpdate { get; set; }
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public TBSCertList_RevokedCertificates_Item[]? RevokedCertificates { get; set; }
-    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set CrlExtensions (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIXCommonTypes2009.Extension[]? CrlExtensions { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -805,7 +809,7 @@ public sealed class TBSCertList_RevokedCertificates_Item
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
     public Asn1Integer UserCertificate { get; set; }
     public Time RevocationDate { get; set; }
-    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set CrlEntryExtensions (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIXCommonTypes2009.Extension[]? CrlEntryExtensions { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);

@@ -14,6 +14,7 @@ public sealed class PKIMessage
     public PKIBody Body { get; set; }
     /// <summary>ASN.1 alias PKIProtection ::= BIT STRING.</summary>
     public Asn1BitString? Protection { get; set; }
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.Certificate[]? ExtraCerts { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -83,6 +84,7 @@ public sealed class PKIHeader
     public Asn1Kit.Legacy.Pkix.GeneralName Sender { get; set; }
     public Asn1Kit.Legacy.Pkix.GeneralName Recipient { get; set; }
     public DateTimeOffset? MessageTime { get; set; }
+    /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier? ProtectionAlg { get; set; }
     /// <summary>ASN.1 alias KeyIdentifier ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte>? SenderKID { get; set; }
@@ -91,8 +93,9 @@ public sealed class PKIHeader
     public ReadOnlyMemory<byte>? TransactionID { get; set; }
     public ReadOnlyMemory<byte>? SenderNonce { get; set; }
     public ReadOnlyMemory<byte>? RecipNonce { get; set; }
-    /// <summary>ASN.1 alias PKIFreeText ::= SEQUENCE OF UTF8String.</summary>
+    /// <summary>ASN.1 alias PKIFreeText ::= SEQUENCE OF UTF8String. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public string[]? FreeText { get; set; }
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public InfoTypeAndValue[]? GeneralInfo { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -297,10 +300,10 @@ public enum PKIBodyKind
 public sealed class PKIBody
 {
     public PKIBodyKind Kind { get; private set; }
-    /// <summary>ASN.1 alias CertReqMessages ::= SEQUENCE OF CertReqMsg.</summary>
+    /// <summary>ASN.1 alias CertReqMessages ::= SEQUENCE OF CertReqMsg. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Crmf.CertReqMsg[]? Ir { get; private set; }
     public CertRepMessage? Ip { get; private set; }
-    /// <summary>ASN.1 alias CertReqMessages ::= SEQUENCE OF CertReqMsg.</summary>
+    /// <summary>ASN.1 alias CertReqMessages ::= SEQUENCE OF CertReqMsg. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Crmf.CertReqMsg[]? Cr { get; private set; }
     public CertRepMessage? Cp { get; private set; }
     public Asn1Kit.Legacy.Pkcs10.CertificationRequest? P10cr { get; private set; }
@@ -308,16 +311,16 @@ public sealed class PKIBody
     public Challenge[]? Popdecc { get; private set; }
     /// <summary>ASN.1 alias POPODecKeyRespContent ::= SEQUENCE OF INTEGER.</summary>
     public Asn1Integer[]? Popdecr { get; private set; }
-    /// <summary>ASN.1 alias CertReqMessages ::= SEQUENCE OF CertReqMsg.</summary>
+    /// <summary>ASN.1 alias CertReqMessages ::= SEQUENCE OF CertReqMsg. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Crmf.CertReqMsg[]? Kur { get; private set; }
     public CertRepMessage? Kup { get; private set; }
-    /// <summary>ASN.1 alias CertReqMessages ::= SEQUENCE OF CertReqMsg.</summary>
+    /// <summary>ASN.1 alias CertReqMessages ::= SEQUENCE OF CertReqMsg. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Crmf.CertReqMsg[]? Krr { get; private set; }
     public KeyRecRepContent? Krp { get; private set; }
     /// <summary>ASN.1 alias RevReqContent ::= SEQUENCE OF RevDetails.</summary>
     public RevDetails[]? Rr { get; private set; }
     public RevRepContent? Rp { get; private set; }
-    /// <summary>ASN.1 alias CertReqMessages ::= SEQUENCE OF CertReqMsg.</summary>
+    /// <summary>ASN.1 alias CertReqMessages ::= SEQUENCE OF CertReqMsg. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Crmf.CertReqMsg[]? Ccr { get; private set; }
     public CertRepMessage? Ccp { get; private set; }
     public CAKeyUpdAnnContent? Ckuann { get; private set; }
@@ -958,8 +961,10 @@ public sealed class ProtectedPart
 public sealed class PBMParameter
 {
     public ReadOnlyMemory<byte> Salt { get; set; }
+    /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier Owf { get; set; }
     public Asn1Integer IterationCount { get; set; }
+    /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier Mac { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -996,7 +1001,9 @@ public sealed class PBMParameter
 
 public sealed class DHBMParameter
 {
+    /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier Owf { get; set; }
+    /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier Mac { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1138,7 +1145,7 @@ public sealed class PKIFailureInfo
 public sealed class PKIStatusInfo
 {
     public int Status { get; set; }
-    /// <summary>ASN.1 alias PKIFreeText ::= SEQUENCE OF UTF8String.</summary>
+    /// <summary>ASN.1 alias PKIFreeText ::= SEQUENCE OF UTF8String. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public string[]? StatusString { get; set; }
     public PKIFailureInfo? FailInfo { get; set; }
 
@@ -1189,6 +1196,7 @@ public sealed class PKIStatusInfo
 
 public sealed class OOBCertHash
 {
+    /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier? HashAlg { get; set; }
     public Asn1Kit.Legacy.Crmf.CertId? CertId { get; set; }
     public Asn1BitString HashVal { get; set; }
@@ -1251,6 +1259,7 @@ public sealed class OOBCertHash
 
 public sealed class Challenge
 {
+    /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier? Owf { get; set; }
     public ReadOnlyMemory<byte> Witness { get; set; }
     public ReadOnlyMemory<byte> ChallengeValue { get; set; }
@@ -1293,6 +1302,7 @@ public sealed class Challenge
 
 public sealed class CertRepMessage
 {
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.Certificate[]? CaPubs { get; set; }
     public CertResponse[] Response { get; set; } = Array.Empty<CertResponse>();
 
@@ -1541,7 +1551,9 @@ public sealed class KeyRecRepContent
 {
     public PKIStatusInfo Status { get; set; }
     public Asn1Kit.Legacy.Pkix.Certificate? NewSigCert { get; set; }
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.Certificate[]? CaCerts { get; set; }
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public CertifiedKeyPair[]? KeyPairHist { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1626,7 +1638,7 @@ public sealed class RevDetails
     public Asn1Kit.Legacy.Crmf.CertTemplate CertDetails { get; set; }
     public Asn1Kit.Legacy.Pkix.ReasonFlags? RevocationReason { get; set; }
     public DateTimeOffset? BadSinceDate { get; set; }
-    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.Extension[]? CrlEntryDetails { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1684,8 +1696,11 @@ public sealed class RevDetails
 
 public sealed class RevRepContent
 {
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public PKIStatusInfo[] Status { get; set; } = Array.Empty<PKIStatusInfo>();
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Crmf.CertId[]? RevCerts { get; set; }
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.CertificateList[]? Crls { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1795,7 +1810,7 @@ public sealed class RevAnnContent
     public Asn1Kit.Legacy.Crmf.CertId CertId { get; set; }
     public DateTimeOffset WillBeRevokedAt { get; set; }
     public DateTimeOffset BadSinceDate { get; set; }
-    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.Extension[]? CrlDetails { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1884,7 +1899,7 @@ public sealed class ErrorMsgContent
 {
     public PKIStatusInfo PKIStatusInfo { get; set; }
     public Asn1Integer? ErrorCode { get; set; }
-    /// <summary>ASN.1 alias PKIFreeText ::= SEQUENCE OF UTF8String.</summary>
+    /// <summary>ASN.1 alias PKIFreeText ::= SEQUENCE OF UTF8String. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public string[]? ErrorDetails { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);

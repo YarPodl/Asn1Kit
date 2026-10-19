@@ -10,6 +10,7 @@ namespace Asn1Kit.Modern.PKCS10;
 
 public sealed class SubjectPublicKeyInfo
 {
+    /// <summary>ASN.1 object set PKInfoAlgorithms (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Algorithm { get; set; }
     public Asn1BitString SubjectPublicKey { get; set; }
 
@@ -43,7 +44,9 @@ public sealed class SubjectPublicKeyInfo
 
 public sealed class Attribute
 {
+    /// <summary>ASN.1 constraint unsupported:  table({ IOSet }). Not enforced by runtime.</summary>
     public Asn1Oid Type { get; set; }
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Any[] Values { get; set; } = Array.Empty<Asn1Any>();
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -79,6 +82,7 @@ public sealed class Attribute
 
 public sealed class CertificationRequestInfo
 {
+    /// <summary>ASN.1 constraint unsupported: (v1 , ...). Not enforced by runtime.</summary>
     public int Version { get; set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
     public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[][] Subject { get; set; } = Array.Empty<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[]>();
@@ -130,6 +134,7 @@ public sealed class CertificationRequestInfo
 public sealed class CertificationRequest
 {
     public CertificationRequestInfo CertificationRequestInfo { get; set; }
+    /// <summary>ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier SignatureAlgorithm { get; set; }
     public Asn1BitString Signature { get; set; }
 

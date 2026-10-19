@@ -1389,6 +1389,7 @@ public sealed class DirectoryString
 public sealed class Certificate
 {
     public Asn1Value<TBSCertificate> TbsCertificate { get; set; }
+    /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public AlgorithmIdentifier SignatureAlgorithm { get; set; }
     public Asn1BitString Signature { get; set; }
 
@@ -1430,6 +1431,7 @@ public sealed class TBSCertificate
     public int Version { get; set; } = 0;
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
     public Asn1Integer SerialNumber { get; set; }
+    /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public AlgorithmIdentifier Signature { get; set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
     public Asn1Value<AttributeTypeAndValue[][]> Issuer { get; set; }
@@ -1441,7 +1443,7 @@ public sealed class TBSCertificate
     public Asn1BitString? IssuerUniqueID { get; set; }
     /// <summary>ASN.1 alias UniqueIdentifier ::= BIT STRING.</summary>
     public Asn1BitString? SubjectUniqueID { get; set; }
-    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Value<Extension[]>? Extensions { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1665,6 +1667,7 @@ public sealed class Time
 
 public sealed class SubjectPublicKeyInfo
 {
+    /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public AlgorithmIdentifier Algorithm { get; set; }
     public Asn1BitString SubjectPublicKey { get; set; }
 
@@ -1741,6 +1744,7 @@ public sealed class Extension
 public sealed class CertificateList
 {
     public TBSCertList TbsCertList { get; set; }
+    /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public AlgorithmIdentifier SignatureAlgorithm { get; set; }
     public Asn1BitString Signature { get; set; }
 
@@ -1777,13 +1781,14 @@ public sealed class CertificateList
 public sealed class TBSCertList
 {
     public int? Version { get; set; }
+    /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public AlgorithmIdentifier Signature { get; set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
     public AttributeTypeAndValue[][] Issuer { get; set; } = Array.Empty<AttributeTypeAndValue[]>();
     public Time ThisUpdate { get; set; }
     public Time? NextUpdate { get; set; }
     public TBSCertList_RevokedCertificates_Item[]? RevokedCertificates { get; set; }
-    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Extension[]? CrlExtensions { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1909,9 +1914,9 @@ public sealed class AlgorithmIdentifier
 public sealed class ORAddress
 {
     public BuiltInStandardAttributes BuiltInStandardAttributes { get; set; }
-    /// <summary>ASN.1 alias BuiltInDomainDefinedAttributes ::= SEQUENCE OF BuiltInDomainDefinedAttribute.</summary>
+    /// <summary>ASN.1 alias BuiltInDomainDefinedAttributes ::= SEQUENCE OF BuiltInDomainDefinedAttribute. ASN.1 SIZE (1..4). Not enforced by runtime.</summary>
     public BuiltInDomainDefinedAttribute[]? BuiltInDomainDefinedAttributes { get; set; }
-    /// <summary>ASN.1 alias ExtensionAttributes ::= SET OF ExtensionAttribute.</summary>
+    /// <summary>ASN.1 alias ExtensionAttributes ::= SET OF ExtensionAttribute. ASN.1 SIZE (1..256). Not enforced by runtime.</summary>
     public ExtensionAttribute[]? ExtensionAttributes { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -1966,17 +1971,17 @@ public sealed class BuiltInStandardAttributes
 {
     public CountryName? CountryName { get; set; }
     public AdministrationDomainName? AdministrationDomainName { get; set; }
-    /// <summary>ASN.1 alias NetworkAddress ::= X121Address.</summary>
+    /// <summary>ASN.1 alias NetworkAddress ::= X121Address. ASN.1 SIZE (1..16). Not enforced by runtime.</summary>
     public string? NetworkAddress { get; set; }
-    /// <summary>ASN.1 alias TerminalIdentifier ::= PrintableString.</summary>
+    /// <summary>ASN.1 alias TerminalIdentifier ::= PrintableString. ASN.1 SIZE (1..24). Not enforced by runtime.</summary>
     public string? TerminalIdentifier { get; set; }
     public PrivateDomainName? PrivateDomainName { get; set; }
-    /// <summary>ASN.1 alias OrganizationName ::= PrintableString.</summary>
+    /// <summary>ASN.1 alias OrganizationName ::= PrintableString. ASN.1 SIZE (1..64). Not enforced by runtime.</summary>
     public string? OrganizationName { get; set; }
-    /// <summary>ASN.1 alias NumericUserIdentifier ::= NumericString.</summary>
+    /// <summary>ASN.1 alias NumericUserIdentifier ::= NumericString. ASN.1 SIZE (1..32). Not enforced by runtime.</summary>
     public string? NumericUserIdentifier { get; set; }
     public PersonalName? PersonalName { get; set; }
-    /// <summary>ASN.1 alias OrganizationalUnitNames ::= SEQUENCE OF OrganizationalUnitName.</summary>
+    /// <summary>ASN.1 alias OrganizationalUnitNames ::= SEQUENCE OF OrganizationalUnitName. ASN.1 SIZE (1..4). Not enforced by runtime.</summary>
     public string[]? OrganizationalUnitNames { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -2285,9 +2290,13 @@ public sealed class PrivateDomainName
 
 public sealed class PersonalName
 {
+    /// <summary>ASN.1 SIZE (1..40). Not enforced by runtime.</summary>
     public string Surname { get; set; } = "";
+    /// <summary>ASN.1 SIZE (1..16). Not enforced by runtime.</summary>
     public string? GivenName { get; set; }
+    /// <summary>ASN.1 SIZE (1..5). Not enforced by runtime.</summary>
     public string? Initials { get; set; }
+    /// <summary>ASN.1 SIZE (1..3). Not enforced by runtime.</summary>
     public string? GenerationQualifier { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -2359,7 +2368,9 @@ public sealed class PersonalName
 
 public sealed class BuiltInDomainDefinedAttribute
 {
+    /// <summary>ASN.1 SIZE (1..8). Not enforced by runtime.</summary>
     public string Type { get; set; } = "";
+    /// <summary>ASN.1 SIZE (1..128). Not enforced by runtime.</summary>
     public string Value { get; set; } = "";
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -2392,6 +2403,7 @@ public sealed class BuiltInDomainDefinedAttribute
 
 public sealed class ExtensionAttribute
 {
+    /// <summary>ASN.1 value range (0..256). Not enforced by runtime.</summary>
     public int ExtensionAttributeType { get; set; }
     public Asn1Any ExtensionAttributeValue { get; set; }
 
@@ -2432,9 +2444,13 @@ public sealed class ExtensionAttribute
 
 public sealed class TeletexPersonalName
 {
+    /// <summary>ASN.1 SIZE (1..40). Not enforced by runtime.</summary>
     public string Surname { get; set; } = "";
+    /// <summary>ASN.1 SIZE (1..16). Not enforced by runtime.</summary>
     public string? GivenName { get; set; }
+    /// <summary>ASN.1 SIZE (1..5). Not enforced by runtime.</summary>
     public string? Initials { get; set; }
+    /// <summary>ASN.1 SIZE (1..3). Not enforced by runtime.</summary>
     public string? GenerationQualifier { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -2638,7 +2654,9 @@ public sealed class PostalCode
 
 public sealed class UnformattedPostalAddress
 {
+    /// <summary>ASN.1 SIZE (1..6). Not enforced by runtime.</summary>
     public string[]? PrintableAddress { get; set; }
+    /// <summary>ASN.1 SIZE (1..180). Not enforced by runtime.</summary>
     public string? TeletexString { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -2695,7 +2713,9 @@ public sealed class UnformattedPostalAddress
 
 public sealed class PDSParameter
 {
+    /// <summary>ASN.1 SIZE (1..30). Not enforced by runtime.</summary>
     public string? PrintableString { get; set; }
+    /// <summary>ASN.1 SIZE (1..30). Not enforced by runtime.</summary>
     public string? TeletexString { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -2819,6 +2839,7 @@ public sealed class PresentationAddress
     public ReadOnlyMemory<byte>? PSelector { get; set; }
     public ReadOnlyMemory<byte>? SSelector { get; set; }
     public ReadOnlyMemory<byte>? TSelector { get; set; }
+    /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public ReadOnlyMemory<byte>[] NAddresses { get; set; } = Array.Empty<ReadOnlyMemory<byte>>();
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -2920,7 +2941,9 @@ public static class TerminalType
 
 public sealed class TeletexDomainDefinedAttribute
 {
+    /// <summary>ASN.1 SIZE (1..8). Not enforced by runtime.</summary>
     public string Type { get; set; } = "";
+    /// <summary>ASN.1 SIZE (1..128). Not enforced by runtime.</summary>
     public string Value { get; set; } = "";
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -2956,7 +2979,7 @@ public sealed class TBSCertList_RevokedCertificates_Item
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
     public Asn1Integer UserCertificate { get; set; }
     public Time RevocationDate { get; set; }
-    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension.</summary>
+    /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Extension[]? CrlEntryExtensions { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
@@ -3000,7 +3023,9 @@ public sealed class TBSCertList_RevokedCertificates_Item
 
 public sealed class ExtendedNetworkAddress_E1634Address
 {
+    /// <summary>ASN.1 SIZE (1..15). Not enforced by runtime.</summary>
     public string Number { get; set; } = "";
+    /// <summary>ASN.1 SIZE (1..40). Not enforced by runtime.</summary>
     public string? SubAddress { get; set; }
 
     public void Encode(Asn1Writer writer) => Encode(writer, DefaultTag);
