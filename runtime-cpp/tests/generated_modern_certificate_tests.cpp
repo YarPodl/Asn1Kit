@@ -3,9 +3,11 @@
 
 #include "PKIX1Explicit2009.hpp"
 #include "PKIX1Implicit2009.hpp"
+#include "PKIXAlgs2009.hpp"
 #include "PKIXX400Address2009.types.hpp"
 
 #include "asn1kit/encode_decode.hpp"
+#include "asn1kit/integer.hpp"
 #include "asn1kit/reader.hpp"
 #include "asn1kit/writer.hpp"
 
@@ -15,6 +17,7 @@
 #include <fstream>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 using asn1kit::encoding;
@@ -30,6 +33,7 @@ using GeneralNameKind = asn1kit::modern::PKIX1Implicit2009::GeneralName_kind;
 using CountryName = asn1kit::modern::PKIXX400Address2009::CountryName;
 using CountryNameKind = asn1kit::modern::PKIXX400Address2009::CountryName_kind;
 using TBSCertificate = asn1kit::modern::PKIX1Explicit2009::TBSCertificate;
+using DSASigValue = asn1kit::modern::PKIXAlgs2009::DSASigValue;
 
 static_assert(requires(TBSCertificate& certificate) {
     certificate.supported_attributes_issuer();
@@ -76,10 +80,28 @@ TEST(GeneratedModernCertificateTests, DirectoryStringPreservesStringForm) {
 }
 
 TEST(GeneratedModernCertificateTests, StoredNestedRvalueOpenViewOwnsCarrier) {
-    auto signature = Certificate{}
-        .signature_algorithms()
-        .signature();
-    EXPECT_FALSE(signature.sa_dsa_with_sha1().has_value());
+    DSASigValue expected{};
+    expected.r = asn1kit::integer::from_int32(11);
+    expected.s = asn1kit::integer::from_int32(22);
+
+    auto certificate =
+        Certificate::make_signature_algorithms().signature().sa_dsa_with_sha1(expected);
+    ASSERT_TRUE(certificate.signature_algorithms().signature().sa_dsa_with_sha1().has_value());
+
+    auto table = std::move(certificate).signature_algorithms();
+    auto field = std::move(table).signature();
+    const auto from_stored = field.sa_dsa_with_sha1();
+    ASSERT_TRUE(from_stored.has_value());
+    EXPECT_EQ(from_stored->r, expected.r);
+    EXPECT_EQ(from_stored->s, expected.s);
+
+    auto again =
+        Certificate::make_signature_algorithms().signature().sa_dsa_with_sha1(expected);
+    const auto from_chain =
+        std::move(again).signature_algorithms().signature().sa_dsa_with_sha1();
+    ASSERT_TRUE(from_chain.has_value());
+    EXPECT_EQ(from_chain->r, expected.r);
+    EXPECT_EQ(from_chain->s, expected.s);
 }
 
 static_assert(std::string_view(PkixOids::IdPkix.text()) == "1.3.6.1.5.5.7");

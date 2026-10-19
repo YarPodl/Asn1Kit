@@ -50,7 +50,8 @@ dotnet test compiler/tests/Asn1Kit.Compiler.Tests/Asn1Kit.Compiler.Tests.csproj 
 dotnet test Asn1Kit.sln
 
 # runtime-cpp: configure → build → test; команда из корня репозитория
+# На Windows скрипт сам инициализирует MSVC x64 (VsDevCmd); Developer Shell не нужен.
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-runtime-cpp.ps1
 ```
 
-Общие BER/DER-фикстуры (`runtime-csharp/fixtures/ber-der/`) — полный .NET-прогон и нативный скрипт. C++-генератор вместе с C++ runtime/generated — только `CppCodegenTests` и нативный скрипт. Фильтр всего компонента достаточен для итоговой проверки; фильтр одного теста — нет. Один `ctest` не является итоговой проверкой: он не пересобирает изменённый код.
+Общие BER/DER-фикстуры (`runtime-csharp/fixtures/ber-der/`) — полный .NET-прогон и нативный скрипт. C++-генератор вместе с C++ runtime/generated — только `CppCodegenTests` и нативный скрипт. Фильтр всего компонента достаточен для итоговой проверки; фильтр одного теста — нет. Один `ctest` не является итоговой проверкой: он не пересобирает изменённый код. Сбой инициализации MSVC — дефект toolchain/скрипта; не обходи повторным запуском из Developer Shell.

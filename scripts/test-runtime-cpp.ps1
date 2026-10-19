@@ -22,7 +22,7 @@ function Find-VisualStudioInstallation {
         $installationPath = & $vswhere `
             -latest `
             -products '*' `
-            -version '[17.0,18.0)' `
+            -version '[17.0,19.0)' `
             -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
             -property installationPath
         if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($installationPath)) {
@@ -30,11 +30,13 @@ function Find-VisualStudioInstallation {
         }
     }
 
-    $visualStudioRoot = Join-Path ${env:ProgramFiles} 'Microsoft Visual Studio/2022'
-    foreach ($edition in @('Community', 'Professional', 'Enterprise', 'BuildTools')) {
-        $candidate = Join-Path $visualStudioRoot $edition
-        if (Test-Path -LiteralPath (Join-Path $candidate 'Common7/Tools/VsDevCmd.bat')) {
-            return $candidate
+    foreach ($year in @('2025', '2022')) {
+        $visualStudioRoot = Join-Path ${env:ProgramFiles} "Microsoft Visual Studio/$year"
+        foreach ($edition in @('Community', 'Professional', 'Enterprise', 'BuildTools')) {
+            $candidate = Join-Path $visualStudioRoot $edition
+            if (Test-Path -LiteralPath (Join-Path $candidate 'Common7/Tools/VsDevCmd.bat')) {
+                return $candidate
+            }
         }
     }
 
@@ -57,7 +59,7 @@ function Initialize-MsvcEnvironment {
     }
 
     if ([string]::IsNullOrWhiteSpace($VisualStudioInstallation)) {
-        throw 'Visual Studio 2022 with the MSVC x64 tools was not found. Install the Microsoft.VisualStudio.Component.VC.Tools.x86.x64 component.'
+        throw 'Visual Studio 2022+ with the MSVC x64 tools was not found. Install the Microsoft.VisualStudio.Component.VC.Tools.x86.x64 component.'
     }
 
     $vsDevCmd = Join-Path $VisualStudioInstallation 'Common7/Tools/VsDevCmd.bat'
