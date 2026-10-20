@@ -19,6 +19,7 @@ class Asn1kitRuntimeConan(ConanFile):
     default_options = {
         "build_tests": True,
         "build_benchmarks": False,
+        "openssl/*:shared": False,
     }
 
     def build_requirements(self):
@@ -27,6 +28,7 @@ class Asn1kitRuntimeConan(ConanFile):
             self.test_requires("nlohmann_json/3.11.3")
         if self.options.build_benchmarks:
             self.test_requires("benchmark/1.9.1")
+            self.test_requires("openssl/3.5.7")
 
     def generate(self):
         deps = CMakeDeps(self)

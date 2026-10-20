@@ -76,7 +76,7 @@ Open types в C++ доступны через functional view (`info.content_set
 - **Demo CMS (C++):** [runtime-cpp/examples/cms_demo](../runtime-cpp/examples/cms_demo/) — Modern generated API (`verify` / `print-cert` / `print-cms` / `sign`, educational stub).
 - **Legacy (регрессия):** [Asn1Kit.Legacy](../runtime-csharp/generated/Asn1Kit.Legacy/) — ASN.1:1988 PKIX/CMS/DVCS (`Asn1Kit.Legacy.*`); options — [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json).
 - Бенчмарки C# (не gate): [Asn1Kit.Legacy.Benchmarks](../runtime-csharp/benchmarks/Asn1Kit.Legacy.Benchmarks/).
-- Бенчмарки C++ (не gate): [runtime-cpp/benchmarks](../runtime-cpp/benchmarks/) — Modern Cert/CRL/CMS Lazy Decode+Encode (Google Benchmark, `ASN1KIT_BUILD_BENCHMARKS`).
+- Бенчмарки C++ (не gate): [runtime-cpp/benchmarks](../runtime-cpp/benchmarks/) — сравнение Asn1Kit/OpenSSL 3.5+ для Modern Cert/CRL/CMS Decode+Encode (Google Benchmark, `ASN1KIT_BUILD_BENCHMARKS`).
 
 ## Backlog
 

@@ -86,6 +86,7 @@ if(ASN1KIT_BUILD_EXAMPLES)
 endif()
 
 if(ASN1KIT_BUILD_BENCHMARKS)
+    find_package(OpenSSL 3.5 REQUIRED COMPONENTS Crypto)
     if(ASN1KIT_FETCH_TEST_DEPS)
         include(FetchContent)
         set(FETCHCONTENT_BASE_DIR "${CMAKE_BINARY_DIR}/_deps" CACHE PATH "" FORCE)

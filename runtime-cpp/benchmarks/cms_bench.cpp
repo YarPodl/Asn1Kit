@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "fixture_loader.hpp"
+#include "openssl_support.hpp"
 
 #include "CryptographicMessageSyntax2009.hpp"
 
@@ -22,6 +23,7 @@ std::vector<std::uint8_t> g_cms_der;
 Cms::ContentInfo g_content_info{};
 Cms::SignedData g_signed_data{};
 asn1kit::writer g_encode_writer{asn1kit::encoding::der};
+asn1kit::benchmarks::openssl_support::cms_content_info_ptr g_openssl_content_info;
 
 [[nodiscard]] Cms::SignedData decode_signed_data(const std::vector<std::uint8_t>& der) {
     auto info = asn1kit::decode<Cms::ContentInfo>(der, asn1kit::encoding::der);
@@ -59,9 +61,10 @@ void SetupCms(const benchmark::State&) {
     }
     g_signed_data = std::move(*signed_data);
     g_encode_writer.ensure_capacity(g_cms_der.size() + 256);
+    g_openssl_content_info = asn1kit::benchmarks::openssl_support::decode_cms(g_cms_der);
 }
 
-void Cms_Lazy_Decode(benchmark::State& state) {
+void Cms_Asn1Kit_Lazy_Decode(benchmark::State& state) {
     for (auto _ : state) {
         auto signed_data = decode_signed_data(g_cms_der);
         benchmark::DoNotOptimize(signed_data);
@@ -69,7 +72,7 @@ void Cms_Lazy_Decode(benchmark::State& state) {
     }
 }
 
-void Cms_Lazy_Materialize_Decode(benchmark::State& state) {
+void Cms_Asn1Kit_Lazy_Materialize_Decode(benchmark::State& state) {
     for (auto _ : state) {
         auto info = asn1kit::decode<Cms::ContentInfo>(g_cms_der, asn1kit::encoding::der);
         auto signed_data = info.content_set().ct_signed_data();
@@ -83,7 +86,7 @@ void Cms_Lazy_Materialize_Decode(benchmark::State& state) {
     }
 }
 
-void Cms_Lazy_Encode(benchmark::State& state) {
+void Cms_Asn1Kit_Lazy_Encode(benchmark::State& state) {
     for (auto _ : state) {
         // Re-bind SignedData each op so Encode pays structural cost (not opaque WriteAny of retained content).
         g_encode_writer.reset();
@@ -95,8 +98,30 @@ void Cms_Lazy_Encode(benchmark::State& state) {
     }
 }
 
+void Cms_OpenSSL_Decode(benchmark::State& state) {
+    for (auto _ : state) {
+        auto value = asn1kit::benchmarks::openssl_support::decode_cms(g_cms_der);
+        benchmark::DoNotOptimize(value.get());
+        benchmark::ClobberMemory();
+    }
+}
+
+void Cms_OpenSSL_Encode(benchmark::State& state) {
+    for (auto _ : state) {
+        auto encoded =
+            asn1kit::benchmarks::openssl_support::encode_cms(*g_openssl_content_info);
+        benchmark::DoNotOptimize(encoded.data());
+        benchmark::DoNotOptimize(encoded.size());
+        benchmark::ClobberMemory();
+    }
+}
+
 } // namespace
 
-BENCHMARK(Cms_Lazy_Decode)->Unit(benchmark::kMicrosecond)->Setup(SetupCms);
-BENCHMARK(Cms_Lazy_Materialize_Decode)->Unit(benchmark::kMicrosecond)->Setup(SetupCms);
-BENCHMARK(Cms_Lazy_Encode)->Unit(benchmark::kMicrosecond)->Setup(SetupCms);
+BENCHMARK(Cms_Asn1Kit_Lazy_Decode)->Unit(benchmark::kMicrosecond)->Setup(SetupCms);
+BENCHMARK(Cms_Asn1Kit_Lazy_Materialize_Decode)
+    ->Unit(benchmark::kMicrosecond)
+    ->Setup(SetupCms);
+BENCHMARK(Cms_Asn1Kit_Lazy_Encode)->Unit(benchmark::kMicrosecond)->Setup(SetupCms);
+BENCHMARK(Cms_OpenSSL_Decode)->Unit(benchmark::kMicrosecond)->Setup(SetupCms);
+BENCHMARK(Cms_OpenSSL_Encode)->Unit(benchmark::kMicrosecond)->Setup(SetupCms);

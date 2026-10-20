@@ -5,7 +5,7 @@
 
 namespace asn1kit::benchmarks {
 
-/// Loads Cert/CRL/CMS fixtures and verifies decode/encode + retained TBS TLV on CMS certs.
+/// Verifies Asn1Kit and OpenSSL decode/encode for the Cert/CRL/CMS fixtures.
 void verify_fixtures();
 
 } // namespace asn1kit::benchmarks

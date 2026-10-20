@@ -12,7 +12,7 @@ Codegen C++ (`Asn1Kit.Codegen.Cpp`, `--lang cpp`) — MVP; golden и Person roun
 | --- | --- |
 | Библиотека `asn1kit` | нет (только стандарт C++20) |
 | Тесты | [GoogleTest](https://github.com/google/googletest), [nlohmann_json](https://github.com/nlohmann/json) — через **Conan 2** или **FetchContent** (не линкуются в `libasn1kit`) |
-| Бенчмарки (opt-in) | [Google Benchmark](https://github.com/google/benchmark) — то же; не входят в test gate |
+| Бенчмарки (opt-in) | [Google Benchmark](https://github.com/google/benchmark) и OpenSSL 3.5+ (`Crypto`) — через Conan; при FetchContent OpenSSL берётся из системы; не входят в test gate |
 
 Фикстуры BER/DER **не копируются**: тесты читают `../runtime-csharp/fixtures/ber-der/*.json` через `ASN1KIT_BER_DER_FIXTURES_DIR`.
 
@@ -93,7 +93,7 @@ ctest --preset conan-default
 | --- | --- | --- |
 | `ASN1KIT_BUILD_TESTS` | `ON` | Сборка gtest-таргета |
 | `ASN1KIT_BUILD_EXAMPLES` | `ON` | Сборка примеров (`examples/cms_demo`) |
-| `ASN1KIT_BUILD_BENCHMARKS` | `OFF` | Сборка Google Benchmark suite ([benchmarks/](benchmarks/)) |
+| `ASN1KIT_BUILD_BENCHMARKS` | `OFF` | Сборка Google Benchmark suite с обязательным OpenSSL 3.5+ ([benchmarks/](benchmarks/)) |
 | `ASN1KIT_BUILD_FUZZ` | `OFF` | Optional libFuzzer decode harness ([fuzz/](fuzz/); только Clang) |
 | `ASN1KIT_FETCH_TEST_DEPS` | `OFF` | FetchContent вместо `find_package` (пресеты `fetch-default` / `fetch-release`) |
 | `ASN1KIT_BER_DER_FIXTURES_DIR` | `../runtime-csharp/fixtures/ber-der` | Каталог JSON-фикстур |
@@ -101,7 +101,7 @@ ctest --preset conan-default
 С Conan тестами и их зависимостями управляет опция рецепта:
 `conan install . -o "&:build_tests=False" …`. Без Conan используйте
 `-DASN1KIT_BUILD_TESTS=OFF`. Без примеров: `-DASN1KIT_BUILD_EXAMPLES=OFF`.
-Бенчмарки: `-DASN1KIT_BUILD_BENCHMARKS=ON` или Conan `-o "&:build_benchmarks=True"`; Release — пресет `fetch-release` / `conan-release`. См. [benchmarks/README.md](benchmarks/README.md).
+Бенчмарки: `-DASN1KIT_BUILD_BENCHMARKS=ON` или Conan `-o "&:build_benchmarks=True"`; Release — пресет `fetch-release` / `conan-release`. Первый вариант требует доступного для `find_package` системного OpenSSL 3.5+, второй устанавливает pinned OpenSSL автоматически. См. [benchmarks/README.md](benchmarks/README.md).
 
 Fuzz (не gate; нужен Clang с `-fsanitize=fuzzer`):
 

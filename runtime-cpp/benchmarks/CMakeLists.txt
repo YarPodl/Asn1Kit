@@ -4,6 +4,7 @@
 add_executable(asn1kit_benchmarks
     main.cpp
     fixture_loader.cpp
+    openssl_support.cpp
     smoke.cpp
     encode_samples.cpp
     certificate_bench.cpp
@@ -15,6 +16,7 @@ target_link_libraries(asn1kit_benchmarks
     PRIVATE
         asn1kit::asn1kit
         benchmark::benchmark
+        OpenSSL::Crypto
 )
 
 target_include_directories(asn1kit_benchmarks
