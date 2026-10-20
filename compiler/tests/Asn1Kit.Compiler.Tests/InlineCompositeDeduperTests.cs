@@ -62,4 +62,130 @@ END";
         var field = Assert.Single(Assert.IsType<SequenceType>(different.Type).Components);
         Assert.IsType<SequenceType>(field.Type);
     }
+
+    [Theory]
+    [InlineData("lazy")]
+    [InlineData("retainEncoded")]
+    public void KeepsInlineSequenceWhenNestedFieldOptionDiffers(string option)
+    {
+        var namedField = new IrComponent { Name = "n", Type = new IntegerType() };
+        var inlineField = new IrComponent { Name = "n", Type = new IntegerType() };
+        namedField.Options = option switch
+        {
+            "lazy" => IrOptions.SetLazy(null, true),
+            "retainEncoded" => IrOptions.SetRetainEncoded(null, true),
+            _ => throw new InvalidOperationException(option)
+        };
+
+        var document = DocumentWithNamedAndInline(namedField, inlineField);
+        InlineCompositeDeduper.Dedup(document);
+
+        var body = Assert.Single(Assert.IsType<SequenceType>(
+            document.Modules[0].Types.Single(t => t.Name == "Wrapper").Type).Components);
+        Assert.IsType<SequenceType>(body.Type);
+    }
+
+    [Fact]
+    public void KeepsInlineSequenceWhenIntegerRepresentationDiffers()
+    {
+        var namedField = new IrComponent
+        {
+            Name = "n",
+            Type = new IntegerType
+            {
+                Options = IrOptions.SetIntegerRepresentation(null, IrOptions.IntegerRepresentations.Der)
+            }
+        };
+        var inlineField = new IrComponent
+        {
+            Name = "n",
+            Type = new IntegerType
+            {
+                Options = IrOptions.SetIntegerRepresentation(null, IrOptions.IntegerRepresentations.Int32)
+            }
+        };
+
+        var document = DocumentWithNamedAndInline(namedField, inlineField);
+        InlineCompositeDeduper.Dedup(document);
+
+        var body = Assert.Single(Assert.IsType<SequenceType>(
+            document.Modules[0].Types.Single(t => t.Name == "Wrapper").Type).Components);
+        Assert.IsType<SequenceType>(body.Type);
+    }
+
+    [Fact]
+    public void CollapsesInlineSequenceWhenNestedFieldOptionsMatch()
+    {
+        var namedField = new IrComponent
+        {
+            Name = "n",
+            Type = new IntegerType(),
+            Options = IrOptions.SetLazy(null, true)
+        };
+        var inlineField = new IrComponent
+        {
+            Name = "n",
+            Type = new IntegerType(),
+            Options = IrOptions.SetLazy(null, true)
+        };
+
+        var document = DocumentWithNamedAndInline(namedField, inlineField);
+        InlineCompositeDeduper.Dedup(document);
+
+        var body = Assert.Single(Assert.IsType<SequenceType>(
+            document.Modules[0].Types.Single(t => t.Name == "Wrapper").Type).Components);
+        var reference = Assert.IsType<RefType>(body.Type);
+        Assert.Equal("Named", reference.Name);
+    }
+
+    [Fact]
+    public void CollapsesInlineSequenceWhenBothSidesHaveNoOptions()
+    {
+        var document = DocumentWithNamedAndInline(
+            new IrComponent { Name = "n", Type = new IntegerType() },
+            new IrComponent { Name = "n", Type = new IntegerType() });
+        InlineCompositeDeduper.Dedup(document);
+
+        var body = Assert.Single(Assert.IsType<SequenceType>(
+            document.Modules[0].Types.Single(t => t.Name == "Wrapper").Type).Components);
+        var reference = Assert.IsType<RefType>(body.Type);
+        Assert.Equal("Named", reference.Name);
+    }
+
+    private static IrDocument DocumentWithNamedAndInline(IrComponent namedField, IrComponent inlineField) =>
+        new()
+        {
+            IrVersion = 1,
+            Modules =
+            {
+                new IrModule
+                {
+                    Name = "M",
+                    TagDefault = TagDefaults.Explicit,
+                    Types =
+                    {
+                        new IrTypeDef
+                        {
+                            Name = "Named",
+                            Type = new SequenceType { Components = { namedField } }
+                        },
+                        new IrTypeDef
+                        {
+                            Name = "Wrapper",
+                            Type = new SequenceType
+                            {
+                                Components =
+                                {
+                                    new IrComponent
+                                    {
+                                        Name = "body",
+                                        Type = new SequenceType { Components = { inlineField } }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
 }

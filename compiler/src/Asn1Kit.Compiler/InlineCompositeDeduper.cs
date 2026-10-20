@@ -7,7 +7,9 @@ namespace Asn1Kit.Compiler;
 
 /// <summary>
 /// Replaces inline SEQUENCE/SET/multi-CHOICE that match an existing typedef with a ref,
-/// moving IOC tables onto <c>ref.openTypes</c> (selector differences are ignored for matching).
+/// moving IOC tables onto <c>ref.openTypes</c>. Fingerprint is wire-shape plus
+/// <c>options</c>; IOC place-specific fields (<c>selector</c>/<c>bindings</c>/<c>table</c>/<c>openTypes</c>)
+/// are ignored for matching.
 /// </summary>
 internal static class InlineCompositeDeduper
 {
@@ -277,7 +279,6 @@ internal static class InlineCompositeDeduper
             obj.Remove("tableExtensible");
             obj.Remove("openTypes");
             obj.Remove("selector");
-            obj.Remove("options");
             if (obj.TryGetPropertyValue("unsupported", out var unsupported) &&
                 unsupported is JsonValue value &&
                 value.TryGetValue<string>(out var text) &&
