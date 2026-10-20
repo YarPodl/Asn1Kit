@@ -5,10 +5,13 @@
 
 #include "PKIX1Explicit2009.hpp"
 
+#include <cstddef>
+
 namespace asn1kit::benchmarks {
 
 /// Hand-built encode graphs (PKITS Trust Anchor / GoodCACRL scale). No Decode.
 [[nodiscard]] asn1kit::modern::PKIX1Explicit2009::Certificate create_certificate();
-[[nodiscard]] asn1kit::modern::PKIX1Explicit2009::CertificateList create_certificate_list();
+[[nodiscard]] asn1kit::modern::PKIX1Explicit2009::CertificateList create_certificate_list(
+    std::size_t revoked_certificate_count = 2);
 
 } // namespace asn1kit::benchmarks

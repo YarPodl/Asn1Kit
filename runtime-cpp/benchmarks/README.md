@@ -2,7 +2,7 @@
 
 Decode/Encode KPI для **Certificate**, **CertificateList** (CRL) и CMS **ContentInfo** (attached SignedData): Asn1Kit Modern generated API сравнивается с OpenSSL 3.5+.
 
-Фикстуры: [runtime-csharp/fixtures/pkix](../../runtime-csharp/fixtures/pkix/), [runtime-csharp/fixtures/cms](../../runtime-csharp/fixtures/cms/).
+Фикстуры: [runtime-csharp/fixtures/pkix](../../runtime-csharp/fixtures/pkix/), [runtime-csharp/fixtures/cms](../../runtime-csharp/fixtures/cms/). Большая CRL размером около 40 MiB не хранится на диске: она один раз строится и DER-кодируется в памяти процесса из 1 165 000 записей, каждая с единственным `CRLReason=keyCompromise`.
 
 **Не входит в** `scripts/test-runtime-cpp.ps1` / `ctest`. Опция `ASN1KIT_BUILD_BENCHMARKS` по умолчанию `OFF`; обычные runtime/tests от OpenSSL не зависят. При включении benchmark OpenSSL обязателен и линкуется только через `OpenSSL::Crypto`.
 
@@ -32,10 +32,16 @@ cmake --build --preset conan-release --target asn1kit_benchmarks
 **Краткий KPI** (после правок runtime/codegen на той же машине):
 
 ```powershell
-.\build-fetch-release\benchmarks\asn1kit_benchmarks.exe --benchmark_filter="(Certificate|CertificateList)_(Asn1Kit|OpenSSL)_(Decode|Encode)$|Cms_(Asn1Kit_Lazy|OpenSSL)_(Decode|Encode)$"
+.\build-fetch-release\benchmarks\asn1kit_benchmarks.exe --benchmark_filter="(Certificate|CertificateList|LargeCertificateList)_(Asn1Kit|OpenSSL)_(Decode|Encode)$|Cms_(Asn1Kit_Lazy|OpenSSL)_(Decode|Encode)$"
 ```
 
-**Полный suite** (13 сценариев, включая `Cms_Asn1Kit_Lazy_Materialize_Decode`):
+**Только большая CRL**:
+
+```powershell
+.\build-fetch-release\benchmarks\asn1kit_benchmarks.exe --benchmark_filter="LargeCertificateList_(Asn1Kit|OpenSSL)_Decode$"
+```
+
+**Полный suite** (15 сценариев, включая `Cms_Asn1Kit_Lazy_Materialize_Decode`):
 
 ```powershell
 .\build-fetch-release\benchmarks\asn1kit_benchmarks.exe
@@ -59,6 +65,8 @@ JSON-отчёт:
 | `CertificateList_Asn1Kit_Encode` | hand-built CRL | structural encode + выделение выходного vector |
 | `CertificateList_OpenSSL_Decode` | тот же CRL fixture | `d2i_X509_CRL` + `X509_CRL_free` |
 | `CertificateList_OpenSSL_Encode` | заранее декодированный fixture | `i2d_X509_CRL` + `OPENSSL_free` |
+| `LargeCertificateList_Asn1Kit_Decode` | сгенерированная в памяти CRL около 40 MiB | полное декодирование 1 165 000 записей + уничтожение объекта |
+| `LargeCertificateList_OpenSSL_Decode` | тот же сгенерированный DER | `d2i_X509_CRL` + `X509_CRL_free` |
 | `Cms_Asn1Kit_Lazy_Decode` | `attached-signeddata.p7m` | ContentInfo + SignedData shell |
 | `Cms_Asn1Kit_Lazy_Encode` | decoded SignedData | re-bind content + encode |
 | `Cms_Asn1Kit_Lazy_Materialize_Decode` | тот же CMS | shell + invalidate/access retained TBS |

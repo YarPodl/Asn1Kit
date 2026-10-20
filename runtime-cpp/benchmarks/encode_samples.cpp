@@ -15,6 +15,8 @@
 #include "asn1kit/writer.hpp"
 
 #include <cstdint>
+#include <limits>
+#include <stdexcept>
 #include <vector>
 
 namespace asn1kit::benchmarks {
@@ -80,13 +82,13 @@ using Name = std::vector<std::vector<Attr>>;
     return spki;
 }
 
-[[nodiscard]] Pkix::TBSCertList_RevokedCertificates_Item revoked(std::int32_t serial) {
+[[nodiscard]] Pkix::TBSCertList_RevokedCertificates_Item revoked(
+    std::int32_t serial,
+    const Common::Extension& reason_extension) {
     Pkix::TBSCertList_RevokedCertificates_Item item{};
     item.userCertificate = asn1kit::integer::from_int32(serial);
     item.revocationDate = Pkix::Time::from_utcTime(not_before());
-    item.crlEntryExtensions = std::vector<Common::Extension>{
-        Common::Extension::make_crl_entry_extensions().crl_reason(
-            Implicit::CRLReason::keyCompromise)};
+    item.crlEntryExtensions = std::vector<Common::Extension>{reason_extension};
     return item;
 }
 
@@ -127,7 +129,12 @@ Pkix::Certificate create_certificate() {
     return cert;
 }
 
-Pkix::CertificateList create_certificate_list() {
+Pkix::CertificateList create_certificate_list(std::size_t revoked_certificate_count) {
+    if (revoked_certificate_count >
+        static_cast<std::size_t>((std::numeric_limits<std::int32_t>::max)() - 0x0D)) {
+        throw std::length_error("CRL entry count exceeds the supported serial number range.");
+    }
+
     const auto signature_algorithm = sha256_with_rsa();
 
     Pkix::TBSCertList tbs{};
@@ -136,10 +143,16 @@ Pkix::CertificateList create_certificate_list() {
     tbs.issuer = make_name("Good CA");
     tbs.thisUpdate = Pkix::Time::from_utcTime(not_before());
     tbs.nextUpdate = Pkix::Time::from_utcTime(not_after());
-    tbs.revokedCertificates = std::vector<Pkix::TBSCertList_RevokedCertificates_Item>{
-        revoked(0x0E),
-        revoked(0x0F),
-    };
+    const auto reason_extension =
+        Common::Extension::make_crl_entry_extensions().crl_reason(
+            Implicit::CRLReason::keyCompromise);
+    std::vector<Pkix::TBSCertList_RevokedCertificates_Item> revoked_certificates;
+    revoked_certificates.reserve(revoked_certificate_count);
+    for (std::size_t i = 0; i < revoked_certificate_count; ++i) {
+        revoked_certificates.push_back(
+            revoked(static_cast<std::int32_t>(i + 0x0E), reason_extension));
+    }
+    tbs.revokedCertificates = std::move(revoked_certificates);
 
     Implicit::AuthorityKeyIdentifier aki{};
     aki.keyIdentifier = asn1kit::bytes::from_vector(filled(20, 0x58));
