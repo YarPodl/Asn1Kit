@@ -208,17 +208,6 @@ struct publicKeyAlgorithms_parameters_open_type_entries {
 
 };
 
-struct sMimeCapsSet_parameters_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"AlgorithmInformation-2009.sMimeCapsSet_parameters">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<asn1kit::integer> cap_rc2_cbc{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::Rc2Cbc.get()};
-    inline static const binding_type<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> smime_caps{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdAlgESDH.get()};
-
-};
-
 struct signatureAlgorithms_parameters_open_type_entries {
     template <typename T>
     using binding_type = asn1kit::open_binding<
@@ -718,32 +707,6 @@ private:
     [[no_unique_address]] base view_;
 };
 
-template <typename Target>
-struct SMIMECapabilitySMimeCapsSetOpenView {
-    using open_entries = detail::sMimeCapsSet_parameters_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit SMIMECapabilitySMimeCapsSetOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit SMIMECapabilitySMimeCapsSetOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    SMIMECapabilitySMimeCapsSetOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cap_rc2_cbc, cap_rc2_cbc)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(smime_caps, smime_caps)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
 #undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
 
 inline AlgorithmIdentifierContentEncryptionAlgorithmSetOpenView<AlgorithmIdentifier> AlgorithmIdentifier::content_encryption_algorithm_set() & {
@@ -965,19 +928,6 @@ inline AlgorithmIdentifierWitnessAlgsOpenView<asn1kit::open_owned_target<Algorit
 }
 inline AlgorithmIdentifierWitnessAlgsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> AlgorithmIdentifier::make_witness_algs() {
     return AlgorithmIdentifierWitnessAlgsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>>{};
-}
-
-inline SMIMECapabilitySMimeCapsSetOpenView<SMIMECapability> SMIMECapability::s_mime_caps_set() & {
-    return SMIMECapabilitySMimeCapsSetOpenView<SMIMECapability>{*this};
-}
-inline SMIMECapabilitySMimeCapsSetOpenView<const SMIMECapability> SMIMECapability::s_mime_caps_set() const & {
-    return SMIMECapabilitySMimeCapsSetOpenView<const SMIMECapability>{*this};
-}
-inline SMIMECapabilitySMimeCapsSetOpenView<asn1kit::open_owned_target<SMIMECapability>> SMIMECapability::s_mime_caps_set() && {
-    return SMIMECapabilitySMimeCapsSetOpenView<asn1kit::open_owned_target<SMIMECapability>>{std::move(*this)};
-}
-inline SMIMECapabilitySMimeCapsSetOpenView<asn1kit::open_factory_target<SMIMECapability>> SMIMECapability::make_s_mime_caps_set() {
-    return SMIMECapabilitySMimeCapsSetOpenView<asn1kit::open_factory_target<SMIMECapability>>{};
 }
 
 } // namespace AlgorithmInformation2009

@@ -266,48 +266,10 @@ inline ParamOptions decode_enumerated(asn1kit::reader& r, std::type_identity<Par
     throw asn1kit::exception("Unknown ENUMERATED value.");
 }
 
-namespace detail {
-struct sMimeCapsSet_parameters_open_type_entries;
-} // namespace detail
-template <typename Target>
-struct SMIMECapabilitySMimeCapsSetOpenView;
 struct SMIMECapability {
     // ASN.1 constraint unsupported:  table({ CapabilitySet }). Not enforced by runtime.
     asn1kit::oid capabilityID{};
     std::optional<asn1kit::any> parameters{};
-
-    [[nodiscard]] SMIMECapabilitySMimeCapsSetOpenView<SMIMECapability> s_mime_caps_set() &;
-    [[nodiscard]] SMIMECapabilitySMimeCapsSetOpenView<const SMIMECapability> s_mime_caps_set() const &;
-    [[nodiscard]] SMIMECapabilitySMimeCapsSetOpenView<asn1kit::open_owned_target<SMIMECapability>> s_mime_caps_set() &&;
-    SMIMECapabilitySMimeCapsSetOpenView<const SMIMECapability> s_mime_caps_set() const && = delete;
-    [[nodiscard]] static SMIMECapabilitySMimeCapsSetOpenView<asn1kit::open_factory_target<SMIMECapability>> make_s_mime_caps_set();
-
-    template <typename T>
-    [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, T> open_binding(asn1kit::oid key) {
-        return {std::move(key)};
-    }
-
-    template <typename Context, typename T>
-    [[nodiscard]] std::optional<T> try_decode(
-        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding) const {
-        if (!parameters.has_value()) return std::nullopt;
-        if (!(this->capabilityID == binding.key)) return std::nullopt;
-        return asn1kit::decode_open<T>(*parameters);
-    }
-
-    template <typename Context, typename T>
-    void set(const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
-        this->capabilityID = binding.key;
-        parameters = asn1kit::encode_open(value);
-    }
-
-    template <typename Context, typename T>
-    [[nodiscard]] static SMIMECapability create(
-        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
-        SMIMECapability result{};
-        result.set(binding, value);
-        return result;
-    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);

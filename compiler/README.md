@@ -41,7 +41,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-modern.ps
 | Путь | Назначение |
 | --- | --- |
 | `fixtures/asn1/` | Входные модули ASN.1 (в т.ч. `cms-2004.asn`) |
-| `fixtures/asn1/modern/` | 27 модулей RFC 5911/5912/6268/8410 + RFC 9215 GOST + curated RFC 3161 TSP; происхождение и исправления в [README](fixtures/asn1/modern/README.md) |
+| `fixtures/asn1/modern/` | 28 модулей RFC 5911/5912/6268/8410 + RFC 9215 GOST + curated RFC 3161 TSP + curated RFC 3029 DVCS; происхождение и исправления в [README](fixtures/asn1/modern/README.md) |
 | `fixtures/ir/modern-pkix-cms.json` | **Golden**: весь современный корпус; регенерация через `scripts/regenerate-modern.ps1` |
 | `fixtures/ir/modern-pkix-cms.patch.json` | Options overlay для modern PKIX/CMS: исходные TLV сертификата, TBS, имён, SPKI и `signedAttrs` |
 | `fixtures/opentype/pkix-bindings.json` | Sidecar open-type bindings для golden PKIX |
@@ -53,7 +53,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/regenerate-modern.ps
 | `fixtures/ir/example.json` | **Ручная**: `options.csharp.*` / `options.cpp.*`; компилятором не пересобирать |
 | `../runtime-cpp/generated/**/*.hpp` | **Golden C++** (единственный SoT); `scripts/regenerate-cpp-golden.ps1` / `regenerate-modern-cpp.ps1` |
 | `../runtime-csharp/generated/Asn1Kit.Legacy/*.g.cs` | **Legacy C#** (регрессия): PKIX/CMS/DVCS + `dvcs.patch.json`; руками не править |
-| `../runtime-csharp/generated/Asn1Kit.Modern/*.g.cs` | **Modern C#**: 27 модулей корпуса; руками не править |
+| `../runtime-csharp/generated/Asn1Kit.Modern/*.g.cs` | **Modern C#**: 28 модулей корпуса; руками не править |
 
 Golden IR сверяют `PkixExplicit88Tests` / `PkixImplicit88Tests` / `Cms2004Tests`; golden C# — `PkixGeneratedCodeTests`; product options — `IrOptionsPatchTests`. Diff фикстуры — часть ревью.
 

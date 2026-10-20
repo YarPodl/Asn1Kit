@@ -106,11 +106,11 @@ public sealed class SMIMECapability : IAsn1Encodable
 
 internal static class __AlgorithmInformation2009OpenTypeCodecs
 {
-    internal static Asn1Codec<AlgorithmIdentifier> SmimeCapsSMIMECapability { get; } =
-        new(static reader => AlgorithmIdentifier.Decode(reader), static (writer, value) => value.Encode(writer));
-
     internal static Asn1Codec<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams> SaRsaSSAPSSAlgorithmIdentifier { get; } =
         new(static reader => Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<AlgorithmIdentifier> KaaEsdhAlgorithmIdentifier { get; } =
+        new(static reader => AlgorithmIdentifier.Decode(reader), static (writer, value) => value.Encode(writer));
 
     internal static Asn1Codec<Asn1Kit.Modern.PKIXAlgs2009.DomainParameters> PkDhAlgorithmIdentifier { get; } =
         new(static reader => Asn1Kit.Modern.PKIXAlgs2009.DomainParameters.Decode(reader), static (writer, value) => value.Encode(writer));
@@ -163,43 +163,6 @@ public sealed record ParametersBinding<T>
     }
 }
 
-public sealed record SMIMECapabilityParametersBinding<T>
-{
-    public Asn1Oid Oid { get; }
-    public Asn1Codec<T>? Codec { get; }
-    public Func<SMIMECapability, T>? Decoder { get; }
-    public Func<T, Asn1Any>? Encoder { get; }
-
-    public SMIMECapabilityParametersBinding(Asn1Oid oid, Asn1Codec<T> codec)
-    {
-        Oid = oid;
-        Codec = codec ?? throw new ArgumentNullException(nameof(codec));
-    }
-
-    public SMIMECapabilityParametersBinding(Asn1Oid oid, Func<SMIMECapability, T> decoder, Func<T, Asn1Any> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public SMIMECapability Create(T value)
-    {
-        var result = new SMIMECapability();
-        AlgorithmInformation2009OpenTypeExtensions.SetParameters(result, this, value);
-        return result;
-    }
-}
-
-public static class SMimeCapsSetParametersBindings
-{
-    public static SMIMECapabilityParametersBinding<Asn1Integer> CapRC2CBC { get; } =
-        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.Rc2Cbc, Asn1Codecs.Integer);
-
-    public static SMIMECapabilityParametersBinding<AlgorithmIdentifier> SmimeCaps { get; } =
-        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.IdAlgESDH, __AlgorithmInformation2009OpenTypeCodecs.SmimeCapsSMIMECapability);
-}
-
 public static class SignatureAlgorithmsParametersBindings
 {
     public static ParametersBinding<Asn1Null> SaRsaWithMD2 { get; } =
@@ -248,10 +211,10 @@ public static class KeyTransportAlgorithmSetParametersBindings
 public static class KeyAgreementAlgorithmSetParametersBindings
 {
     public static ParametersBinding<AlgorithmIdentifier> KaaEsdh { get; } =
-        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.IdAlgESDH, __AlgorithmInformation2009OpenTypeCodecs.SmimeCapsSMIMECapability);
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.IdAlgESDH, __AlgorithmInformation2009OpenTypeCodecs.KaaEsdhAlgorithmIdentifier);
 
     public static ParametersBinding<AlgorithmIdentifier> KaaSsdh { get; } =
-        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.IdAlgSSDH, __AlgorithmInformation2009OpenTypeCodecs.SmimeCapsSMIMECapability);
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.IdAlgSSDH, __AlgorithmInformation2009OpenTypeCodecs.KaaEsdhAlgorithmIdentifier);
 }
 
 public static class OriginatorKeySetParametersBindings
@@ -421,66 +384,6 @@ public static class AlgorithmInformation2009OpenTypeExtensions
             ? codec.Encode(value)
             : binding.Encoder!(value);
         result.Parameters = encoded;
-    }
-
-    public static bool TryDecodeParameters<T>(this SMIMECapability source, SMIMECapabilityParametersBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (source.Parameters is null) return false;
-        if (!(source.CapabilityID.Equals(binding.Oid))) return false;
-        if (binding.Codec is { } codec)
-        {
-            if (source.Parameters is not { } openRaw) throw new Asn1Exception("Missing open-type value.");
-            value = codec.Decode(openRaw);
-        }
-        else
-            value = binding.Decoder!(source);
-        return true;
-    }
-
-    public static void SetParameters<T>(this SMIMECapability source, SMIMECapabilityParametersBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        var result = source;
-        result.CapabilityID = binding.Oid;
-        var encoded = binding.Codec is { } codec
-            ? codec.Encode(value)
-            : binding.Encoder!(value);
-        result.Parameters = encoded;
-    }
-
-    public static bool TryGet<T>(this SMIMECapability[]? source, SMIMECapabilityParametersBinding<T> binding, out T value)
-        => TryGet(source, binding, out value, out _);
-
-    public static bool TryGet<T>(this SMIMECapability[]? source, SMIMECapabilityParametersBinding<T> binding, out T value, out SMIMECapability raw)
-    {
-        value = default!;
-        raw = default!;
-        if (source is null) return false;
-        ArgumentNullException.ThrowIfNull(binding);
-        SMIMECapability? match = null;
-        foreach (var item in source)
-        {
-            if (item.CapabilityID.Equals(binding.Oid))
-            {
-                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
-                match = item;
-            }
-        }
-        if (match is null) return false;
-        if (match.Parameters is null) return false;
-        raw = match;
-        if (binding.Codec is { } codec)
-        {
-            if (match.Parameters is not { } openRaw) throw new Asn1Exception("Missing open-type value.");
-            value = codec.Decode(openRaw);
-        }
-        else
-            value = binding.Decoder!(match);
-        return true;
     }
 
 }
