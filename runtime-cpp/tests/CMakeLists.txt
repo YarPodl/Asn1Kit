@@ -66,6 +66,7 @@ gtest_discover_tests(asn1kit_tests)
 # round-trip in a separate binary.
 add_executable(asn1kit_modern_tests
     generated_modern_certificate_tests.cpp
+    generated_modern_cms_tests.cpp
     generated_modern_headers_compile.cpp
 )
 
@@ -84,10 +85,16 @@ target_include_directories(asn1kit_modern_tests
 set(ASN1KIT_PKIX_FIXTURES_DIR
     "${CMAKE_CURRENT_SOURCE_DIR}/../../runtime-csharp/fixtures/pkix"
     CACHE PATH "Path to runtime-csharp pkix certificate fixtures")
+# Distinct from ASN1KIT_CMS_FIXTURES_DIR (cms_demo / benchmarks → fixtures/cms).
+set(ASN1KIT_CMS_RFC4134_FIXTURES_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../runtime-csharp/fixtures/cms/rfc4134"
+    CACHE PATH "Path to runtime-csharp RFC 4134 CMS fixtures")
 file(TO_CMAKE_PATH "${ASN1KIT_PKIX_FIXTURES_DIR}" _asn1kit_pkix_fixtures_dir)
+file(TO_CMAKE_PATH "${ASN1KIT_CMS_RFC4134_FIXTURES_DIR}" _asn1kit_cms_rfc4134_fixtures_dir)
 target_compile_definitions(asn1kit_modern_tests
     PRIVATE
         "ASN1KIT_PKIX_FIXTURES_DIR=\"${_asn1kit_pkix_fixtures_dir}\""
+        "ASN1KIT_CMS_RFC4134_FIXTURES_DIR=\"${_asn1kit_cms_rfc4134_fixtures_dir}\""
 )
 
 if(MSVC)

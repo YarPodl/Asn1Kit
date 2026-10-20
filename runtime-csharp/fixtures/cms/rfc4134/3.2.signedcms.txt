@@ -1,0 +1,6 @@
+file: data
+derLength: 45
+contentType: 1.2.840.113549.1.7.1
+dataOctetLength: 28
+dataOctetUtf8: This is some sample content.
+dataOctetSha1Hex: 406aec085279ba6e16022d9e0629c0229687dd48

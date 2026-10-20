@@ -1,0 +1,21 @@
+fileKind: signedData
+derLength: 891
+contentType: 1.2.840.113549.1.7.2
+version: 1
+digestAlgorithms: 1.3.14.3.2.26
+eContentType: 1.2.840.113549.1.7.1
+eContentPresent: False
+eContentLength: 
+eContentSha1Hex: 
+certificateCount: 1
+certificate: serial=00c8; subject=CN=AliceDSS; ski=be6ca1b3e3c1f7ed4370a4ce1301e2fde397fecd
+signerCount: 1
+signer[0].sidKind: issuerAndSerial
+signer[0].serialNumberHex: c8
+signer[0].subjectKeyIdentifierHex: 
+signer[0].digestAlgorithm: 1.3.14.3.2.26
+signer[0].signatureAlgorithm: 1.2.840.10040.4.3
+signer[0].signatureByteLength: 46
+signer[0].signedAttrsPresent: False
+signer[0].signedAttrsTlvHex: 
+signedCms.signer[0].certificate.serial: 00c8

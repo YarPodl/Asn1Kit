@@ -74,6 +74,7 @@ Open types в C++ доступны через functional view (`info.content_set
 - **Modern:** [Asn1Kit.Modern](../runtime-csharp/generated/Asn1Kit.Modern/) — 27 модулей (CMS-2009 + PKIX/OCSP/PKCS10/CMP/TSP/… + GOST RFC 9215); regenerate `scripts/regenerate-modern.ps1`.
 - **Demo CMS (C#):** [Asn1Kit.Cms.Demo](../runtime-csharp/examples/Asn1Kit.Cms.Demo/) — default Modern; `--legacy` для regression-стека.
 - **Demo CMS (C++):** [runtime-cpp/examples/cms_demo](../runtime-cpp/examples/cms_demo/) — Modern generated API (`verify` / `print-cert` / `print-cms` / `sign`, educational stub).
+- **CMS interop (RFC 4134):** [runtime-csharp/fixtures/cms/rfc4134/](../runtime-csharp/fixtures/cms/rfc4134/) — независимые `.bin` + `expected.json` (`SignedCms` / `System.Formats.Asn1`); gate — `CmsRfc4134InteropTests` (Modern + Legacy) и C++ `generated_modern_cms_tests`.
 - **Legacy (регрессия):** [Asn1Kit.Legacy](../runtime-csharp/generated/Asn1Kit.Legacy/) — ASN.1:1988 PKIX/CMS/DVCS (`Asn1Kit.Legacy.*`); options — [dvcs.patch.json](../compiler/fixtures/ir/dvcs.patch.json).
 - Бенчмарки C# (не gate): [Asn1Kit.Legacy.Benchmarks](../runtime-csharp/benchmarks/Asn1Kit.Legacy.Benchmarks/).
 - Бенчмарки C++ (не gate): [runtime-cpp/benchmarks](../runtime-cpp/benchmarks/) — сравнение Asn1Kit/OpenSSL 3.5+ для Modern Cert/CRL/CMS Decode+Encode (Google Benchmark, `ASN1KIT_BUILD_BENCHMARKS`).
@@ -82,18 +83,18 @@ Open types в C++ доступны через functional view (`info.content_set
 
 ### Открыто
 
-1. **Независимый CMS interop-корпус.** RFC 4134: field asserts и round-trip для `ContentInfo` / `SignedData`, `signedAttrs`, detached content и нескольких signers; expected не получать через Asn1Kit.
-2. **C++ modern headers: standalone self-containment.** Общая consumer translation unit компилирует все 25 `*.format.hpp`, но отдельное включение некоторых facade всё ещё упирается в ациклические type-deps при цикле модулей (CMS → AttributeCertificate → ESS → CMS). Это не type-SCC: нужен более мелкий layout header split или module-SCC amalgam без раздувания/поломки соседних facade.
-3. Curated **DVCS** с `IMPORTS` на modern (вместо legacy-графа).
-4. **GOST этап 2:** минимальный CPALGS-срез [RFC 4357](https://www.rfc-editor.org/rfc/rfc4357) (`Cryptographic-Gost-Useful-Definitions`, `GostR3410-2001-PKISyntax`, `GostR3411-94-DigestSyntax`, `Gost28147-89-EncryptionSyntax`) и [RFC 4490](https://www.rfc-editor.org/rfc/rfc4490) `GostR3410-EncryptionSyntax` с `SubjectPublicKeyInfo` из `PKIX1Explicit-2009`; без полных `*-ParamSetSyntax`. CMS EnvelopedData для R 34.12 (Kuznyechik/Magma) — вне IETF ASN.1.
-5. При необходимости — дальнейший trim Modern / дополнительные protocol-пакеты; typed `eContent`→`TSTInfo` (сейчас opaque + `TSTInfo.Decode`).
-6. Пул массивов (constructed BER concat, DER SET OF sort).
-7. Второй oracle — BouncyCastle (не gate `dotnet test`).
-8. **C++ `is_default_*` для CHOICE DEFAULT.** Сравнение идёт через `!=`, а у generated CHOICE нет `operator==`/`!=` (есть у named BIT STRING). В modern IR CHOICE DEFAULT нет — latent; при первом таком DEFAULT C++ не соберётся. Нужен `operator==` для CHOICE или отдельный compare в helper.
-9. **`asn1kit::value<T>::get()` non-const.** Любой non-const доступ сбрасывает retained TLV — footgun для bit-exact re-encode (CMS `signedAttrs` / `toBeSigned`). Усилить API/документацию и тест «inspect via non-const → `!has_original_encoding()`».
-10. **Ergonomic `asn1kit::encode` / `decode` и `reader_options`.** Обёртки всегда используют `default_profile()`; ужесточить/ослабить depth/materialize/segment лимиты можно только через raw `reader`. Прокинуть options в API или явно оставить gap.
-11. **CONTAINING ADR.** Удаление `Asn1Contained` / `contained<T>` (typed → `T`, opaque → `ROM`/`bytes`/`bit_string`) зафиксировано в status/runtime-api, но без отдельной записи в [decisions.md](decisions.md).
-12. **BIT STRING CONTAINING success path (C#).** Есть write + reject unaligned; нет успешного read round-trip через `ReadBitStringContaining` (в отличие от OCTET).
+1. **C++ modern headers: standalone self-containment.** Общая consumer translation unit компилирует все 25 `*.format.hpp`, но отдельное включение некоторых facade всё ещё упирается в ациклические type-deps при цикле модулей (CMS → AttributeCertificate → ESS → CMS). Это не type-SCC: нужен более мелкий layout header split или module-SCC amalgam без раздувания/поломки соседних facade.
+2. Curated **DVCS** с `IMPORTS` на modern (вместо legacy-графа).
+3. **GOST этап 2:** минимальный CPALGS-срез [RFC 4357](https://www.rfc-editor.org/rfc/rfc4357) (`Cryptographic-Gost-Useful-Definitions`, `GostR3410-2001-PKISyntax`, `GostR3411-94-DigestSyntax`, `Gost28147-89-EncryptionSyntax`) и [RFC 4490](https://www.rfc-editor.org/rfc/rfc4490) `GostR3410-EncryptionSyntax` с `SubjectPublicKeyInfo` из `PKIX1Explicit-2009`; без полных `*-ParamSetSyntax`. CMS EnvelopedData для R 34.12 (Kuznyechik/Magma) — вне IETF ASN.1.
+4. При необходимости — дальнейший trim Modern / дополнительные protocol-пакеты; typed `eContent`→`TSTInfo` (сейчас opaque + `TSTInfo.Decode`).
+5. Пул массивов (constructed BER concat, DER SET OF sort).
+6. Второй oracle — BouncyCastle (не gate `dotnet test`).
+7. **C++ `is_default_*` для CHOICE DEFAULT.** Сравнение идёт через `!=`, а у generated CHOICE нет `operator==`/`!=` (есть у named BIT STRING). В modern IR CHOICE DEFAULT нет — latent; при первом таком DEFAULT C++ не соберётся. Нужен `operator==` для CHOICE или отдельный compare в helper.
+8. **`asn1kit::value<T>::get()` non-const.** Любой non-const доступ сбрасывает retained TLV — footgun для bit-exact re-encode (CMS `signedAttrs` / `toBeSigned`). Усилить API/документацию и тест «inspect via non-const → `!has_original_encoding()`».
+9. **Ergonomic `asn1kit::encode` / `decode` и `reader_options`.** Обёртки всегда используют `default_profile()`; ужесточить/ослабить depth/materialize/segment лимиты можно только через raw `reader`. Прокинуть options в API или явно оставить gap.
+10. **CONTAINING ADR.** Удаление `Asn1Contained` / `contained<T>` (typed → `T`, opaque → `ROM`/`bytes`/`bit_string`) зафиксировано в status/runtime-api, но без отдельной записи в [decisions.md](decisions.md).
+11. **BIT STRING CONTAINING success path (C#).** Есть write + reject unaligned; нет успешного read round-trip через `ReadBitStringContaining` (в отличие от OCTET).
+12. **CMS signedAttrs SET OF sort oracle (G021 remainder).** RFC 4134 `4.10` закрывает field asserts и retained SET TLV; синтетическая перестановка unsorted attributes → канонический DER ещё не покрыта.
 
 ### Крупные
 

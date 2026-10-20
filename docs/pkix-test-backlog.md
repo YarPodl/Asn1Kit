@@ -109,7 +109,7 @@ Typed extensions: KeyUsage, BasicConstraints, AKI, SKI, CertificatePolicies, CRL
 
 | Кейс | Статус |
 | --- | --- |
-| `ContentInfo` decode по contentType OID | todo |
+| `ContentInfo` decode по contentType OID | done (RFC 4134 `3.2` / SignedData outer) |
 | BER indefinite + DER definite контейнера | todo |
 | Trailing junk after ContentInfo — зафиксировать политику | todo |
 
@@ -117,12 +117,12 @@ Typed extensions: KeyUsage, BasicConstraints, AKI, SKI, CertificatePolicies, CRL
 
 | Кейс | Статус |
 | --- | --- |
-| Attached SignedData (version, digests, eContent, certs, crls, signerInfos) | todo |
-| Detached SignedData | todo |
-| Multiple `SignerInfo` (IssuerAndSerialNumber + SKID) | todo |
-| `signedAttrs` / `unsignedAttrs` (contentType, messageDigest, signingTime, countersignature) | todo |
-| Embedded certs + CRLs | todo |
-| RFC 4134 sample vectors (field asserts, без обязательного verify) | todo |
+| Attached SignedData (version, digests, eContent, certs, crls, signerInfos) | done (RFC 4134 `4.2`) |
+| Detached SignedData | done (RFC 4134 `4.3`) |
+| Multiple `SignerInfo` (IssuerAndSerialNumber + SKID) | done (`4.6` multi; `4.7` SKI) |
+| `signedAttrs` / `unsignedAttrs` (contentType, messageDigest, signingTime, countersignature) | partial (`4.10` contentType/messageDigest + retained SET; countersignature / unsorted — open) |
+| Embedded certs + CRLs | done (certs in `4.2`/`4.6`; CRL vectors — open) |
+| RFC 4134 sample vectors (field asserts, без обязательного verify) | done (`3.2`, `4.2`, `4.3`, `4.6`, `4.7`, `4.10`) |
 | SET OF DER sort (digestAlgorithms / certificates / signerInfos) | todo |
 
 ### Прочие CMS content types
@@ -141,7 +141,7 @@ Typed extensions: KeyUsage, BasicConstraints, AKI, SKI, CertificatePolicies, CRL
 
 | Источник | Статус |
 | --- | --- |
-| RFC 4134 §4.x sample `.bin` | todo |
+| RFC 4134 §4.x sample `.bin` | done ([rfc4134/](../runtime-csharp/fixtures/cms/rfc4134/)) |
 | OpenSSL `test/smime-certs` CMS DER | todo |
 | .NET Pkcs fixtures | todo |
 | BC `CMSSampleMessages` | todo |
@@ -163,6 +163,6 @@ Typed extensions: KeyUsage, BasicConstraints, AKI, SKI, CertificatePolicies, CRL
 
 ## Рекомендуемый порядок
 
-1. Каркас CMS-тестов на модуле `Asn1Kit.Cms` (RFC 4134).
+1. ~~Каркас CMS-тестов на модуле `Asn1Kit.Cms` (RFC 4134).~~ done — `CmsRfc4134InteropTests`.
 2. CSR/OCSP — когда появятся ASN.1 модули.
 3. Не тащить path validation / verify / decrypt в `Asn1Kit.Legacy.Tests`.

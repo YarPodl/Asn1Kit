@@ -53,10 +53,10 @@ Evidence записывается стабильными именами test met
 | G017 | `pkix.csr` | open | — | Весь исходный критерий. |
 | G018 | `pkix.ocsp` | open | — | Весь исходный критерий. |
 | G019 | `pkix.attribute-cert` | open | — | Весь исходный критерий. |
-| G020 | `cms.external-rfc` | open | — | Весь исходный критерий. |
-| G021 | `cms.signed-attrs` | open | — | Весь исходный критерий. |
-| G022 | `cms.detached` | open | — | Весь исходный критерий. |
-| G023 | `cms.multiple-signers` | open | — | Весь исходный критерий. |
+| G020 | `cms.external-rfc` | done | — | RFC 4134 корпус + field asserts / DER round-trip. |
+| G021 | `cms.signed-attrs` | partial | — | RFC 4134 `4.10`: attrs + retained SET; unsorted permutation oracle остаётся. |
+| G022 | `cms.detached` | done | — | RFC 4134 `4.3`. |
+| G023 | `cms.multiple-signers` | done | — | RFC 4134 `4.6`. |
 | G024 | `cms.enveloped` | open | — | Весь исходный критерий. |
 | G025 | `dvcs.response` | open | — | Весь исходный критерий. |
 | G026 | `default.explicit-reject` | deferred | soft-read policy | Явно записанный DEFAULT принимается и нормализуется при DER encode; strict-reject не планируется — [решение](decisions.md#constraints-схемы--описательные-без-runtime-enforcement). |
@@ -162,10 +162,39 @@ Evidence записывается стабильными именами test met
   [PrimitiveCodecTests.cs](../runtime-csharp/tests/Asn1Kit.Runtime.Tests/PrimitiveCodecTests.cs)
   и [primitive_codec_tests.cpp](../runtime-cpp/tests/primitive_codec_tests.cpp).
 
+### G020 — `cms.external-rfc`
+
+- Фикстуры: [rfc4134/](../runtime-csharp/fixtures/cms/rfc4134/) (`3.2`, `4.2`,
+  `4.3`, `4.6`, `4.7`, `4.10`; `expected.json` из `SignedCms` +
+  `System.Formats.Asn1`).
+- C#: `CmsRfc4134InteropTests` в
+  [CmsRfc4134InteropTests.cs](../runtime-csharp/tests/Asn1Kit.Legacy.Tests/CmsRfc4134InteropTests.cs)
+  (Modern + Legacy field asserts и byte-identical DER round-trip).
+- C++: `GeneratedModernCmsTests` в
+  [generated_modern_cms_tests.cpp](../runtime-cpp/tests/generated_modern_cms_tests.cpp).
+
+### G021 — `cms.signed-attrs` (partial)
+
+- RFC 4134 `4.10`: OIDs/`contentType`/`messageDigest`, retained wire TLV
+  (`0xA0`) и universal SET contents — `SignedAttrs_4_10_*` /
+  `SignedData_4_10_SignedAttrsRoundTrip`.
+- Остаток: синтетическая unsorted permutation → канонический DER SET oracle.
+
+### G022 — `cms.detached`
+
+- RFC 4134 `4.3` + `detached-content.bin`: отсутствие `eContent`, round-trip
+  оболочки — C# `SignedData_MatchesExternalExpectedAndRoundTrips("4.3.bin")`,
+  C++ `SignedData_4_3_DetachedRoundTrip`.
+
+### G023 — `cms.multiple-signers`
+
+- RFC 4134 `4.6` (два signer) и `4.7` (SKI) — C# `MultipleSigners_4_6_*` /
+  `SubjectKeyIdentifier_4_7_*`, C++ `SignedData_4_6_*` / `SignedData_4_7_*`.
+
 ## Последняя проверка
 
-На 2026-10-19:
+На 2026-10-20 (после RFC 4134 CMS interop):
 
-- `dotnet test Asn1Kit.sln` — 706 тестов, ошибок нет;
+- `dotnet test Asn1Kit.sln` — 726 тестов (372 + 71 + 283), ошибок нет;
 - `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-runtime-cpp.ps1`
-  — 279 тестов, ошибок нет.
+  — 285 тестов, ошибок нет.
