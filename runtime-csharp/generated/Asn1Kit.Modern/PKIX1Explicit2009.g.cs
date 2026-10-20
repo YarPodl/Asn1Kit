@@ -281,7 +281,7 @@ public static class PKIX1Explicit2009Oids
     }
 }
 
-public abstract class Signed<T>
+public abstract class Signed<T> : IAsn1Encodable
 {
     public T ToBeSigned { get; set; } = default!;
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier AlgorithmIdentifier { get; set; } = new();
@@ -313,7 +313,7 @@ public enum DirectoryStringKind
     UTF8String,
 }
 
-public sealed class DirectoryString
+public sealed class DirectoryString : IAsn1Encodable
 {
     public DirectoryStringKind Kind { get; private set; }
     public string Value { get; private set; } = "";
@@ -418,7 +418,7 @@ public sealed class DirectoryString
     }
 }
 
-public sealed class TBSCertificate
+public sealed class TBSCertificate : IAsn1Encodable
 {
     public int Version { get; set; } = 0;
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
@@ -567,7 +567,7 @@ public static class Version
     public const int V3 = 2;
 }
 
-public sealed class Validity
+public sealed class Validity : IAsn1Encodable
 {
     public Time NotBefore { get; set; }
     public Time NotAfter { get; set; }
@@ -606,7 +606,7 @@ public enum TimeKind
     GeneralTime,
 }
 
-public sealed class Time
+public sealed class Time : IAsn1Encodable
 {
     public TimeKind Kind { get; private set; }
     public DateTimeOffset Value { get; private set; }
@@ -666,7 +666,7 @@ public sealed class Time
     }
 }
 
-public sealed class SubjectPublicKeyInfo
+public sealed class SubjectPublicKeyInfo : IAsn1Encodable
 {
     /// <summary>ASN.1 object set PublicKeyAlgorithms (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Algorithm { get; set; }
@@ -700,7 +700,7 @@ public sealed class SubjectPublicKeyInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class TBSCertList
+public sealed class TBSCertList : IAsn1Encodable
 {
     public int? Version { get; set; }
     /// <summary>ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.</summary>
@@ -804,7 +804,7 @@ public sealed class TBSCertList
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class TBSCertList_RevokedCertificates_Item
+public sealed class TBSCertList_RevokedCertificates_Item : IAsn1Encodable
 {
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
     public Asn1Integer UserCertificate { get; set; }

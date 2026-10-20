@@ -38,7 +38,7 @@ public static class ERSOids
     }
 }
 
-public sealed class EvidenceRecord
+public sealed class EvidenceRecord : IAsn1Encodable
 {
     public int Version { get; set; }
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier[] DigestAlgorithms { get; set; } = Array.Empty<Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier>();
@@ -106,7 +106,7 @@ public sealed class EvidenceRecord
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class ArchiveTimeStamp
+public sealed class ArchiveTimeStamp : IAsn1Encodable
 {
     /// <summary>ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? DigestAlgorithm { get; set; }
@@ -174,7 +174,7 @@ public sealed class ArchiveTimeStamp
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class EncryptionInfo
+public sealed class EncryptionInfo : IAsn1Encodable
 {
     /// <summary>ASN.1 constraint unsupported:  table({ SupportedEncryptionAlgorithms }). Not enforced by runtime.</summary>
     public Asn1Oid EncryptionInfoType { get; set; }

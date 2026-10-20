@@ -200,7 +200,7 @@ public static class GostR34102012PKISyntaxOids
     }
 }
 
-public sealed class GostR34102012PublicKeyParameters
+public sealed class GostR34102012PublicKeyParameters : IAsn1Encodable
 {
     public Asn1Oid PublicKeyParamSet { get; set; }
     public Asn1Oid? DigestParamSet { get; set; }

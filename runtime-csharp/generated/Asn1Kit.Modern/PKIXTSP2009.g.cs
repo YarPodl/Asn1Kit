@@ -20,7 +20,7 @@ public static class PKIXTSP2009Oids
     }
 }
 
-public sealed class TimeStampReq
+public sealed class TimeStampReq : IAsn1Encodable
 {
     public int Version { get; set; }
     public MessageImprint MessageImprint { get; set; }
@@ -94,7 +94,7 @@ public sealed class TimeStampReq
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class MessageImprint
+public sealed class MessageImprint : IAsn1Encodable
 {
     /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set DigestAlgorithmSet (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier HashAlgorithm { get; set; }
@@ -128,7 +128,7 @@ public sealed class MessageImprint
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class TimeStampResp
+public sealed class TimeStampResp : IAsn1Encodable
 {
     public PKIStatusInfo Status { get; set; }
     /// <summary>ASN.1 alias TimeStampToken ::= ContentInfo.</summary>
@@ -168,7 +168,7 @@ public sealed class TimeStampResp
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class PKIStatusInfo
+public sealed class PKIStatusInfo : IAsn1Encodable
 {
     public int Status { get; set; }
     /// <summary>ASN.1 alias PKIFreeText ::= SEQUENCE OF UTF8String. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
@@ -258,7 +258,7 @@ public enum PKIFailureInfoFlags
     SystemFailure = 1 << 25
 }
 
-public sealed class PKIFailureInfo
+public sealed class PKIFailureInfo : IAsn1Encodable
 {
     public Asn1BitString Value { get; set; }
 
@@ -318,7 +318,7 @@ public sealed class PKIFailureInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.BitString;
 }
 
-public sealed class TSTInfo
+public sealed class TSTInfo : IAsn1Encodable
 {
     public int Version { get; set; }
     /// <summary>ASN.1 alias TSAPolicyId ::= OBJECT IDENTIFIER.</summary>
@@ -417,7 +417,7 @@ public sealed class TSTInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class Accuracy
+public sealed class Accuracy : IAsn1Encodable
 {
     public Asn1Integer? Seconds { get; set; }
     /// <summary>ASN.1 value range (1..999). Not enforced by runtime.</summary>

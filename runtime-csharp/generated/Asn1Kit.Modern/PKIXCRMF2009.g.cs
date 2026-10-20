@@ -146,7 +146,7 @@ public static class PKIXCRMF2009Oids
     }
 }
 
-public sealed class CertReqMsg
+public sealed class CertReqMsg : IAsn1Encodable
 {
     public CertRequest CertReq { get; set; }
     public ProofOfPossession? Popo { get; set; }
@@ -198,7 +198,7 @@ public sealed class CertReqMsg
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class CertRequest
+public sealed class CertRequest : IAsn1Encodable
 {
     public Asn1Integer CertReqId { get; set; }
     public CertTemplate CertTemplate { get; set; }
@@ -244,7 +244,7 @@ public sealed class CertRequest
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class CertTemplate
+public sealed class CertTemplate : IAsn1Encodable
 {
     public int? Version { get; set; }
     public Asn1Integer? SerialNumber { get; set; }
@@ -396,7 +396,7 @@ public sealed class CertTemplate
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class OptionalValidity
+public sealed class OptionalValidity : IAsn1Encodable
 {
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.Time? NotBefore { get; set; }
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.Time? NotAfter { get; set; }
@@ -463,7 +463,7 @@ public enum ProofOfPossessionKind
     KeyAgreement,
 }
 
-public sealed class ProofOfPossession
+public sealed class ProofOfPossession : IAsn1Encodable
 {
     public ProofOfPossessionKind Kind { get; private set; }
     public Asn1Null? RaVerified { get; private set; }
@@ -570,7 +570,7 @@ public sealed class ProofOfPossession
     }
 }
 
-public sealed class POPOSigningKey
+public sealed class POPOSigningKey : IAsn1Encodable
 {
     public POPOSigningKeyInput? PoposkInput { get; set; }
     /// <summary>ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.</summary>
@@ -613,7 +613,7 @@ public sealed class POPOSigningKey
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class POPOSigningKeyInput
+public sealed class POPOSigningKeyInput : IAsn1Encodable
 {
     public POPOSigningKeyInput_AuthInfo AuthInfo { get; set; }
     public Asn1Kit.Modern.PKCS10.SubjectPublicKeyInfo PublicKey { get; set; }
@@ -646,7 +646,7 @@ public sealed class POPOSigningKeyInput
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class PKMACValue
+public sealed class PKMACValue : IAsn1Encodable
 {
     /// <summary>ASN.1 object set Password-MACAlgorithms (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier AlgId { get; set; }
@@ -680,7 +680,7 @@ public sealed class PKMACValue
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class PBMParameter
+public sealed class PBMParameter : IAsn1Encodable
 {
     public ReadOnlyMemory<byte> Salt { get; set; }
     /// <summary>ASN.1 object set DigestAlgorithms (extensible). Membership not enforced by runtime.</summary>
@@ -730,7 +730,7 @@ public enum POPOPrivKeyKind
     EncryptedKey,
 }
 
-public sealed class POPOPrivKey
+public sealed class POPOPrivKey : IAsn1Encodable
 {
     public POPOPrivKeyKind Kind { get; private set; }
     public Asn1BitString? ThisMessage { get; private set; }
@@ -847,7 +847,7 @@ public static class SubsequentMessage
     public const int ChallengeResp = 1;
 }
 
-public sealed class EncKeyWithID
+public sealed class EncKeyWithID : IAsn1Encodable
 {
     public PrivateKeyInfo PrivateKey { get; set; }
     public EncKeyWithID_Identifier? Identifier { get; set; }
@@ -886,7 +886,7 @@ public sealed class EncKeyWithID
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class PrivateKeyInfo
+public sealed class PrivateKeyInfo : IAsn1Encodable
 {
     public Asn1Integer Version { get; set; }
     /// <summary>ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
@@ -936,7 +936,7 @@ public sealed class PrivateKeyInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class PKIPublicationInfo
+public sealed class PKIPublicationInfo : IAsn1Encodable
 {
     public int Action { get; set; }
     /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
@@ -979,7 +979,7 @@ public sealed class PKIPublicationInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class SinglePubInfo
+public sealed class SinglePubInfo : IAsn1Encodable
 {
     public int PubMethod { get; set; }
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName? PubLocation { get; set; }
@@ -1025,7 +1025,7 @@ public enum PKIArchiveOptionsKind
     ArchiveRemGenPrivKey,
 }
 
-public sealed class PKIArchiveOptions
+public sealed class PKIArchiveOptions : IAsn1Encodable
 {
     public PKIArchiveOptionsKind Kind { get; private set; }
     public EncryptedKey? EncryptedPrivKey { get; private set; }
@@ -1116,7 +1116,7 @@ public enum EncryptedKeyKind
     EnvelopedData,
 }
 
-public sealed class EncryptedKey
+public sealed class EncryptedKey : IAsn1Encodable
 {
     public EncryptedKeyKind Kind { get; private set; }
     public EncryptedValue? EncryptedValue { get; private set; }
@@ -1177,7 +1177,7 @@ public sealed class EncryptedKey
     }
 }
 
-public sealed class EncryptedValue
+public sealed class EncryptedValue : IAsn1Encodable
 {
     /// <summary>ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? IntendedAlg { get; set; }
@@ -1255,7 +1255,7 @@ public sealed class EncryptedValue
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class CertId
+public sealed class CertId : IAsn1Encodable
 {
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName Issuer { get; set; }
     public Asn1Integer SerialNumber { get; set; }
@@ -1294,7 +1294,7 @@ public enum POPOSigningKeyInput_AuthInfoKind
     PublicKeyMAC,
 }
 
-public sealed class POPOSigningKeyInput_AuthInfo
+public sealed class POPOSigningKeyInput_AuthInfo : IAsn1Encodable
 {
     public POPOSigningKeyInput_AuthInfoKind Kind { get; private set; }
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName? Sender { get; private set; }
@@ -1368,7 +1368,7 @@ public enum EncKeyWithID_IdentifierKind
     GeneralName,
 }
 
-public sealed class EncKeyWithID_Identifier
+public sealed class EncKeyWithID_Identifier : IAsn1Encodable
 {
     public EncKeyWithID_IdentifierKind Kind { get; private set; }
     public string? String { get; private set; }

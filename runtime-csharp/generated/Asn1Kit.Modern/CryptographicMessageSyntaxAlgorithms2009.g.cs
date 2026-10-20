@@ -92,7 +92,7 @@ public static class CryptographicMessageSyntaxAlgorithms2009Oids
     }
 }
 
-public sealed class RC2CBCParameter
+public sealed class RC2CBCParameter : IAsn1Encodable
 {
     /// <summary>ASN.1 value range (1..256). Not enforced by runtime.</summary>
     public int Rc2ParameterVersion { get; set; }
@@ -126,7 +126,7 @@ public sealed class RC2CBCParameter
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class PBKDF2Params
+public sealed class PBKDF2Params : IAsn1Encodable
 {
     public PBKDF2Params_Salt Salt { get; set; }
     /// <summary>ASN.1 value range (1..MAX). Not enforced by runtime.</summary>
@@ -186,7 +186,7 @@ public enum PBKDF2Params_SaltKind
     OtherSource,
 }
 
-public sealed class PBKDF2Params_Salt
+public sealed class PBKDF2Params_Salt : IAsn1Encodable
 {
     public PBKDF2Params_SaltKind Kind { get; private set; }
     public ReadOnlyMemory<byte>? Specified { get; private set; }

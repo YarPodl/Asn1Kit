@@ -52,7 +52,7 @@
 
 ## Runtime BER/DER
 
-Инвентарь `Write*` / `Read*`, ownership и `ToString` — [runtime-api.md](../runtime-csharp/docs/runtime-api.md). Warm top-level decode: `Asn1Utils.Decode` / `DecodeRetained`. Hex-матрица — [ber-der/](../runtime-csharp/fixtures/ber-der/); oracle BCL — `PrimitiveOracleTests`.
+Инвентарь `Write*` / `Read*`, ownership и `ToString` — [runtime-api.md](../runtime-csharp/docs/runtime-api.md). Warm top-level API (паритет с C++ `asn1kit::encode`/`decode`): `Asn1Utils.Decode` / `DecodeRetained` / `Encode` / `TryEncode`, маркер `IAsn1Encodable`, type-driven `WriteSequenceOf`/`WriteSetOf` без лямбды для приложений (C# codegen OF остаётся на static-лямбдах). Hex-матрица — [ber-der/](../runtime-csharp/fixtures/ber-der/); oracle BCL — `PrimitiveOracleTests`.
 
 **C++ runtime** ([runtime-cpp/](../runtime-cpp/)): примитивы BER/DER **да** (boolean/null/integer/enumerated/octet/oid/bitstring/string/time/`any`/`encode_open`/`asn_string` + soft-profile + `asn1kit::bytes`); известный `CONTAINING T` поддержан через typed `read_*_containing` / `write_*_containing`, неизвестный payload остаётся `bytes` / `bit_string`; публичные SEQUENCE/SET/OF/EXPLICIT `enter_*` / `with_*` **да**; typed codec concepts `asn1_decodable` / `asn1_encodable` через `match_tag` + натуральные `decode`/`encode` (без `default_tag`; untagged CHOICE поддержан в `read`/`write`/OF/`asn1kit::encode|decode`); `next_matches<T>`; те же layer-1 фикстуры.
 

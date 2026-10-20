@@ -137,7 +137,7 @@ public static class PKIXAttributeCertificate2009Oids
     }
 }
 
-public sealed class AttributeCertificateInfo
+public sealed class AttributeCertificateInfo : IAsn1Encodable
 {
     public int Version { get; set; }
     public Holder Holder { get; set; }
@@ -219,7 +219,7 @@ public static class AttCertVersion
     public const int V2 = 1;
 }
 
-public sealed class Holder
+public sealed class Holder : IAsn1Encodable
 {
     public IssuerSerial? BaseCertificateID { get; set; }
     /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
@@ -277,7 +277,7 @@ public sealed class Holder
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class ObjectDigestInfo
+public sealed class ObjectDigestInfo : IAsn1Encodable
 {
     public ObjectDigestInfo_DigestedObjectType DigestedObjectType { get; set; }
     public Asn1Oid? OtherObjectTypeID { get; set; }
@@ -329,7 +329,7 @@ public enum AttCertIssuerKind
     V2Form,
 }
 
-public sealed class AttCertIssuer
+public sealed class AttCertIssuer : IAsn1Encodable
 {
     public AttCertIssuerKind Kind { get; private set; }
     /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
@@ -394,7 +394,7 @@ public sealed class AttCertIssuer
     }
 }
 
-public sealed class V2Form
+public sealed class V2Form : IAsn1Encodable
 {
     /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]? IssuerName { get; set; }
@@ -452,7 +452,7 @@ public sealed class V2Form
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class IssuerSerial
+public sealed class IssuerSerial : IAsn1Encodable
 {
     /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[] Issuer { get; set; } = Array.Empty<Asn1Kit.Modern.PKIX1Implicit2009.GeneralName>();
@@ -500,7 +500,7 @@ public sealed class IssuerSerial
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class AttCertValidityPeriod
+public sealed class AttCertValidityPeriod : IAsn1Encodable
 {
     public DateTimeOffset NotBeforeTime { get; set; }
     public DateTimeOffset NotAfterTime { get; set; }
@@ -540,7 +540,7 @@ public enum TargetKind
     TargetCert,
 }
 
-public sealed class Target
+public sealed class Target : IAsn1Encodable
 {
     public TargetKind Kind { get; private set; }
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName? TargetName { get; private set; }
@@ -631,7 +631,7 @@ public sealed class Target
     }
 }
 
-public sealed class TargetCert
+public sealed class TargetCert : IAsn1Encodable
 {
     public IssuerSerial TargetCertificate { get; set; }
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName? TargetName { get; set; }
@@ -679,7 +679,7 @@ public sealed class TargetCert
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class AAControls
+public sealed class AAControls : IAsn1Encodable
 {
     /// <summary>ASN.1 value range (0..MAX). Not enforced by runtime.</summary>
     public Asn1Integer? PathLenConstraint { get; set; }
@@ -751,7 +751,7 @@ public sealed class AAControls
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class IetfAttrSyntax
+public sealed class IetfAttrSyntax : IAsn1Encodable
 {
     /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]? PolicyAuthority { get; set; }
@@ -797,7 +797,7 @@ public sealed class IetfAttrSyntax
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class SvceAuthInfo
+public sealed class SvceAuthInfo : IAsn1Encodable
 {
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName Service { get; set; }
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName Ident { get; set; }
@@ -839,7 +839,7 @@ public sealed class SvceAuthInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class RoleSyntax
+public sealed class RoleSyntax : IAsn1Encodable
 {
     /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[]? RoleAuthority { get; set; }
@@ -889,7 +889,7 @@ public sealed class RoleSyntax
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class Clearance
+public sealed class Clearance : IAsn1Encodable
 {
     private static readonly Asn1BitString s_defaultClassList = Asn1BitString.CopyFrom(new byte[] { 0x40 }, 6);
 
@@ -942,7 +942,7 @@ public sealed class Clearance
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class SecurityCategoryRfc3281
+public sealed class SecurityCategoryRfc3281 : IAsn1Encodable
 {
     /// <summary>ASN.1 constraint unsupported:  table({ Supported }). Not enforced by runtime.</summary>
     public Asn1Oid Type { get; set; }
@@ -984,7 +984,7 @@ public sealed class SecurityCategoryRfc3281
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class ClearanceRfc3281
+public sealed class ClearanceRfc3281 : IAsn1Encodable
 {
     private static readonly Asn1BitString s_defaultClassList = Asn1BitString.CopyFrom(new byte[] { 0x40 }, 6);
 
@@ -1055,7 +1055,7 @@ public enum ClassListFlags
     TopSecret = 1 << 5
 }
 
-public sealed class ClassList
+public sealed class ClassList : IAsn1Encodable
 {
     public Asn1BitString Value { get; set; }
 
@@ -1111,7 +1111,7 @@ public sealed class ClassList
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.BitString;
 }
 
-public sealed class ACClearAttrs
+public sealed class ACClearAttrs : IAsn1Encodable
 {
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName AcIssuer { get; set; }
     public Asn1Integer AcSerial { get; set; }
@@ -1167,7 +1167,7 @@ public enum IetfAttrSyntax_Values_ItemKind
     String,
 }
 
-public sealed class IetfAttrSyntax_Values_Item
+public sealed class IetfAttrSyntax_Values_Item : IAsn1Encodable
 {
     public IetfAttrSyntax_Values_ItemKind Kind { get; private set; }
     public ReadOnlyMemory<byte>? Octets { get; private set; }

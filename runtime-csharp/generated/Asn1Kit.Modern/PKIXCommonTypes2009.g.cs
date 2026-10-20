@@ -8,7 +8,7 @@ using Asn1Kit.Runtime;
 
 namespace Asn1Kit.Modern.PKIXCommonTypes2009;
 
-public sealed class Extension
+public sealed class Extension : IAsn1Encodable
 {
     /// <summary>ASN.1 constraint unsupported:  table({ ExtensionSet }). Not enforced by runtime.</summary>
     public Asn1Oid ExtnID { get; set; }
@@ -51,7 +51,7 @@ public sealed class Extension
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class AttributeSet
+public sealed class AttributeSet : IAsn1Encodable
 {
     /// <summary>ASN.1 constraint unsupported:  table({ AttrSet }). Not enforced by runtime.</summary>
     public Asn1Oid Type { get; set; }
@@ -89,7 +89,7 @@ public sealed class AttributeSet
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class SecurityCategory
+public sealed class SecurityCategory : IAsn1Encodable
 {
     /// <summary>ASN.1 constraint unsupported:  table({ Supported }). Not enforced by runtime.</summary>
     public Asn1Oid Type { get; set; }
@@ -130,7 +130,7 @@ public sealed class SecurityCategory
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class SingleAttribute
+public sealed class SingleAttribute : IAsn1Encodable
 {
     /// <summary>ASN.1 constraint unsupported:  table({ AttrSet }). Not enforced by runtime.</summary>
     public Asn1Oid Type { get; set; }

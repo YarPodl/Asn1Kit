@@ -110,7 +110,7 @@ public static class CryptographicMessageSyntax2004Oids
     }
 }
 
-public sealed class ContentInfo
+public sealed class ContentInfo : IAsn1Encodable
 {
     /// <summary>ASN.1 alias ContentType ::= OBJECT IDENTIFIER.</summary>
     public Asn1Oid ContentType { get; set; }
@@ -151,7 +151,7 @@ public sealed class ContentInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class SignedData
+public sealed class SignedData : IAsn1Encodable
 {
     public int Version { get; set; }
     /// <summary>ASN.1 alias DigestAlgorithmIdentifiers ::= SET OF DigestAlgorithmIdentifier.</summary>
@@ -224,7 +224,7 @@ public sealed class SignedData
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class EncapsulatedContentInfo
+public sealed class EncapsulatedContentInfo : IAsn1Encodable
 {
     /// <summary>ASN.1 alias ContentType ::= OBJECT IDENTIFIER.</summary>
     public Asn1Oid EContentType { get; set; }
@@ -271,7 +271,7 @@ public sealed class EncapsulatedContentInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class SignerInfo
+public sealed class SignerInfo : IAsn1Encodable
 {
     public int Version { get; set; }
     public SignerIdentifier Sid { get; set; }
@@ -351,7 +351,7 @@ public enum SignerIdentifierKind
     SubjectKeyIdentifier,
 }
 
-public sealed class SignerIdentifier
+public sealed class SignerIdentifier : IAsn1Encodable
 {
     public SignerIdentifierKind Kind { get; private set; }
     public IssuerAndSerialNumber? IssuerAndSerialNumber { get; private set; }
@@ -413,7 +413,7 @@ public sealed class SignerIdentifier
     }
 }
 
-public sealed class Attribute
+public sealed class Attribute : IAsn1Encodable
 {
     public Asn1Oid AttrType { get; set; }
     public Asn1Any[] AttrValues { get; set; } = Array.Empty<Asn1Any>();
@@ -449,7 +449,7 @@ public sealed class Attribute
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class EnvelopedData
+public sealed class EnvelopedData : IAsn1Encodable
 {
     public int Version { get; set; }
     public OriginatorInfo? OriginatorInfo { get; set; }
@@ -511,7 +511,7 @@ public sealed class EnvelopedData
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class OriginatorInfo
+public sealed class OriginatorInfo : IAsn1Encodable
 {
     /// <summary>ASN.1 alias CertificateSet ::= SET OF CertificateChoices.</summary>
     public CertificateChoices[]? Certs { get; set; }
@@ -564,7 +564,7 @@ public sealed class OriginatorInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class EncryptedContentInfo
+public sealed class EncryptedContentInfo : IAsn1Encodable
 {
     /// <summary>ASN.1 alias ContentType ::= OBJECT IDENTIFIER.</summary>
     public Asn1Oid ContentType { get; set; }
@@ -618,7 +618,7 @@ public enum RecipientInfoKind
     Ori,
 }
 
-public sealed class RecipientInfo
+public sealed class RecipientInfo : IAsn1Encodable
 {
     public RecipientInfoKind Kind { get; private set; }
     public KeyTransRecipientInfo? Ktri { get; private set; }
@@ -727,7 +727,7 @@ public sealed class RecipientInfo
     }
 }
 
-public sealed class KeyTransRecipientInfo
+public sealed class KeyTransRecipientInfo : IAsn1Encodable
 {
     public int Version { get; set; }
     public RecipientIdentifier Rid { get; set; }
@@ -774,7 +774,7 @@ public enum RecipientIdentifierKind
     SubjectKeyIdentifier,
 }
 
-public sealed class RecipientIdentifier
+public sealed class RecipientIdentifier : IAsn1Encodable
 {
     public RecipientIdentifierKind Kind { get; private set; }
     public IssuerAndSerialNumber? IssuerAndSerialNumber { get; private set; }
@@ -836,7 +836,7 @@ public sealed class RecipientIdentifier
     }
 }
 
-public sealed class KeyAgreeRecipientInfo
+public sealed class KeyAgreeRecipientInfo : IAsn1Encodable
 {
     public int Version { get; set; }
     public OriginatorIdentifierOrKey Originator { get; set; }
@@ -911,7 +911,7 @@ public enum OriginatorIdentifierOrKeyKind
     OriginatorKey,
 }
 
-public sealed class OriginatorIdentifierOrKey
+public sealed class OriginatorIdentifierOrKey : IAsn1Encodable
 {
     public OriginatorIdentifierOrKeyKind Kind { get; private set; }
     public IssuerAndSerialNumber? IssuerAndSerialNumber { get; private set; }
@@ -989,7 +989,7 @@ public sealed class OriginatorIdentifierOrKey
     }
 }
 
-public sealed class OriginatorPublicKey
+public sealed class OriginatorPublicKey : IAsn1Encodable
 {
     /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier Algorithm { get; set; }
@@ -1023,7 +1023,7 @@ public sealed class OriginatorPublicKey
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class RecipientEncryptedKey
+public sealed class RecipientEncryptedKey : IAsn1Encodable
 {
     public KeyAgreeRecipientIdentifier Rid { get; set; }
     /// <summary>ASN.1 alias EncryptedKey ::= OCTET STRING.</summary>
@@ -1063,7 +1063,7 @@ public enum KeyAgreeRecipientIdentifierKind
     RKeyId,
 }
 
-public sealed class KeyAgreeRecipientIdentifier
+public sealed class KeyAgreeRecipientIdentifier : IAsn1Encodable
 {
     public KeyAgreeRecipientIdentifierKind Kind { get; private set; }
     public IssuerAndSerialNumber? IssuerAndSerialNumber { get; private set; }
@@ -1124,7 +1124,7 @@ public sealed class KeyAgreeRecipientIdentifier
     }
 }
 
-public sealed class RecipientKeyIdentifier
+public sealed class RecipientKeyIdentifier : IAsn1Encodable
 {
     /// <summary>ASN.1 alias SubjectKeyIdentifier ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> SubjectKeyIdentifier { get; set; }
@@ -1173,7 +1173,7 @@ public sealed class RecipientKeyIdentifier
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class KEKRecipientInfo
+public sealed class KEKRecipientInfo : IAsn1Encodable
 {
     public int Version { get; set; }
     public KEKIdentifier Kekid { get; set; }
@@ -1214,7 +1214,7 @@ public sealed class KEKRecipientInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class KEKIdentifier
+public sealed class KEKIdentifier : IAsn1Encodable
 {
     public ReadOnlyMemory<byte> KeyIdentifier { get; set; }
     public DateTimeOffset? Date { get; set; }
@@ -1262,7 +1262,7 @@ public sealed class KEKIdentifier
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class PasswordRecipientInfo
+public sealed class PasswordRecipientInfo : IAsn1Encodable
 {
     public int Version { get; set; }
     /// <summary>ASN.1 alias KeyDerivationAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set (closed). Membership not enforced by runtime.</summary>
@@ -1310,7 +1310,7 @@ public sealed class PasswordRecipientInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class OtherRecipientInfo
+public sealed class OtherRecipientInfo : IAsn1Encodable
 {
     public Asn1Oid OriType { get; set; }
     public Asn1Any OriValue { get; set; }
@@ -1343,7 +1343,7 @@ public sealed class OtherRecipientInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class DigestedData
+public sealed class DigestedData : IAsn1Encodable
 {
     public int Version { get; set; }
     /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set (closed). Membership not enforced by runtime.</summary>
@@ -1384,7 +1384,7 @@ public sealed class DigestedData
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class EncryptedData
+public sealed class EncryptedData : IAsn1Encodable
 {
     public int Version { get; set; }
     public EncryptedContentInfo EncryptedContentInfo { get; set; }
@@ -1430,7 +1430,7 @@ public sealed class EncryptedData
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class AuthenticatedData
+public sealed class AuthenticatedData : IAsn1Encodable
 {
     public int Version { get; set; }
     public OriginatorInfo? OriginatorInfo { get; set; }
@@ -1529,7 +1529,7 @@ public enum RevocationInfoChoiceKind
     Other,
 }
 
-public sealed class RevocationInfoChoice
+public sealed class RevocationInfoChoice : IAsn1Encodable
 {
     public RevocationInfoChoiceKind Kind { get; private set; }
     public Asn1Kit.Legacy.Pkix.CertificateList? Crl { get; private set; }
@@ -1590,7 +1590,7 @@ public sealed class RevocationInfoChoice
     }
 }
 
-public sealed class OtherRevocationInfoFormat
+public sealed class OtherRevocationInfoFormat : IAsn1Encodable
 {
     public Asn1Oid OtherRevInfoFormat { get; set; }
     public Asn1Any OtherRevInfo { get; set; }
@@ -1630,7 +1630,7 @@ public enum CertificateChoicesKind
     Other,
 }
 
-public sealed class CertificateChoices
+public sealed class CertificateChoices : IAsn1Encodable
 {
     public CertificateChoicesKind Kind { get; private set; }
     public Asn1Lazy<Asn1Kit.Legacy.Pkix.Certificate>? Certificate { get; private set; }
@@ -1717,7 +1717,7 @@ public sealed class CertificateChoices
     }
 }
 
-public sealed class OtherCertificateFormat
+public sealed class OtherCertificateFormat : IAsn1Encodable
 {
     public Asn1Oid OtherCertFormat { get; set; }
     public Asn1Any OtherCert { get; set; }
@@ -1750,7 +1750,7 @@ public sealed class OtherCertificateFormat
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class IssuerAndSerialNumber
+public sealed class IssuerAndSerialNumber : IAsn1Encodable
 {
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
     public Asn1Value<Asn1Kit.Legacy.Pkix.AttributeTypeAndValue[][]> Issuer { get; set; }
@@ -1810,7 +1810,7 @@ public static class CMSVersion
     public const int V5 = 5;
 }
 
-public sealed class OtherKeyAttribute
+public sealed class OtherKeyAttribute : IAsn1Encodable
 {
     public Asn1Oid KeyAttrId { get; set; }
     public Asn1Any? KeyAttr { get; set; }
@@ -1855,7 +1855,7 @@ public enum TimeKind
     GeneralTime,
 }
 
-public sealed class Time
+public sealed class Time : IAsn1Encodable
 {
     public TimeKind Kind { get; private set; }
     public DateTimeOffset Value { get; private set; }
@@ -1921,7 +1921,7 @@ public enum ExtendedCertificateOrCertificateKind
     ExtendedCertificate,
 }
 
-public sealed class ExtendedCertificateOrCertificate
+public sealed class ExtendedCertificateOrCertificate : IAsn1Encodable
 {
     public ExtendedCertificateOrCertificateKind Kind { get; private set; }
     public Asn1Kit.Legacy.Pkix.Certificate? Certificate { get; private set; }
@@ -1982,7 +1982,7 @@ public sealed class ExtendedCertificateOrCertificate
     }
 }
 
-public sealed class ExtendedCertificate
+public sealed class ExtendedCertificate : IAsn1Encodable
 {
     public ExtendedCertificateInfo ExtendedCertificateInfo { get; set; }
     /// <summary>ASN.1 alias SignatureAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set (closed). Membership not enforced by runtime.</summary>
@@ -2020,7 +2020,7 @@ public sealed class ExtendedCertificate
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class ExtendedCertificateInfo
+public sealed class ExtendedCertificateInfo : IAsn1Encodable
 {
     public int Version { get; set; }
     public Asn1Kit.Legacy.Pkix.Certificate Certificate { get; set; }

@@ -182,7 +182,7 @@ public static class SMIMESymmetricKeyDistribution2009Oids
     }
 }
 
-public sealed class GLUseKEK
+public sealed class GLUseKEK : IAsn1Encodable
 {
     public GLInfo GlInfo { get; set; }
     /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
@@ -237,7 +237,7 @@ public sealed class GLUseKEK
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class GLInfo
+public sealed class GLInfo : IAsn1Encodable
 {
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName GlName { get; set; }
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName GlAddress { get; set; }
@@ -270,7 +270,7 @@ public sealed class GLInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class GLOwnerInfo
+public sealed class GLOwnerInfo : IAsn1Encodable
 {
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName GlOwnerName { get; set; }
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName GlOwnerAddress { get; set; }
@@ -322,7 +322,7 @@ public static class GLAdministration
     public const int Closed = 2;
 }
 
-public sealed class GLKeyAttributes
+public sealed class GLKeyAttributes : IAsn1Encodable
 {
     public bool RekeyControlledByGLO { get; set; } = false;
     public bool RecipientsNotMutuallyAware { get; set; } = true;
@@ -395,7 +395,7 @@ public sealed class GLKeyAttributes
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class GLAddMember
+public sealed class GLAddMember : IAsn1Encodable
 {
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName GlName { get; set; }
     public GLMember GlMember { get; set; }
@@ -428,7 +428,7 @@ public sealed class GLAddMember
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class GLMember
+public sealed class GLMember : IAsn1Encodable
 {
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName GlMemberName { get; set; }
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName? GlMemberAddress { get; set; }
@@ -476,7 +476,7 @@ public sealed class GLMember
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class Certificates
+public sealed class Certificates : IAsn1Encodable
 {
     public Asn1Kit.Modern.PKIX1Explicit2009.Certificate? PKC { get; set; }
     /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
@@ -538,7 +538,7 @@ public sealed class Certificates
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class GLDeleteMember
+public sealed class GLDeleteMember : IAsn1Encodable
 {
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName GlName { get; set; }
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName GlMemberToDelete { get; set; }
@@ -571,7 +571,7 @@ public sealed class GLDeleteMember
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class GLRekey
+public sealed class GLRekey : IAsn1Encodable
 {
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName GlName { get; set; }
     public int? GlAdministration { get; set; }
@@ -628,7 +628,7 @@ public sealed class GLRekey
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class GLNewKeyAttributes
+public sealed class GLNewKeyAttributes : IAsn1Encodable
 {
     public bool? RekeyControlledByGLO { get; set; }
     public bool? RecipientsNotMutuallyAware { get; set; }
@@ -701,7 +701,7 @@ public sealed class GLNewKeyAttributes
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class GLOwnerAdministration
+public sealed class GLOwnerAdministration : IAsn1Encodable
 {
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName GlName { get; set; }
     public GLOwnerInfo GlOwnerInfo { get; set; }
@@ -734,7 +734,7 @@ public sealed class GLOwnerAdministration
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class GLKRefresh
+public sealed class GLKRefresh : IAsn1Encodable
 {
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName GlName { get; set; }
     /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
@@ -771,7 +771,7 @@ public sealed class GLKRefresh
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class Date
+public sealed class Date : IAsn1Encodable
 {
     public DateTimeOffset Start { get; set; }
     public DateTimeOffset? End { get; set; }
@@ -810,7 +810,7 @@ public sealed class Date
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class GLAQueryRequest
+public sealed class GLAQueryRequest : IAsn1Encodable
 {
     /// <summary>ASN.1 constraint unsupported:  table({ SkdQuerySet }). Not enforced by runtime.</summary>
     public Asn1Oid GlaRequestType { get; set; }
@@ -845,7 +845,7 @@ public sealed class GLAQueryRequest
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class GLAQueryResponse
+public sealed class GLAQueryResponse : IAsn1Encodable
 {
     /// <summary>ASN.1 constraint unsupported:  table({ SkdResponseSet }). Not enforced by runtime.</summary>
     public Asn1Oid GlaResponseType { get; set; }
@@ -880,7 +880,7 @@ public sealed class GLAQueryResponse
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class GLManageCert
+public sealed class GLManageCert : IAsn1Encodable
 {
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName GlName { get; set; }
     public GLMember GlMember { get; set; }
@@ -913,7 +913,7 @@ public sealed class GLManageCert
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class GLKey
+public sealed class GLKey : IAsn1Encodable
 {
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName GlName { get; set; }
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.KEKIdentifier GlIdentifier { get; set; }

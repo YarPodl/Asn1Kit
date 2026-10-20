@@ -119,7 +119,7 @@ public static class CMSFirmwareWrapper2009Oids
     }
 }
 
-public sealed class FirmwarePackageIdentifier
+public sealed class FirmwarePackageIdentifier : IAsn1Encodable
 {
     public PreferredOrLegacyPackageIdentifier Name { get; set; }
     public PreferredOrLegacyStalePackageIdentifier? Stale { get; set; }
@@ -164,7 +164,7 @@ public enum PreferredOrLegacyPackageIdentifierKind
     Legacy,
 }
 
-public sealed class PreferredOrLegacyPackageIdentifier
+public sealed class PreferredOrLegacyPackageIdentifier : IAsn1Encodable
 {
     public PreferredOrLegacyPackageIdentifierKind Kind { get; private set; }
     public PreferredPackageIdentifier? Preferred { get; private set; }
@@ -225,7 +225,7 @@ public sealed class PreferredOrLegacyPackageIdentifier
     }
 }
 
-public sealed class PreferredPackageIdentifier
+public sealed class PreferredPackageIdentifier : IAsn1Encodable
 {
     public Asn1Oid FwPkgID { get; set; }
     /// <summary>ASN.1 value range (0..MAX). Not enforced by runtime.</summary>
@@ -265,7 +265,7 @@ public enum PreferredOrLegacyStalePackageIdentifierKind
     LegacyStaleVersion,
 }
 
-public sealed class PreferredOrLegacyStalePackageIdentifier
+public sealed class PreferredOrLegacyStalePackageIdentifier : IAsn1Encodable
 {
     public PreferredOrLegacyStalePackageIdentifierKind Kind { get; private set; }
     /// <summary>ASN.1 value range (0..MAX). Not enforced by runtime.</summary>
@@ -333,7 +333,7 @@ public enum CommunityIdentifierKind
     HwModuleList,
 }
 
-public sealed class CommunityIdentifier
+public sealed class CommunityIdentifier : IAsn1Encodable
 {
     public CommunityIdentifierKind Kind { get; private set; }
     public Asn1Oid? CommunityOID { get; private set; }
@@ -394,7 +394,7 @@ public sealed class CommunityIdentifier
     }
 }
 
-public sealed class HardwareModules
+public sealed class HardwareModules : IAsn1Encodable
 {
     public Asn1Oid HwType { get; set; }
     public HardwareSerialEntry[] HwSerialEntries { get; set; } = Array.Empty<HardwareSerialEntry>();
@@ -437,7 +437,7 @@ public enum HardwareSerialEntryKind
     Block,
 }
 
-public sealed class HardwareSerialEntry
+public sealed class HardwareSerialEntry : IAsn1Encodable
 {
     public HardwareSerialEntryKind Kind { get; private set; }
     public Asn1Null? All { get; private set; }
@@ -514,7 +514,7 @@ public sealed class HardwareSerialEntry
     }
 }
 
-public sealed class FirmwarePackageInfo
+public sealed class FirmwarePackageInfo : IAsn1Encodable
 {
     public Asn1Integer? FwPkgType { get; set; }
     public PreferredOrLegacyPackageIdentifier[]? Dependencies { get; set; }
@@ -562,7 +562,7 @@ public sealed class FirmwarePackageInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class FirmwarePackageLoadReceipt
+public sealed class FirmwarePackageLoadReceipt : IAsn1Encodable
 {
     public int Version { get; set; } = 1;
     public Asn1Oid HwType { get; set; }
@@ -631,7 +631,7 @@ public static class FWReceiptVersion
     public const int V1 = 1;
 }
 
-public sealed class FirmwarePackageLoadError
+public sealed class FirmwarePackageLoadError : IAsn1Encodable
 {
     public int Version { get; set; } = 1;
     public Asn1Oid HwType { get; set; }
@@ -713,7 +713,7 @@ public static class FWErrorVersion
     public const int V1 = 1;
 }
 
-public sealed class CurrentFWConfig
+public sealed class CurrentFWConfig : IAsn1Encodable
 {
     public Asn1Integer? FwPkgType { get; set; }
     public PreferredOrLegacyPackageIdentifier FwPkgName { get; set; }
@@ -830,7 +830,7 @@ public enum FirmwarePackageLoadErrorCode
     OtherError = 99
 }
 
-public sealed class HardwareModuleName
+public sealed class HardwareModuleName : IAsn1Encodable
 {
     public Asn1Oid HwType { get; set; }
     public ReadOnlyMemory<byte> HwSerialNum { get; set; }
@@ -863,7 +863,7 @@ public sealed class HardwareModuleName
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class HardwareSerialEntry_Block
+public sealed class HardwareSerialEntry_Block : IAsn1Encodable
 {
     public ReadOnlyMemory<byte> Low { get; set; }
     public ReadOnlyMemory<byte> High { get; set; }

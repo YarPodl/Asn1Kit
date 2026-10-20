@@ -227,7 +227,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
 
     private static void EmitSignedBase(StringBuilder sb, string algorithmIdentifierType)
     {
-        sb.AppendLine("public abstract class Signed<T>");
+        sb.AppendLine("public abstract class Signed<T> : IAsn1Encodable");
         sb.AppendLine("{");
         sb.AppendLine("    public T ToBeSigned { get; set; } = default!;");
         sb.AppendLine($"    public {algorithmIdentifierType} AlgorithmIdentifier {{ get; set; }} = new();");
@@ -606,7 +606,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
     {
         var valueType = IsCSharpValueTypeEmit(module, typeName, type);
         var typeKeyword = valueType ? "struct" : "sealed class";
-        sb.AppendLine($"public {typeKeyword} {typeName}");
+        sb.AppendLine($"public {typeKeyword} {typeName} : IAsn1Encodable");
         sb.AppendLine("{");
         EmitCachedDefaults(sb, document, module, typeName, components);
         foreach (var field in components)
@@ -834,7 +834,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
 
         sb.AppendLine("}");
         sb.AppendLine();
-        sb.AppendLine($"public sealed class {typeName}");
+        sb.AppendLine($"public sealed class {typeName} : IAsn1Encodable");
         sb.AppendLine("{");
         sb.AppendLine($"    public {typeName}Kind Kind {{ get; private set; }}");
         if (type.Extensible)
@@ -1025,7 +1025,7 @@ public sealed partial class CSharpBackend : ILanguageBackend
 
         sb.AppendLine("}");
         sb.AppendLine();
-        sb.AppendLine($"public sealed class {typeName}");
+        sb.AppendLine($"public sealed class {typeName} : IAsn1Encodable");
         sb.AppendLine("{");
         sb.AppendLine("    public Asn1BitString Value { get; set; }");
         sb.AppendLine();

@@ -48,7 +48,9 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | --- | --- | --- |
 | `Asn1Writer.EncodedLength` / `EnsureCapacity` / `TryEncode(Span)` / `Encode() → byte[]` / `Encode(Asn1EncodeFunc|Asn1EncodeAction)` / `Reset()` | hot | snapshot / copy-out / zero-copy callback; `Reset` reuse without shrinking capacity |
 | `WriteOctetString(ReadOnlySpan)` / `WriteRaw(ReadOnlySpan)` | hot/cold | borrow |
-| `WriteSequenceOf<T>` / `WriteSetOf<T>` | hot | collection + item callback; `SET OF` inherits DER sorting from its internal scope |
+| `WriteSequenceOf<T>` / `WriteSetOf<T>` (callback) | hot | collection + item callback; `SET OF` inherits DER sorting from its internal scope; **codegen uses this form** |
+| `WriteSequenceOf<T>` / `WriteSetOf<T>` (`where T : IAsn1Encodable`) | warm | type-driven OF without lambda for app code; mirrors C++ `write_sequence_of(items)`; **codegen does not emit** (avoids interface dispatch on shared generics) |
+| `IAsn1Encodable` | warm | marker for generated named types (`void Encode(Asn1Writer)`); enables `Asn1Utils.Encode` and warm OF overloads |
 | `EnterSequence` / `EnterSet` / `EnterSequenceOf` / `EnterSetOf` / `EnterExplicit` → `Asn1WriterScope` | hot | allocation-free begin/end frame; запись содержимого через тот же writer; dispose только один раз и в LIFO-порядке |
 | `ReadSequenceOf<T>` / `ReadSetOf<T>` | hot | owned `T[]` (`Array.Empty<T>` when empty); OF fill без capturing-лямбды вокруг `decodeItem` |
 | `ReadSequenceOf<T,TState>` / `ReadSetOf<T,TState>` | hot | явное состояние + `Func<Asn1Reader,TState,T>`; generated static callback не захватывает контекст |
@@ -70,7 +72,8 @@ CSharpBackend → Asn1Writer.Write* / Asn1Reader.Read*
 | `EnterEncoded(ReadOnlyMemory<byte>)` | hot | окно ранее прочитанного TLV для отложенного SET decode; те же encoding/options, scope восстанавливает исходное окно |
 | `Asn1Any.FromValue<T>(T, Action<Asn1Writer,T>)` | warm | owned DER TLV одного значения, используется для констант typed DEFAULT |
 | `Asn1Codec<T>` / `Asn1Codecs` | warm/hot | переиспользуемая пара reader/writer; singleton-кодеки примитивов и общие адаптеры raw open type для ANY, CONTAINING, массивов и decoder-only string CHOICE (`DecodeStringChoice`) |
-| `Asn1Utils.Decode` / `DecodeRetained` | warm | top-level `ReadOnlyMemory` → значение (+ optional `Asn1Value` с исходным TLV); внутри `Asn1Reader` + decode callback + `ThrowIfNotEmpty`; codegen не эмитит |
+| `Asn1Utils.Decode` / `DecodeRetained` | warm | top-level `ReadOnlyMemory` → значение (+ optional `Asn1Value` с исходным TLV); внутри `Asn1Reader` + decode callback + `ThrowIfNotEmpty`; паритет с C++ `asn1kit::decode` (без static-constraint на net6 — method group / `Func`); codegen не эмитит |
+| `Asn1Utils.Encode` / `TryEncode` | warm | top-level значение → `byte[]` / `Span`; паритет с C++ `asn1kit::encode` / `try_encode`; constraint `IAsn1Encodable` или явный encode-callback; codegen не эмитит |
 | `Asn1Collection.Count<T>(IReadOnlyList<T>, Func<T,bool>)` | hot | подсчёт без временных коллекций для структурного сравнения SET OF DEFAULT |
 
 ## CONTAINING и неизвестные расширения

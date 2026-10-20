@@ -262,6 +262,14 @@ public sealed class Asn1Writer
     }
 
     /// <summary>
+    /// Warm type-driven SEQUENCE OF for <see cref="IAsn1Encodable"/> items.
+    /// Codegen keeps the callback overload with a direct concrete <c>Encode</c> call.
+    /// </summary>
+    public void WriteSequenceOf<T>(Asn1Tag tag, IList<T> items)
+        where T : IAsn1Encodable =>
+        WriteSequenceOf(tag, items, static (writer, item) => item.Encode(writer));
+
+    /// <summary>
     /// Enters constructed SET OF contents and finalizes the value on dispose. DER elements are sorted
     /// lexicographically by their complete encodings (X.690 §11.6).
     /// </summary>
@@ -292,6 +300,14 @@ public sealed class Asn1Writer
             }
         }
     }
+
+    /// <summary>
+    /// Warm type-driven SET OF for <see cref="IAsn1Encodable"/> items.
+    /// Codegen keeps the callback overload with a direct concrete <c>Encode</c> call.
+    /// </summary>
+    public void WriteSetOf<T>(Asn1Tag tag, IList<T> items)
+        where T : IAsn1Encodable =>
+        WriteSetOf(tag, items, static (writer, item) => item.Encode(writer));
 
     /// <summary>Enters an EXPLICIT constructed wrapper and finalizes the value on dispose.</summary>
     public Asn1WriterScope EnterExplicit(Asn1Tag tag) => BeginScope(tag, sortDerSetOf: false);

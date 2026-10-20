@@ -353,7 +353,7 @@ public static class EnrollmentMessageSyntax2009Oids
     }
 }
 
-public sealed class PKIData
+public sealed class PKIData : IAsn1Encodable
 {
     /// <summary>ASN.1 SIZE (0..MAX). Not enforced by runtime.</summary>
     public TaggedAttribute[] ControlSequence { get; set; } = Array.Empty<TaggedAttribute>();
@@ -408,7 +408,7 @@ public sealed class PKIData
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class TaggedAttribute
+public sealed class TaggedAttribute : IAsn1Encodable
 {
     /// <summary>ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.</summary>
     public uint BodyPartID { get; set; }
@@ -456,7 +456,7 @@ public enum TaggedRequestKind
     Orm,
 }
 
-public sealed class TaggedRequest
+public sealed class TaggedRequest : IAsn1Encodable
 {
     public TaggedRequestKind Kind { get; private set; }
     public TaggedCertificationRequest? Tcr { get; private set; }
@@ -533,7 +533,7 @@ public sealed class TaggedRequest
     }
 }
 
-public sealed class TaggedCertificationRequest
+public sealed class TaggedCertificationRequest : IAsn1Encodable
 {
     /// <summary>ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.</summary>
     public uint BodyPartID { get; set; }
@@ -567,7 +567,7 @@ public sealed class TaggedCertificationRequest
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class CertificationRequest
+public sealed class CertificationRequest : IAsn1Encodable
 {
     public CertificationRequest_CertificationRequestInfo CertificationRequestInfo { get; set; }
     /// <summary>ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.</summary>
@@ -604,7 +604,7 @@ public sealed class CertificationRequest
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class TaggedContentInfo
+public sealed class TaggedContentInfo : IAsn1Encodable
 {
     /// <summary>ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.</summary>
     public uint BodyPartID { get; set; }
@@ -638,7 +638,7 @@ public sealed class TaggedContentInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class OtherMsg
+public sealed class OtherMsg : IAsn1Encodable
 {
     /// <summary>ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.</summary>
     public uint BodyPartID { get; set; }
@@ -677,7 +677,7 @@ public sealed class OtherMsg
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class PKIResponse
+public sealed class PKIResponse : IAsn1Encodable
 {
     /// <summary>ASN.1 SIZE (0..MAX). Not enforced by runtime.</summary>
     public TaggedAttribute[] ControlSequence { get; set; } = Array.Empty<TaggedAttribute>();
@@ -725,7 +725,7 @@ public sealed class PKIResponse
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class CMCStatusInfo
+public sealed class CMCStatusInfo : IAsn1Encodable
 {
     public int CMCStatus { get; set; }
     /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
@@ -780,7 +780,7 @@ public sealed class CMCStatusInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class PendInfo
+public sealed class PendInfo : IAsn1Encodable
 {
     public ReadOnlyMemory<byte> PendToken { get; set; }
     public DateTimeOffset PendTime { get; set; }
@@ -863,7 +863,7 @@ public static class CMCFailInfo
     public const int AuthDataFail = 13;
 }
 
-public sealed class AddExtensions
+public sealed class AddExtensions : IAsn1Encodable
 {
     /// <summary>ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.</summary>
     public uint PkiDataReference { get; set; }
@@ -906,7 +906,7 @@ public sealed class AddExtensions
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class EncryptedPOP
+public sealed class EncryptedPOP : IAsn1Encodable
 {
     public TaggedRequest Request { get; set; }
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.ContentInfo Cms { get; set; }
@@ -950,7 +950,7 @@ public sealed class EncryptedPOP
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class DecryptedPOP
+public sealed class DecryptedPOP : IAsn1Encodable
 {
     /// <summary>ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.</summary>
     public uint BodyPartID { get; set; }
@@ -988,7 +988,7 @@ public sealed class DecryptedPOP
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class LraPopWitness
+public sealed class LraPopWitness : IAsn1Encodable
 {
     /// <summary>ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.</summary>
     public uint PkiDataBodyid { get; set; }
@@ -1025,7 +1025,7 @@ public sealed class LraPopWitness
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class GetCert
+public sealed class GetCert : IAsn1Encodable
 {
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName IssuerName { get; set; }
     public Asn1Integer SerialNumber { get; set; }
@@ -1058,7 +1058,7 @@ public sealed class GetCert
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class GetCRL
+public sealed class GetCRL : IAsn1Encodable
 {
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
     public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[][] IssuerName { get; set; } = Array.Empty<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[]>();
@@ -1122,7 +1122,7 @@ public sealed class GetCRL
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class RevokeRequest
+public sealed class RevokeRequest : IAsn1Encodable
 {
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
     public Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[][] IssuerName { get; set; } = Array.Empty<Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute[]>();
@@ -1192,7 +1192,7 @@ public sealed class RevokeRequest
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class CMCUnsignedData
+public sealed class CMCUnsignedData : IAsn1Encodable
 {
     /// <summary>ASN.1 alias BodyPartPath ::= SEQUENCE OF BodyPartID. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public uint[] BodyPartPath { get; set; } = Array.Empty<uint>();
@@ -1233,7 +1233,7 @@ public sealed class CMCUnsignedData
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class CMCStatusInfoV2
+public sealed class CMCStatusInfoV2 : IAsn1Encodable
 {
     public int CMCStatus { get; set; }
     /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
@@ -1294,7 +1294,7 @@ public enum BodyPartReferenceKind
     BodyPartPath,
 }
 
-public sealed class BodyPartReference
+public sealed class BodyPartReference : IAsn1Encodable
 {
     public BodyPartReferenceKind Kind { get; private set; }
     /// <summary>ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.</summary>
@@ -1360,7 +1360,7 @@ public sealed class BodyPartReference
     }
 }
 
-public sealed class PublishTrustAnchors
+public sealed class PublishTrustAnchors : IAsn1Encodable
 {
     public Asn1Integer SeqNumber { get; set; }
     /// <summary>ASN.1 object set HashAlgorithms (extensible). Membership not enforced by runtime.</summary>
@@ -1400,7 +1400,7 @@ public sealed class PublishTrustAnchors
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class CMCPublicationInfo
+public sealed class CMCPublicationInfo : IAsn1Encodable
 {
     /// <summary>ASN.1 object set HashAlgorithms (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier HashAlg { get; set; }
@@ -1440,7 +1440,7 @@ public sealed class CMCPublicationInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class ModCertTemplate
+public sealed class ModCertTemplate : IAsn1Encodable
 {
     /// <summary>ASN.1 alias BodyPartPath ::= SEQUENCE OF BodyPartID. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public uint[] PkiDataReference { get; set; } = Array.Empty<uint>();
@@ -1493,7 +1493,7 @@ public sealed class ModCertTemplate
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class ControlsProcessed
+public sealed class ControlsProcessed : IAsn1Encodable
 {
     /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public BodyPartReference[] BodyList { get; set; } = Array.Empty<BodyPartReference>();
@@ -1527,7 +1527,7 @@ public sealed class ControlsProcessed
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class IdentityProofV2
+public sealed class IdentityProofV2 : IAsn1Encodable
 {
     /// <summary>ASN.1 object set WitnessAlgs (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier ProofAlgID { get; set; }
@@ -1565,7 +1565,7 @@ public sealed class IdentityProofV2
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class PopLinkWitnessV2
+public sealed class PopLinkWitnessV2 : IAsn1Encodable
 {
     /// <summary>ASN.1 object set KeyDevAlgs (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier KeyGenAlgorithm { get; set; }
@@ -1603,7 +1603,7 @@ public sealed class PopLinkWitnessV2
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class TaggedRequest_Orm
+public sealed class TaggedRequest_Orm : IAsn1Encodable
 {
     /// <summary>ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.</summary>
     public uint BodyPartID { get; set; }
@@ -1642,7 +1642,7 @@ public sealed class TaggedRequest_Orm
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Context(2, true);
 }
 
-public sealed class CertificationRequest_CertificationRequestInfo
+public sealed class CertificationRequest_CertificationRequestInfo : IAsn1Encodable
 {
     public Asn1Integer Version { get; set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
@@ -1691,7 +1691,7 @@ public sealed class CertificationRequest_CertificationRequestInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo
+public sealed class CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo : IAsn1Encodable
 {
     /// <summary>ASN.1 object set PublicKeyAlgorithms (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Algorithm { get; set; }
@@ -1731,7 +1731,7 @@ public enum CMCStatusInfo_OtherInfoKind
     PendInfo,
 }
 
-public sealed class CMCStatusInfo_OtherInfo
+public sealed class CMCStatusInfo_OtherInfo : IAsn1Encodable
 {
     public CMCStatusInfo_OtherInfoKind Kind { get; private set; }
     public int? FailInfo { get; private set; }
@@ -1799,7 +1799,7 @@ public enum CMCStatusInfoV2_OtherInfoKind
     ExtendedFailInfo,
 }
 
-public sealed class CMCStatusInfoV2_OtherInfo
+public sealed class CMCStatusInfoV2_OtherInfo : IAsn1Encodable
 {
     public CMCStatusInfoV2_OtherInfoKind Kind { get; private set; }
     public int? FailInfo { get; private set; }
@@ -1876,7 +1876,7 @@ public sealed class CMCStatusInfoV2_OtherInfo
     }
 }
 
-public sealed class CMCStatusInfoV2_OtherInfo_ExtendedFailInfo
+public sealed class CMCStatusInfoV2_OtherInfo_ExtendedFailInfo : IAsn1Encodable
 {
     /// <summary>ASN.1 constraint unsupported:  table({ ExtendedFailures }). Not enforced by runtime.</summary>
     public Asn1Oid FailInfoOID { get; set; }

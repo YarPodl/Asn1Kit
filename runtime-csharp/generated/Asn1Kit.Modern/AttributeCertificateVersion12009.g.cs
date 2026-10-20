@@ -8,7 +8,7 @@ using Asn1Kit.Runtime;
 
 namespace Asn1Kit.Modern.AttributeCertificateVersion12009;
 
-public sealed class AttributeCertificateInfoV1
+public sealed class AttributeCertificateInfoV1 : IAsn1Encodable
 {
     public int Version { get; set; } = 0;
     public AttributeCertificateInfoV1_Subject Subject { get; set; }
@@ -106,7 +106,7 @@ public enum AttributeCertificateInfoV1_SubjectKind
     SubjectName,
 }
 
-public sealed class AttributeCertificateInfoV1_Subject
+public sealed class AttributeCertificateInfoV1_Subject : IAsn1Encodable
 {
     public AttributeCertificateInfoV1_SubjectKind Kind { get; private set; }
     public Asn1Kit.Modern.ExtendedSecurityServices2009.IssuerSerial? BaseCertificateID { get; private set; }

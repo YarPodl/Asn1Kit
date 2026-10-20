@@ -353,7 +353,7 @@ public static class PKIX1Implicit88Oids
     }
 }
 
-public sealed class AuthorityKeyIdentifier
+public sealed class AuthorityKeyIdentifier : IAsn1Encodable
 {
     /// <summary>ASN.1 alias KeyIdentifier ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte>? KeyIdentifier { get; set; }
@@ -437,7 +437,7 @@ public enum KeyUsageFlags
     DecipherOnly = 1 << 8
 }
 
-public sealed class KeyUsage
+public sealed class KeyUsage : IAsn1Encodable
 {
     public Asn1BitString Value { get; set; }
 
@@ -499,7 +499,7 @@ public sealed class KeyUsage
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.BitString;
 }
 
-public sealed class PrivateKeyUsagePeriod
+public sealed class PrivateKeyUsagePeriod : IAsn1Encodable
 {
     public DateTimeOffset? NotBefore { get; set; }
     public DateTimeOffset? NotAfter { get; set; }
@@ -544,7 +544,7 @@ public sealed class PrivateKeyUsagePeriod
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class PolicyInformation
+public sealed class PolicyInformation : IAsn1Encodable
 {
     /// <summary>ASN.1 alias CertPolicyId ::= OBJECT IDENTIFIER.</summary>
     public Asn1Oid PolicyIdentifier { get; set; }
@@ -588,7 +588,7 @@ public sealed class PolicyInformation
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class PolicyQualifierInfo
+public sealed class PolicyQualifierInfo : IAsn1Encodable
 {
     /// <summary>ASN.1 alias PolicyQualifierId ::= OBJECT IDENTIFIER. ASN.1 constraint unsupported: (id-qt-cps | id-qt-unotice). Not enforced by runtime.</summary>
     public Asn1Oid PolicyQualifierId { get; set; }
@@ -622,7 +622,7 @@ public sealed class PolicyQualifierInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class UserNotice
+public sealed class UserNotice : IAsn1Encodable
 {
     public NoticeReference? NoticeRef { get; set; }
     public DisplayText? ExplicitText { get; set; }
@@ -667,7 +667,7 @@ public sealed class UserNotice
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class NoticeReference
+public sealed class NoticeReference : IAsn1Encodable
 {
     public DisplayText Organization { get; set; }
     public Asn1Integer[] NoticeNumbers { get; set; } = Array.Empty<Asn1Integer>();
@@ -711,7 +711,7 @@ public enum DisplayTextKind
     Utf8String,
 }
 
-public sealed class DisplayText
+public sealed class DisplayText : IAsn1Encodable
 {
     public DisplayTextKind Kind { get; private set; }
     public string Value { get; private set; } = "";
@@ -801,7 +801,7 @@ public sealed class DisplayText
     }
 }
 
-public sealed class PolicyMappings_Item
+public sealed class PolicyMappings_Item : IAsn1Encodable
 {
     /// <summary>ASN.1 alias CertPolicyId ::= OBJECT IDENTIFIER.</summary>
     public Asn1Oid IssuerDomainPolicy { get; set; }
@@ -849,7 +849,7 @@ public enum GeneralNameKind
     RegisteredID,
 }
 
-public sealed class GeneralName
+public sealed class GeneralName : IAsn1Encodable
 {
     public GeneralNameKind Kind { get; private set; }
     /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
@@ -1037,7 +1037,7 @@ public sealed class GeneralName
     }
 }
 
-public sealed class AnotherName
+public sealed class AnotherName : IAsn1Encodable
 {
     public Asn1Oid TypeId { get; set; }
     public Asn1Any Value { get; set; }
@@ -1077,7 +1077,7 @@ public sealed class AnotherName
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class EDIPartyName
+public sealed class EDIPartyName : IAsn1Encodable
 {
     public DirectoryString? NameAssigner { get; set; }
     public DirectoryString PartyName { get; set; }
@@ -1130,7 +1130,7 @@ public sealed class EDIPartyName
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class BasicConstraints
+public sealed class BasicConstraints : IAsn1Encodable
 {
     public bool CA { get; set; } = false;
     /// <summary>ASN.1 value range (0..MAX). Not enforced by runtime.</summary>
@@ -1176,7 +1176,7 @@ public sealed class BasicConstraints
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class NameConstraints
+public sealed class NameConstraints : IAsn1Encodable
 {
     /// <summary>ASN.1 alias GeneralSubtrees ::= SEQUENCE OF GeneralSubtree. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public GeneralSubtree[]? PermittedSubtrees { get; set; }
@@ -1229,7 +1229,7 @@ public sealed class NameConstraints
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class GeneralSubtree
+public sealed class GeneralSubtree : IAsn1Encodable
 {
     public GeneralName Base { get; set; }
     /// <summary>ASN.1 alias BaseDistance ::= INTEGER. ASN.1 value range (0..MAX). Not enforced by runtime.</summary>
@@ -1279,7 +1279,7 @@ public sealed class GeneralSubtree
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class PolicyConstraints
+public sealed class PolicyConstraints : IAsn1Encodable
 {
     /// <summary>ASN.1 alias SkipCerts ::= INTEGER. ASN.1 value range (0..MAX). Not enforced by runtime.</summary>
     public Asn1Integer? RequireExplicitPolicy { get; set; }
@@ -1326,7 +1326,7 @@ public sealed class PolicyConstraints
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class DistributionPoint
+public sealed class DistributionPoint : IAsn1Encodable
 {
     public DistributionPointName? DistributionPointValue { get; set; }
     public ReasonFlags? Reasons { get; set; }
@@ -1397,7 +1397,7 @@ public enum DistributionPointNameKind
     NameRelativeToCRLIssuer,
 }
 
-public sealed class DistributionPointName
+public sealed class DistributionPointName : IAsn1Encodable
 {
     public DistributionPointNameKind Kind { get; private set; }
     /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
@@ -1490,7 +1490,7 @@ public enum ReasonFlagsFlags
     AACompromise = 1 << 8
 }
 
-public sealed class ReasonFlags
+public sealed class ReasonFlags : IAsn1Encodable
 {
     public Asn1BitString Value { get; set; }
 
@@ -1552,7 +1552,7 @@ public sealed class ReasonFlags
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.BitString;
 }
 
-public sealed class AccessDescription
+public sealed class AccessDescription : IAsn1Encodable
 {
     public Asn1Oid AccessMethod { get; set; }
     public GeneralName AccessLocation { get; set; }
@@ -1585,7 +1585,7 @@ public sealed class AccessDescription
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class IssuingDistributionPoint
+public sealed class IssuingDistributionPoint : IAsn1Encodable
 {
     public DistributionPointName? DistributionPoint { get; set; }
     public bool OnlyContainsUserCerts { get; set; } = false;

@@ -335,7 +335,7 @@ public static class PKIXAlgs2009Oids
     }
 }
 
-public sealed class RSAPublicKey
+public sealed class RSAPublicKey : IAsn1Encodable
 {
     public Asn1Integer Modulus { get; set; }
     public Asn1Integer PublicExponent { get; set; }
@@ -368,7 +368,7 @@ public sealed class RSAPublicKey
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class DSAParams
+public sealed class DSAParams : IAsn1Encodable
 {
     public Asn1Integer P { get; set; }
     public Asn1Integer Q { get; set; }
@@ -404,7 +404,7 @@ public sealed class DSAParams
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class DomainParameters
+public sealed class DomainParameters : IAsn1Encodable
 {
     public Asn1Integer P { get; set; }
     public Asn1Integer G { get; set; }
@@ -458,7 +458,7 @@ public sealed class DomainParameters
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class ValidationParams
+public sealed class ValidationParams : IAsn1Encodable
 {
     public Asn1BitString Seed { get; set; }
     public Asn1Integer PgenCounter { get; set; }
@@ -491,7 +491,7 @@ public sealed class ValidationParams
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class DSASigValue
+public sealed class DSASigValue : IAsn1Encodable
 {
     public Asn1Integer R { get; set; }
     public Asn1Integer S { get; set; }
@@ -524,7 +524,7 @@ public sealed class DSASigValue
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class ECDSASigValue
+public sealed class ECDSASigValue : IAsn1Encodable
 {
     public Asn1Integer R { get; set; }
     public Asn1Integer S { get; set; }

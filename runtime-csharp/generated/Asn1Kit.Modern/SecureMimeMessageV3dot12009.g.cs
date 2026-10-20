@@ -72,7 +72,7 @@ public enum SMIMEEncryptionKeyPreferenceKind
     SubjectAltKeyIdentifier,
 }
 
-public sealed class SMIMEEncryptionKeyPreference
+public sealed class SMIMEEncryptionKeyPreference : IAsn1Encodable
 {
     public SMIMEEncryptionKeyPreferenceKind Kind { get; private set; }
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.IssuerAndSerialNumber? IssuerAndSerialNumber { get; private set; }

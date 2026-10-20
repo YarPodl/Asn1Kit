@@ -1,6 +1,9 @@
 namespace Asn1Kit.Runtime;
 
-/// <summary>Warm top-level helpers that wrap <see cref="Asn1Reader"/> for complete TLV values.</summary>
+/// <summary>
+/// Warm top-level helpers that wrap <see cref="Asn1Reader"/> / <see cref="Asn1Writer"/> for complete TLV values.
+/// Mirrors C++ <c>asn1kit::encode</c> / <c>asn1kit::decode</c>; codegen does not emit calls here.
+/// </summary>
 public static class Asn1Utils
 {
     /// <summary>
@@ -42,5 +45,62 @@ public static class Asn1Utils
         var value = reader.ReadWithOriginalEncoding(decode);
         reader.ThrowIfNotEmpty();
         return value;
+    }
+
+    /// <summary>
+    /// Encodes <paramref name="value"/> as a complete TLV. Equivalent to
+    /// <c>writer.Encode()</c> after <see cref="IAsn1Encodable.Encode"/>.
+    /// </summary>
+    public static byte[] Encode<T>(T value, Asn1Encoding encoding = Asn1Encoding.Der)
+        where T : IAsn1Encodable
+    {
+        if (value is null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
+
+        var writer = new Asn1Writer(encoding);
+        value.Encode(writer);
+        return writer.Encode();
+    }
+
+    /// <summary>
+    /// Encodes <paramref name="value"/> into <paramref name="destination"/>.
+    /// Returns <see langword="false"/> when the span is too small; <paramref name="bytesWritten"/> is then unspecified.
+    /// </summary>
+    public static bool TryEncode<T>(
+        Span<byte> destination,
+        T value,
+        out int bytesWritten,
+        Asn1Encoding encoding = Asn1Encoding.Der)
+        where T : IAsn1Encodable
+    {
+        if (value is null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
+
+        var writer = new Asn1Writer(encoding);
+        value.Encode(writer);
+        return writer.TryEncode(destination, out bytesWritten);
+    }
+
+    /// <summary>
+    /// Encodes <paramref name="value"/> using an explicit callback (for types that do not implement
+    /// <see cref="IAsn1Encodable"/>, such as primitives).
+    /// </summary>
+    public static byte[] Encode<T>(
+        T value,
+        Action<Asn1Writer, T> encode,
+        Asn1Encoding encoding = Asn1Encoding.Der)
+    {
+        if (encode is null)
+        {
+            throw new ArgumentNullException(nameof(encode));
+        }
+
+        var writer = new Asn1Writer(encoding);
+        encode(writer, value);
+        return writer.Encode();
     }
 }

@@ -128,7 +128,7 @@ public static class PKIX1PSSOAEPAlgorithms2009Oids
     }
 }
 
-public sealed class RSASSAPSSParams
+public sealed class RSASSAPSSParams : IAsn1Encodable
 {
     /// <summary>ASN.1 alias HashAlgorithm ::= AlgorithmIdentifier. ASN.1 object set HashAlgorithms (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier HashAlgorithm { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdSha1, Parameters = PKIX1PSSOAEPAlgorithms2009Defaults.Value0 };
@@ -221,7 +221,7 @@ public sealed class RSASSAPSSParams
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class RSAESOAEPParams
+public sealed class RSAESOAEPParams : IAsn1Encodable
 {
     /// <summary>ASN.1 alias HashAlgorithm ::= AlgorithmIdentifier. ASN.1 object set HashAlgorithms (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier HashFunc { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdSha1, Parameters = PKIX1PSSOAEPAlgorithms2009Defaults.Value0 };

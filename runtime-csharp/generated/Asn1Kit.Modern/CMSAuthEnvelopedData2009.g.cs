@@ -20,7 +20,7 @@ public static class CMSAuthEnvelopedData2009Oids
     }
 }
 
-public sealed class AuthEnvelopedData
+public sealed class AuthEnvelopedData : IAsn1Encodable
 {
     public int Version { get; set; }
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.OriginatorInfo? OriginatorInfo { get; set; }

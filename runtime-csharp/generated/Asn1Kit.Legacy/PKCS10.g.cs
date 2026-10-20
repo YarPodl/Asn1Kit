@@ -8,7 +8,7 @@ using Asn1Kit.Runtime;
 
 namespace Asn1Kit.Legacy.Pkcs10;
 
-public sealed class CertificationRequestInfo
+public sealed class CertificationRequestInfo : IAsn1Encodable
 {
     /// <summary>ASN.1 alias Version ::= INTEGER.</summary>
     public Asn1Integer Version { get; set; }
@@ -59,7 +59,7 @@ public sealed class CertificationRequestInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class Attribute
+public sealed class Attribute : IAsn1Encodable
 {
     public Asn1Oid Type { get; set; }
     public Asn1Any[] Values { get; set; } = Array.Empty<Asn1Any>();
@@ -95,7 +95,7 @@ public sealed class Attribute
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class CertificationRequest
+public sealed class CertificationRequest : IAsn1Encodable
 {
     public CertificationRequestInfo CertificationRequestInfo { get; set; }
     /// <summary>ASN.1 alias SignatureAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set (closed). Membership not enforced by runtime.</summary>

@@ -56,7 +56,7 @@ public static class SecureMimeMessageV3Oids
     }
 }
 
-public sealed class SMIMECapability
+public sealed class SMIMECapability : IAsn1Encodable
 {
     public Asn1Oid CapabilityID { get; set; }
     public Asn1Any? Parameters { get; set; }
@@ -102,7 +102,7 @@ public enum SMIMEEncryptionKeyPreferenceKind
     SubjectAltKeyIdentifier,
 }
 
-public sealed class SMIMEEncryptionKeyPreference
+public sealed class SMIMEEncryptionKeyPreference : IAsn1Encodable
 {
     public SMIMEEncryptionKeyPreferenceKind Kind { get; private set; }
     public Asn1Kit.Legacy.Cms.IssuerAndSerialNumber? IssuerAndSerialNumber { get; private set; }
@@ -180,7 +180,7 @@ public sealed class SMIMEEncryptionKeyPreference
     }
 }
 
-public sealed class RC2CBCParameter
+public sealed class RC2CBCParameter : IAsn1Encodable
 {
     public Asn1Integer Rc2ParameterVersion { get; set; }
     /// <summary>ASN.1 alias IV ::= OCTET STRING. ASN.1 SIZE (8). Not enforced by runtime.</summary>

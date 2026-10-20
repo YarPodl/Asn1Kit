@@ -74,7 +74,7 @@ public static class PKIXDVCSOids
     }
 }
 
-public sealed class DigestInfo
+public sealed class DigestInfo : IAsn1Encodable
 {
     /// <summary>ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier DigestAlgorithm { get; set; }
@@ -115,7 +115,7 @@ public enum DVCSTimeKind
     TimeStampToken,
 }
 
-public sealed class DVCSTime
+public sealed class DVCSTime : IAsn1Encodable
 {
     public DVCSTimeKind Kind { get; private set; }
     public DateTimeOffset? GenTime { get; private set; }
@@ -177,7 +177,7 @@ public sealed class DVCSTime
     }
 }
 
-public sealed class TargetEtcChain
+public sealed class TargetEtcChain : IAsn1Encodable
 {
     public CertEtcToken Target { get; set; }
     /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
@@ -229,7 +229,7 @@ public sealed class TargetEtcChain
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class PathProcInput
+public sealed class PathProcInput : IAsn1Encodable
 {
     /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.PolicyInformation[] AcceptablePolicySet { get; set; } = Array.Empty<Asn1Kit.Legacy.Pkix.PolicyInformation>();
@@ -295,7 +295,7 @@ public enum CertEtcTokenKind
     Extension,
 }
 
-public sealed class CertEtcToken
+public sealed class CertEtcToken : IAsn1Encodable
 {
     public CertEtcTokenKind Kind { get; private set; }
     public Asn1Kit.Legacy.Pkix.Certificate? Certificate { get; private set; }
@@ -489,7 +489,7 @@ public sealed class CertEtcToken
     }
 }
 
-public sealed class DVCSRequestInformation
+public sealed class DVCSRequestInformation : IAsn1Encodable
 {
     public Asn1Integer Version { get; set; } = Asn1Integer.FromInt64(1L);
     public ServiceType Service { get; set; }
@@ -620,7 +620,7 @@ public enum ServiceType
     Ccpd = 4
 }
 
-public sealed class DVCSRequest
+public sealed class DVCSRequest : IAsn1Encodable
 {
     public DVCSRequestInformation RequestInformation { get; set; }
     public Data Data { get; set; }
@@ -669,7 +669,7 @@ public enum DataKind
     Certs,
 }
 
-public sealed class Data
+public sealed class Data : IAsn1Encodable
 {
     public DataKind Kind { get; private set; }
     public ReadOnlyMemory<byte>? Message { get; private set; }
@@ -756,7 +756,7 @@ public enum DVCSResponseKind
     DvErrorNote,
 }
 
-public sealed class DVCSResponse
+public sealed class DVCSResponse : IAsn1Encodable
 {
     public DVCSResponseKind Kind { get; private set; }
     public DVCSCertInfo? DvCertInfo { get; private set; }
@@ -817,7 +817,7 @@ public sealed class DVCSResponse
     }
 }
 
-public sealed class DVCSCertInfo
+public sealed class DVCSCertInfo : IAsn1Encodable
 {
     public Asn1Integer Version { get; set; } = Asn1Integer.FromInt64(1L);
     public DVCSRequestInformation DvReqInfo { get; set; }
@@ -922,7 +922,7 @@ public sealed class DVCSCertInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class DVCSErrorNotice
+public sealed class DVCSErrorNotice : IAsn1Encodable
 {
     public Asn1Kit.Legacy.Cmp.PKIStatusInfo TransactionStatus { get; set; }
     public Asn1Kit.Legacy.Pkix.GeneralName? TransactionIdentifier { get; set; }

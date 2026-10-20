@@ -281,7 +281,7 @@ public static class PKIX1Explicit88Oids
     }
 }
 
-public sealed class Attribute
+public sealed class Attribute : IAsn1Encodable
 {
     /// <summary>ASN.1 alias AttributeType ::= OBJECT IDENTIFIER.</summary>
     public Asn1Oid Type { get; set; }
@@ -318,7 +318,7 @@ public sealed class Attribute
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public struct AttributeTypeAndValue
+public struct AttributeTypeAndValue : IAsn1Encodable
 {
     /// <summary>ASN.1 alias AttributeType ::= OBJECT IDENTIFIER.</summary>
     public Asn1Oid Type { get; set; }
@@ -369,7 +369,7 @@ public enum X520nameKind
     BmpString,
 }
 
-public sealed class X520name
+public sealed class X520name : IAsn1Encodable
 {
     public X520nameKind Kind { get; private set; }
     public string Value { get; private set; } = "";
@@ -483,7 +483,7 @@ public enum X520CommonNameKind
     BmpString,
 }
 
-public sealed class X520CommonName
+public sealed class X520CommonName : IAsn1Encodable
 {
     public X520CommonNameKind Kind { get; private set; }
     public string Value { get; private set; } = "";
@@ -597,7 +597,7 @@ public enum X520LocalityNameKind
     BmpString,
 }
 
-public sealed class X520LocalityName
+public sealed class X520LocalityName : IAsn1Encodable
 {
     public X520LocalityNameKind Kind { get; private set; }
     public string Value { get; private set; } = "";
@@ -711,7 +711,7 @@ public enum X520StateOrProvinceNameKind
     BmpString,
 }
 
-public sealed class X520StateOrProvinceName
+public sealed class X520StateOrProvinceName : IAsn1Encodable
 {
     public X520StateOrProvinceNameKind Kind { get; private set; }
     public string Value { get; private set; } = "";
@@ -825,7 +825,7 @@ public enum X520OrganizationNameKind
     BmpString,
 }
 
-public sealed class X520OrganizationName
+public sealed class X520OrganizationName : IAsn1Encodable
 {
     public X520OrganizationNameKind Kind { get; private set; }
     public string Value { get; private set; } = "";
@@ -939,7 +939,7 @@ public enum X520OrganizationalUnitNameKind
     BmpString,
 }
 
-public sealed class X520OrganizationalUnitName
+public sealed class X520OrganizationalUnitName : IAsn1Encodable
 {
     public X520OrganizationalUnitNameKind Kind { get; private set; }
     public string Value { get; private set; } = "";
@@ -1053,7 +1053,7 @@ public enum X520TitleKind
     BmpString,
 }
 
-public sealed class X520Title
+public sealed class X520Title : IAsn1Encodable
 {
     public X520TitleKind Kind { get; private set; }
     public string Value { get; private set; } = "";
@@ -1167,7 +1167,7 @@ public enum X520PseudonymKind
     BmpString,
 }
 
-public sealed class X520Pseudonym
+public sealed class X520Pseudonym : IAsn1Encodable
 {
     public X520PseudonymKind Kind { get; private set; }
     public string Value { get; private set; } = "";
@@ -1281,7 +1281,7 @@ public enum DirectoryStringKind
     BmpString,
 }
 
-public sealed class DirectoryString
+public sealed class DirectoryString : IAsn1Encodable
 {
     public DirectoryStringKind Kind { get; private set; }
     public string Value { get; private set; } = "";
@@ -1386,7 +1386,7 @@ public sealed class DirectoryString
     }
 }
 
-public sealed class Certificate
+public sealed class Certificate : IAsn1Encodable
 {
     public Asn1Value<TBSCertificate> TbsCertificate { get; set; }
     /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
@@ -1426,7 +1426,7 @@ public sealed class Certificate
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class TBSCertificate
+public sealed class TBSCertificate : IAsn1Encodable
 {
     public int Version { get; set; } = 0;
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
@@ -1566,7 +1566,7 @@ public static class Version
     public const int V3 = 2;
 }
 
-public sealed class Validity
+public sealed class Validity : IAsn1Encodable
 {
     public Time NotBefore { get; set; }
     public Time NotAfter { get; set; }
@@ -1605,7 +1605,7 @@ public enum TimeKind
     GeneralTime,
 }
 
-public sealed class Time
+public sealed class Time : IAsn1Encodable
 {
     public TimeKind Kind { get; private set; }
     public DateTimeOffset Value { get; private set; }
@@ -1665,7 +1665,7 @@ public sealed class Time
     }
 }
 
-public sealed class SubjectPublicKeyInfo
+public sealed class SubjectPublicKeyInfo : IAsn1Encodable
 {
     /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public AlgorithmIdentifier Algorithm { get; set; }
@@ -1699,7 +1699,7 @@ public sealed class SubjectPublicKeyInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class Extension
+public sealed class Extension : IAsn1Encodable
 {
     public Asn1Oid ExtnID { get; set; }
     public bool Critical { get; set; } = false;
@@ -1741,7 +1741,7 @@ public sealed class Extension
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class CertificateList
+public sealed class CertificateList : IAsn1Encodable
 {
     public TBSCertList TbsCertList { get; set; }
     /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
@@ -1778,7 +1778,7 @@ public sealed class CertificateList
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class TBSCertList
+public sealed class TBSCertList : IAsn1Encodable
 {
     public int? Version { get; set; }
     /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
@@ -1872,7 +1872,7 @@ public sealed class TBSCertList
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class AlgorithmIdentifier
+public sealed class AlgorithmIdentifier : IAsn1Encodable
 {
     public Asn1Oid Algorithm { get; set; }
     public Asn1Any? Parameters { get; set; }
@@ -1911,7 +1911,7 @@ public sealed class AlgorithmIdentifier
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class ORAddress
+public sealed class ORAddress : IAsn1Encodable
 {
     public BuiltInStandardAttributes BuiltInStandardAttributes { get; set; }
     /// <summary>ASN.1 alias BuiltInDomainDefinedAttributes ::= SEQUENCE OF BuiltInDomainDefinedAttribute. ASN.1 SIZE (1..4). Not enforced by runtime.</summary>
@@ -1967,7 +1967,7 @@ public sealed class ORAddress
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class BuiltInStandardAttributes
+public sealed class BuiltInStandardAttributes : IAsn1Encodable
 {
     public CountryName? CountryName { get; set; }
     public AdministrationDomainName? AdministrationDomainName { get; set; }
@@ -2096,7 +2096,7 @@ public enum CountryNameKind
     Iso3166Alpha2Code,
 }
 
-public sealed class CountryName
+public sealed class CountryName : IAsn1Encodable
 {
     public CountryNameKind Kind { get; private set; }
     public string Value { get; private set; } = "";
@@ -2162,7 +2162,7 @@ public enum AdministrationDomainNameKind
     Printable,
 }
 
-public sealed class AdministrationDomainName
+public sealed class AdministrationDomainName : IAsn1Encodable
 {
     public AdministrationDomainNameKind Kind { get; private set; }
     public string Value { get; private set; } = "";
@@ -2228,7 +2228,7 @@ public enum PrivateDomainNameKind
     Printable,
 }
 
-public sealed class PrivateDomainName
+public sealed class PrivateDomainName : IAsn1Encodable
 {
     public PrivateDomainNameKind Kind { get; private set; }
     public string Value { get; private set; } = "";
@@ -2288,7 +2288,7 @@ public sealed class PrivateDomainName
     }
 }
 
-public sealed class PersonalName
+public sealed class PersonalName : IAsn1Encodable
 {
     /// <summary>ASN.1 SIZE (1..40). Not enforced by runtime.</summary>
     public string Surname { get; set; } = "";
@@ -2366,7 +2366,7 @@ public sealed class PersonalName
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Set;
 }
 
-public sealed class BuiltInDomainDefinedAttribute
+public sealed class BuiltInDomainDefinedAttribute : IAsn1Encodable
 {
     /// <summary>ASN.1 SIZE (1..8). Not enforced by runtime.</summary>
     public string Type { get; set; } = "";
@@ -2401,7 +2401,7 @@ public sealed class BuiltInDomainDefinedAttribute
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class ExtensionAttribute
+public sealed class ExtensionAttribute : IAsn1Encodable
 {
     /// <summary>ASN.1 value range (0..256). Not enforced by runtime.</summary>
     public int ExtensionAttributeType { get; set; }
@@ -2442,7 +2442,7 @@ public sealed class ExtensionAttribute
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class TeletexPersonalName
+public sealed class TeletexPersonalName : IAsn1Encodable
 {
     /// <summary>ASN.1 SIZE (1..40). Not enforced by runtime.</summary>
     public string Surname { get; set; } = "";
@@ -2526,7 +2526,7 @@ public enum PhysicalDeliveryCountryNameKind
     Iso3166Alpha2Code,
 }
 
-public sealed class PhysicalDeliveryCountryName
+public sealed class PhysicalDeliveryCountryName : IAsn1Encodable
 {
     public PhysicalDeliveryCountryNameKind Kind { get; private set; }
     public string Value { get; private set; } = "";
@@ -2592,7 +2592,7 @@ public enum PostalCodeKind
     PrintableCode,
 }
 
-public sealed class PostalCode
+public sealed class PostalCode : IAsn1Encodable
 {
     public PostalCodeKind Kind { get; private set; }
     public string Value { get; private set; } = "";
@@ -2652,7 +2652,7 @@ public sealed class PostalCode
     }
 }
 
-public sealed class UnformattedPostalAddress
+public sealed class UnformattedPostalAddress : IAsn1Encodable
 {
     /// <summary>ASN.1 SIZE (1..6). Not enforced by runtime.</summary>
     public string[]? PrintableAddress { get; set; }
@@ -2711,7 +2711,7 @@ public sealed class UnformattedPostalAddress
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Set;
 }
 
-public sealed class PDSParameter
+public sealed class PDSParameter : IAsn1Encodable
 {
     /// <summary>ASN.1 SIZE (1..30). Not enforced by runtime.</summary>
     public string? PrintableString { get; set; }
@@ -2773,7 +2773,7 @@ public enum ExtendedNetworkAddressKind
     PsapAddress,
 }
 
-public sealed class ExtendedNetworkAddress
+public sealed class ExtendedNetworkAddress : IAsn1Encodable
 {
     public ExtendedNetworkAddressKind Kind { get; private set; }
     public ExtendedNetworkAddress_E1634Address? E1634Address { get; private set; }
@@ -2834,7 +2834,7 @@ public sealed class ExtendedNetworkAddress
     }
 }
 
-public sealed class PresentationAddress
+public sealed class PresentationAddress : IAsn1Encodable
 {
     public ReadOnlyMemory<byte>? PSelector { get; set; }
     public ReadOnlyMemory<byte>? SSelector { get; set; }
@@ -2939,7 +2939,7 @@ public static class TerminalType
     public const int Videotex = 8;
 }
 
-public sealed class TeletexDomainDefinedAttribute
+public sealed class TeletexDomainDefinedAttribute : IAsn1Encodable
 {
     /// <summary>ASN.1 SIZE (1..8). Not enforced by runtime.</summary>
     public string Type { get; set; } = "";
@@ -2974,7 +2974,7 @@ public sealed class TeletexDomainDefinedAttribute
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class TBSCertList_RevokedCertificates_Item
+public sealed class TBSCertList_RevokedCertificates_Item : IAsn1Encodable
 {
     /// <summary>ASN.1 alias CertificateSerialNumber ::= INTEGER.</summary>
     public Asn1Integer UserCertificate { get; set; }
@@ -3021,7 +3021,7 @@ public sealed class TBSCertList_RevokedCertificates_Item
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class ExtendedNetworkAddress_E1634Address
+public sealed class ExtendedNetworkAddress_E1634Address : IAsn1Encodable
 {
     /// <summary>ASN.1 SIZE (1..15). Not enforced by runtime.</summary>
     public string Number { get; set; } = "";

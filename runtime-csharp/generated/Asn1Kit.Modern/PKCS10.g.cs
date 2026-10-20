@@ -8,7 +8,7 @@ using Asn1Kit.Runtime;
 
 namespace Asn1Kit.Modern.PKCS10;
 
-public sealed class SubjectPublicKeyInfo
+public sealed class SubjectPublicKeyInfo : IAsn1Encodable
 {
     /// <summary>ASN.1 object set PKInfoAlgorithms (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Algorithm { get; set; }
@@ -42,7 +42,7 @@ public sealed class SubjectPublicKeyInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class Attribute
+public sealed class Attribute : IAsn1Encodable
 {
     /// <summary>ASN.1 constraint unsupported:  table({ IOSet }). Not enforced by runtime.</summary>
     public Asn1Oid Type { get; set; }
@@ -80,7 +80,7 @@ public sealed class Attribute
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class CertificationRequestInfo
+public sealed class CertificationRequestInfo : IAsn1Encodable
 {
     /// <summary>ASN.1 constraint unsupported: (v1 , ...). Not enforced by runtime.</summary>
     public int Version { get; set; }
@@ -131,7 +131,7 @@ public sealed class CertificationRequestInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class CertificationRequest
+public sealed class CertificationRequest : IAsn1Encodable
 {
     public CertificationRequestInfo CertificationRequestInfo { get; set; }
     /// <summary>ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.</summary>

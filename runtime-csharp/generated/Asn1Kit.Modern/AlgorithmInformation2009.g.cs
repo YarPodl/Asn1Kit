@@ -24,7 +24,7 @@ public enum ParamOptions
     Optional = 5
 }
 
-public sealed class AlgorithmIdentifier
+public sealed class AlgorithmIdentifier : IAsn1Encodable
 {
     /// <summary>ASN.1 constraint unsupported:  table({ AlgorithmSet }). Not enforced by runtime.</summary>
     public Asn1Oid Algorithm { get; set; }
@@ -64,7 +64,7 @@ public sealed class AlgorithmIdentifier
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class SMIMECapability
+public sealed class SMIMECapability : IAsn1Encodable
 {
     /// <summary>ASN.1 constraint unsupported:  table({ CapabilitySet }). Not enforced by runtime.</summary>
     public Asn1Oid CapabilityID { get; set; }

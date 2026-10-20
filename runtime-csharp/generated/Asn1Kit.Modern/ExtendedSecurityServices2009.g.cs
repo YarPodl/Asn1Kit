@@ -110,7 +110,7 @@ public static class ExtendedSecurityServices2009Oids
     }
 }
 
-public sealed class ReceiptRequest
+public sealed class ReceiptRequest : IAsn1Encodable
 {
     /// <summary>ASN.1 alias ContentIdentifier ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> SignedContentIdentifier { get; set; }
@@ -160,7 +160,7 @@ public enum ReceiptsFromKind
     ReceiptList,
 }
 
-public sealed class ReceiptsFrom
+public sealed class ReceiptsFrom : IAsn1Encodable
 {
     public ReceiptsFromKind Kind { get; private set; }
     public int? AllOrFirstTier { get; private set; }
@@ -235,7 +235,7 @@ public static class AllOrFirstTier
     public const int FirstTierRecipients = 1;
 }
 
-public sealed class Receipt
+public sealed class Receipt : IAsn1Encodable
 {
     public int Version { get; set; }
     /// <summary>ASN.1 alias ContentType ::= OBJECT IDENTIFIER.</summary>
@@ -282,7 +282,7 @@ public static class ESSVersion
     public const int V1 = 1;
 }
 
-public sealed class ContentHints
+public sealed class ContentHints : IAsn1Encodable
 {
     /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public string? ContentDescription { get; set; }
@@ -323,7 +323,7 @@ public sealed class ContentHints
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class ContentReference
+public sealed class ContentReference : IAsn1Encodable
 {
     /// <summary>ASN.1 alias ContentType ::= OBJECT IDENTIFIER.</summary>
     public Asn1Oid ContentType { get; set; }
@@ -361,7 +361,7 @@ public sealed class ContentReference
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class ESSSecurityLabel
+public sealed class ESSSecurityLabel : IAsn1Encodable
 {
     /// <summary>ASN.1 alias SecurityPolicyIdentifier ::= OBJECT IDENTIFIER.</summary>
     public Asn1Oid SecurityPolicyIdentifier { get; set; }
@@ -462,7 +462,7 @@ public enum ESSPrivacyMarkKind
     Utf8String,
 }
 
-public sealed class ESSPrivacyMark
+public sealed class ESSPrivacyMark : IAsn1Encodable
 {
     public ESSPrivacyMarkKind Kind { get; private set; }
     public string Value { get; private set; } = "";
@@ -522,7 +522,7 @@ public sealed class ESSPrivacyMark
     }
 }
 
-public sealed class MLData
+public sealed class MLData : IAsn1Encodable
 {
     public EntityIdentifier MailListIdentifier { get; set; }
     public DateTimeOffset ExpansionTime { get; set; }
@@ -570,7 +570,7 @@ public enum EntityIdentifierKind
     SubjectKeyIdentifier,
 }
 
-public sealed class EntityIdentifier
+public sealed class EntityIdentifier : IAsn1Encodable
 {
     public EntityIdentifierKind Kind { get; private set; }
     public Asn1Kit.Modern.CryptographicMessageSyntax2009.IssuerAndSerialNumber? IssuerAndSerialNumber { get; private set; }
@@ -639,7 +639,7 @@ public enum MLReceiptPolicyKind
     InAdditionTo,
 }
 
-public sealed class MLReceiptPolicy
+public sealed class MLReceiptPolicy : IAsn1Encodable
 {
     public MLReceiptPolicyKind Kind { get; private set; }
     public Asn1Null? None { get; private set; }
@@ -730,7 +730,7 @@ public sealed class MLReceiptPolicy
     }
 }
 
-public sealed class SigningCertificate
+public sealed class SigningCertificate : IAsn1Encodable
 {
     public ESSCertID[] Certs { get; set; } = Array.Empty<ESSCertID>();
     public Asn1Kit.Modern.PKIX1Implicit2009.PolicyInformation[]? Policies { get; set; }
@@ -775,7 +775,7 @@ public sealed class SigningCertificate
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class SigningCertificateV2
+public sealed class SigningCertificateV2 : IAsn1Encodable
 {
     public ESSCertIDv2[] Certs { get; set; } = Array.Empty<ESSCertIDv2>();
     public Asn1Kit.Modern.PKIX1Implicit2009.PolicyInformation[]? Policies { get; set; }
@@ -820,7 +820,7 @@ public sealed class SigningCertificateV2
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class ESSCertIDv2
+public sealed class ESSCertIDv2 : IAsn1Encodable
 {
     /// <summary>ASN.1 alias HashAlgorithm ::= AlgorithmIdentifier. ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier HashAlgorithm { get; set; } = new Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier { Algorithm = global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdSha256 };
@@ -870,7 +870,7 @@ public sealed class ESSCertIDv2
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class ESSCertID
+public sealed class ESSCertID : IAsn1Encodable
 {
     /// <summary>ASN.1 alias Hash ::= OCTET STRING.</summary>
     public ReadOnlyMemory<byte> CertHash { get; set; }
@@ -910,7 +910,7 @@ public sealed class ESSCertID
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class IssuerSerial
+public sealed class IssuerSerial : IAsn1Encodable
 {
     /// <summary>ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName[] Issuer { get; set; } = Array.Empty<Asn1Kit.Modern.PKIX1Implicit2009.GeneralName>();

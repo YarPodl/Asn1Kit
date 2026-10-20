@@ -8,7 +8,7 @@ using Asn1Kit.Runtime;
 
 namespace Asn1Kit.Modern.PKIXX400Address2009;
 
-public sealed class ORAddress
+public sealed class ORAddress : IAsn1Encodable
 {
     public BuiltInStandardAttributes BuiltInStandardAttributes { get; set; }
     /// <summary>ASN.1 alias BuiltInDomainDefinedAttributes ::= SEQUENCE OF BuiltInDomainDefinedAttribute. ASN.1 SIZE (1..4). Not enforced by runtime.</summary>
@@ -64,7 +64,7 @@ public sealed class ORAddress
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class BuiltInStandardAttributes
+public sealed class BuiltInStandardAttributes : IAsn1Encodable
 {
     public CountryName? CountryName { get; set; }
     public AdministrationDomainName? AdministrationDomainName { get; set; }
@@ -193,7 +193,7 @@ public enum CountryNameKind
     Iso3166Alpha2Code,
 }
 
-public sealed class CountryName
+public sealed class CountryName : IAsn1Encodable
 {
     public CountryNameKind Kind { get; private set; }
     public string Value { get; private set; } = "";
@@ -259,7 +259,7 @@ public enum AdministrationDomainNameKind
     Printable,
 }
 
-public sealed class AdministrationDomainName
+public sealed class AdministrationDomainName : IAsn1Encodable
 {
     public AdministrationDomainNameKind Kind { get; private set; }
     public string Value { get; private set; } = "";
@@ -325,7 +325,7 @@ public enum PrivateDomainNameKind
     Printable,
 }
 
-public sealed class PrivateDomainName
+public sealed class PrivateDomainName : IAsn1Encodable
 {
     public PrivateDomainNameKind Kind { get; private set; }
     public string Value { get; private set; } = "";
@@ -385,7 +385,7 @@ public sealed class PrivateDomainName
     }
 }
 
-public sealed class PersonalName
+public sealed class PersonalName : IAsn1Encodable
 {
     /// <summary>ASN.1 SIZE (1..40). Not enforced by runtime.</summary>
     public string Surname { get; set; } = "";
@@ -463,7 +463,7 @@ public sealed class PersonalName
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Set;
 }
 
-public sealed class BuiltInDomainDefinedAttribute
+public sealed class BuiltInDomainDefinedAttribute : IAsn1Encodable
 {
     /// <summary>ASN.1 SIZE (1..8). Not enforced by runtime.</summary>
     public string Type { get; set; } = "";
@@ -498,7 +498,7 @@ public sealed class BuiltInDomainDefinedAttribute
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class ExtensionAttribute
+public sealed class ExtensionAttribute : IAsn1Encodable
 {
     /// <summary>ASN.1 value range (0..256). ASN.1 constraint unsupported:  table({ SupportedExtensionAttributes }). Not enforced by runtime.</summary>
     public int ExtensionAttributeType { get; set; }
@@ -540,7 +540,7 @@ public sealed class ExtensionAttribute
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class PDSParameter
+public sealed class PDSParameter : IAsn1Encodable
 {
     /// <summary>ASN.1 SIZE (1..30). Not enforced by runtime.</summary>
     public string? PrintableString { get; set; }
@@ -596,7 +596,7 @@ public sealed class PDSParameter
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Set;
 }
 
-public sealed class PresentationAddress
+public sealed class PresentationAddress : IAsn1Encodable
 {
     public ReadOnlyMemory<byte>? PSelector { get; set; }
     public ReadOnlyMemory<byte>? SSelector { get; set; }
@@ -685,7 +685,7 @@ public sealed class PresentationAddress
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class TeletexDomainDefinedAttribute
+public sealed class TeletexDomainDefinedAttribute : IAsn1Encodable
 {
     /// <summary>ASN.1 SIZE (1..8). Not enforced by runtime.</summary>
     public string Type { get; set; } = "";
@@ -720,7 +720,7 @@ public sealed class TeletexDomainDefinedAttribute
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class EaTeletexPersonalNameExtensionAttribute_Value
+public sealed class EaTeletexPersonalNameExtensionAttribute_Value : IAsn1Encodable
 {
     /// <summary>ASN.1 SIZE (1..40). Not enforced by runtime.</summary>
     public string Surname { get; set; } = "";
@@ -804,7 +804,7 @@ public enum EaPhysicalDeliveryCountryNameExtensionAttribute_ValueKind
     Iso3166Alpha2Code,
 }
 
-public sealed class EaPhysicalDeliveryCountryNameExtensionAttribute_Value
+public sealed class EaPhysicalDeliveryCountryNameExtensionAttribute_Value : IAsn1Encodable
 {
     public EaPhysicalDeliveryCountryNameExtensionAttribute_ValueKind Kind { get; private set; }
     public string Value { get; private set; } = "";
@@ -870,7 +870,7 @@ public enum EaPostalCodeExtensionAttribute_ValueKind
     PrintableCode,
 }
 
-public sealed class EaPostalCodeExtensionAttribute_Value
+public sealed class EaPostalCodeExtensionAttribute_Value : IAsn1Encodable
 {
     public EaPostalCodeExtensionAttribute_ValueKind Kind { get; private set; }
     public string Value { get; private set; } = "";
@@ -930,7 +930,7 @@ public sealed class EaPostalCodeExtensionAttribute_Value
     }
 }
 
-public sealed class EaUnformattedPostalAddressExtensionAttribute_Value
+public sealed class EaUnformattedPostalAddressExtensionAttribute_Value : IAsn1Encodable
 {
     /// <summary>ASN.1 SIZE (1..6). Not enforced by runtime.</summary>
     public string[]? PrintableAddress { get; set; }
@@ -995,7 +995,7 @@ public enum EaExtendedNetworkAddressExtensionAttribute_ValueKind
     PsapAddress,
 }
 
-public sealed class EaExtendedNetworkAddressExtensionAttribute_Value
+public sealed class EaExtendedNetworkAddressExtensionAttribute_Value : IAsn1Encodable
 {
     public EaExtendedNetworkAddressExtensionAttribute_ValueKind Kind { get; private set; }
     public EaExtendedNetworkAddressExtensionAttribute_Value_E1634Address? E1634Address { get; private set; }
@@ -1056,7 +1056,7 @@ public sealed class EaExtendedNetworkAddressExtensionAttribute_Value
     }
 }
 
-public sealed class EaExtendedNetworkAddressExtensionAttribute_Value_E1634Address
+public sealed class EaExtendedNetworkAddressExtensionAttribute_Value_E1634Address : IAsn1Encodable
 {
     /// <summary>ASN.1 SIZE (1..15). Not enforced by runtime.</summary>
     public string Number { get; set; } = "";
@@ -1097,7 +1097,7 @@ public sealed class EaExtendedNetworkAddressExtensionAttribute_Value_E1634Addres
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class EaExtendedNetworkAddressExtensionAttribute_DecodedE1634Address
+public sealed class EaExtendedNetworkAddressExtensionAttribute_DecodedE1634Address : IAsn1Encodable
 {
     /// <summary>ASN.1 SIZE (1..15). Not enforced by runtime.</summary>
     public string Number { get; set; } = "";

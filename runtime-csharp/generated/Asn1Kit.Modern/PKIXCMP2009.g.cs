@@ -35,7 +35,7 @@ public enum CMPCertificateKind
     Unknown,
 }
 
-public sealed class CMPCertificate
+public sealed class CMPCertificate : IAsn1Encodable
 {
     public CMPCertificateKind Kind { get; private set; }
     public Asn1Any? Unknown { get; private set; }
@@ -85,7 +85,7 @@ public sealed class CMPCertificate
     }
 }
 
-public sealed class PKIMessage
+public sealed class PKIMessage : IAsn1Encodable
 {
     public PKIHeader Header { get; set; }
     public PKIBody Body { get; set; }
@@ -155,7 +155,7 @@ public sealed class PKIMessage
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class PKIHeader
+public sealed class PKIHeader : IAsn1Encodable
 {
     public int Pvno { get; set; }
     public Asn1Kit.Modern.PKIX1Implicit2009.GeneralName Sender { get; set; }
@@ -377,7 +377,7 @@ public enum PKIBodyKind
     PollRep,
 }
 
-public sealed class PKIBody
+public sealed class PKIBody : IAsn1Encodable
 {
     public PKIBodyKind Kind { get; private set; }
     /// <summary>ASN.1 alias CertReqMessages ::= SEQUENCE OF CertReqMsg. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
@@ -1089,7 +1089,7 @@ public sealed class PKIBody
     }
 }
 
-public sealed class ProtectedPart
+public sealed class ProtectedPart : IAsn1Encodable
 {
     public PKIHeader Header { get; set; }
     public PKIBody Body { get; set; }
@@ -1122,7 +1122,7 @@ public sealed class ProtectedPart
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class PBMParameter
+public sealed class PBMParameter : IAsn1Encodable
 {
     public ReadOnlyMemory<byte> Salt { get; set; }
     /// <summary>ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
@@ -1163,7 +1163,7 @@ public sealed class PBMParameter
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class DHBMParameter
+public sealed class DHBMParameter : IAsn1Encodable
 {
     /// <summary>ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier Owf { get; set; }
@@ -1276,7 +1276,7 @@ public enum PKIFailureInfoFlags
     DuplicateCertReq = 1 << 26
 }
 
-public sealed class PKIFailureInfo
+public sealed class PKIFailureInfo : IAsn1Encodable
 {
     public Asn1BitString Value { get; set; }
 
@@ -1374,7 +1374,7 @@ public sealed class PKIFailureInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.BitString;
 }
 
-public sealed class PKIStatusInfo
+public sealed class PKIStatusInfo : IAsn1Encodable
 {
     public int Status { get; set; }
     /// <summary>ASN.1 alias PKIFreeText ::= SEQUENCE OF UTF8String. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
@@ -1426,7 +1426,7 @@ public sealed class PKIStatusInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class OOBCertHash
+public sealed class OOBCertHash : IAsn1Encodable
 {
     /// <summary>ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? HashAlg { get; set; }
@@ -1489,7 +1489,7 @@ public sealed class OOBCertHash
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class Challenge
+public sealed class Challenge : IAsn1Encodable
 {
     /// <summary>ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
     public Asn1Kit.Modern.AlgorithmInformation2009.AlgorithmIdentifier? Owf { get; set; }
@@ -1532,7 +1532,7 @@ public sealed class Challenge
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class CertRepMessage
+public sealed class CertRepMessage : IAsn1Encodable
 {
     /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public CMPCertificate[]? CaPubs { get; set; }
@@ -1585,7 +1585,7 @@ public sealed class CertRepMessage
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class CertResponse
+public sealed class CertResponse : IAsn1Encodable
 {
     public Asn1Integer CertReqId { get; set; }
     public PKIStatusInfo Status { get; set; }
@@ -1636,7 +1636,7 @@ public sealed class CertResponse
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class CertifiedKeyPair
+public sealed class CertifiedKeyPair : IAsn1Encodable
 {
     public CertOrEncCert CertOrEncCert { get; set; }
     public Asn1Kit.Modern.PKIXCRMF2009.EncryptedValue? PrivateKey { get; set; }
@@ -1704,7 +1704,7 @@ public enum CertOrEncCertKind
     EncryptedCert,
 }
 
-public sealed class CertOrEncCert
+public sealed class CertOrEncCert : IAsn1Encodable
 {
     public CertOrEncCertKind Kind { get; private set; }
     public CMPCertificate? Certificate { get; private set; }
@@ -1779,7 +1779,7 @@ public sealed class CertOrEncCert
     }
 }
 
-public sealed class KeyRecRepContent
+public sealed class KeyRecRepContent : IAsn1Encodable
 {
     public PKIStatusInfo Status { get; set; }
     public CMPCertificate? NewSigCert { get; set; }
@@ -1865,7 +1865,7 @@ public sealed class KeyRecRepContent
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class RevDetails
+public sealed class RevDetails : IAsn1Encodable
 {
     public Asn1Kit.Modern.PKIXCRMF2009.CertTemplate CertDetails { get; set; }
     /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set (extensible). Membership not enforced by runtime.</summary>
@@ -1908,7 +1908,7 @@ public sealed class RevDetails
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class RevRepContent
+public sealed class RevRepContent : IAsn1Encodable
 {
     /// <summary>ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
     public PKIStatusInfo[] Status { get; set; } = Array.Empty<PKIStatusInfo>();
@@ -1982,7 +1982,7 @@ public sealed class RevRepContent
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class CAKeyUpdAnnContent
+public sealed class CAKeyUpdAnnContent : IAsn1Encodable
 {
     public CMPCertificate OldWithNew { get; set; }
     public CMPCertificate NewWithOld { get; set; }
@@ -2018,7 +2018,7 @@ public sealed class CAKeyUpdAnnContent
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class RevAnnContent
+public sealed class RevAnnContent : IAsn1Encodable
 {
     public int Status { get; set; }
     public Asn1Kit.Modern.PKIXCRMF2009.CertId CertId { get; set; }
@@ -2070,7 +2070,7 @@ public sealed class RevAnnContent
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class InfoTypeAndValue
+public sealed class InfoTypeAndValue : IAsn1Encodable
 {
     /// <summary>ASN.1 constraint unsupported:  table({ SupportedInfoSet }). Not enforced by runtime.</summary>
     public Asn1Oid InfoType { get; set; }
@@ -2105,7 +2105,7 @@ public sealed class InfoTypeAndValue
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class ErrorMsgContent
+public sealed class ErrorMsgContent : IAsn1Encodable
 {
     public PKIStatusInfo PKIStatusInfo { get; set; }
     public Asn1Integer? ErrorCode { get; set; }
@@ -2157,7 +2157,7 @@ public sealed class ErrorMsgContent
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class CertStatus
+public sealed class CertStatus : IAsn1Encodable
 {
     public ReadOnlyMemory<byte> CertHash { get; set; }
     public Asn1Integer CertReqId { get; set; }
@@ -2199,7 +2199,7 @@ public sealed class CertStatus
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class PollReqContent_Item
+public sealed class PollReqContent_Item : IAsn1Encodable
 {
     public Asn1Integer CertReqId { get; set; }
 
@@ -2229,7 +2229,7 @@ public sealed class PollReqContent_Item
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class PollRepContent_Item
+public sealed class PollRepContent_Item : IAsn1Encodable
 {
     public Asn1Integer CertReqId { get; set; }
     public Asn1Integer CheckAfter { get; set; }

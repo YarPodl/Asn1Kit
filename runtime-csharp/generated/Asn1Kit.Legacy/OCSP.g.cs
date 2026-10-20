@@ -92,7 +92,7 @@ public static class OCSPOids
     }
 }
 
-public sealed class OCSPRequest
+public sealed class OCSPRequest : IAsn1Encodable
 {
     public TBSRequest TbsRequest { get; set; }
     public Signature? OptionalSignature { get; set; }
@@ -138,7 +138,7 @@ public sealed class OCSPRequest
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class TBSRequest
+public sealed class TBSRequest : IAsn1Encodable
 {
     public int Version { get; set; } = 0;
     public Asn1Kit.Legacy.Pkix.GeneralName? RequestorName { get; set; }
@@ -223,7 +223,7 @@ public sealed class TBSRequest
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class Signature
+public sealed class Signature : IAsn1Encodable
 {
     /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier SignatureAlgorithm { get; set; }
@@ -282,7 +282,7 @@ public static class Version
     public const int V1 = 0;
 }
 
-public sealed class Request
+public sealed class Request : IAsn1Encodable
 {
     public CertID ReqCert { get; set; }
     /// <summary>ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime.</summary>
@@ -332,7 +332,7 @@ public sealed class Request
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class CertID
+public sealed class CertID : IAsn1Encodable
 {
     /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
     public Asn1Kit.Legacy.Pkix.AlgorithmIdentifier HashAlgorithm { get; set; }
@@ -373,7 +373,7 @@ public sealed class CertID
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class OCSPResponse
+public sealed class OCSPResponse : IAsn1Encodable
 {
     public OCSPResponseStatus ResponseStatus { get; set; }
     public ResponseBytes? ResponseBytes { get; set; }
@@ -435,7 +435,7 @@ public enum OCSPResponseStatus
     Unauthorized = 6
 }
 
-public sealed class ResponseBytes
+public sealed class ResponseBytes : IAsn1Encodable
 {
     public Asn1Oid ResponseType { get; set; }
     public ReadOnlyMemory<byte> Response { get; set; }
@@ -468,7 +468,7 @@ public sealed class ResponseBytes
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class BasicOCSPResponse
+public sealed class BasicOCSPResponse : IAsn1Encodable
 {
     public ResponseData TbsResponseData { get; set; }
     /// <summary>ASN.1 object set (closed). Membership not enforced by runtime.</summary>
@@ -524,7 +524,7 @@ public sealed class BasicOCSPResponse
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class ResponseData
+public sealed class ResponseData : IAsn1Encodable
 {
     public int Version { get; set; } = 0;
     public ResponderID ResponderID { get; set; }
@@ -605,7 +605,7 @@ public enum ResponderIDKind
     ByKey,
 }
 
-public sealed class ResponderID
+public sealed class ResponderID : IAsn1Encodable
 {
     public ResponderIDKind Kind { get; private set; }
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
@@ -688,7 +688,7 @@ public sealed class ResponderID
     }
 }
 
-public sealed class SingleResponse
+public sealed class SingleResponse : IAsn1Encodable
 {
     public CertID CertID { get; set; }
     public CertStatus CertStatus { get; set; }
@@ -767,7 +767,7 @@ public enum CertStatusKind
     Unknown,
 }
 
-public sealed class CertStatus
+public sealed class CertStatus : IAsn1Encodable
 {
     public CertStatusKind Kind { get; private set; }
     public Asn1Null? Good { get; private set; }
@@ -845,7 +845,7 @@ public sealed class CertStatus
     }
 }
 
-public sealed class RevokedInfo
+public sealed class RevokedInfo : IAsn1Encodable
 {
     public DateTimeOffset RevocationTime { get; set; }
     public Asn1Kit.Legacy.Pkix.CRLReason? RevocationReason { get; set; }
@@ -891,7 +891,7 @@ public sealed class RevokedInfo
     public static Asn1Tag DefaultTag { get; } = Asn1Tag.Sequence;
 }
 
-public sealed class ServiceLocator
+public sealed class ServiceLocator : IAsn1Encodable
 {
     /// <summary>ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.</summary>
     public Asn1Kit.Legacy.Pkix.AttributeTypeAndValue[][] Issuer { get; set; } = Array.Empty<Asn1Kit.Legacy.Pkix.AttributeTypeAndValue[]>();
