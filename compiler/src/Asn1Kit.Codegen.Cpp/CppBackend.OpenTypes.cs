@@ -1763,7 +1763,7 @@ public sealed partial class CppBackend
         }
 
         return KnownOidExpression(document, module, key) ??
-               $"asn1kit::oid_literal<\"{CppNames.EscapeString(key)}\">().get()";
+               $"asn1kit::oid_literal<\"{CppNames.EscapeString(key)}\">()";
     }
 
     private static TypeExpr QualifyOpenTypeReferences(

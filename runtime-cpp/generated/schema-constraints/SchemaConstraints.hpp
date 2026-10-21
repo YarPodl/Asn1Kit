@@ -226,8 +226,8 @@ struct closedSet_value_open_type_entries {
         asn1kit::open_context<"SchemaConstraints.closedSet_value">,
         asn1kit::oid, T>;
 
-    inline static const binding_type<asn1kit::integer> int_entry{asn1kit::oid_literal<"1.2.1">().get()};
-    inline static const binding_type<bool> bool_entry{asn1kit::oid_literal<"1.2.2">().get()};
+    inline static const binding_type<asn1kit::integer> int_entry{asn1kit::oid_literal<"1.2.1">()};
+    inline static const binding_type<bool> bool_entry{asn1kit::oid_literal<"1.2.2">()};
 
 };
 
@@ -237,8 +237,8 @@ struct openSet_value_open_type_entries {
         asn1kit::open_context<"SchemaConstraints.openSet_value">,
         asn1kit::oid, T>;
 
-    inline static const binding_type<asn1kit::integer> int_entry{asn1kit::oid_literal<"1.2.1">().get()};
-    inline static const binding_type<bool> bool_entry{asn1kit::oid_literal<"1.2.2">().get()};
+    inline static const binding_type<asn1kit::integer> int_entry{asn1kit::oid_literal<"1.2.1">()};
+    inline static const binding_type<bool> bool_entry{asn1kit::oid_literal<"1.2.2">()};
 
 };
 

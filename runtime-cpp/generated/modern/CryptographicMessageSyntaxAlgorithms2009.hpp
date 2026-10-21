@@ -147,13 +147,13 @@ struct PBKDF2Params {
 
     static ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier default_prf() {
         ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};
-        v.algorithm = CryptographicMessageSyntaxAlgorithms2009Oids::HMACSHA1.get();
+        v.algorithm = CryptographicMessageSyntaxAlgorithms2009Oids::HMACSHA1;
         v.parameters = asn1kit::encode_open(asn1kit::null_value::value());
         return v;
     }
 
     static bool is_default_prf(const ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier& value) {
-        return !(value.algorithm != CryptographicMessageSyntaxAlgorithms2009Oids::HMACSHA1.get()) && value.parameters.has_value() && !((*value.parameters) != asn1kit::encode_open(asn1kit::null_value::value()));
+        return !(value.algorithm != CryptographicMessageSyntaxAlgorithms2009Oids::HMACSHA1) && value.parameters.has_value() && !((*value.parameters) != asn1kit::encode_open(asn1kit::null_value::value()));
     }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {

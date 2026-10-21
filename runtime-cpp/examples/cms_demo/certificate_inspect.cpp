@@ -52,14 +52,14 @@ void print_typed_extensions(const Pkix::TBSCertificate& tbs, std::ostream& out) 
 
     if (const auto ski = view.subject_key_identifier()) {
         write_indent(out, 2);
-        out << format_oid(ImplicitOids::IdCeSubjectKeyIdentifier.get()) << ": non-critical\n";
+        out << format_oid(ImplicitOids::IdCeSubjectKeyIdentifier) << ": non-critical\n";
         write_indent(out, 3);
         out << "keyIdentifier: " << hex_bytes(ski->span(), 64) << "\n";
-        printed.insert(ImplicitOids::IdCeSubjectKeyIdentifier.get().to_string());
+        printed.insert(ImplicitOids::IdCeSubjectKeyIdentifier.text());
     }
     if (const auto aki = view.authority_key_identifier()) {
         write_indent(out, 2);
-        out << format_oid(ImplicitOids::IdCeAuthorityKeyIdentifier.get()) << ": non-critical\n";
+        out << format_oid(ImplicitOids::IdCeAuthorityKeyIdentifier) << ": non-critical\n";
         if (aki->keyIdentifier.has_value()) {
             write_indent(out, 3);
             out << "keyIdentifier: " << hex_bytes(aki->keyIdentifier->span(), 64) << "\n";
@@ -69,33 +69,33 @@ void print_typed_extensions(const Pkix::TBSCertificate& tbs, std::ostream& out) 
             out << "authorityCertSerialNumber: "
                 << aki->authorityCertSerialNumber->to_decimal() << "\n";
         }
-        printed.insert(ImplicitOids::IdCeAuthorityKeyIdentifier.get().to_string());
+        printed.insert(ImplicitOids::IdCeAuthorityKeyIdentifier.text());
     }
     if (const auto ku = view.key_usage()) {
         bool critical = false;
         for (const auto& ext : *tbs.extensions) {
-            if (ext.extnID == ImplicitOids::IdCeKeyUsage.get()) {
+            if (ext.extnID == ImplicitOids::IdCeKeyUsage) {
                 critical = ext.critical;
                 break;
             }
         }
         write_indent(out, 2);
-        out << format_oid(ImplicitOids::IdCeKeyUsage.get()) << ": "
+        out << format_oid(ImplicitOids::IdCeKeyUsage) << ": "
             << (critical ? "critical" : "non-critical") << "\n";
         write_indent(out, 3);
         out << format_key_usage(ku->flags()) << "\n";
-        printed.insert(ImplicitOids::IdCeKeyUsage.get().to_string());
+        printed.insert(ImplicitOids::IdCeKeyUsage.text());
     }
     if (const auto bc = view.basic_constraints()) {
         bool critical = false;
         for (const auto& ext : *tbs.extensions) {
-            if (ext.extnID == ImplicitOids::IdCeBasicConstraints.get()) {
+            if (ext.extnID == ImplicitOids::IdCeBasicConstraints) {
                 critical = ext.critical;
                 break;
             }
         }
         write_indent(out, 2);
-        out << format_oid(ImplicitOids::IdCeBasicConstraints.get()) << ": "
+        out << format_oid(ImplicitOids::IdCeBasicConstraints) << ": "
             << (critical ? "critical" : "non-critical") << "\n";
         write_indent(out, 3);
         out << "cA: " << (bc->cA ? "true" : "false") << "\n";
@@ -103,27 +103,27 @@ void print_typed_extensions(const Pkix::TBSCertificate& tbs, std::ostream& out) 
             write_indent(out, 3);
             out << "pathLenConstraint: " << bc->pathLenConstraint->to_decimal() << "\n";
         }
-        printed.insert(ImplicitOids::IdCeBasicConstraints.get().to_string());
+        printed.insert(ImplicitOids::IdCeBasicConstraints.text());
     }
     if (const auto policies = view.certificate_policies()) {
         write_indent(out, 2);
-        out << format_oid(ImplicitOids::IdCeCertificatePolicies.get()) << ": non-critical\n";
+        out << format_oid(ImplicitOids::IdCeCertificatePolicies) << ": non-critical\n";
         for (const auto& policy : *policies) {
             write_indent(out, 3);
             out << "policyIdentifier: " << policy.policyIdentifier.to_string() << "\n";
         }
-        printed.insert(ImplicitOids::IdCeCertificatePolicies.get().to_string());
+        printed.insert(ImplicitOids::IdCeCertificatePolicies.text());
     }
     if (const auto aia = view.authority_info_access()) {
         write_indent(out, 2);
-        out << format_oid(ImplicitOids::IdPeAuthorityInfoAccess.get()) << ": non-critical\n";
+        out << format_oid(ImplicitOids::IdPeAuthorityInfoAccess) << ": non-critical\n";
         for (const auto& access : *aia) {
             write_indent(out, 3);
             out << "accessMethod: " << access.accessMethod.to_string() << "\n";
             write_indent(out, 3);
             out << "accessLocation: " << format_general_name(access.accessLocation) << "\n";
         }
-        printed.insert(ImplicitOids::IdPeAuthorityInfoAccess.get().to_string());
+        printed.insert(ImplicitOids::IdPeAuthorityInfoAccess.text());
     }
 
     for (const auto& ext : *tbs.extensions) {

@@ -39,9 +39,9 @@ struct authAttributeSet_open_type_entries {
         asn1kit::open_context<"CryptographicMessageSyntax-2009.authAttributeSet">,
         asn1kit::oid, T>;
 
-    inline static const binding_type<std::vector<asn1kit::oid>> content_type{CryptographicMessageSyntax2009Oids::IdContentType.get()};
-    inline static const binding_type<std::vector<asn1kit::bytes>> message_digest{CryptographicMessageSyntax2009Oids::IdMessageDigest.get()};
-    inline static const binding_type<std::vector<Time>> signing_time{CryptographicMessageSyntax2009Oids::IdSigningTime.get()};
+    inline static const binding_type<std::vector<asn1kit::oid>> content_type{CryptographicMessageSyntax2009Oids::IdContentType};
+    inline static const binding_type<std::vector<asn1kit::bytes>> message_digest{CryptographicMessageSyntax2009Oids::IdMessageDigest};
+    inline static const binding_type<std::vector<Time>> signing_time{CryptographicMessageSyntax2009Oids::IdSigningTime};
 
 };
 
@@ -51,11 +51,11 @@ struct contentSet_content_open_type_entries {
         asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_content">,
         asn1kit::oid, T>;
 
-    inline static const binding_type<SignedData> ct_signed_data{CryptographicMessageSyntax2009Oids::IdSignedData.get()};
-    inline static const binding_type<EncryptedData> ct_encrypted_data{CryptographicMessageSyntax2009Oids::IdEncryptedData.get()};
-    inline static const binding_type<EnvelopedData> ct_enveloped_data{CryptographicMessageSyntax2009Oids::IdEnvelopedData.get()};
-    inline static const binding_type<AuthenticatedData> ct_authenticated_data{CryptographicMessageSyntax2009Oids::IdCtAuthData.get()};
-    inline static const binding_type<DigestedData> ct_digested_data{CryptographicMessageSyntax2009Oids::IdDigestedData.get()};
+    inline static const binding_type<SignedData> ct_signed_data{CryptographicMessageSyntax2009Oids::IdSignedData};
+    inline static const binding_type<EncryptedData> ct_encrypted_data{CryptographicMessageSyntax2009Oids::IdEncryptedData};
+    inline static const binding_type<EnvelopedData> ct_enveloped_data{CryptographicMessageSyntax2009Oids::IdEnvelopedData};
+    inline static const binding_type<AuthenticatedData> ct_authenticated_data{CryptographicMessageSyntax2009Oids::IdCtAuthData};
+    inline static const binding_type<DigestedData> ct_digested_data{CryptographicMessageSyntax2009Oids::IdDigestedData};
 
 };
 
@@ -65,11 +65,11 @@ struct contentSet_eContent_open_type_entries {
         asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_eContent">,
         asn1kit::oid, T>;
 
-    inline static const binding_type<SignedData> ct_signed_data{CryptographicMessageSyntax2009Oids::IdSignedData.get()};
-    inline static const binding_type<EncryptedData> ct_encrypted_data{CryptographicMessageSyntax2009Oids::IdEncryptedData.get()};
-    inline static const binding_type<EnvelopedData> ct_enveloped_data{CryptographicMessageSyntax2009Oids::IdEnvelopedData.get()};
-    inline static const binding_type<AuthenticatedData> ct_authenticated_data{CryptographicMessageSyntax2009Oids::IdCtAuthData.get()};
-    inline static const binding_type<DigestedData> ct_digested_data{CryptographicMessageSyntax2009Oids::IdDigestedData.get()};
+    inline static const binding_type<SignedData> ct_signed_data{CryptographicMessageSyntax2009Oids::IdSignedData};
+    inline static const binding_type<EncryptedData> ct_encrypted_data{CryptographicMessageSyntax2009Oids::IdEncryptedData};
+    inline static const binding_type<EnvelopedData> ct_enveloped_data{CryptographicMessageSyntax2009Oids::IdEnvelopedData};
+    inline static const binding_type<AuthenticatedData> ct_authenticated_data{CryptographicMessageSyntax2009Oids::IdCtAuthData};
+    inline static const binding_type<DigestedData> ct_digested_data{CryptographicMessageSyntax2009Oids::IdDigestedData};
 
 };
 
@@ -79,9 +79,9 @@ struct signedAttributesSet_open_type_entries {
         asn1kit::open_context<"CryptographicMessageSyntax-2009.signedAttributesSet">,
         asn1kit::oid, T>;
 
-    inline static const binding_type<std::vector<Time>> signing_time{CryptographicMessageSyntax2009Oids::IdSigningTime.get()};
-    inline static const binding_type<std::vector<asn1kit::bytes>> message_digest{CryptographicMessageSyntax2009Oids::IdMessageDigest.get()};
-    inline static const binding_type<std::vector<asn1kit::oid>> content_type{CryptographicMessageSyntax2009Oids::IdContentType.get()};
+    inline static const binding_type<std::vector<Time>> signing_time{CryptographicMessageSyntax2009Oids::IdSigningTime};
+    inline static const binding_type<std::vector<asn1kit::bytes>> message_digest{CryptographicMessageSyntax2009Oids::IdMessageDigest};
+    inline static const binding_type<std::vector<asn1kit::oid>> content_type{CryptographicMessageSyntax2009Oids::IdContentType};
 
 };
 
@@ -91,7 +91,7 @@ struct unsignedAttributes_open_type_entries {
         asn1kit::open_context<"CryptographicMessageSyntax-2009.unsignedAttributes">,
         asn1kit::oid, T>;
 
-    inline static const binding_type<std::vector<SignerInfo>> countersignature{CryptographicMessageSyntax2009Oids::IdCountersignature.get()};
+    inline static const binding_type<std::vector<SignerInfo>> countersignature{CryptographicMessageSyntax2009Oids::IdCountersignature};
 
 };
 

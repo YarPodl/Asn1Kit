@@ -56,40 +56,40 @@ std::string format_oid(const asn1kit::oid& value) {
     const auto labeled = [&](const char* name) {
         return std::string(name) + " (" + value.to_string() + ")";
     };
-    if (value == ImplicitOids::IdCeSubjectKeyIdentifier.get()) {
+    if (value == ImplicitOids::IdCeSubjectKeyIdentifier) {
         return labeled("subjectKeyIdentifier");
     }
-    if (value == ImplicitOids::IdCeKeyUsage.get()) {
+    if (value == ImplicitOids::IdCeKeyUsage) {
         return labeled("keyUsage");
     }
-    if (value == ImplicitOids::IdCeBasicConstraints.get()) {
+    if (value == ImplicitOids::IdCeBasicConstraints) {
         return labeled("basicConstraints");
     }
-    if (value == ImplicitOids::IdCeCertificatePolicies.get()) {
+    if (value == ImplicitOids::IdCeCertificatePolicies) {
         return labeled("certificatePolicies");
     }
-    if (value == ImplicitOids::IdCeAuthorityKeyIdentifier.get()) {
+    if (value == ImplicitOids::IdCeAuthorityKeyIdentifier) {
         return labeled("authorityKeyIdentifier");
     }
-    if (value == ImplicitOids::IdPeAuthorityInfoAccess.get()) {
+    if (value == ImplicitOids::IdPeAuthorityInfoAccess) {
         return labeled("authorityInfoAccess");
     }
-    if (value == CmsOids::IdContentType.get()) {
+    if (value == CmsOids::IdContentType) {
         return labeled("contentType");
     }
-    if (value == CmsOids::IdMessageDigest.get()) {
+    if (value == CmsOids::IdMessageDigest) {
         return labeled("messageDigest");
     }
-    if (value == CmsOids::IdSigningTime.get()) {
+    if (value == CmsOids::IdSigningTime) {
         return labeled("signingTime");
     }
-    if (value == OcspOids::IdPkixOcspNonce.get()) {
+    if (value == OcspOids::IdPkixOcspNonce) {
         return labeled("id-pkix-ocsp-nonce");
     }
-    if (value == OcspOids::IdPkixOcspBasic.get()) {
+    if (value == OcspOids::IdPkixOcspBasic) {
         return labeled("id-pkix-ocsp-basic");
     }
-    if (value == DigestOids::IdSha256.get()) {
+    if (value == DigestOids::IdSha256) {
         return labeled("id-sha256");
     }
     return value.to_string();

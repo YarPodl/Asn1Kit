@@ -202,7 +202,8 @@ END
         Assert.Contains("struct AlgorithmIdentifier", source);
         Assert.Contains("asn1kit::open_binding<", source);
         Assert.Contains("asn1kit::open_context<\"M.mixed_parameters\">", source);
-        Assert.Contains("MOids::IdEmpty.get()", source);
+        Assert.Contains("MOids::IdEmpty", source);
+        Assert.DoesNotContain("MOids::IdEmpty.get()", source);
         Assert.DoesNotContain("IdEmpty_oid", source);
         Assert.DoesNotContain("open_codec", source);
         Assert.DoesNotContain("asn1kit::codecs::", source);
@@ -417,7 +418,8 @@ END", "Params.asn")
         var paramsFile = Assert.Single(new CppBackend().Generate(document), f => f.RelativePath == "Params.hpp")
             .Contents.Replace("\r\n", "\n", StringComparison.Ordinal);
         Assert.Contains("#include \"Oids.hpp\"", paramsFile);
-        Assert.Contains("::asn1kit::t::Oids::OidsOids::IdEmpty.get()", paramsFile);
+        Assert.Contains("::asn1kit::t::Oids::OidsOids::IdEmpty", paramsFile);
+        Assert.DoesNotContain("::asn1kit::t::Oids::OidsOids::IdEmpty.get()", paramsFile);
         Assert.DoesNotContain("oid_literal<\"1.2.3\">", paramsFile);
     }
 
@@ -940,7 +942,8 @@ Value ::= SEQUENCE { algorithm OBJECT IDENTIFIER DEFAULT { 2 999 128 } }
 END
 ";
         var source = CppSource(asn);
-        Assert.Contains("asn1kit::oid_literal<\"2.999.128\">().get()", source);
+        Assert.Contains("asn1kit::oid_literal<\"2.999.128\">()", source);
+        Assert.DoesNotContain("asn1kit::oid_literal<\"2.999.128\">().get()", source);
         Assert.DoesNotContain("asn1kit::oid::parse", source);
     }
 
@@ -965,7 +968,8 @@ END
         Assert.Contains("static bool is_default_prf(const AlgorithmIdentifier& value) {", source);
         Assert.Contains("value.prf = default_prf();", source);
         Assert.Contains("if (!is_default_prf(this->prf)) {", source);
-        Assert.Contains("MOids::IdAlg.get()", source);
+        Assert.Contains("MOids::IdAlg", source);
+        Assert.DoesNotContain("MOids::IdAlg.get()", source);
         Assert.DoesNotContain("v{};         v.", source);
         Assert.DoesNotContain("([&]{ ", source);
     }
@@ -997,7 +1001,8 @@ END", "Params.asn")
         var paramsFile = Assert.Single(files, f => f.RelativePath == "Params.hpp").Contents
             .Replace("\r\n", "\n", StringComparison.Ordinal);
         Assert.Contains("#include \"Oids.hpp\"", paramsFile);
-        Assert.Contains("::asn1kit::t::Oids::OidsOids::IdSha1.get()", paramsFile);
+        Assert.Contains("::asn1kit::t::Oids::OidsOids::IdSha1", paramsFile);
+        Assert.DoesNotContain("::asn1kit::t::Oids::OidsOids::IdSha1.get()", paramsFile);
         Assert.DoesNotContain("oid_literal<\"1.3.14.3.2.26\">", paramsFile);
     }
 

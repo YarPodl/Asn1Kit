@@ -350,12 +350,12 @@ struct ESSCertIDv2 {
 
     static ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier default_hashAlgorithm() {
         ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier v{};
-        v.algorithm = ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256.get();
+        v.algorithm = ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256;
         return v;
     }
 
     static bool is_default_hashAlgorithm(const ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier& value) {
-        return !(value.algorithm != ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256.get()) && !value.parameters.has_value();
+        return !(value.algorithm != ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256) && !value.parameters.has_value();
     }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {

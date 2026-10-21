@@ -416,12 +416,12 @@ struct GLKeyAttributes {
 
     static ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability default_requestedAlgorithm() {
         ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability v{};
-        v.capabilityID = ::asn1kit::modern::CMSAesRsaesOaep2009::CMSAesRsaesOaep2009Oids::IdAes128Wrap.get();
+        v.capabilityID = ::asn1kit::modern::CMSAesRsaesOaep2009::CMSAesRsaesOaep2009Oids::IdAes128Wrap;
         return v;
     }
 
     static bool is_default_requestedAlgorithm(const ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability& value) {
-        return !(value.capabilityID != ::asn1kit::modern::CMSAesRsaesOaep2009::CMSAesRsaesOaep2009Oids::IdAes128Wrap.get()) && !value.parameters.has_value();
+        return !(value.capabilityID != ::asn1kit::modern::CMSAesRsaesOaep2009::CMSAesRsaesOaep2009Oids::IdAes128Wrap) && !value.parameters.has_value();
     }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {

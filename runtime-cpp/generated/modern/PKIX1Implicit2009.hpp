@@ -41,8 +41,8 @@ struct policyQualifierId_qualifier_open_type_entries {
         asn1kit::open_context<"PKIX1Implicit-2009.policyQualifierId_qualifier">,
         asn1kit::oid, T>;
 
-    inline static const binding_type<asn1kit::asn_string<asn1kit::string_form::ia5>> pqid_cps{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdQtCps.get()};
-    inline static const binding_type<UserNotice> pqid_unotice{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdQtUnotice.get()};
+    inline static const binding_type<asn1kit::asn_string<asn1kit::string_form::ia5>> pqid_cps{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdQtCps};
+    inline static const binding_type<UserNotice> pqid_unotice{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdQtUnotice};
 
 };
 

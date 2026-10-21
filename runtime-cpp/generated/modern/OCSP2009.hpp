@@ -39,7 +39,7 @@ struct responseSet_response_open_type_entries {
         asn1kit::open_context<"OCSP-2009.responseSet_response">,
         asn1kit::oid, T>;
 
-    inline static const binding_type<BasicOCSPResponse> basic_response{OCSP2009Oids::IdPkixOcspBasic.get()};
+    inline static const binding_type<BasicOCSPResponse> basic_response{OCSP2009Oids::IdPkixOcspBasic};
 
 };
 

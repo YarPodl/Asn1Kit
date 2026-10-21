@@ -222,9 +222,9 @@ void print_signed_attributes(const Cms::SignerInfo& signer, std::ostream& out, i
         }
     }
     for (const auto& attr : signer.signedAttrs->get()) {
-        if (attr.attrType == CmsOids::IdContentType.get() ||
-            attr.attrType == CmsOids::IdMessageDigest.get() ||
-            attr.attrType == CmsOids::IdSigningTime.get()) {
+        if (attr.attrType == CmsOids::IdContentType ||
+            attr.attrType == CmsOids::IdMessageDigest ||
+            attr.attrType == CmsOids::IdSigningTime) {
             continue;
         }
         write_indent(out, depth + 1);
@@ -290,7 +290,7 @@ std::vector<SignerResult> verify_attached(std::span<const std::uint8_t> encoded)
                 const auto claimed =
                     read_message_digest(signer, signed_data.encapContentInfo.eContentType);
                 if (signer.digestAlgorithm.algorithm ==
-                    PssOaep::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256.get()) {
+                    PssOaep::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256) {
                     const auto actual = sha256(content);
                     if (claimed.span().size() != actual.size() ||
                         !std::equal(
@@ -410,10 +410,10 @@ std::vector<std::uint8_t> build_attached_signed_data(
     const auto digest = asn1kit::bytes::from_vector(std::move(digest_vec));
 
     Alg::AlgorithmIdentifier digest_algorithm{};
-    digest_algorithm.algorithm = PssOaep::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256.get();
+    digest_algorithm.algorithm = PssOaep::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256;
 
     Alg::AlgorithmIdentifier signature_algorithm{};
-    signature_algorithm.algorithm = PkixAlgs::PKIXAlgs2009Oids::RsaEncryption.get();
+    signature_algorithm.algorithm = PkixAlgs::PKIXAlgs2009Oids::RsaEncryption;
 
     Cms::IssuerAndSerialNumber ias{};
     ias.issuer = tbs.issuer;
@@ -426,7 +426,7 @@ std::vector<std::uint8_t> build_attached_signed_data(
     signer.sid = Cms::SignerIdentifier::from_issuerAndSerialNumber(std::move(ias));
     signer.digestAlgorithm = digest_algorithm;
     signer.signedAttrs = asn1kit::value<std::vector<Cms::Attribute>>::from_value({
-        Cms::Attribute::make_signed_attributes_set().content_type(CmsOids::IdData.get()),
+        Cms::Attribute::make_signed_attributes_set().content_type(CmsOids::IdData()),
         Cms::Attribute::make_signed_attributes_set().message_digest(digest),
         Cms::Attribute::make_signed_attributes_set().signing_time(
             Cms::Time::from_utcTime(now)),
@@ -437,7 +437,7 @@ std::vector<std::uint8_t> build_attached_signed_data(
     Cms::SignedData signed_data{};
     signed_data.version = Cms::CMSVersion::V1;
     signed_data.digestAlgorithms = {digest_algorithm};
-    signed_data.encapContentInfo.eContentType = CmsOids::IdData.get();
+    signed_data.encapContentInfo.eContentType = CmsOids::IdData;
     signed_data.encapContentInfo.eContent = asn1kit::bytes::borrow(content);
     signed_data.certificates = std::vector<Cms::CertificateChoices>{
         Cms::CertificateChoices::from_certificate(certificate)};

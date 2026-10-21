@@ -11,6 +11,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <span>
 #include <string>
 #include <string_view>
@@ -101,7 +102,33 @@ struct oid_constant {
     [[nodiscard]] constexpr std::span<const std::uint8_t> span() const noexcept { return contents; }
     [[nodiscard]] oid get() const { return oid::from_contents(bytes::borrow(contents)); }
     [[nodiscard]] oid operator()() const { return get(); }
+    [[nodiscard]] operator oid() const { return get(); }
 };
+
+template <detail::oid_text Text>
+[[nodiscard]] bool operator==(const oid& a, oid_constant<Text> b) noexcept {
+    const auto left = a.span();
+    const auto right = b.span();
+    if (left.size() != right.size()) {
+        return false;
+    }
+    return std::memcmp(left.data(), right.data(), left.size()) == 0;
+}
+
+template <detail::oid_text Text>
+[[nodiscard]] bool operator==(oid_constant<Text> a, const oid& b) noexcept {
+    return b == a;
+}
+
+template <detail::oid_text Text>
+[[nodiscard]] bool operator!=(const oid& a, oid_constant<Text> b) noexcept {
+    return !(a == b);
+}
+
+template <detail::oid_text Text>
+[[nodiscard]] bool operator!=(oid_constant<Text> a, const oid& b) noexcept {
+    return !(a == b);
+}
 
 template <detail::oid_text Text>
 [[nodiscard]] consteval auto oid_literal() {

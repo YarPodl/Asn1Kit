@@ -1246,7 +1246,7 @@ public sealed partial class CppBackend
             (NullType, IrNullValue) => "asn1kit::null_value::value()",
             (OidType, IrOidValue oid) =>
                 KnownOidExpression(document, emitting, oid.Value) ??
-                $"asn1kit::oid_literal<\"{CppNames.EscapeString(oid.Value)}\">().get()",
+                $"asn1kit::oid_literal<\"{CppNames.EscapeString(oid.Value)}\">()",
             (StringType, IrStringValue text) =>
                 $"std::string(\"{CppNames.EscapeString(text.Value)}\")",
             (IntegerType, IrIntegerValue integer) => IntegerDefaultExpression(
@@ -1278,7 +1278,7 @@ public sealed partial class CppBackend
                 string.Equals(oid.Value, dottedValue, StringComparison.Ordinal))
             .Select(definition => CppNames.SanitizeTypeName(definition.Name))
             .First();
-        return catalog + "::" + name + ".get()";
+        return catalog + "::" + name;
     }
 
     /// <summary>

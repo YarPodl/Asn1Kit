@@ -59,4 +59,22 @@ TEST(OidLiteral, SharedEncoderRejectsInvalidArcsAndShortBuffer) {
     EXPECT_EQ(oid_literal<"2.2147483567.2147483647">().get(), oid::parse("2.2147483567.2147483647"));
 }
 
+TEST(OidLiteral, ComparesAndConvertsWithoutGet) {
+    const auto value = oid::parse("1.3.6.1.5.5.7");
+    EXPECT_EQ(value, pkix);
+    EXPECT_EQ(pkix, value);
+    EXPECT_NE(value, oid_literal<"1.2.3">());
+    EXPECT_NE(oid_literal<"1.2.3">(), value);
+
+    const oid assigned = pkix;
+    EXPECT_EQ(assigned.span().data(), pkix.span().data());
+    EXPECT_FALSE(assigned.contents().owner());
+
+    const oid& bound = pkix;
+    EXPECT_EQ(bound.span().data(), pkix.span().data());
+
+    EXPECT_EQ(pkix.get(), value);
+    EXPECT_EQ(pkix(), value);
+}
+
 } // namespace

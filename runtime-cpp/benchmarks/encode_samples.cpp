@@ -49,7 +49,7 @@ using Name = std::vector<std::vector<Attr>>;
 
 [[nodiscard]] Alg::AlgorithmIdentifier sha256_with_rsa() {
     const auto binding = Alg::AlgorithmIdentifier::open_binding<asn1kit::null_value>(
-        PssOaep::PKIX1PSSOAEPAlgorithms2009Oids::Sha256WithRSAEncryption.get());
+        PssOaep::PKIX1PSSOAEPAlgorithms2009Oids::Sha256WithRSAEncryption);
     return Alg::AlgorithmIdentifier::create(binding, asn1kit::null_value::value());
 }
 

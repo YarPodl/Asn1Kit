@@ -41,7 +41,7 @@ struct skdQuerySet_glaRequestValue_open_type_entries {
         asn1kit::open_context<"SMIMESymmetricKeyDistribution-2009.skdQuerySet_glaRequestValue">,
         asn1kit::oid, T>;
 
-    inline static const binding_type<asn1kit::null_value> skd_alg_request{SMIMESymmetricKeyDistribution2009Oids::IdCmcGlaSkdAlgRequest.get()};
+    inline static const binding_type<asn1kit::null_value> skd_alg_request{SMIMESymmetricKeyDistribution2009Oids::IdCmcGlaSkdAlgRequest};
 
 };
 
@@ -51,7 +51,7 @@ struct skdResponseSet_glaResponseValue_open_type_entries {
         asn1kit::open_context<"SMIMESymmetricKeyDistribution-2009.skdResponseSet_glaResponseValue">,
         asn1kit::oid, T>;
 
-    inline static const binding_type<::asn1kit::modern::AlgorithmInformation2009::SMIMECapability> skd_alg_response{SMIMESymmetricKeyDistribution2009Oids::IdCmcGlaSkdAlgResponse.get()};
+    inline static const binding_type<::asn1kit::modern::AlgorithmInformation2009::SMIMECapability> skd_alg_response{SMIMESymmetricKeyDistribution2009Oids::IdCmcGlaSkdAlgResponse};
 
 };
 

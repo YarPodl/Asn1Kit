@@ -45,7 +45,7 @@ namespace PssOaep = asn1kit::modern::PKIX1PSSOAEPAlgorithms2009;
     }
 
     Ocsp::CertID cert_id{};
-    cert_id.hashAlgorithm.algorithm = PssOaep::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256.get();
+    cert_id.hashAlgorithm.algorithm = PssOaep::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256;
     // RFC 6960: hash over the DER encoding of the issuer's name in the certificate being checked.
     cert_id.issuerNameHash =
         asn1kit::bytes::from_vector(sha256(ee_tbs.issuer.original_encoding().span()));
@@ -188,7 +188,7 @@ std::vector<std::uint8_t> build_ocsp_response(std::span<const std::uint8_t> requ
     Ocsp::BasicOCSPResponse basic{};
     basic.tbsResponseData = std::move(response_data);
     basic.signatureAlgorithm.algorithm =
-        PssOaep::PKIX1PSSOAEPAlgorithms2009Oids::Sha256WithRSAEncryption.get();
+        PssOaep::PKIX1PSSOAEPAlgorithms2009Oids::Sha256WithRSAEncryption;
     basic.signature = asn1kit::bit_string(
         asn1kit::bytes::from_vector(std::vector<std::uint8_t>(32, 0xCD)), 0);
 

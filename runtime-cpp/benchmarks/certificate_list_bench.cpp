@@ -53,7 +53,7 @@ void verify_asn1kit_large_crl(std::span<const std::uint8_t> der) {
         entries.size() == large_crl_entry_count,
         "Asn1Kit decoded an unexpected large CRL entry count.");
 
-    const auto reason_oid = Implicit::PKIX1Implicit2009Oids::IdCeCRLReasons.get();
+    const auto reason_oid = Implicit::PKIX1Implicit2009Oids::IdCeCRLReasons;
     for (const auto& entry : entries) {
         require(
             entry.crlEntryExtensions.has_value() && entry.crlEntryExtensions->size() == 1,

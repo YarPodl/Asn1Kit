@@ -339,11 +339,11 @@ struct mixed_extnValue_open_type_entries {
         asn1kit::open_context<"M.mixed_extnValue">,
         asn1kit::oid, T>;
 
-    inline static const binding_type<asn1kit::null_value> empty_entry{asn1kit::oid_literal<"1.2.3">().get()};
-    inline static const binding_type<std::int32_t> data_entry{asn1kit::oid_literal<"1.2.4">().get()};
-    inline static const binding_type<bool> base{asn1kit::oid_literal<"1.2.5">().get()};
-    inline static const binding_type<asn1kit::null_value> access{asn1kit::oid_literal<"1.2.6">().get()};
-    inline static const binding_type<bool> open_entries{asn1kit::oid_literal<"1.2.7">().get()};
+    inline static const binding_type<asn1kit::null_value> empty_entry{asn1kit::oid_literal<"1.2.3">()};
+    inline static const binding_type<std::int32_t> data_entry{asn1kit::oid_literal<"1.2.4">()};
+    inline static const binding_type<bool> base{asn1kit::oid_literal<"1.2.5">()};
+    inline static const binding_type<asn1kit::null_value> access{asn1kit::oid_literal<"1.2.6">()};
+    inline static const binding_type<bool> open_entries{asn1kit::oid_literal<"1.2.7">()};
 
 };
 
@@ -353,11 +353,11 @@ struct mixed_parameters_open_type_entries {
         asn1kit::open_context<"M.mixed_parameters">,
         asn1kit::oid, T>;
 
-    inline static const binding_type<asn1kit::null_value> empty_entry{asn1kit::oid_literal<"1.2.3">().get()};
-    inline static const binding_type<std::int32_t> data_entry{asn1kit::oid_literal<"1.2.4">().get()};
-    inline static const binding_type<bool> base{asn1kit::oid_literal<"1.2.5">().get()};
-    inline static const binding_type<asn1kit::null_value> access{asn1kit::oid_literal<"1.2.6">().get()};
-    inline static const binding_type<bool> open_entries{asn1kit::oid_literal<"1.2.7">().get()};
+    inline static const binding_type<asn1kit::null_value> empty_entry{asn1kit::oid_literal<"1.2.3">()};
+    inline static const binding_type<std::int32_t> data_entry{asn1kit::oid_literal<"1.2.4">()};
+    inline static const binding_type<bool> base{asn1kit::oid_literal<"1.2.5">()};
+    inline static const binding_type<asn1kit::null_value> access{asn1kit::oid_literal<"1.2.6">()};
+    inline static const binding_type<bool> open_entries{asn1kit::oid_literal<"1.2.7">()};
 
 };
 
@@ -367,11 +367,11 @@ struct mixed_value_open_type_entries {
         asn1kit::open_context<"M.mixed_value">,
         asn1kit::oid, T>;
 
-    inline static const binding_type<asn1kit::null_value> empty_entry{asn1kit::oid_literal<"1.2.3">().get()};
-    inline static const binding_type<std::int32_t> data_entry{asn1kit::oid_literal<"1.2.4">().get()};
-    inline static const binding_type<bool> base{asn1kit::oid_literal<"1.2.5">().get()};
-    inline static const binding_type<asn1kit::null_value> access{asn1kit::oid_literal<"1.2.6">().get()};
-    inline static const binding_type<bool> open_entries{asn1kit::oid_literal<"1.2.7">().get()};
+    inline static const binding_type<asn1kit::null_value> empty_entry{asn1kit::oid_literal<"1.2.3">()};
+    inline static const binding_type<std::int32_t> data_entry{asn1kit::oid_literal<"1.2.4">()};
+    inline static const binding_type<bool> base{asn1kit::oid_literal<"1.2.5">()};
+    inline static const binding_type<asn1kit::null_value> access{asn1kit::oid_literal<"1.2.6">()};
+    inline static const binding_type<bool> open_entries{asn1kit::oid_literal<"1.2.7">()};
 
 };
 
@@ -381,11 +381,11 @@ struct mixed_values_open_type_entries {
         asn1kit::open_context<"M.mixed_values">,
         asn1kit::oid, T>;
 
-    inline static const binding_type<std::vector<asn1kit::null_value>> empty_entry{asn1kit::oid_literal<"1.2.3">().get()};
-    inline static const binding_type<std::vector<std::int32_t>> data_entry{asn1kit::oid_literal<"1.2.4">().get()};
-    inline static const binding_type<std::vector<bool>> base{asn1kit::oid_literal<"1.2.5">().get()};
-    inline static const binding_type<std::vector<asn1kit::null_value>> access{asn1kit::oid_literal<"1.2.6">().get()};
-    inline static const binding_type<std::vector<bool>> open_entries{asn1kit::oid_literal<"1.2.7">().get()};
+    inline static const binding_type<std::vector<asn1kit::null_value>> empty_entry{asn1kit::oid_literal<"1.2.3">()};
+    inline static const binding_type<std::vector<std::int32_t>> data_entry{asn1kit::oid_literal<"1.2.4">()};
+    inline static const binding_type<std::vector<bool>> base{asn1kit::oid_literal<"1.2.5">()};
+    inline static const binding_type<std::vector<asn1kit::null_value>> access{asn1kit::oid_literal<"1.2.6">()};
+    inline static const binding_type<std::vector<bool>> open_entries{asn1kit::oid_literal<"1.2.7">()};
 
 };
 

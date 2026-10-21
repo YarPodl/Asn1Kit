@@ -41,14 +41,14 @@ struct signatureAlgorithms_signature_open_type_entries {
         asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature">,
         asn1kit::oid, T>;
 
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha1.get()};
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA1.get()};
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha224{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha224.get()};
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha256{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha256.get()};
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha224{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA224.get()};
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha256{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA256.get()};
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha384{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA384.get()};
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha512{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA512.get()};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha1};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA1};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha224{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha224};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha256{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha256};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha224{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA224};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha256{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA256};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha384{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA384};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha512{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA512};
 
 };
 
@@ -58,14 +58,14 @@ struct signatureAlgorithms_signature_certificateList_open_type_entries {
         asn1kit::open_context<"PKIX1Explicit-2009.signatureAlgorithms_signature_certificateList">,
         asn1kit::oid, T>;
 
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha1.get()};
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA1.get()};
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha224{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha224.get()};
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha256{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha256.get()};
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha224{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA224.get()};
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha256{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA256.get()};
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha384{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA384.get()};
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha512{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA512.get()};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha1};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA1};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha224{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha224};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha256{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha256};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha224{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA224};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha256{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA256};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha384{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA384};
+    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha512{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA512};
 
 };
 
