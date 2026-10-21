@@ -115,7 +115,7 @@ cmake --build build-fuzz --target asn1kit_fuzz_run   # ~10s against seeded corpu
 [`runtime-csharp/fixtures/ber-der/hostile-ber.json`](../runtime-csharp/fixtures/ber-der/hostile-ber.json);
 gate replay — `BoundedDecoderFuzz_CorpusRegressions`.
 
-CMS demo (Modern generated): [examples/cms_demo](examples/cms_demo/).
+CMS/PKIX/OCSP demo (Modern generated, typed extensions + educational OCSP): [examples/cms_demo](examples/cms_demo/).
 
 ## API
 

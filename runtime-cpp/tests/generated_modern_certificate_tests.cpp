@@ -186,6 +186,32 @@ TEST(GeneratedModernCertificateTests, ValidCertificatePathTest1EERoundTrip) {
     round_trip_certificate("ValidCertificatePathTest1EE.crt");
 }
 
+TEST(GeneratedModernCertificateTests, GoodCACertDecodesSequenceOfCertExtensions) {
+    const auto bytes = read_file("GoodCACert.crt");
+    ASSERT_FALSE(bytes.empty());
+    const auto certificate = asn1kit::decode<Certificate>(bytes, encoding::der);
+    const auto& tbs = certificate.toBeSigned.get();
+    const auto view = tbs.cert_extensions();
+
+    const auto ski = view.subject_key_identifier();
+    ASSERT_TRUE(ski.has_value());
+    EXPECT_FALSE(ski->empty());
+
+    const auto policies = view.certificate_policies();
+    ASSERT_TRUE(policies.has_value());
+    ASSERT_EQ(policies->size(), 1u);
+    EXPECT_EQ(
+        policies->front().policyIdentifier.to_string(),
+        "2.16.840.1.101.3.2.1.48.1");
+
+    const auto ku = view.key_usage();
+    ASSERT_TRUE(ku.has_value());
+    EXPECT_TRUE(
+        (static_cast<std::uint32_t>(ku->flags()) &
+         static_cast<std::uint32_t>(
+             asn1kit::modern::PKIX1Implicit2009::KeyUsageFlags::keyCertSign)) != 0);
+}
+
 TEST(GeneratedModernCertificateTests, TimeUsesOneValueForBothWireForms) {
     const auto date = asn1kit::utc_date_time::parse_iso("2000-01-02T03:04:05Z");
     for (const auto& time : {Time::from_utcTime(date), Time::from_generalTime(date)}) {

@@ -271,6 +271,19 @@ template <typename T>
 concept open_primitive =
     is_typed_primitive_v<T> || std::is_same_v<T, null_value> || std::is_same_v<T, any>;
 
+/// Element type of `std::vector<E>`; used so Contained open-type SEQUENCE OF
+/// payloads (`std::vector<E>` as `open_binding` Value) participate in `open_typed`.
+template <typename T>
+struct vector_element {};
+
+template <typename E, typename A>
+struct vector_element<std::vector<E, A>> {
+    using type = E;
+};
+
+template <typename T>
+concept is_vector = requires { typename vector_element<T>::type; };
+
 template <typename T>
 struct open_wire_ops;
 
@@ -306,6 +319,10 @@ void encode_open_value(writer& w, T& value) {
         w.write_any(value);
     } else if constexpr (is_asn_string_v<T> || is_asn_time_v<T>) {
         open_wire_ops<T>::encode(w, value);
+    } else if constexpr (is_vector<T>) {
+        // Contained open-type SEQUENCE OF is modeled as std::vector<E>; wire tag is SEQUENCE.
+        // SET OF Contained is not expressed as bare std::vector in this API.
+        w.write_sequence_of(tag::sequence, value);
     } else {
         w.write(value);
     }
@@ -323,6 +340,8 @@ template <typename T>
         return r.read_any();
     } else if constexpr (is_asn_string_v<T> || is_asn_time_v<T>) {
         return open_wire_ops<T>::decode(r);
+    } else if constexpr (is_vector<T>) {
+        return r.read_sequence_of<typename vector_element<T>::type>();
     } else {
         return r.read<T>();
     }
@@ -331,10 +350,12 @@ template <typename T>
 } // namespace detail
 
 /// Types whose open-type wire form is fully determined at compile time.
+/// `std::vector<E>` is SEQUENCE OF `E` (Contained CERT/CMS extension payloads).
 template <typename T>
 concept open_typed = (asn1_decodable<T> && asn1_encodable<T>) || detail::open_primitive<T>
     || detail::generated_enumerated<T> || detail::is_asn_string_v<T>
-    || detail::is_asn_time_v<T>;
+    || detail::is_asn_time_v<T>
+    || (detail::is_vector<T> && open_typed<typename detail::vector_element<T>::type>);
 
 /// Encodes one value as a complete DER TLV; wire rules come from `T`.
 template <open_typed T>

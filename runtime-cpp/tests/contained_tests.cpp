@@ -1,6 +1,7 @@
 // Copyright Asn1Kit contributors
 // SPDX-License-Identifier: Apache-2.0
 
+#include "asn1kit/codec.hpp"
 #include "asn1kit/reader.hpp"
 #include "asn1kit/writer.hpp"
 
@@ -9,6 +10,7 @@
 #include <cstdint>
 #include <stdexcept>
 #include <string_view>
+#include <type_traits>
 #include <vector>
 
 using namespace asn1kit;
@@ -126,4 +128,17 @@ TEST(Containing, OpaqueBitStringRoundTripsUnusedBits) {
     writer w(encoding::der);
     w.write_bit_string(tag::bit_string, opaque);
     EXPECT_EQ(w.encode(), hex_bytes("030202A0"));
+}
+
+TEST(Containing, ContainedSequenceOfVectorIsOpenTyped) {
+    static_assert(open_typed<std::vector<std::int32_t>>);
+    static_assert(open_typed<std::vector<oid>>);
+
+    const std::vector<std::int32_t> values{1, 2, 3};
+    // Contained payload bytes are the SEQUENCE OF INTEGER TLV (extnValue contents).
+    const auto octets = encode_contained_octets(values);
+    EXPECT_EQ(octets.to_vector(), hex_bytes("3009020101020102020103"));
+
+    const auto decoded = decode_contained<std::vector<std::int32_t>>(octets);
+    EXPECT_EQ(decoded, values);
 }
