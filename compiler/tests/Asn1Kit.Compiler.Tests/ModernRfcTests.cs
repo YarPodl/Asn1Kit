@@ -40,6 +40,74 @@ public sealed class ModernRfcTests
     }
 
     [Fact]
+    public void ModernOpenTypeApiIsLimitedToDemoAndBenchmarkOwners()
+    {
+        var expected = new[]
+        {
+            "AlgorithmInformation-2009.AlgorithmIdentifier",
+            "CryptographicMessageSyntax-2009.Attribute",
+            "CryptographicMessageSyntax-2009.ContentInfo",
+            "CryptographicMessageSyntax-2009.SignerInfo",
+            "OCSP-2009.ResponseBytes",
+            "OCSP-2009.ResponseData",
+            "OCSP-2009.TBSRequest",
+            "PKIX-CommonTypes-2009.Extension",
+            "PKIX-CommonTypes-2009.SingleAttribute",
+            "PKIX1Explicit-2009.TBSCertificate"
+        };
+
+        var actual = Corpus.Value.Modules
+            .SelectMany(module => module.Types.Select(type => (module, type)))
+            .Where(item =>
+            {
+                var json = System.Text.Json.JsonSerializer.Serialize(
+                    item.type.Type, IrSerializer.JsonOptions);
+                return json.Contains("\"selector\"", StringComparison.Ordinal) ||
+                       json.Contains("\"openTypes\"", StringComparison.Ordinal);
+            })
+            .Where(item => IrOptions.IsOpenTypeApiEnabled(item.type.Options))
+            .Select(item => item.module.Name + "." + item.type.Name)
+            .OrderBy(static name => name, StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Equal(expected.OrderBy(static name => name, StringComparer.Ordinal), actual);
+    }
+
+    [Fact]
+    public void ModernGeneratedOpenTypeApiExistsForAllowlistAndNotForDisabledOwners()
+    {
+        static bool HasExtensionApi(Type owner) => owner.Assembly.GetTypes()
+            .Where(static type => type.IsAbstract && type.IsSealed)
+            .SelectMany(static type => type.GetMethods(
+                BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly))
+            .Any(method => method.GetParameters() is { Length: > 0 } parameters &&
+                           parameters[0].ParameterType == owner);
+
+        foreach (var (module, type) in new[]
+        {
+            ("AlgorithmInformation-2009", "AlgorithmIdentifier"),
+            ("CryptographicMessageSyntax-2009", "Attribute"),
+            ("CryptographicMessageSyntax-2009", "ContentInfo"),
+            ("OCSP-2009", "ResponseBytes"),
+            ("OCSP-2009", "ResponseData"),
+            ("OCSP-2009", "TBSRequest"),
+            ("PKIX1Explicit-2009", "TBSCertificate"),
+            ("PKIX-CommonTypes-2009", "Extension"),
+            ("PKIX-CommonTypes-2009", "SingleAttribute")
+        })
+            Assert.True(HasExtensionApi(ResolveType(module, type)), $"Missing open-type API for {module}.{type}.");
+
+        foreach (var (module, type) in new[]
+        {
+            ("PKIX1Explicit-2009", "Certificate"),
+            ("PKIX-X400Address-2009", "ExtensionAttribute"),
+            ("PKIXCMP-2009", "PKIHeader"),
+            ("SMIMESymmetricKeyDistribution-2009", "GLInfo")
+        })
+            Assert.False(HasExtensionApi(ResolveType(module, type)), $"Unexpected open-type API for {module}.{type}.");
+    }
+
+    [Fact]
     public void WholeRfcCorpusMatchesIrAndGeneratedGoldenSources()
     {
         Assert.Equal(28, Corpus.Value.Modules.Count);

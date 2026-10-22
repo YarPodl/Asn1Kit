@@ -2250,34 +2250,6 @@ public sealed record ContentBinding<T>
     }
 }
 
-public sealed record EContentBinding<T>
-{
-    public Asn1Oid Oid { get; }
-    public Asn1Codec<T>? Codec { get; }
-    public Func<EncapsulatedContentInfo, T>? Decoder { get; }
-    public Func<T, ReadOnlyMemory<byte>>? Encoder { get; }
-
-    public EContentBinding(Asn1Oid oid, Asn1Codec<T> codec)
-    {
-        Oid = oid;
-        Codec = codec ?? throw new ArgumentNullException(nameof(codec));
-    }
-
-    public EContentBinding(Asn1Oid oid, Func<EncapsulatedContentInfo, T> decoder, Func<T, ReadOnlyMemory<byte>> encoder)
-    {
-        Oid = oid;
-        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
-    }
-
-    public EncapsulatedContentInfo Create(T value)
-    {
-        var result = new EncapsulatedContentInfo();
-        CryptographicMessageSyntax2009OpenTypeExtensions.SetEContent(result, this, value);
-        return result;
-    }
-}
-
 public static class ContentSetContentBindings
 {
     public static ContentBinding<SignedData> CtSignedData { get; } =
@@ -2293,24 +2265,6 @@ public static class ContentSetContentBindings
         new(CryptographicMessageSyntax2009Oids.IdCtAuthData, __CryptographicMessageSyntax2009OpenTypeCodecs.CtAuthenticatedDataContentInfo);
 
     public static ContentBinding<DigestedData> CtDigestedData { get; } =
-        new(CryptographicMessageSyntax2009Oids.IdDigestedData, __CryptographicMessageSyntax2009OpenTypeCodecs.CtDigestedDataContentInfo);
-}
-
-public static class ContentSetEContentBindings
-{
-    public static EContentBinding<SignedData> CtSignedData { get; } =
-        new(CryptographicMessageSyntax2009Oids.IdSignedData, __CryptographicMessageSyntax2009OpenTypeCodecs.CtSignedDataContentInfo);
-
-    public static EContentBinding<EncryptedData> CtEncryptedData { get; } =
-        new(CryptographicMessageSyntax2009Oids.IdEncryptedData, __CryptographicMessageSyntax2009OpenTypeCodecs.CtEncryptedDataContentInfo);
-
-    public static EContentBinding<EnvelopedData> CtEnvelopedData { get; } =
-        new(CryptographicMessageSyntax2009Oids.IdEnvelopedData, __CryptographicMessageSyntax2009OpenTypeCodecs.CtEnvelopedDataContentInfo);
-
-    public static EContentBinding<AuthenticatedData> CtAuthenticatedData { get; } =
-        new(CryptographicMessageSyntax2009Oids.IdCtAuthData, __CryptographicMessageSyntax2009OpenTypeCodecs.CtAuthenticatedDataContentInfo);
-
-    public static EContentBinding<DigestedData> CtDigestedData { get; } =
         new(CryptographicMessageSyntax2009Oids.IdDigestedData, __CryptographicMessageSyntax2009OpenTypeCodecs.CtDigestedDataContentInfo);
 }
 
@@ -2685,74 +2639,6 @@ public static class CryptographicMessageSyntax2009OpenTypeExtensions
             ? codec.Encode(value)
             : binding.Encoder!(value);
         result.Content = encoded;
-    }
-
-    public static bool TryDecodeEContent<T>(this EncapsulatedContentInfo source, EContentBinding<T> binding, out T value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (source.EContent is null) return false;
-        if (!(source.EContentType.Equals(binding.Oid))) return false;
-        if (binding.Codec is { } codec)
-        {
-            if (source.EContent is not { } openRaw) throw new Asn1Exception("Missing open-type value.");
-            value = Asn1Codecs.DecodeContained(openRaw, codec);
-        }
-        else
-            value = binding.Decoder!(source);
-        return true;
-    }
-
-    public static void SetEContent<T>(this EncapsulatedContentInfo source, EContentBinding<T> binding, T value)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        var result = source;
-        result.EContentType = binding.Oid;
-        var encoded = binding.Codec is { } codec
-            ? Asn1Codecs.EncodeContainedOctets(value, codec)
-            : binding.Encoder!(value);
-        result.EContent = encoded;
-    }
-
-}
-
-public static class IssuerAndSerialNumberOpenTypeExtensions
-{
-    public static bool TryGetIssuer<T>(this IssuerAndSerialNumber source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value)
-        => TryGetIssuer(source, binding, out value, out _);
-
-    public static bool TryGetIssuer<T>(this IssuerAndSerialNumber source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute? match = null;
-        if (source.Issuer is { } node0)
-        {
-            foreach (var node1 in node0.Value)
-            {
-                foreach (var node2 in node1)
-                {
-                    if (node2.Type.Equals(binding.Oid))
-                    {
-                        if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetIssuer.");
-                        match = node2;
-                    }
-                }
-            }
-        }
-        if (match is null) return false;
-        raw = match;
-        if (binding.Codec is { } codec)
-        {
-            value = codec.Decode(match.Value);
-        }
-        else
-            value = binding.Decoder!(match);
-        return true;
     }
 
 }

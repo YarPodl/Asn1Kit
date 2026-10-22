@@ -382,6 +382,294 @@ struct RSASSAPSSParams {
     }
 };
 
+#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+#error "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY is reserved for generated headers"
+#endif
+#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding) \
+    template <typename... Args> \
+    decltype(auto) Name(Args&&... args) const \
+        requires requires(const base& view, Args&&... values) { \
+            view.template invoke<open_entries::Binding>(std::forward<Args>(values)...); \
+        } \
+    { return view_.template invoke<open_entries::Binding>(std::forward<Args>(args)...); }
+
+template <typename Target>
+struct RSAESOAEPParamsHashAlgorithmsHashFuncOpenView {
+    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::hashAlgorithms_parameters_algorithmIdentifier_open_type_entries;
+
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_hash_func(binding);
+        }
+    };
+
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit RSAESOAEPParamsHashAlgorithmsHashFuncOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit RSAESOAEPParamsHashAlgorithmsHashFuncOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha1, mda_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(oid_2_16_840_1_101_3_4_2_4, oid_2_16_840_1_101_3_4_2_4)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha256, mda_sha256)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(oid_2_16_840_1_101_3_4_2_2, oid_2_16_840_1_101_3_4_2_2)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(oid_2_16_840_1_101_3_4_2_3, oid_2_16_840_1_101_3_4_2_3)
+
+private:
+    [[no_unique_address]] base view_;
+};
+
+template <typename Target>
+struct RSAESOAEPParamsHashAlgorithmsMaskGenFuncOpenView {
+    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::hashAlgorithms_parameters_algorithmIdentifier_open_type_entries;
+
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_mask_gen_func(binding);
+        }
+    };
+
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit RSAESOAEPParamsHashAlgorithmsMaskGenFuncOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit RSAESOAEPParamsHashAlgorithmsMaskGenFuncOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha1, mda_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(oid_2_16_840_1_101_3_4_2_4, oid_2_16_840_1_101_3_4_2_4)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha256, mda_sha256)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(oid_2_16_840_1_101_3_4_2_2, oid_2_16_840_1_101_3_4_2_2)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(oid_2_16_840_1_101_3_4_2_3, oid_2_16_840_1_101_3_4_2_3)
+
+private:
+    [[no_unique_address]] base view_;
+};
+
+template <typename Target>
+struct RSAESOAEPParamsPkcs1MgfAlgorithmsOpenView {
+    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::pKCS1MGFAlgorithms_parameters_open_type_entries;
+
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_mask_gen_func(binding);
+        }
+    };
+
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit RSAESOAEPParamsPkcs1MgfAlgorithmsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit RSAESOAEPParamsPkcs1MgfAlgorithmsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(hash_algorithm, hash_algorithm)
+
+private:
+    [[no_unique_address]] base view_;
+};
+
+template <typename Target>
+struct RSAESOAEPParamsPssSourceAlgorithmsOpenView {
+    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::pSS_sourceAlgorithms_parameters_open_type_entries;
+
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_p_source_func(binding);
+        }
+    };
+
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit RSAESOAEPParamsPssSourceAlgorithmsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit RSAESOAEPParamsPssSourceAlgorithmsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(encoding_parameters, encoding_parameters)
+
+private:
+    [[no_unique_address]] base view_;
+};
+
+template <typename Target>
+struct RSASSAPSSParamsHashAlgorithmsHashAlgorithmOpenView {
+    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::hashAlgorithms_parameters_algorithmIdentifier_open_type_entries;
+
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_hash_algorithm(binding);
+        }
+    };
+
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit RSASSAPSSParamsHashAlgorithmsHashAlgorithmOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit RSASSAPSSParamsHashAlgorithmsHashAlgorithmOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha1, mda_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(oid_2_16_840_1_101_3_4_2_4, oid_2_16_840_1_101_3_4_2_4)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha256, mda_sha256)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(oid_2_16_840_1_101_3_4_2_2, oid_2_16_840_1_101_3_4_2_2)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(oid_2_16_840_1_101_3_4_2_3, oid_2_16_840_1_101_3_4_2_3)
+
+private:
+    [[no_unique_address]] base view_;
+};
+
+template <typename Target>
+struct RSASSAPSSParamsHashAlgorithmsMaskGenAlgorithmOpenView {
+    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::hashAlgorithms_parameters_algorithmIdentifier_open_type_entries;
+
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_mask_gen_algorithm(binding);
+        }
+    };
+
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit RSASSAPSSParamsHashAlgorithmsMaskGenAlgorithmOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit RSASSAPSSParamsHashAlgorithmsMaskGenAlgorithmOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha1, mda_sha1)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(oid_2_16_840_1_101_3_4_2_4, oid_2_16_840_1_101_3_4_2_4)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha256, mda_sha256)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(oid_2_16_840_1_101_3_4_2_2, oid_2_16_840_1_101_3_4_2_2)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(oid_2_16_840_1_101_3_4_2_3, oid_2_16_840_1_101_3_4_2_3)
+
+private:
+    [[no_unique_address]] base view_;
+};
+
+template <typename Target>
+struct RSASSAPSSParamsPkcs1MgfAlgorithmsOpenView {
+    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::pKCS1MGFAlgorithms_parameters_open_type_entries;
+
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_mask_gen_algorithm(binding);
+        }
+    };
+
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit RSASSAPSSParamsPkcs1MgfAlgorithmsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit RSASSAPSSParamsPkcs1MgfAlgorithmsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(hash_algorithm, hash_algorithm)
+
+private:
+    [[no_unique_address]] base view_;
+};
+
+#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+
+inline RSAESOAEPParamsHashAlgorithmsHashFuncOpenView<RSAESOAEPParams> RSAESOAEPParams::hash_algorithms_hash_func() & {
+    return RSAESOAEPParamsHashAlgorithmsHashFuncOpenView<RSAESOAEPParams>{*this};
+}
+inline RSAESOAEPParamsHashAlgorithmsHashFuncOpenView<const RSAESOAEPParams> RSAESOAEPParams::hash_algorithms_hash_func() const & {
+    return RSAESOAEPParamsHashAlgorithmsHashFuncOpenView<const RSAESOAEPParams>{*this};
+}
+inline RSAESOAEPParamsHashAlgorithmsHashFuncOpenView<asn1kit::open_owned_target<RSAESOAEPParams>> RSAESOAEPParams::hash_algorithms_hash_func() && {
+    return RSAESOAEPParamsHashAlgorithmsHashFuncOpenView<asn1kit::open_owned_target<RSAESOAEPParams>>{std::move(*this)};
+}
+
+inline RSAESOAEPParamsHashAlgorithmsMaskGenFuncOpenView<RSAESOAEPParams> RSAESOAEPParams::hash_algorithms_mask_gen_func() & {
+    return RSAESOAEPParamsHashAlgorithmsMaskGenFuncOpenView<RSAESOAEPParams>{*this};
+}
+inline RSAESOAEPParamsHashAlgorithmsMaskGenFuncOpenView<const RSAESOAEPParams> RSAESOAEPParams::hash_algorithms_mask_gen_func() const & {
+    return RSAESOAEPParamsHashAlgorithmsMaskGenFuncOpenView<const RSAESOAEPParams>{*this};
+}
+inline RSAESOAEPParamsHashAlgorithmsMaskGenFuncOpenView<asn1kit::open_owned_target<RSAESOAEPParams>> RSAESOAEPParams::hash_algorithms_mask_gen_func() && {
+    return RSAESOAEPParamsHashAlgorithmsMaskGenFuncOpenView<asn1kit::open_owned_target<RSAESOAEPParams>>{std::move(*this)};
+}
+
+inline RSAESOAEPParamsPkcs1MgfAlgorithmsOpenView<RSAESOAEPParams> RSAESOAEPParams::pkcs1_mgf_algorithms() & {
+    return RSAESOAEPParamsPkcs1MgfAlgorithmsOpenView<RSAESOAEPParams>{*this};
+}
+inline RSAESOAEPParamsPkcs1MgfAlgorithmsOpenView<const RSAESOAEPParams> RSAESOAEPParams::pkcs1_mgf_algorithms() const & {
+    return RSAESOAEPParamsPkcs1MgfAlgorithmsOpenView<const RSAESOAEPParams>{*this};
+}
+inline RSAESOAEPParamsPkcs1MgfAlgorithmsOpenView<asn1kit::open_owned_target<RSAESOAEPParams>> RSAESOAEPParams::pkcs1_mgf_algorithms() && {
+    return RSAESOAEPParamsPkcs1MgfAlgorithmsOpenView<asn1kit::open_owned_target<RSAESOAEPParams>>{std::move(*this)};
+}
+
+inline RSAESOAEPParamsPssSourceAlgorithmsOpenView<RSAESOAEPParams> RSAESOAEPParams::pss_source_algorithms() & {
+    return RSAESOAEPParamsPssSourceAlgorithmsOpenView<RSAESOAEPParams>{*this};
+}
+inline RSAESOAEPParamsPssSourceAlgorithmsOpenView<const RSAESOAEPParams> RSAESOAEPParams::pss_source_algorithms() const & {
+    return RSAESOAEPParamsPssSourceAlgorithmsOpenView<const RSAESOAEPParams>{*this};
+}
+inline RSAESOAEPParamsPssSourceAlgorithmsOpenView<asn1kit::open_owned_target<RSAESOAEPParams>> RSAESOAEPParams::pss_source_algorithms() && {
+    return RSAESOAEPParamsPssSourceAlgorithmsOpenView<asn1kit::open_owned_target<RSAESOAEPParams>>{std::move(*this)};
+}
+
+inline RSASSAPSSParamsHashAlgorithmsHashAlgorithmOpenView<RSASSAPSSParams> RSASSAPSSParams::hash_algorithms_hash_algorithm() & {
+    return RSASSAPSSParamsHashAlgorithmsHashAlgorithmOpenView<RSASSAPSSParams>{*this};
+}
+inline RSASSAPSSParamsHashAlgorithmsHashAlgorithmOpenView<const RSASSAPSSParams> RSASSAPSSParams::hash_algorithms_hash_algorithm() const & {
+    return RSASSAPSSParamsHashAlgorithmsHashAlgorithmOpenView<const RSASSAPSSParams>{*this};
+}
+inline RSASSAPSSParamsHashAlgorithmsHashAlgorithmOpenView<asn1kit::open_owned_target<RSASSAPSSParams>> RSASSAPSSParams::hash_algorithms_hash_algorithm() && {
+    return RSASSAPSSParamsHashAlgorithmsHashAlgorithmOpenView<asn1kit::open_owned_target<RSASSAPSSParams>>{std::move(*this)};
+}
+
+inline RSASSAPSSParamsHashAlgorithmsMaskGenAlgorithmOpenView<RSASSAPSSParams> RSASSAPSSParams::hash_algorithms_mask_gen_algorithm() & {
+    return RSASSAPSSParamsHashAlgorithmsMaskGenAlgorithmOpenView<RSASSAPSSParams>{*this};
+}
+inline RSASSAPSSParamsHashAlgorithmsMaskGenAlgorithmOpenView<const RSASSAPSSParams> RSASSAPSSParams::hash_algorithms_mask_gen_algorithm() const & {
+    return RSASSAPSSParamsHashAlgorithmsMaskGenAlgorithmOpenView<const RSASSAPSSParams>{*this};
+}
+inline RSASSAPSSParamsHashAlgorithmsMaskGenAlgorithmOpenView<asn1kit::open_owned_target<RSASSAPSSParams>> RSASSAPSSParams::hash_algorithms_mask_gen_algorithm() && {
+    return RSASSAPSSParamsHashAlgorithmsMaskGenAlgorithmOpenView<asn1kit::open_owned_target<RSASSAPSSParams>>{std::move(*this)};
+}
+
+inline RSASSAPSSParamsPkcs1MgfAlgorithmsOpenView<RSASSAPSSParams> RSASSAPSSParams::pkcs1_mgf_algorithms() & {
+    return RSASSAPSSParamsPkcs1MgfAlgorithmsOpenView<RSASSAPSSParams>{*this};
+}
+inline RSASSAPSSParamsPkcs1MgfAlgorithmsOpenView<const RSASSAPSSParams> RSASSAPSSParams::pkcs1_mgf_algorithms() const & {
+    return RSASSAPSSParamsPkcs1MgfAlgorithmsOpenView<const RSASSAPSSParams>{*this};
+}
+inline RSASSAPSSParamsPkcs1MgfAlgorithmsOpenView<asn1kit::open_owned_target<RSASSAPSSParams>> RSASSAPSSParams::pkcs1_mgf_algorithms() && {
+    return RSASSAPSSParamsPkcs1MgfAlgorithmsOpenView<asn1kit::open_owned_target<RSASSAPSSParams>>{std::move(*this)};
+}
+
 } // namespace PKIX1PSSOAEPAlgorithms2009
 } // namespace modern
 } // namespace asn1kit

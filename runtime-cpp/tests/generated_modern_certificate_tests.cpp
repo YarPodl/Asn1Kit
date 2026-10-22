@@ -5,7 +5,7 @@
 #include "PKIX1Implicit2009.hpp"
 #include "PKIXAlgs2009.hpp"
 #include "PKIXCommonTypes2009.hpp"
-#include "PKIXX400Address2009.types.hpp"
+#include "PKIXX400Address2009.hpp"
 
 #include "asn1kit/encode_decode.hpp"
 #include "asn1kit/integer.hpp"
@@ -34,7 +34,6 @@ using GeneralNameKind = asn1kit::modern::PKIX1Implicit2009::GeneralName_kind;
 using CountryName = asn1kit::modern::PKIXX400Address2009::CountryName;
 using CountryNameKind = asn1kit::modern::PKIXX400Address2009::CountryName_kind;
 using TBSCertificate = asn1kit::modern::PKIX1Explicit2009::TBSCertificate;
-using DSASigValue = asn1kit::modern::PKIXAlgs2009::DSASigValue;
 using Extension = asn1kit::modern::PKIXCommonTypes2009::Extension;
 using CRLReason = asn1kit::modern::PKIX1Implicit2009::CRLReason;
 using ImplicitOids = asn1kit::modern::PKIX1Implicit2009::PKIX1Implicit2009Oids;
@@ -86,31 +85,6 @@ TEST(GeneratedModernCertificateTests, DirectoryStringPreservesStringForm) {
     const std::vector<std::uint8_t> invalid{0x02, 1, 1};
     reader r(invalid, encoding::der);
     EXPECT_THROW(DirectoryString::decode(r), asn1kit::exception);
-}
-
-TEST(GeneratedModernCertificateTests, StoredNestedRvalueOpenViewOwnsCarrier) {
-    DSASigValue expected{};
-    expected.r = asn1kit::integer::from_int32(11);
-    expected.s = asn1kit::integer::from_int32(22);
-
-    auto certificate =
-        Certificate::make_signature_algorithms().signature().sa_dsa_with_sha1(expected);
-    ASSERT_TRUE(certificate.signature_algorithms().signature().sa_dsa_with_sha1().has_value());
-
-    auto table = std::move(certificate).signature_algorithms();
-    auto field = std::move(table).signature();
-    const auto from_stored = field.sa_dsa_with_sha1();
-    ASSERT_TRUE(from_stored.has_value());
-    EXPECT_EQ(from_stored->r, expected.r);
-    EXPECT_EQ(from_stored->s, expected.s);
-
-    auto again =
-        Certificate::make_signature_algorithms().signature().sa_dsa_with_sha1(expected);
-    const auto from_chain =
-        std::move(again).signature_algorithms().signature().sa_dsa_with_sha1();
-    ASSERT_TRUE(from_chain.has_value());
-    EXPECT_EQ(from_chain->r, expected.r);
-    EXPECT_EQ(from_chain->s, expected.s);
 }
 
 TEST(GeneratedModernCertificateTests, CrlReasonOpenTypeCreatesAndRoundTripsExtension) {

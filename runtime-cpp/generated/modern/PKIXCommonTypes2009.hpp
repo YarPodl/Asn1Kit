@@ -27,13 +27,11 @@
 
 #include "PKIXCommonTypes2009.types.hpp"
 
-#include "CryptographicMessageSyntax2009.types.hpp"
-#include "EnrollmentMessageSyntax2009.types.hpp"
 #include "OCSP2009.types.hpp"
 #include "PKCS10.hpp"
-#include "PKIX1Explicit2009.types.hpp"
-#include "PKIX1Implicit2009.types.hpp"
-#include "PKIXAttributeCertificate2009.types.hpp"
+#include "PKIX1Explicit2009.hpp"
+#include "PKIX1Implicit2009.hpp"
+#include "PKIXAttributeCertificate2009.hpp"
 #include "PKIXCRMF2009.hpp"
 
 namespace asn1kit {
@@ -56,32 +54,6 @@ struct attributeCertExtensions_open_type_entries {
     inline static const binding_type<asn1kit::null_value> no_rev_avail{::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdCeNoRevAvail};
     inline static const binding_type<std::vector<std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::Target>>> ac_proxying{::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdPeAcProxying};
     inline static const binding_type<::asn1kit::modern::PKIXAttributeCertificate2009::AAControls> aa_controls{::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdPeAaControls};
-
-};
-
-struct attributeList_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.attributeList">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<std::vector<std::vector<Extension>>> extension_req{::asn1kit::modern::EnrollmentMessageSyntax2009::EnrollmentMessageSyntax2009Oids::IdExtensionReq};
-
-};
-
-struct attributesDefined_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.attributesDefined">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::SvceAuthInfo>> authentication_info{::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAcaAuthenticationInfo};
-    inline static const binding_type<std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::SvceAuthInfo>> acces_identity{::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAcaAccessIdentity};
-    inline static const binding_type<std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::IetfAttrSyntax>> charging_identity{::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAcaChargingIdentity};
-    inline static const binding_type<std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::IetfAttrSyntax>> group{::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAcaGroup};
-    inline static const binding_type<std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::RoleSyntax>> role{::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAtRole};
-    inline static const binding_type<std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::Clearance>> clearance{::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAtClearance};
-    inline static const binding_type<std::vector<::asn1kit::modern::CryptographicMessageSyntax2009::ContentInfo>> enc_attrs{::asn1kit::modern::PKIXAttributeCertificate2009::PKIXAttributeCertificate2009Oids::IdAcaEncAttrs};
 
 };
 
@@ -212,32 +184,6 @@ struct regInfoSet_value_open_type_entries {
 
 };
 
-struct supportedAttributes_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> name{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtName};
-    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> surname{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtSurname};
-    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> given_name{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtGivenName};
-    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> initials{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtInitials};
-    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> generation_qualifier{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtGenerationQualifier};
-    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> x520_common_name{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtCommonName};
-    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> x520_locality_name{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtLocalityName};
-    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> x520_state_or_province_name{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtStateOrProvinceName};
-    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> x520_organization_name{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtOrganizationName};
-    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> x520_organizational_unit_name{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtOrganizationalUnitName};
-    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> x520_title{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtTitle};
-    inline static const binding_type<std::vector<asn1kit::asn_string<asn1kit::string_form::printable>>> x520dn_qualifier{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtDnQualifier};
-    inline static const binding_type<std::vector<asn1kit::asn_string<asn1kit::string_form::printable>>> x520country_name{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtCountryName};
-    inline static const binding_type<std::vector<asn1kit::asn_string<asn1kit::string_form::printable>>> x520_serial_number{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtSerialNumber};
-    inline static const binding_type<std::vector<::asn1kit::modern::PKIX1Explicit2009::DirectoryString>> x520_pseudonym{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdAtPseudonym};
-    inline static const binding_type<std::vector<asn1kit::asn_string<asn1kit::string_form::ia5>>> domain_component{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdDomainComponent};
-    inline static const binding_type<std::vector<asn1kit::asn_string<asn1kit::string_form::ia5>>> email_address{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdEmailAddress};
-
-};
-
 struct supportedAttributes_value_open_type_entries {
     template <typename T>
     using binding_type = asn1kit::open_binding<
@@ -276,103 +222,6 @@ struct supportedAttributes_value_open_type_entries {
             view.template invoke<open_entries::Binding>(std::forward<Args>(values)...); \
         } \
     { return view_.template invoke<open_entries::Binding>(std::forward<Args>(args)...); }
-
-template <typename Target>
-struct AttributeSetAttributeListOpenView {
-    using open_entries = detail::attributeList_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AttributeSetAttributeListOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AttributeSetAttributeListOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AttributeSetAttributeListOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(extension_req, extension_req)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct AttributeSetAttributesDefinedOpenView {
-    using open_entries = detail::attributesDefined_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AttributeSetAttributesDefinedOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AttributeSetAttributesDefinedOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AttributeSetAttributesDefinedOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(authentication_info, authentication_info)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(acces_identity, acces_identity)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(charging_identity, charging_identity)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(group, group)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(role, role)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(clearance, clearance)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(enc_attrs, enc_attrs)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct AttributeSetSupportedAttributesOpenView {
-    using open_entries = detail::supportedAttributes_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AttributeSetSupportedAttributesOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AttributeSetSupportedAttributesOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AttributeSetSupportedAttributesOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(name, name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(surname, surname)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(given_name, given_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(initials, initials)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(generation_qualifier, generation_qualifier)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_common_name, x520_common_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_locality_name, x520_locality_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_state_or_province_name, x520_state_or_province_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_organization_name, x520_organization_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_organizational_unit_name, x520_organizational_unit_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_title, x520_title)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520dn_qualifier, x520dn_qualifier)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520country_name, x520country_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_serial_number, x520_serial_number)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_pseudonym, x520_pseudonym)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(domain_component, domain_component)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(email_address, email_address)
-
-private:
-    [[no_unique_address]] base view_;
-};
 
 template <typename Target>
 struct ExtensionAttributeCertExtensionsOpenView {
@@ -710,45 +559,6 @@ private:
 };
 
 #undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
-
-inline AttributeSetAttributeListOpenView<AttributeSet> AttributeSet::attribute_list() & {
-    return AttributeSetAttributeListOpenView<AttributeSet>{*this};
-}
-inline AttributeSetAttributeListOpenView<const AttributeSet> AttributeSet::attribute_list() const & {
-    return AttributeSetAttributeListOpenView<const AttributeSet>{*this};
-}
-inline AttributeSetAttributeListOpenView<asn1kit::open_owned_target<AttributeSet>> AttributeSet::attribute_list() && {
-    return AttributeSetAttributeListOpenView<asn1kit::open_owned_target<AttributeSet>>{std::move(*this)};
-}
-inline AttributeSetAttributeListOpenView<asn1kit::open_factory_target<AttributeSet>> AttributeSet::make_attribute_list() {
-    return AttributeSetAttributeListOpenView<asn1kit::open_factory_target<AttributeSet>>{};
-}
-
-inline AttributeSetAttributesDefinedOpenView<AttributeSet> AttributeSet::attributes_defined() & {
-    return AttributeSetAttributesDefinedOpenView<AttributeSet>{*this};
-}
-inline AttributeSetAttributesDefinedOpenView<const AttributeSet> AttributeSet::attributes_defined() const & {
-    return AttributeSetAttributesDefinedOpenView<const AttributeSet>{*this};
-}
-inline AttributeSetAttributesDefinedOpenView<asn1kit::open_owned_target<AttributeSet>> AttributeSet::attributes_defined() && {
-    return AttributeSetAttributesDefinedOpenView<asn1kit::open_owned_target<AttributeSet>>{std::move(*this)};
-}
-inline AttributeSetAttributesDefinedOpenView<asn1kit::open_factory_target<AttributeSet>> AttributeSet::make_attributes_defined() {
-    return AttributeSetAttributesDefinedOpenView<asn1kit::open_factory_target<AttributeSet>>{};
-}
-
-inline AttributeSetSupportedAttributesOpenView<AttributeSet> AttributeSet::supported_attributes() & {
-    return AttributeSetSupportedAttributesOpenView<AttributeSet>{*this};
-}
-inline AttributeSetSupportedAttributesOpenView<const AttributeSet> AttributeSet::supported_attributes() const & {
-    return AttributeSetSupportedAttributesOpenView<const AttributeSet>{*this};
-}
-inline AttributeSetSupportedAttributesOpenView<asn1kit::open_owned_target<AttributeSet>> AttributeSet::supported_attributes() && {
-    return AttributeSetSupportedAttributesOpenView<asn1kit::open_owned_target<AttributeSet>>{std::move(*this)};
-}
-inline AttributeSetSupportedAttributesOpenView<asn1kit::open_factory_target<AttributeSet>> AttributeSet::make_supported_attributes() {
-    return AttributeSetSupportedAttributesOpenView<asn1kit::open_factory_target<AttributeSet>>{};
-}
 
 inline ExtensionAttributeCertExtensionsOpenView<Extension> Extension::attribute_cert_extensions() & {
     return ExtensionAttributeCertExtensionsOpenView<Extension>{*this};

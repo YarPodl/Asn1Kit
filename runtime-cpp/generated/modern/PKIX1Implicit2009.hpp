@@ -25,80 +25,1286 @@
 #include <variant>
 #include <vector>
 
-#include "PKIX1Implicit2009.types.hpp"
+namespace asn1kit {
+namespace modern {
+namespace PKIX1Implicit2009 {
 
-#include "PKIX1Explicit2009.types.hpp"
+struct PKIX1Implicit2009Oids {
+    static constexpr auto IdCe = asn1kit::oid_literal<"2.5.29">();
+    static constexpr auto IdCeAuthorityKeyIdentifier = asn1kit::oid_literal<"2.5.29.35">();
+    static constexpr auto IdCeSubjectKeyIdentifier = asn1kit::oid_literal<"2.5.29.14">();
+    static constexpr auto IdCeKeyUsage = asn1kit::oid_literal<"2.5.29.15">();
+    static constexpr auto IdCePrivateKeyUsagePeriod = asn1kit::oid_literal<"2.5.29.16">();
+    static constexpr auto IdCeCertificatePolicies = asn1kit::oid_literal<"2.5.29.32">();
+    static constexpr auto IdCePolicyMappings = asn1kit::oid_literal<"2.5.29.33">();
+    static constexpr auto IdCeSubjectAltName = asn1kit::oid_literal<"2.5.29.17">();
+    static constexpr auto IdCeIssuerAltName = asn1kit::oid_literal<"2.5.29.18">();
+    static constexpr auto IdCeSubjectDirectoryAttributes = asn1kit::oid_literal<"2.5.29.9">();
+    static constexpr auto IdCeBasicConstraints = asn1kit::oid_literal<"2.5.29.19">();
+    static constexpr auto IdCeNameConstraints = asn1kit::oid_literal<"2.5.29.30">();
+    static constexpr auto IdCePolicyConstraints = asn1kit::oid_literal<"2.5.29.36">();
+    static constexpr auto IdCeCRLDistributionPoints = asn1kit::oid_literal<"2.5.29.31">();
+    static constexpr auto IdCeExtKeyUsage = asn1kit::oid_literal<"2.5.29.37">();
+    static constexpr auto AnyExtendedKeyUsage = asn1kit::oid_literal<"2.5.29.37.0">();
+    static constexpr auto IdKpServerAuth = asn1kit::oid_literal<"1.3.6.1.5.5.7.3.1">();
+    static constexpr auto IdKpClientAuth = asn1kit::oid_literal<"1.3.6.1.5.5.7.3.2">();
+    static constexpr auto IdKpCodeSigning = asn1kit::oid_literal<"1.3.6.1.5.5.7.3.3">();
+    static constexpr auto IdKpEmailProtection = asn1kit::oid_literal<"1.3.6.1.5.5.7.3.4">();
+    static constexpr auto IdKpTimeStamping = asn1kit::oid_literal<"1.3.6.1.5.5.7.3.8">();
+    static constexpr auto IdKpOCSPSigning = asn1kit::oid_literal<"1.3.6.1.5.5.7.3.9">();
+    static constexpr auto IdCeInhibitAnyPolicy = asn1kit::oid_literal<"2.5.29.54">();
+    static constexpr auto IdCeFreshestCRL = asn1kit::oid_literal<"2.5.29.46">();
+    static constexpr auto IdPeAuthorityInfoAccess = asn1kit::oid_literal<"1.3.6.1.5.5.7.1.1">();
+    static constexpr auto IdPeSubjectInfoAccess = asn1kit::oid_literal<"1.3.6.1.5.5.7.1.11">();
+    static constexpr auto IdCeCRLNumber = asn1kit::oid_literal<"2.5.29.20">();
+    static constexpr auto IdCeIssuingDistributionPoint = asn1kit::oid_literal<"2.5.29.28">();
+    static constexpr auto IdCeDeltaCRLIndicator = asn1kit::oid_literal<"2.5.29.27">();
+    static constexpr auto IdCeCRLReasons = asn1kit::oid_literal<"2.5.29.21">();
+    static constexpr auto IdCeCertificateIssuer = asn1kit::oid_literal<"2.5.29.29">();
+    static constexpr auto IdCeHoldInstructionCode = asn1kit::oid_literal<"2.5.29.23">();
+    static constexpr auto HoldInstruction = asn1kit::oid_literal<"2.2.840.10040.2">();
+    static constexpr auto IdHoldinstructionNone = asn1kit::oid_literal<"2.2.840.10040.2.1">();
+    static constexpr auto IdHoldinstructionCallissuer = asn1kit::oid_literal<"2.2.840.10040.2.2">();
+    static constexpr auto IdHoldinstructionReject = asn1kit::oid_literal<"2.2.840.10040.2.3">();
+    static constexpr auto IdCeInvalidityDate = asn1kit::oid_literal<"2.5.29.24">();
+};
+
+struct BasicConstraints {
+    bool cA = false;
+    // ASN.1 value range (0..MAX). Not enforced by runtime.
+    std::optional<asn1kit::integer> pathLenConstraint{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static BasicConstraints decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        BasicConstraints value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            if (inner.next_is(asn1kit::tag::boolean)) {
+                value.cA = inner.read_boolean(asn1kit::tag::boolean);
+            }
+            else {
+                value.cA = false;
+            }
+            if (inner.next_is(asn1kit::tag::integer)) {
+                value.pathLenConstraint = inner.read_integer_value(asn1kit::tag::integer);
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        if (this->cA != false) {
+            w.write_boolean(asn1kit::tag::boolean, this->cA);
+        }
+        if (this->pathLenConstraint.has_value()) {
+            w.write_integer(asn1kit::tag::integer, (*this->pathLenConstraint));
+        }
+    }
+};
+
+enum class CRLReason {
+    unspecified = 0,
+    keyCompromise = 1,
+    cACompromise = 2,
+    affiliationChanged = 3,
+    superseded = 4,
+    cessationOfOperation = 5,
+    certificateHold = 6,
+    removeFromCRL = 8,
+    privilegeWithdrawn = 9,
+    aACompromise = 10
+};
+
+inline void encode_enumerated(asn1kit::writer& w, CRLReason value, const asn1kit::tag& t = asn1kit::tag::enumerated) {
+    w.write_enumerated_decimal(t, std::to_string(static_cast<std::int32_t>(value)));
+}
+
+inline CRLReason decode_enumerated(asn1kit::reader& r, std::type_identity<CRLReason>, const asn1kit::tag& t = asn1kit::tag::enumerated) {
+    const auto text = r.read_enumerated_decimal(t);
+    const auto number = std::stoll(text);
+    if (number == 0) return CRLReason::unspecified;
+    if (number == 1) return CRLReason::keyCompromise;
+    if (number == 2) return CRLReason::cACompromise;
+    if (number == 3) return CRLReason::affiliationChanged;
+    if (number == 4) return CRLReason::superseded;
+    if (number == 5) return CRLReason::cessationOfOperation;
+    if (number == 6) return CRLReason::certificateHold;
+    if (number == 8) return CRLReason::removeFromCRL;
+    if (number == 9) return CRLReason::privilegeWithdrawn;
+    if (number == 10) return CRLReason::aACompromise;
+    throw asn1kit::exception("Unknown ENUMERATED value.");
+}
+
+enum class DisplayText_kind {
+    ia5String,
+    visibleString,
+    bmpString,
+    utf8String
+};
+
+struct DisplayText {
+    DisplayText_kind kind{};
+    std::string value{};
+
+    // ASN.1 SIZE (1..200). Not enforced by runtime.
+    static DisplayText from_ia5String(std::string v) {
+        DisplayText result{};
+        result.kind = DisplayText_kind::ia5String;
+        result.value = std::move(v);
+        return result;
+    }
+
+    // ASN.1 SIZE (1..200). Not enforced by runtime.
+    static DisplayText from_visibleString(std::string v) {
+        DisplayText result{};
+        result.kind = DisplayText_kind::visibleString;
+        result.value = std::move(v);
+        return result;
+    }
+
+    // ASN.1 SIZE (1..200). Not enforced by runtime.
+    static DisplayText from_bmpString(std::string v) {
+        DisplayText result{};
+        result.kind = DisplayText_kind::bmpString;
+        result.value = std::move(v);
+        return result;
+    }
+
+    // ASN.1 SIZE (1..200). Not enforced by runtime.
+    static DisplayText from_utf8String(std::string v) {
+        DisplayText result{};
+        result.kind = DisplayText_kind::utf8String;
+        result.value = std::move(v);
+        return result;
+    }
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return (t.matches_ignore_constructed(asn1kit::tag::ia5_string) || t.matches_ignore_constructed(asn1kit::tag::visible_string) || t.matches_ignore_constructed(asn1kit::tag::bmp_string) || t.matches_ignore_constructed(asn1kit::tag::utf8_string));
+    }
+
+    static DisplayText decode(asn1kit::reader& r) {
+        asn1kit::tag peeked;
+        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
+        if (peeked.matches_ignore_constructed(asn1kit::tag::ia5_string)) {
+            std::string alt{};
+            alt = r.read_string(asn1kit::tag::ia5_string, asn1kit::string_form::ia5);
+            return from_ia5String(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::visible_string)) {
+            std::string alt{};
+            alt = r.read_string(asn1kit::tag::visible_string, asn1kit::string_form::visible);
+            return from_visibleString(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::bmp_string)) {
+            std::string alt{};
+            alt = r.read_string(asn1kit::tag::bmp_string, asn1kit::string_form::bmp);
+            return from_bmpString(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::utf8_string)) {
+            std::string alt{};
+            alt = r.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
+            return from_utf8String(std::move(alt));
+        } else {
+            throw asn1kit::exception("Unknown CHOICE alternative.");
+        }
+    }
+
+    static DisplayText decode(asn1kit::reader& r, const asn1kit::tag& t) {
+        (void)t;
+        return decode(r);
+    }
+
+    void encode(asn1kit::writer& w) const {
+        switch (kind) {
+        case DisplayText_kind::ia5String:
+            {
+                const auto& alt = value;
+                w.write_string(asn1kit::tag::ia5_string, alt, asn1kit::string_form::ia5);
+                break;
+            }
+        case DisplayText_kind::visibleString:
+            {
+                const auto& alt = value;
+                w.write_string(asn1kit::tag::visible_string, alt, asn1kit::string_form::visible);
+                break;
+            }
+        case DisplayText_kind::bmpString:
+            {
+                const auto& alt = value;
+                w.write_string(asn1kit::tag::bmp_string, alt, asn1kit::string_form::bmp);
+                break;
+            }
+        case DisplayText_kind::utf8String:
+            {
+                const auto& alt = value;
+                w.write_string(asn1kit::tag::utf8_string, alt, asn1kit::string_form::utf8);
+                break;
+            }
+        }
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
+        (void)t;
+        encode(w);
+    }
+};
+
+} // namespace PKIX1Implicit2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKIX1Explicit2009.hpp"
 
 namespace asn1kit {
 namespace modern {
 namespace PKIX1Implicit2009 {
 
-namespace detail {
+struct EDIPartyName {
+    std::optional<::asn1kit::modern::PKIX1Explicit2009::DirectoryString> nameAssigner{};
+    ::asn1kit::modern::PKIX1Explicit2009::DirectoryString partyName{};
 
-struct policyQualifierId_qualifier_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"PKIX1Implicit-2009.policyQualifierId_qualifier">,
-        asn1kit::oid, T>;
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
 
-    inline static const binding_type<asn1kit::asn_string<asn1kit::string_form::ia5>> pqid_cps{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdQtCps};
-    inline static const binding_type<UserNotice> pqid_unotice{::asn1kit::modern::PKIX1Explicit2009::PKIX1Explicit2009Oids::IdQtUnotice};
+    static EDIPartyName decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        EDIPartyName value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            if (inner.next_is(asn1kit::tag::context(0, true))) {
+                ::asn1kit::modern::PKIX1Explicit2009::DirectoryString tmp_nameAssigner{};
+                inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
+                    tmp_nameAssigner = ::asn1kit::modern::PKIX1Explicit2009::DirectoryString::decode(scoped);
+                });
+                value.nameAssigner = std::move(tmp_nameAssigner);
+            }
+            ::asn1kit::modern::PKIX1Explicit2009::DirectoryString tmp_partyName{};
+            inner.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
+                tmp_partyName = ::asn1kit::modern::PKIX1Explicit2009::DirectoryString::decode(scoped);
+            });
+            value.partyName = std::move(tmp_partyName);
+        });
+        return value;
+    }
 
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        if (this->nameAssigner.has_value()) {
+            {
+                auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
+                (*this->nameAssigner).encode(w);
+            }
+        }
+        {
+            auto explicit_scope = w.enter_explicit(asn1kit::tag::context(1, true));
+            this->partyName.encode(w);
+        }
+    }
 };
 
-} // namespace detail
+struct GeneralName_OtherName {
+    asn1kit::oid type_id{};
+    // ASN.1 object set (extensible). Membership not enforced by runtime.
+    asn1kit::any value_{};
 
-#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
-#error "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY is reserved for generated headers"
-#endif
-#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding) \
-    template <typename... Args> \
-    decltype(auto) Name(Args&&... args) const \
-        requires requires(const base& view, Args&&... values) { \
-            view.template invoke<open_entries::Binding>(std::forward<Args>(values)...); \
-        } \
-    { return view_.template invoke<open_entries::Binding>(std::forward<Args>(args)...); }
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
 
-template <typename Target>
-struct PolicyQualifierInfoPolicyQualifierIdOpenView {
-    using open_entries = detail::policyQualifierId_qualifier_open_type_entries;
+    static GeneralName_OtherName decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        GeneralName_OtherName value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.type_id = inner.read_oid(asn1kit::tag::object_identifier);
+            asn1kit::any tmp_value_{};
+            inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
+                tmp_value_ = scoped.read_any();
+            });
+            value.value_ = std::move(tmp_value_);
+        });
+        return value;
+    }
 
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit PolicyQualifierInfoPolicyQualifierIdOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit PolicyQualifierInfoPolicyQualifierIdOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    PolicyQualifierInfoPolicyQualifierIdOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(pqid_cps, pqid_cps)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(pqid_unotice, pqid_unotice)
-
-private:
-    [[no_unique_address]] base view_;
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_object_identifier(asn1kit::tag::object_identifier, this->type_id);
+        {
+            auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
+            w.write_any(this->value_);
+        }
+    }
 };
 
-#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+} // namespace PKIX1Implicit2009
+} // namespace modern
+} // namespace asn1kit
 
-inline PolicyQualifierInfoPolicyQualifierIdOpenView<PolicyQualifierInfo> PolicyQualifierInfo::policy_qualifier_id() & {
-    return PolicyQualifierInfoPolicyQualifierIdOpenView<PolicyQualifierInfo>{*this};
+#include "PKIXCommonTypes2009.types.hpp"
+#include "PKIXX400Address2009.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace PKIX1Implicit2009 {
+
+enum class GeneralName_kind {
+    otherName,
+    rfc822Name,
+    dNSName,
+    x400Address,
+    directoryName,
+    ediPartyName,
+    uniformResourceIdentifier,
+    iPAddress,
+    registeredID
+};
+
+struct GeneralName {
+    GeneralName_kind kind{};
+    std::variant<GeneralName_OtherName, std::string, ::asn1kit::modern::PKIXX400Address2009::ORAddress, std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>, EDIPartyName, asn1kit::bytes, asn1kit::oid> value{};
+
+    static GeneralName from_otherName(GeneralName_OtherName v) {
+        GeneralName result{};
+        result.kind = GeneralName_kind::otherName;
+        result.value.emplace<0>(std::move(v));
+        return result;
+    }
+
+    static GeneralName from_rfc822Name(std::string v) {
+        GeneralName result{};
+        result.kind = GeneralName_kind::rfc822Name;
+        result.value.emplace<1>(std::move(v));
+        return result;
+    }
+
+    static GeneralName from_dNSName(std::string v) {
+        GeneralName result{};
+        result.kind = GeneralName_kind::dNSName;
+        result.value.emplace<1>(std::move(v));
+        return result;
+    }
+
+    static GeneralName from_x400Address(::asn1kit::modern::PKIXX400Address2009::ORAddress v) {
+        GeneralName result{};
+        result.kind = GeneralName_kind::x400Address;
+        result.value.emplace<2>(std::move(v));
+        return result;
+    }
+
+    // ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.
+    static GeneralName from_directoryName(std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> v) {
+        GeneralName result{};
+        result.kind = GeneralName_kind::directoryName;
+        result.value.emplace<3>(std::move(v));
+        return result;
+    }
+
+    static GeneralName from_ediPartyName(EDIPartyName v) {
+        GeneralName result{};
+        result.kind = GeneralName_kind::ediPartyName;
+        result.value.emplace<4>(std::move(v));
+        return result;
+    }
+
+    static GeneralName from_uniformResourceIdentifier(std::string v) {
+        GeneralName result{};
+        result.kind = GeneralName_kind::uniformResourceIdentifier;
+        result.value.emplace<1>(std::move(v));
+        return result;
+    }
+
+    static GeneralName from_iPAddress(asn1kit::bytes v) {
+        GeneralName result{};
+        result.kind = GeneralName_kind::iPAddress;
+        result.value.emplace<5>(std::move(v));
+        return result;
+    }
+
+    static GeneralName from_registeredID(asn1kit::oid v) {
+        GeneralName result{};
+        result.kind = GeneralName_kind::registeredID;
+        result.value.emplace<6>(std::move(v));
+        return result;
+    }
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return (t.matches_ignore_constructed(asn1kit::tag::context(0, true)) || t.matches_ignore_constructed(asn1kit::tag::context(1)) || t.matches_ignore_constructed(asn1kit::tag::context(2)) || t.matches_ignore_constructed(asn1kit::tag::context(3, true)) || t.matches_ignore_constructed(asn1kit::tag::context(4, true)) || t.matches_ignore_constructed(asn1kit::tag::context(5, true)) || t.matches_ignore_constructed(asn1kit::tag::context(6)) || t.matches_ignore_constructed(asn1kit::tag::context(7)) || t.matches_ignore_constructed(asn1kit::tag::context(8)));
+    }
+
+    static GeneralName decode(asn1kit::reader& r) {
+        asn1kit::tag peeked;
+        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
+        if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
+            GeneralName_OtherName alt{};
+            alt = GeneralName_OtherName::decode(r, asn1kit::tag::context(0, true));
+            return from_otherName(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1))) {
+            std::string alt{};
+            alt = r.read_string(asn1kit::tag::context(1), asn1kit::string_form::ia5);
+            return from_rfc822Name(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2))) {
+            std::string alt{};
+            alt = r.read_string(asn1kit::tag::context(2), asn1kit::string_form::ia5);
+            return from_dNSName(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(3, true))) {
+            ::asn1kit::modern::PKIXX400Address2009::ORAddress alt{};
+            alt = ::asn1kit::modern::PKIXX400Address2009::ORAddress::decode(r, asn1kit::tag::context(3, true));
+            return from_x400Address(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(4, true))) {
+            std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> alt{};
+            std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> tmp_directoryName{};
+            r.with_explicit(asn1kit::tag::context(4, true), [&](asn1kit::reader& scoped) {
+                tmp_directoryName = scoped.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
+                    return inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
+                });
+            });
+            alt = std::move(tmp_directoryName);
+            return from_directoryName(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(5, true))) {
+            EDIPartyName alt{};
+            alt = EDIPartyName::decode(r, asn1kit::tag::context(5, true));
+            return from_ediPartyName(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(6))) {
+            std::string alt{};
+            alt = r.read_string(asn1kit::tag::context(6), asn1kit::string_form::ia5);
+            return from_uniformResourceIdentifier(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(7))) {
+            asn1kit::bytes alt{};
+            alt = r.read_octet_string(asn1kit::tag::context(7));
+            return from_iPAddress(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(8))) {
+            asn1kit::oid alt{};
+            alt = r.read_oid(asn1kit::tag::context(8));
+            return from_registeredID(std::move(alt));
+        } else {
+            throw asn1kit::exception("Unknown CHOICE alternative.");
+        }
+    }
+
+    static GeneralName decode(asn1kit::reader& r, const asn1kit::tag& t) {
+        (void)t;
+        return decode(r);
+    }
+
+    void encode(asn1kit::writer& w) const {
+        switch (kind) {
+        case GeneralName_kind::otherName:
+            {
+                const auto& alt = std::get<0>(value);
+                alt.encode(w, asn1kit::tag::context(0, true));
+                break;
+            }
+        case GeneralName_kind::rfc822Name:
+            {
+                const auto& alt = std::get<1>(value);
+                w.write_string(asn1kit::tag::context(1), alt, asn1kit::string_form::ia5);
+                break;
+            }
+        case GeneralName_kind::dNSName:
+            {
+                const auto& alt = std::get<1>(value);
+                w.write_string(asn1kit::tag::context(2), alt, asn1kit::string_form::ia5);
+                break;
+            }
+        case GeneralName_kind::x400Address:
+            {
+                const auto& alt = std::get<2>(value);
+                alt.encode(w, asn1kit::tag::context(3, true));
+                break;
+            }
+        case GeneralName_kind::directoryName:
+            {
+                const auto& alt = std::get<3>(value);
+                {
+                    auto explicit_scope = w.enter_explicit(asn1kit::tag::context(4, true));
+                    w.write_sequence_of(asn1kit::tag::sequence, alt, [&](asn1kit::writer& inner, const auto& item) {
+                        inner.write_set_of(asn1kit::tag::set, item);
+                    });
+                }
+                break;
+            }
+        case GeneralName_kind::ediPartyName:
+            {
+                const auto& alt = std::get<4>(value);
+                alt.encode(w, asn1kit::tag::context(5, true));
+                break;
+            }
+        case GeneralName_kind::uniformResourceIdentifier:
+            {
+                const auto& alt = std::get<1>(value);
+                w.write_string(asn1kit::tag::context(6), alt, asn1kit::string_form::ia5);
+                break;
+            }
+        case GeneralName_kind::iPAddress:
+            {
+                const auto& alt = std::get<5>(value);
+                w.write_octet_string(asn1kit::tag::context(7), alt.span());
+                break;
+            }
+        case GeneralName_kind::registeredID:
+            {
+                const auto& alt = std::get<6>(value);
+                w.write_object_identifier(asn1kit::tag::context(8), alt);
+                break;
+            }
+        }
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
+        (void)t;
+        encode(w);
+    }
+};
+
+struct AccessDescription {
+    asn1kit::oid accessMethod{};
+    GeneralName accessLocation{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static AccessDescription decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        AccessDescription value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.accessMethod = inner.read_oid(asn1kit::tag::object_identifier);
+            value.accessLocation = GeneralName::decode(inner);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_object_identifier(asn1kit::tag::object_identifier, this->accessMethod);
+        this->accessLocation.encode(w);
+    }
+};
+
+struct AuthorityKeyIdentifier {
+    // ASN.1 alias KeyIdentifier ::= OCTET STRING.
+    std::optional<asn1kit::bytes> keyIdentifier{};
+    // ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    std::optional<std::vector<GeneralName>> authorityCertIssuer{};
+    // ASN.1 alias CertificateSerialNumber ::= INTEGER.
+    std::optional<asn1kit::integer> authorityCertSerialNumber{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static AuthorityKeyIdentifier decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        AuthorityKeyIdentifier value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            if (inner.next_is(asn1kit::tag::context(0))) {
+                value.keyIdentifier = inner.read_octet_string(asn1kit::tag::context(0));
+            }
+            if (inner.next_is(asn1kit::tag::context(1, true))) {
+                value.authorityCertIssuer = inner.read_sequence_of<GeneralName>(asn1kit::tag::context(1, true));
+            }
+            if (inner.next_is(asn1kit::tag::context(2))) {
+                value.authorityCertSerialNumber = inner.read_integer_value(asn1kit::tag::context(2));
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        if (this->keyIdentifier.has_value()) {
+            w.write_octet_string(asn1kit::tag::context(0), (*this->keyIdentifier).span());
+        }
+        if (this->authorityCertIssuer.has_value()) {
+            w.write_sequence_of(asn1kit::tag::context(1, true), (*this->authorityCertIssuer));
+        }
+        if (this->authorityCertSerialNumber.has_value()) {
+            w.write_integer(asn1kit::tag::context(2), (*this->authorityCertSerialNumber));
+        }
+    }
+};
+
+enum class DistributionPointName_kind {
+    fullName,
+    nameRelativeToCRLIssuer
+};
+
+struct DistributionPointName {
+    DistributionPointName_kind kind{};
+    std::variant<std::vector<GeneralName>, std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> value{};
+
+    // ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    static DistributionPointName from_fullName(std::vector<GeneralName> v) {
+        DistributionPointName result{};
+        result.kind = DistributionPointName_kind::fullName;
+        result.value.emplace<0>(std::move(v));
+        return result;
+    }
+
+    // ASN.1 alias RelativeDistinguishedName ::= SET OF SingleAttribute. ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    static DistributionPointName from_nameRelativeToCRLIssuer(std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> v) {
+        DistributionPointName result{};
+        result.kind = DistributionPointName_kind::nameRelativeToCRLIssuer;
+        result.value.emplace<1>(std::move(v));
+        return result;
+    }
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return (t.matches_ignore_constructed(asn1kit::tag::context(0, true)) || t.matches_ignore_constructed(asn1kit::tag::context(1, true)));
+    }
+
+    static DistributionPointName decode(asn1kit::reader& r) {
+        asn1kit::tag peeked;
+        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
+        if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
+            std::vector<GeneralName> alt{};
+            alt = r.read_sequence_of<GeneralName>(asn1kit::tag::context(0, true));
+            return from_fullName(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
+            std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute> alt{};
+            alt = r.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>(asn1kit::tag::context(1, true));
+            return from_nameRelativeToCRLIssuer(std::move(alt));
+        } else {
+            throw asn1kit::exception("Unknown CHOICE alternative.");
+        }
+    }
+
+    static DistributionPointName decode(asn1kit::reader& r, const asn1kit::tag& t) {
+        (void)t;
+        return decode(r);
+    }
+
+    void encode(asn1kit::writer& w) const {
+        switch (kind) {
+        case DistributionPointName_kind::fullName:
+            {
+                const auto& alt = std::get<0>(value);
+                w.write_sequence_of(asn1kit::tag::context(0, true), alt);
+                break;
+            }
+        case DistributionPointName_kind::nameRelativeToCRLIssuer:
+            {
+                const auto& alt = std::get<1>(value);
+                w.write_set_of(asn1kit::tag::context(1, true), alt);
+                break;
+            }
+        }
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
+        (void)t;
+        encode(w);
+    }
+};
+
+struct GeneralSubtree {
+    GeneralName base{};
+    // ASN.1 alias BaseDistance ::= INTEGER. ASN.1 value range (0..MAX). Not enforced by runtime.
+    asn1kit::integer minimum = asn1kit::integer::from_int64(0ll);
+    // ASN.1 alias BaseDistance ::= INTEGER. ASN.1 value range (0..MAX). Not enforced by runtime.
+    std::optional<asn1kit::integer> maximum{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static GeneralSubtree decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        GeneralSubtree value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.base = GeneralName::decode(inner);
+            if (inner.next_is(asn1kit::tag::context(0))) {
+                value.minimum = inner.read_integer_value(asn1kit::tag::context(0));
+            }
+            else {
+                value.minimum = asn1kit::integer::from_int64(0ll);
+            }
+            if (inner.next_is(asn1kit::tag::context(1))) {
+                value.maximum = inner.read_integer_value(asn1kit::tag::context(1));
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->base.encode(w);
+        if (this->minimum != asn1kit::integer::from_int64(0ll)) {
+            w.write_integer(asn1kit::tag::context(0), this->minimum);
+        }
+        if (this->maximum.has_value()) {
+            w.write_integer(asn1kit::tag::context(1), (*this->maximum));
+        }
+    }
+};
+
+enum class KeyUsageFlags : std::uint32_t {
+    none = 0,
+    digitalSignature = 1u << 0,
+    nonRepudiation = 1u << 1,
+    keyEncipherment = 1u << 2,
+    dataEncipherment = 1u << 3,
+    keyAgreement = 1u << 4,
+    keyCertSign = 1u << 5,
+    cRLSign = 1u << 6,
+    encipherOnly = 1u << 7,
+    decipherOnly = 1u << 8
+};
+
+inline constexpr KeyUsageFlags operator|(KeyUsageFlags a, KeyUsageFlags b) {
+    return static_cast<KeyUsageFlags>(static_cast<std::uint32_t>(a) | static_cast<std::uint32_t>(b));
 }
-inline PolicyQualifierInfoPolicyQualifierIdOpenView<const PolicyQualifierInfo> PolicyQualifierInfo::policy_qualifier_id() const & {
-    return PolicyQualifierInfoPolicyQualifierIdOpenView<const PolicyQualifierInfo>{*this};
+
+struct KeyUsage {
+    asn1kit::bit_string value{};
+
+    KeyUsage() = default;
+    KeyUsage(asn1kit::bit_string bits) : value(std::move(bits)) {}
+
+    friend bool operator==(const KeyUsage& a, const KeyUsage& b) noexcept {
+        return a.value == b.value;
+    }
+    friend bool operator!=(const KeyUsage& a, const KeyUsage& b) noexcept {
+        return !(a == b);
+    }
+    friend bool operator==(const KeyUsage& a, const asn1kit::bit_string& b) noexcept {
+        return a.value == b;
+    }
+    friend bool operator!=(const KeyUsage& a, const asn1kit::bit_string& b) noexcept {
+        return !(a == b);
+    }
+
+    static bool bit_is_set(const asn1kit::bit_string& bits, int index) {
+        if (index < 0 || static_cast<std::size_t>(index) >= bits.bit_length()) return false;
+        const auto byte = bits.span()[static_cast<std::size_t>(index) / 8];
+        return (byte & static_cast<std::uint8_t>(0x80 >> (index % 8))) != 0;
+    }
+
+    KeyUsageFlags flags() const {
+        auto result = KeyUsageFlags::none;
+        if (bit_is_set(value, 0)) result = result | KeyUsageFlags::digitalSignature;
+        if (bit_is_set(value, 1)) result = result | KeyUsageFlags::nonRepudiation;
+        if (bit_is_set(value, 2)) result = result | KeyUsageFlags::keyEncipherment;
+        if (bit_is_set(value, 3)) result = result | KeyUsageFlags::dataEncipherment;
+        if (bit_is_set(value, 4)) result = result | KeyUsageFlags::keyAgreement;
+        if (bit_is_set(value, 5)) result = result | KeyUsageFlags::keyCertSign;
+        if (bit_is_set(value, 6)) result = result | KeyUsageFlags::cRLSign;
+        if (bit_is_set(value, 7)) result = result | KeyUsageFlags::encipherOnly;
+        if (bit_is_set(value, 8)) result = result | KeyUsageFlags::decipherOnly;
+        return result;
+    }
+
+    static KeyUsage from_flags(KeyUsageFlags flags) {
+        KeyUsage result{};
+        std::vector<std::uint8_t> data(2, 0);
+        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>(KeyUsageFlags::digitalSignature)) != 0) {
+            data[0 / 8] = static_cast<std::uint8_t>(data[0 / 8] | static_cast<std::uint8_t>(0x80 >> (0 % 8)));
+        }
+        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>(KeyUsageFlags::nonRepudiation)) != 0) {
+            data[1 / 8] = static_cast<std::uint8_t>(data[1 / 8] | static_cast<std::uint8_t>(0x80 >> (1 % 8)));
+        }
+        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>(KeyUsageFlags::keyEncipherment)) != 0) {
+            data[2 / 8] = static_cast<std::uint8_t>(data[2 / 8] | static_cast<std::uint8_t>(0x80 >> (2 % 8)));
+        }
+        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>(KeyUsageFlags::dataEncipherment)) != 0) {
+            data[3 / 8] = static_cast<std::uint8_t>(data[3 / 8] | static_cast<std::uint8_t>(0x80 >> (3 % 8)));
+        }
+        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>(KeyUsageFlags::keyAgreement)) != 0) {
+            data[4 / 8] = static_cast<std::uint8_t>(data[4 / 8] | static_cast<std::uint8_t>(0x80 >> (4 % 8)));
+        }
+        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>(KeyUsageFlags::keyCertSign)) != 0) {
+            data[5 / 8] = static_cast<std::uint8_t>(data[5 / 8] | static_cast<std::uint8_t>(0x80 >> (5 % 8)));
+        }
+        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>(KeyUsageFlags::cRLSign)) != 0) {
+            data[6 / 8] = static_cast<std::uint8_t>(data[6 / 8] | static_cast<std::uint8_t>(0x80 >> (6 % 8)));
+        }
+        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>(KeyUsageFlags::encipherOnly)) != 0) {
+            data[7 / 8] = static_cast<std::uint8_t>(data[7 / 8] | static_cast<std::uint8_t>(0x80 >> (7 % 8)));
+        }
+        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>(KeyUsageFlags::decipherOnly)) != 0) {
+            data[8 / 8] = static_cast<std::uint8_t>(data[8 / 8] | static_cast<std::uint8_t>(0x80 >> (8 % 8)));
+        }
+        result.value = asn1kit::bit_string::copy_from(data, 0);
+        return result;
+    }
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::bit_string);
+    }
+
+    static KeyUsage decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::bit_string) {
+        KeyUsage result{};
+        result.value = r.read_bit_string(t);
+        return result;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::bit_string) const {
+        w.write_bit_string(t, value);
+    }
+};
+
+struct NameConstraints {
+    // ASN.1 alias GeneralSubtrees ::= SEQUENCE OF GeneralSubtree. ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    std::optional<std::vector<GeneralSubtree>> permittedSubtrees{};
+    // ASN.1 alias GeneralSubtrees ::= SEQUENCE OF GeneralSubtree. ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    std::optional<std::vector<GeneralSubtree>> excludedSubtrees{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static NameConstraints decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        NameConstraints value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            if (inner.next_is(asn1kit::tag::context(0, true))) {
+                value.permittedSubtrees = inner.read_sequence_of<GeneralSubtree>(asn1kit::tag::context(0, true));
+            }
+            if (inner.next_is(asn1kit::tag::context(1, true))) {
+                value.excludedSubtrees = inner.read_sequence_of<GeneralSubtree>(asn1kit::tag::context(1, true));
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        if (this->permittedSubtrees.has_value()) {
+            w.write_sequence_of(asn1kit::tag::context(0, true), (*this->permittedSubtrees));
+        }
+        if (this->excludedSubtrees.has_value()) {
+            w.write_sequence_of(asn1kit::tag::context(1, true), (*this->excludedSubtrees));
+        }
+    }
+};
+
+struct NoticeReference {
+    DisplayText organization{};
+    std::vector<asn1kit::integer> noticeNumbers{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static NoticeReference decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        NoticeReference value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.organization = DisplayText::decode(inner);
+            value.noticeNumbers = inner.read_sequence_of<asn1kit::integer>();
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->organization.encode(w);
+        w.write_sequence_of(asn1kit::tag::sequence, this->noticeNumbers);
+    }
+};
+
+struct PolicyConstraints {
+    // ASN.1 alias SkipCerts ::= INTEGER. ASN.1 value range (0..MAX). Not enforced by runtime.
+    std::optional<asn1kit::integer> requireExplicitPolicy{};
+    // ASN.1 alias SkipCerts ::= INTEGER. ASN.1 value range (0..MAX). Not enforced by runtime.
+    std::optional<asn1kit::integer> inhibitPolicyMapping{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static PolicyConstraints decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        PolicyConstraints value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            if (inner.next_is(asn1kit::tag::context(0))) {
+                value.requireExplicitPolicy = inner.read_integer_value(asn1kit::tag::context(0));
+            }
+            if (inner.next_is(asn1kit::tag::context(1))) {
+                value.inhibitPolicyMapping = inner.read_integer_value(asn1kit::tag::context(1));
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        if (this->requireExplicitPolicy.has_value()) {
+            w.write_integer(asn1kit::tag::context(0), (*this->requireExplicitPolicy));
+        }
+        if (this->inhibitPolicyMapping.has_value()) {
+            w.write_integer(asn1kit::tag::context(1), (*this->inhibitPolicyMapping));
+        }
+    }
+};
+
+struct PolicyMappings_Item {
+    // ASN.1 alias CertPolicyId ::= OBJECT IDENTIFIER.
+    asn1kit::oid issuerDomainPolicy{};
+    // ASN.1 alias CertPolicyId ::= OBJECT IDENTIFIER.
+    asn1kit::oid subjectDomainPolicy{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static PolicyMappings_Item decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        PolicyMappings_Item value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.issuerDomainPolicy = inner.read_oid(asn1kit::tag::object_identifier);
+            value.subjectDomainPolicy = inner.read_oid(asn1kit::tag::object_identifier);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_object_identifier(asn1kit::tag::object_identifier, this->issuerDomainPolicy);
+        w.write_object_identifier(asn1kit::tag::object_identifier, this->subjectDomainPolicy);
+    }
+};
+
+struct PolicyQualifierInfo {
+    // ASN.1 constraint unsupported:  table({ PolicyQualifierId }). Not enforced by runtime.
+    asn1kit::oid policyQualifierId{};
+    // ASN.1 object set PolicyQualifierId (extensible). Membership not enforced by runtime.
+    asn1kit::any qualifier{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static PolicyQualifierInfo decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        PolicyQualifierInfo value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.policyQualifierId = inner.read_oid(asn1kit::tag::object_identifier);
+            value.qualifier = inner.read_any();
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_object_identifier(asn1kit::tag::object_identifier, this->policyQualifierId);
+        w.write_any(this->qualifier);
+    }
+};
+
+struct PolicyInformation {
+    // ASN.1 alias CertPolicyId ::= OBJECT IDENTIFIER.
+    asn1kit::oid policyIdentifier{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    std::optional<std::vector<PolicyQualifierInfo>> policyQualifiers{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static PolicyInformation decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        PolicyInformation value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.policyIdentifier = inner.read_oid(asn1kit::tag::object_identifier);
+            if (inner.next_is(asn1kit::tag::sequence)) {
+                value.policyQualifiers = inner.read_sequence_of<PolicyQualifierInfo>();
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_object_identifier(asn1kit::tag::object_identifier, this->policyIdentifier);
+        if (this->policyQualifiers.has_value()) {
+            w.write_sequence_of(asn1kit::tag::sequence, (*this->policyQualifiers));
+        }
+    }
+};
+
+struct PrivateKeyUsagePeriod {
+    std::optional<asn1kit::utc_date_time> notBefore{};
+    std::optional<asn1kit::utc_date_time> notAfter{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static PrivateKeyUsagePeriod decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        PrivateKeyUsagePeriod value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            if (inner.next_is(asn1kit::tag::context(0))) {
+                value.notBefore = inner.read_time(asn1kit::tag::context(0), asn1kit::time_form::generalized);
+            }
+            if (inner.next_is(asn1kit::tag::context(1))) {
+                value.notAfter = inner.read_time(asn1kit::tag::context(1), asn1kit::time_form::generalized);
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        if (this->notBefore.has_value()) {
+            w.write_time(asn1kit::tag::context(0), (*this->notBefore), asn1kit::time_form::generalized, 3);
+        }
+        if (this->notAfter.has_value()) {
+            w.write_time(asn1kit::tag::context(1), (*this->notAfter), asn1kit::time_form::generalized, 3);
+        }
+    }
+};
+
+enum class ReasonFlagsFlags : std::uint32_t {
+    none = 0,
+    unused = 1u << 0,
+    keyCompromise = 1u << 1,
+    cACompromise = 1u << 2,
+    affiliationChanged = 1u << 3,
+    superseded = 1u << 4,
+    cessationOfOperation = 1u << 5,
+    certificateHold = 1u << 6,
+    privilegeWithdrawn = 1u << 7,
+    aACompromise = 1u << 8
+};
+
+inline constexpr ReasonFlagsFlags operator|(ReasonFlagsFlags a, ReasonFlagsFlags b) {
+    return static_cast<ReasonFlagsFlags>(static_cast<std::uint32_t>(a) | static_cast<std::uint32_t>(b));
 }
-inline PolicyQualifierInfoPolicyQualifierIdOpenView<asn1kit::open_owned_target<PolicyQualifierInfo>> PolicyQualifierInfo::policy_qualifier_id() && {
-    return PolicyQualifierInfoPolicyQualifierIdOpenView<asn1kit::open_owned_target<PolicyQualifierInfo>>{std::move(*this)};
-}
-inline PolicyQualifierInfoPolicyQualifierIdOpenView<asn1kit::open_factory_target<PolicyQualifierInfo>> PolicyQualifierInfo::make_policy_qualifier_id() {
-    return PolicyQualifierInfoPolicyQualifierIdOpenView<asn1kit::open_factory_target<PolicyQualifierInfo>>{};
-}
+
+struct ReasonFlags {
+    asn1kit::bit_string value{};
+
+    ReasonFlags() = default;
+    ReasonFlags(asn1kit::bit_string bits) : value(std::move(bits)) {}
+
+    friend bool operator==(const ReasonFlags& a, const ReasonFlags& b) noexcept {
+        return a.value == b.value;
+    }
+    friend bool operator!=(const ReasonFlags& a, const ReasonFlags& b) noexcept {
+        return !(a == b);
+    }
+    friend bool operator==(const ReasonFlags& a, const asn1kit::bit_string& b) noexcept {
+        return a.value == b;
+    }
+    friend bool operator!=(const ReasonFlags& a, const asn1kit::bit_string& b) noexcept {
+        return !(a == b);
+    }
+
+    static bool bit_is_set(const asn1kit::bit_string& bits, int index) {
+        if (index < 0 || static_cast<std::size_t>(index) >= bits.bit_length()) return false;
+        const auto byte = bits.span()[static_cast<std::size_t>(index) / 8];
+        return (byte & static_cast<std::uint8_t>(0x80 >> (index % 8))) != 0;
+    }
+
+    ReasonFlagsFlags flags() const {
+        auto result = ReasonFlagsFlags::none;
+        if (bit_is_set(value, 0)) result = result | ReasonFlagsFlags::unused;
+        if (bit_is_set(value, 1)) result = result | ReasonFlagsFlags::keyCompromise;
+        if (bit_is_set(value, 2)) result = result | ReasonFlagsFlags::cACompromise;
+        if (bit_is_set(value, 3)) result = result | ReasonFlagsFlags::affiliationChanged;
+        if (bit_is_set(value, 4)) result = result | ReasonFlagsFlags::superseded;
+        if (bit_is_set(value, 5)) result = result | ReasonFlagsFlags::cessationOfOperation;
+        if (bit_is_set(value, 6)) result = result | ReasonFlagsFlags::certificateHold;
+        if (bit_is_set(value, 7)) result = result | ReasonFlagsFlags::privilegeWithdrawn;
+        if (bit_is_set(value, 8)) result = result | ReasonFlagsFlags::aACompromise;
+        return result;
+    }
+
+    static ReasonFlags from_flags(ReasonFlagsFlags flags) {
+        ReasonFlags result{};
+        std::vector<std::uint8_t> data(2, 0);
+        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>(ReasonFlagsFlags::unused)) != 0) {
+            data[0 / 8] = static_cast<std::uint8_t>(data[0 / 8] | static_cast<std::uint8_t>(0x80 >> (0 % 8)));
+        }
+        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>(ReasonFlagsFlags::keyCompromise)) != 0) {
+            data[1 / 8] = static_cast<std::uint8_t>(data[1 / 8] | static_cast<std::uint8_t>(0x80 >> (1 % 8)));
+        }
+        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>(ReasonFlagsFlags::cACompromise)) != 0) {
+            data[2 / 8] = static_cast<std::uint8_t>(data[2 / 8] | static_cast<std::uint8_t>(0x80 >> (2 % 8)));
+        }
+        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>(ReasonFlagsFlags::affiliationChanged)) != 0) {
+            data[3 / 8] = static_cast<std::uint8_t>(data[3 / 8] | static_cast<std::uint8_t>(0x80 >> (3 % 8)));
+        }
+        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>(ReasonFlagsFlags::superseded)) != 0) {
+            data[4 / 8] = static_cast<std::uint8_t>(data[4 / 8] | static_cast<std::uint8_t>(0x80 >> (4 % 8)));
+        }
+        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>(ReasonFlagsFlags::cessationOfOperation)) != 0) {
+            data[5 / 8] = static_cast<std::uint8_t>(data[5 / 8] | static_cast<std::uint8_t>(0x80 >> (5 % 8)));
+        }
+        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>(ReasonFlagsFlags::certificateHold)) != 0) {
+            data[6 / 8] = static_cast<std::uint8_t>(data[6 / 8] | static_cast<std::uint8_t>(0x80 >> (6 % 8)));
+        }
+        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>(ReasonFlagsFlags::privilegeWithdrawn)) != 0) {
+            data[7 / 8] = static_cast<std::uint8_t>(data[7 / 8] | static_cast<std::uint8_t>(0x80 >> (7 % 8)));
+        }
+        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>(ReasonFlagsFlags::aACompromise)) != 0) {
+            data[8 / 8] = static_cast<std::uint8_t>(data[8 / 8] | static_cast<std::uint8_t>(0x80 >> (8 % 8)));
+        }
+        result.value = asn1kit::bit_string::copy_from(data, 0);
+        return result;
+    }
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::bit_string);
+    }
+
+    static ReasonFlags decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::bit_string) {
+        ReasonFlags result{};
+        result.value = r.read_bit_string(t);
+        return result;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::bit_string) const {
+        w.write_bit_string(t, value);
+    }
+};
+
+struct DistributionPoint {
+    std::optional<DistributionPointName> distributionPoint{};
+    std::optional<ReasonFlags> reasons{};
+    // ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    std::optional<std::vector<GeneralName>> cRLIssuer{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static DistributionPoint decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        DistributionPoint value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            if (inner.next_is(asn1kit::tag::context(0, true))) {
+                DistributionPointName tmp_distributionPoint{};
+                inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
+                    tmp_distributionPoint = DistributionPointName::decode(scoped);
+                });
+                value.distributionPoint = std::move(tmp_distributionPoint);
+            }
+            if (inner.next_is(asn1kit::tag::context(1))) {
+                value.reasons = ReasonFlags::decode(inner, asn1kit::tag::context(1));
+            }
+            if (inner.next_is(asn1kit::tag::context(2, true))) {
+                value.cRLIssuer = inner.read_sequence_of<GeneralName>(asn1kit::tag::context(2, true));
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        if (this->distributionPoint.has_value()) {
+            {
+                auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
+                (*this->distributionPoint).encode(w);
+            }
+        }
+        if (this->reasons.has_value()) {
+            (*this->reasons).encode(w, asn1kit::tag::context(1));
+        }
+        if (this->cRLIssuer.has_value()) {
+            w.write_sequence_of(asn1kit::tag::context(2, true), (*this->cRLIssuer));
+        }
+    }
+};
+
+struct IssuingDistributionPoint {
+    std::optional<DistributionPointName> distributionPoint{};
+    bool onlyContainsUserCerts = false;
+    bool onlyContainsCACerts = false;
+    std::optional<ReasonFlags> onlySomeReasons{};
+    bool indirectCRL = false;
+    bool onlyContainsAttributeCerts = false;
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static IssuingDistributionPoint decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        IssuingDistributionPoint value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            if (inner.next_is(asn1kit::tag::context(0, true))) {
+                DistributionPointName tmp_distributionPoint{};
+                inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
+                    tmp_distributionPoint = DistributionPointName::decode(scoped);
+                });
+                value.distributionPoint = std::move(tmp_distributionPoint);
+            }
+            if (inner.next_is(asn1kit::tag::context(1))) {
+                value.onlyContainsUserCerts = inner.read_boolean(asn1kit::tag::context(1));
+            }
+            else {
+                value.onlyContainsUserCerts = false;
+            }
+            if (inner.next_is(asn1kit::tag::context(2))) {
+                value.onlyContainsCACerts = inner.read_boolean(asn1kit::tag::context(2));
+            }
+            else {
+                value.onlyContainsCACerts = false;
+            }
+            if (inner.next_is(asn1kit::tag::context(3))) {
+                value.onlySomeReasons = ReasonFlags::decode(inner, asn1kit::tag::context(3));
+            }
+            if (inner.next_is(asn1kit::tag::context(4))) {
+                value.indirectCRL = inner.read_boolean(asn1kit::tag::context(4));
+            }
+            else {
+                value.indirectCRL = false;
+            }
+            if (inner.next_is(asn1kit::tag::context(5))) {
+                value.onlyContainsAttributeCerts = inner.read_boolean(asn1kit::tag::context(5));
+            }
+            else {
+                value.onlyContainsAttributeCerts = false;
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        if (this->distributionPoint.has_value()) {
+            {
+                auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
+                (*this->distributionPoint).encode(w);
+            }
+        }
+        if (this->onlyContainsUserCerts != false) {
+            w.write_boolean(asn1kit::tag::context(1), this->onlyContainsUserCerts);
+        }
+        if (this->onlyContainsCACerts != false) {
+            w.write_boolean(asn1kit::tag::context(2), this->onlyContainsCACerts);
+        }
+        if (this->onlySomeReasons.has_value()) {
+            (*this->onlySomeReasons).encode(w, asn1kit::tag::context(3));
+        }
+        if (this->indirectCRL != false) {
+            w.write_boolean(asn1kit::tag::context(4), this->indirectCRL);
+        }
+        if (this->onlyContainsAttributeCerts != false) {
+            w.write_boolean(asn1kit::tag::context(5), this->onlyContainsAttributeCerts);
+        }
+    }
+};
+
+struct UserNotice {
+    std::optional<NoticeReference> noticeRef{};
+    std::optional<DisplayText> explicitText{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static UserNotice decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        UserNotice value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            if (inner.next_matches<NoticeReference>()) {
+                value.noticeRef = NoticeReference::decode(inner);
+            }
+            if (inner.next_matches<DisplayText>()) {
+                value.explicitText = DisplayText::decode(inner);
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        if (this->noticeRef.has_value()) {
+            (*this->noticeRef).encode(w);
+        }
+        if (this->explicitText.has_value()) {
+            (*this->explicitText).encode(w);
+        }
+    }
+};
 
 } // namespace PKIX1Implicit2009
 } // namespace modern

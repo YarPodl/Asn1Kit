@@ -1174,7 +1174,8 @@ public sealed partial class CppBackend
             .ToList();
         EmitDeferredPeerIncludes(builder, ns, ref namespaceOpen, remainingPeers);
 
-        if (plan.Open.Sites.Count > 0)
+        if (plan.Open.Sites.Count > 0 ||
+            _openViewNames.Keys.Any(key => key.Module == module.Name))
         {
             EnsureNamespaceOpen(builder, ns, ref namespaceOpen);
             EmitOpenTypes(builder, document, module, plan.Open);
@@ -1328,7 +1329,9 @@ public sealed partial class CppBackend
         {
             foreach (var plan in plans.OrderBy(static p => p.Module.Name, StringComparer.Ordinal))
             {
-                if (plan.Open.Sites.Count == 0 || !modulesInFilter.Contains(plan.Module.Name))
+                if ((plan.Open.Sites.Count == 0 &&
+                     !_openViewNames.Keys.Any(key => key.Module == plan.Module.Name)) ||
+                    !modulesInFilter.Contains(plan.Module.Name))
                 {
                     continue;
                 }

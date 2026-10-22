@@ -139,6 +139,33 @@ public static class IrOptions
     }
 
     /// <summary>
+    /// When false on a typedef, language backends emit only the raw ASN.1 model and codec,
+    /// without the typed open-type convenience API. Default is true.
+    /// </summary>
+    public static bool IsOpenTypeApiEnabled(JsonObject? options)
+    {
+        if (options is null || !options.TryGetPropertyValue("openTypeApi", out var node) || node is null)
+        {
+            return true;
+        }
+
+        if (node is JsonValue value)
+        {
+            if (value.TryGetValue<bool>(out var flag))
+            {
+                return flag;
+            }
+
+            if (value.TryGetValue<string>(out var text))
+            {
+                return !string.Equals(text, "false", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
     /// When true, SEQUENCE/SET and SEQUENCE OF/SET OF usages are wrapped in a deferred-decode container
     /// (C#: <c>Asn1Lazy&lt;T&gt;</c>). Default is false (eager decode).
     /// </summary>
@@ -237,6 +264,9 @@ public static class IrOptions
 
     public static JsonObject SetRetainEncoded(JsonObject? options, bool value) =>
         Set(options, "retainEncoded", JsonValue.Create(value)!);
+
+    public static JsonObject SetOpenTypeApi(JsonObject? options, bool value) =>
+        Set(options, "openTypeApi", JsonValue.Create(value)!);
 
     public static JsonObject SetCSharpValueType(JsonObject? options, bool value) =>
         SetCSharp(options, "valueType", value ? "true" : "false");

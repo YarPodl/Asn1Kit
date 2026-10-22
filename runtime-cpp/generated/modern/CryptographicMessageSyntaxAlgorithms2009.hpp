@@ -216,6 +216,56 @@ struct RC2CBCParameter {
     }
 };
 
+#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+#error "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY is reserved for generated headers"
+#endif
+#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding) \
+    template <typename... Args> \
+    decltype(auto) Name(Args&&... args) const \
+        requires requires(const base& view, Args&&... values) { \
+            view.template invoke<open_entries::Binding>(std::forward<Args>(values)...); \
+        } \
+    { return view_.template invoke<open_entries::Binding>(std::forward<Args>(args)...); }
+
+template <typename Target>
+struct PBKDF2ParamsPbkdf2PrFsOpenView {
+    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::pOPAlgs_parameters_open_type_entries;
+
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_prf(binding);
+        }
+    };
+
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit PBKDF2ParamsPbkdf2PrFsOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit PBKDF2ParamsPbkdf2PrFsOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(maca_h_mac_sha1, maca_h_mac_sha1)
+
+private:
+    [[no_unique_address]] base view_;
+};
+
+#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+
+inline PBKDF2ParamsPbkdf2PrFsOpenView<PBKDF2Params> PBKDF2Params::pbkdf2_pr_fs() & {
+    return PBKDF2ParamsPbkdf2PrFsOpenView<PBKDF2Params>{*this};
+}
+inline PBKDF2ParamsPbkdf2PrFsOpenView<const PBKDF2Params> PBKDF2Params::pbkdf2_pr_fs() const & {
+    return PBKDF2ParamsPbkdf2PrFsOpenView<const PBKDF2Params>{*this};
+}
+inline PBKDF2ParamsPbkdf2PrFsOpenView<asn1kit::open_owned_target<PBKDF2Params>> PBKDF2Params::pbkdf2_pr_fs() && {
+    return PBKDF2ParamsPbkdf2PrFsOpenView<asn1kit::open_owned_target<PBKDF2Params>>{std::move(*this)};
+}
+
 } // namespace CryptographicMessageSyntaxAlgorithms2009
 } // namespace modern
 } // namespace asn1kit

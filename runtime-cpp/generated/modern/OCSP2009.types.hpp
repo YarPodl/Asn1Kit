@@ -179,24 +179,10 @@ namespace asn1kit {
 namespace modern {
 namespace OCSP2009 {
 
-template <typename Target>
-struct RequestLocalOpenView;
 struct Request {
     CertID reqCert{};
     // ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set (extensible). Membership not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> singleRequestExtensions{};
-
-    [[nodiscard]] RequestLocalOpenView<Request> local() &;
-    [[nodiscard]] RequestLocalOpenView<const Request> local() const &;
-    [[nodiscard]] RequestLocalOpenView<asn1kit::open_owned_target<Request>> local() &&;
-    RequestLocalOpenView<const Request> local() const && = delete;
-
-    template <typename T>
-    [[nodiscard]] std::optional<T> try_decode_single_request_extensions(
-        const asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.extension_extnValue_extension">, asn1kit::oid, T>& binding) const {
-        if (!(*this).singleRequestExtensions.has_value()) return std::nullopt;
-        return asn1kit::try_decode_unique((*(*this).singleRequestExtensions), binding);
-    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -422,7 +408,7 @@ struct OCSPResponse {
 } // namespace modern
 } // namespace asn1kit
 
-#include "PKIX1Implicit2009.types.hpp"
+#include "PKIX1Implicit2009.hpp"
 
 namespace asn1kit {
 namespace modern {
@@ -587,7 +573,7 @@ struct ServiceLocator {
 } // namespace modern
 } // namespace asn1kit
 
-#include "PKIX1Explicit2009.types.hpp"
+#include "PKIX1Explicit2009.hpp"
 
 namespace asn1kit {
 namespace modern {
@@ -632,8 +618,6 @@ struct Signature {
     }
 };
 
-template <typename Target>
-struct SingleResponseLocalOpenView;
 struct SingleResponse {
     CertID certID{};
     CertStatus certStatus{};
@@ -641,18 +625,6 @@ struct SingleResponse {
     std::optional<asn1kit::utc_date_time> nextUpdate{};
     // ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set (extensible). Membership not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> singleExtensions{};
-
-    [[nodiscard]] SingleResponseLocalOpenView<SingleResponse> local() &;
-    [[nodiscard]] SingleResponseLocalOpenView<const SingleResponse> local() const &;
-    [[nodiscard]] SingleResponseLocalOpenView<asn1kit::open_owned_target<SingleResponse>> local() &&;
-    SingleResponseLocalOpenView<const SingleResponse> local() const && = delete;
-
-    template <typename T>
-    [[nodiscard]] std::optional<T> try_decode_single_extensions(
-        const asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.extension_extnValue_extension_3">, asn1kit::oid, T>& binding) const {
-        if (!(*this).singleExtensions.has_value()) return std::nullopt;
-        return asn1kit::try_decode_unique((*(*this).singleExtensions), binding);
-    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -775,25 +747,12 @@ struct ResponseData {
     }
 };
 
-template <typename Target>
-struct BasicOCSPResponseLocalOpenView;
 struct BasicOCSPResponse {
     ResponseData tbsResponseData{};
     // ASN.1 object set (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signatureAlgorithm{};
     asn1kit::bit_string signature{};
     std::optional<std::vector<::asn1kit::modern::PKIX1Explicit2009::Certificate>> certs{};
-
-    [[nodiscard]] BasicOCSPResponseLocalOpenView<BasicOCSPResponse> local() &;
-    [[nodiscard]] BasicOCSPResponseLocalOpenView<const BasicOCSPResponse> local() const &;
-    [[nodiscard]] BasicOCSPResponseLocalOpenView<asn1kit::open_owned_target<BasicOCSPResponse>> local() &&;
-    BasicOCSPResponseLocalOpenView<const BasicOCSPResponse> local() const && = delete;
-
-    template <typename T>
-    [[nodiscard]] std::optional<T> try_decode_signature_algorithm(
-        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.algorithmIdentifier_parameters_algorithmIdentifier">, asn1kit::oid, T>& binding) const {
-        return asn1kit::try_decode_unique((*this).signatureAlgorithm, binding);
-    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);

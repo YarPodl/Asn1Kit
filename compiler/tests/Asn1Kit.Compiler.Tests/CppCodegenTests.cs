@@ -259,6 +259,54 @@ END
     }
 
     [Fact]
+    public void OpenTypeApiFalseKeepsRawTypeAndSuppressesTypedApi()
+    {
+        const string asn = @"
+M DEFINITIONS ::= BEGIN
+  C ::= CLASS { &id OBJECT IDENTIFIER UNIQUE, &T } WITH SYNTAX { &T IDENTIFIED BY &id }
+  item C ::= { INTEGER IDENTIFIED BY {1 2 3} }
+  Items C ::= {item}
+  Carrier{C:S} ::= SEQUENCE { id C.&id({S}), value C.&T({S}{@id}) }
+  Holder ::= SEQUENCE { carrier Carrier{Items} }
+END
+";
+        var document = new Asn1Compiler().CompileText(asn);
+        document.Modules[0].Types.Single(t => t.Name == "Carrier").Options =
+            IrOptions.SetOpenTypeApi(null, false);
+        document.Modules[0].Types.Single(t => t.Name == "Holder").Options =
+            IrOptions.SetOpenTypeApi(null, false);
+
+        var source = CppSource(document);
+
+        Assert.Contains("struct Carrier", source);
+        Assert.Contains("asn1kit::any value_{}", source);
+        Assert.Contains("static Carrier decode", source);
+        Assert.DoesNotContain("open_binding", source);
+        Assert.DoesNotContain("OpenView", source);
+        Assert.DoesNotContain("open_type_entries", source);
+    }
+
+    [Fact]
+    public void OpenTypeCarrierApiRemainsWhenContextOwnerIsDisabled()
+    {
+        const string asn = @"
+M DEFINITIONS ::= BEGIN
+  C ::= CLASS { &id OBJECT IDENTIFIER UNIQUE, &T } WITH SYNTAX { &T IDENTIFIED BY &id }
+  item C ::= { INTEGER IDENTIFIED BY {1 2 3} }
+  Items C ::= {item}
+  Carrier{C:S} ::= SEQUENCE { id C.&id({S}), value C.&T({S}{@id}) }
+  Holder ::= SEQUENCE { carrier Carrier{Items} }
+END
+";
+        var carrierOnly = new Asn1Compiler().CompileText(asn);
+        carrierOnly.Modules[0].Types.Single(t => t.Name == "Holder").Options =
+            IrOptions.SetOpenTypeApi(null, false);
+        var carrierSource = CppSource(carrierOnly);
+        Assert.Contains("CarrierItemsOpenView", carrierSource);
+        Assert.Contains("open_type_entries", carrierSource);
+    }
+
+    [Fact]
     public void OpenTypeViewsGroupTableFieldsAndDisambiguateLocalCatalogs()
     {
         const string asn = @"
@@ -1619,17 +1667,17 @@ END
             files["OCSP2009.types.hpp"]);
         Assert.Contains(
             "encode_enumerated(w, this->reason, asn1kit::tag::enumerated);",
-            files["EnrollmentMessageSyntax2009.types.hpp"]);
+            files["EnrollmentMessageSyntax2009.hpp"]);
         Assert.Contains(
             "inline void encode_enumerated(asn1kit::writer& w, CRLReason value",
-            files["PKIX1Implicit2009.types.hpp"]);
+            files["PKIX1Implicit2009.hpp"]);
         Assert.Contains(
             "decode_enumerated(asn1kit::reader& r, std::type_identity<CRLReason>",
-            files["PKIX1Implicit2009.types.hpp"]);
-        Assert.DoesNotContain("encode_CRLReason", files["PKIX1Implicit2009.types.hpp"]);
-        Assert.DoesNotContain("decode_CRLReason", files["PKIX1Implicit2009.types.hpp"]);
+            files["PKIX1Implicit2009.hpp"]);
+        Assert.DoesNotContain("encode_CRLReason", files["PKIX1Implicit2009.hpp"]);
+        Assert.DoesNotContain("decode_CRLReason", files["PKIX1Implicit2009.hpp"]);
 
-        Assert.Contains(
+        Assert.DoesNotContain(
             "ExtensionAttribute_EaTeletexPersonalName>",
             files["PKIXX400Address2009.hpp"]);
         Assert.Contains(
@@ -1640,16 +1688,16 @@ END
             files["CryptographicMessageSyntax2009.types.hpp"]);
         Assert.DoesNotContain(
             "try_decode_revoked_certificates",
-            files["PKIX1Explicit2009.types.hpp"]);
+            files["PKIX1Explicit2009.hpp"]);
         Assert.Contains(
             "try_decode_issuer",
-            files["PKIX1Explicit2009.types.hpp"]);
-        Assert.Contains(
+            files["PKIX1Explicit2009.hpp"]);
+        Assert.DoesNotContain(
             "try_decode_extensions",
-            files["EnrollmentMessageSyntax2009.types.hpp"]);
-        Assert.Contains(
+            files["EnrollmentMessageSyntax2009.hpp"]);
+        Assert.DoesNotContain(
             "try_decode_attrs",
-            files["PKIXAttributeCertificate2009.types.hpp"]);
+            files["PKIXAttributeCertificate2009.hpp"]);
         Assert.Contains(
             "return asn1kit::try_decode_unique(",
             files["CryptographicMessageSyntax2009.types.hpp"]);
@@ -1659,6 +1707,30 @@ END
         Assert.Contains(
             "struct PKIMessage;",
             files["cycle_PKIXCMP2009_PKIBody_PKIXCMP2009_PKIMessage.hpp"]);
+
+        var generated = string.Join("\n", files.Values);
+        foreach (var api in new[]
+        {
+            "AlgorithmIdentifier::make_signature_algorithms",
+            "Attribute::make_signed_attributes_set",
+            "ContentInfo::make_content_set",
+            "SignerInfo::signed_attributes_set",
+            "ResponseBytes::make_response_set",
+            "ResponseData::local",
+            "TBSRequest::local",
+            "TBSCertificate::cert_extensions",
+            "Extension::make_cert_extensions",
+            "SingleAttribute::make_supported_attributes"
+        })
+            Assert.Contains(api, generated);
+        foreach (var removed in new[]
+        {
+            "Certificate::make_signature_algorithms",
+            "ExtensionAttributeSupportedExtensionAttributesOpenView",
+            "PKIHeaderSupportedAttributes",
+            "GLInfoSupportedAttributes"
+        })
+            Assert.DoesNotContain(removed, generated);
     }
 
     [Fact]
@@ -1672,7 +1744,7 @@ END
         Assert.Contains(files, f => f.RelativePath.StartsWith("cycle_", StringComparison.Ordinal));
         Assert.DoesNotContain(files, f => f.RelativePath == "all.hpp");
         Assert.DoesNotContain(files, f => f.RelativePath == "certificate.hpp");
-        var explicitTypes = files.Single(f => f.RelativePath == "PKIX1Explicit2009.types.hpp").Contents;
+        var explicitTypes = files.Single(f => f.RelativePath == "PKIX1Explicit2009.hpp").Contents;
         Assert.DoesNotContain("Certificate_AlgorithmIdentifier", explicitTypes, StringComparison.Ordinal);
         Assert.Contains(
             "AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier",

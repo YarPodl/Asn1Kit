@@ -25,7 +25,1059 @@
 #include <variant>
 #include <vector>
 
-#include "EnrollmentMessageSyntax2009.types.hpp"
+namespace asn1kit {
+namespace modern {
+namespace EnrollmentMessageSyntax2009 {
+
+struct EnrollmentMessageSyntax2009Oids {
+    static constexpr auto IdCmc = asn1kit::oid_literal<"1.3.6.1.5.5.7.7">();
+    static constexpr auto IdCct = asn1kit::oid_literal<"1.3.6.1.5.5.7.12">();
+    static constexpr auto IdCctPKIData = asn1kit::oid_literal<"1.3.6.1.5.5.7.12.2">();
+    static constexpr auto IdCctPKIResponse = asn1kit::oid_literal<"1.3.6.1.5.5.7.12.3">();
+    static constexpr auto IdCmcIdentityProof = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.3">();
+    static constexpr auto IdCmcDataReturn = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.4">();
+    static constexpr auto IdCmcRegInfo = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.18">();
+    static constexpr auto IdCmcResponseInfo = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.19">();
+    static constexpr auto IdCmcQueryPending = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.21">();
+    static constexpr auto IdCmcPopLinkRandom = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.22">();
+    static constexpr auto IdCmcPopLinkWitness = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.23">();
+    static constexpr auto IdCmcIdentification = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.2">();
+    static constexpr auto IdCmcTransactionId = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.5">();
+    static constexpr auto IdCmcSenderNonce = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.6">();
+    static constexpr auto IdCmcRecipientNonce = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.7">();
+    static constexpr auto IdCmcStatusInfo = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.1">();
+    static constexpr auto IdCmcAddExtensions = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.8">();
+    static constexpr auto IdCmcEncryptedPOP = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.9">();
+    static constexpr auto IdCmcDecryptedPOP = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.10">();
+    static constexpr auto IdCmcLraPOPWitness = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.11">();
+    static constexpr auto IdCmcGetCert = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.15">();
+    static constexpr auto IdCmcGetCRL = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.16">();
+    static constexpr auto IdCmcRevokeRequest = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.17">();
+    static constexpr auto IdCmcConfirmCertAcceptance = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.24">();
+    static constexpr auto IdExtensionReq = asn1kit::oid_literal<"1.2.840.113549.1.9.14">();
+    static constexpr auto IdAlgNoSignature = asn1kit::oid_literal<"1.3.6.1.5.5.7.6.2">();
+    static constexpr auto IdAa = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2">();
+    static constexpr auto IdAaCmcUnsignedData = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.34">();
+    static constexpr auto IdCmcStatusInfoV2 = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.25">();
+    static constexpr auto IdCmcTrustedAnchors = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.26">();
+    static constexpr auto IdCmcAuthData = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.27">();
+    static constexpr auto IdCmcBatchRequests = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.28">();
+    static constexpr auto IdCmcBatchResponses = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.29">();
+    static constexpr auto IdCmcPublishCert = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.30">();
+    static constexpr auto IdCmcModCertTemplate = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.31">();
+    static constexpr auto IdCmcControlProcessed = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.32">();
+    static constexpr auto IdCmcIdentityProofV2 = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.33">();
+    static constexpr auto IdCmcPopLinkWitnessV2 = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.34">();
+};
+
+} // namespace EnrollmentMessageSyntax2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKIXCommonTypes2009.types.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace EnrollmentMessageSyntax2009 {
+
+struct AddExtensions {
+    // ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.
+    std::uint32_t pkiDataReference{};
+    std::vector<std::uint32_t> certReferences{};
+    std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension> extensions{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static AddExtensions decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        AddExtensions value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.pkiDataReference = inner.read_uint32(asn1kit::tag::integer);
+            value.certReferences = inner.read_sequence_of<std::uint32_t>();
+            value.extensions = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>();
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_integer(asn1kit::tag::integer, this->pkiDataReference);
+        w.write_sequence_of(asn1kit::tag::sequence, this->certReferences);
+        w.write_sequence_of(asn1kit::tag::sequence, this->extensions);
+    }
+};
+
+enum class BodyPartReference_kind {
+    bodyPartID,
+    bodyPartPath
+};
+
+struct BodyPartReference {
+    BodyPartReference_kind kind{};
+    std::variant<std::uint32_t, std::vector<std::uint32_t>> value{};
+
+    // ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.
+    static BodyPartReference from_bodyPartID(std::uint32_t v) {
+        BodyPartReference result{};
+        result.kind = BodyPartReference_kind::bodyPartID;
+        result.value.emplace<0>(std::move(v));
+        return result;
+    }
+
+    // ASN.1 alias BodyPartPath ::= SEQUENCE OF BodyPartID. ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    static BodyPartReference from_bodyPartPath(std::vector<std::uint32_t> v) {
+        BodyPartReference result{};
+        result.kind = BodyPartReference_kind::bodyPartPath;
+        result.value.emplace<1>(std::move(v));
+        return result;
+    }
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return (t.matches_ignore_constructed(asn1kit::tag::integer) || t.matches_ignore_constructed(asn1kit::tag::sequence));
+    }
+
+    static BodyPartReference decode(asn1kit::reader& r) {
+        asn1kit::tag peeked;
+        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
+        if (peeked.matches_ignore_constructed(asn1kit::tag::integer)) {
+            std::uint32_t alt{};
+            alt = r.read_uint32(asn1kit::tag::integer);
+            return from_bodyPartID(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
+            std::vector<std::uint32_t> alt{};
+            alt = r.read_sequence_of<std::uint32_t>();
+            return from_bodyPartPath(std::move(alt));
+        } else {
+            throw asn1kit::exception("Unknown CHOICE alternative.");
+        }
+    }
+
+    static BodyPartReference decode(asn1kit::reader& r, const asn1kit::tag& t) {
+        (void)t;
+        return decode(r);
+    }
+
+    void encode(asn1kit::writer& w) const {
+        switch (kind) {
+        case BodyPartReference_kind::bodyPartID:
+            {
+                const auto& alt = std::get<0>(value);
+                w.write_integer(asn1kit::tag::integer, alt);
+                break;
+            }
+        case BodyPartReference_kind::bodyPartPath:
+            {
+                const auto& alt = std::get<1>(value);
+                w.write_sequence_of(asn1kit::tag::sequence, alt);
+                break;
+            }
+        }
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
+        (void)t;
+        encode(w);
+    }
+};
+
+struct CMCFailInfo {
+    static constexpr std::int32_t BadAlg = 0;
+    static constexpr std::int32_t BadMessageCheck = 1;
+    static constexpr std::int32_t BadRequest = 2;
+    static constexpr std::int32_t BadTime = 3;
+    static constexpr std::int32_t BadCertId = 4;
+    static constexpr std::int32_t UnsuportedExt = 5;
+    static constexpr std::int32_t MustArchiveKeys = 6;
+    static constexpr std::int32_t BadIdentity = 7;
+    static constexpr std::int32_t PopRequired = 8;
+    static constexpr std::int32_t PopFailed = 9;
+    static constexpr std::int32_t NoKeyReuse = 10;
+    static constexpr std::int32_t InternalCAError = 11;
+    static constexpr std::int32_t TryLater = 12;
+    static constexpr std::int32_t AuthDataFail = 13;
+};
+
+} // namespace EnrollmentMessageSyntax2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "AlgorithmInformation2009.types.hpp"
+#include "PKIXCRMF2009.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace EnrollmentMessageSyntax2009 {
+
+struct CMCPublicationInfo {
+    // ASN.1 object set HashAlgorithms (extensible). Membership not enforced by runtime.
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlg{};
+    std::vector<asn1kit::bytes> certHashes{};
+    ::asn1kit::modern::PKIXCRMF2009::PKIPublicationInfo pubInfo{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static CMCPublicationInfo decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        CMCPublicationInfo value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.hashAlg = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
+            value.certHashes = inner.read_sequence_of<asn1kit::bytes>();
+            value.pubInfo = ::asn1kit::modern::PKIXCRMF2009::PKIPublicationInfo::decode(inner);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->hashAlg.encode(w);
+        w.write_sequence_of(asn1kit::tag::sequence, this->certHashes);
+        this->pubInfo.encode(w);
+    }
+};
+
+struct CMCStatus {
+    static constexpr std::int32_t Success = 0;
+    static constexpr std::int32_t Failed = 2;
+    static constexpr std::int32_t Pending = 3;
+    static constexpr std::int32_t NoSupport = 4;
+    static constexpr std::int32_t ConfirmRequired = 5;
+    static constexpr std::int32_t PopRequired = 6;
+    static constexpr std::int32_t Partial = 7;
+};
+
+struct CMCStatusInfoV2_OtherInfo_ExtendedFailInfo {
+    // ASN.1 constraint unsupported:  table({ ExtendedFailures }). Not enforced by runtime.
+    asn1kit::oid failInfoOID{};
+    // ASN.1 object set ExtendedFailures (extensible). Membership not enforced by runtime.
+    asn1kit::any failInfoValue{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static CMCStatusInfoV2_OtherInfo_ExtendedFailInfo decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        CMCStatusInfoV2_OtherInfo_ExtendedFailInfo value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.failInfoOID = inner.read_oid(asn1kit::tag::object_identifier);
+            value.failInfoValue = inner.read_any();
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_object_identifier(asn1kit::tag::object_identifier, this->failInfoOID);
+        w.write_any(this->failInfoValue);
+    }
+};
+
+struct CMCUnsignedData {
+    // ASN.1 alias BodyPartPath ::= SEQUENCE OF BodyPartID. ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    std::vector<std::uint32_t> bodyPartPath{};
+    asn1kit::oid identifier{};
+    // ASN.1 object set (extensible). Membership not enforced by runtime.
+    asn1kit::any content{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static CMCUnsignedData decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        CMCUnsignedData value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.bodyPartPath = inner.read_sequence_of<std::uint32_t>();
+            value.identifier = inner.read_oid(asn1kit::tag::object_identifier);
+            value.content = inner.read_any();
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_sequence_of(asn1kit::tag::sequence, this->bodyPartPath);
+        w.write_object_identifier(asn1kit::tag::object_identifier, this->identifier);
+        w.write_any(this->content);
+    }
+};
+
+struct CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo {
+    // ASN.1 object set PublicKeyAlgorithms (extensible). Membership not enforced by runtime.
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithm{};
+    asn1kit::bit_string subjectPublicKey{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.algorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
+            value.subjectPublicKey = inner.read_bit_string(asn1kit::tag::bit_string);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->algorithm.encode(w);
+        w.write_bit_string(asn1kit::tag::bit_string, this->subjectPublicKey);
+    }
+};
+
+struct CertificationRequest_CertificationRequestInfo {
+    asn1kit::integer version{};
+    // ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.
+    std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> subject{};
+    CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo subjectPublicKeyInfo{};
+    std::vector<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet> attributes{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static CertificationRequest_CertificationRequestInfo decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        CertificationRequest_CertificationRequestInfo value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.version = inner.read_integer_value(asn1kit::tag::integer);
+            value.subject = inner.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
+                return inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
+            });
+            value.subjectPublicKeyInfo = CertificationRequest_CertificationRequestInfo_SubjectPublicKeyInfo::decode(inner);
+            value.attributes = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet>(asn1kit::tag::context(0, true));
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_integer(asn1kit::tag::integer, this->version);
+        w.write_sequence_of(asn1kit::tag::sequence, this->subject, [&](asn1kit::writer& inner, const auto& item) {
+            inner.write_set_of(asn1kit::tag::set, item);
+        });
+        this->subjectPublicKeyInfo.encode(w);
+        w.write_set_of(asn1kit::tag::context(0, true), this->attributes);
+    }
+};
+
+struct CertificationRequest {
+    CertificationRequest_CertificationRequestInfo certificationRequestInfo{};
+    // ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signatureAlgorithm{};
+    asn1kit::bit_string signature{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static CertificationRequest decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        CertificationRequest value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.certificationRequestInfo = CertificationRequest_CertificationRequestInfo::decode(inner);
+            value.signatureAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
+            value.signature = inner.read_bit_string(asn1kit::tag::bit_string);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->certificationRequestInfo.encode(w);
+        this->signatureAlgorithm.encode(w);
+        w.write_bit_string(asn1kit::tag::bit_string, this->signature);
+    }
+};
+
+struct ControlsProcessed {
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    std::vector<BodyPartReference> bodyList{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static ControlsProcessed decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        ControlsProcessed value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.bodyList = inner.read_sequence_of<BodyPartReference>();
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_sequence_of(asn1kit::tag::sequence, this->bodyList);
+    }
+};
+
+struct DecryptedPOP {
+    // ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.
+    std::uint32_t bodyPartID{};
+    // ASN.1 object set POPAlgs (extensible). Membership not enforced by runtime.
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier thePOPAlgID{};
+    asn1kit::bytes thePOP{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static DecryptedPOP decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        DecryptedPOP value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.bodyPartID = inner.read_uint32(asn1kit::tag::integer);
+            value.thePOPAlgID = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
+            value.thePOP = inner.read_octet_string(asn1kit::tag::octet_string);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_integer(asn1kit::tag::integer, this->bodyPartID);
+        this->thePOPAlgID.encode(w);
+        w.write_octet_string(asn1kit::tag::octet_string, this->thePOP.span());
+    }
+};
+
+} // namespace EnrollmentMessageSyntax2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKIX1Implicit2009.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace EnrollmentMessageSyntax2009 {
+
+struct GetCRL {
+    // ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.
+    std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> issuerName{};
+    std::optional<::asn1kit::modern::PKIX1Implicit2009::GeneralName> cRLName{};
+    std::optional<asn1kit::utc_date_time> time{};
+    std::optional<::asn1kit::modern::PKIX1Implicit2009::ReasonFlags> reasons{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static GetCRL decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        GetCRL value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.issuerName = inner.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
+                return inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
+            });
+            if (inner.next_matches<::asn1kit::modern::PKIX1Implicit2009::GeneralName>()) {
+                value.cRLName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
+            }
+            if (inner.next_is(asn1kit::tag::generalized_time)) {
+                value.time = inner.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
+            }
+            if (inner.next_matches<::asn1kit::modern::PKIX1Implicit2009::ReasonFlags>()) {
+                value.reasons = ::asn1kit::modern::PKIX1Implicit2009::ReasonFlags::decode(inner);
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_sequence_of(asn1kit::tag::sequence, this->issuerName, [&](asn1kit::writer& inner, const auto& item) {
+            inner.write_set_of(asn1kit::tag::set, item);
+        });
+        if (this->cRLName.has_value()) {
+            (*this->cRLName).encode(w);
+        }
+        if (this->time.has_value()) {
+            w.write_time(asn1kit::tag::generalized_time, (*this->time), asn1kit::time_form::generalized, 3);
+        }
+        if (this->reasons.has_value()) {
+            (*this->reasons).encode(w);
+        }
+    }
+};
+
+struct GetCert {
+    ::asn1kit::modern::PKIX1Implicit2009::GeneralName issuerName{};
+    asn1kit::integer serialNumber{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static GetCert decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        GetCert value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.issuerName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
+            value.serialNumber = inner.read_integer_value(asn1kit::tag::integer);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->issuerName.encode(w);
+        w.write_integer(asn1kit::tag::integer, this->serialNumber);
+    }
+};
+
+struct IdentityProofV2 {
+    // ASN.1 object set WitnessAlgs (extensible). Membership not enforced by runtime.
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier proofAlgID{};
+    // ASN.1 object set POPAlgs (extensible). Membership not enforced by runtime.
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier macAlgId{};
+    asn1kit::bytes witness{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static IdentityProofV2 decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        IdentityProofV2 value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.proofAlgID = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
+            value.macAlgId = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
+            value.witness = inner.read_octet_string(asn1kit::tag::octet_string);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->proofAlgID.encode(w);
+        this->macAlgId.encode(w);
+        w.write_octet_string(asn1kit::tag::octet_string, this->witness.span());
+    }
+};
+
+struct LraPopWitness {
+    // ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.
+    std::uint32_t pkiDataBodyid{};
+    std::vector<std::uint32_t> bodyIds{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static LraPopWitness decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        LraPopWitness value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.pkiDataBodyid = inner.read_uint32(asn1kit::tag::integer);
+            value.bodyIds = inner.read_sequence_of<std::uint32_t>();
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_integer(asn1kit::tag::integer, this->pkiDataBodyid);
+        w.write_sequence_of(asn1kit::tag::sequence, this->bodyIds);
+    }
+};
+
+struct ModCertTemplate {
+    // ASN.1 alias BodyPartPath ::= SEQUENCE OF BodyPartID. ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    std::vector<std::uint32_t> pkiDataReference{};
+    // ASN.1 alias BodyPartList ::= SEQUENCE OF BodyPartID. ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    std::vector<std::uint32_t> certReferences{};
+    bool replace = true;
+    ::asn1kit::modern::PKIXCRMF2009::CertTemplate certTemplate{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static ModCertTemplate decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        ModCertTemplate value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.pkiDataReference = inner.read_sequence_of<std::uint32_t>();
+            value.certReferences = inner.read_sequence_of<std::uint32_t>();
+            if (inner.next_is(asn1kit::tag::boolean)) {
+                value.replace = inner.read_boolean(asn1kit::tag::boolean);
+            }
+            else {
+                value.replace = true;
+            }
+            value.certTemplate = ::asn1kit::modern::PKIXCRMF2009::CertTemplate::decode(inner);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_sequence_of(asn1kit::tag::sequence, this->pkiDataReference);
+        w.write_sequence_of(asn1kit::tag::sequence, this->certReferences);
+        if (this->replace != true) {
+            w.write_boolean(asn1kit::tag::boolean, this->replace);
+        }
+        this->certTemplate.encode(w);
+    }
+};
+
+struct OtherMsg {
+    // ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.
+    std::uint32_t bodyPartID{};
+    // ASN.1 constraint unsupported:  table({ OtherMsgSet }). Not enforced by runtime.
+    asn1kit::oid otherMsgType{};
+    // ASN.1 object set OtherMsgSet (extensible). Membership not enforced by runtime.
+    asn1kit::any otherMsgValue{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static OtherMsg decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        OtherMsg value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.bodyPartID = inner.read_uint32(asn1kit::tag::integer);
+            value.otherMsgType = inner.read_oid(asn1kit::tag::object_identifier);
+            value.otherMsgValue = inner.read_any();
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_integer(asn1kit::tag::integer, this->bodyPartID);
+        w.write_object_identifier(asn1kit::tag::object_identifier, this->otherMsgType);
+        w.write_any(this->otherMsgValue);
+    }
+};
+
+struct PendInfo {
+    asn1kit::bytes pendToken{};
+    asn1kit::utc_date_time pendTime{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static PendInfo decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        PendInfo value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.pendToken = inner.read_octet_string(asn1kit::tag::octet_string);
+            value.pendTime = inner.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_octet_string(asn1kit::tag::octet_string, this->pendToken.span());
+        w.write_time(asn1kit::tag::generalized_time, this->pendTime, asn1kit::time_form::generalized, 3);
+    }
+};
+
+enum class CMCStatusInfoV2_OtherInfo_kind {
+    failInfo,
+    pendInfo,
+    extendedFailInfo
+};
+
+struct CMCStatusInfoV2_OtherInfo {
+    CMCStatusInfoV2_OtherInfo_kind kind{};
+    std::variant<std::int32_t, PendInfo, CMCStatusInfoV2_OtherInfo_ExtendedFailInfo> value{};
+
+    static CMCStatusInfoV2_OtherInfo from_failInfo(std::int32_t v) {
+        CMCStatusInfoV2_OtherInfo result{};
+        result.kind = CMCStatusInfoV2_OtherInfo_kind::failInfo;
+        result.value.emplace<0>(std::move(v));
+        return result;
+    }
+
+    static CMCStatusInfoV2_OtherInfo from_pendInfo(PendInfo v) {
+        CMCStatusInfoV2_OtherInfo result{};
+        result.kind = CMCStatusInfoV2_OtherInfo_kind::pendInfo;
+        result.value.emplace<1>(std::move(v));
+        return result;
+    }
+
+    static CMCStatusInfoV2_OtherInfo from_extendedFailInfo(CMCStatusInfoV2_OtherInfo_ExtendedFailInfo v) {
+        CMCStatusInfoV2_OtherInfo result{};
+        result.kind = CMCStatusInfoV2_OtherInfo_kind::extendedFailInfo;
+        result.value.emplace<2>(std::move(v));
+        return result;
+    }
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return (t.matches_ignore_constructed(asn1kit::tag::integer) || t.matches_ignore_constructed(asn1kit::tag::sequence) || t.matches_ignore_constructed(asn1kit::tag::context(1, true)));
+    }
+
+    static CMCStatusInfoV2_OtherInfo decode(asn1kit::reader& r) {
+        asn1kit::tag peeked;
+        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
+        if (peeked.matches_ignore_constructed(asn1kit::tag::integer)) {
+            std::int32_t alt{};
+            alt = r.read_int32(asn1kit::tag::integer);
+            return from_failInfo(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
+            PendInfo alt{};
+            alt = PendInfo::decode(r);
+            return from_pendInfo(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
+            CMCStatusInfoV2_OtherInfo_ExtendedFailInfo alt{};
+            alt = CMCStatusInfoV2_OtherInfo_ExtendedFailInfo::decode(r, asn1kit::tag::context(1, true));
+            return from_extendedFailInfo(std::move(alt));
+        } else {
+            throw asn1kit::exception("Unknown CHOICE alternative.");
+        }
+    }
+
+    static CMCStatusInfoV2_OtherInfo decode(asn1kit::reader& r, const asn1kit::tag& t) {
+        (void)t;
+        return decode(r);
+    }
+
+    void encode(asn1kit::writer& w) const {
+        switch (kind) {
+        case CMCStatusInfoV2_OtherInfo_kind::failInfo:
+            {
+                const auto& alt = std::get<0>(value);
+                w.write_integer(asn1kit::tag::integer, alt);
+                break;
+            }
+        case CMCStatusInfoV2_OtherInfo_kind::pendInfo:
+            {
+                const auto& alt = std::get<1>(value);
+                alt.encode(w);
+                break;
+            }
+        case CMCStatusInfoV2_OtherInfo_kind::extendedFailInfo:
+            {
+                const auto& alt = std::get<2>(value);
+                alt.encode(w, asn1kit::tag::context(1, true));
+                break;
+            }
+        }
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
+        (void)t;
+        encode(w);
+    }
+};
+
+struct CMCStatusInfoV2 {
+    std::int32_t cMCStatus{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    std::vector<BodyPartReference> bodyList{};
+    std::optional<std::string> statusString{};
+    std::optional<CMCStatusInfoV2_OtherInfo> otherInfo{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static CMCStatusInfoV2 decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        CMCStatusInfoV2 value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.cMCStatus = inner.read_int32(asn1kit::tag::integer);
+            value.bodyList = inner.read_sequence_of<BodyPartReference>();
+            if (inner.next_is(asn1kit::tag::utf8_string)) {
+                value.statusString = inner.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
+            }
+            if (inner.next_matches<CMCStatusInfoV2_OtherInfo>()) {
+                value.otherInfo = CMCStatusInfoV2_OtherInfo::decode(inner);
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_integer(asn1kit::tag::integer, this->cMCStatus);
+        w.write_sequence_of(asn1kit::tag::sequence, this->bodyList);
+        if (this->statusString.has_value()) {
+            w.write_string(asn1kit::tag::utf8_string, (*this->statusString), asn1kit::string_form::utf8);
+        }
+        if (this->otherInfo.has_value()) {
+            (*this->otherInfo).encode(w);
+        }
+    }
+};
+
+enum class CMCStatusInfo_OtherInfo_kind {
+    failInfo,
+    pendInfo
+};
+
+struct CMCStatusInfo_OtherInfo {
+    CMCStatusInfo_OtherInfo_kind kind{};
+    std::variant<std::int32_t, PendInfo> value{};
+
+    static CMCStatusInfo_OtherInfo from_failInfo(std::int32_t v) {
+        CMCStatusInfo_OtherInfo result{};
+        result.kind = CMCStatusInfo_OtherInfo_kind::failInfo;
+        result.value.emplace<0>(std::move(v));
+        return result;
+    }
+
+    static CMCStatusInfo_OtherInfo from_pendInfo(PendInfo v) {
+        CMCStatusInfo_OtherInfo result{};
+        result.kind = CMCStatusInfo_OtherInfo_kind::pendInfo;
+        result.value.emplace<1>(std::move(v));
+        return result;
+    }
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return (t.matches_ignore_constructed(asn1kit::tag::integer) || t.matches_ignore_constructed(asn1kit::tag::sequence));
+    }
+
+    static CMCStatusInfo_OtherInfo decode(asn1kit::reader& r) {
+        asn1kit::tag peeked;
+        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
+        if (peeked.matches_ignore_constructed(asn1kit::tag::integer)) {
+            std::int32_t alt{};
+            alt = r.read_int32(asn1kit::tag::integer);
+            return from_failInfo(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
+            PendInfo alt{};
+            alt = PendInfo::decode(r);
+            return from_pendInfo(std::move(alt));
+        } else {
+            throw asn1kit::exception("Unknown CHOICE alternative.");
+        }
+    }
+
+    static CMCStatusInfo_OtherInfo decode(asn1kit::reader& r, const asn1kit::tag& t) {
+        (void)t;
+        return decode(r);
+    }
+
+    void encode(asn1kit::writer& w) const {
+        switch (kind) {
+        case CMCStatusInfo_OtherInfo_kind::failInfo:
+            {
+                const auto& alt = std::get<0>(value);
+                w.write_integer(asn1kit::tag::integer, alt);
+                break;
+            }
+        case CMCStatusInfo_OtherInfo_kind::pendInfo:
+            {
+                const auto& alt = std::get<1>(value);
+                alt.encode(w);
+                break;
+            }
+        }
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
+        (void)t;
+        encode(w);
+    }
+};
+
+struct CMCStatusInfo {
+    std::int32_t cMCStatus{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    std::vector<std::uint32_t> bodyList{};
+    std::optional<std::string> statusString{};
+    std::optional<CMCStatusInfo_OtherInfo> otherInfo{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static CMCStatusInfo decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        CMCStatusInfo value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.cMCStatus = inner.read_int32(asn1kit::tag::integer);
+            value.bodyList = inner.read_sequence_of<std::uint32_t>();
+            if (inner.next_is(asn1kit::tag::utf8_string)) {
+                value.statusString = inner.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
+            }
+            if (inner.next_matches<CMCStatusInfo_OtherInfo>()) {
+                value.otherInfo = CMCStatusInfo_OtherInfo::decode(inner);
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_integer(asn1kit::tag::integer, this->cMCStatus);
+        w.write_sequence_of(asn1kit::tag::sequence, this->bodyList);
+        if (this->statusString.has_value()) {
+            w.write_string(asn1kit::tag::utf8_string, (*this->statusString), asn1kit::string_form::utf8);
+        }
+        if (this->otherInfo.has_value()) {
+            (*this->otherInfo).encode(w);
+        }
+    }
+};
+
+struct PopLinkWitnessV2 {
+    // ASN.1 object set KeyDevAlgs (extensible). Membership not enforced by runtime.
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier keyGenAlgorithm{};
+    // ASN.1 object set POPAlgs (extensible). Membership not enforced by runtime.
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier macAlgorithm{};
+    asn1kit::bytes witness{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static PopLinkWitnessV2 decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        PopLinkWitnessV2 value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.keyGenAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
+            value.macAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
+            value.witness = inner.read_octet_string(asn1kit::tag::octet_string);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->keyGenAlgorithm.encode(w);
+        this->macAlgorithm.encode(w);
+        w.write_octet_string(asn1kit::tag::octet_string, this->witness.span());
+    }
+};
+
+struct PublishTrustAnchors {
+    asn1kit::integer seqNumber{};
+    // ASN.1 object set HashAlgorithms (extensible). Membership not enforced by runtime.
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm{};
+    std::vector<asn1kit::bytes> anchorHashes{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static PublishTrustAnchors decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        PublishTrustAnchors value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.seqNumber = inner.read_integer_value(asn1kit::tag::integer);
+            value.hashAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
+            value.anchorHashes = inner.read_sequence_of<asn1kit::bytes>();
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_integer(asn1kit::tag::integer, this->seqNumber);
+        this->hashAlgorithm.encode(w);
+        w.write_sequence_of(asn1kit::tag::sequence, this->anchorHashes);
+    }
+};
+
+struct RevokeRequest {
+    // ASN.1 alias Name ::= CHOICE { rdnSequence RDNSequence }.
+    std::vector<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> issuerName{};
+    asn1kit::integer serialNumber{};
+    ::asn1kit::modern::PKIX1Implicit2009::CRLReason reason{};
+    std::optional<asn1kit::utc_date_time> invalidityDate{};
+    std::optional<asn1kit::bytes> passphrase{};
+    std::optional<std::string> comment{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static RevokeRequest decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        RevokeRequest value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.issuerName = inner.read_sequence_of<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>>(asn1kit::tag::sequence, [&](asn1kit::reader& inner) {
+                return inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>();
+            });
+            value.serialNumber = inner.read_integer_value(asn1kit::tag::integer);
+            value.reason = decode_enumerated(inner, std::type_identity<::asn1kit::modern::PKIX1Implicit2009::CRLReason>{}, asn1kit::tag::enumerated);
+            if (inner.next_is(asn1kit::tag::generalized_time)) {
+                value.invalidityDate = inner.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
+            }
+            if (inner.next_is(asn1kit::tag::octet_string)) {
+                value.passphrase = inner.read_octet_string(asn1kit::tag::octet_string);
+            }
+            if (inner.next_is(asn1kit::tag::utf8_string)) {
+                value.comment = inner.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_sequence_of(asn1kit::tag::sequence, this->issuerName, [&](asn1kit::writer& inner, const auto& item) {
+            inner.write_set_of(asn1kit::tag::set, item);
+        });
+        w.write_integer(asn1kit::tag::integer, this->serialNumber);
+        encode_enumerated(w, this->reason, asn1kit::tag::enumerated);
+        if (this->invalidityDate.has_value()) {
+            w.write_time(asn1kit::tag::generalized_time, (*this->invalidityDate), asn1kit::time_form::generalized, 3);
+        }
+        if (this->passphrase.has_value()) {
+            w.write_octet_string(asn1kit::tag::octet_string, (*this->passphrase).span());
+        }
+        if (this->comment.has_value()) {
+            w.write_string(asn1kit::tag::utf8_string, (*this->comment), asn1kit::string_form::utf8);
+        }
+    }
+};
+
+struct TaggedAttribute {
+    // ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.
+    std::uint32_t bodyPartID{};
+    // ASN.1 constraint unsupported:  table({ Cmc-Control-Set }). Not enforced by runtime.
+    asn1kit::oid attrType{};
+    std::vector<asn1kit::any> attrValues{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static TaggedAttribute decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        TaggedAttribute value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.bodyPartID = inner.read_uint32(asn1kit::tag::integer);
+            value.attrType = inner.read_oid(asn1kit::tag::object_identifier);
+            value.attrValues = inner.read_set_of<asn1kit::any>(asn1kit::tag::set, [&](asn1kit::reader& inner) {
+                return inner.read_any();
+            });
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_integer(asn1kit::tag::integer, this->bodyPartID);
+        w.write_object_identifier(asn1kit::tag::object_identifier, this->attrType);
+        w.write_set_of(asn1kit::tag::set, this->attrValues, [&](asn1kit::writer& inner, const auto& item) {
+            inner.write_any(item);
+        });
+    }
+};
+
+struct TaggedCertificationRequest {
+    // ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.
+    std::uint32_t bodyPartID{};
+    CertificationRequest certificationRequest{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static TaggedCertificationRequest decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        TaggedCertificationRequest value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.bodyPartID = inner.read_uint32(asn1kit::tag::integer);
+            value.certificationRequest = CertificationRequest::decode(inner);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_integer(asn1kit::tag::integer, this->bodyPartID);
+        this->certificationRequest.encode(w);
+    }
+};
+
+} // namespace EnrollmentMessageSyntax2009
+} // namespace modern
+} // namespace asn1kit
 
 #include "CryptographicMessageSyntax2009.types.hpp"
 
@@ -33,565 +1085,248 @@ namespace asn1kit {
 namespace modern {
 namespace EnrollmentMessageSyntax2009 {
 
-namespace detail {
+struct TaggedContentInfo {
+    // ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.
+    std::uint32_t bodyPartID{};
+    ::asn1kit::modern::CryptographicMessageSyntax2009::ContentInfo contentInfo{};
 
-struct cmc_control_set_attrValues_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"EnrollmentMessageSyntax-2009.cmc_control_set_attrValues">,
-        asn1kit::oid, T>;
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
 
-    inline static const binding_type<std::vector<asn1kit::bytes>> cmc_identity_proof{EnrollmentMessageSyntax2009Oids::IdCmcIdentityProof};
-    inline static const binding_type<std::vector<asn1kit::bytes>> cmc_data_return{EnrollmentMessageSyntax2009Oids::IdCmcDataReturn};
-    inline static const binding_type<std::vector<asn1kit::bytes>> cmc_reg_info{EnrollmentMessageSyntax2009Oids::IdCmcRegInfo};
-    inline static const binding_type<std::vector<asn1kit::bytes>> cmc_response_info{EnrollmentMessageSyntax2009Oids::IdCmcResponseInfo};
-    inline static const binding_type<std::vector<asn1kit::bytes>> cmc_query_pending{EnrollmentMessageSyntax2009Oids::IdCmcQueryPending};
-    inline static const binding_type<std::vector<asn1kit::bytes>> cmc_pop_link_random{EnrollmentMessageSyntax2009Oids::IdCmcPopLinkRandom};
-    inline static const binding_type<std::vector<asn1kit::bytes>> cmc_pop_link_witness{EnrollmentMessageSyntax2009Oids::IdCmcPopLinkWitness};
-    inline static const binding_type<std::vector<asn1kit::asn_string<asn1kit::string_form::utf8>>> cmc_identification{EnrollmentMessageSyntax2009Oids::IdCmcIdentification};
-    inline static const binding_type<std::vector<asn1kit::integer>> cmc_transaction_id{EnrollmentMessageSyntax2009Oids::IdCmcTransactionId};
-    inline static const binding_type<std::vector<asn1kit::bytes>> cmc_sender_nonce{EnrollmentMessageSyntax2009Oids::IdCmcSenderNonce};
-    inline static const binding_type<std::vector<asn1kit::bytes>> cmc_recipient_nonce{EnrollmentMessageSyntax2009Oids::IdCmcRecipientNonce};
-    inline static const binding_type<std::vector<CMCStatusInfo>> cmc_status_info{EnrollmentMessageSyntax2009Oids::IdCmcStatusInfo};
-    inline static const binding_type<std::vector<AddExtensions>> cmc_add_extensions{EnrollmentMessageSyntax2009Oids::IdCmcAddExtensions};
-    inline static const binding_type<std::vector<EncryptedPOP>> cmc_encrypted_pop{EnrollmentMessageSyntax2009Oids::IdCmcEncryptedPOP};
-    inline static const binding_type<std::vector<DecryptedPOP>> cmc_decrypted_pop{EnrollmentMessageSyntax2009Oids::IdCmcDecryptedPOP};
-    inline static const binding_type<std::vector<LraPopWitness>> cmc_lra_pop_witness{EnrollmentMessageSyntax2009Oids::IdCmcLraPOPWitness};
-    inline static const binding_type<std::vector<GetCert>> cmc_get_cert{EnrollmentMessageSyntax2009Oids::IdCmcGetCert};
-    inline static const binding_type<std::vector<GetCRL>> cmc_get_crl{EnrollmentMessageSyntax2009Oids::IdCmcGetCRL};
-    inline static const binding_type<std::vector<RevokeRequest>> cmc_revoke_request{EnrollmentMessageSyntax2009Oids::IdCmcRevokeRequest};
-    inline static const binding_type<std::vector<::asn1kit::modern::CryptographicMessageSyntax2009::IssuerAndSerialNumber>> cmc_confirm_cert_acceptance{EnrollmentMessageSyntax2009Oids::IdCmcConfirmCertAcceptance};
-    inline static const binding_type<std::vector<CMCStatusInfoV2>> cmc_status_info_v2{EnrollmentMessageSyntax2009Oids::IdCmcStatusInfoV2};
-    inline static const binding_type<std::vector<PublishTrustAnchors>> cmc_trusted_anchors{EnrollmentMessageSyntax2009Oids::IdCmcTrustedAnchors};
-    inline static const binding_type<std::vector<std::uint32_t>> cmc_auth_data{EnrollmentMessageSyntax2009Oids::IdCmcAuthData};
-    inline static const binding_type<std::vector<std::vector<std::uint32_t>>> cmc_batch_requests{EnrollmentMessageSyntax2009Oids::IdCmcBatchRequests};
-    inline static const binding_type<std::vector<std::vector<std::uint32_t>>> cmc_batch_responses{EnrollmentMessageSyntax2009Oids::IdCmcBatchResponses};
-    inline static const binding_type<std::vector<CMCPublicationInfo>> cmc_publish_cert{EnrollmentMessageSyntax2009Oids::IdCmcPublishCert};
-    inline static const binding_type<std::vector<ModCertTemplate>> cmc_mod_cert_template{EnrollmentMessageSyntax2009Oids::IdCmcModCertTemplate};
-    inline static const binding_type<std::vector<ControlsProcessed>> cmc_control_processed{EnrollmentMessageSyntax2009Oids::IdCmcControlProcessed};
-    inline static const binding_type<std::vector<IdentityProofV2>> cmc_identity_proof_v2{EnrollmentMessageSyntax2009Oids::IdCmcIdentityProofV2};
-    inline static const binding_type<std::vector<PopLinkWitnessV2>> cmc_pop_link_witness_v2{EnrollmentMessageSyntax2009Oids::IdCmcPopLinkWitnessV2};
+    static TaggedContentInfo decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        TaggedContentInfo value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.bodyPartID = inner.read_uint32(asn1kit::tag::integer);
+            value.contentInfo = ::asn1kit::modern::CryptographicMessageSyntax2009::ContentInfo::decode(inner);
+        });
+        return value;
+    }
 
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_integer(asn1kit::tag::integer, this->bodyPartID);
+        this->contentInfo.encode(w);
+    }
 };
 
-} // namespace detail
+struct PKIResponse {
+    // ASN.1 SIZE (0..MAX). Not enforced by runtime.
+    std::vector<TaggedAttribute> controlSequence{};
+    // ASN.1 SIZE (0..MAX). Not enforced by runtime.
+    std::vector<TaggedContentInfo> cmsSequence{};
+    // ASN.1 SIZE (0..MAX). Not enforced by runtime.
+    std::vector<OtherMsg> otherMsgSequence{};
 
-#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
-#error "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY is reserved for generated headers"
-#endif
-#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding) \
-    template <typename... Args> \
-    decltype(auto) Name(Args&&... args) const \
-        requires requires(const base& view, Args&&... values) { \
-            view.template invoke<open_entries::Binding>(std::forward<Args>(values)...); \
-        } \
-    { return view_.template invoke<open_entries::Binding>(std::forward<Args>(args)...); }
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
 
-template <typename Target>
-struct AddExtensionsCertExtensionsOpenView {
-    using open_entries = ::asn1kit::modern::PKIXCommonTypes2009::detail::certExtensions_open_type_entries;
+    static PKIResponse decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        PKIResponse value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.controlSequence = inner.read_sequence_of<TaggedAttribute>();
+            value.cmsSequence = inner.read_sequence_of<TaggedContentInfo>();
+            value.otherMsgSequence = inner.read_sequence_of<OtherMsg>();
+        });
+        return value;
+    }
 
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_extensions(binding);
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_sequence_of(asn1kit::tag::sequence, this->controlSequence);
+        w.write_sequence_of(asn1kit::tag::sequence, this->cmsSequence);
+        w.write_sequence_of(asn1kit::tag::sequence, this->otherMsgSequence);
+    }
+};
+
+struct TaggedRequest_Orm {
+    // ASN.1 alias BodyPartID ::= INTEGER. ASN.1 value range (0..4294967295). Not enforced by runtime.
+    std::uint32_t bodyPartID{};
+    // ASN.1 constraint unsupported:  table({ OtherRequests }). Not enforced by runtime.
+    asn1kit::oid requestMessageType{};
+    // ASN.1 object set OtherRequests (extensible). Membership not enforced by runtime.
+    asn1kit::any requestMessageValue{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static TaggedRequest_Orm decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        TaggedRequest_Orm value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.bodyPartID = inner.read_uint32(asn1kit::tag::integer);
+            value.requestMessageType = inner.read_oid(asn1kit::tag::object_identifier);
+            value.requestMessageValue = inner.read_any();
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_integer(asn1kit::tag::integer, this->bodyPartID);
+        w.write_object_identifier(asn1kit::tag::object_identifier, this->requestMessageType);
+        w.write_any(this->requestMessageValue);
+    }
+};
+
+enum class TaggedRequest_kind {
+    tcr,
+    crm,
+    orm
+};
+
+struct TaggedRequest {
+    TaggedRequest_kind kind{};
+    std::variant<TaggedCertificationRequest, ::asn1kit::modern::PKIXCRMF2009::CertReqMsg, TaggedRequest_Orm> value{};
+
+    static TaggedRequest from_tcr(TaggedCertificationRequest v) {
+        TaggedRequest result{};
+        result.kind = TaggedRequest_kind::tcr;
+        result.value.emplace<0>(std::move(v));
+        return result;
+    }
+
+    static TaggedRequest from_crm(::asn1kit::modern::PKIXCRMF2009::CertReqMsg v) {
+        TaggedRequest result{};
+        result.kind = TaggedRequest_kind::crm;
+        result.value.emplace<1>(std::move(v));
+        return result;
+    }
+
+    static TaggedRequest from_orm(TaggedRequest_Orm v) {
+        TaggedRequest result{};
+        result.kind = TaggedRequest_kind::orm;
+        result.value.emplace<2>(std::move(v));
+        return result;
+    }
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return (t.matches_ignore_constructed(asn1kit::tag::context(0, true)) || t.matches_ignore_constructed(asn1kit::tag::context(1, true)) || t.matches_ignore_constructed(asn1kit::tag::context(2, true)));
+    }
+
+    static TaggedRequest decode(asn1kit::reader& r) {
+        asn1kit::tag peeked;
+        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
+        if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
+            TaggedCertificationRequest alt{};
+            alt = TaggedCertificationRequest::decode(r, asn1kit::tag::context(0, true));
+            return from_tcr(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
+            ::asn1kit::modern::PKIXCRMF2009::CertReqMsg alt{};
+            alt = ::asn1kit::modern::PKIXCRMF2009::CertReqMsg::decode(r, asn1kit::tag::context(1, true));
+            return from_crm(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2, true))) {
+            TaggedRequest_Orm alt{};
+            alt = TaggedRequest_Orm::decode(r, asn1kit::tag::context(2, true));
+            return from_orm(std::move(alt));
+        } else {
+            throw asn1kit::exception("Unknown CHOICE alternative.");
         }
-    };
+    }
 
-    using base = asn1kit::open_function_view<Target, access>;
+    static TaggedRequest decode(asn1kit::reader& r, const asn1kit::tag& t) {
+        (void)t;
+        return decode(r);
+    }
 
-    explicit AddExtensionsCertExtensionsOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AddExtensionsCertExtensionsOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(authority_key_identifier, authority_key_identifier)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(subject_key_identifier, subject_key_identifier)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(key_usage, key_usage)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(private_key_usage_period, private_key_usage_period)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(certificate_policies, certificate_policies)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(policy_mappings, policy_mappings)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(subject_alt_name, subject_alt_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(issuer_alt_name, issuer_alt_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(subject_directory_attributes, subject_directory_attributes)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(basic_constraints, basic_constraints)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(name_constraints, name_constraints)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(policy_constraints, policy_constraints)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ext_key_usage, ext_key_usage)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(crl_distribution_points, crl_distribution_points)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(inhibit_any_policy, inhibit_any_policy)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(freshest_crl, freshest_crl)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(authority_info_access, authority_info_access)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(subject_info_access_syntax, subject_info_access_syntax)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct CMCPublicationInfoHashAlgorithmsOpenView {
-    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::hashAlgorithms_parameters_open_type_entries;
-
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_hash_alg(binding);
+    void encode(asn1kit::writer& w) const {
+        switch (kind) {
+        case TaggedRequest_kind::tcr:
+            {
+                const auto& alt = std::get<0>(value);
+                alt.encode(w, asn1kit::tag::context(0, true));
+                break;
+            }
+        case TaggedRequest_kind::crm:
+            {
+                const auto& alt = std::get<1>(value);
+                alt.encode(w, asn1kit::tag::context(1, true));
+                break;
+            }
+        case TaggedRequest_kind::orm:
+            {
+                const auto& alt = std::get<2>(value);
+                alt.encode(w, asn1kit::tag::context(2, true));
+                break;
+            }
         }
-    };
+    }
 
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit CMCPublicationInfoHashAlgorithmsOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit CMCPublicationInfoHashAlgorithmsOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha1, mda_sha1)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha256, mda_sha256)
-
-private:
-    [[no_unique_address]] base view_;
+    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
+        (void)t;
+        encode(w);
+    }
 };
 
-template <typename Target>
-struct CertificationRequestSignatureAlgorithmsOpenView {
-    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::signatureAlgorithms_parameters_open_type_entries;
+struct EncryptedPOP {
+    TaggedRequest request{};
+    ::asn1kit::modern::CryptographicMessageSyntax2009::ContentInfo cms{};
+    // ASN.1 object set POPAlgs (extensible). Membership not enforced by runtime.
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier thePOPAlgID{};
+    // ASN.1 object set WitnessAlgs (extensible). Membership not enforced by runtime.
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier witnessAlgID{};
+    asn1kit::bytes witness{};
 
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_signature_algorithm(binding);
-        }
-    };
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
 
-    using base = asn1kit::open_function_view<Target, access>;
+    static EncryptedPOP decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        EncryptedPOP value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.request = TaggedRequest::decode(inner);
+            value.cms = ::asn1kit::modern::CryptographicMessageSyntax2009::ContentInfo::decode(inner);
+            value.thePOPAlgID = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
+            value.witnessAlgID = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
+            value.witness = inner.read_octet_string(asn1kit::tag::octet_string);
+        });
+        return value;
+    }
 
-    explicit CertificationRequestSignatureAlgorithmsOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit CertificationRequestSignatureAlgorithmsOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_md2, sa_rsa_with_md2)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_md5, sa_rsa_with_md5)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_sha1, sa_rsa_with_sha1)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha1, sa_dsa_with_sha1)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha1, sa_ecdsa_with_sha1)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha224, sa_dsa_with_sha224)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha256, sa_dsa_with_sha256)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha224, sa_ecdsa_with_sha224)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha256, sa_ecdsa_with_sha256)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha384, sa_ecdsa_with_sha384)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha512, sa_ecdsa_with_sha512)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_ssa_pss, sa_rsa_ssa_pss)
-
-private:
-    [[no_unique_address]] base view_;
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->request.encode(w);
+        this->cms.encode(w);
+        this->thePOPAlgID.encode(w);
+        this->witnessAlgID.encode(w);
+        w.write_octet_string(asn1kit::tag::octet_string, this->witness.span());
+    }
 };
 
-template <typename Target>
-struct DecryptedPOPPopAlgsOpenView {
-    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::pOPAlgs_parameters_open_type_entries;
+struct PKIData {
+    // ASN.1 SIZE (0..MAX). Not enforced by runtime.
+    std::vector<TaggedAttribute> controlSequence{};
+    // ASN.1 SIZE (0..MAX). Not enforced by runtime.
+    std::vector<TaggedRequest> reqSequence{};
+    // ASN.1 SIZE (0..MAX). Not enforced by runtime.
+    std::vector<TaggedContentInfo> cmsSequence{};
+    // ASN.1 SIZE (0..MAX). Not enforced by runtime.
+    std::vector<OtherMsg> otherMsgSequence{};
 
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_the_pop_alg_id(binding);
-        }
-    };
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
 
-    using base = asn1kit::open_function_view<Target, access>;
+    static PKIData decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        PKIData value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.controlSequence = inner.read_sequence_of<TaggedAttribute>();
+            value.reqSequence = inner.read_sequence_of<TaggedRequest>();
+            value.cmsSequence = inner.read_sequence_of<TaggedContentInfo>();
+            value.otherMsgSequence = inner.read_sequence_of<OtherMsg>();
+        });
+        return value;
+    }
 
-    explicit DecryptedPOPPopAlgsOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit DecryptedPOPPopAlgsOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(maca_h_mac_sha1, maca_h_mac_sha1)
-
-private:
-    [[no_unique_address]] base view_;
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_sequence_of(asn1kit::tag::sequence, this->controlSequence);
+        w.write_sequence_of(asn1kit::tag::sequence, this->reqSequence);
+        w.write_sequence_of(asn1kit::tag::sequence, this->cmsSequence);
+        w.write_sequence_of(asn1kit::tag::sequence, this->otherMsgSequence);
+    }
 };
-
-template <typename Target>
-struct EncryptedPOPPopAlgsOpenView {
-    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::pOPAlgs_parameters_open_type_entries;
-
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_the_pop_alg_id(binding);
-        }
-    };
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit EncryptedPOPPopAlgsOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit EncryptedPOPPopAlgsOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(maca_h_mac_sha1, maca_h_mac_sha1)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct EncryptedPOPWitnessAlgsOpenView {
-    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::witnessAlgs_parameters_open_type_entries;
-
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_witness_alg_id(binding);
-        }
-    };
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit EncryptedPOPWitnessAlgsOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit EncryptedPOPWitnessAlgsOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha1, mda_sha1)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct IdentityProofV2PopAlgsOpenView {
-    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::pOPAlgs_parameters_open_type_entries;
-
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_mac_alg_id(binding);
-        }
-    };
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit IdentityProofV2PopAlgsOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit IdentityProofV2PopAlgsOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(maca_h_mac_sha1, maca_h_mac_sha1)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct IdentityProofV2WitnessAlgsOpenView {
-    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::witnessAlgs_parameters_open_type_entries;
-
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_proof_alg_id(binding);
-        }
-    };
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit IdentityProofV2WitnessAlgsOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit IdentityProofV2WitnessAlgsOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha1, mda_sha1)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct PopLinkWitnessV2KeyDevAlgsOpenView {
-    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::keyDevAlgs_parameters_open_type_entries;
-
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_key_gen_algorithm(binding);
-        }
-    };
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit PopLinkWitnessV2KeyDevAlgsOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit PopLinkWitnessV2KeyDevAlgsOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(kda_pbkdf2, kda_pbkdf2)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct PopLinkWitnessV2PopAlgsOpenView {
-    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::pOPAlgs_parameters_open_type_entries;
-
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_mac_algorithm(binding);
-        }
-    };
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit PopLinkWitnessV2PopAlgsOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit PopLinkWitnessV2PopAlgsOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(maca_h_mac_sha1, maca_h_mac_sha1)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct PublishTrustAnchorsHashAlgorithmsOpenView {
-    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::hashAlgorithms_parameters_open_type_entries;
-
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_hash_algorithm(binding);
-        }
-    };
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit PublishTrustAnchorsHashAlgorithmsOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit PublishTrustAnchorsHashAlgorithmsOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha1, mda_sha1)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha256, mda_sha256)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct TaggedAttributeCmcControlSetOpenView {
-    using open_entries = detail::cmc_control_set_attrValues_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit TaggedAttributeCmcControlSetOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit TaggedAttributeCmcControlSetOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    TaggedAttributeCmcControlSetOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_identity_proof, cmc_identity_proof)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_data_return, cmc_data_return)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_reg_info, cmc_reg_info)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_response_info, cmc_response_info)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_query_pending, cmc_query_pending)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_pop_link_random, cmc_pop_link_random)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_pop_link_witness, cmc_pop_link_witness)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_identification, cmc_identification)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_transaction_id, cmc_transaction_id)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_sender_nonce, cmc_sender_nonce)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_recipient_nonce, cmc_recipient_nonce)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_status_info, cmc_status_info)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_add_extensions, cmc_add_extensions)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_encrypted_pop, cmc_encrypted_pop)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_decrypted_pop, cmc_decrypted_pop)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_lra_pop_witness, cmc_lra_pop_witness)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_get_cert, cmc_get_cert)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_get_crl, cmc_get_crl)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_revoke_request, cmc_revoke_request)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_confirm_cert_acceptance, cmc_confirm_cert_acceptance)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_status_info_v2, cmc_status_info_v2)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_trusted_anchors, cmc_trusted_anchors)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_auth_data, cmc_auth_data)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_batch_requests, cmc_batch_requests)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_batch_responses, cmc_batch_responses)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_publish_cert, cmc_publish_cert)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_mod_cert_template, cmc_mod_cert_template)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_control_processed, cmc_control_processed)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_identity_proof_v2, cmc_identity_proof_v2)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cmc_pop_link_witness_v2, cmc_pop_link_witness_v2)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
-
-inline AddExtensionsCertExtensionsOpenView<AddExtensions> AddExtensions::cert_extensions() & {
-    return AddExtensionsCertExtensionsOpenView<AddExtensions>{*this};
-}
-inline AddExtensionsCertExtensionsOpenView<const AddExtensions> AddExtensions::cert_extensions() const & {
-    return AddExtensionsCertExtensionsOpenView<const AddExtensions>{*this};
-}
-inline AddExtensionsCertExtensionsOpenView<asn1kit::open_owned_target<AddExtensions>> AddExtensions::cert_extensions() && {
-    return AddExtensionsCertExtensionsOpenView<asn1kit::open_owned_target<AddExtensions>>{std::move(*this)};
-}
-
-inline CMCPublicationInfoHashAlgorithmsOpenView<CMCPublicationInfo> CMCPublicationInfo::hash_algorithms() & {
-    return CMCPublicationInfoHashAlgorithmsOpenView<CMCPublicationInfo>{*this};
-}
-inline CMCPublicationInfoHashAlgorithmsOpenView<const CMCPublicationInfo> CMCPublicationInfo::hash_algorithms() const & {
-    return CMCPublicationInfoHashAlgorithmsOpenView<const CMCPublicationInfo>{*this};
-}
-inline CMCPublicationInfoHashAlgorithmsOpenView<asn1kit::open_owned_target<CMCPublicationInfo>> CMCPublicationInfo::hash_algorithms() && {
-    return CMCPublicationInfoHashAlgorithmsOpenView<asn1kit::open_owned_target<CMCPublicationInfo>>{std::move(*this)};
-}
-
-inline CertificationRequestSignatureAlgorithmsOpenView<CertificationRequest> CertificationRequest::signature_algorithms() & {
-    return CertificationRequestSignatureAlgorithmsOpenView<CertificationRequest>{*this};
-}
-inline CertificationRequestSignatureAlgorithmsOpenView<const CertificationRequest> CertificationRequest::signature_algorithms() const & {
-    return CertificationRequestSignatureAlgorithmsOpenView<const CertificationRequest>{*this};
-}
-inline CertificationRequestSignatureAlgorithmsOpenView<asn1kit::open_owned_target<CertificationRequest>> CertificationRequest::signature_algorithms() && {
-    return CertificationRequestSignatureAlgorithmsOpenView<asn1kit::open_owned_target<CertificationRequest>>{std::move(*this)};
-}
-
-inline DecryptedPOPPopAlgsOpenView<DecryptedPOP> DecryptedPOP::pop_algs() & {
-    return DecryptedPOPPopAlgsOpenView<DecryptedPOP>{*this};
-}
-inline DecryptedPOPPopAlgsOpenView<const DecryptedPOP> DecryptedPOP::pop_algs() const & {
-    return DecryptedPOPPopAlgsOpenView<const DecryptedPOP>{*this};
-}
-inline DecryptedPOPPopAlgsOpenView<asn1kit::open_owned_target<DecryptedPOP>> DecryptedPOP::pop_algs() && {
-    return DecryptedPOPPopAlgsOpenView<asn1kit::open_owned_target<DecryptedPOP>>{std::move(*this)};
-}
-
-inline EncryptedPOPPopAlgsOpenView<EncryptedPOP> EncryptedPOP::pop_algs() & {
-    return EncryptedPOPPopAlgsOpenView<EncryptedPOP>{*this};
-}
-inline EncryptedPOPPopAlgsOpenView<const EncryptedPOP> EncryptedPOP::pop_algs() const & {
-    return EncryptedPOPPopAlgsOpenView<const EncryptedPOP>{*this};
-}
-inline EncryptedPOPPopAlgsOpenView<asn1kit::open_owned_target<EncryptedPOP>> EncryptedPOP::pop_algs() && {
-    return EncryptedPOPPopAlgsOpenView<asn1kit::open_owned_target<EncryptedPOP>>{std::move(*this)};
-}
-
-inline EncryptedPOPWitnessAlgsOpenView<EncryptedPOP> EncryptedPOP::witness_algs() & {
-    return EncryptedPOPWitnessAlgsOpenView<EncryptedPOP>{*this};
-}
-inline EncryptedPOPWitnessAlgsOpenView<const EncryptedPOP> EncryptedPOP::witness_algs() const & {
-    return EncryptedPOPWitnessAlgsOpenView<const EncryptedPOP>{*this};
-}
-inline EncryptedPOPWitnessAlgsOpenView<asn1kit::open_owned_target<EncryptedPOP>> EncryptedPOP::witness_algs() && {
-    return EncryptedPOPWitnessAlgsOpenView<asn1kit::open_owned_target<EncryptedPOP>>{std::move(*this)};
-}
-
-inline IdentityProofV2PopAlgsOpenView<IdentityProofV2> IdentityProofV2::pop_algs() & {
-    return IdentityProofV2PopAlgsOpenView<IdentityProofV2>{*this};
-}
-inline IdentityProofV2PopAlgsOpenView<const IdentityProofV2> IdentityProofV2::pop_algs() const & {
-    return IdentityProofV2PopAlgsOpenView<const IdentityProofV2>{*this};
-}
-inline IdentityProofV2PopAlgsOpenView<asn1kit::open_owned_target<IdentityProofV2>> IdentityProofV2::pop_algs() && {
-    return IdentityProofV2PopAlgsOpenView<asn1kit::open_owned_target<IdentityProofV2>>{std::move(*this)};
-}
-
-inline IdentityProofV2WitnessAlgsOpenView<IdentityProofV2> IdentityProofV2::witness_algs() & {
-    return IdentityProofV2WitnessAlgsOpenView<IdentityProofV2>{*this};
-}
-inline IdentityProofV2WitnessAlgsOpenView<const IdentityProofV2> IdentityProofV2::witness_algs() const & {
-    return IdentityProofV2WitnessAlgsOpenView<const IdentityProofV2>{*this};
-}
-inline IdentityProofV2WitnessAlgsOpenView<asn1kit::open_owned_target<IdentityProofV2>> IdentityProofV2::witness_algs() && {
-    return IdentityProofV2WitnessAlgsOpenView<asn1kit::open_owned_target<IdentityProofV2>>{std::move(*this)};
-}
-
-inline PopLinkWitnessV2KeyDevAlgsOpenView<PopLinkWitnessV2> PopLinkWitnessV2::key_dev_algs() & {
-    return PopLinkWitnessV2KeyDevAlgsOpenView<PopLinkWitnessV2>{*this};
-}
-inline PopLinkWitnessV2KeyDevAlgsOpenView<const PopLinkWitnessV2> PopLinkWitnessV2::key_dev_algs() const & {
-    return PopLinkWitnessV2KeyDevAlgsOpenView<const PopLinkWitnessV2>{*this};
-}
-inline PopLinkWitnessV2KeyDevAlgsOpenView<asn1kit::open_owned_target<PopLinkWitnessV2>> PopLinkWitnessV2::key_dev_algs() && {
-    return PopLinkWitnessV2KeyDevAlgsOpenView<asn1kit::open_owned_target<PopLinkWitnessV2>>{std::move(*this)};
-}
-
-inline PopLinkWitnessV2PopAlgsOpenView<PopLinkWitnessV2> PopLinkWitnessV2::pop_algs() & {
-    return PopLinkWitnessV2PopAlgsOpenView<PopLinkWitnessV2>{*this};
-}
-inline PopLinkWitnessV2PopAlgsOpenView<const PopLinkWitnessV2> PopLinkWitnessV2::pop_algs() const & {
-    return PopLinkWitnessV2PopAlgsOpenView<const PopLinkWitnessV2>{*this};
-}
-inline PopLinkWitnessV2PopAlgsOpenView<asn1kit::open_owned_target<PopLinkWitnessV2>> PopLinkWitnessV2::pop_algs() && {
-    return PopLinkWitnessV2PopAlgsOpenView<asn1kit::open_owned_target<PopLinkWitnessV2>>{std::move(*this)};
-}
-
-inline PublishTrustAnchorsHashAlgorithmsOpenView<PublishTrustAnchors> PublishTrustAnchors::hash_algorithms() & {
-    return PublishTrustAnchorsHashAlgorithmsOpenView<PublishTrustAnchors>{*this};
-}
-inline PublishTrustAnchorsHashAlgorithmsOpenView<const PublishTrustAnchors> PublishTrustAnchors::hash_algorithms() const & {
-    return PublishTrustAnchorsHashAlgorithmsOpenView<const PublishTrustAnchors>{*this};
-}
-inline PublishTrustAnchorsHashAlgorithmsOpenView<asn1kit::open_owned_target<PublishTrustAnchors>> PublishTrustAnchors::hash_algorithms() && {
-    return PublishTrustAnchorsHashAlgorithmsOpenView<asn1kit::open_owned_target<PublishTrustAnchors>>{std::move(*this)};
-}
-
-inline TaggedAttributeCmcControlSetOpenView<TaggedAttribute> TaggedAttribute::cmc_control_set() & {
-    return TaggedAttributeCmcControlSetOpenView<TaggedAttribute>{*this};
-}
-inline TaggedAttributeCmcControlSetOpenView<const TaggedAttribute> TaggedAttribute::cmc_control_set() const & {
-    return TaggedAttributeCmcControlSetOpenView<const TaggedAttribute>{*this};
-}
-inline TaggedAttributeCmcControlSetOpenView<asn1kit::open_owned_target<TaggedAttribute>> TaggedAttribute::cmc_control_set() && {
-    return TaggedAttributeCmcControlSetOpenView<asn1kit::open_owned_target<TaggedAttribute>>{std::move(*this)};
-}
-inline TaggedAttributeCmcControlSetOpenView<asn1kit::open_factory_target<TaggedAttribute>> TaggedAttribute::make_cmc_control_set() {
-    return TaggedAttributeCmcControlSetOpenView<asn1kit::open_factory_target<TaggedAttribute>>{};
-}
 
 } // namespace EnrollmentMessageSyntax2009
 } // namespace modern

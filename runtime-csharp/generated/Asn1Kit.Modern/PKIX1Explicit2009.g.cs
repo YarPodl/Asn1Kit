@@ -907,17 +907,8 @@ public sealed class CertificateList : Asn1Kit.Modern.PKIX1Explicit2009.Signed<TB
 
 internal static class __PKIX1Explicit2009OpenTypeCodecs
 {
-    internal static Asn1Codec<Asn1Kit.Modern.PKIXAlgs2009.DSAParams> PkDsa { get; } =
-        new(static reader => Asn1Kit.Modern.PKIXAlgs2009.DSAParams.Decode(reader), static (writer, value) => value.Encode(writer));
-
-    internal static Asn1Codec<Asn1Kit.Modern.PKIXAlgs2009.DomainParameters> PkDh { get; } =
-        new(static reader => Asn1Kit.Modern.PKIXAlgs2009.DomainParameters.Decode(reader), static (writer, value) => value.Encode(writer));
-
-    internal static Asn1Codec<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams> PkRsaSSAPSS { get; } =
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams> SaRsaSSAPSSAlgorithmIdentifier { get; } =
         new(static reader => Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams.Decode(reader), static (writer, value) => value.Encode(writer));
-
-    internal static Asn1Codec<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams> PkRsaESOAEP { get; } =
-        new(static reader => Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams.Decode(reader), static (writer, value) => value.Encode(writer));
 
     internal static Asn1Codec<DirectoryString> NameSingleAttribute { get; } =
         new(static reader => DirectoryString.Decode(reader), static (writer, value) => value.Encode(writer));
@@ -1066,6 +1057,15 @@ internal static class __PKIX1Explicit2009OpenTypeCodecs
             });
         });
 
+    internal static Asn1Codec<Asn1Kit.Modern.PKIXAlgs2009.DSAParams> PkDsaAlgorithmIdentifier { get; } =
+        new(static reader => Asn1Kit.Modern.PKIXAlgs2009.DSAParams.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIXAlgs2009.DomainParameters> PkDhAlgorithmIdentifier { get; } =
+        new(static reader => Asn1Kit.Modern.PKIXAlgs2009.DomainParameters.Decode(reader), static (writer, value) => value.Encode(writer));
+
+    internal static Asn1Codec<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams> PkRsaESOAEPAlgorithmIdentifier { get; } =
+        new(static reader => Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams.Decode(reader), static (writer, value) => value.Encode(writer));
+
     internal static Asn1Codec<Asn1Kit.Modern.PKIX1Implicit2009.CRLReason> CRLReasonExtension { get; } = new(
         static reader =>
         {
@@ -1081,38 +1081,6 @@ internal static class __PKIX1Explicit2009OpenTypeCodecs
     internal static Asn1Codec<Asn1Kit.Modern.PKIX1Implicit2009.IssuingDistributionPoint> IssuingDistributionPointExtension { get; } =
         new(static reader => Asn1Kit.Modern.PKIX1Implicit2009.IssuingDistributionPoint.Decode(reader), static (writer, value) => value.Encode(writer));
 
-}
-
-public sealed record PublicKeyAlgorithmsParameters2Binding<T>(Asn1Oid Oid, Func<Asn1Any, T> Decoder, Func<T, Asn1Any> Encoder);
-
-public static class PublicKeyAlgorithmsParameters2Bindings
-{
-    public static PublicKeyAlgorithmsParameters2Binding<Asn1Null> PkRsa { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.RsaEncryption, Asn1Codecs.Null.Decode, Asn1Codecs.Null.Encode);
-
-    public static PublicKeyAlgorithmsParameters2Binding<Asn1Kit.Modern.PKIXAlgs2009.DSAParams> PkDsa { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdDsa, __PKIX1Explicit2009OpenTypeCodecs.PkDsa.Decode, __PKIX1Explicit2009OpenTypeCodecs.PkDsa.Encode);
-
-    public static PublicKeyAlgorithmsParameters2Binding<Asn1Kit.Modern.PKIXAlgs2009.DomainParameters> PkDh { get; } =
-        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.DhPublicNumber, __PKIX1Explicit2009OpenTypeCodecs.PkDh.Decode, __PKIX1Explicit2009OpenTypeCodecs.PkDh.Encode);
-
-    public static PublicKeyAlgorithmsParameters2Binding<ReadOnlyMemory<byte>> PkKea { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdKeyExchangeAlgorithm, Asn1Codecs.OctetString.Decode, Asn1Codecs.OctetString.Encode);
-
-    public static PublicKeyAlgorithmsParameters2Binding<Asn1Oid> PkEc { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdEcPublicKey, Asn1Codecs.ObjectIdentifier.Decode, Asn1Codecs.ObjectIdentifier.Encode);
-
-    public static PublicKeyAlgorithmsParameters2Binding<Asn1Oid> PkEcDH { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdEcDH, Asn1Codecs.ObjectIdentifier.Decode, Asn1Codecs.ObjectIdentifier.Encode);
-
-    public static PublicKeyAlgorithmsParameters2Binding<Asn1Oid> PkEcMQV { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdEcMQV, Asn1Codecs.ObjectIdentifier.Decode, Asn1Codecs.ObjectIdentifier.Encode);
-
-    public static PublicKeyAlgorithmsParameters2Binding<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams> PkRsaSSAPSS { get; } =
-        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSASSAPSS, __PKIX1Explicit2009OpenTypeCodecs.PkRsaSSAPSS.Decode, __PKIX1Explicit2009OpenTypeCodecs.PkRsaSSAPSS.Encode);
-
-    public static PublicKeyAlgorithmsParameters2Binding<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams> PkRsaESOAEP { get; } =
-        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSAESOAEP, __PKIX1Explicit2009OpenTypeCodecs.PkRsaESOAEP.Decode, __PKIX1Explicit2009OpenTypeCodecs.PkRsaESOAEP.Encode);
 }
 
 public static class CertExtensionsBindings
@@ -1178,10 +1146,10 @@ public static class PublicKeyAlgorithmsParametersBindings
         new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.RsaEncryption, Asn1Codecs.Null);
 
     public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.PKIXAlgs2009.DSAParams> PkDsa { get; } =
-        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdDsa, __PKIX1Explicit2009OpenTypeCodecs.PkDsa);
+        new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdDsa, __PKIX1Explicit2009OpenTypeCodecs.PkDsaAlgorithmIdentifier);
 
     public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.PKIXAlgs2009.DomainParameters> PkDh { get; } =
-        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.DhPublicNumber, __PKIX1Explicit2009OpenTypeCodecs.PkDh);
+        new(global::Asn1Kit.Modern.CryptographicMessageSyntaxAlgorithms2009.CryptographicMessageSyntaxAlgorithms2009Oids.DhPublicNumber, __PKIX1Explicit2009OpenTypeCodecs.PkDhAlgorithmIdentifier);
 
     public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<ReadOnlyMemory<byte>> PkKea { get; } =
         new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdKeyExchangeAlgorithm, Asn1Codecs.OctetString);
@@ -1196,10 +1164,10 @@ public static class PublicKeyAlgorithmsParametersBindings
         new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.IdEcMQV, Asn1Codecs.ObjectIdentifier);
 
     public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams> SaRsaSSAPSS { get; } =
-        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSASSAPSS, __PKIX1Explicit2009OpenTypeCodecs.PkRsaSSAPSS);
+        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSASSAPSS, __PKIX1Explicit2009OpenTypeCodecs.SaRsaSSAPSSAlgorithmIdentifier);
 
     public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSAESOAEPParams> PkRsaESOAEP { get; } =
-        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSAESOAEP, __PKIX1Explicit2009OpenTypeCodecs.PkRsaESOAEP);
+        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSAESOAEP, __PKIX1Explicit2009OpenTypeCodecs.PkRsaESOAEPAlgorithmIdentifier);
 }
 
 public static class SignatureAlgorithmsParametersBindings
@@ -1238,7 +1206,7 @@ public static class SignatureAlgorithmsParametersBindings
         new(global::Asn1Kit.Modern.PKIXAlgs2009.PKIXAlgs2009Oids.EcdsaWithSHA512, Asn1Codecs.Null);
 
     public static Asn1Kit.Modern.AlgorithmInformation2009.ParametersBinding<Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.RSASSAPSSParams> SaRsaSSAPSS { get; } =
-        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSASSAPSS, __PKIX1Explicit2009OpenTypeCodecs.PkRsaSSAPSS);
+        new(global::Asn1Kit.Modern.PKIX1PSSOAEPAlgorithms2009.PKIX1PSSOAEPAlgorithms2009Oids.IdRSASSAPSS, __PKIX1Explicit2009OpenTypeCodecs.SaRsaSSAPSSAlgorithmIdentifier);
 }
 
 public static class CrlEntryExtensionsBindings
@@ -1547,83 +1515,6 @@ public static class TBSCertificateOpenTypeExtensions
         if (binding.Codec is { } codec)
         {
             value = codec.Decode(match.Value);
-        }
-        else
-            value = binding.Decoder!(match);
-        return true;
-    }
-
-}
-
-public static class TBSCertListOpenTypeExtensions
-{
-    public static bool TryGetIssuer<T>(this TBSCertList source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value)
-        => TryGetIssuer(source, binding, out value, out _);
-
-    public static bool TryGetIssuer<T>(this TBSCertList source, Asn1Kit.Modern.PKIXCommonTypes2009.ValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.PKIXCommonTypes2009.SingleAttribute? match = null;
-        if (source.Issuer is { } node0)
-        {
-            foreach (var node1 in node0)
-            {
-                foreach (var node2 in node1)
-                {
-                    if (node2.Type.Equals(binding.Oid))
-                    {
-                        if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetIssuer.");
-                        match = node2;
-                    }
-                }
-            }
-        }
-        if (match is null) return false;
-        raw = match;
-        if (binding.Codec is { } codec)
-        {
-            value = codec.Decode(match.Value);
-        }
-        else
-            value = binding.Decoder!(match);
-        return true;
-    }
-
-    public static bool TryGetRevokedCertificates<T>(this TBSCertList source, Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<T> binding, out T value)
-        => TryGetRevokedCertificates(source, binding, out value, out _);
-
-    public static bool TryGetRevokedCertificates<T>(this TBSCertList source, Asn1Kit.Modern.PKIXCommonTypes2009.ExtnValueBinding<T> binding, out T value, out Asn1Kit.Modern.PKIXCommonTypes2009.Extension raw)
-    {
-        value = default!;
-        raw = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        Asn1Kit.Modern.PKIXCommonTypes2009.Extension? match = null;
-        if (source.RevokedCertificates is { } node0)
-        {
-            foreach (var node1 in node0)
-            {
-                if (node1.CrlEntryExtensions is { } node2)
-                {
-                    foreach (var node3 in node2)
-                    {
-                        if (node3.ExtnID.Equals(binding.Oid))
-                        {
-                            if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGetRevokedCertificates.");
-                            match = node3;
-                        }
-                    }
-                }
-            }
-        }
-        if (match is null) return false;
-        raw = match;
-        if (binding.Codec is { } codec)
-        {
-            value = Asn1Codecs.DecodeContained(match.ExtnValue, codec);
         }
         else
             value = binding.Decoder!(match);

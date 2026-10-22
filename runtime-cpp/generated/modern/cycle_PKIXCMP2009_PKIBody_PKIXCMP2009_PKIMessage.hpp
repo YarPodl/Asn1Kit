@@ -26,8 +26,8 @@
 #include <variant>
 #include <vector>
 
-#include "EnrollmentMessageSyntax2009.types.hpp"
-#include "PKIX1Explicit2009.types.hpp"
+#include "EnrollmentMessageSyntax2009.hpp"
+#include "PKIX1Explicit2009.hpp"
 #include "PKIXCMP2009.types.hpp"
 #include "PKIXCRMF2009.hpp"
 

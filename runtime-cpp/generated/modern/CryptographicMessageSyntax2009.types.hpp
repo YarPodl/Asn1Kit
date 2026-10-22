@@ -218,49 +218,11 @@ struct ContentInfo {
     }
 };
 
-namespace detail {
-struct contentSet_eContent_open_type_entries;
-} // namespace detail
-template <typename Target>
-struct EncapsulatedContentInfoContentSetOpenView;
 struct EncapsulatedContentInfo {
     // ASN.1 constraint unsupported:  table({ ContentSet }). Not enforced by runtime.
     asn1kit::oid eContentType{};
     // ASN.1 object set ContentSet (extensible). Membership not enforced by runtime.
     std::optional<asn1kit::bytes> eContent{};
-
-    [[nodiscard]] EncapsulatedContentInfoContentSetOpenView<EncapsulatedContentInfo> content_set() &;
-    [[nodiscard]] EncapsulatedContentInfoContentSetOpenView<const EncapsulatedContentInfo> content_set() const &;
-    [[nodiscard]] EncapsulatedContentInfoContentSetOpenView<asn1kit::open_owned_target<EncapsulatedContentInfo>> content_set() &&;
-    EncapsulatedContentInfoContentSetOpenView<const EncapsulatedContentInfo> content_set() const && = delete;
-    [[nodiscard]] static EncapsulatedContentInfoContentSetOpenView<asn1kit::open_factory_target<EncapsulatedContentInfo>> make_content_set();
-
-    template <typename T>
-    [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, T> open_binding(asn1kit::oid key) {
-        return {std::move(key)};
-    }
-
-    template <typename Context, typename T>
-    [[nodiscard]] std::optional<T> try_decode(
-        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding) const {
-        if (!eContent.has_value()) return std::nullopt;
-        if (!(this->eContentType == binding.key)) return std::nullopt;
-        return asn1kit::decode_contained<T>(*eContent);
-    }
-
-    template <typename Context, typename T>
-    void set(const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
-        this->eContentType = binding.key;
-        eContent = asn1kit::encode_contained_octets(value);
-    }
-
-    template <typename Context, typename T>
-    [[nodiscard]] static EncapsulatedContentInfo create(
-        const asn1kit::open_binding<Context, asn1kit::oid, T>& binding, const T& value) {
-        EncapsulatedContentInfo result{};
-        result.set(binding, value);
-        return result;
-    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -435,7 +397,7 @@ struct EncryptedData {
 } // namespace modern
 } // namespace asn1kit
 
-#include "PKIX1Explicit2009.types.hpp"
+#include "PKIX1Explicit2009.hpp"
 
 namespace asn1kit {
 namespace modern {
@@ -615,23 +577,10 @@ struct IssuerAndSerialNumber {
     }
 };
 
-template <typename Target>
-struct OriginatorPublicKeyOriginatorKeySetOpenView;
 struct OriginatorPublicKey {
     // ASN.1 object set OriginatorKeySet (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithm{};
     asn1kit::bit_string publicKey{};
-
-    [[nodiscard]] OriginatorPublicKeyOriginatorKeySetOpenView<OriginatorPublicKey> originator_key_set() &;
-    [[nodiscard]] OriginatorPublicKeyOriginatorKeySetOpenView<const OriginatorPublicKey> originator_key_set() const &;
-    [[nodiscard]] OriginatorPublicKeyOriginatorKeySetOpenView<asn1kit::open_owned_target<OriginatorPublicKey>> originator_key_set() &&;
-    OriginatorPublicKeyOriginatorKeySetOpenView<const OriginatorPublicKey> originator_key_set() const && = delete;
-
-    template <typename T>
-    [[nodiscard]] std::optional<T> try_decode_algorithm(
-        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.originatorKeySet_parameters">, asn1kit::oid, T>& binding) const {
-        return asn1kit::try_decode_unique((*this).algorithm, binding);
-    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -1076,8 +1025,6 @@ struct RecipientIdentifier {
     }
 };
 
-template <typename Target>
-struct KeyTransRecipientInfoKeyTransportAlgorithmSetOpenView;
 struct KeyTransRecipientInfo {
     std::int32_t version{};
     RecipientIdentifier rid{};
@@ -1085,17 +1032,6 @@ struct KeyTransRecipientInfo {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier keyEncryptionAlgorithm{};
     // ASN.1 alias EncryptedKey ::= OCTET STRING.
     asn1kit::bytes encryptedKey{};
-
-    [[nodiscard]] KeyTransRecipientInfoKeyTransportAlgorithmSetOpenView<KeyTransRecipientInfo> key_transport_algorithm_set() &;
-    [[nodiscard]] KeyTransRecipientInfoKeyTransportAlgorithmSetOpenView<const KeyTransRecipientInfo> key_transport_algorithm_set() const &;
-    [[nodiscard]] KeyTransRecipientInfoKeyTransportAlgorithmSetOpenView<asn1kit::open_owned_target<KeyTransRecipientInfo>> key_transport_algorithm_set() &&;
-    KeyTransRecipientInfoKeyTransportAlgorithmSetOpenView<const KeyTransRecipientInfo> key_transport_algorithm_set() const && = delete;
-
-    template <typename T>
-    [[nodiscard]] std::optional<T> try_decode_key_encryption_algorithm(
-        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.keyTransportAlgorithmSet_parameters">, asn1kit::oid, T>& binding) const {
-        return asn1kit::try_decode_unique((*this).keyEncryptionAlgorithm, binding);
-    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -1253,8 +1189,6 @@ struct RecipientEncryptedKey {
     }
 };
 
-template <typename Target>
-struct KeyAgreeRecipientInfoKeyAgreementAlgorithmSetOpenView;
 struct KeyAgreeRecipientInfo {
     std::int32_t version{};
     OriginatorIdentifierOrKey originator{};
@@ -1264,17 +1198,6 @@ struct KeyAgreeRecipientInfo {
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier keyEncryptionAlgorithm{};
     // ASN.1 alias RecipientEncryptedKeys ::= SEQUENCE OF RecipientEncryptedKey.
     std::vector<RecipientEncryptedKey> recipientEncryptedKeys{};
-
-    [[nodiscard]] KeyAgreeRecipientInfoKeyAgreementAlgorithmSetOpenView<KeyAgreeRecipientInfo> key_agreement_algorithm_set() &;
-    [[nodiscard]] KeyAgreeRecipientInfoKeyAgreementAlgorithmSetOpenView<const KeyAgreeRecipientInfo> key_agreement_algorithm_set() const &;
-    [[nodiscard]] KeyAgreeRecipientInfoKeyAgreementAlgorithmSetOpenView<asn1kit::open_owned_target<KeyAgreeRecipientInfo>> key_agreement_algorithm_set() &&;
-    KeyAgreeRecipientInfoKeyAgreementAlgorithmSetOpenView<const KeyAgreeRecipientInfo> key_agreement_algorithm_set() const && = delete;
-
-    template <typename T>
-    [[nodiscard]] std::optional<T> try_decode_key_encryption_algorithm(
-        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.keyAgreementAlgorithmSet_parameters">, asn1kit::oid, T>& binding) const {
-        return asn1kit::try_decode_unique((*this).keyEncryptionAlgorithm, binding);
-    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -1788,8 +1711,8 @@ struct Time {
 } // namespace modern
 } // namespace asn1kit
 
-#include "AttributeCertificateVersion12009.types.hpp"
-#include "PKIXAttributeCertificate2009.types.hpp"
+#include "AttributeCertificateVersion12009.hpp"
+#include "PKIXAttributeCertificate2009.hpp"
 
 namespace asn1kit {
 namespace modern {

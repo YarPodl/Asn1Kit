@@ -25,7 +25,257 @@
 #include <variant>
 #include <vector>
 
-#include "SMIMESymmetricKeyDistribution2009.types.hpp"
+namespace asn1kit {
+namespace modern {
+namespace SMIMESymmetricKeyDistribution2009 {
+
+struct SMIMESymmetricKeyDistribution2009Oids {
+    static constexpr auto IdSkd = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8">();
+    static constexpr auto IdSkdGlUseKEK = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.1">();
+    static constexpr auto IdSkdGlDelete = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.2">();
+    static constexpr auto IdSkdGlAddMember = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.3">();
+    static constexpr auto IdSkdGlDeleteMember = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.4">();
+    static constexpr auto IdSkdGlRekey = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.5">();
+    static constexpr auto IdSkdGlAddOwner = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.6">();
+    static constexpr auto IdSkdGlRemoveOwner = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.7">();
+    static constexpr auto IdSkdGlKeyCompromise = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.8">();
+    static constexpr auto IdSkdGlkRefresh = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.9">();
+    static constexpr auto IdSkdGlaQueryRequest = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.11">();
+    static constexpr auto IdSkdGlaQueryResponse = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.12">();
+    static constexpr auto IdCmcGlaRR = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.99">();
+    static constexpr auto IdCmcGlaSkdAlgRequest = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.99.1">();
+    static constexpr auto IdCmcGlaSkdAlgResponse = asn1kit::oid_literal<"1.3.6.1.5.5.7.7.99.2">();
+    static constexpr auto IdSkdGlProvideCert = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.13">();
+    static constexpr auto IdSkdGlManageCert = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.14">();
+    static constexpr auto IdSkdGlKey = asn1kit::oid_literal<"1.2.840.113549.1.9.16.8.15">();
+    static constexpr auto IdCetSkdFailInfo = asn1kit::oid_literal<"1.3.6.1.5.5.7.15.1">();
+};
+
+} // namespace SMIMESymmetricKeyDistribution2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "CryptographicMessageSyntax2009.types.hpp"
+#include "PKIX1Explicit2009.hpp"
+#include "PKIXAttributeCertificate2009.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace SMIMESymmetricKeyDistribution2009 {
+
+struct Certificates {
+    std::optional<::asn1kit::modern::PKIX1Explicit2009::Certificate> pKC{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    std::optional<std::vector<::asn1kit::modern::PKIXAttributeCertificate2009::AttributeCertificate>> aC{};
+    // ASN.1 alias CertificateSet ::= SET OF CertificateChoices.
+    std::optional<std::vector<::asn1kit::modern::CryptographicMessageSyntax2009::CertificateChoices>> certPath{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static Certificates decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        Certificates value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            if (inner.next_is(asn1kit::tag::context(0, true))) {
+                value.pKC = ::asn1kit::modern::PKIX1Explicit2009::Certificate::decode(inner, asn1kit::tag::context(0, true));
+            }
+            if (inner.next_is(asn1kit::tag::context(1, true))) {
+                value.aC = inner.read_sequence_of<::asn1kit::modern::PKIXAttributeCertificate2009::AttributeCertificate>(asn1kit::tag::context(1, true));
+            }
+            if (inner.next_is(asn1kit::tag::context(2, true))) {
+                value.certPath = inner.read_set_of<::asn1kit::modern::CryptographicMessageSyntax2009::CertificateChoices>(asn1kit::tag::context(2, true));
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        if (this->pKC.has_value()) {
+            (*this->pKC).encode(w, asn1kit::tag::context(0, true));
+        }
+        if (this->aC.has_value()) {
+            w.write_sequence_of(asn1kit::tag::context(1, true), (*this->aC));
+        }
+        if (this->certPath.has_value()) {
+            w.write_set_of(asn1kit::tag::context(2, true), (*this->certPath));
+        }
+    }
+};
+
+struct Date {
+    asn1kit::utc_date_time start{};
+    std::optional<asn1kit::utc_date_time> end{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static Date decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        Date value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.start = inner.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
+            if (inner.next_is(asn1kit::tag::generalized_time)) {
+                value.end = inner.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_time(asn1kit::tag::generalized_time, this->start, asn1kit::time_form::generalized, 3);
+        if (this->end.has_value()) {
+            w.write_time(asn1kit::tag::generalized_time, (*this->end), asn1kit::time_form::generalized, 3);
+        }
+    }
+};
+
+struct GLAQueryRequest {
+    // ASN.1 constraint unsupported:  table({ SkdQuerySet }). Not enforced by runtime.
+    asn1kit::oid glaRequestType{};
+    // ASN.1 object set SkdQuerySet (extensible). Membership not enforced by runtime.
+    asn1kit::any glaRequestValue{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static GLAQueryRequest decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        GLAQueryRequest value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.glaRequestType = inner.read_oid(asn1kit::tag::object_identifier);
+            value.glaRequestValue = inner.read_any();
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_object_identifier(asn1kit::tag::object_identifier, this->glaRequestType);
+        w.write_any(this->glaRequestValue);
+    }
+};
+
+struct GLAQueryResponse {
+    // ASN.1 constraint unsupported:  table({ SkdResponseSet }). Not enforced by runtime.
+    asn1kit::oid glaResponseType{};
+    // ASN.1 object set SkdResponseSet (extensible). Membership not enforced by runtime.
+    asn1kit::any glaResponseValue{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static GLAQueryResponse decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        GLAQueryResponse value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.glaResponseType = inner.read_oid(asn1kit::tag::object_identifier);
+            value.glaResponseValue = inner.read_any();
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_object_identifier(asn1kit::tag::object_identifier, this->glaResponseType);
+        w.write_any(this->glaResponseValue);
+    }
+};
+
+struct GLAdministration {
+    static constexpr std::int32_t Unmanaged = 0;
+    static constexpr std::int32_t Managed = 1;
+    static constexpr std::int32_t Closed = 2;
+};
+
+} // namespace SMIMESymmetricKeyDistribution2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKIX1Implicit2009.hpp"
+
+namespace asn1kit {
+namespace modern {
+namespace SMIMESymmetricKeyDistribution2009 {
+
+struct GLDeleteMember {
+    ::asn1kit::modern::PKIX1Implicit2009::GeneralName glName{};
+    ::asn1kit::modern::PKIX1Implicit2009::GeneralName glMemberToDelete{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static GLDeleteMember decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        GLDeleteMember value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.glName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
+            value.glMemberToDelete = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->glName.encode(w);
+        this->glMemberToDelete.encode(w);
+    }
+};
+
+struct GLInfo {
+    ::asn1kit::modern::PKIX1Implicit2009::GeneralName glName{};
+    ::asn1kit::modern::PKIX1Implicit2009::GeneralName glAddress{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static GLInfo decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        GLInfo value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.glName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
+            value.glAddress = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->glName.encode(w);
+        this->glAddress.encode(w);
+    }
+};
+
+struct GLKRefresh {
+    ::asn1kit::modern::PKIX1Implicit2009::GeneralName glName{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    std::vector<Date> dates{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static GLKRefresh decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        GLKRefresh value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.glName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
+            value.dates = inner.read_sequence_of<Date>();
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->glName.encode(w);
+        w.write_sequence_of(asn1kit::tag::sequence, this->dates);
+    }
+};
+
+} // namespace SMIMESymmetricKeyDistribution2009
+} // namespace modern
+} // namespace asn1kit
 
 #include "AlgorithmInformation2009.types.hpp"
 
@@ -33,118 +283,426 @@ namespace asn1kit {
 namespace modern {
 namespace SMIMESymmetricKeyDistribution2009 {
 
-namespace detail {
+struct GLKey {
+    ::asn1kit::modern::PKIX1Implicit2009::GeneralName glName{};
+    ::asn1kit::modern::CryptographicMessageSyntax2009::KEKIdentifier glIdentifier{};
+    // ASN.1 alias RecipientInfos ::= SET OF RecipientInfo. ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    std::vector<::asn1kit::modern::CryptographicMessageSyntax2009::RecipientInfo> glkWrapped{};
+    // ASN.1 alias KeyWrapAlgorithm ::= SMIMECapability. ASN.1 object set SKD-Caps (extensible). Membership not enforced by runtime.
+    ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability glkAlgorithm{};
+    asn1kit::utc_date_time glkNotBefore{};
+    asn1kit::utc_date_time glkNotAfter{};
 
-struct skdQuerySet_glaRequestValue_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"SMIMESymmetricKeyDistribution-2009.skdQuerySet_glaRequestValue">,
-        asn1kit::oid, T>;
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
 
-    inline static const binding_type<asn1kit::null_value> skd_alg_request{SMIMESymmetricKeyDistribution2009Oids::IdCmcGlaSkdAlgRequest};
+    static GLKey decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        GLKey value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.glName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
+            value.glIdentifier = ::asn1kit::modern::CryptographicMessageSyntax2009::KEKIdentifier::decode(inner);
+            value.glkWrapped = inner.read_set_of<::asn1kit::modern::CryptographicMessageSyntax2009::RecipientInfo>();
+            value.glkAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability::decode(inner);
+            value.glkNotBefore = inner.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
+            value.glkNotAfter = inner.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
+        });
+        return value;
+    }
 
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->glName.encode(w);
+        this->glIdentifier.encode(w);
+        w.write_set_of(asn1kit::tag::set, this->glkWrapped);
+        this->glkAlgorithm.encode(w);
+        w.write_time(asn1kit::tag::generalized_time, this->glkNotBefore, asn1kit::time_form::generalized, 3);
+        w.write_time(asn1kit::tag::generalized_time, this->glkNotAfter, asn1kit::time_form::generalized, 3);
+    }
 };
 
-struct skdResponseSet_glaResponseValue_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"SMIMESymmetricKeyDistribution-2009.skdResponseSet_glaResponseValue">,
-        asn1kit::oid, T>;
+} // namespace SMIMESymmetricKeyDistribution2009
+} // namespace modern
+} // namespace asn1kit
 
-    inline static const binding_type<::asn1kit::modern::AlgorithmInformation2009::SMIMECapability> skd_alg_response{SMIMESymmetricKeyDistribution2009Oids::IdCmcGlaSkdAlgResponse};
+#include "CMSAesRsaesOaep2009.hpp"
 
+namespace asn1kit {
+namespace modern {
+namespace SMIMESymmetricKeyDistribution2009 {
+
+struct GLKeyAttributes {
+    bool rekeyControlledByGLO = false;
+    bool recipientsNotMutuallyAware = true;
+    asn1kit::integer duration = asn1kit::integer::from_int64(0ll);
+    asn1kit::integer generationCounter = asn1kit::integer::from_int64(2ll);
+    // ASN.1 alias KeyWrapAlgorithm ::= SMIMECapability. ASN.1 object set SKD-Caps (extensible). Membership not enforced by runtime.
+    ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability requestedAlgorithm = default_requestedAlgorithm();
+
+    static ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability default_requestedAlgorithm() {
+        ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability v{};
+        v.capabilityID = ::asn1kit::modern::CMSAesRsaesOaep2009::CMSAesRsaesOaep2009Oids::IdAes128Wrap;
+        return v;
+    }
+
+    static bool is_default_requestedAlgorithm(const ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability& value) {
+        return !(value.capabilityID != ::asn1kit::modern::CMSAesRsaesOaep2009::CMSAesRsaesOaep2009Oids::IdAes128Wrap) && !value.parameters.has_value();
+    }
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static GLKeyAttributes decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        GLKeyAttributes value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            if (inner.next_is(asn1kit::tag::context(0))) {
+                value.rekeyControlledByGLO = inner.read_boolean(asn1kit::tag::context(0));
+            }
+            else {
+                value.rekeyControlledByGLO = false;
+            }
+            if (inner.next_is(asn1kit::tag::context(1))) {
+                value.recipientsNotMutuallyAware = inner.read_boolean(asn1kit::tag::context(1));
+            }
+            else {
+                value.recipientsNotMutuallyAware = true;
+            }
+            if (inner.next_is(asn1kit::tag::context(2))) {
+                value.duration = inner.read_integer_value(asn1kit::tag::context(2));
+            }
+            else {
+                value.duration = asn1kit::integer::from_int64(0ll);
+            }
+            if (inner.next_is(asn1kit::tag::context(3))) {
+                value.generationCounter = inner.read_integer_value(asn1kit::tag::context(3));
+            }
+            else {
+                value.generationCounter = asn1kit::integer::from_int64(2ll);
+            }
+            if (inner.next_is(asn1kit::tag::context(4, true))) {
+                value.requestedAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability::decode(inner, asn1kit::tag::context(4, true));
+            }
+            else {
+                value.requestedAlgorithm = default_requestedAlgorithm();
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        if (this->rekeyControlledByGLO != false) {
+            w.write_boolean(asn1kit::tag::context(0), this->rekeyControlledByGLO);
+        }
+        if (this->recipientsNotMutuallyAware != true) {
+            w.write_boolean(asn1kit::tag::context(1), this->recipientsNotMutuallyAware);
+        }
+        if (this->duration != asn1kit::integer::from_int64(0ll)) {
+            w.write_integer(asn1kit::tag::context(2), this->duration);
+        }
+        if (this->generationCounter != asn1kit::integer::from_int64(2ll)) {
+            w.write_integer(asn1kit::tag::context(3), this->generationCounter);
+        }
+        if (!is_default_requestedAlgorithm(this->requestedAlgorithm)) {
+            this->requestedAlgorithm.encode(w, asn1kit::tag::context(4, true));
+        }
+    }
 };
 
-} // namespace detail
+struct GLMember {
+    ::asn1kit::modern::PKIX1Implicit2009::GeneralName glMemberName{};
+    std::optional<::asn1kit::modern::PKIX1Implicit2009::GeneralName> glMemberAddress{};
+    std::optional<Certificates> certificates{};
 
-#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
-#error "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY is reserved for generated headers"
-#endif
-#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding) \
-    template <typename... Args> \
-    decltype(auto) Name(Args&&... args) const \
-        requires requires(const base& view, Args&&... values) { \
-            view.template invoke<open_entries::Binding>(std::forward<Args>(values)...); \
-        } \
-    { return view_.template invoke<open_entries::Binding>(std::forward<Args>(args)...); }
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
 
-template <typename Target>
-struct GLAQueryRequestSkdQuerySetOpenView {
-    using open_entries = detail::skdQuerySet_glaRequestValue_open_type_entries;
+    static GLMember decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        GLMember value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.glMemberName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
+            if (inner.next_matches<::asn1kit::modern::PKIX1Implicit2009::GeneralName>()) {
+                value.glMemberAddress = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
+            }
+            if (inner.next_matches<Certificates>()) {
+                value.certificates = Certificates::decode(inner);
+            }
+        });
+        return value;
+    }
 
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit GLAQueryRequestSkdQuerySetOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit GLAQueryRequestSkdQuerySetOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    GLAQueryRequestSkdQuerySetOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(skd_alg_request, skd_alg_request)
-
-private:
-    [[no_unique_address]] base view_;
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->glMemberName.encode(w);
+        if (this->glMemberAddress.has_value()) {
+            (*this->glMemberAddress).encode(w);
+        }
+        if (this->certificates.has_value()) {
+            (*this->certificates).encode(w);
+        }
+    }
 };
 
-template <typename Target>
-struct GLAQueryResponseSkdResponseSetOpenView {
-    using open_entries = detail::skdResponseSet_glaResponseValue_open_type_entries;
+struct GLAddMember {
+    ::asn1kit::modern::PKIX1Implicit2009::GeneralName glName{};
+    GLMember glMember{};
 
-    using access = asn1kit::open_direct_access;
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
 
-    using base = asn1kit::open_function_view<Target, access>;
+    static GLAddMember decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        GLAddMember value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.glName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
+            value.glMember = GLMember::decode(inner);
+        });
+        return value;
+    }
 
-    explicit GLAQueryResponseSkdResponseSetOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit GLAQueryResponseSkdResponseSetOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    GLAQueryResponseSkdResponseSetOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(skd_alg_response, skd_alg_response)
-
-private:
-    [[no_unique_address]] base view_;
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->glName.encode(w);
+        this->glMember.encode(w);
+    }
 };
 
-#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+struct GLManageCert {
+    ::asn1kit::modern::PKIX1Implicit2009::GeneralName glName{};
+    GLMember glMember{};
 
-inline GLAQueryRequestSkdQuerySetOpenView<GLAQueryRequest> GLAQueryRequest::skd_query_set() & {
-    return GLAQueryRequestSkdQuerySetOpenView<GLAQueryRequest>{*this};
-}
-inline GLAQueryRequestSkdQuerySetOpenView<const GLAQueryRequest> GLAQueryRequest::skd_query_set() const & {
-    return GLAQueryRequestSkdQuerySetOpenView<const GLAQueryRequest>{*this};
-}
-inline GLAQueryRequestSkdQuerySetOpenView<asn1kit::open_owned_target<GLAQueryRequest>> GLAQueryRequest::skd_query_set() && {
-    return GLAQueryRequestSkdQuerySetOpenView<asn1kit::open_owned_target<GLAQueryRequest>>{std::move(*this)};
-}
-inline GLAQueryRequestSkdQuerySetOpenView<asn1kit::open_factory_target<GLAQueryRequest>> GLAQueryRequest::make_skd_query_set() {
-    return GLAQueryRequestSkdQuerySetOpenView<asn1kit::open_factory_target<GLAQueryRequest>>{};
-}
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
 
-inline GLAQueryResponseSkdResponseSetOpenView<GLAQueryResponse> GLAQueryResponse::skd_response_set() & {
-    return GLAQueryResponseSkdResponseSetOpenView<GLAQueryResponse>{*this};
-}
-inline GLAQueryResponseSkdResponseSetOpenView<const GLAQueryResponse> GLAQueryResponse::skd_response_set() const & {
-    return GLAQueryResponseSkdResponseSetOpenView<const GLAQueryResponse>{*this};
-}
-inline GLAQueryResponseSkdResponseSetOpenView<asn1kit::open_owned_target<GLAQueryResponse>> GLAQueryResponse::skd_response_set() && {
-    return GLAQueryResponseSkdResponseSetOpenView<asn1kit::open_owned_target<GLAQueryResponse>>{std::move(*this)};
-}
-inline GLAQueryResponseSkdResponseSetOpenView<asn1kit::open_factory_target<GLAQueryResponse>> GLAQueryResponse::make_skd_response_set() {
-    return GLAQueryResponseSkdResponseSetOpenView<asn1kit::open_factory_target<GLAQueryResponse>>{};
-}
+    static GLManageCert decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        GLManageCert value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.glName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
+            value.glMember = GLMember::decode(inner);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->glName.encode(w);
+        this->glMember.encode(w);
+    }
+};
+
+struct GLNewKeyAttributes {
+    std::optional<bool> rekeyControlledByGLO{};
+    std::optional<bool> recipientsNotMutuallyAware{};
+    std::optional<asn1kit::integer> duration{};
+    std::optional<asn1kit::integer> generationCounter{};
+    // ASN.1 alias KeyWrapAlgorithm ::= SMIMECapability. ASN.1 object set SKD-Caps (extensible). Membership not enforced by runtime.
+    std::optional<::asn1kit::modern::AlgorithmInformation2009::SMIMECapability> requestedAlgorithm{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static GLNewKeyAttributes decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        GLNewKeyAttributes value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            if (inner.next_is(asn1kit::tag::context(0))) {
+                value.rekeyControlledByGLO = inner.read_boolean(asn1kit::tag::context(0));
+            }
+            if (inner.next_is(asn1kit::tag::context(1))) {
+                value.recipientsNotMutuallyAware = inner.read_boolean(asn1kit::tag::context(1));
+            }
+            if (inner.next_is(asn1kit::tag::context(2))) {
+                value.duration = inner.read_integer_value(asn1kit::tag::context(2));
+            }
+            if (inner.next_is(asn1kit::tag::context(3))) {
+                value.generationCounter = inner.read_integer_value(asn1kit::tag::context(3));
+            }
+            if (inner.next_is(asn1kit::tag::context(4, true))) {
+                value.requestedAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::SMIMECapability::decode(inner, asn1kit::tag::context(4, true));
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        if (this->rekeyControlledByGLO.has_value()) {
+            w.write_boolean(asn1kit::tag::context(0), (*this->rekeyControlledByGLO));
+        }
+        if (this->recipientsNotMutuallyAware.has_value()) {
+            w.write_boolean(asn1kit::tag::context(1), (*this->recipientsNotMutuallyAware));
+        }
+        if (this->duration.has_value()) {
+            w.write_integer(asn1kit::tag::context(2), (*this->duration));
+        }
+        if (this->generationCounter.has_value()) {
+            w.write_integer(asn1kit::tag::context(3), (*this->generationCounter));
+        }
+        if (this->requestedAlgorithm.has_value()) {
+            (*this->requestedAlgorithm).encode(w, asn1kit::tag::context(4, true));
+        }
+    }
+};
+
+struct GLOwnerInfo {
+    ::asn1kit::modern::PKIX1Implicit2009::GeneralName glOwnerName{};
+    ::asn1kit::modern::PKIX1Implicit2009::GeneralName glOwnerAddress{};
+    std::optional<Certificates> certificates{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static GLOwnerInfo decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        GLOwnerInfo value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.glOwnerName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
+            value.glOwnerAddress = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
+            if (inner.next_matches<Certificates>()) {
+                value.certificates = Certificates::decode(inner);
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->glOwnerName.encode(w);
+        this->glOwnerAddress.encode(w);
+        if (this->certificates.has_value()) {
+            (*this->certificates).encode(w);
+        }
+    }
+};
+
+struct GLOwnerAdministration {
+    ::asn1kit::modern::PKIX1Implicit2009::GeneralName glName{};
+    GLOwnerInfo glOwnerInfo{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static GLOwnerAdministration decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        GLOwnerAdministration value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.glName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
+            value.glOwnerInfo = GLOwnerInfo::decode(inner);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->glName.encode(w);
+        this->glOwnerInfo.encode(w);
+    }
+};
+
+struct GLRekey {
+    ::asn1kit::modern::PKIX1Implicit2009::GeneralName glName{};
+    std::optional<std::int32_t> glAdministration{};
+    std::optional<GLNewKeyAttributes> glNewKeyAttributes{};
+    std::optional<bool> glRekeyAllGLKeys{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static GLRekey decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        GLRekey value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.glName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
+            if (inner.next_is(asn1kit::tag::integer)) {
+                value.glAdministration = inner.read_int32(asn1kit::tag::integer);
+            }
+            if (inner.next_matches<GLNewKeyAttributes>()) {
+                value.glNewKeyAttributes = GLNewKeyAttributes::decode(inner);
+            }
+            if (inner.next_is(asn1kit::tag::boolean)) {
+                value.glRekeyAllGLKeys = inner.read_boolean(asn1kit::tag::boolean);
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->glName.encode(w);
+        if (this->glAdministration.has_value()) {
+            w.write_integer(asn1kit::tag::integer, (*this->glAdministration));
+        }
+        if (this->glNewKeyAttributes.has_value()) {
+            (*this->glNewKeyAttributes).encode(w);
+        }
+        if (this->glRekeyAllGLKeys.has_value()) {
+            w.write_boolean(asn1kit::tag::boolean, (*this->glRekeyAllGLKeys));
+        }
+    }
+};
+
+struct GLUseKEK {
+    GLInfo glInfo{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    std::vector<GLOwnerInfo> glOwnerInfo{};
+    std::int32_t glAdministration = 1;
+    std::optional<GLKeyAttributes> glKeyAttributes{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static GLUseKEK decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        GLUseKEK value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.glInfo = GLInfo::decode(inner);
+            value.glOwnerInfo = inner.read_sequence_of<GLOwnerInfo>();
+            if (inner.next_is(asn1kit::tag::integer)) {
+                value.glAdministration = inner.read_int32(asn1kit::tag::integer);
+            }
+            else {
+                value.glAdministration = 1;
+            }
+            if (inner.next_matches<GLKeyAttributes>()) {
+                value.glKeyAttributes = GLKeyAttributes::decode(inner);
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->glInfo.encode(w);
+        w.write_sequence_of(asn1kit::tag::sequence, this->glOwnerInfo);
+        if (this->glAdministration != 1) {
+            w.write_integer(asn1kit::tag::integer, this->glAdministration);
+        }
+        if (this->glKeyAttributes.has_value()) {
+            (*this->glKeyAttributes).encode(w);
+        }
+    }
+};
+
+struct SKDFailInfo {
+    static constexpr std::int32_t Unspecified = 0;
+    static constexpr std::int32_t ClosedGL = 1;
+    static constexpr std::int32_t UnsupportedDuration = 2;
+    static constexpr std::int32_t NoGLACertificate = 3;
+    static constexpr std::int32_t InvalidCert = 4;
+    static constexpr std::int32_t UnsupportedAlgorithm = 5;
+    static constexpr std::int32_t NoGLONameMatch = 6;
+    static constexpr std::int32_t InvalidGLName = 7;
+    static constexpr std::int32_t NameAlreadyInUse = 8;
+    static constexpr std::int32_t NoSpam = 9;
+    static constexpr std::int32_t DeniedAccess = 10;
+    static constexpr std::int32_t AlreadyAMember = 11;
+    static constexpr std::int32_t NotAMember = 12;
+    static constexpr std::int32_t AlreadyAnOwner = 13;
+    static constexpr std::int32_t NotAnOwner = 14;
+};
 
 } // namespace SMIMESymmetricKeyDistribution2009
 } // namespace modern

@@ -107,6 +107,44 @@ public sealed class IrOptionsTests
     }
 
     [Fact]
+    public void OpenTypeApi_DefaultsTrue_AndAcceptsBoolOrString()
+    {
+        Assert.True(IrOptions.IsOpenTypeApiEnabled(null));
+        Assert.False(IrOptions.IsOpenTypeApiEnabled(IrOptions.SetOpenTypeApi(null, false)));
+        Assert.True(IrOptions.IsOpenTypeApiEnabled(IrOptions.SetOpenTypeApi(null, true)));
+        Assert.False(IrOptions.IsOpenTypeApiEnabled(
+            IrOptions.Set(null, "openTypeApi", JsonValue.Create("false")!)));
+        Assert.True(IrOptions.IsOpenTypeApiEnabled(
+            IrOptions.Set(null, "openTypeApi", JsonValue.Create("true")!)));
+    }
+
+    [Fact]
+    public void OpenTypeApi_RoundTripsWithSiblingAndUnknownOptions()
+    {
+        var options = IrOptions.SetOpenTypeApi(null, false);
+        options = IrOptions.Set(options, "future.setting", JsonValue.Create(42)!);
+        options = IrOptions.SetCSharp(options, "typeName", "Renamed");
+        var document = new IrDocument
+        {
+            Modules =
+            {
+                new IrModule
+                {
+                    Name = "M",
+                    Types = { new IrTypeDef { Name = "T", Type = new BooleanType(), Options = options } }
+                }
+            }
+        };
+
+        var copy = IrSerializer.FromJson(IrSerializer.ToJson(document));
+        var actual = copy.Modules[0].Types[0].Options!;
+
+        Assert.False(IrOptions.IsOpenTypeApiEnabled(actual));
+        Assert.Equal("Renamed", IrOptions.CSharpTypeName(actual));
+        Assert.Equal(42, actual["future"]!["setting"]!.GetValue<int>());
+    }
+
+    [Fact]
     public void CSharpValueType_AcceptsBoolOrString()
     {
         Assert.False(IrOptions.IsCSharpValueType(null));

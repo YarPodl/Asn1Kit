@@ -94,6 +94,7 @@ public sealed partial class CSharpBackend
     private void CollectOpenTypeUseNested(IrDocument document, IrModule module, string owner, TypeExpr type,
         Queue<(string Name, TypeExpr Type)> queue)
     {
+        if (!OpenTypeApiEnabled(module, owner)) return;
         IReadOnlyList<IrComponent>? fields = type switch
         {
             SequenceType sequence => sequence.Components,
@@ -120,6 +121,7 @@ public sealed partial class CSharpBackend
         _openTypeUsePlans.Clear();
         foreach (var (owner, type) in types)
         {
+            if (!OpenTypeApiEnabled(module, owner)) continue;
             var fields = OpenContainerFields(type);
             if (fields is null) continue;
             var methods = new HashSet<string>(StringComparer.Ordinal);

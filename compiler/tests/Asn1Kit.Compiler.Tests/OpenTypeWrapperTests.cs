@@ -124,6 +124,56 @@ public sealed class OpenTypeBindingTests
     }
 
     [Fact]
+    public void OpenTypeApiFalseKeepsRawClassAndSuppressesTypedApi()
+    {
+        var document = new Asn1Compiler().CompileText(Source);
+        foreach (var name in new[] { "Extension", "Attribute", "Holder" })
+        {
+            var definition = document.Modules[0].Types.Single(t => t.Name == name);
+            definition.Options = IrOptions.SetOpenTypeApi(definition.Options, false);
+        }
+
+        var generated = Assert.Single(new CSharpBackend().Generate(document)).Contents;
+
+        Assert.Contains("public sealed class Extension", generated);
+        Assert.Contains("public ReadOnlyMemory<byte> Payload", generated);
+        Assert.Contains("public static Extension Decode", generated);
+        Assert.DoesNotContain("Binding<", generated);
+        Assert.DoesNotContain("Bindings", generated);
+        Assert.DoesNotContain("OpenTypeExtensions", generated);
+    }
+
+    [Fact]
+    public void OpenTypeApiFlagsCarrierAndContextOwnerIndependently()
+    {
+        static void NestExtensions(IrDocument document)
+        {
+            var holder = (SequenceType)document.Modules[0].Types.Single(t => t.Name == "Holder").Type;
+            var extensions = holder.Components.Single(c => c.Name == "extensions");
+            var items = Assert.IsType<SequenceOfType>(extensions.Type);
+            extensions.Type = new SequenceOfType { Element = new SetOfType { Element = items.Element } };
+        }
+
+        var contextOnly = new Asn1Compiler().CompileText(Source);
+        NestExtensions(contextOnly);
+        contextOnly.Modules[0].Types.Single(t => t.Name == "Extension").Options =
+            IrOptions.SetOpenTypeApi(null, false);
+        var contextSource = Assert.Single(new CSharpBackend().Generate(contextOnly)).Contents;
+        Assert.DoesNotContain("TryDecodePayload<T>(this Extension", contextSource);
+        Assert.Contains("TryGetExtensions<T>(this Holder", contextSource);
+        Assert.Contains("public static class NumbersPayloadBindings", contextSource);
+
+        var carrierOnly = new Asn1Compiler().CompileText(Source);
+        NestExtensions(carrierOnly);
+        carrierOnly.Modules[0].Types.Single(t => t.Name == "Holder").Options =
+            IrOptions.SetOpenTypeApi(null, false);
+        var carrierSource = Assert.Single(new CSharpBackend().Generate(carrierOnly)).Contents;
+        Assert.Contains("TryDecodePayload<T>(this Extension", carrierSource);
+        Assert.DoesNotContain("TryGetExtensions<T>(this Holder", carrierSource);
+        Assert.Contains("public static class NumbersPayloadBindings", carrierSource);
+    }
+
+    [Fact]
     public void InstanceDescriptorsSupportCustomIntegerKeys()
     {
         const string source = @"M DEFINITIONS ::= BEGIN

@@ -23,6 +23,7 @@ public sealed partial class CSharpBackend
         OpenContainer Container, IrComponent Field, OpenPayload Payload, AnyType Any,
         IrOpenTypeSelector Selector, IReadOnlyList<OpenContainer> Parents,
         IReadOnlyList<OpenAccess> Route, bool SourceValueType, List<OpenWrapper> Wrappers,
+        bool CarrierApiEnabled, bool ContextApiEnabled,
         string? Table, IReadOnlyList<string> Path)
     {
         public string DecodeMethod { get; set; } = "";
@@ -47,6 +48,7 @@ public sealed partial class CSharpBackend
         public OpenWrapperSite Representative { get; set; }
         public string BindingStem { get; set; } = "";
         public bool HasArrayGet { get; set; }
+        public bool HasCarrierApi { get; set; }
         public bool Emitted { get; set; }
     }
 
@@ -98,6 +100,22 @@ public sealed partial class CSharpBackend
     }
 
     private ModuleOpenTypeCodecCache? _openTypeCodecCache;
+
+    private static bool OpenTypeApiEnabled(IrModule module, string owner)
+    {
+        var localOwner = owner.Split('.').Last();
+        var definition = module.Types
+            .Where(static type => IrOptions.ShouldGenerate(type.Options))
+            .Select(type => new
+            {
+                Def = type,
+                Name = IrOptions.CSharpTypeName(type.Options) ?? SanitizeIdentifier(type.Name)
+            })
+            .Where(item => localOwner.StartsWith(item.Name, StringComparison.Ordinal))
+            .OrderByDescending(static item => item.Name.Length)
+            .FirstOrDefault();
+        return definition is null || IrOptions.IsOpenTypeApiEnabled(definition.Def.Options);
+    }
 
     private OpenWrapperPlan PlanOpenTypeWrappers(IrDocument document, IrModule module,
         IReadOnlyList<(string Name, TypeExpr Type)> types, HashSet<string> emitted)
@@ -403,9 +421,13 @@ public sealed partial class CSharpBackend
             IReadOnlyList<IrOpenTypeBinding> bindings, string? table, IReadOnlyList<string> tablePath,
             IrModule bindingModule)
         {
+            var carrierApiEnabled = OpenTypeApiEnabled(container.Module, container.CsType);
+            var contextApiEnabled = OpenTypeApiEnabled(bindingModule, sourceOwner ?? context);
+            if (!carrierApiEnabled && !contextApiEnabled) return;
             var site = new OpenWrapperSite(context, sourceOwner, source, container, openField, payload,
                 any, selector, ancestors.ToList(), route.ToList(), sourceValueType,
-                new List<OpenWrapper>(), table, tablePath.ToList());
+                new List<OpenWrapper>(), carrierApiEnabled, contextApiEnabled,
+                table, tablePath.ToList());
             foreach (var binding in bindings)
             {
                 var qualified = new IrOpenTypeBinding
@@ -469,10 +491,13 @@ public sealed partial class CSharpBackend
         {
             var identity = OpenCarrierShapeIdentity(site);
             var hasArray = site.Route.Count > 0 && site.Route.Any(static step => step.Many) &&
-                           site.Selector.Levels == 0;
+                           site.Selector.Levels == 0 && site.CarrierApiEnabled;
             if (_carrierShapes.TryGetValue(identity, out var existing))
             {
                 existing.HasArrayGet |= hasArray;
+                existing.HasCarrierApi |= site.CarrierApiEnabled;
+                if (site.CarrierApiEnabled && !existing.Representative.CarrierApiEnabled)
+                    existing.Representative = site;
                 if (hasArray && !existing.Representative.Route.Any(static step => step.Many))
                 {
                     site.BindingStem = existing.BindingStem.Length > 0
@@ -485,7 +510,11 @@ public sealed partial class CSharpBackend
                 }
                 continue;
             }
-            _carrierShapes.Add(identity, new OpenCarrierShape(identity, site) { HasArrayGet = hasArray });
+            _carrierShapes.Add(identity, new OpenCarrierShape(identity, site)
+            {
+                HasArrayGet = hasArray,
+                HasCarrierApi = site.CarrierApiEnabled
+            });
         }
     }
 
@@ -592,6 +621,7 @@ public sealed partial class CSharpBackend
             var methods = new HashSet<string>(StringComparer.Ordinal);
             foreach (var site in group)
             {
+                if (!site.ContextApiEnabled) continue;
                 if (site.Owner is null || site.Source is null) continue;
                 if (!IsNestedOpenOwnerRoute(site)) continue;
                 var method = "TryGet" + PropertyName(site.Source, site.Owner).TrimStart('@');
@@ -788,23 +818,27 @@ public sealed partial class CSharpBackend
             EmitOpenDecodeBindingDescriptor(sb, document, module, site);
         }
 
-        if (carrierShapes.Count > 0)
+        var carrierApiShapes = carrierShapes.Where(static shape => shape.HasCarrierApi).ToList();
+        if (carrierApiShapes.Count > 0)
         {
             sb.AppendLine($"public static class {SanitizeIdentifier(module.Name)}OpenTypeExtensions");
             sb.AppendLine("{");
-            foreach (var shape in carrierShapes)
+            foreach (var shape in carrierApiShapes)
             {
                 var site = shape.Representative;
                 EmitOpenWrapperDecodeMethod(sb, document, module, site, site.DecodeMethod);
                 if (shape.HasArrayGet)
                     EmitOpenArrayGetMethod(sb, document, module, site);
-                shape.Emitted = true;
             }
             sb.AppendLine("}");
             sb.AppendLine();
         }
 
-        foreach (var group in plan.Sites.Where(static site => site.GetMethod is not null)
+        foreach (var shape in carrierShapes)
+            shape.Emitted = true;
+
+        foreach (var group in plan.Sites.Where(site => site.GetMethod is not null &&
+                                                    OpenTypeApiEnabled(module, site.Owner ?? site.Context))
                      .GroupBy(s => s.Owner ?? s.Context))
         {
             sb.AppendLine($"public static class {group.Key}OpenTypeExtensions");
@@ -849,7 +883,7 @@ public sealed partial class CSharpBackend
         sb.AppendLine("        Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));");
         sb.AppendLine("        Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));");
         sb.AppendLine("    }");
-        if (site.Selector.Levels == 0)
+        if (site.Selector.Levels == 0 && site.CarrierApiEnabled)
             EmitOpenBindingCreateMethods(sb, site, containerType, setMethod, extensionsClass);
         sb.AppendLine("}");
         sb.AppendLine();

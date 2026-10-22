@@ -25,120 +25,643 @@
 #include <variant>
 #include <vector>
 
-#include "PKIXX400Address2009.types.hpp"
-
 namespace asn1kit {
 namespace modern {
 namespace PKIXX400Address2009 {
 
-namespace detail {
-
-struct supportedExtensionAttributes_extension_attribute_value_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"PKIX-X400Address-2009.supportedExtensionAttributes_extension_attribute_value">,
-        std::int32_t, T>;
-
-    inline static const binding_type<asn1kit::asn_string<asn1kit::string_form::printable>> ea_common_name{std::int32_t{1}};
-    inline static const binding_type<asn1kit::asn_string<asn1kit::string_form::teletex>> ea_teletex_common_name{std::int32_t{2}};
-    inline static const binding_type<asn1kit::asn_string<asn1kit::string_form::teletex>> ea_teletex_organization_name{std::int32_t{3}};
-    inline static const binding_type<ExtensionAttribute_EaTeletexPersonalName> ea_teletex_personal_name{std::int32_t{4}};
-    inline static const binding_type<std::vector<std::string>> ea_teletex_organizational_unit_names{std::int32_t{5}};
-    inline static const binding_type<asn1kit::asn_string<asn1kit::string_form::printable>> ea_p_ds_name{std::int32_t{7}};
-    inline static const binding_type<ExtensionAttribute_EaPhysicalDeliveryCountryName> ea_physical_delivery_country_name{std::int32_t{8}};
-    inline static const binding_type<ExtensionAttribute_EaPostalCode> ea_postal_code{std::int32_t{9}};
-    inline static const binding_type<PDSParameter> ea_physical_delivery_office_name{std::int32_t{10}};
-    inline static const binding_type<PDSParameter> ea_physical_delivery_office_number{std::int32_t{11}};
-    inline static const binding_type<PDSParameter> ea_extension_or_address_components{std::int32_t{12}};
-    inline static const binding_type<PDSParameter> ea_physical_delivery_personal_name{std::int32_t{13}};
-    inline static const binding_type<PDSParameter> ea_physical_delivery_organization_name{std::int32_t{14}};
-    inline static const binding_type<PDSParameter> ea_extension_physical_delivery_address_components{std::int32_t{15}};
-    inline static const binding_type<ExtensionAttribute_EaUnformattedPostalAddress> ea_unformatted_postal_address{std::int32_t{16}};
-    inline static const binding_type<PDSParameter> ea_street_address{std::int32_t{17}};
-    inline static const binding_type<PDSParameter> ea_post_office_box_address{std::int32_t{18}};
-    inline static const binding_type<PDSParameter> ea_poste_restante_address{std::int32_t{19}};
-    inline static const binding_type<PDSParameter> ea_unique_postal_name{std::int32_t{20}};
-    inline static const binding_type<PDSParameter> ea_local_postal_attributes{std::int32_t{21}};
-    inline static const binding_type<ExtensionAttribute_EaExtendedNetworkAddress> ea_extended_network_address{std::int32_t{22}};
-    inline static const binding_type<std::int32_t> ea_terminal_type{std::int32_t{23}};
-    inline static const binding_type<std::vector<TeletexDomainDefinedAttribute>> ea_teletex_domain_defined_attributes{std::int32_t{6}};
-
+enum class AdministrationDomainName_kind {
+    numeric,
+    printable
 };
 
-} // namespace detail
+struct AdministrationDomainName {
+    AdministrationDomainName_kind kind{};
+    std::string value{};
 
-#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
-#error "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY is reserved for generated headers"
-#endif
-#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding) \
-    template <typename... Args> \
-    decltype(auto) Name(Args&&... args) const \
-        requires requires(const base& view, Args&&... values) { \
-            view.template invoke<open_entries::Binding>(std::forward<Args>(values)...); \
-        } \
-    { return view_.template invoke<open_entries::Binding>(std::forward<Args>(args)...); }
+    // ASN.1 SIZE (0..16). Not enforced by runtime.
+    static AdministrationDomainName from_numeric(std::string v) {
+        AdministrationDomainName result{};
+        result.kind = AdministrationDomainName_kind::numeric;
+        result.value = std::move(v);
+        return result;
+    }
 
-template <typename Target>
-struct ExtensionAttributeSupportedExtensionAttributesOpenView {
-    using open_entries = detail::supportedExtensionAttributes_extension_attribute_value_open_type_entries;
+    // ASN.1 SIZE (0..16). Not enforced by runtime.
+    static AdministrationDomainName from_printable(std::string v) {
+        AdministrationDomainName result{};
+        result.kind = AdministrationDomainName_kind::printable;
+        result.value = std::move(v);
+        return result;
+    }
 
-    using access = asn1kit::open_direct_access;
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::application(2, true));
+    }
 
-    using base = asn1kit::open_function_view<Target, access>;
+    static AdministrationDomainName decode_content(asn1kit::reader& r) {
+        asn1kit::tag peeked;
+        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
+        if (peeked.matches_ignore_constructed(asn1kit::tag::numeric_string)) {
+            std::string alt{};
+            alt = r.read_string(asn1kit::tag::numeric_string, asn1kit::string_form::numeric);
+            return from_numeric(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::printable_string)) {
+            std::string alt{};
+            alt = r.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
+            return from_printable(std::move(alt));
+        } else {
+            throw asn1kit::exception("Unknown CHOICE alternative.");
+        }
+    }
 
-    explicit ExtensionAttributeSupportedExtensionAttributesOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
+    static AdministrationDomainName decode(asn1kit::reader& r) {
+        return decode(r, asn1kit::tag::application(2, true));
+    }
 
-    explicit ExtensionAttributeSupportedExtensionAttributesOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
+    static AdministrationDomainName decode(asn1kit::reader& r, const asn1kit::tag& t) {
+        AdministrationDomainName value{};
+        r.with_explicit(t, [&](asn1kit::reader& inner) {
+            value = decode_content(inner);
+        });
+        return value;
+    }
 
-    ExtensionAttributeSupportedExtensionAttributesOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
+    void encode_content(asn1kit::writer& w) const {
+        switch (kind) {
+        case AdministrationDomainName_kind::numeric:
+            {
+                const auto& alt = value;
+                w.write_string(asn1kit::tag::numeric_string, alt, asn1kit::string_form::numeric);
+                break;
+            }
+        case AdministrationDomainName_kind::printable:
+            {
+                const auto& alt = value;
+                w.write_string(asn1kit::tag::printable_string, alt, asn1kit::string_form::printable);
+                break;
+            }
+        }
+    }
 
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ea_common_name, ea_common_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ea_teletex_common_name, ea_teletex_common_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ea_teletex_organization_name, ea_teletex_organization_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ea_teletex_personal_name, ea_teletex_personal_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ea_teletex_organizational_unit_names, ea_teletex_organizational_unit_names)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ea_p_ds_name, ea_p_ds_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ea_physical_delivery_country_name, ea_physical_delivery_country_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ea_postal_code, ea_postal_code)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ea_physical_delivery_office_name, ea_physical_delivery_office_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ea_physical_delivery_office_number, ea_physical_delivery_office_number)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ea_extension_or_address_components, ea_extension_or_address_components)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ea_physical_delivery_personal_name, ea_physical_delivery_personal_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ea_physical_delivery_organization_name, ea_physical_delivery_organization_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ea_extension_physical_delivery_address_components, ea_extension_physical_delivery_address_components)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ea_unformatted_postal_address, ea_unformatted_postal_address)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ea_street_address, ea_street_address)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ea_post_office_box_address, ea_post_office_box_address)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ea_poste_restante_address, ea_poste_restante_address)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ea_unique_postal_name, ea_unique_postal_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ea_local_postal_attributes, ea_local_postal_attributes)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ea_extended_network_address, ea_extended_network_address)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ea_terminal_type, ea_terminal_type)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ea_teletex_domain_defined_attributes, ea_teletex_domain_defined_attributes)
+    void encode(asn1kit::writer& w) const {
+        encode(w, asn1kit::tag::application(2, true));
+    }
 
-private:
-    [[no_unique_address]] base view_;
+    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
+        auto scope = w.enter_explicit(t);
+        encode_content(w);
+    }
 };
 
-#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+struct BuiltInDomainDefinedAttribute {
+    // ASN.1 SIZE (1..8). Not enforced by runtime.
+    std::string type{};
+    // ASN.1 SIZE (1..128). Not enforced by runtime.
+    std::string value_{};
 
-inline ExtensionAttributeSupportedExtensionAttributesOpenView<ExtensionAttribute> ExtensionAttribute::supported_extension_attributes() & {
-    return ExtensionAttributeSupportedExtensionAttributesOpenView<ExtensionAttribute>{*this};
-}
-inline ExtensionAttributeSupportedExtensionAttributesOpenView<const ExtensionAttribute> ExtensionAttribute::supported_extension_attributes() const & {
-    return ExtensionAttributeSupportedExtensionAttributesOpenView<const ExtensionAttribute>{*this};
-}
-inline ExtensionAttributeSupportedExtensionAttributesOpenView<asn1kit::open_owned_target<ExtensionAttribute>> ExtensionAttribute::supported_extension_attributes() && {
-    return ExtensionAttributeSupportedExtensionAttributesOpenView<asn1kit::open_owned_target<ExtensionAttribute>>{std::move(*this)};
-}
-inline ExtensionAttributeSupportedExtensionAttributesOpenView<asn1kit::open_factory_target<ExtensionAttribute>> ExtensionAttribute::make_supported_extension_attributes() {
-    return ExtensionAttributeSupportedExtensionAttributesOpenView<asn1kit::open_factory_target<ExtensionAttribute>>{};
-}
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static BuiltInDomainDefinedAttribute decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        BuiltInDomainDefinedAttribute value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.type = inner.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
+            value.value_ = inner.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_string(asn1kit::tag::printable_string, this->type, asn1kit::string_form::printable);
+        w.write_string(asn1kit::tag::printable_string, this->value_, asn1kit::string_form::printable);
+    }
+};
+
+enum class CountryName_kind {
+    x121_dcc_code,
+    iso_3166_alpha2_code
+};
+
+struct CountryName {
+    CountryName_kind kind{};
+    std::string value{};
+
+    // ASN.1 SIZE (3). Not enforced by runtime.
+    static CountryName from_x121_dcc_code(std::string v) {
+        CountryName result{};
+        result.kind = CountryName_kind::x121_dcc_code;
+        result.value = std::move(v);
+        return result;
+    }
+
+    // ASN.1 SIZE (2). Not enforced by runtime.
+    static CountryName from_iso_3166_alpha2_code(std::string v) {
+        CountryName result{};
+        result.kind = CountryName_kind::iso_3166_alpha2_code;
+        result.value = std::move(v);
+        return result;
+    }
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::application(1, true));
+    }
+
+    static CountryName decode_content(asn1kit::reader& r) {
+        asn1kit::tag peeked;
+        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
+        if (peeked.matches_ignore_constructed(asn1kit::tag::numeric_string)) {
+            std::string alt{};
+            alt = r.read_string(asn1kit::tag::numeric_string, asn1kit::string_form::numeric);
+            return from_x121_dcc_code(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::printable_string)) {
+            std::string alt{};
+            alt = r.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
+            return from_iso_3166_alpha2_code(std::move(alt));
+        } else {
+            throw asn1kit::exception("Unknown CHOICE alternative.");
+        }
+    }
+
+    static CountryName decode(asn1kit::reader& r) {
+        return decode(r, asn1kit::tag::application(1, true));
+    }
+
+    static CountryName decode(asn1kit::reader& r, const asn1kit::tag& t) {
+        CountryName value{};
+        r.with_explicit(t, [&](asn1kit::reader& inner) {
+            value = decode_content(inner);
+        });
+        return value;
+    }
+
+    void encode_content(asn1kit::writer& w) const {
+        switch (kind) {
+        case CountryName_kind::x121_dcc_code:
+            {
+                const auto& alt = value;
+                w.write_string(asn1kit::tag::numeric_string, alt, asn1kit::string_form::numeric);
+                break;
+            }
+        case CountryName_kind::iso_3166_alpha2_code:
+            {
+                const auto& alt = value;
+                w.write_string(asn1kit::tag::printable_string, alt, asn1kit::string_form::printable);
+                break;
+            }
+        }
+    }
+
+    void encode(asn1kit::writer& w) const {
+        encode(w, asn1kit::tag::application(1, true));
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
+        auto scope = w.enter_explicit(t);
+        encode_content(w);
+    }
+};
+
+struct ExtensionAttribute {
+    // ASN.1 value range (0..256). ASN.1 constraint unsupported:  table({ SupportedExtensionAttributes }). Not enforced by runtime.
+    std::int32_t extension_attribute_type{};
+    // ASN.1 object set SupportedExtensionAttributes (extensible). Membership not enforced by runtime.
+    asn1kit::any extension_attribute_value{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static ExtensionAttribute decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        ExtensionAttribute value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.extension_attribute_type = inner.read_int32(asn1kit::tag::context(0));
+            asn1kit::any tmp_extension_attribute_value{};
+            inner.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
+                tmp_extension_attribute_value = scoped.read_any();
+            });
+            value.extension_attribute_value = std::move(tmp_extension_attribute_value);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_integer(asn1kit::tag::context(0), this->extension_attribute_type);
+        {
+            auto explicit_scope = w.enter_explicit(asn1kit::tag::context(1, true));
+            w.write_any(this->extension_attribute_value);
+        }
+    }
+};
+
+struct PDSParameter {
+    // ASN.1 SIZE (1..30). Not enforced by runtime.
+    std::optional<std::string> printable_string{};
+    // ASN.1 SIZE (1..30). Not enforced by runtime.
+    std::optional<std::string> teletex_string{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::set);
+    }
+
+    static PDSParameter decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::set) {
+        PDSParameter value{};
+        r.with_set(t, [&](asn1kit::reader& inner) {
+            while (!inner.eof()) {
+                asn1kit::tag peeked;
+                if (!inner.try_peek_tag(peeked)) {
+                    break;
+                }
+                if (peeked.matches_ignore_constructed(asn1kit::tag::printable_string)) {
+                    if (value.printable_string.has_value()) throw asn1kit::exception("Duplicate SET component 'printable-string'.");
+                    value.printable_string = inner.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
+                } else if (peeked.matches_ignore_constructed(asn1kit::tag::teletex_string)) {
+                    if (value.teletex_string.has_value()) throw asn1kit::exception("Duplicate SET component 'teletex-string'.");
+                    value.teletex_string = inner.read_string(asn1kit::tag::teletex_string, asn1kit::string_form::teletex);
+                } else {
+                    throw asn1kit::exception("Unknown SET component.");
+                }
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::set) const {
+        auto scope = w.enter_set(t);
+        if (this->printable_string.has_value()) {
+            w.write_string(asn1kit::tag::printable_string, (*this->printable_string), asn1kit::string_form::printable);
+        }
+        if (this->teletex_string.has_value()) {
+            w.write_string(asn1kit::tag::teletex_string, (*this->teletex_string), asn1kit::string_form::teletex);
+        }
+    }
+};
+
+struct PersonalName {
+    // ASN.1 SIZE (1..40). Not enforced by runtime.
+    std::string surname{};
+    // ASN.1 SIZE (1..16). Not enforced by runtime.
+    std::optional<std::string> given_name{};
+    // ASN.1 SIZE (1..5). Not enforced by runtime.
+    std::optional<std::string> initials{};
+    // ASN.1 SIZE (1..3). Not enforced by runtime.
+    std::optional<std::string> generation_qualifier{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::set);
+    }
+
+    static PersonalName decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::set) {
+        PersonalName value{};
+        r.with_set(t, [&](asn1kit::reader& inner) {
+            bool seen_surname = false;
+            while (!inner.eof()) {
+                asn1kit::tag peeked;
+                if (!inner.try_peek_tag(peeked)) {
+                    break;
+                }
+                if (peeked.matches_ignore_constructed(asn1kit::tag::context(0))) {
+                    if (seen_surname) throw asn1kit::exception("Duplicate SET component 'surname'.");
+                    seen_surname = true;
+                    value.surname = inner.read_string(asn1kit::tag::context(0), asn1kit::string_form::printable);
+                } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1))) {
+                    if (value.given_name.has_value()) throw asn1kit::exception("Duplicate SET component 'given-name'.");
+                    value.given_name = inner.read_string(asn1kit::tag::context(1), asn1kit::string_form::printable);
+                } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2))) {
+                    if (value.initials.has_value()) throw asn1kit::exception("Duplicate SET component 'initials'.");
+                    value.initials = inner.read_string(asn1kit::tag::context(2), asn1kit::string_form::printable);
+                } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(3))) {
+                    if (value.generation_qualifier.has_value()) throw asn1kit::exception("Duplicate SET component 'generation-qualifier'.");
+                    value.generation_qualifier = inner.read_string(asn1kit::tag::context(3), asn1kit::string_form::printable);
+                } else {
+                    throw asn1kit::exception("Unknown SET component.");
+                }
+            }
+            if (!seen_surname) throw asn1kit::exception("Missing SET component 'surname'.");
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::set) const {
+        auto scope = w.enter_set(t);
+        w.write_string(asn1kit::tag::context(0), this->surname, asn1kit::string_form::printable);
+        if (this->given_name.has_value()) {
+            w.write_string(asn1kit::tag::context(1), (*this->given_name), asn1kit::string_form::printable);
+        }
+        if (this->initials.has_value()) {
+            w.write_string(asn1kit::tag::context(2), (*this->initials), asn1kit::string_form::printable);
+        }
+        if (this->generation_qualifier.has_value()) {
+            w.write_string(asn1kit::tag::context(3), (*this->generation_qualifier), asn1kit::string_form::printable);
+        }
+    }
+};
+
+struct PresentationAddress {
+    std::optional<asn1kit::bytes> pSelector{};
+    std::optional<asn1kit::bytes> sSelector{};
+    std::optional<asn1kit::bytes> tSelector{};
+    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    std::vector<asn1kit::bytes> nAddresses{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static PresentationAddress decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        PresentationAddress value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            if (inner.next_is(asn1kit::tag::context(0, true))) {
+                asn1kit::bytes tmp_pSelector{};
+                inner.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
+                    tmp_pSelector = scoped.read_octet_string(asn1kit::tag::octet_string);
+                });
+                value.pSelector = std::move(tmp_pSelector);
+            }
+            if (inner.next_is(asn1kit::tag::context(1, true))) {
+                asn1kit::bytes tmp_sSelector{};
+                inner.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
+                    tmp_sSelector = scoped.read_octet_string(asn1kit::tag::octet_string);
+                });
+                value.sSelector = std::move(tmp_sSelector);
+            }
+            if (inner.next_is(asn1kit::tag::context(2, true))) {
+                asn1kit::bytes tmp_tSelector{};
+                inner.with_explicit(asn1kit::tag::context(2, true), [&](asn1kit::reader& scoped) {
+                    tmp_tSelector = scoped.read_octet_string(asn1kit::tag::octet_string);
+                });
+                value.tSelector = std::move(tmp_tSelector);
+            }
+            std::vector<asn1kit::bytes> tmp_nAddresses{};
+            inner.with_explicit(asn1kit::tag::context(3, true), [&](asn1kit::reader& scoped) {
+                tmp_nAddresses = scoped.read_set_of<asn1kit::bytes>();
+            });
+            value.nAddresses = std::move(tmp_nAddresses);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        if (this->pSelector.has_value()) {
+            {
+                auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
+                w.write_octet_string(asn1kit::tag::octet_string, (*this->pSelector).span());
+            }
+        }
+        if (this->sSelector.has_value()) {
+            {
+                auto explicit_scope = w.enter_explicit(asn1kit::tag::context(1, true));
+                w.write_octet_string(asn1kit::tag::octet_string, (*this->sSelector).span());
+            }
+        }
+        if (this->tSelector.has_value()) {
+            {
+                auto explicit_scope = w.enter_explicit(asn1kit::tag::context(2, true));
+                w.write_octet_string(asn1kit::tag::octet_string, (*this->tSelector).span());
+            }
+        }
+        {
+            auto explicit_scope = w.enter_explicit(asn1kit::tag::context(3, true));
+            w.write_set_of(asn1kit::tag::set, this->nAddresses);
+        }
+    }
+};
+
+enum class PrivateDomainName_kind {
+    numeric,
+    printable
+};
+
+struct PrivateDomainName {
+    PrivateDomainName_kind kind{};
+    std::string value{};
+
+    // ASN.1 SIZE (1..16). Not enforced by runtime.
+    static PrivateDomainName from_numeric(std::string v) {
+        PrivateDomainName result{};
+        result.kind = PrivateDomainName_kind::numeric;
+        result.value = std::move(v);
+        return result;
+    }
+
+    // ASN.1 SIZE (1..16). Not enforced by runtime.
+    static PrivateDomainName from_printable(std::string v) {
+        PrivateDomainName result{};
+        result.kind = PrivateDomainName_kind::printable;
+        result.value = std::move(v);
+        return result;
+    }
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return (t.matches_ignore_constructed(asn1kit::tag::numeric_string) || t.matches_ignore_constructed(asn1kit::tag::printable_string));
+    }
+
+    static PrivateDomainName decode(asn1kit::reader& r) {
+        asn1kit::tag peeked;
+        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
+        if (peeked.matches_ignore_constructed(asn1kit::tag::numeric_string)) {
+            std::string alt{};
+            alt = r.read_string(asn1kit::tag::numeric_string, asn1kit::string_form::numeric);
+            return from_numeric(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::printable_string)) {
+            std::string alt{};
+            alt = r.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
+            return from_printable(std::move(alt));
+        } else {
+            throw asn1kit::exception("Unknown CHOICE alternative.");
+        }
+    }
+
+    static PrivateDomainName decode(asn1kit::reader& r, const asn1kit::tag& t) {
+        (void)t;
+        return decode(r);
+    }
+
+    void encode(asn1kit::writer& w) const {
+        switch (kind) {
+        case PrivateDomainName_kind::numeric:
+            {
+                const auto& alt = value;
+                w.write_string(asn1kit::tag::numeric_string, alt, asn1kit::string_form::numeric);
+                break;
+            }
+        case PrivateDomainName_kind::printable:
+            {
+                const auto& alt = value;
+                w.write_string(asn1kit::tag::printable_string, alt, asn1kit::string_form::printable);
+                break;
+            }
+        }
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
+        (void)t;
+        encode(w);
+    }
+};
+
+struct BuiltInStandardAttributes {
+    std::optional<CountryName> country_name{};
+    std::optional<AdministrationDomainName> administration_domain_name{};
+    // ASN.1 alias NetworkAddress ::= X121Address. ASN.1 SIZE (1..16). Not enforced by runtime.
+    std::optional<std::string> network_address{};
+    // ASN.1 alias TerminalIdentifier ::= PrintableString. ASN.1 SIZE (1..24). Not enforced by runtime.
+    std::optional<std::string> terminal_identifier{};
+    std::optional<PrivateDomainName> private_domain_name{};
+    // ASN.1 alias OrganizationName ::= PrintableString. ASN.1 SIZE (1..64). Not enforced by runtime.
+    std::optional<std::string> organization_name{};
+    // ASN.1 alias NumericUserIdentifier ::= NumericString. ASN.1 SIZE (1..32). Not enforced by runtime.
+    std::optional<std::string> numeric_user_identifier{};
+    std::optional<PersonalName> personal_name{};
+    // ASN.1 alias OrganizationalUnitNames ::= SEQUENCE OF OrganizationalUnitName. ASN.1 SIZE (1..4). Not enforced by runtime.
+    std::optional<std::vector<std::string>> organizational_unit_names{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static BuiltInStandardAttributes decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        BuiltInStandardAttributes value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            if (inner.next_matches<CountryName>()) {
+                value.country_name = CountryName::decode(inner);
+            }
+            if (inner.next_matches<AdministrationDomainName>()) {
+                value.administration_domain_name = AdministrationDomainName::decode(inner);
+            }
+            if (inner.next_is(asn1kit::tag::context(0))) {
+                value.network_address = inner.read_string(asn1kit::tag::context(0), asn1kit::string_form::numeric);
+            }
+            if (inner.next_is(asn1kit::tag::context(1))) {
+                value.terminal_identifier = inner.read_string(asn1kit::tag::context(1), asn1kit::string_form::printable);
+            }
+            if (inner.next_is(asn1kit::tag::context(2, true))) {
+                PrivateDomainName tmp_private_domain_name{};
+                inner.with_explicit(asn1kit::tag::context(2, true), [&](asn1kit::reader& scoped) {
+                    tmp_private_domain_name = PrivateDomainName::decode(scoped);
+                });
+                value.private_domain_name = std::move(tmp_private_domain_name);
+            }
+            if (inner.next_is(asn1kit::tag::context(3))) {
+                value.organization_name = inner.read_string(asn1kit::tag::context(3), asn1kit::string_form::printable);
+            }
+            if (inner.next_is(asn1kit::tag::context(4))) {
+                value.numeric_user_identifier = inner.read_string(asn1kit::tag::context(4), asn1kit::string_form::numeric);
+            }
+            if (inner.next_is(asn1kit::tag::context(5, true))) {
+                value.personal_name = PersonalName::decode(inner, asn1kit::tag::context(5, true));
+            }
+            if (inner.next_is(asn1kit::tag::context(6, true))) {
+                value.organizational_unit_names = inner.read_sequence_of<std::string>(asn1kit::tag::context(6, true), [&](asn1kit::reader& inner) {
+                    return inner.read_string(asn1kit::tag::printable_string, asn1kit::string_form::printable);
+                });
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        if (this->country_name.has_value()) {
+            (*this->country_name).encode(w);
+        }
+        if (this->administration_domain_name.has_value()) {
+            (*this->administration_domain_name).encode(w);
+        }
+        if (this->network_address.has_value()) {
+            w.write_string(asn1kit::tag::context(0), (*this->network_address), asn1kit::string_form::numeric);
+        }
+        if (this->terminal_identifier.has_value()) {
+            w.write_string(asn1kit::tag::context(1), (*this->terminal_identifier), asn1kit::string_form::printable);
+        }
+        if (this->private_domain_name.has_value()) {
+            {
+                auto explicit_scope = w.enter_explicit(asn1kit::tag::context(2, true));
+                (*this->private_domain_name).encode(w);
+            }
+        }
+        if (this->organization_name.has_value()) {
+            w.write_string(asn1kit::tag::context(3), (*this->organization_name), asn1kit::string_form::printable);
+        }
+        if (this->numeric_user_identifier.has_value()) {
+            w.write_string(asn1kit::tag::context(4), (*this->numeric_user_identifier), asn1kit::string_form::numeric);
+        }
+        if (this->personal_name.has_value()) {
+            (*this->personal_name).encode(w, asn1kit::tag::context(5, true));
+        }
+        if (this->organizational_unit_names.has_value()) {
+            w.write_sequence_of(asn1kit::tag::context(6, true), (*this->organizational_unit_names), [&](asn1kit::writer& inner, const auto& item) {
+                inner.write_string(asn1kit::tag::printable_string, item, asn1kit::string_form::printable);
+            });
+        }
+    }
+};
+
+struct ORAddress {
+    BuiltInStandardAttributes built_in_standard_attributes{};
+    // ASN.1 alias BuiltInDomainDefinedAttributes ::= SEQUENCE OF BuiltInDomainDefinedAttribute. ASN.1 SIZE (1..4). Not enforced by runtime.
+    std::optional<std::vector<BuiltInDomainDefinedAttribute>> built_in_domain_defined_attributes{};
+    // ASN.1 alias ExtensionAttributes ::= SET OF ExtensionAttribute. ASN.1 SIZE (1..256). Not enforced by runtime.
+    std::optional<std::vector<ExtensionAttribute>> extension_attributes{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static ORAddress decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        ORAddress value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.built_in_standard_attributes = BuiltInStandardAttributes::decode(inner);
+            if (inner.next_is(asn1kit::tag::sequence)) {
+                value.built_in_domain_defined_attributes = inner.read_sequence_of<BuiltInDomainDefinedAttribute>();
+            }
+            if (inner.next_is(asn1kit::tag::set)) {
+                value.extension_attributes = inner.read_set_of<ExtensionAttribute>();
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->built_in_standard_attributes.encode(w);
+        if (this->built_in_domain_defined_attributes.has_value()) {
+            w.write_sequence_of(asn1kit::tag::sequence, (*this->built_in_domain_defined_attributes));
+        }
+        if (this->extension_attributes.has_value()) {
+            w.write_set_of(asn1kit::tag::set, (*this->extension_attributes));
+        }
+    }
+};
+
+struct TeletexDomainDefinedAttribute {
+    // ASN.1 SIZE (1..8). Not enforced by runtime.
+    std::string type{};
+    // ASN.1 SIZE (1..128). Not enforced by runtime.
+    std::string value_{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static TeletexDomainDefinedAttribute decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        TeletexDomainDefinedAttribute value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.type = inner.read_string(asn1kit::tag::teletex_string, asn1kit::string_form::teletex);
+            value.value_ = inner.read_string(asn1kit::tag::teletex_string, asn1kit::string_form::teletex);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_string(asn1kit::tag::teletex_string, this->type, asn1kit::string_form::teletex);
+        w.write_string(asn1kit::tag::teletex_string, this->value_, asn1kit::string_form::teletex);
+    }
+};
 
 } // namespace PKIXX400Address2009
 } // namespace modern

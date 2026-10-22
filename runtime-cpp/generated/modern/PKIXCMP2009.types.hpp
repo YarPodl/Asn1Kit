@@ -39,7 +39,7 @@ struct PKIXCMP2009Oids {
 } // namespace modern
 } // namespace asn1kit
 
-#include "PKIX1Explicit2009.types.hpp"
+#include "PKIX1Explicit2009.hpp"
 
 namespace asn1kit {
 namespace modern {
@@ -662,7 +662,7 @@ struct PKIHeader_Pvno {
 } // namespace modern
 } // namespace asn1kit
 
-#include "PKIX1Implicit2009.types.hpp"
+#include "PKIX1Implicit2009.hpp"
 
 namespace asn1kit {
 namespace modern {

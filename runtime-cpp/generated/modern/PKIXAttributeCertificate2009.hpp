@@ -25,371 +25,1002 @@
 #include <variant>
 #include <vector>
 
-#include "PKIXAttributeCertificate2009.types.hpp"
+namespace asn1kit {
+namespace modern {
+namespace PKIXAttributeCertificate2009 {
 
-#include "PKIXAlgs2009.hpp"
+struct PKIXAttributeCertificate2009Oids {
+    static constexpr auto IdPeAcAuditIdentity = asn1kit::oid_literal<"1.3.6.1.5.5.7.1.4">();
+    static constexpr auto IdPeAaControls = asn1kit::oid_literal<"1.3.6.1.5.5.7.1.6">();
+    static constexpr auto IdPeAcProxying = asn1kit::oid_literal<"1.3.6.1.5.5.7.1.10">();
+    static constexpr auto IdCeTargetInformation = asn1kit::oid_literal<"2.5.29.55">();
+    static constexpr auto IdCeNoRevAvail = asn1kit::oid_literal<"2.5.29.56">();
+    static constexpr auto IdAca = asn1kit::oid_literal<"1.3.6.1.5.5.7.10">();
+    static constexpr auto IdAcaAuthenticationInfo = asn1kit::oid_literal<"1.3.6.1.5.5.7.10.1">();
+    static constexpr auto IdAcaAccessIdentity = asn1kit::oid_literal<"1.3.6.1.5.5.7.10.2">();
+    static constexpr auto IdAcaChargingIdentity = asn1kit::oid_literal<"1.3.6.1.5.5.7.10.3">();
+    static constexpr auto IdAcaGroup = asn1kit::oid_literal<"1.3.6.1.5.5.7.10.4">();
+    static constexpr auto IdAcaEncAttrs = asn1kit::oid_literal<"1.3.6.1.5.5.7.10.6">();
+    static constexpr auto IdAtRole = asn1kit::oid_literal<"2.5.4.72">();
+    static constexpr auto IdAtClearance = asn1kit::oid_literal<"2.5.4.55">();
+    static constexpr auto IdAtClearanceRfc3281 = asn1kit::oid_literal<"2.5.1.5.55">();
+};
+
+struct AAControls {
+    // ASN.1 value range (0..MAX). Not enforced by runtime.
+    std::optional<asn1kit::integer> pathLenConstraint{};
+    // ASN.1 alias AttrSpec ::= SEQUENCE OF OBJECT IDENTIFIER.
+    std::optional<std::vector<asn1kit::oid>> permittedAttrs{};
+    // ASN.1 alias AttrSpec ::= SEQUENCE OF OBJECT IDENTIFIER.
+    std::optional<std::vector<asn1kit::oid>> excludedAttrs{};
+    bool permitUnSpecified = true;
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static AAControls decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        AAControls value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            if (inner.next_is(asn1kit::tag::integer)) {
+                value.pathLenConstraint = inner.read_integer_value(asn1kit::tag::integer);
+            }
+            if (inner.next_is(asn1kit::tag::context(0, true))) {
+                value.permittedAttrs = inner.read_sequence_of<asn1kit::oid>(asn1kit::tag::context(0, true));
+            }
+            if (inner.next_is(asn1kit::tag::context(1, true))) {
+                value.excludedAttrs = inner.read_sequence_of<asn1kit::oid>(asn1kit::tag::context(1, true));
+            }
+            if (inner.next_is(asn1kit::tag::boolean)) {
+                value.permitUnSpecified = inner.read_boolean(asn1kit::tag::boolean);
+            }
+            else {
+                value.permitUnSpecified = true;
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        if (this->pathLenConstraint.has_value()) {
+            w.write_integer(asn1kit::tag::integer, (*this->pathLenConstraint));
+        }
+        if (this->permittedAttrs.has_value()) {
+            w.write_sequence_of(asn1kit::tag::context(0, true), (*this->permittedAttrs));
+        }
+        if (this->excludedAttrs.has_value()) {
+            w.write_sequence_of(asn1kit::tag::context(1, true), (*this->excludedAttrs));
+        }
+        if (this->permitUnSpecified != true) {
+            w.write_boolean(asn1kit::tag::boolean, this->permitUnSpecified);
+        }
+    }
+};
+
+} // namespace PKIXAttributeCertificate2009
+} // namespace modern
+} // namespace asn1kit
+
+#include "PKIX1Implicit2009.hpp"
+#include "PKIXCommonTypes2009.types.hpp"
 
 namespace asn1kit {
 namespace modern {
 namespace PKIXAttributeCertificate2009 {
 
-namespace detail {
+struct ACClearAttrs {
+    ::asn1kit::modern::PKIX1Implicit2009::GeneralName acIssuer{};
+    asn1kit::integer acSerial{};
+    std::vector<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet> attrs{};
 
-struct signatureAlgorithms_signature_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"PKIXAttributeCertificate-2009.signatureAlgorithms_signature">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha1};
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA1};
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha224{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha224};
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::DSASigValue> sa_dsa_with_sha256{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha256};
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha224{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA224};
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha256{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA256};
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha384{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA384};
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::ECDSASigValue> sa_ecdsa_with_sha512{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA512};
-
-};
-
-} // namespace detail
-
-#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
-#error "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY is reserved for generated headers"
-#endif
-#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding) \
-    template <typename... Args> \
-    decltype(auto) Name(Args&&... args) const \
-        requires requires(const base& view, Args&&... values) { \
-            view.template invoke<open_entries::Binding>(std::forward<Args>(values)...); \
-        } \
-    { return view_.template invoke<open_entries::Binding>(std::forward<Args>(args)...); }
-
-template <typename Target>
-struct ACClearAttrsAttributesDefinedOpenView {
-    using open_entries = ::asn1kit::modern::PKIXCommonTypes2009::detail::attributesDefined_open_type_entries;
-
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_attrs(binding);
-        }
-    };
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit ACClearAttrsAttributesDefinedOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit ACClearAttrsAttributesDefinedOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(authentication_info, authentication_info)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(acces_identity, acces_identity)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(charging_identity, charging_identity)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(group, group)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(role, role)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(clearance, clearance)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(enc_attrs, enc_attrs)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct AttributeCertificateSignatureAlgorithmsOpenViewParameters {
-    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::signatureAlgorithms_parameters_open_type_entries;
-
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_algorithm_identifier(binding);
-        }
-    };
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AttributeCertificateSignatureAlgorithmsOpenViewParameters(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AttributeCertificateSignatureAlgorithmsOpenViewParameters(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_md2, sa_rsa_with_md2)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_md5, sa_rsa_with_md5)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_sha1, sa_rsa_with_sha1)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha1, sa_dsa_with_sha1)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha1, sa_ecdsa_with_sha1)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha224, sa_dsa_with_sha224)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha256, sa_dsa_with_sha256)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha224, sa_ecdsa_with_sha224)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha256, sa_ecdsa_with_sha256)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha384, sa_ecdsa_with_sha384)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha512, sa_ecdsa_with_sha512)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_ssa_pss, sa_rsa_ssa_pss)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct AttributeCertificateSignatureAlgorithmsOpenViewSignature {
-    using open_entries = detail::signatureAlgorithms_signature_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AttributeCertificateSignatureAlgorithmsOpenViewSignature(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AttributeCertificateSignatureAlgorithmsOpenViewSignature(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AttributeCertificateSignatureAlgorithmsOpenViewSignature()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha1, sa_dsa_with_sha1)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha1, sa_ecdsa_with_sha1)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha224, sa_dsa_with_sha224)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha256, sa_dsa_with_sha256)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha224, sa_ecdsa_with_sha224)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha256, sa_ecdsa_with_sha256)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha384, sa_ecdsa_with_sha384)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha512, sa_ecdsa_with_sha512)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct AttributeCertificateSignatureAlgorithmsOpenView {
-    explicit AttributeCertificateSignatureAlgorithmsOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : target_(target) {}
-
-    explicit AttributeCertificateSignatureAlgorithmsOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : target_(std::move(owner)) {}
-
-    AttributeCertificateSignatureAlgorithmsOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    [[nodiscard]] auto parameters() const &
-        requires (!asn1kit::is_open_factory_target_v<Target>)
-    {
-        if constexpr (asn1kit::is_open_factory_target_v<Target>)
-            return AttributeCertificateSignatureAlgorithmsOpenViewParameters<Target>{};
-        else if constexpr (asn1kit::is_open_owned_target_v<Target>)
-            return AttributeCertificateSignatureAlgorithmsOpenViewParameters<const asn1kit::open_owner_t<Target>>{target_.get()};
-        else
-            return AttributeCertificateSignatureAlgorithmsOpenViewParameters<Target>{target_.get()};
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    [[nodiscard]] auto parameters() &&
-        requires (!asn1kit::is_open_factory_target_v<Target>)
-    {
-        if constexpr (asn1kit::is_open_factory_target_v<Target>)
-            return AttributeCertificateSignatureAlgorithmsOpenViewParameters<Target>{};
-        else if constexpr (asn1kit::is_open_owned_target_v<Target>)
-            return AttributeCertificateSignatureAlgorithmsOpenViewParameters<Target>{std::move(target_).take()};
-        else
-            return AttributeCertificateSignatureAlgorithmsOpenViewParameters<Target>{target_.get()};
+    static ACClearAttrs decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        ACClearAttrs value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.acIssuer = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
+            value.acSerial = inner.read_integer_value(asn1kit::tag::integer);
+            value.attrs = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet>();
+        });
+        return value;
     }
 
-    void parameters() const && = delete;
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->acIssuer.encode(w);
+        w.write_integer(asn1kit::tag::integer, this->acSerial);
+        w.write_sequence_of(asn1kit::tag::sequence, this->attrs);
+    }
+};
 
-    [[nodiscard]] auto signature() const &
-    {
-        if constexpr (asn1kit::is_open_factory_target_v<Target>)
-            return AttributeCertificateSignatureAlgorithmsOpenViewSignature<Target>{};
-        else if constexpr (asn1kit::is_open_owned_target_v<Target>)
-            return AttributeCertificateSignatureAlgorithmsOpenViewSignature<const asn1kit::open_owner_t<Target>>{target_.get()};
-        else
-            return AttributeCertificateSignatureAlgorithmsOpenViewSignature<Target>{target_.get()};
+struct AttCertValidityPeriod {
+    asn1kit::utc_date_time notBeforeTime{};
+    asn1kit::utc_date_time notAfterTime{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
     }
 
-    [[nodiscard]] auto signature() &&
-    {
-        if constexpr (asn1kit::is_open_factory_target_v<Target>)
-            return AttributeCertificateSignatureAlgorithmsOpenViewSignature<Target>{};
-        else if constexpr (asn1kit::is_open_owned_target_v<Target>)
-            return AttributeCertificateSignatureAlgorithmsOpenViewSignature<Target>{std::move(target_).take()};
-        else
-            return AttributeCertificateSignatureAlgorithmsOpenViewSignature<Target>{target_.get()};
+    static AttCertValidityPeriod decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        AttCertValidityPeriod value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.notBeforeTime = inner.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
+            value.notAfterTime = inner.read_time(asn1kit::tag::generalized_time, asn1kit::time_form::generalized);
+        });
+        return value;
     }
 
-    void signature() const && = delete;
-
-private:
-    asn1kit::open_view_target<Target> target_;
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_time(asn1kit::tag::generalized_time, this->notBeforeTime, asn1kit::time_form::generalized, 3);
+        w.write_time(asn1kit::tag::generalized_time, this->notAfterTime, asn1kit::time_form::generalized, 3);
+    }
 };
 
-template <typename Target>
-struct AttributeCertificateInfoAttributeCertExtensionsOpenView {
-    using open_entries = ::asn1kit::modern::PKIXCommonTypes2009::detail::attributeCertExtensions_open_type_entries;
+struct AttCertVersion {
+    static constexpr std::int32_t V2 = 1;
+};
 
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_extensions(binding);
+enum class ClassListFlags : std::uint32_t {
+    none = 0,
+    unmarked = 1u << 0,
+    unclassified = 1u << 1,
+    restricted = 1u << 2,
+    confidential = 1u << 3,
+    secret = 1u << 4,
+    topSecret = 1u << 5
+};
+
+inline constexpr ClassListFlags operator|(ClassListFlags a, ClassListFlags b) {
+    return static_cast<ClassListFlags>(static_cast<std::uint32_t>(a) | static_cast<std::uint32_t>(b));
+}
+
+struct ClassList {
+    asn1kit::bit_string value{};
+
+    ClassList() = default;
+    ClassList(asn1kit::bit_string bits) : value(std::move(bits)) {}
+
+    friend bool operator==(const ClassList& a, const ClassList& b) noexcept {
+        return a.value == b.value;
+    }
+    friend bool operator!=(const ClassList& a, const ClassList& b) noexcept {
+        return !(a == b);
+    }
+    friend bool operator==(const ClassList& a, const asn1kit::bit_string& b) noexcept {
+        return a.value == b;
+    }
+    friend bool operator!=(const ClassList& a, const asn1kit::bit_string& b) noexcept {
+        return !(a == b);
+    }
+
+    static bool bit_is_set(const asn1kit::bit_string& bits, int index) {
+        if (index < 0 || static_cast<std::size_t>(index) >= bits.bit_length()) return false;
+        const auto byte = bits.span()[static_cast<std::size_t>(index) / 8];
+        return (byte & static_cast<std::uint8_t>(0x80 >> (index % 8))) != 0;
+    }
+
+    ClassListFlags flags() const {
+        auto result = ClassListFlags::none;
+        if (bit_is_set(value, 0)) result = result | ClassListFlags::unmarked;
+        if (bit_is_set(value, 1)) result = result | ClassListFlags::unclassified;
+        if (bit_is_set(value, 2)) result = result | ClassListFlags::restricted;
+        if (bit_is_set(value, 3)) result = result | ClassListFlags::confidential;
+        if (bit_is_set(value, 4)) result = result | ClassListFlags::secret;
+        if (bit_is_set(value, 5)) result = result | ClassListFlags::topSecret;
+        return result;
+    }
+
+    static ClassList from_flags(ClassListFlags flags) {
+        ClassList result{};
+        std::vector<std::uint8_t> data(1, 0);
+        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>(ClassListFlags::unmarked)) != 0) {
+            data[0 / 8] = static_cast<std::uint8_t>(data[0 / 8] | static_cast<std::uint8_t>(0x80 >> (0 % 8)));
         }
-    };
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AttributeCertificateInfoAttributeCertExtensionsOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AttributeCertificateInfoAttributeCertExtensionsOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(audit_identity, audit_identity)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(target_information, target_information)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(authority_key_identifier, authority_key_identifier)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(authority_info_access, authority_info_access)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(crl_distribution_points, crl_distribution_points)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(no_rev_avail, no_rev_avail)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ac_proxying, ac_proxying)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(aa_controls, aa_controls)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct AttributeCertificateInfoAttributesDefinedOpenView {
-    using open_entries = ::asn1kit::modern::PKIXCommonTypes2009::detail::attributesDefined_open_type_entries;
-
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_attributes(binding);
+        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>(ClassListFlags::unclassified)) != 0) {
+            data[1 / 8] = static_cast<std::uint8_t>(data[1 / 8] | static_cast<std::uint8_t>(0x80 >> (1 % 8)));
         }
-    };
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AttributeCertificateInfoAttributesDefinedOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AttributeCertificateInfoAttributesDefinedOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(authentication_info, authentication_info)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(acces_identity, acces_identity)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(charging_identity, charging_identity)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(group, group)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(role, role)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(clearance, clearance)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(enc_attrs, enc_attrs)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct AttributeCertificateInfoSignatureAlgorithmsOpenView {
-    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::signatureAlgorithms_parameters_open_type_entries;
-
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_signature(binding);
+        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>(ClassListFlags::restricted)) != 0) {
+            data[2 / 8] = static_cast<std::uint8_t>(data[2 / 8] | static_cast<std::uint8_t>(0x80 >> (2 % 8)));
         }
-    };
+        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>(ClassListFlags::confidential)) != 0) {
+            data[3 / 8] = static_cast<std::uint8_t>(data[3 / 8] | static_cast<std::uint8_t>(0x80 >> (3 % 8)));
+        }
+        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>(ClassListFlags::secret)) != 0) {
+            data[4 / 8] = static_cast<std::uint8_t>(data[4 / 8] | static_cast<std::uint8_t>(0x80 >> (4 % 8)));
+        }
+        if ((static_cast<std::uint32_t>(flags) & static_cast<std::uint32_t>(ClassListFlags::topSecret)) != 0) {
+            data[5 / 8] = static_cast<std::uint8_t>(data[5 / 8] | static_cast<std::uint8_t>(0x80 >> (5 % 8)));
+        }
+        result.value = asn1kit::bit_string::copy_from(data, 0);
+        return result;
+    }
 
-    using base = asn1kit::open_function_view<Target, access>;
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::bit_string);
+    }
 
-    explicit AttributeCertificateInfoSignatureAlgorithmsOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
+    static ClassList decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::bit_string) {
+        ClassList result{};
+        result.value = r.read_bit_string(t);
+        return result;
+    }
 
-    explicit AttributeCertificateInfoSignatureAlgorithmsOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_md2, sa_rsa_with_md2)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_md5, sa_rsa_with_md5)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_sha1, sa_rsa_with_sha1)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha1, sa_dsa_with_sha1)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha1, sa_ecdsa_with_sha1)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha224, sa_dsa_with_sha224)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha256, sa_dsa_with_sha256)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha224, sa_ecdsa_with_sha224)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha256, sa_ecdsa_with_sha256)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha384, sa_ecdsa_with_sha384)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha512, sa_ecdsa_with_sha512)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_ssa_pss, sa_rsa_ssa_pss)
-
-private:
-    [[no_unique_address]] base view_;
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::bit_string) const {
+        w.write_bit_string(t, value);
+    }
 };
 
-#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+struct Clearance {
+    asn1kit::oid policyId{};
+    ClassList classList = asn1kit::bit_string::copy_from(std::vector<std::uint8_t>{0x40}, 6);
+    std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SecurityCategory>> securityCategories{};
 
-inline ACClearAttrsAttributesDefinedOpenView<ACClearAttrs> ACClearAttrs::attributes_defined() & {
-    return ACClearAttrsAttributesDefinedOpenView<ACClearAttrs>{*this};
-}
-inline ACClearAttrsAttributesDefinedOpenView<const ACClearAttrs> ACClearAttrs::attributes_defined() const & {
-    return ACClearAttrsAttributesDefinedOpenView<const ACClearAttrs>{*this};
-}
-inline ACClearAttrsAttributesDefinedOpenView<asn1kit::open_owned_target<ACClearAttrs>> ACClearAttrs::attributes_defined() && {
-    return ACClearAttrsAttributesDefinedOpenView<asn1kit::open_owned_target<ACClearAttrs>>{std::move(*this)};
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static Clearance decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        Clearance value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.policyId = inner.read_oid(asn1kit::tag::object_identifier);
+            if (inner.next_matches<ClassList>()) {
+                value.classList = ClassList::decode(inner);
+            }
+            else {
+                value.classList = asn1kit::bit_string::copy_from(std::vector<std::uint8_t>{0x40}, 6);
+            }
+            if (inner.next_is(asn1kit::tag::set)) {
+                value.securityCategories = inner.read_set_of<::asn1kit::modern::PKIXCommonTypes2009::SecurityCategory>();
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_object_identifier(asn1kit::tag::object_identifier, this->policyId);
+        if (this->classList != asn1kit::bit_string::copy_from(std::vector<std::uint8_t>{0x40}, 6)) {
+            this->classList.encode(w);
+        }
+        if (this->securityCategories.has_value()) {
+            w.write_set_of(asn1kit::tag::set, (*this->securityCategories));
+        }
+    }
+};
+
+enum class IetfAttrSyntax_Values_Item_kind {
+    octets,
+    oid,
+    string
+};
+
+struct IetfAttrSyntax_Values_Item {
+    IetfAttrSyntax_Values_Item_kind kind{};
+    std::variant<asn1kit::bytes, asn1kit::oid, std::string> value{};
+
+    static IetfAttrSyntax_Values_Item from_octets(asn1kit::bytes v) {
+        IetfAttrSyntax_Values_Item result{};
+        result.kind = IetfAttrSyntax_Values_Item_kind::octets;
+        result.value.emplace<0>(std::move(v));
+        return result;
+    }
+
+    static IetfAttrSyntax_Values_Item from_oid(asn1kit::oid v) {
+        IetfAttrSyntax_Values_Item result{};
+        result.kind = IetfAttrSyntax_Values_Item_kind::oid;
+        result.value.emplace<1>(std::move(v));
+        return result;
+    }
+
+    static IetfAttrSyntax_Values_Item from_string(std::string v) {
+        IetfAttrSyntax_Values_Item result{};
+        result.kind = IetfAttrSyntax_Values_Item_kind::string;
+        result.value.emplace<2>(std::move(v));
+        return result;
+    }
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return (t.matches_ignore_constructed(asn1kit::tag::octet_string) || t.matches_ignore_constructed(asn1kit::tag::object_identifier) || t.matches_ignore_constructed(asn1kit::tag::utf8_string));
+    }
+
+    static IetfAttrSyntax_Values_Item decode(asn1kit::reader& r) {
+        asn1kit::tag peeked;
+        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
+        if (peeked.matches_ignore_constructed(asn1kit::tag::octet_string)) {
+            asn1kit::bytes alt{};
+            alt = r.read_octet_string(asn1kit::tag::octet_string);
+            return from_octets(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::object_identifier)) {
+            asn1kit::oid alt{};
+            alt = r.read_oid(asn1kit::tag::object_identifier);
+            return from_oid(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::utf8_string)) {
+            std::string alt{};
+            alt = r.read_string(asn1kit::tag::utf8_string, asn1kit::string_form::utf8);
+            return from_string(std::move(alt));
+        } else {
+            throw asn1kit::exception("Unknown CHOICE alternative.");
+        }
+    }
+
+    static IetfAttrSyntax_Values_Item decode(asn1kit::reader& r, const asn1kit::tag& t) {
+        (void)t;
+        return decode(r);
+    }
+
+    void encode(asn1kit::writer& w) const {
+        switch (kind) {
+        case IetfAttrSyntax_Values_Item_kind::octets:
+            {
+                const auto& alt = std::get<0>(value);
+                w.write_octet_string(asn1kit::tag::octet_string, alt.span());
+                break;
+            }
+        case IetfAttrSyntax_Values_Item_kind::oid:
+            {
+                const auto& alt = std::get<1>(value);
+                w.write_object_identifier(asn1kit::tag::object_identifier, alt);
+                break;
+            }
+        case IetfAttrSyntax_Values_Item_kind::string:
+            {
+                const auto& alt = std::get<2>(value);
+                w.write_string(asn1kit::tag::utf8_string, alt, asn1kit::string_form::utf8);
+                break;
+            }
+        }
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
+        (void)t;
+        encode(w);
+    }
+};
+
+struct IetfAttrSyntax {
+    // ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    std::optional<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> policyAuthority{};
+    std::vector<IetfAttrSyntax_Values_Item> values{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static IetfAttrSyntax decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        IetfAttrSyntax value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            if (inner.next_is(asn1kit::tag::context(0, true))) {
+                value.policyAuthority = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>(asn1kit::tag::context(0, true));
+            }
+            value.values = inner.read_sequence_of<IetfAttrSyntax_Values_Item>();
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        if (this->policyAuthority.has_value()) {
+            w.write_sequence_of(asn1kit::tag::context(0, true), (*this->policyAuthority));
+        }
+        w.write_sequence_of(asn1kit::tag::sequence, this->values);
+    }
+};
+
+struct IssuerSerial {
+    // ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> issuer{};
+    // ASN.1 alias CertificateSerialNumber ::= INTEGER.
+    asn1kit::integer serial{};
+    // ASN.1 alias UniqueIdentifier ::= BIT STRING.
+    std::optional<asn1kit::bit_string> issuerUID{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static IssuerSerial decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        IssuerSerial value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.issuer = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
+            value.serial = inner.read_integer_value(asn1kit::tag::integer);
+            if (inner.next_is(asn1kit::tag::bit_string)) {
+                value.issuerUID = inner.read_bit_string(asn1kit::tag::bit_string);
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_sequence_of(asn1kit::tag::sequence, this->issuer);
+        w.write_integer(asn1kit::tag::integer, this->serial);
+        if (this->issuerUID.has_value()) {
+            w.write_bit_string(asn1kit::tag::bit_string, (*this->issuerUID));
+        }
+    }
+};
+
+enum class ObjectDigestInfo_DigestedObjectType {
+    publicKey = 0,
+    publicKeyCert = 1,
+    otherObjectTypes = 2
+};
+
+inline void encode_enumerated(asn1kit::writer& w, ObjectDigestInfo_DigestedObjectType value, const asn1kit::tag& t = asn1kit::tag::enumerated) {
+    w.write_enumerated_decimal(t, std::to_string(static_cast<std::int32_t>(value)));
 }
 
-inline AttributeCertificateSignatureAlgorithmsOpenView<AttributeCertificate> AttributeCertificate::signature_algorithms() & {
-    return AttributeCertificateSignatureAlgorithmsOpenView<AttributeCertificate>{*this};
-}
-inline AttributeCertificateSignatureAlgorithmsOpenView<const AttributeCertificate> AttributeCertificate::signature_algorithms() const & {
-    return AttributeCertificateSignatureAlgorithmsOpenView<const AttributeCertificate>{*this};
-}
-inline AttributeCertificateSignatureAlgorithmsOpenView<asn1kit::open_owned_target<AttributeCertificate>> AttributeCertificate::signature_algorithms() && {
-    return AttributeCertificateSignatureAlgorithmsOpenView<asn1kit::open_owned_target<AttributeCertificate>>{std::move(*this)};
-}
-inline AttributeCertificateSignatureAlgorithmsOpenView<asn1kit::open_factory_target<AttributeCertificate>> AttributeCertificate::make_signature_algorithms() {
-    return AttributeCertificateSignatureAlgorithmsOpenView<asn1kit::open_factory_target<AttributeCertificate>>{};
+inline ObjectDigestInfo_DigestedObjectType decode_enumerated(asn1kit::reader& r, std::type_identity<ObjectDigestInfo_DigestedObjectType>, const asn1kit::tag& t = asn1kit::tag::enumerated) {
+    const auto text = r.read_enumerated_decimal(t);
+    const auto number = std::stoll(text);
+    if (number == 0) return ObjectDigestInfo_DigestedObjectType::publicKey;
+    if (number == 1) return ObjectDigestInfo_DigestedObjectType::publicKeyCert;
+    if (number == 2) return ObjectDigestInfo_DigestedObjectType::otherObjectTypes;
+    throw asn1kit::exception("Unknown ENUMERATED value.");
 }
 
-inline AttributeCertificateInfoAttributeCertExtensionsOpenView<AttributeCertificateInfo> AttributeCertificateInfo::attribute_cert_extensions() & {
-    return AttributeCertificateInfoAttributeCertExtensionsOpenView<AttributeCertificateInfo>{*this};
-}
-inline AttributeCertificateInfoAttributeCertExtensionsOpenView<const AttributeCertificateInfo> AttributeCertificateInfo::attribute_cert_extensions() const & {
-    return AttributeCertificateInfoAttributeCertExtensionsOpenView<const AttributeCertificateInfo>{*this};
-}
-inline AttributeCertificateInfoAttributeCertExtensionsOpenView<asn1kit::open_owned_target<AttributeCertificateInfo>> AttributeCertificateInfo::attribute_cert_extensions() && {
-    return AttributeCertificateInfoAttributeCertExtensionsOpenView<asn1kit::open_owned_target<AttributeCertificateInfo>>{std::move(*this)};
-}
+} // namespace PKIXAttributeCertificate2009
+} // namespace modern
+} // namespace asn1kit
 
-inline AttributeCertificateInfoAttributesDefinedOpenView<AttributeCertificateInfo> AttributeCertificateInfo::attributes_defined() & {
-    return AttributeCertificateInfoAttributesDefinedOpenView<AttributeCertificateInfo>{*this};
-}
-inline AttributeCertificateInfoAttributesDefinedOpenView<const AttributeCertificateInfo> AttributeCertificateInfo::attributes_defined() const & {
-    return AttributeCertificateInfoAttributesDefinedOpenView<const AttributeCertificateInfo>{*this};
-}
-inline AttributeCertificateInfoAttributesDefinedOpenView<asn1kit::open_owned_target<AttributeCertificateInfo>> AttributeCertificateInfo::attributes_defined() && {
-    return AttributeCertificateInfoAttributesDefinedOpenView<asn1kit::open_owned_target<AttributeCertificateInfo>>{std::move(*this)};
-}
+#include "AlgorithmInformation2009.types.hpp"
 
-inline AttributeCertificateInfoSignatureAlgorithmsOpenView<AttributeCertificateInfo> AttributeCertificateInfo::signature_algorithms() & {
-    return AttributeCertificateInfoSignatureAlgorithmsOpenView<AttributeCertificateInfo>{*this};
-}
-inline AttributeCertificateInfoSignatureAlgorithmsOpenView<const AttributeCertificateInfo> AttributeCertificateInfo::signature_algorithms() const & {
-    return AttributeCertificateInfoSignatureAlgorithmsOpenView<const AttributeCertificateInfo>{*this};
-}
-inline AttributeCertificateInfoSignatureAlgorithmsOpenView<asn1kit::open_owned_target<AttributeCertificateInfo>> AttributeCertificateInfo::signature_algorithms() && {
-    return AttributeCertificateInfoSignatureAlgorithmsOpenView<asn1kit::open_owned_target<AttributeCertificateInfo>>{std::move(*this)};
-}
+namespace asn1kit {
+namespace modern {
+namespace PKIXAttributeCertificate2009 {
+
+struct ObjectDigestInfo {
+    ObjectDigestInfo_DigestedObjectType digestedObjectType{};
+    std::optional<asn1kit::oid> otherObjectTypeID{};
+    // ASN.1 object set (extensible). Membership not enforced by runtime.
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier digestAlgorithm{};
+    asn1kit::bit_string objectDigest{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static ObjectDigestInfo decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        ObjectDigestInfo value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.digestedObjectType = decode_enumerated(inner, std::type_identity<ObjectDigestInfo_DigestedObjectType>{}, asn1kit::tag::enumerated);
+            if (inner.next_is(asn1kit::tag::object_identifier)) {
+                value.otherObjectTypeID = inner.read_oid(asn1kit::tag::object_identifier);
+            }
+            value.digestAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
+            value.objectDigest = inner.read_bit_string(asn1kit::tag::bit_string);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        encode_enumerated(w, this->digestedObjectType, asn1kit::tag::enumerated);
+        if (this->otherObjectTypeID.has_value()) {
+            w.write_object_identifier(asn1kit::tag::object_identifier, (*this->otherObjectTypeID));
+        }
+        this->digestAlgorithm.encode(w);
+        w.write_bit_string(asn1kit::tag::bit_string, this->objectDigest);
+    }
+};
+
+struct Holder {
+    std::optional<IssuerSerial> baseCertificateID{};
+    // ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    std::optional<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> entityName{};
+    std::optional<ObjectDigestInfo> objectDigestInfo{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static Holder decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        Holder value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            if (inner.next_is(asn1kit::tag::context(0, true))) {
+                value.baseCertificateID = IssuerSerial::decode(inner, asn1kit::tag::context(0, true));
+            }
+            if (inner.next_is(asn1kit::tag::context(1, true))) {
+                value.entityName = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>(asn1kit::tag::context(1, true));
+            }
+            if (inner.next_is(asn1kit::tag::context(2, true))) {
+                value.objectDigestInfo = ObjectDigestInfo::decode(inner, asn1kit::tag::context(2, true));
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        if (this->baseCertificateID.has_value()) {
+            (*this->baseCertificateID).encode(w, asn1kit::tag::context(0, true));
+        }
+        if (this->entityName.has_value()) {
+            w.write_sequence_of(asn1kit::tag::context(1, true), (*this->entityName));
+        }
+        if (this->objectDigestInfo.has_value()) {
+            (*this->objectDigestInfo).encode(w, asn1kit::tag::context(2, true));
+        }
+    }
+};
+
+struct RoleSyntax {
+    // ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    std::optional<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> roleAuthority{};
+    ::asn1kit::modern::PKIX1Implicit2009::GeneralName roleName{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static RoleSyntax decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        RoleSyntax value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            if (inner.next_is(asn1kit::tag::context(0, true))) {
+                value.roleAuthority = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>(asn1kit::tag::context(0, true));
+            }
+            ::asn1kit::modern::PKIX1Implicit2009::GeneralName tmp_roleName{};
+            inner.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
+                tmp_roleName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(scoped);
+            });
+            value.roleName = std::move(tmp_roleName);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        if (this->roleAuthority.has_value()) {
+            w.write_sequence_of(asn1kit::tag::context(0, true), (*this->roleAuthority));
+        }
+        {
+            auto explicit_scope = w.enter_explicit(asn1kit::tag::context(1, true));
+            this->roleName.encode(w);
+        }
+    }
+};
+
+struct SecurityCategoryRfc3281 {
+    // ASN.1 constraint unsupported:  table({ Supported }). Not enforced by runtime.
+    asn1kit::oid type{};
+    // ASN.1 object set SupportedSecurityCategories (extensible). Membership not enforced by runtime.
+    asn1kit::any value_{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static SecurityCategoryRfc3281 decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        SecurityCategoryRfc3281 value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.type = inner.read_oid(asn1kit::tag::context(0));
+            asn1kit::any tmp_value_{};
+            inner.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
+                tmp_value_ = scoped.read_any();
+            });
+            value.value_ = std::move(tmp_value_);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_object_identifier(asn1kit::tag::context(0), this->type);
+        {
+            auto explicit_scope = w.enter_explicit(asn1kit::tag::context(1, true));
+            w.write_any(this->value_);
+        }
+    }
+};
+
+struct ClearanceRfc3281 {
+    asn1kit::oid policyId{};
+    ClassList classList = asn1kit::bit_string::copy_from(std::vector<std::uint8_t>{0x40}, 6);
+    std::optional<std::vector<SecurityCategoryRfc3281>> securityCategories{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static ClearanceRfc3281 decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        ClearanceRfc3281 value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.policyId = inner.read_oid(asn1kit::tag::context(0));
+            if (inner.next_is(asn1kit::tag::context(1))) {
+                value.classList = ClassList::decode(inner, asn1kit::tag::context(1));
+            }
+            else {
+                value.classList = asn1kit::bit_string::copy_from(std::vector<std::uint8_t>{0x40}, 6);
+            }
+            if (inner.next_is(asn1kit::tag::context(2, true))) {
+                value.securityCategories = inner.read_set_of<SecurityCategoryRfc3281>(asn1kit::tag::context(2, true));
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_object_identifier(asn1kit::tag::context(0), this->policyId);
+        if (this->classList != asn1kit::bit_string::copy_from(std::vector<std::uint8_t>{0x40}, 6)) {
+            this->classList.encode(w, asn1kit::tag::context(1));
+        }
+        if (this->securityCategories.has_value()) {
+            w.write_set_of(asn1kit::tag::context(2, true), (*this->securityCategories));
+        }
+    }
+};
+
+struct SvceAuthInfo {
+    ::asn1kit::modern::PKIX1Implicit2009::GeneralName service{};
+    ::asn1kit::modern::PKIX1Implicit2009::GeneralName ident{};
+    std::optional<asn1kit::bytes> authInfo{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static SvceAuthInfo decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        SvceAuthInfo value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.service = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
+            value.ident = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
+            if (inner.next_is(asn1kit::tag::octet_string)) {
+                value.authInfo = inner.read_octet_string(asn1kit::tag::octet_string);
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->service.encode(w);
+        this->ident.encode(w);
+        if (this->authInfo.has_value()) {
+            w.write_octet_string(asn1kit::tag::octet_string, (*this->authInfo).span());
+        }
+    }
+};
+
+struct TargetCert {
+    IssuerSerial targetCertificate{};
+    std::optional<::asn1kit::modern::PKIX1Implicit2009::GeneralName> targetName{};
+    std::optional<ObjectDigestInfo> certDigestInfo{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static TargetCert decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        TargetCert value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.targetCertificate = IssuerSerial::decode(inner);
+            if (inner.next_matches<::asn1kit::modern::PKIX1Implicit2009::GeneralName>()) {
+                value.targetName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
+            }
+            if (inner.next_matches<ObjectDigestInfo>()) {
+                value.certDigestInfo = ObjectDigestInfo::decode(inner);
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->targetCertificate.encode(w);
+        if (this->targetName.has_value()) {
+            (*this->targetName).encode(w);
+        }
+        if (this->certDigestInfo.has_value()) {
+            (*this->certDigestInfo).encode(w);
+        }
+    }
+};
+
+enum class Target_kind {
+    targetName,
+    targetGroup,
+    targetCert
+};
+
+struct Target {
+    Target_kind kind{};
+    std::variant<::asn1kit::modern::PKIX1Implicit2009::GeneralName, TargetCert> value{};
+
+    static Target from_targetName(::asn1kit::modern::PKIX1Implicit2009::GeneralName v) {
+        Target result{};
+        result.kind = Target_kind::targetName;
+        result.value.emplace<0>(std::move(v));
+        return result;
+    }
+
+    static Target from_targetGroup(::asn1kit::modern::PKIX1Implicit2009::GeneralName v) {
+        Target result{};
+        result.kind = Target_kind::targetGroup;
+        result.value.emplace<0>(std::move(v));
+        return result;
+    }
+
+    static Target from_targetCert(TargetCert v) {
+        Target result{};
+        result.kind = Target_kind::targetCert;
+        result.value.emplace<1>(std::move(v));
+        return result;
+    }
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return (t.matches_ignore_constructed(asn1kit::tag::context(0, true)) || t.matches_ignore_constructed(asn1kit::tag::context(1, true)) || t.matches_ignore_constructed(asn1kit::tag::context(2, true)));
+    }
+
+    static Target decode(asn1kit::reader& r) {
+        asn1kit::tag peeked;
+        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
+        if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
+            ::asn1kit::modern::PKIX1Implicit2009::GeneralName alt{};
+            ::asn1kit::modern::PKIX1Implicit2009::GeneralName tmp_targetName{};
+            r.with_explicit(asn1kit::tag::context(0, true), [&](asn1kit::reader& scoped) {
+                tmp_targetName = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(scoped);
+            });
+            alt = std::move(tmp_targetName);
+            return from_targetName(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(1, true))) {
+            ::asn1kit::modern::PKIX1Implicit2009::GeneralName alt{};
+            ::asn1kit::modern::PKIX1Implicit2009::GeneralName tmp_targetGroup{};
+            r.with_explicit(asn1kit::tag::context(1, true), [&](asn1kit::reader& scoped) {
+                tmp_targetGroup = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(scoped);
+            });
+            alt = std::move(tmp_targetGroup);
+            return from_targetGroup(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(2, true))) {
+            TargetCert alt{};
+            alt = TargetCert::decode(r, asn1kit::tag::context(2, true));
+            return from_targetCert(std::move(alt));
+        } else {
+            throw asn1kit::exception("Unknown CHOICE alternative.");
+        }
+    }
+
+    static Target decode(asn1kit::reader& r, const asn1kit::tag& t) {
+        (void)t;
+        return decode(r);
+    }
+
+    void encode(asn1kit::writer& w) const {
+        switch (kind) {
+        case Target_kind::targetName:
+            {
+                const auto& alt = std::get<0>(value);
+                {
+                    auto explicit_scope = w.enter_explicit(asn1kit::tag::context(0, true));
+                    alt.encode(w);
+                }
+                break;
+            }
+        case Target_kind::targetGroup:
+            {
+                const auto& alt = std::get<0>(value);
+                {
+                    auto explicit_scope = w.enter_explicit(asn1kit::tag::context(1, true));
+                    alt.encode(w);
+                }
+                break;
+            }
+        case Target_kind::targetCert:
+            {
+                const auto& alt = std::get<1>(value);
+                alt.encode(w, asn1kit::tag::context(2, true));
+                break;
+            }
+        }
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
+        (void)t;
+        encode(w);
+    }
+};
+
+struct V2Form {
+    // ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    std::optional<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>> issuerName{};
+    std::optional<IssuerSerial> baseCertificateID{};
+    std::optional<ObjectDigestInfo> objectDigestInfo{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static V2Form decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        V2Form value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            if (inner.next_is(asn1kit::tag::sequence)) {
+                value.issuerName = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
+            }
+            if (inner.next_is(asn1kit::tag::context(0, true))) {
+                value.baseCertificateID = IssuerSerial::decode(inner, asn1kit::tag::context(0, true));
+            }
+            if (inner.next_is(asn1kit::tag::context(1, true))) {
+                value.objectDigestInfo = ObjectDigestInfo::decode(inner, asn1kit::tag::context(1, true));
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        if (this->issuerName.has_value()) {
+            w.write_sequence_of(asn1kit::tag::sequence, (*this->issuerName));
+        }
+        if (this->baseCertificateID.has_value()) {
+            (*this->baseCertificateID).encode(w, asn1kit::tag::context(0, true));
+        }
+        if (this->objectDigestInfo.has_value()) {
+            (*this->objectDigestInfo).encode(w, asn1kit::tag::context(1, true));
+        }
+    }
+};
+
+enum class AttCertIssuer_kind {
+    v1Form,
+    v2Form
+};
+
+struct AttCertIssuer {
+    AttCertIssuer_kind kind{};
+    std::variant<std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName>, V2Form> value{};
+
+    // ASN.1 alias GeneralNames ::= SEQUENCE OF GeneralName. ASN.1 SIZE (1..MAX). Not enforced by runtime.
+    static AttCertIssuer from_v1Form(std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> v) {
+        AttCertIssuer result{};
+        result.kind = AttCertIssuer_kind::v1Form;
+        result.value.emplace<0>(std::move(v));
+        return result;
+    }
+
+    static AttCertIssuer from_v2Form(V2Form v) {
+        AttCertIssuer result{};
+        result.kind = AttCertIssuer_kind::v2Form;
+        result.value.emplace<1>(std::move(v));
+        return result;
+    }
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return (t.matches_ignore_constructed(asn1kit::tag::sequence) || t.matches_ignore_constructed(asn1kit::tag::context(0, true)));
+    }
+
+    static AttCertIssuer decode(asn1kit::reader& r) {
+        asn1kit::tag peeked;
+        if (!r.try_peek_tag(peeked)) throw asn1kit::exception("Expected CHOICE alternative.");
+        if (peeked.matches_ignore_constructed(asn1kit::tag::sequence)) {
+            std::vector<::asn1kit::modern::PKIX1Implicit2009::GeneralName> alt{};
+            alt = r.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::GeneralName>();
+            return from_v1Form(std::move(alt));
+        } else if (peeked.matches_ignore_constructed(asn1kit::tag::context(0, true))) {
+            V2Form alt{};
+            alt = V2Form::decode(r, asn1kit::tag::context(0, true));
+            return from_v2Form(std::move(alt));
+        } else {
+            throw asn1kit::exception("Unknown CHOICE alternative.");
+        }
+    }
+
+    static AttCertIssuer decode(asn1kit::reader& r, const asn1kit::tag& t) {
+        (void)t;
+        return decode(r);
+    }
+
+    void encode(asn1kit::writer& w) const {
+        switch (kind) {
+        case AttCertIssuer_kind::v1Form:
+            {
+                const auto& alt = std::get<0>(value);
+                w.write_sequence_of(asn1kit::tag::sequence, alt);
+                break;
+            }
+        case AttCertIssuer_kind::v2Form:
+            {
+                const auto& alt = std::get<1>(value);
+                alt.encode(w, asn1kit::tag::context(0, true));
+                break;
+            }
+        }
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t) const {
+        (void)t;
+        encode(w);
+    }
+};
+
+struct AttributeCertificateInfo {
+    std::int32_t version{};
+    Holder holder{};
+    AttCertIssuer issuer{};
+    // ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier signature{};
+    // ASN.1 alias CertificateSerialNumber ::= INTEGER.
+    asn1kit::integer serialNumber{};
+    AttCertValidityPeriod attrCertValidityPeriod{};
+    std::vector<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet> attributes{};
+    // ASN.1 alias UniqueIdentifier ::= BIT STRING.
+    std::optional<asn1kit::bit_string> issuerUniqueID{};
+    // ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set AttributeCertExtensions (extensible). Membership not enforced by runtime.
+    std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> extensions{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static AttributeCertificateInfo decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        AttributeCertificateInfo value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.version = inner.read_int32(asn1kit::tag::integer);
+            value.holder = Holder::decode(inner);
+            value.issuer = AttCertIssuer::decode(inner);
+            value.signature = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
+            value.serialNumber = inner.read_integer_value(asn1kit::tag::integer);
+            value.attrCertValidityPeriod = AttCertValidityPeriod::decode(inner);
+            value.attributes = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::AttributeSet>();
+            if (inner.next_is(asn1kit::tag::bit_string)) {
+                value.issuerUniqueID = inner.read_bit_string(asn1kit::tag::bit_string);
+            }
+            if (inner.next_is(asn1kit::tag::sequence)) {
+                value.extensions = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>();
+            }
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        w.write_integer(asn1kit::tag::integer, this->version);
+        this->holder.encode(w);
+        this->issuer.encode(w);
+        this->signature.encode(w);
+        w.write_integer(asn1kit::tag::integer, this->serialNumber);
+        this->attrCertValidityPeriod.encode(w);
+        w.write_sequence_of(asn1kit::tag::sequence, this->attributes);
+        if (this->issuerUniqueID.has_value()) {
+            w.write_bit_string(asn1kit::tag::bit_string, (*this->issuerUniqueID));
+        }
+        if (this->extensions.has_value()) {
+            w.write_sequence_of(asn1kit::tag::sequence, (*this->extensions));
+        }
+    }
+};
+
+struct AttributeCertificate {
+    AttributeCertificateInfo toBeSigned{};
+    // ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.
+    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
+    // ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.
+    asn1kit::bit_string signature{};
+
+    static constexpr bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static AttributeCertificate decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
+        AttributeCertificate value{};
+        r.with_sequence(t, [&](asn1kit::reader& inner) {
+            value.toBeSigned = AttributeCertificateInfo::decode(inner);
+            value.algorithmIdentifier = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
+            value.signature = inner.read_bit_string(asn1kit::tag::bit_string);
+        });
+        return value;
+    }
+
+    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
+        auto scope = w.enter_sequence(t);
+        this->toBeSigned.encode(w);
+        this->algorithmIdentifier.encode(w);
+        w.write_bit_string(asn1kit::tag::bit_string, this->signature);
+    }
+};
 
 } // namespace PKIXAttributeCertificate2009
 } // namespace modern

@@ -47,7 +47,7 @@ struct PKIXDVCS2009Oids {
 #include "CryptographicMessageSyntax2009.types.hpp"
 #include "ExtendedSecurityServices2009.hpp"
 #include "OCSP2009.types.hpp"
-#include "PKIX1Explicit2009.types.hpp"
+#include "PKIX1Explicit2009.hpp"
 #include "PKIXCMP2009.types.hpp"
 #include "PKIXCommonTypes2009.types.hpp"
 
@@ -276,7 +276,7 @@ struct CertEtcToken {
 } // namespace modern
 } // namespace asn1kit
 
-#include "PKIX1Implicit2009.types.hpp"
+#include "PKIX1Implicit2009.hpp"
 
 namespace asn1kit {
 namespace modern {

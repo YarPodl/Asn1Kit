@@ -30,77 +30,11 @@ namespace asn1kit {
 namespace modern {
 namespace PKIXCommonTypes2009 {
 
-namespace detail {
-struct attributeList_open_type_entries;
-struct attributesDefined_open_type_entries;
-struct supportedAttributes_open_type_entries;
-} // namespace detail
-template <typename Target>
-struct AttributeSetAttributeListOpenView;
-template <typename Target>
-struct AttributeSetAttributesDefinedOpenView;
-template <typename Target>
-struct AttributeSetSupportedAttributesOpenView;
 struct AttributeSet {
     // ASN.1 constraint unsupported:  table({ AttrSet }). Not enforced by runtime.
     asn1kit::oid type{};
     // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::vector<asn1kit::any> values{};
-
-    [[nodiscard]] AttributeSetAttributeListOpenView<AttributeSet> attribute_list() &;
-    [[nodiscard]] AttributeSetAttributeListOpenView<const AttributeSet> attribute_list() const &;
-    [[nodiscard]] AttributeSetAttributeListOpenView<asn1kit::open_owned_target<AttributeSet>> attribute_list() &&;
-    AttributeSetAttributeListOpenView<const AttributeSet> attribute_list() const && = delete;
-    [[nodiscard]] static AttributeSetAttributeListOpenView<asn1kit::open_factory_target<AttributeSet>> make_attribute_list();
-
-    [[nodiscard]] AttributeSetAttributesDefinedOpenView<AttributeSet> attributes_defined() &;
-    [[nodiscard]] AttributeSetAttributesDefinedOpenView<const AttributeSet> attributes_defined() const &;
-    [[nodiscard]] AttributeSetAttributesDefinedOpenView<asn1kit::open_owned_target<AttributeSet>> attributes_defined() &&;
-    AttributeSetAttributesDefinedOpenView<const AttributeSet> attributes_defined() const && = delete;
-    [[nodiscard]] static AttributeSetAttributesDefinedOpenView<asn1kit::open_factory_target<AttributeSet>> make_attributes_defined();
-
-    [[nodiscard]] AttributeSetSupportedAttributesOpenView<AttributeSet> supported_attributes() &;
-    [[nodiscard]] AttributeSetSupportedAttributesOpenView<const AttributeSet> supported_attributes() const &;
-    [[nodiscard]] AttributeSetSupportedAttributesOpenView<asn1kit::open_owned_target<AttributeSet>> supported_attributes() &&;
-    AttributeSetSupportedAttributesOpenView<const AttributeSet> supported_attributes() const && = delete;
-    [[nodiscard]] static AttributeSetSupportedAttributesOpenView<asn1kit::open_factory_target<AttributeSet>> make_supported_attributes();
-
-    template <typename T>
-    [[nodiscard]] static asn1kit::open_binding<asn1kit::default_open_context, asn1kit::oid, std::vector<T>> open_binding(asn1kit::oid key) {
-        return {std::move(key)};
-    }
-
-    template <typename Context, typename T>
-    [[nodiscard]] std::optional<std::vector<T>> try_decode(
-        const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding) const {
-        if (!(this->type == binding.key)) return std::nullopt;
-        return asn1kit::decode_each<T>(values);
-    }
-
-    template <typename Context, typename T>
-    void set(const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding, const std::vector<T>& value) {
-        this->type = binding.key;
-        values = asn1kit::encode_each(value);
-    }
-
-    template <typename Context, typename T>
-    void set(const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding, const T& value) {
-        set(binding, std::vector<T>{value});
-    }
-
-    template <typename Context, typename T>
-    [[nodiscard]] static AttributeSet create(
-        const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding, const std::vector<T>& value) {
-        AttributeSet result{};
-        result.set(binding, value);
-        return result;
-    }
-
-    template <typename Context, typename T>
-    [[nodiscard]] static AttributeSet create(
-        const asn1kit::open_binding<Context, asn1kit::oid, std::vector<T>>& binding, const T& value) {
-        return create(binding, std::vector<T>{value});
-    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);

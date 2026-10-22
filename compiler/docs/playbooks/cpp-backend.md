@@ -21,9 +21,10 @@
 - OPTIONAL → `std::optional<T>` (`next_matches<T>()` для именованных типов без собственного тега поля, иначе `next_is`); OF → `std::vector<T>` (type-driven `read_*_of` / `write_*_of` без лямбды, когда элемент — typed generated/примитив без per-element tag); CHOICE → `enum class …_kind` + `std::variant` уникальных C++-типов; при единственном типе — обычное поле `value`.
 - `string` / `time` / `null` — явные `read_string` / `write_string` / `read_time` / `write_time` / `write_null` / `null_value::decode` (не type-driven примитивы).
 - `ENUMERATED` → `enum class` и единая пара перегруженных ADL-функций `encode_enumerated(writer&, T, tag)` / `decode_enumerated(reader&, std::type_identity<T>, tag)`. Type-specific `encode_<Type>` / `decode_<Type>` не эмитятся. Decode проверяет объявленные members; generated enum удовлетворяет `open_typed`, произвольный C++ enum — нет.
-- Опции: `options.cpp.namespace`, `typeName`, `fieldName`; общие `aliasOf`, `generate`, `integer.representation`.
+- Опции: `options.cpp.namespace`, `typeName`, `fieldName`; общие `aliasOf`, `generate`, `openTypeApi`, `integer.representation`.
 - `any` → `asn1kit::any` (`read_any` / `write_any`; untagged OPTIONAL — через `eof()`).
 - Open-type Binding (direct / CONTAINING / SEQUENCE·SET OF / ancestor, OID/INTEGER selector): `OpenTypeBindings.NormalizeLegacy` → plan/emit в `CppBackend.OpenTypes.cs`.
+  - `options.openTypeApi: false` на typedef оставляет carrier-struct, raw-поля и codec, но убирает его `open_binding`, `try_decode`/`set`/`create`, factory/accessors и `*OpenView`. На contextual owner флаг подавляет только его API. Вложенные synthetic-типы наследуют флаг корневого typedef. Carrier/context проверяются независимо; общие descriptors/codecs остаются лишь при наличии включённого потребителя.
   - Runtime-descriptor `asn1kit::open_binding<Context, Key, Value>` хранит только key; phantom `Context` идентифицирует таблицу, `Value` — публичный decoded-тип:
     - direct `any` → `encode_open` / `decode_open<T>`;
     - `CONTAINING` → `encode_contained` / `decode_contained<T>`;

@@ -30,6 +30,8 @@ public sealed partial class CppBackend
         string ContextOwner,
         IReadOnlyList<string> ContextPath,
         bool CrossesInlineBoundary,
+        bool ContainerApiEnabled,
+        bool ContextApiEnabled,
         string? Table,
         IReadOnlyList<string> Path,
         List<OpenBinding> Bindings)
@@ -73,8 +75,10 @@ public sealed partial class CppBackend
         foreach (var plan in materializedPlans)
         foreach (var site in plan.Open.Sites)
         {
-            Add(site.Container.Module.Name, site.Container.TypeName, site);
-            if (site.ContextOwner != site.Container.TypeName || site.ContextModule != site.Container.Module)
+            if (site.ContainerApiEnabled)
+                Add(site.Container.Module.Name, site.Container.TypeName, site);
+            if (site.ContextApiEnabled &&
+                (site.ContextOwner != site.Container.TypeName || site.ContextModule != site.Container.Module))
                 Add(site.ContextModule.Name, site.ContextOwner, site);
         }
 
@@ -309,8 +313,9 @@ public sealed partial class CppBackend
             if (IsCollapsibleAlias(definition.Type)) continue;
             var typeName = IrOptions.CppTypeName(definition.Options)
                 ?? CppNames.SanitizeTypeName(definition.Name);
+            var apiEnabled = IrOptions.IsOpenTypeApiEnabled(definition.Options);
             WalkDefinitionScoped(document, module, typeName, definition.Type,
-                Array.Empty<OpenContainer>(), typeName, Array.Empty<string>(), plan, shared);
+                Array.Empty<OpenContainer>(), typeName, Array.Empty<string>(), apiEnabled, plan, shared);
         }
 
         foreach (var other in document.Modules)
@@ -319,17 +324,18 @@ public sealed partial class CppBackend
             {
                 var owner = IrOptions.CppTypeName(definition.Options)
                     ?? CppNames.SanitizeTypeName(definition.Name);
-                ScanIncoming(definition.Type, other, owner, Array.Empty<string>(), false);
+                ScanIncoming(definition.Type, other, owner, Array.Empty<string>(), false,
+                    IrOptions.IsOpenTypeApiEnabled(definition.Options));
             }
             foreach (var definition in other.Values)
-                ScanIncoming(definition.Type, other, CppNames.SanitizeTypeName(definition.Name), Array.Empty<string>(), false);
+                ScanIncoming(definition.Type, other, CppNames.SanitizeTypeName(definition.Name), Array.Empty<string>(), false, true);
         }
 
         AssignOpenStems(plan, names);
         return plan;
 
         void ScanIncoming(TypeExpr expression, IrModule contextModule, string contextOwner,
-            IReadOnlyList<string> route, bool crossesInlineBoundary)
+            IReadOnlyList<string> route, bool crossesInlineBoundary, bool contextApiEnabled)
         {
             switch (expression)
             {
@@ -344,7 +350,7 @@ public sealed partial class CppBackend
                             foreach (var use in reference.OpenTypes)
                                 ResolveUse(document, contextModule, found.Value, use, contextOwner,
                                     route.Concat(use.Path).ToList(), crossesInlineBoundary,
-                                    plan, shared, names);
+                                    contextApiEnabled, plan, shared, names);
                         }
                     }
 
@@ -352,7 +358,8 @@ public sealed partial class CppBackend
                     {
                         foreach (var use in reference.OpenTypes)
                         foreach (var binding in use.Bindings)
-                            ScanIncoming(binding.Type, contextModule, contextOwner, route, crossesInlineBoundary);
+                            ScanIncoming(binding.Type, contextModule, contextOwner, route, crossesInlineBoundary,
+                                contextApiEnabled);
                     }
 
                     if (FindWithModule(document, contextModule, reference) is { } referenced &&
@@ -363,56 +370,58 @@ public sealed partial class CppBackend
                                      contextOwner + "\n" + (route.Count > 0 ? route[0] : "");
                         if (incomingRefs.Add(refKey))
                             ScanIncoming(referenced.Def.Type, referenced.Module, contextOwner, route,
-                                crossesInlineBoundary);
+                                crossesInlineBoundary, contextApiEnabled);
                     }
 
                     break;
                 case AnyType { Bindings: { } bodyBindings }:
                     foreach (var binding in bodyBindings)
-                        ScanIncoming(binding.Type, contextModule, contextOwner, route, crossesInlineBoundary);
+                        ScanIncoming(binding.Type, contextModule, contextOwner, route, crossesInlineBoundary,
+                            contextApiEnabled);
                     break;
                 case SequenceType sequence:
                     foreach (var field in sequence.Components)
                         ScanIncoming(field.Type, contextModule, contextOwner,
                             route.Append(field.Name).ToList(),
-                            crossesInlineBoundary || CrossesInlineOwnerBoundary(field.Type));
+                            crossesInlineBoundary || CrossesInlineOwnerBoundary(field.Type), contextApiEnabled);
                     break;
                 case SetType set:
                     foreach (var field in set.Components)
                         ScanIncoming(field.Type, contextModule, contextOwner,
                             route.Append(field.Name).ToList(),
-                            crossesInlineBoundary || CrossesInlineOwnerBoundary(field.Type));
+                            crossesInlineBoundary || CrossesInlineOwnerBoundary(field.Type), contextApiEnabled);
                     break;
                 case ChoiceType choice:
                     if (choice.Components.Count == 1)
                     {
                         var alternative = choice.Components[0];
                         ScanIncoming(alternative.Type, contextModule, contextOwner,
-                            route, crossesInlineBoundary || alternative.Type is not RefType);
+                            route, crossesInlineBoundary || alternative.Type is not RefType,
+                            contextApiEnabled);
                     }
                     else
                     {
                         foreach (var alternative in choice.Components)
                             ScanIncoming(alternative.Type, contextModule, contextOwner,
                                 route.Append(alternative.Name).ToList(),
-                                crossesInlineBoundary || alternative.Type is not RefType);
+                                crossesInlineBoundary || alternative.Type is not RefType, contextApiEnabled);
                     }
                     break;
                 case SequenceOfType of:
                     ScanIncoming(of.Element, contextModule, contextOwner, route.Append("[]").ToList(),
-                        crossesInlineBoundary || of.Element is not RefType);
+                        crossesInlineBoundary || of.Element is not RefType, contextApiEnabled);
                     break;
                 case SetOfType of:
                     ScanIncoming(of.Element, contextModule, contextOwner, route.Append("[]").ToList(),
-                        crossesInlineBoundary || of.Element is not RefType);
+                        crossesInlineBoundary || of.Element is not RefType, contextApiEnabled);
                     break;
                 case OctetStringType { Containing: { } containing }:
                     ScanIncoming(containing, contextModule, contextOwner, route.Append("containing").ToList(),
-                        crossesInlineBoundary || containing is not RefType);
+                        crossesInlineBoundary || containing is not RefType, contextApiEnabled);
                     break;
                 case BitStringType { Containing: { } containing }:
                     ScanIncoming(containing, contextModule, contextOwner, route.Append("containing").ToList(),
-                        crossesInlineBoundary || containing is not RefType);
+                        crossesInlineBoundary || containing is not RefType, contextApiEnabled);
                     break;
             }
         }
@@ -435,6 +444,7 @@ public sealed partial class CppBackend
         IReadOnlyList<OpenContainer> parents,
         string contextOwner,
         IReadOnlyList<string> contextPath,
+        bool apiEnabled,
         OpenPlan plan,
         Dictionary<string, OpenBinding> shared)
     {
@@ -443,7 +453,7 @@ public sealed partial class CppBackend
         {
             WalkDefinitionScoped(
                 document, module, owner, ((ChoiceType)type).Components[0].Type, parents,
-                contextOwner, contextPath, plan, shared);
+                contextOwner, contextPath, apiEnabled, plan, shared);
             return;
         }
 
@@ -451,7 +461,7 @@ public sealed partial class CppBackend
         {
             var element = type is SetOfType setOf ? setOf.Element : ((SequenceOfType)type).Element;
             WalkDefinitionScoped(document, module, owner + "_Item", element, parents,
-                contextOwner, contextPath.Append("[]").ToList(), plan, shared);
+                contextOwner, contextPath.Append("[]").ToList(), apiEnabled, plan, shared);
             return;
         }
 
@@ -462,7 +472,7 @@ public sealed partial class CppBackend
         {
             TryRegisterDefinitionScoped(
                 document, module, container, field, parents, contextOwner,
-                contextPath.Append(field.Name).ToList(), plan, shared);
+                contextPath.Append(field.Name).ToList(), apiEnabled, plan, shared);
             var fieldType = UnwrapAliases(document, module, field.Type);
             if (fieldType is RefType) continue;
             if (fieldType is SequenceOfType or SetOfType or SequenceType or SetType or ChoiceType)
@@ -471,7 +481,7 @@ public sealed partial class CppBackend
                 var childOwner = owner + "_" + CppNames.SanitizeTypeName(field.Name);
                 WalkDefinitionScoped(
                     document, module, childOwner, fieldType, childParents, contextOwner,
-                    contextPath.Append(field.Name).ToList(), plan, shared);
+                    contextPath.Append(field.Name).ToList(), apiEnabled, plan, shared);
             }
         }
     }
@@ -484,6 +494,7 @@ public sealed partial class CppBackend
         IReadOnlyList<OpenContainer> outerParents,
         string contextOwner,
         IReadOnlyList<string> contextPath,
+        bool apiEnabled,
         OpenPlan plan,
         Dictionary<string, OpenBinding> shared)
     {
@@ -507,7 +518,8 @@ public sealed partial class CppBackend
         var parents = outerParents.Reverse().Take(selector.Levels).ToList();
         var payload = BuildOpenPayload(document, module, field.Type);
         AddSite(document, module, container, field, payload, selector, parents, definitionAny.Bindings!,
-            contextOwner, contextPath, false, definitionAny.Table, new[] { field.Name }, module, plan, shared);
+            contextOwner, contextPath, false, apiEnabled, apiEnabled,
+            definitionAny.Table, new[] { field.Name }, module, plan, shared);
     }
 
     private void ResolveUse(
@@ -518,6 +530,7 @@ public sealed partial class CppBackend
         string contextOwner,
         IReadOnlyList<string> contextPath,
         bool crossesInlineBoundary,
+        bool contextApiEnabled,
         OpenPlan plan,
         Dictionary<string, OpenBinding> shared,
         HashSet<string> names)
@@ -527,6 +540,7 @@ public sealed partial class CppBackend
             ?? CppNames.SanitizeTypeName(target.Def.Name);
         var expression = target.Def.Type;
         var module = target.Module;
+        var containerApiEnabled = IrOptions.IsOpenTypeApiEnabled(target.Def.Options);
         var hint = "";
         OpenContainer? container = null;
         IrComponent? openField = null;
@@ -542,6 +556,7 @@ public sealed partial class CppBackend
                     ?? CppNames.SanitizeTypeName(found.Value.Def.Name);
                 module = found.Value.Module;
                 expression = found.Value.Def.Type;
+                containerApiEnabled = IrOptions.IsOpenTypeApiEnabled(found.Value.Def.Options);
                 hint = "";
                 continue;
             }
@@ -611,6 +626,7 @@ public sealed partial class CppBackend
             AddSite(document, target.Module, container, openField, payload, selector,
                 Array.Empty<OpenContainer>(), use.Bindings,
                 contextOwner, contextPath, crossesInlineBoundary,
+                containerApiEnabled, contextApiEnabled,
                 use.Table, use.Path, contextModule, plan, shared);
             return;
         }
@@ -628,6 +644,8 @@ public sealed partial class CppBackend
         string contextOwner,
         IReadOnlyList<string> contextPath,
         bool crossesInlineBoundary,
+        bool containerApiEnabled,
+        bool contextApiEnabled,
         string? table,
         IReadOnlyList<string> path,
         IrModule bindingModule,
@@ -635,9 +653,11 @@ public sealed partial class CppBackend
         Dictionary<string, OpenBinding> shared)
     {
         if (container.Module != emittingModule) return;
+        if (!containerApiEnabled && !contextApiEnabled) return;
         var site = new OpenSite(
             container, openField, payload, selector, parents.ToList(), bindingModule, contextOwner,
-            contextPath.ToList(), crossesInlineBoundary, table, path.ToList(),
+            contextPath.ToList(), crossesInlineBoundary, containerApiEnabled, contextApiEnabled,
+            table, path.ToList(),
             new List<OpenBinding>());
         foreach (var binding in bindings)
         {

@@ -51,7 +51,7 @@ struct PKIXCRMF2009Oids {
 } // namespace modern
 } // namespace asn1kit
 
-#include "PKIX1Implicit2009.types.hpp"
+#include "PKIX1Implicit2009.hpp"
 
 namespace asn1kit {
 namespace modern {
@@ -359,10 +359,6 @@ namespace asn1kit {
 namespace modern {
 namespace PKIXCRMF2009 {
 
-template <typename Target>
-struct CertTemplateCertExtensionsOpenView;
-template <typename Target>
-struct CertTemplateSignatureAlgorithmsOpenView;
 struct CertTemplate {
     std::optional<std::int32_t> version{};
     std::optional<asn1kit::integer> serialNumber{};
@@ -380,30 +376,6 @@ struct CertTemplate {
     std::optional<asn1kit::bit_string> subjectUID{};
     // ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set CertExtensions (extensible). Membership not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> extensions{};
-
-    [[nodiscard]] CertTemplateCertExtensionsOpenView<CertTemplate> cert_extensions() &;
-    [[nodiscard]] CertTemplateCertExtensionsOpenView<const CertTemplate> cert_extensions() const &;
-    [[nodiscard]] CertTemplateCertExtensionsOpenView<asn1kit::open_owned_target<CertTemplate>> cert_extensions() &&;
-    CertTemplateCertExtensionsOpenView<const CertTemplate> cert_extensions() const && = delete;
-
-    [[nodiscard]] CertTemplateSignatureAlgorithmsOpenView<CertTemplate> signature_algorithms() &;
-    [[nodiscard]] CertTemplateSignatureAlgorithmsOpenView<const CertTemplate> signature_algorithms() const &;
-    [[nodiscard]] CertTemplateSignatureAlgorithmsOpenView<asn1kit::open_owned_target<CertTemplate>> signature_algorithms() &&;
-    CertTemplateSignatureAlgorithmsOpenView<const CertTemplate> signature_algorithms() const && = delete;
-
-    template <typename T>
-    [[nodiscard]] std::optional<T> try_decode_signing_alg(
-        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">, asn1kit::oid, T>& binding) const {
-        if (!(*this).signingAlg.has_value()) return std::nullopt;
-        return asn1kit::try_decode_unique((*(*this).signingAlg), binding);
-    }
-
-    template <typename T>
-    [[nodiscard]] std::optional<T> try_decode_extensions(
-        const asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.certExtensions">, asn1kit::oid, T>& binding) const {
-        if (!(*this).extensions.has_value()) return std::nullopt;
-        return asn1kit::try_decode_unique((*(*this).extensions), binding);
-    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -549,10 +521,6 @@ struct CertRequest {
     }
 };
 
-template <typename Target>
-struct PBMParameterDigestAlgorithmsOpenView;
-template <typename Target>
-struct PBMParameterMacAlgorithmsOpenView;
 struct PBMParameter {
     asn1kit::bytes salt{};
     // ASN.1 object set DigestAlgorithms (extensible). Membership not enforced by runtime.
@@ -560,28 +528,6 @@ struct PBMParameter {
     asn1kit::integer iterationCount{};
     // ASN.1 object set MACAlgorithms (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier mac{};
-
-    [[nodiscard]] PBMParameterDigestAlgorithmsOpenView<PBMParameter> digest_algorithms() &;
-    [[nodiscard]] PBMParameterDigestAlgorithmsOpenView<const PBMParameter> digest_algorithms() const &;
-    [[nodiscard]] PBMParameterDigestAlgorithmsOpenView<asn1kit::open_owned_target<PBMParameter>> digest_algorithms() &&;
-    PBMParameterDigestAlgorithmsOpenView<const PBMParameter> digest_algorithms() const && = delete;
-
-    [[nodiscard]] PBMParameterMacAlgorithmsOpenView<PBMParameter> mac_algorithms() &;
-    [[nodiscard]] PBMParameterMacAlgorithmsOpenView<const PBMParameter> mac_algorithms() const &;
-    [[nodiscard]] PBMParameterMacAlgorithmsOpenView<asn1kit::open_owned_target<PBMParameter>> mac_algorithms() &&;
-    PBMParameterMacAlgorithmsOpenView<const PBMParameter> mac_algorithms() const && = delete;
-
-    template <typename T>
-    [[nodiscard]] std::optional<T> try_decode_owf(
-        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.witnessAlgs_parameters">, asn1kit::oid, T>& binding) const {
-        return asn1kit::try_decode_unique((*this).owf, binding);
-    }
-
-    template <typename T>
-    [[nodiscard]] std::optional<T> try_decode_mac(
-        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.pOPAlgs_parameters">, asn1kit::oid, T>& binding) const {
-        return asn1kit::try_decode_unique((*this).mac, binding);
-    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -709,23 +655,10 @@ struct PKIPublicationInfo_Action {
     static constexpr std::int32_t PleasePublish = 1;
 };
 
-template <typename Target>
-struct PKMACValuePasswordMacAlgorithmsOpenView;
 struct PKMACValue {
     // ASN.1 object set Password-MACAlgorithms (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algId{};
     asn1kit::bit_string value_{};
-
-    [[nodiscard]] PKMACValuePasswordMacAlgorithmsOpenView<PKMACValue> password_mac_algorithms() &;
-    [[nodiscard]] PKMACValuePasswordMacAlgorithmsOpenView<const PKMACValue> password_mac_algorithms() const &;
-    [[nodiscard]] PKMACValuePasswordMacAlgorithmsOpenView<asn1kit::open_owned_target<PKMACValue>> password_mac_algorithms() &&;
-    PKMACValuePasswordMacAlgorithmsOpenView<const PKMACValue> password_mac_algorithms() const && = delete;
-
-    template <typename T>
-    [[nodiscard]] std::optional<T> try_decode_alg_id(
-        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.password_mACAlgorithms_parameters">, asn1kit::oid, T>& binding) const {
-        return asn1kit::try_decode_unique((*this).algId, binding);
-    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -974,24 +907,11 @@ struct POPOSigningKeyInput {
     }
 };
 
-template <typename Target>
-struct POPOSigningKeySignatureAlgorithmsOpenView;
 struct POPOSigningKey {
     std::optional<POPOSigningKeyInput> poposkInput{};
     // ASN.1 object set SignatureAlgorithms (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier algorithmIdentifier{};
     asn1kit::bit_string signature{};
-
-    [[nodiscard]] POPOSigningKeySignatureAlgorithmsOpenView<POPOSigningKey> signature_algorithms() &;
-    [[nodiscard]] POPOSigningKeySignatureAlgorithmsOpenView<const POPOSigningKey> signature_algorithms() const &;
-    [[nodiscard]] POPOSigningKeySignatureAlgorithmsOpenView<asn1kit::open_owned_target<POPOSigningKey>> signature_algorithms() &&;
-    POPOSigningKeySignatureAlgorithmsOpenView<const POPOSigningKey> signature_algorithms() const && = delete;
-
-    template <typename T>
-    [[nodiscard]] std::optional<T> try_decode_algorithm_identifier(
-        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">, asn1kit::oid, T>& binding) const {
-        return asn1kit::try_decode_unique((*this).algorithmIdentifier, binding);
-    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -1204,25 +1124,11 @@ struct ProofOfPossession {
     }
 };
 
-template <typename Target>
-struct CertReqMsgRegInfoSetOpenView;
 struct CertReqMsg {
     CertRequest certReq{};
     std::optional<ProofOfPossession> popo{};
     // ASN.1 SIZE (1..MAX). Not enforced by runtime.
     std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::SingleAttribute>> regInfo{};
-
-    [[nodiscard]] CertReqMsgRegInfoSetOpenView<CertReqMsg> reg_info_set() &;
-    [[nodiscard]] CertReqMsgRegInfoSetOpenView<const CertReqMsg> reg_info_set() const &;
-    [[nodiscard]] CertReqMsgRegInfoSetOpenView<asn1kit::open_owned_target<CertReqMsg>> reg_info_set() &&;
-    CertReqMsgRegInfoSetOpenView<const CertReqMsg> reg_info_set() const && = delete;
-
-    template <typename T>
-    [[nodiscard]] std::optional<T> try_decode_reg_info(
-        const asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.regInfoSet_value">, asn1kit::oid, T>& binding) const {
-        if (!(*this).regInfo.has_value()) return std::nullopt;
-        return asn1kit::try_decode_unique((*(*this).regInfo), binding);
-    }
 
     static constexpr bool match_tag(const asn1kit::tag& t) {
         return t.matches_ignore_constructed(asn1kit::tag::sequence);
@@ -1322,6 +1228,61 @@ struct SubsequentMessage {
     static constexpr std::int32_t EncrCert = 0;
     static constexpr std::int32_t ChallengeResp = 1;
 };
+
+#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+#error "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY is reserved for generated headers"
+#endif
+#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding) \
+    template <typename... Args> \
+    decltype(auto) Name(Args&&... args) const \
+        requires requires(const base& view, Args&&... values) { \
+            view.template invoke<open_entries::Binding>(std::forward<Args>(values)...); \
+        } \
+    { return view_.template invoke<open_entries::Binding>(std::forward<Args>(args)...); }
+
+template <typename Target>
+struct CertRequestRegControlSetOpenView {
+    using open_entries = ::asn1kit::modern::PKIXCommonTypes2009::detail::regControlSet_value_open_type_entries;
+
+    struct access {
+        template <typename Source, typename Binding>
+        static auto decode(const Source& source, const Binding& binding) {
+            return source.try_decode_controls(binding);
+        }
+    };
+
+    using base = asn1kit::open_function_view<Target, access>;
+
+    explicit CertRequestRegControlSetOpenView(Target& target)
+        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
+        : view_(target) {}
+
+    explicit CertRequestRegControlSetOpenView(asn1kit::open_owner_t<Target>&& owner)
+        requires asn1kit::is_open_owned_target_v<Target>
+        : view_(std::move(owner)) {}
+
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(reg_ctrl_reg_token, reg_ctrl_reg_token)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(reg_ctrl_authenticator, reg_ctrl_authenticator)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(reg_ctrl_pki_publication_info, reg_ctrl_pki_publication_info)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(reg_ctrl_pki_archive_options, reg_ctrl_pki_archive_options)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(reg_ctrl_old_cert_id, reg_ctrl_old_cert_id)
+    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(reg_ctrl_protocol_encr_key, reg_ctrl_protocol_encr_key)
+
+private:
+    [[no_unique_address]] base view_;
+};
+
+#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+
+inline CertRequestRegControlSetOpenView<CertRequest> CertRequest::reg_control_set() & {
+    return CertRequestRegControlSetOpenView<CertRequest>{*this};
+}
+inline CertRequestRegControlSetOpenView<const CertRequest> CertRequest::reg_control_set() const & {
+    return CertRequestRegControlSetOpenView<const CertRequest>{*this};
+}
+inline CertRequestRegControlSetOpenView<asn1kit::open_owned_target<CertRequest>> CertRequest::reg_control_set() && {
+    return CertRequestRegControlSetOpenView<asn1kit::open_owned_target<CertRequest>>{std::move(*this)};
+}
 
 } // namespace PKIXCRMF2009
 } // namespace modern

@@ -266,7 +266,7 @@ struct TSTInfo_Version {
 } // namespace modern
 } // namespace asn1kit
 
-#include "PKIX1Implicit2009.types.hpp"
+#include "PKIX1Implicit2009.hpp"
 #include "PKIXCommonTypes2009.types.hpp"
 
 namespace asn1kit {

@@ -507,15 +507,6 @@ public sealed record ValuesBinding<T>
         Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
         Encoder = encoder ?? throw new ArgumentNullException(nameof(encoder));
     }
-
-    public AttributeSet Create(T[] value)
-    {
-        var result = new AttributeSet();
-        PKIXCommonTypes2009OpenTypeExtensions.SetValues(result, this, value);
-        return result;
-    }
-
-    public AttributeSet Create(T value) => Create(new[] { value });
 }
 
 public static class AttributeListBindings
@@ -1106,65 +1097,6 @@ public static class PKIXCommonTypes2009OpenTypeExtensions
         if (binding.Codec is { } codec)
         {
             value = codec.Decode(match.Value);
-        }
-        else
-            value = binding.Decoder!(match);
-        return true;
-    }
-
-    public static bool TryDecodeValues<T>(this AttributeSet source, ValuesBinding<T> binding, out T[] value)
-    {
-        value = default!;
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        if (!(source.Type.Equals(binding.Oid))) return false;
-        if (binding.Codec is { } codec)
-        {
-            value = Asn1Codecs.DecodeEach(source.Values, codec);
-        }
-        else
-            value = binding.Decoder!(source);
-        return true;
-    }
-
-    public static void SetValues<T>(this AttributeSet source, ValuesBinding<T> binding, T[] value)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(binding);
-        var result = source;
-        result.Type = binding.Oid;
-        var encoded = binding.Codec is { } codec
-            ? Asn1Codecs.EncodeEach(value, codec)
-            : binding.Encoder!(value);
-        result.Values = encoded;
-    }
-
-    public static void SetValues<T>(this AttributeSet source, ValuesBinding<T> binding, T value)
-        => source.SetValues(binding, new[] { value });
-
-    public static bool TryGet<T>(this AttributeSet[]? source, ValuesBinding<T> binding, out T[] value)
-        => TryGet(source, binding, out value, out _);
-
-    public static bool TryGet<T>(this AttributeSet[]? source, ValuesBinding<T> binding, out T[] value, out AttributeSet raw)
-    {
-        value = default!;
-        raw = default!;
-        if (source is null) return false;
-        ArgumentNullException.ThrowIfNull(binding);
-        AttributeSet? match = null;
-        foreach (var item in source)
-        {
-            if (item.Type.Equals(binding.Oid))
-            {
-                if (match is not null) throw new Asn1Exception("Multiple values match open-type source TryGet.");
-                match = item;
-            }
-        }
-        if (match is null) return false;
-        raw = match;
-        if (binding.Codec is { } codec)
-        {
-            value = Asn1Codecs.DecodeEach(match.Values, codec);
         }
         else
             value = binding.Decoder!(match);

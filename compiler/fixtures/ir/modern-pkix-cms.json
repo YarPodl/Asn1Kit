@@ -144,6 +144,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -414,6 +417,9 @@
             ],
             "extensible": false
           },
+          "options": {
+            "openTypeApi": false
+          },
           "specialization": {
             "module": "PKIX1Explicit-2009",
             "name": "SIGNED"
@@ -568,6 +574,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -1902,6 +1911,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -2051,6 +2063,9 @@
                 "tableExtensible": true
               }
             ]
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -2214,6 +2229,9 @@
               }
             ],
             "extensible": true
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -2446,6 +2464,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -2567,6 +2588,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -2655,6 +2679,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -2913,6 +2940,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -3013,6 +3043,9 @@
               }
             ],
             "extensible": true
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -3169,6 +3202,9 @@
                 "min": 1
               }
             }
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -3202,6 +3238,9 @@
                 "min": 1
               }
             }
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -3220,6 +3259,9 @@
                 "tableExtensible": true
               }
             ]
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -3238,6 +3280,9 @@
                 "tableExtensible": true
               }
             ]
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -3273,6 +3318,9 @@
                 "tableExtensible": true
               }
             ]
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -3310,6 +3358,9 @@
                 "tableExtensible": true
               }
             ]
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -3336,6 +3387,9 @@
                 "tableExtensible": true
               }
             ]
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -3363,6 +3417,9 @@
                 "tableExtensible": true
               }
             ]
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -3440,6 +3497,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -3560,6 +3620,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -3598,6 +3661,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -3671,6 +3737,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -3995,6 +4064,9 @@
                 "tableExtensible": true
               }
             ]
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -4080,7 +4152,8 @@
           "options": {
             "csharp": {
               "typeName": "PBKDF2PRFsAlgorithmIdentifier"
-            }
+            },
+            "openTypeApi": false
           }
         },
         {
@@ -4103,7 +4176,8 @@
           "options": {
             "csharp": {
               "typeName": "PBKDF2SaltSourcesAlgorithmIdentifier"
-            }
+            },
+            "openTypeApi": false
           }
         },
         {
@@ -4407,6 +4481,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -4433,6 +4510,9 @@
                 "min": 1
               }
             }
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -4522,6 +4602,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -4557,6 +4640,9 @@
                 "min": 1
               }
             }
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -4592,6 +4678,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         }
       ],
@@ -5052,6 +5141,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -5136,6 +5228,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -5462,6 +5557,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -5530,6 +5628,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -5999,6 +6100,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -6085,6 +6189,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -6136,6 +6243,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -6188,6 +6298,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -6229,6 +6342,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -6284,6 +6400,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -6481,6 +6600,9 @@
                 "min": 1
               }
             }
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -6628,6 +6750,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -6728,6 +6853,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -6811,6 +6939,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -6950,6 +7081,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -7022,6 +7156,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         }
       ],
@@ -7481,6 +7618,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -7809,6 +7949,9 @@
                 "max": 64
               }
             }
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -7868,6 +8011,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -8043,6 +8189,9 @@
                 "tableExtensible": true
               }
             ]
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -8141,6 +8290,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         }
       ],
@@ -8807,6 +8959,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -8871,6 +9026,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -8920,6 +9078,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -9118,6 +9279,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -9368,6 +9532,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -9495,6 +9662,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -9690,6 +9860,9 @@
             ],
             "extensible": false
           },
+          "options": {
+            "openTypeApi": false
+          },
           "specialization": {
             "module": "PKCS-10",
             "name": "SubjectPublicKeyInfo"
@@ -9736,6 +9909,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           },
           "specialization": {
             "module": "PKCS-10",
@@ -9811,6 +9987,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -9854,6 +10033,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         }
       ],
@@ -9955,6 +10137,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -9997,6 +10182,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -11132,6 +11320,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -11639,6 +11830,9 @@
                 "tableExtensible": false
               }
             ]
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -11666,6 +11860,9 @@
                 "tableExtensible": true
               }
             ]
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -11693,6 +11890,9 @@
                 "tableExtensible": true
               }
             ]
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -12732,6 +12932,9 @@
                 "min": 1
               }
             }
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -12953,6 +13156,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           },
           "specialization": {
             "module": "PKIX1Explicit-2009",
@@ -13556,6 +13762,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -13774,6 +13983,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           },
           "specialization": {
             "module": "PKIX1Explicit-2009",
@@ -14102,6 +14314,9 @@
               }
             ],
             "extensible": true
+          },
+          "options": {
+            "openTypeApi": false
           }
         }
       ],
@@ -14606,6 +14821,9 @@
             "constraint": {
               "unsupported": "(WITH COMPONENTS { ... , authorityCertIssuer PRESENT , authorityCertSerialNumber PRESENT } | WITH COMPONENTS { ... , authorityCertIssuer ABSENT , authorityCertSerialNumber ABSENT })"
             }
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -14802,6 +15020,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -15351,6 +15572,9 @@
                 "min": 1
               }
             }
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -15480,6 +15704,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -15600,6 +15827,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -15739,6 +15969,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -15864,6 +16097,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -17162,6 +17398,9 @@
             ],
             "extensible": false
           },
+          "options": {
+            "openTypeApi": false
+          },
           "specialization": {
             "module": "PKIX1Explicit-2009",
             "name": "SIGNED"
@@ -17505,6 +17744,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -17565,6 +17807,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -17627,6 +17872,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -17700,6 +17948,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -17733,6 +17984,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -17849,6 +18103,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -17983,6 +18240,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -18015,6 +18275,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -18050,6 +18313,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -18100,6 +18366,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -18145,6 +18414,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           },
           "specialization": {
             "module": "PKIXAttributeCertificate-2009",
@@ -18352,6 +18624,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         }
       ],
@@ -18803,6 +19078,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -19268,6 +19546,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -19313,6 +19594,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -19557,6 +19841,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -19608,6 +19895,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -19894,6 +20184,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -20062,6 +20355,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -20120,6 +20416,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -20413,6 +20712,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -20857,6 +21159,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -20973,6 +21278,9 @@
                 "min": 1
               }
             }
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -21168,6 +21476,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -21216,6 +21527,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -21260,6 +21574,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -21337,6 +21654,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -21468,6 +21788,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -21522,6 +21845,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -21544,6 +21870,9 @@
                 }
               ]
             }
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -21642,6 +21971,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -21828,6 +22160,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -21865,6 +22200,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -22412,6 +22750,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -22533,6 +22874,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -22590,6 +22934,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -22791,6 +23138,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -22816,6 +23166,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         }
       ],
@@ -23002,6 +23355,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -23286,6 +23642,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -23830,6 +24189,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -23863,6 +24225,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -23901,6 +24266,9 @@
                 "tableExtensible": true
               }
             ]
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -24028,6 +24396,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -24061,6 +24432,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -24142,6 +24516,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -24182,6 +24559,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -24277,6 +24657,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -24317,6 +24700,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -24387,6 +24773,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -24442,6 +24831,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -24473,6 +24865,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
@@ -24530,6 +24925,9 @@
               }
             ],
             "extensible": false
+          },
+          "options": {
+            "openTypeApi": false
           }
         },
         {
