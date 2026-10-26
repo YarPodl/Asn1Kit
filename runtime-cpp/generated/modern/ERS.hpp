@@ -25,22 +25,10 @@
 #include <variant>
 #include <vector>
 
-namespace asn1kit {
-namespace modern {
-namespace ERS {
-
-struct ERSOids {
-    static constexpr auto IdAaErInternal = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.49">();
-    static constexpr auto IdAaErExternal = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.50">();
-    static constexpr auto Ltans = asn1kit::oid_literal<"1.3.6.1.5.5.11">();
-};
-
-} // namespace ERS
-} // namespace modern
-} // namespace asn1kit
+#include "ERS.types.hpp"
+#include "cycle_AttributeCertificateVersion12009_AttCertVersionV1_AttributeCertificateVersion12009_AttributeCertificateInfoV1_and_56_more.hpp"
 
 #include "AlgorithmInformation2009.types.hpp"
-#include "CryptographicMessageSyntax2009.types.hpp"
 #include "PKIXCommonTypes2009.types.hpp"
 
 namespace asn1kit {
@@ -93,36 +81,6 @@ struct ArchiveTimeStamp {
         }
         this->timeStamp.encode(w);
     }
-};
-
-struct EncryptionInfo {
-    // ASN.1 constraint unsupported:  table({ SupportedEncryptionAlgorithms }). Not enforced by runtime.
-    asn1kit::oid encryptionInfoType{};
-    // ASN.1 object set SupportedEncryptionAlgorithms (extensible). Membership not enforced by runtime.
-    asn1kit::any encryptionInfoValue{};
-
-    static constexpr bool match_tag(const asn1kit::tag& t) {
-        return t.matches_ignore_constructed(asn1kit::tag::sequence);
-    }
-
-    static EncryptionInfo decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
-        EncryptionInfo value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.encryptionInfoType = inner.read_oid(asn1kit::tag::object_identifier);
-            value.encryptionInfoValue = inner.read_any();
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
-        auto scope = w.enter_sequence(t);
-        w.write_object_identifier(asn1kit::tag::object_identifier, this->encryptionInfoType);
-        w.write_any(this->encryptionInfoValue);
-    }
-};
-
-struct EvidenceRecord_Version {
-    static constexpr std::int32_t V1 = 1;
 };
 
 struct EvidenceRecord {

@@ -31,7 +31,7 @@
 #include "PKIX1PSSOAEPAlgorithms2009.hpp"
 #include "PKIXAlgs2009.hpp"
 #include "PKIXCMP2009.types.hpp"
-#include "PKIXCRMF2009.hpp"
+#include "PKIXCRMF2009.types.hpp"
 
 namespace asn1kit {
 namespace modern {

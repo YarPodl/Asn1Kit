@@ -57,6 +57,55 @@ public sealed partial class CppBackend
                 StringComparer.Ordinal)
             .ToList();
 
+        // Once type-level amalgams make split headers necessary, module-level include
+        // cycles must also be represented by an amalgam. Delayed includes can order a
+        // simple include-only triangle in unsplit headers, but split facades cannot safely
+        // resume a partially emitted peer header after an include guard short-circuits it.
+        if (amalgams.Count > 0)
+        {
+            foreach (var moduleCycle in ComputeModuleCycleAmalgams(items, adj))
+            {
+                var overlapping = amalgams.Where(existing => existing.Overlaps(moduleCycle))
+                    .ToList();
+                if (overlapping.Count > 0)
+                {
+                    continue;
+                }
+
+                amalgams.Add(moduleCycle);
+            }
+
+            amalgams = amalgams
+                .OrderBy(static members => string.Join('\0',
+                        members.OrderBy(static t => t.Module, StringComparer.Ordinal)
+                            .ThenBy(static t => t.Name, StringComparer.Ordinal)
+                            .Select(m => m.Module + '\u0001' + m.Name)),
+                    StringComparer.Ordinal)
+                .ToList();
+        }
+
+        bool absorbedPostDependency;
+        do
+        {
+            absorbedPostDependency = false;
+            var amalgamTypes = amalgams.SelectMany(static amalgam => amalgam).ToHashSet();
+            var provisionalPostTypes = ComputePostTypes(items, adj, amalgamTypes);
+            foreach (var amalgam in amalgams)
+            {
+                var dependencies = amalgam
+                    .Select(key => keyOf[key])
+                    .SelectMany(index => adj[index])
+                    .Select(index => (Module: items[index].Module.Name, Name: items[index].Name))
+                    .Where(provisionalPostTypes.Contains)
+                    .ToList();
+                foreach (var dependency in dependencies)
+                {
+                    absorbedPostDependency |= amalgam.Add(dependency);
+                }
+            }
+        }
+        while (absorbedPostDependency);
+
         var cycleNames = AssignCycleFileNames(amalgams);
         var typeToCycleFile = new Dictionary<(string Module, string Name), string>();
         for (var i = 0; i < amalgams.Count; i++)
@@ -99,7 +148,8 @@ public sealed partial class CppBackend
         {
             var amalgam = amalgams[i];
             var includes = CollectAmalgamIncludes(
-                amalgam, cycleNames[i], typeToCycleFile, modulesWithTypesFile, items, keyOf, adj);
+                document, amalgam, cycleNames[i], typeToCycleFile, postTypes,
+                modulesWithTypesFile, items, keyOf, adj);
             files.Add(EmitAmalgamatedFile(
                 document,
                 plans,
@@ -266,6 +316,44 @@ public sealed partial class CppBackend
         component.Count > 1 ||
         (component.Count == 1 && adj[component[0]].Contains(component[0]));
 
+    private static List<HashSet<(string Module, string Name)>> ComputeModuleCycleAmalgams(
+        IReadOnlyList<(IrModule Module, string Name, TypeExpr Type)> items,
+        HashSet<int>[] typeAdj)
+    {
+        var moduleNames = items.Select(static item => item.Module.Name)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(static name => name, StringComparer.Ordinal)
+            .ToList();
+        var moduleIndex = moduleNames.Select((name, index) => (name, index))
+            .ToDictionary(static pair => pair.name, static pair => pair.index,
+                StringComparer.Ordinal);
+        var moduleAdj = moduleNames.Select(_ => new HashSet<int>()).ToArray();
+        for (var source = 0; source < items.Count; source++)
+        {
+            var sourceModule = moduleIndex[items[source].Module.Name];
+            foreach (var target in typeAdj[source])
+            {
+                var targetModule = moduleIndex[items[target].Module.Name];
+                if (sourceModule != targetModule)
+                {
+                    moduleAdj[sourceModule].Add(targetModule);
+                }
+            }
+        }
+
+        return ComputeTypeSccs(moduleAdj)
+            .Where(component => component.Count > 1)
+            .Select(component =>
+            {
+                var modules = component.Select(index => moduleNames[index])
+                    .ToHashSet(StringComparer.Ordinal);
+                return items.Where(item => modules.Contains(item.Module.Name))
+                    .Select(static item => (item.Module.Name, item.Name))
+                    .ToHashSet();
+            })
+            .ToList();
+    }
+
     private static List<List<int>> ComputeTypeSccs(HashSet<int>[] adj)
     {
         var n = adj.Length;
@@ -367,10 +455,12 @@ public sealed partial class CppBackend
         return names;
     }
 
-    private static List<string> CollectAmalgamIncludes(
+    private List<string> CollectAmalgamIncludes(
+        IrDocument document,
         HashSet<(string Module, string Name)> amalgam,
         string selfFile,
         Dictionary<(string Module, string Name), string> typeToCycleFile,
+        HashSet<(string Module, string Name)> postTypes,
         HashSet<string> modulesWithTypesFile,
         IReadOnlyList<(IrModule Module, string Name, TypeExpr Type)> items,
         Dictionary<(string Module, string Name), int> keyOf,
@@ -383,6 +473,12 @@ public sealed partial class CppBackend
             if (!keyOf.TryGetValue(key, out var index))
             {
                 continue;
+            }
+
+            foreach (var peer in CollectOidCatalogPeerModules(
+                         document, items[index].Module, items[index].Type))
+            {
+                peerIncludes.Add(PeerHeaderForTypesFile(peer, modulesWithTypesFile));
             }
 
             foreach (var dep in adj[index])
@@ -401,7 +497,7 @@ public sealed partial class CppBackend
                 }
 
                 peerIncludes.Add(
-                    modulesWithTypesFile.Contains(depKey.Module)
+                    modulesWithTypesFile.Contains(depKey.Module) && !postTypes.Contains(depKey)
                         ? TypesFileName(depKey.Module)
                         : CppNames.SanitizeTypeName(depKey.Module) + ".hpp");
             }

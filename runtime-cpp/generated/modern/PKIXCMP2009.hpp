@@ -26,7 +26,7 @@
 #include <vector>
 
 #include "PKIXCMP2009.types.hpp"
-#include "cycle_PKIXCMP2009_PKIBody_PKIXCMP2009_PKIMessage.hpp"
+#include "cycle_PKIXCMP2009_PKIBody_PKIXCMP2009_PKIMessage_and_7_more.hpp"
 
 namespace asn1kit {
 namespace modern {

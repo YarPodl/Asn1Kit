@@ -25,27 +25,10 @@
 #include <variant>
 #include <vector>
 
-namespace asn1kit {
-namespace modern {
-namespace PKIXDVCS2009 {
-
-struct PKIXDVCS2009Oids {
-    static constexpr auto IdAdDvcs = asn1kit::oid_literal<"1.3.6.1.5.5.7.48.4">();
-    static constexpr auto IdKpDvcs = asn1kit::oid_literal<"1.3.6.1.5.5.7.3.10">();
-    static constexpr auto IdCtDVCSRequestData = asn1kit::oid_literal<"1.2.840.113549.1.9.16.1.7">();
-    static constexpr auto IdCtDVCSResponseData = asn1kit::oid_literal<"1.2.840.113549.1.9.16.1.8">();
-    static constexpr auto IdAaDvcsDvc = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.29">();
-    static constexpr auto IdPkix = asn1kit::oid_literal<"1.3.6.1.5.5.7">();
-    static constexpr auto IdSmime = asn1kit::oid_literal<"1.2.840.113549.1.9.16">();
-};
-
-} // namespace PKIXDVCS2009
-} // namespace modern
-} // namespace asn1kit
+#include "PKIXDVCS2009.types.hpp"
+#include "cycle_AttributeCertificateVersion12009_AttCertVersionV1_AttributeCertificateVersion12009_AttributeCertificateInfoV1_and_56_more.hpp"
 
 #include "AlgorithmInformation2009.types.hpp"
-#include "CryptographicMessageSyntax2009.types.hpp"
-#include "ExtendedSecurityServices2009.hpp"
 #include "OCSP2009.types.hpp"
 #include "PKIX1Explicit2009.hpp"
 #include "PKIXCMP2009.types.hpp"
@@ -272,44 +255,6 @@ struct CertEtcToken {
     }
 };
 
-} // namespace PKIXDVCS2009
-} // namespace modern
-} // namespace asn1kit
-
-#include "PKIX1Implicit2009.hpp"
-
-namespace asn1kit {
-namespace modern {
-namespace PKIXDVCS2009 {
-
-struct DVCSErrorNotice {
-    ::asn1kit::modern::PKIXCMP2009::PKIStatusInfo transactionStatus{};
-    std::optional<::asn1kit::modern::PKIX1Implicit2009::GeneralName> transactionIdentifier{};
-
-    static constexpr bool match_tag(const asn1kit::tag& t) {
-        return t.matches_ignore_constructed(asn1kit::tag::sequence);
-    }
-
-    static DVCSErrorNotice decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
-        DVCSErrorNotice value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.transactionStatus = ::asn1kit::modern::PKIXCMP2009::PKIStatusInfo::decode(inner);
-            if (inner.next_matches<::asn1kit::modern::PKIX1Implicit2009::GeneralName>()) {
-                value.transactionIdentifier = ::asn1kit::modern::PKIX1Implicit2009::GeneralName::decode(inner);
-            }
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
-        auto scope = w.enter_sequence(t);
-        this->transactionStatus.encode(w);
-        if (this->transactionIdentifier.has_value()) {
-            (*this->transactionIdentifier).encode(w);
-        }
-    }
-};
-
 enum class DVCSTime_kind {
     genTime,
     timeStampToken
@@ -381,94 +326,15 @@ struct DVCSTime {
     }
 };
 
-struct DigestInfo {
-    // ASN.1 alias DigestAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set DigestAlgorithmSet (extensible). Membership not enforced by runtime.
-    ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier digestAlgorithm{};
-    // ASN.1 alias Digest ::= OCTET STRING.
-    asn1kit::bytes digest{};
+} // namespace PKIXDVCS2009
+} // namespace modern
+} // namespace asn1kit
 
-    static constexpr bool match_tag(const asn1kit::tag& t) {
-        return t.matches_ignore_constructed(asn1kit::tag::sequence);
-    }
+#include "PKIX1Implicit2009.hpp"
 
-    static DigestInfo decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
-        DigestInfo value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.digestAlgorithm = ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier::decode(inner);
-            value.digest = inner.read_octet_string(asn1kit::tag::octet_string);
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
-        auto scope = w.enter_sequence(t);
-        this->digestAlgorithm.encode(w);
-        w.write_octet_string(asn1kit::tag::octet_string, this->digest.span());
-    }
-};
-
-struct PathProcInput {
-    // ASN.1 SIZE (1..MAX). Not enforced by runtime.
-    std::vector<::asn1kit::modern::PKIX1Implicit2009::PolicyInformation> acceptablePolicySet{};
-    bool inhibitPolicyMapping = false;
-    bool explicitPolicyReqd = false;
-
-    static constexpr bool match_tag(const asn1kit::tag& t) {
-        return t.matches_ignore_constructed(asn1kit::tag::sequence);
-    }
-
-    static PathProcInput decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
-        PathProcInput value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.acceptablePolicySet = inner.read_sequence_of<::asn1kit::modern::PKIX1Implicit2009::PolicyInformation>();
-            if (inner.next_is(asn1kit::tag::boolean)) {
-                value.inhibitPolicyMapping = inner.read_boolean(asn1kit::tag::boolean);
-            }
-            else {
-                value.inhibitPolicyMapping = false;
-            }
-            if (inner.next_is(asn1kit::tag::boolean)) {
-                value.explicitPolicyReqd = inner.read_boolean(asn1kit::tag::boolean);
-            }
-            else {
-                value.explicitPolicyReqd = false;
-            }
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
-        auto scope = w.enter_sequence(t);
-        w.write_sequence_of(asn1kit::tag::sequence, this->acceptablePolicySet);
-        if (this->inhibitPolicyMapping != false) {
-            w.write_boolean(asn1kit::tag::boolean, this->inhibitPolicyMapping);
-        }
-        if (this->explicitPolicyReqd != false) {
-            w.write_boolean(asn1kit::tag::boolean, this->explicitPolicyReqd);
-        }
-    }
-};
-
-enum class ServiceType {
-    cpd = 1,
-    vsd = 2,
-    cpkc = 3,
-    ccpd = 4
-};
-
-inline void encode_enumerated(asn1kit::writer& w, ServiceType value, const asn1kit::tag& t = asn1kit::tag::enumerated) {
-    w.write_enumerated_decimal(t, std::to_string(static_cast<std::int32_t>(value)));
-}
-
-inline ServiceType decode_enumerated(asn1kit::reader& r, std::type_identity<ServiceType>, const asn1kit::tag& t = asn1kit::tag::enumerated) {
-    const auto text = r.read_enumerated_decimal(t);
-    const auto number = std::stoll(text);
-    if (number == 1) return ServiceType::cpd;
-    if (number == 2) return ServiceType::vsd;
-    if (number == 3) return ServiceType::cpkc;
-    if (number == 4) return ServiceType::ccpd;
-    throw asn1kit::exception("Unknown ENUMERATED value.");
-}
+namespace asn1kit {
+namespace modern {
+namespace PKIXDVCS2009 {
 
 struct DVCSRequestInformation {
     asn1kit::integer version = asn1kit::integer::from_int64(1ll);

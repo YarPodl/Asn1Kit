@@ -142,7 +142,7 @@ struct CAKeyUpdAnnContent {
 } // namespace modern
 } // namespace asn1kit
 
-#include "PKIXCRMF2009.hpp"
+#include "PKIXCRMF2009.types.hpp"
 
 namespace asn1kit {
 namespace modern {
@@ -1191,35 +1191,6 @@ struct RevAnnContent {
         w.write_time(asn1kit::tag::generalized_time, this->badSinceDate, asn1kit::time_form::generalized, 3);
         if (this->crlDetails.has_value()) {
             w.write_sequence_of(asn1kit::tag::sequence, (*this->crlDetails));
-        }
-    }
-};
-
-struct RevDetails {
-    ::asn1kit::modern::PKIXCRMF2009::CertTemplate certDetails{};
-    // ASN.1 alias Extensions ::= SEQUENCE OF Extension. ASN.1 SIZE (1..MAX). Not enforced by runtime. ASN.1 object set (extensible). Membership not enforced by runtime.
-    std::optional<std::vector<::asn1kit::modern::PKIXCommonTypes2009::Extension>> crlEntryDetails{};
-
-    static constexpr bool match_tag(const asn1kit::tag& t) {
-        return t.matches_ignore_constructed(asn1kit::tag::sequence);
-    }
-
-    static RevDetails decode(asn1kit::reader& r, const asn1kit::tag& t = asn1kit::tag::sequence) {
-        RevDetails value{};
-        r.with_sequence(t, [&](asn1kit::reader& inner) {
-            value.certDetails = ::asn1kit::modern::PKIXCRMF2009::CertTemplate::decode(inner);
-            if (inner.next_is(asn1kit::tag::sequence)) {
-                value.crlEntryDetails = inner.read_sequence_of<::asn1kit::modern::PKIXCommonTypes2009::Extension>();
-            }
-        });
-        return value;
-    }
-
-    void encode(asn1kit::writer& w, const asn1kit::tag& t = asn1kit::tag::sequence) const {
-        auto scope = w.enter_sequence(t);
-        this->certDetails.encode(w);
-        if (this->crlEntryDetails.has_value()) {
-            w.write_sequence_of(asn1kit::tag::sequence, (*this->crlEntryDetails));
         }
     }
 };

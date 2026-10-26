@@ -979,6 +979,69 @@ END
             "namespace a {\n\n} // namespace a",
             a.Replace("\r\n", "\n", StringComparison.Ordinal),
             StringComparison.Ordinal);
+
+        // An unrelated type SCC enables split-header planning. The include-only triangle
+        // must then become its own amalgam even when every typed open-type API is disabled.
+        document.Modules.Add(new IrModule
+        {
+            Name = "D",
+            Options = IrOptions.SetCpp(null, "namespace", "mod::d"),
+            Types =
+            {
+                new IrTypeDef
+                {
+                    Name = "Left",
+                    Type = new SequenceType
+                    {
+                        Components =
+                        {
+                            new IrComponent
+                            {
+                                Name = "right",
+                                Type = new RefType { Name = "Right", Module = "E" }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        document.Modules.Add(new IrModule
+        {
+            Name = "E",
+            Options = IrOptions.SetCpp(null, "namespace", "mod::e"),
+            Types =
+            {
+                new IrTypeDef
+                {
+                    Name = "Right",
+                    Type = new SequenceType
+                    {
+                        Components =
+                        {
+                            new IrComponent
+                            {
+                                Name = "left",
+                                Type = new RefType { Name = "Left", Module = "D" },
+                                Optional = true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        foreach (var definition in document.Modules.SelectMany(static module => module.Types))
+        {
+            definition.Options = IrOptions.SetOpenTypeApi(definition.Options, false);
+        }
+
+        var splitFiles = new CppBackend().Generate(document);
+        var triangle = Assert.Single(splitFiles, file =>
+            file.RelativePath.StartsWith("cycle_", StringComparison.Ordinal) &&
+            file.Contents.Contains("struct Issuer", StringComparison.Ordinal));
+        Assert.Contains("struct Choices", triangle.Contents);
+        Assert.Contains("struct Attr", triangle.Contents);
+        Assert.Contains("struct Serial", triangle.Contents);
+        Assert.Contains("struct Entity", triangle.Contents);
     }
 
     [Fact]
@@ -1649,6 +1712,7 @@ END
     {
         var files = new CppBackend().Generate(LoadModernPkixCms())
             .ToDictionary(f => f.RelativePath, f => f.Contents, StringComparer.Ordinal);
+        var generated = string.Join("\n", files.Values);
 
         // Synthesized nested owner referenced from another module's OID catalog.
         Assert.Contains(
@@ -1667,7 +1731,7 @@ END
             files["OCSP2009.types.hpp"]);
         Assert.Contains(
             "encode_enumerated(w, this->reason, asn1kit::tag::enumerated);",
-            files["EnrollmentMessageSyntax2009.hpp"]);
+            files["EnrollmentMessageSyntax2009.types.hpp"]);
         Assert.Contains(
             "inline void encode_enumerated(asn1kit::writer& w, CRLReason value",
             files["PKIX1Implicit2009.hpp"]);
@@ -1682,10 +1746,10 @@ END
             files["PKIXX400Address2009.hpp"]);
         Assert.Contains(
             "std::optional<std::vector<T>> try_decode_signed_attrs(",
-            files["CryptographicMessageSyntax2009.types.hpp"]);
+            generated);
         Assert.Contains(
             "open_context<\"CryptographicMessageSyntax-2009.signedAttributesSet\">",
-            files["CryptographicMessageSyntax2009.types.hpp"]);
+            generated);
         Assert.DoesNotContain(
             "try_decode_revoked_certificates",
             files["PKIX1Explicit2009.hpp"]);
@@ -1700,15 +1764,14 @@ END
             files["PKIXAttributeCertificate2009.hpp"]);
         Assert.Contains(
             "return asn1kit::try_decode_unique(",
-            files["CryptographicMessageSyntax2009.types.hpp"]);
+            generated);
         Assert.DoesNotContain(
             "Multiple values match open-type contextual decode.",
-            files["CryptographicMessageSyntax2009.types.hpp"]);
-        Assert.Contains(
-            "struct PKIMessage;",
-            files["cycle_PKIXCMP2009_PKIBody_PKIXCMP2009_PKIMessage.hpp"]);
+            generated);
+        Assert.Contains(files, file =>
+            file.Key.StartsWith("cycle_PKIXCMP2009_", StringComparison.Ordinal) &&
+            file.Value.Contains("struct PKIMessage;", StringComparison.Ordinal));
 
-        var generated = string.Join("\n", files.Values);
         foreach (var api in new[]
         {
             "AlgorithmIdentifier::make_signature_algorithms",

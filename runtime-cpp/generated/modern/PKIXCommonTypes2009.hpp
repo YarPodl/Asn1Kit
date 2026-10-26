@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "PKIXCommonTypes2009.types.hpp"
+#include "cycle_PKIXCMP2009_PKIBody_PKIXCMP2009_PKIMessage_and_7_more.hpp"
 
 #include "OCSP2009.types.hpp"
 #include "PKCS10.hpp"
@@ -33,6 +34,7 @@
 #include "PKIX1Implicit2009.hpp"
 #include "PKIXAttributeCertificate2009.hpp"
 #include "PKIXCRMF2009.hpp"
+#include "PKIXCRMF2009.types.hpp"
 
 namespace asn1kit {
 namespace modern {

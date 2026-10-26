@@ -25,6 +25,8 @@
 #include <variant>
 #include <vector>
 
+#include "cycle_AttributeCertificateVersion12009_AttCertVersionV1_AttributeCertificateVersion12009_AttributeCertificateInfoV1_and_56_more.hpp"
+
 namespace asn1kit {
 namespace modern {
 namespace SecureMimeMessageV3dot12009 {
@@ -37,16 +39,6 @@ struct SecureMimeMessageV3dot12009Oids {
     static constexpr auto IdCap = asn1kit::oid_literal<"1.2.840.113549.1.9.16.11">();
     static constexpr auto IdCapPreferBinaryInside = asn1kit::oid_literal<"1.2.840.113549.1.9.16.11.1">();
 };
-
-} // namespace SecureMimeMessageV3dot12009
-} // namespace modern
-} // namespace asn1kit
-
-#include "CryptographicMessageSyntax2009.types.hpp"
-
-namespace asn1kit {
-namespace modern {
-namespace SecureMimeMessageV3dot12009 {
 
 enum class SMIMEEncryptionKeyPreference_kind {
     issuerAndSerialNumber,

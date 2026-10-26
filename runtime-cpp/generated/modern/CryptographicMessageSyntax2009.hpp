@@ -25,11 +25,25 @@
 #include <variant>
 #include <vector>
 
-#include "CryptographicMessageSyntax2009.types.hpp"
+#include "cycle_AttributeCertificateVersion12009_AttCertVersionV1_AttributeCertificateVersion12009_AttributeCertificateInfoV1_and_56_more.hpp"
 
 namespace asn1kit {
 namespace modern {
 namespace CryptographicMessageSyntax2009 {
+
+struct CryptographicMessageSyntax2009Oids {
+    static constexpr auto IdCtContentInfo = asn1kit::oid_literal<"1.2.840.113549.1.9.16.1.6">();
+    static constexpr auto IdData = asn1kit::oid_literal<"1.2.840.113549.1.7.1">();
+    static constexpr auto IdSignedData = asn1kit::oid_literal<"1.2.840.113549.1.7.2">();
+    static constexpr auto IdEnvelopedData = asn1kit::oid_literal<"1.2.840.113549.1.7.3">();
+    static constexpr auto IdDigestedData = asn1kit::oid_literal<"1.2.840.113549.1.7.5">();
+    static constexpr auto IdEncryptedData = asn1kit::oid_literal<"1.2.840.113549.1.7.6">();
+    static constexpr auto IdCtAuthData = asn1kit::oid_literal<"1.2.840.113549.1.9.16.1.2">();
+    static constexpr auto IdContentType = asn1kit::oid_literal<"1.2.840.113549.1.9.3">();
+    static constexpr auto IdMessageDigest = asn1kit::oid_literal<"1.2.840.113549.1.9.4">();
+    static constexpr auto IdSigningTime = asn1kit::oid_literal<"1.2.840.113549.1.9.5">();
+    static constexpr auto IdCountersignature = asn1kit::oid_literal<"1.2.840.113549.1.9.6">();
+};
 
 namespace detail {
 
