@@ -143,6 +143,26 @@ public sealed class CmsRfc4134InteropTests
             CmsRfc4134Fixtures.ToHex(Assert.Single(digests).Span));
     }
 
+    [Fact]
+    public void SignedAttrs_4_10_UnsortedPermutationEncodesCanonicalDer()
+    {
+        var der = CmsRfc4134Fixtures.ReadDer("4.10.bin");
+        var info = ModernCms.ContentInfo.Decode(new Asn1Reader(der, Asn1Encoding.Der));
+        Assert.True(info.TryDecodeContent(
+            ModernCms.ContentSetContentBindings.CtSignedData, out ModernCms.SignedData signedData));
+
+        var signer = Assert.Single(signedData.SignerInfos);
+        var canonicalAttrs = signer.SignedAttrs!.Value.Value;
+        var unsortedAttrs = canonicalAttrs.Reverse().ToArray();
+        Assert.False(canonicalAttrs.Select(a => a.AttrType).SequenceEqual(
+            unsortedAttrs.Select(a => a.AttrType)));
+
+        signer.SignedAttrs = unsortedAttrs;
+        info.SetContent(ModernCms.ContentSetContentBindings.CtSignedData, signedData);
+
+        AssertRoundTrip(der, writer => info.Encode(writer));
+    }
+
     private static void AssertModernSignedData(
         byte[] der,
         ExpectedCmsMessage expected,

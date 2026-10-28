@@ -54,7 +54,7 @@ Evidence записывается стабильными именами test met
 | G018 | `pkix.ocsp` | open | — | Весь исходный критерий. |
 | G019 | `pkix.attribute-cert` | open | — | Весь исходный критерий. |
 | G020 | `cms.external-rfc` | done | — | RFC 4134 корпус + field asserts / DER round-trip. |
-| G021 | `cms.signed-attrs` | partial | — | RFC 4134 `4.10`: attrs + retained SET; unsorted permutation oracle остаётся. |
+| G021 | `cms.signed-attrs` | done | C# Modern CMS + RFC 4134 DER oracle | — |
 | G022 | `cms.detached` | done | — | RFC 4134 `4.3`. |
 | G023 | `cms.multiple-signers` | done | — | RFC 4134 `4.6`. |
 | G024 | `cms.enveloped` | open | — | Весь исходный критерий. |
@@ -173,12 +173,14 @@ Evidence записывается стабильными именами test met
 - C++: `GeneratedModernCmsTests` в
   [generated_modern_cms_tests.cpp](../runtime-cpp/tests/generated_modern_cms_tests.cpp).
 
-### G021 — `cms.signed-attrs` (partial)
+### G021 — `cms.signed-attrs` (done)
 
 - RFC 4134 `4.10`: OIDs/`contentType`/`messageDigest`, retained wire TLV
   (`0xA0`) и universal SET contents — `SignedAttrs_4_10_*` /
   `SignedData_4_10_SignedAttrsRoundTrip`.
-- Остаток: синтетическая unsorted permutation → канонический DER SET oracle.
+- `SignedAttrs_4_10_UnsortedPermutationEncodesCanonicalDer`: синтетическая
+  перестановка decoded attributes повторно кодируется в исходный канонический
+  DER внешнего RFC 4134 `4.10`.
 
 ### G022 — `cms.detached`
 

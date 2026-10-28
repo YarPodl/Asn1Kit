@@ -98,6 +98,12 @@
 - C# всегда: поле `Asn1Any` + typed `Binding<T>` / table-каталог / `TryDecode`·`Set`·`TryGet` / при однородном leaf — `AsString` — детали в [csharp-backend.md](../compiler/docs/playbooks/csharp-backend.md).
 - Decode: неизвестный ключ → raw; известный mismatch → `Asn1Exception`. `options.openType.mismatch` и universal-tag fallback для open types сняты (опция deprecated/no-op).
 
+## CONTAINING — известный payload представлен непосредственно его типом
+
+**Причина.** Универсальная обёртка `Asn1Contained<T>` / `contained<T>` дублировала модель значения и смешивала два разных случая: известный schema type, который можно декодировать сразу, и неизвестный open-type payload, который обязан сохраниться без догадок runtime. Дополнительный carrier также усложнял generated API без новой wire-семантики.
+
+**Последствие.** Известный `OCTET STRING (CONTAINING T)` или `BIT STRING (CONTAINING T)` представлен непосредственно как `T`; encode/decode выполняется парными `Read*Containing` / `Write*Containing`. Неизвестный OCTET payload остаётся raw bytes (`ReadOnlyMemory<byte>` в C#, `asn1kit::bytes` в C++), неизвестный BIT payload — bit-string value с сохранённым `UnusedBits`. Typed BIT STRING принимается только при октетном выравнивании. Runtime не угадывает внутренний ASN.1 до явного open-type binding; отдельных `Asn1Contained` / `contained<T>` в публичной модели нет.
+
 ## Runtime: мягкое чтение неканоничных форм + опции строгости
 
 **Причина.** Реальные PKIX/CMS потоки часто несут TLV, запрещённые строгим DER. Жёсткий reject по умолчанию ломает разбор чужих данных; молчаливый accept без документации и без переключателя — скрытый soft-profile.

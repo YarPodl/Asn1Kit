@@ -37,11 +37,24 @@ public sealed class ContainedValueTests
     }
 
     [Fact]
-    public void BitStringContentMustBeOctetAlignedWhenKnown()
+    public void WritesAndReadsTypedBitStringContent()
     {
         var writer = new Asn1Writer();
         writer.WriteBitStringContaining(Asn1Tag.BitString, 42, static (w, v) => w.WriteInteger(Asn1Tag.Integer, v));
         Assert.Equal("03040002012A", Convert.ToHexString(writer.Encode()));
+
+        var reader = new Asn1Reader(writer.Encode(), Asn1Encoding.Der);
+        var value = reader.ReadBitStringContaining(
+            Asn1Tag.BitString,
+            0,
+            static (r, _) => r.ReadInt32(Asn1Tag.Integer));
+        Assert.Equal(42, value);
+        reader.ThrowIfNotEmpty();
+    }
+
+    [Fact]
+    public void BitStringContentMustBeOctetAlignedWhenKnown()
+    {
         var reader = new Asn1Reader(Convert.FromHexString("030203A0"));
         Assert.Throws<Asn1Exception>(() => reader.ReadBitStringContaining(Asn1Tag.BitString, 0, static (r, _) => r.ReadInt32(Asn1Tag.Integer)));
     }
