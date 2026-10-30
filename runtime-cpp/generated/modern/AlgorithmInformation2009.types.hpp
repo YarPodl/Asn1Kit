@@ -31,16 +31,22 @@ namespace modern {
 namespace AlgorithmInformation2009 {
 
 namespace detail {
+struct algorithmIdentifier_parameters_algorithmIdentifier_2_open_type_entries;
 struct algorithmIdentifier_parameters_algorithmIdentifier_open_type_entries;
 struct algorithmIdentifier_parameters_open_type_entries;
 struct contentEncryptionAlgorithmSet_parameters_open_type_entries;
+struct digestAlgorithms_parameters_open_type_entries;
 struct hashAlgorithms_parameters_algorithmIdentifier_open_type_entries;
 struct hashAlgorithms_parameters_open_type_entries;
 struct keyAgreementAlgorithmSet_parameters_open_type_entries;
 struct keyDevAlgs_parameters_open_type_entries;
+struct keyEncryptionAlgorithmSet_parameters_open_type_entries;
 struct keyTransportAlgorithmSet_parameters_open_type_entries;
 struct keyWrapAlgs_parameters_open_type_entries;
+struct mACAlgorithms_parameters_open_type_entries;
+struct messageAuthenticationCodeAlgorithmSet_parameters_open_type_entries;
 struct originatorKeySet_parameters_open_type_entries;
+struct pBKDF2_pRFs_parameters_open_type_entries;
 struct pKCS1MGFAlgorithms_parameters_open_type_entries;
 struct pOPAlgs_parameters_open_type_entries;
 struct pSS_sourceAlgorithms_parameters_open_type_entries;
@@ -48,41 +54,124 @@ struct password_mACAlgorithms_parameters_open_type_entries;
 struct publicKeyAlgorithms_parameters_open_type_entries;
 struct signatureAlgorithms_parameters_open_type_entries;
 struct witnessAlgs_parameters_open_type_entries;
+template <typename Target, typename Access> struct AlgorithmIdentifierParametersAlgorithmIdentifier2OpenTable;
+template <typename Target, typename Access> struct AlgorithmIdentifierParametersAlgorithmIdentifierOpenTable;
+template <typename Target, typename Access> struct AlgorithmIdentifierParametersOpenTable;
+template <typename Target, typename Access> struct ContentEncryptionAlgorithmSetParametersOpenTable;
+template <typename Target, typename Access> struct DigestAlgorithmsParametersOpenTable;
+template <typename Target, typename Access> struct HashAlgorithmsParametersAlgorithmIdentifierOpenTable;
+template <typename Target, typename Access> struct HashAlgorithmsParametersOpenTable;
+template <typename Target, typename Access> struct KeyAgreementAlgorithmSetParametersOpenTable;
+template <typename Target, typename Access> struct KeyDevAlgsParametersOpenTable;
+template <typename Target, typename Access> struct KeyEncryptionAlgorithmSetParametersOpenTable;
+template <typename Target, typename Access> struct KeyTransportAlgorithmSetParametersOpenTable;
+template <typename Target, typename Access> struct KeyWrapAlgsParametersOpenTable;
+template <typename Target, typename Access> struct MACAlgorithmsParametersOpenTable;
+template <typename Target, typename Access> struct MessageAuthenticationCodeAlgorithmSetParametersOpenTable;
+template <typename Target, typename Access> struct OriginatorKeySetParametersOpenTable;
+template <typename Target, typename Access> struct PBKDF2PRFsParametersOpenTable;
+template <typename Target, typename Access> struct PKCS1MGFAlgorithmsParametersOpenTable;
+template <typename Target, typename Access> struct POPAlgsParametersOpenTable;
+template <typename Target, typename Access> struct PSSSourceAlgorithmsParametersOpenTable;
+template <typename Target, typename Access> struct PasswordMACAlgorithmsParametersOpenTable;
+template <typename Target, typename Access> struct PublicKeyAlgorithmsParametersOpenTable;
+template <typename Target, typename Access> struct SignatureAlgorithmsParametersOpenTable;
+template <typename Target, typename Access> struct WitnessAlgsParametersOpenTable;
+} // namespace detail
+namespace detail {
+using AlgorithmIdentifierSignatureAlgorithmsParametersOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct SignatureAlgorithmsParametersOpenTable;
+using AlgorithmIdentifierContentEncryptionAlgorithmSetParametersOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct ContentEncryptionAlgorithmSetParametersOpenTable;
+using AlgorithmIdentifierKeyTransportAlgorithmSetParametersOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct KeyTransportAlgorithmSetParametersOpenTable;
+using AlgorithmIdentifierKeyAgreementAlgorithmSetParametersOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct KeyAgreementAlgorithmSetParametersOpenTable;
+using AlgorithmIdentifierKeyWrapAlgsParametersOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct KeyWrapAlgsParametersOpenTable;
+using AlgorithmIdentifierOriginatorKeySetParametersOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct OriginatorKeySetParametersOpenTable;
+using AlgorithmIdentifierKeyEncryptionAlgorithmSetParametersOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct KeyEncryptionAlgorithmSetParametersOpenTable;
+using AlgorithmIdentifierLocalKeyDerivationAlgorithmParametersOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct AlgorithmIdentifierParametersOpenTable;
+using AlgorithmIdentifierMessageAuthenticationCodeAlgorithmSetParametersOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct MessageAuthenticationCodeAlgorithmSetParametersOpenTable;
+using AlgorithmIdentifierPbkdf2PrFsParametersOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct PBKDF2PRFsParametersOpenTable;
+using AlgorithmIdentifierPublicKeyAlgorithmsParametersOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct PublicKeyAlgorithmsParametersOpenTable;
+using AlgorithmIdentifierPopAlgsParametersOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct POPAlgsParametersOpenTable;
+using AlgorithmIdentifierWitnessAlgsParametersOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct WitnessAlgsParametersOpenTable;
+using AlgorithmIdentifierHashAlgorithmsHashAlgorithmParametersOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct HashAlgorithmsParametersOpenTable;
+using AlgorithmIdentifierKeyDevAlgsParametersOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct KeyDevAlgsParametersOpenTable;
+using AlgorithmIdentifierLocalAlgorithmIdentifierParametersOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct AlgorithmIdentifierParametersAlgorithmIdentifierOpenTable;
+using AlgorithmIdentifierLocalSignatureAlgorithmParametersOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct AlgorithmIdentifierParametersAlgorithmIdentifier2OpenTable;
+using AlgorithmIdentifierHashAlgorithmsAlgorithmIdentifierParametersOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct HashAlgorithmsParametersAlgorithmIdentifierOpenTable;
+using AlgorithmIdentifierPkcs1MgfAlgorithmsParametersOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct PKCS1MGFAlgorithmsParametersOpenTable;
+using AlgorithmIdentifierPssSourceAlgorithmsParametersOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct PSSSourceAlgorithmsParametersOpenTable;
+using AlgorithmIdentifierPasswordMacAlgorithmsParametersOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct PasswordMACAlgorithmsParametersOpenTable;
+using AlgorithmIdentifierDigestAlgorithmsParametersOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct DigestAlgorithmsParametersOpenTable;
+using AlgorithmIdentifierMacAlgorithmsParametersOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct MACAlgorithmsParametersOpenTable;
 } // namespace detail
 template <typename Target>
-struct AlgorithmIdentifierContentEncryptionAlgorithmSetOpenView;
+using AlgorithmIdentifierContentEncryptionAlgorithmSetOpenView = detail::ContentEncryptionAlgorithmSetParametersOpenTable<Target, detail::AlgorithmIdentifierContentEncryptionAlgorithmSetParametersOpenAccess>;
 template <typename Target>
-struct AlgorithmIdentifierHashAlgorithmsAlgorithmIdentifierOpenView;
+using AlgorithmIdentifierDigestAlgorithmsOpenView = detail::DigestAlgorithmsParametersOpenTable<Target, detail::AlgorithmIdentifierDigestAlgorithmsParametersOpenAccess>;
 template <typename Target>
-struct AlgorithmIdentifierHashAlgorithmsHashAlgorithmOpenView;
+using AlgorithmIdentifierHashAlgorithmsAlgorithmIdentifierOpenView = detail::HashAlgorithmsParametersAlgorithmIdentifierOpenTable<Target, detail::AlgorithmIdentifierHashAlgorithmsAlgorithmIdentifierParametersOpenAccess>;
 template <typename Target>
-struct AlgorithmIdentifierKeyAgreementAlgorithmSetOpenView;
+using AlgorithmIdentifierHashAlgorithmsHashAlgorithmOpenView = detail::HashAlgorithmsParametersOpenTable<Target, detail::AlgorithmIdentifierHashAlgorithmsHashAlgorithmParametersOpenAccess>;
 template <typename Target>
-struct AlgorithmIdentifierKeyTransportAlgorithmSetOpenView;
+using AlgorithmIdentifierKeyAgreementAlgorithmSetOpenView = detail::KeyAgreementAlgorithmSetParametersOpenTable<Target, detail::AlgorithmIdentifierKeyAgreementAlgorithmSetParametersOpenAccess>;
 template <typename Target>
-struct AlgorithmIdentifierKeyWrapAlgsOpenView;
+using AlgorithmIdentifierKeyDevAlgsOpenView = detail::KeyDevAlgsParametersOpenTable<Target, detail::AlgorithmIdentifierKeyDevAlgsParametersOpenAccess>;
 template <typename Target>
-struct AlgorithmIdentifierLocalAlgorithmIdentifierOpenView;
+using AlgorithmIdentifierKeyEncryptionAlgorithmSetOpenView = detail::KeyEncryptionAlgorithmSetParametersOpenTable<Target, detail::AlgorithmIdentifierKeyEncryptionAlgorithmSetParametersOpenAccess>;
 template <typename Target>
-struct AlgorithmIdentifierLocalKeyDerivationAlgorithmOpenView;
+using AlgorithmIdentifierKeyTransportAlgorithmSetOpenView = detail::KeyTransportAlgorithmSetParametersOpenTable<Target, detail::AlgorithmIdentifierKeyTransportAlgorithmSetParametersOpenAccess>;
 template <typename Target>
-struct AlgorithmIdentifierLocalSignatureAlgorithmOpenView;
+using AlgorithmIdentifierKeyWrapAlgsOpenView = detail::KeyWrapAlgsParametersOpenTable<Target, detail::AlgorithmIdentifierKeyWrapAlgsParametersOpenAccess>;
 template <typename Target>
-struct AlgorithmIdentifierMessageAuthenticationCodeAlgorithmSetOpenView;
+using AlgorithmIdentifierLocalAlgorithmIdentifierOpenView = detail::AlgorithmIdentifierParametersAlgorithmIdentifierOpenTable<Target, detail::AlgorithmIdentifierLocalAlgorithmIdentifierParametersOpenAccess>;
 template <typename Target>
-struct AlgorithmIdentifierOriginatorKeySetOpenView;
+using AlgorithmIdentifierLocalKeyDerivationAlgorithmOpenView = detail::AlgorithmIdentifierParametersOpenTable<Target, detail::AlgorithmIdentifierLocalKeyDerivationAlgorithmParametersOpenAccess>;
 template <typename Target>
-struct AlgorithmIdentifierPasswordMacAlgorithmsOpenView;
+using AlgorithmIdentifierLocalSignatureAlgorithmOpenView = detail::AlgorithmIdentifierParametersAlgorithmIdentifier2OpenTable<Target, detail::AlgorithmIdentifierLocalSignatureAlgorithmParametersOpenAccess>;
 template <typename Target>
-struct AlgorithmIdentifierPkcs1MgfAlgorithmsOpenView;
+using AlgorithmIdentifierMacAlgorithmsOpenView = detail::MACAlgorithmsParametersOpenTable<Target, detail::AlgorithmIdentifierMacAlgorithmsParametersOpenAccess>;
 template <typename Target>
-struct AlgorithmIdentifierPssSourceAlgorithmsOpenView;
+using AlgorithmIdentifierMessageAuthenticationCodeAlgorithmSetOpenView = detail::MessageAuthenticationCodeAlgorithmSetParametersOpenTable<Target, detail::AlgorithmIdentifierMessageAuthenticationCodeAlgorithmSetParametersOpenAccess>;
 template <typename Target>
-struct AlgorithmIdentifierPublicKeyAlgorithmsOpenView;
+using AlgorithmIdentifierOriginatorKeySetOpenView = detail::OriginatorKeySetParametersOpenTable<Target, detail::AlgorithmIdentifierOriginatorKeySetParametersOpenAccess>;
 template <typename Target>
-struct AlgorithmIdentifierSignatureAlgorithmsOpenView;
+using AlgorithmIdentifierPasswordMacAlgorithmsOpenView = detail::PasswordMACAlgorithmsParametersOpenTable<Target, detail::AlgorithmIdentifierPasswordMacAlgorithmsParametersOpenAccess>;
 template <typename Target>
-struct AlgorithmIdentifierWitnessAlgsOpenView;
+using AlgorithmIdentifierPbkdf2PrFsOpenView = detail::PBKDF2PRFsParametersOpenTable<Target, detail::AlgorithmIdentifierPbkdf2PrFsParametersOpenAccess>;
+template <typename Target>
+using AlgorithmIdentifierPkcs1MgfAlgorithmsOpenView = detail::PKCS1MGFAlgorithmsParametersOpenTable<Target, detail::AlgorithmIdentifierPkcs1MgfAlgorithmsParametersOpenAccess>;
+template <typename Target>
+using AlgorithmIdentifierPopAlgsOpenView = detail::POPAlgsParametersOpenTable<Target, detail::AlgorithmIdentifierPopAlgsParametersOpenAccess>;
+template <typename Target>
+using AlgorithmIdentifierPssSourceAlgorithmsOpenView = detail::PSSSourceAlgorithmsParametersOpenTable<Target, detail::AlgorithmIdentifierPssSourceAlgorithmsParametersOpenAccess>;
+template <typename Target>
+using AlgorithmIdentifierPublicKeyAlgorithmsOpenView = detail::PublicKeyAlgorithmsParametersOpenTable<Target, detail::AlgorithmIdentifierPublicKeyAlgorithmsParametersOpenAccess>;
+template <typename Target>
+using AlgorithmIdentifierSignatureAlgorithmsOpenView = detail::SignatureAlgorithmsParametersOpenTable<Target, detail::AlgorithmIdentifierSignatureAlgorithmsParametersOpenAccess>;
+template <typename Target>
+using AlgorithmIdentifierWitnessAlgsOpenView = detail::WitnessAlgsParametersOpenTable<Target, detail::AlgorithmIdentifierWitnessAlgsParametersOpenAccess>;
 struct AlgorithmIdentifier {
     // ASN.1 constraint unsupported:  table({ AlgorithmSet }). Not enforced by runtime.
     asn1kit::oid algorithm{};
@@ -93,6 +182,12 @@ struct AlgorithmIdentifier {
     [[nodiscard]] AlgorithmIdentifierContentEncryptionAlgorithmSetOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> content_encryption_algorithm_set() &&;
     AlgorithmIdentifierContentEncryptionAlgorithmSetOpenView<const AlgorithmIdentifier> content_encryption_algorithm_set() const && = delete;
     [[nodiscard]] static AlgorithmIdentifierContentEncryptionAlgorithmSetOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_content_encryption_algorithm_set();
+
+    [[nodiscard]] AlgorithmIdentifierDigestAlgorithmsOpenView<AlgorithmIdentifier> digest_algorithms() &;
+    [[nodiscard]] AlgorithmIdentifierDigestAlgorithmsOpenView<const AlgorithmIdentifier> digest_algorithms() const &;
+    [[nodiscard]] AlgorithmIdentifierDigestAlgorithmsOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> digest_algorithms() &&;
+    AlgorithmIdentifierDigestAlgorithmsOpenView<const AlgorithmIdentifier> digest_algorithms() const && = delete;
+    [[nodiscard]] static AlgorithmIdentifierDigestAlgorithmsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_digest_algorithms();
 
     [[nodiscard]] AlgorithmIdentifierHashAlgorithmsAlgorithmIdentifierOpenView<AlgorithmIdentifier> hash_algorithms_algorithm_identifier() &;
     [[nodiscard]] AlgorithmIdentifierHashAlgorithmsAlgorithmIdentifierOpenView<const AlgorithmIdentifier> hash_algorithms_algorithm_identifier() const &;
@@ -111,6 +206,18 @@ struct AlgorithmIdentifier {
     [[nodiscard]] AlgorithmIdentifierKeyAgreementAlgorithmSetOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> key_agreement_algorithm_set() &&;
     AlgorithmIdentifierKeyAgreementAlgorithmSetOpenView<const AlgorithmIdentifier> key_agreement_algorithm_set() const && = delete;
     [[nodiscard]] static AlgorithmIdentifierKeyAgreementAlgorithmSetOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_key_agreement_algorithm_set();
+
+    [[nodiscard]] AlgorithmIdentifierKeyDevAlgsOpenView<AlgorithmIdentifier> key_dev_algs() &;
+    [[nodiscard]] AlgorithmIdentifierKeyDevAlgsOpenView<const AlgorithmIdentifier> key_dev_algs() const &;
+    [[nodiscard]] AlgorithmIdentifierKeyDevAlgsOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> key_dev_algs() &&;
+    AlgorithmIdentifierKeyDevAlgsOpenView<const AlgorithmIdentifier> key_dev_algs() const && = delete;
+    [[nodiscard]] static AlgorithmIdentifierKeyDevAlgsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_key_dev_algs();
+
+    [[nodiscard]] AlgorithmIdentifierKeyEncryptionAlgorithmSetOpenView<AlgorithmIdentifier> key_encryption_algorithm_set() &;
+    [[nodiscard]] AlgorithmIdentifierKeyEncryptionAlgorithmSetOpenView<const AlgorithmIdentifier> key_encryption_algorithm_set() const &;
+    [[nodiscard]] AlgorithmIdentifierKeyEncryptionAlgorithmSetOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> key_encryption_algorithm_set() &&;
+    AlgorithmIdentifierKeyEncryptionAlgorithmSetOpenView<const AlgorithmIdentifier> key_encryption_algorithm_set() const && = delete;
+    [[nodiscard]] static AlgorithmIdentifierKeyEncryptionAlgorithmSetOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_key_encryption_algorithm_set();
 
     [[nodiscard]] AlgorithmIdentifierKeyTransportAlgorithmSetOpenView<AlgorithmIdentifier> key_transport_algorithm_set() &;
     [[nodiscard]] AlgorithmIdentifierKeyTransportAlgorithmSetOpenView<const AlgorithmIdentifier> key_transport_algorithm_set() const &;
@@ -142,6 +249,12 @@ struct AlgorithmIdentifier {
     AlgorithmIdentifierLocalSignatureAlgorithmOpenView<const AlgorithmIdentifier> local_signature_algorithm() const && = delete;
     [[nodiscard]] static AlgorithmIdentifierLocalSignatureAlgorithmOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_local_signature_algorithm();
 
+    [[nodiscard]] AlgorithmIdentifierMacAlgorithmsOpenView<AlgorithmIdentifier> mac_algorithms() &;
+    [[nodiscard]] AlgorithmIdentifierMacAlgorithmsOpenView<const AlgorithmIdentifier> mac_algorithms() const &;
+    [[nodiscard]] AlgorithmIdentifierMacAlgorithmsOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> mac_algorithms() &&;
+    AlgorithmIdentifierMacAlgorithmsOpenView<const AlgorithmIdentifier> mac_algorithms() const && = delete;
+    [[nodiscard]] static AlgorithmIdentifierMacAlgorithmsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_mac_algorithms();
+
     [[nodiscard]] AlgorithmIdentifierMessageAuthenticationCodeAlgorithmSetOpenView<AlgorithmIdentifier> message_authentication_code_algorithm_set() &;
     [[nodiscard]] AlgorithmIdentifierMessageAuthenticationCodeAlgorithmSetOpenView<const AlgorithmIdentifier> message_authentication_code_algorithm_set() const &;
     [[nodiscard]] AlgorithmIdentifierMessageAuthenticationCodeAlgorithmSetOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> message_authentication_code_algorithm_set() &&;
@@ -160,11 +273,23 @@ struct AlgorithmIdentifier {
     AlgorithmIdentifierPasswordMacAlgorithmsOpenView<const AlgorithmIdentifier> password_mac_algorithms() const && = delete;
     [[nodiscard]] static AlgorithmIdentifierPasswordMacAlgorithmsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_password_mac_algorithms();
 
+    [[nodiscard]] AlgorithmIdentifierPbkdf2PrFsOpenView<AlgorithmIdentifier> pbkdf2_pr_fs() &;
+    [[nodiscard]] AlgorithmIdentifierPbkdf2PrFsOpenView<const AlgorithmIdentifier> pbkdf2_pr_fs() const &;
+    [[nodiscard]] AlgorithmIdentifierPbkdf2PrFsOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> pbkdf2_pr_fs() &&;
+    AlgorithmIdentifierPbkdf2PrFsOpenView<const AlgorithmIdentifier> pbkdf2_pr_fs() const && = delete;
+    [[nodiscard]] static AlgorithmIdentifierPbkdf2PrFsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_pbkdf2_pr_fs();
+
     [[nodiscard]] AlgorithmIdentifierPkcs1MgfAlgorithmsOpenView<AlgorithmIdentifier> pkcs1_mgf_algorithms() &;
     [[nodiscard]] AlgorithmIdentifierPkcs1MgfAlgorithmsOpenView<const AlgorithmIdentifier> pkcs1_mgf_algorithms() const &;
     [[nodiscard]] AlgorithmIdentifierPkcs1MgfAlgorithmsOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> pkcs1_mgf_algorithms() &&;
     AlgorithmIdentifierPkcs1MgfAlgorithmsOpenView<const AlgorithmIdentifier> pkcs1_mgf_algorithms() const && = delete;
     [[nodiscard]] static AlgorithmIdentifierPkcs1MgfAlgorithmsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_pkcs1_mgf_algorithms();
+
+    [[nodiscard]] AlgorithmIdentifierPopAlgsOpenView<AlgorithmIdentifier> pop_algs() &;
+    [[nodiscard]] AlgorithmIdentifierPopAlgsOpenView<const AlgorithmIdentifier> pop_algs() const &;
+    [[nodiscard]] AlgorithmIdentifierPopAlgsOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> pop_algs() &&;
+    AlgorithmIdentifierPopAlgsOpenView<const AlgorithmIdentifier> pop_algs() const && = delete;
+    [[nodiscard]] static AlgorithmIdentifierPopAlgsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> make_pop_algs();
 
     [[nodiscard]] AlgorithmIdentifierPssSourceAlgorithmsOpenView<AlgorithmIdentifier> pss_source_algorithms() &;
     [[nodiscard]] AlgorithmIdentifierPssSourceAlgorithmsOpenView<const AlgorithmIdentifier> pss_source_algorithms() const &;
@@ -294,6 +419,287 @@ struct SMIMECapability {
         }
     }
 };
+
+#ifndef ASN1KIT_GENERATED_ALGORITHMINFORMATION2009OPENTABLES_HPP
+#define ASN1KIT_GENERATED_ALGORITHMINFORMATION2009OPENTABLES_HPP
+#ifdef ASN1KIT_DETAIL_OPEN_TABLE_ENTRY
+#error "ASN1KIT_DETAIL_OPEN_TABLE_ENTRY is reserved for generated headers"
+#endif
+#define ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(Name, Entry) \
+    template <typename... Args> \
+    decltype(auto) Name(Args&&... args) const \
+        requires requires(const base& table, Args&&... values) { \
+            table.template invoke<entries::Entry>(std::forward<Args>(values)...); \
+        } \
+    { return this->template invoke<entries::Entry>(std::forward<Args>(args)...); }
+
+namespace detail {
+
+template <typename Target, typename Access>
+struct AlgorithmIdentifierParametersOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = algorithmIdentifier_parameters_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(pbkdf2, pbkdf2)
+};
+
+template <typename Target, typename Access>
+struct AlgorithmIdentifierParametersAlgorithmIdentifierOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = algorithmIdentifier_parameters_algorithmIdentifier_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(sha256, sha256)
+};
+
+template <typename Target, typename Access>
+struct AlgorithmIdentifierParametersAlgorithmIdentifier2OpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = algorithmIdentifier_parameters_algorithmIdentifier_2_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(dsa_with_sha1, dsa_with_sha1)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(rsa_with_sha1, rsa_with_sha1)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(rsa_with_md5, rsa_with_md5)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(rsa_with_md2, rsa_with_md2)
+};
+
+template <typename Target, typename Access>
+struct ContentEncryptionAlgorithmSetParametersOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = contentEncryptionAlgorithmSet_parameters_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(f_3_des_cbc, f_3_des_cbc)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(rc2_cbc, rc2_cbc)
+};
+
+template <typename Target, typename Access>
+struct DigestAlgorithmsParametersOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = digestAlgorithms_parameters_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(sha1, sha1)
+};
+
+template <typename Target, typename Access>
+struct HashAlgorithmsParametersOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = hashAlgorithms_parameters_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(sha1, sha1)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(sha256, sha256)
+};
+
+template <typename Target, typename Access>
+struct HashAlgorithmsParametersAlgorithmIdentifierOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = hashAlgorithms_parameters_algorithmIdentifier_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(sha1, sha1)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(oid_2_16_840_1_101_3_4_2_4, oid_2_16_840_1_101_3_4_2_4)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(sha256, sha256)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(oid_2_16_840_1_101_3_4_2_2, oid_2_16_840_1_101_3_4_2_2)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(oid_2_16_840_1_101_3_4_2_3, oid_2_16_840_1_101_3_4_2_3)
+};
+
+template <typename Target, typename Access>
+struct KeyAgreementAlgorithmSetParametersOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = keyAgreementAlgorithmSet_parameters_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(esdh, esdh)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(ssdh, ssdh)
+};
+
+template <typename Target, typename Access>
+struct KeyDevAlgsParametersOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = keyDevAlgs_parameters_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(pbkdf2, pbkdf2)
+};
+
+template <typename Target, typename Access>
+struct KeyEncryptionAlgorithmSetParametersOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = keyEncryptionAlgorithmSet_parameters_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(f_3_des_wrap, f_3_des_wrap)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(rc2_wrap, rc2_wrap)
+};
+
+template <typename Target, typename Access>
+struct KeyTransportAlgorithmSetParametersOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = keyTransportAlgorithmSet_parameters_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(rsa, rsa)
+};
+
+template <typename Target, typename Access>
+struct KeyWrapAlgsParametersOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = keyWrapAlgs_parameters_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(f_3_des_wrap, f_3_des_wrap)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(rc2_wrap, rc2_wrap)
+};
+
+template <typename Target, typename Access>
+struct MACAlgorithmsParametersOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = mACAlgorithms_parameters_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(h_mac_sha1, h_mac_sha1)
+};
+
+template <typename Target, typename Access>
+struct MessageAuthenticationCodeAlgorithmSetParametersOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = messageAuthenticationCodeAlgorithmSet_parameters_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(h_mac_sha1, h_mac_sha1)
+};
+
+template <typename Target, typename Access>
+struct OriginatorKeySetParametersOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = originatorKeySet_parameters_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(dh, dh)
+};
+
+template <typename Target, typename Access>
+struct PBKDF2PRFsParametersOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = pBKDF2_pRFs_parameters_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(h_mac_sha1, h_mac_sha1)
+};
+
+template <typename Target, typename Access>
+struct PKCS1MGFAlgorithmsParametersOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = pKCS1MGFAlgorithms_parameters_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(hash_algorithm, hash_algorithm)
+};
+
+template <typename Target, typename Access>
+struct POPAlgsParametersOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = pOPAlgs_parameters_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(h_mac_sha1, h_mac_sha1)
+};
+
+template <typename Target, typename Access>
+struct PSSSourceAlgorithmsParametersOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = pSS_sourceAlgorithms_parameters_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(encoding_parameters, encoding_parameters)
+};
+
+template <typename Target, typename Access>
+struct PasswordMACAlgorithmsParametersOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = password_mACAlgorithms_parameters_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(pbm_parameter, pbm_parameter)
+};
+
+template <typename Target, typename Access>
+struct PublicKeyAlgorithmsParametersOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = publicKeyAlgorithms_parameters_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(rsa, rsa)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(dsa, dsa)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(dh, dh)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(kea, kea)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(ec, ec)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(ec_dh, ec_dh)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(ec_mqv, ec_mqv)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(rsa_ssa_pss, rsa_ssa_pss)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(rsa_es_oaep, rsa_es_oaep)
+};
+
+template <typename Target, typename Access>
+struct SignatureAlgorithmsParametersOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = signatureAlgorithms_parameters_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(rsa_with_md2, rsa_with_md2)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(rsa_with_md5, rsa_with_md5)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(rsa_with_sha1, rsa_with_sha1)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(dsa_with_sha1, dsa_with_sha1)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(ecdsa_with_sha1, ecdsa_with_sha1)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(dsa_with_sha224, dsa_with_sha224)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(dsa_with_sha256, dsa_with_sha256)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(ecdsa_with_sha224, ecdsa_with_sha224)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(ecdsa_with_sha256, ecdsa_with_sha256)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(ecdsa_with_sha384, ecdsa_with_sha384)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(ecdsa_with_sha512, ecdsa_with_sha512)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(rsa_ssa_pss, rsa_ssa_pss)
+};
+
+template <typename Target, typename Access>
+struct WitnessAlgsParametersOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = witnessAlgs_parameters_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(sha1, sha1)
+};
+
+} // namespace detail
+
+#undef ASN1KIT_DETAIL_OPEN_TABLE_ENTRY
+#endif // ASN1KIT_GENERATED_ALGORITHMINFORMATION2009OPENTABLES_HPP
 
 } // namespace AlgorithmInformation2009
 } // namespace modern

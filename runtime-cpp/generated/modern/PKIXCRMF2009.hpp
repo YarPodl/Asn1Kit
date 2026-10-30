@@ -201,50 +201,19 @@ struct PKIArchiveOptions {
     }
 };
 
-#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
-#error "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY is reserved for generated headers"
-#endif
-#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding) \
-    template <typename... Args> \
-    decltype(auto) Name(Args&&... args) const \
-        requires requires(const base& view, Args&&... values) { \
-            view.template invoke<open_entries::Binding>(std::forward<Args>(values)...); \
-        } \
-    { return view_.template invoke<open_entries::Binding>(std::forward<Args>(args)...); }
+namespace detail {
 
-template <typename Target>
-struct CertRequestRegControlSetOpenView {
-    using open_entries = ::asn1kit::modern::PKIXCommonTypes2009::detail::regControlSet_value_open_type_entries;
-
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_controls(binding);
-        }
-    };
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit CertRequestRegControlSetOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit CertRequestRegControlSetOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(reg_ctrl_reg_token, reg_ctrl_reg_token)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(reg_ctrl_authenticator, reg_ctrl_authenticator)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(reg_ctrl_pki_publication_info, reg_ctrl_pki_publication_info)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(reg_ctrl_pki_archive_options, reg_ctrl_pki_archive_options)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(reg_ctrl_old_cert_id, reg_ctrl_old_cert_id)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(reg_ctrl_protocol_encr_key, reg_ctrl_protocol_encr_key)
-
-private:
-    [[no_unique_address]] base view_;
+struct CertRequestRegControlSetValueOpenAccess {
+    template <typename Entry>
+    static auto binding(const Entry& entry) {
+        using value_type = typename Entry::value_type;
+        return asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.regControlSet_value">, typename Entry::key_type, value_type>{entry.key};
+    }
+    template <typename Source, typename Binding>
+    static auto decode(const Source& source, const Binding& binding) { return source.try_decode_controls(binding); }
 };
 
-#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+} // namespace detail
 
 inline CertRequestRegControlSetOpenView<CertRequest> CertRequest::reg_control_set() & {
     return CertRequestRegControlSetOpenView<CertRequest>{*this};

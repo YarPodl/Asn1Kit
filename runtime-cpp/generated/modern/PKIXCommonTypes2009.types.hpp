@@ -69,23 +69,49 @@ struct extension_extnValue_extension_2_open_type_entries;
 struct extension_extnValue_extension_3_open_type_entries;
 struct extension_extnValue_extension_open_type_entries;
 struct extension_extnValue_open_type_entries;
+template <typename Target, typename Access> struct AttributeCertExtensionsOpenTable;
+template <typename Target, typename Access> struct CertExtensionsOpenTable;
+template <typename Target, typename Access> struct CrlEntryExtensionsOpenTable;
+template <typename Target, typename Access> struct CrlExtensionsOpenTable;
+template <typename Target, typename Access> struct ExtensionExtnValueExtension2OpenTable;
+template <typename Target, typename Access> struct ExtensionExtnValueExtension3OpenTable;
+template <typename Target, typename Access> struct ExtensionExtnValueExtensionOpenTable;
+template <typename Target, typename Access> struct ExtensionExtnValueOpenTable;
+} // namespace detail
+namespace detail {
+using ExtensionCertExtensionsExtnValueOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct CertExtensionsOpenTable;
+using ExtensionLocalRequestExtensionsExtnValueOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct ExtensionExtnValueOpenTable;
+using ExtensionLocalSingleRequestExtensionsExtnValueOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct ExtensionExtnValueExtensionOpenTable;
+using ExtensionLocalResponseExtensionsExtnValueOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct ExtensionExtnValueExtension2OpenTable;
+using ExtensionLocalSingleExtensionsExtnValueOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct ExtensionExtnValueExtension3OpenTable;
+using ExtensionCrlEntryExtensionsExtnValueOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct CrlEntryExtensionsOpenTable;
+using ExtensionCrlExtensionsExtnValueOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct CrlExtensionsOpenTable;
+using ExtensionAttributeCertExtensionsExtnValueOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct AttributeCertExtensionsOpenTable;
 } // namespace detail
 template <typename Target>
-struct ExtensionAttributeCertExtensionsOpenView;
+using ExtensionAttributeCertExtensionsOpenView = detail::AttributeCertExtensionsOpenTable<Target, detail::ExtensionAttributeCertExtensionsExtnValueOpenAccess>;
 template <typename Target>
-struct ExtensionCertExtensionsOpenView;
+using ExtensionCertExtensionsOpenView = detail::CertExtensionsOpenTable<Target, detail::ExtensionCertExtensionsExtnValueOpenAccess>;
 template <typename Target>
-struct ExtensionCrlEntryExtensionsOpenView;
+using ExtensionCrlEntryExtensionsOpenView = detail::CrlEntryExtensionsOpenTable<Target, detail::ExtensionCrlEntryExtensionsExtnValueOpenAccess>;
 template <typename Target>
-struct ExtensionCrlExtensionsOpenView;
+using ExtensionCrlExtensionsOpenView = detail::CrlExtensionsOpenTable<Target, detail::ExtensionCrlExtensionsExtnValueOpenAccess>;
 template <typename Target>
-struct ExtensionLocalRequestExtensionsOpenView;
+using ExtensionLocalRequestExtensionsOpenView = detail::ExtensionExtnValueOpenTable<Target, detail::ExtensionLocalRequestExtensionsExtnValueOpenAccess>;
 template <typename Target>
-struct ExtensionLocalResponseExtensionsOpenView;
+using ExtensionLocalResponseExtensionsOpenView = detail::ExtensionExtnValueExtension2OpenTable<Target, detail::ExtensionLocalResponseExtensionsExtnValueOpenAccess>;
 template <typename Target>
-struct ExtensionLocalSingleExtensionsOpenView;
+using ExtensionLocalSingleExtensionsOpenView = detail::ExtensionExtnValueExtension3OpenTable<Target, detail::ExtensionLocalSingleExtensionsExtnValueOpenAccess>;
 template <typename Target>
-struct ExtensionLocalSingleRequestExtensionsOpenView;
+using ExtensionLocalSingleRequestExtensionsOpenView = detail::ExtensionExtnValueExtensionOpenTable<Target, detail::ExtensionLocalSingleRequestExtensionsExtnValueOpenAccess>;
 struct Extension {
     // ASN.1 constraint unsupported:  table({ ExtensionSet }). Not enforced by runtime.
     asn1kit::oid extnID{};
@@ -230,14 +256,25 @@ struct SecurityCategory {
 namespace detail {
 struct regControlSet_value_open_type_entries;
 struct regInfoSet_value_open_type_entries;
-struct supportedAttributes_value_open_type_entries;
+struct supportedAttributes_open_type_entries;
+template <typename Target, typename Access> struct RegControlSetValueOpenTable;
+template <typename Target, typename Access> struct RegInfoSetValueOpenTable;
+template <typename Target, typename Access> struct SupportedAttributesOpenTable;
+} // namespace detail
+namespace detail {
+using SingleAttributeSupportedAttributesValueOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct SupportedAttributesOpenTable;
+using SingleAttributeRegInfoSetValueOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct RegInfoSetValueOpenTable;
+using SingleAttributeRegControlSetValueOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct RegControlSetValueOpenTable;
 } // namespace detail
 template <typename Target>
-struct SingleAttributeRegControlSetOpenView;
+using SingleAttributeRegControlSetOpenView = detail::RegControlSetValueOpenTable<Target, detail::SingleAttributeRegControlSetValueOpenAccess>;
 template <typename Target>
-struct SingleAttributeRegInfoSetOpenView;
+using SingleAttributeRegInfoSetOpenView = detail::RegInfoSetValueOpenTable<Target, detail::SingleAttributeRegInfoSetValueOpenAccess>;
 template <typename Target>
-struct SingleAttributeSupportedAttributesOpenView;
+using SingleAttributeSupportedAttributesOpenView = detail::SupportedAttributesOpenTable<Target, detail::SingleAttributeSupportedAttributesValueOpenAccess>;
 struct SingleAttribute {
     // ASN.1 constraint unsupported:  table({ AttrSet }). Not enforced by runtime.
     asn1kit::oid type{};
@@ -306,6 +343,196 @@ struct SingleAttribute {
         w.write_any(this->value_);
     }
 };
+
+#ifndef ASN1KIT_GENERATED_PKIXCOMMONTYPES2009OPENTABLES_HPP
+#define ASN1KIT_GENERATED_PKIXCOMMONTYPES2009OPENTABLES_HPP
+#ifdef ASN1KIT_DETAIL_OPEN_TABLE_ENTRY
+#error "ASN1KIT_DETAIL_OPEN_TABLE_ENTRY is reserved for generated headers"
+#endif
+#define ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(Name, Entry) \
+    template <typename... Args> \
+    decltype(auto) Name(Args&&... args) const \
+        requires requires(const base& table, Args&&... values) { \
+            table.template invoke<entries::Entry>(std::forward<Args>(values)...); \
+        } \
+    { return this->template invoke<entries::Entry>(std::forward<Args>(args)...); }
+
+namespace detail {
+
+template <typename Target, typename Access>
+struct AttributeCertExtensionsOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = attributeCertExtensions_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(audit_identity, audit_identity)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(target_information, target_information)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(authority_key_identifier, authority_key_identifier)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(authority_info_access, authority_info_access)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(crl_distribution_points, crl_distribution_points)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(no_rev_avail, no_rev_avail)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(ac_proxying, ac_proxying)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(aa_controls, aa_controls)
+};
+
+template <typename Target, typename Access>
+struct CertExtensionsOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = certExtensions_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(authority_key_identifier, authority_key_identifier)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(subject_key_identifier, subject_key_identifier)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(key_usage, key_usage)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(private_key_usage_period, private_key_usage_period)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(certificate_policies, certificate_policies)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(policy_mappings, policy_mappings)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(subject_alt_name, subject_alt_name)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(issuer_alt_name, issuer_alt_name)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(subject_directory_attributes, subject_directory_attributes)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(basic_constraints, basic_constraints)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(name_constraints, name_constraints)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(policy_constraints, policy_constraints)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(ext_key_usage, ext_key_usage)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(crl_distribution_points, crl_distribution_points)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(inhibit_any_policy, inhibit_any_policy)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(freshest_crl, freshest_crl)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(authority_info_access, authority_info_access)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(subject_info_access_syntax, subject_info_access_syntax)
+};
+
+template <typename Target, typename Access>
+struct CrlEntryExtensionsOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = crlEntryExtensions_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(crl_reason, crl_reason)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(certificate_issuer, certificate_issuer)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(hold_instruction_code, hold_instruction_code)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(invalidity_date, invalidity_date)
+};
+
+template <typename Target, typename Access>
+struct CrlExtensionsOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = crlExtensions_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(authority_key_identifier, authority_key_identifier)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(issuer_alt_name, issuer_alt_name)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(crl_number, crl_number)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(delta_crl_indicator, delta_crl_indicator)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(issuing_distribution_point, issuing_distribution_point)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(freshest_crl, freshest_crl)
+};
+
+template <typename Target, typename Access>
+struct ExtensionExtnValueOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = extension_extnValue_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(ocsp_nonce, ocsp_nonce)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(ocsp_response, ocsp_response)
+};
+
+template <typename Target, typename Access>
+struct ExtensionExtnValueExtensionOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = extension_extnValue_extension_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(ocsp_service_locator, ocsp_service_locator)
+};
+
+template <typename Target, typename Access>
+struct ExtensionExtnValueExtension2OpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = extension_extnValue_extension_2_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(ocsp_nonce, ocsp_nonce)
+};
+
+template <typename Target, typename Access>
+struct ExtensionExtnValueExtension3OpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = extension_extnValue_extension_3_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(ocsp_crl, ocsp_crl)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(ocsp_archive_cutoff, ocsp_archive_cutoff)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(crl_reason, crl_reason)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(certificate_issuer, certificate_issuer)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(hold_instruction_code, hold_instruction_code)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(invalidity_date, invalidity_date)
+};
+
+template <typename Target, typename Access>
+struct RegControlSetValueOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = regControlSet_value_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(reg_token, reg_token)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(authenticator, authenticator)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(pki_publication_info, pki_publication_info)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(pki_archive_options, pki_archive_options)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(old_cert_id, old_cert_id)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(protocol_encr_key, protocol_encr_key)
+};
+
+template <typename Target, typename Access>
+struct RegInfoSetValueOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = regInfoSet_value_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(utf8_pairs, utf8_pairs)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(cert_req, cert_req)
+};
+
+template <typename Target, typename Access>
+struct SupportedAttributesOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = supportedAttributes_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(name, name)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(surname, surname)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(given_name, given_name)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(initials, initials)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(generation_qualifier, generation_qualifier)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(x520_common_name, x520_common_name)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(x520_locality_name, x520_locality_name)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(x520_state_or_province_name, x520_state_or_province_name)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(x520_organization_name, x520_organization_name)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(x520_organizational_unit_name, x520_organizational_unit_name)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(x520_title, x520_title)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(x520dn_qualifier, x520dn_qualifier)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(x520country_name, x520country_name)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(x520_serial_number, x520_serial_number)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(x520_pseudonym, x520_pseudonym)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(domain_component, domain_component)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(email_address, email_address)
+};
+
+} // namespace detail
+
+#undef ASN1KIT_DETAIL_OPEN_TABLE_ENTRY
+#endif // ASN1KIT_GENERATED_PKIXCOMMONTYPES2009OPENTABLES_HPP
 
 } // namespace PKIXCommonTypes2009
 } // namespace modern

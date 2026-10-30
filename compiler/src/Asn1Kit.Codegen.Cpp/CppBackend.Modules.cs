@@ -139,6 +139,8 @@ public sealed partial class CppBackend
             }
         }
 
+        _openFacadesInTypesModules.UnionWith(modulesWithTypesFile);
+
         var peerModulesByModule = BuildPeerModulesByModule(
             document, plans, typesInAmalgams, postTypes, typeToCycleFile, keyOf);
 
@@ -1186,6 +1188,12 @@ public sealed partial class CppBackend
             EnsureNamespaceOpen(builder, ns, ref namespaceOpen);
             EmitType(builder, document, module, name, type);
             builder.AppendLine();
+        }
+
+        if (plan.Open.Sites.Count > 0)
+        {
+            EnsureNamespaceOpen(builder, ns, ref namespaceOpen);
+            EmitOpenTableFacades(builder, module);
         }
 
         if (namespaceOpen)

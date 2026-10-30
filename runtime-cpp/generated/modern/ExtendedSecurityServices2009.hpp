@@ -45,45 +45,19 @@ struct ExtendedSecurityServices2009Oids {
     static constexpr auto IdAaSigningCertificateV2 = asn1kit::oid_literal<"1.2.840.113549.1.9.16.2.47">();
 };
 
-#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
-#error "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY is reserved for generated headers"
-#endif
-#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding) \
-    template <typename... Args> \
-    decltype(auto) Name(Args&&... args) const \
-        requires requires(const base& view, Args&&... values) { \
-            view.template invoke<open_entries::Binding>(std::forward<Args>(values)...); \
-        } \
-    { return view_.template invoke<open_entries::Binding>(std::forward<Args>(args)...); }
+namespace detail {
 
-template <typename Target>
-struct ESSCertIDv2LocalOpenView {
-    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::algorithmIdentifier_parameters_open_type_entries;
-
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_hash_algorithm(binding);
-        }
-    };
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit ESSCertIDv2LocalOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit ESSCertIDv2LocalOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha256, mda_sha256)
-
-private:
-    [[no_unique_address]] base view_;
+struct ESSCertIDv2LocalParametersOpenAccess {
+    template <typename Entry>
+    static auto binding(const Entry& entry) {
+        using value_type = typename Entry::value_type;
+        return asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.algorithmIdentifier_parameters_algorithmIdentifier">, typename Entry::key_type, value_type>{entry.key};
+    }
+    template <typename Source, typename Binding>
+    static auto decode(const Source& source, const Binding& binding) { return source.try_decode_hash_algorithm(binding); }
 };
 
-#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+} // namespace detail
 
 inline ESSCertIDv2LocalOpenView<ESSCertIDv2> ESSCertIDv2::local() & {
     return ESSCertIDv2LocalOpenView<ESSCertIDv2>{*this};

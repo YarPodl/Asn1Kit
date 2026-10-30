@@ -219,8 +219,9 @@ END
         Assert.Contains("namespace detail {", source);
         Assert.DoesNotContain("struct AlgorithmIdentifier_open_types", source);
         Assert.Contains(
-            "using open_entries = detail::mixed_parameters_open_type_entries;",
+            "using AlgorithmIdentifierMixedOpenView = detail::MixedParametersOpenTable<",
             source);
+        Assert.Contains("asn1kit::open_entry<", source);
         Assert.Contains("empty_entry{", source);
         Assert.Contains("data_entry{", source);
         Assert.Contains(
@@ -241,15 +242,18 @@ END
         Assert.Contains(
             "inline AlgorithmIdentifierMixedOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> AlgorithmIdentifier::mixed() && {",
             source);
-        Assert.Contains("using access = asn1kit::open_direct_access;", source);
         Assert.Contains(
-            "using base = asn1kit::open_function_view<Target, access>;",
+            "using base = asn1kit::open_table_view<Target, Access>;",
             source);
         Assert.Contains(
-            "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(data_entry, data_entry)",
+            "ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(data_entry, data_entry)",
             source);
-        Assert.Contains("#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding)", source);
-        Assert.Contains("#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY", source);
+        Assert.Equal(1, source.Split(
+            "ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(data_entry, data_entry)",
+            StringSplitOptions.None).Length - 1);
+        Assert.Contains("#define ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(Name, Entry)", source);
+        Assert.Contains("#undef ASN1KIT_DETAIL_OPEN_TABLE_ENTRY", source);
+        Assert.DoesNotContain("open_function_view", source);
         Assert.DoesNotContain("std::conditional_t<true,", source);
         Assert.DoesNotContain("asn1kit::open_entry_proxy", source);
         Assert.DoesNotContain("set_data_entry", source);
@@ -332,8 +336,8 @@ END
         Assert.DoesNotContain("struct Pair_open_types", source);
         Assert.Contains("struct hTTPItemsA_first_open_type_entries", source);
         Assert.Contains("struct hTTPItemsB_second_open_type_entries", source);
-        Assert.Contains("using open_entries = detail::hTTPItemsA_first_open_type_entries;", source);
-        Assert.Contains("using open_entries = detail::hTTPItemsA_second_open_type_entries;", source);
+        Assert.Contains("detail::HTTPItemsAFirstOpenTable<Target,", source);
+        Assert.Contains("detail::HTTPItemsASecondOpenTable<Target,", source);
         Assert.Contains("http_items_a() &;", source);
         Assert.Contains("static ", source);
         Assert.Contains("make_http_items_a();", source);
@@ -341,54 +345,66 @@ END
         Assert.Contains("second() const", source);
         Assert.Contains("first() &&", source);
         Assert.Contains("std::move(target_).take()", source);
-        Assert.Contains("ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(item_a, item_a)", source);
+        Assert.Equal(2, source.Split(
+            "ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(item_a, item_a)",
+            StringSplitOptions.None).Length - 1);
+        Assert.Equal(1, source.Split(
+            "struct HTTPItemsAFirstOpenTable :", StringSplitOptions.None).Length - 1);
         Assert.DoesNotContain("set_item_a", source);
         Assert.DoesNotContain("_bindings", source);
 
         foreach (var definition in document.Modules[0].Types)
-            ClearTables(definition.Type);
+            SetTables(definition.Type, "HTTPItems");
+
+        source = CppSource(document);
+        Assert.Equal(4, source.Split('\n').Count(line =>
+            line.Contains("OpenTable : asn1kit::open_table_view", StringComparison.Ordinal)));
+        Assert.Equal(source, CppSource(document));
+
+        foreach (var definition in document.Modules[0].Types)
+            SetTables(definition.Type, null);
 
         source = CppSource(document);
         Assert.Contains("local_pair_a() &;", source);
         Assert.Contains("local_pair_b() &;", source);
-        Assert.Contains("using open_entries = detail::", source);
+        Assert.Contains("OpenTable<Target,", source);
         Assert.DoesNotContain("_open_types", source);
         Assert.Equal(source, CppSource(document));
         Assert.DoesNotContain("_bindings", source);
 
-        static void ClearTables(TypeExpr type)
+        static void SetTables(TypeExpr type, string? table)
         {
             if (type is RefType { OpenTypes: { } uses })
             {
                 foreach (var use in uses)
-                    use.Table = null;
+                    use.Table = table;
             }
 
             switch (type)
             {
                 case AnyType any:
-                    any.Table = null;
+                    any.Table = table;
                     break;
                 case SequenceType sequence:
-                    foreach (var component in sequence.Components) ClearTables(component.Type);
+                    foreach (var component in sequence.Components) SetTables(component.Type, table);
                     break;
                 case SetType set:
-                    foreach (var component in set.Components) ClearTables(component.Type);
+                    foreach (var component in set.Components) SetTables(component.Type, table);
                     break;
                 case ChoiceType choice:
-                    foreach (var component in choice.Components) ClearTables(component.Type);
+                    foreach (var component in choice.Components) SetTables(component.Type, table);
                     break;
                 case SequenceOfType sequenceOf:
-                    ClearTables(sequenceOf.Element);
+                    SetTables(sequenceOf.Element, table);
                     break;
                 case SetOfType setOf:
-                    ClearTables(setOf.Element);
+                    SetTables(setOf.Element, table);
                     break;
                 case OctetStringType { Containing: { } containing }:
-                    ClearTables(containing);
+                    SetTables(containing, table);
                     break;
                 case BitStringType { Containing: { } containing }:
-                    ClearTables(containing);
+                    SetTables(containing, table);
                     break;
             }
         }
@@ -426,7 +442,9 @@ M DEFINITIONS ::= BEGIN
   base C ::= { INTEGER IDENTIFIED BY {1 2 3} }
   access C ::= { NULL IDENTIFIED BY {1 2 4} }
   open-entries C ::= { BOOLEAN IDENTIFIED BY {1 2 5} }
-  Items C ::= {base | access | open-entries}
+  ct-data C ::= { INTEGER IDENTIFIED BY {1 2 6} }
+  sa-data C ::= { INTEGER IDENTIFIED BY {1 2 7} }
+  Items C ::= {base | access | open-entries | ct-data | sa-data}
   Value{C:S} ::= SEQUENCE {
     id C.&id({S}), value C.&T({S}{@id}) }
   Holder ::= SEQUENCE { value Value{Items} }
@@ -434,10 +452,12 @@ END
 ";
         var source = CppSource(new Asn1Compiler().CompileText(asn));
 
-        Assert.Contains("ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(base_entry, base)", source);
-        Assert.Contains("ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(access_entry, access)", source);
+        Assert.Contains("ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(base_entry, base)", source);
+        Assert.Contains("ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(access_entry, access)", source);
         Assert.Contains(
-            "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(open_entries_entry, open_entries)", source);
+            "ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(open_entries, open_entries)", source);
+        Assert.Contains("ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(ct_data, ct_data)", source);
+        Assert.Contains("ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(sa_data, sa_data)", source);
     }
 
     [Fact]
@@ -481,13 +501,18 @@ M DEFINITIONS ::= BEGIN
   emptyEntry C ::= { NoData IDENTIFIED BY {1 2 3} }
   dataEntry C ::= { INTEGER (0..100) IDENTIFIED BY {1 2 4} }
   Mixed C ::= {emptyEntry | dataEntry}
+  Empty C ::= {emptyEntry}
   Extension{C:S} ::= SEQUENCE {
     extnID C.&id({S}),
     extnValue OCTET STRING (CONTAINING C.&T({S}{@extnID})) }
   Attribute{C:S} ::= SEQUENCE {
     type C.&id({S}),
     values SET OF C.&T({S}{@type}) }
-  Holder ::= SEQUENCE { ext Extension{Mixed}, attr Attribute{Mixed} }
+  AlgorithmIdentifier{C:S} ::= SEQUENCE {
+    algorithm C.&id({S}), parameters C.&T({S}{@algorithm}) OPTIONAL }
+  Holder ::= SEQUENCE {
+    ext Extension{Mixed}, attr Attribute{Mixed},
+    alg AlgorithmIdentifier{Mixed}, emptyAlg AlgorithmIdentifier{Empty} }
 END
 ";
         var document = new Asn1Compiler().CompileText(asn);
@@ -508,12 +533,74 @@ END
         Assert.DoesNotContain("using open_types =", source);
         Assert.DoesNotContain("struct Extension_open_types", source);
         Assert.DoesNotContain("struct Attribute_open_types", source);
-        Assert.Contains("using open_entries = detail::mixed_extnValue_open_type_entries;", source);
-        Assert.Contains("using open_entries = detail::mixed_values_open_type_entries;", source);
+        Assert.Contains("struct mixed_values_open_type_entries", source);
+        Assert.DoesNotContain("struct mixed_extnValue_open_type_entries", source);
+        Assert.DoesNotContain("struct mixed_parameters_open_type_entries", source);
         Assert.Contains("mixed() &;", source);
-        Assert.Contains("ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(data_entry, data_entry)", source);
+        Assert.Equal(1, source.Split(
+            "ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(data_entry, data_entry)",
+            StringSplitOptions.None).Length - 1);
+        Assert.Contains("= asn1kit::open_many_access;", source);
+        Assert.Contains("= asn1kit::open_direct_access;", source);
+        Assert.Contains("using value_type = typename Entry::value_type;", source);
+        Assert.Contains("return source.try_decode_alg(binding);", source);
         Assert.Contains("make_mixed();", source);
         Assert.DoesNotContain("_bindings", source);
+
+        var mixedUses = new List<IrOpenTypeUse>();
+        var mixedAny = new List<AnyType>();
+        foreach (var definition in document.Modules[0].Types)
+            CollectMixedTables(definition.Type, mixedUses, mixedAny);
+        Assert.True(mixedUses.Count + mixedAny.Count >= 2);
+        foreach (var use in mixedUses) use.TableExtensible = false;
+        foreach (var any in mixedAny) any.TableExtensible = false;
+        if (mixedUses.Count > 0)
+            mixedUses[0].TableExtensible = true;
+        else
+            mixedAny[0].TableExtensible = true;
+
+        var splitSource = CppSource(document);
+        Assert.Equal(2, splitSource.Split(
+            "ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(data_entry, data_entry)",
+            StringSplitOptions.None).Length - 1);
+
+        static void CollectMixedTables(
+            TypeExpr type, List<IrOpenTypeUse> uses, List<AnyType> anyTypes)
+        {
+            if (type is RefType { OpenTypes: { } openTypes })
+                uses.AddRange(openTypes.Where(use => use.Table == "Mixed"));
+
+            switch (type)
+            {
+                case AnyType { Table: "Mixed" } any:
+                    anyTypes.Add(any);
+                    break;
+                case SequenceType sequence:
+                    foreach (var component in sequence.Components)
+                        CollectMixedTables(component.Type, uses, anyTypes);
+                    break;
+                case SetType set:
+                    foreach (var component in set.Components)
+                        CollectMixedTables(component.Type, uses, anyTypes);
+                    break;
+                case ChoiceType choice:
+                    foreach (var component in choice.Components)
+                        CollectMixedTables(component.Type, uses, anyTypes);
+                    break;
+                case SequenceOfType sequenceOf:
+                    CollectMixedTables(sequenceOf.Element, uses, anyTypes);
+                    break;
+                case SetOfType setOf:
+                    CollectMixedTables(setOf.Element, uses, anyTypes);
+                    break;
+                case OctetStringType { Containing: { } containing }:
+                    CollectMixedTables(containing, uses, anyTypes);
+                    break;
+                case BitStringType { Containing: { } containing }:
+                    CollectMixedTables(containing, uses, anyTypes);
+                    break;
+            }
+        }
     }
 
     [Fact]
@@ -539,10 +626,10 @@ END
         Assert.DoesNotContain("static Outer_Nested_Item create(", source);
         Assert.DoesNotContain("using open_types =", source);
         Assert.DoesNotContain("struct Outer_open_types", source);
-        Assert.Contains("using open_entries = detail::items_value_open_type_entries;", source);
+        Assert.Contains("using OuterItemsOpenView = detail::ItemsValueOpenTable<", source);
         Assert.Contains("items() &;", source);
         Assert.Contains("return source.try_decode_nested(binding);", source);
-        Assert.Contains("ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(item, item)", source);
+        Assert.Contains("ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(item, item)", source);
         Assert.DoesNotContain("OuterItemsOpenFactory", source);
         Assert.DoesNotContain("_bindings", source);
     }
@@ -599,8 +686,8 @@ END
 
         Assert.Contains("this->algorithmIdentifier.algorithm", source);
         Assert.Contains("(*this).algorithmIdentifier.algorithm", source);
-        Assert.Contains("std::int32_t, T>;", source);
-        Assert.Contains("binding_type<asn1kit::null_value>", source);
+        Assert.Contains("std::int32_t, asn1kit::null_value>", source);
+        Assert.Contains("asn1kit::open_entry<", source);
         Assert.Contains("std::int32_t{7}", source);
         Assert.Contains(
             "static asn1kit::open_binding<asn1kit::default_open_context, std::int32_t, T> open_binding(std::int32_t key)",

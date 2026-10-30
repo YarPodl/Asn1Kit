@@ -33,11 +33,13 @@ public sealed partial class CppBackend
         bool ContainerApiEnabled,
         bool ContextApiEnabled,
         string? Table,
+        bool? TableExtensible,
         IReadOnlyList<string> Path,
         List<OpenBinding> Bindings)
     {
         public string BindingStem { get; set; } = "";
         public string CatalogStem { get; set; } = "";
+        public string KeyTypeIdentity { get; set; } = "";
     }
 
     private sealed record OpenBinding(string MemberName, IrOpenTypeBinding Binding, OpenSite Site);
@@ -45,9 +47,12 @@ public sealed partial class CppBackend
     private sealed record OpenViewNames(
         string Accessor,
         string? FactoryAccessor,
-        string ViewType);
+        string ViewType,
+        bool IsGroup);
 
-    private sealed record OpenFieldViewNames(string ViewType);
+    private sealed record OpenFieldViewNames(
+        string ViewType,
+        string AccessType);
 
     private sealed class OpenPlan
     {
@@ -63,6 +68,11 @@ public sealed partial class CppBackend
         _openViewNames = new();
     private readonly Dictionary<(string Module, string Type, string Table, string Field), OpenFieldViewNames>
         _openFieldViewNames = new();
+    private readonly Dictionary<(string Module, string Type, string Usage), string>
+        _openAccessNames = new();
+    private readonly Dictionary<(string Module, string Catalog), string>
+        _openCatalogViewNames = new();
+    private readonly HashSet<string> _openFacadesInTypesModules = new(StringComparer.Ordinal);
 
     private void ConfigureOpenTypeEmission(IEnumerable<ModulePlan> plans)
     {
@@ -71,6 +81,9 @@ public sealed partial class CppBackend
         _openCatalogEntryNames.Clear();
         _openViewNames.Clear();
         _openFieldViewNames.Clear();
+        _openAccessNames.Clear();
+        _openCatalogViewNames.Clear();
+        _openFacadesInTypesModules.Clear();
         var materializedPlans = plans.ToList();
         foreach (var plan in materializedPlans)
         foreach (var site in plan.Open.Sites)
@@ -107,6 +120,9 @@ public sealed partial class CppBackend
                 for (var suffix = 2; !usedNames.Add(name); suffix++)
                     name = baseName + "_" + suffix.ToString(CultureInfo.InvariantCulture);
                 _openCatalogEntryNames.Add((plan.Module.Name, site.CatalogStem), name);
+                _openCatalogViewNames.Add(
+                    (plan.Module.Name, site.CatalogStem),
+                    AllocateOpenViewType(site.CatalogStem + "_open_table", usedNames));
             }
 
             foreach (var owner in _openSitesByType.Keys
@@ -172,7 +188,19 @@ public sealed partial class CppBackend
                         owner.Type + "_" + accessor + "_open_view", usedNames);
                     _openViewNames.Add(
                         (owner.Module, owner.Type, tableGroup.Key),
-                        new OpenViewNames(accessor, factoryAccessor, viewType));
+                        new OpenViewNames(accessor, factoryAccessor, viewType, tableGroup.Count() > 1));
+
+                    foreach (var site in tableGroup)
+                    {
+                        var path = _openViewPaths[
+                            (owner.Module, owner.Type, OpenViewUsageIdentity(owner, site))];
+                        var accessType = AllocateOpenViewType(
+                            owner.Type + "_" + tableGroup.Key + "_" + path.Field + "_open_access",
+                            usedNames);
+                        _openAccessNames.Add(
+                            (owner.Module, owner.Type, OpenViewUsageIdentity(owner, site)),
+                            accessType);
+                    }
 
                     if (tableGroup.Count() <= 1) continue;
                     foreach (var site in tableGroup)
@@ -181,9 +209,11 @@ public sealed partial class CppBackend
                             (owner.Module, owner.Type, OpenViewUsageIdentity(owner, site))];
                         var fieldViewType = AllocateOpenViewType(
                             viewType + "_" + path.Field, usedNames);
+                        var accessType = _openAccessNames[
+                            (owner.Module, owner.Type, OpenViewUsageIdentity(owner, site))];
                         _openFieldViewNames.Add(
                             (owner.Module, owner.Type, tableGroup.Key, path.Field),
-                            new OpenFieldViewNames(fieldViewType));
+                            new OpenFieldViewNames(fieldViewType, accessType));
                     }
                 }
             }
@@ -519,7 +549,7 @@ public sealed partial class CppBackend
         var payload = BuildOpenPayload(document, module, field.Type);
         AddSite(document, module, container, field, payload, selector, parents, definitionAny.Bindings!,
             contextOwner, contextPath, false, apiEnabled, apiEnabled,
-            definitionAny.Table, new[] { field.Name }, module, plan, shared);
+            definitionAny.Table, definitionAny.TableExtensible, new[] { field.Name }, module, plan, shared);
     }
 
     private void ResolveUse(
@@ -627,7 +657,7 @@ public sealed partial class CppBackend
                 Array.Empty<OpenContainer>(), use.Bindings,
                 contextOwner, contextPath, crossesInlineBoundary,
                 containerApiEnabled, contextApiEnabled,
-                use.Table, use.Path, contextModule, plan, shared);
+                use.Table, use.TableExtensible, use.Path, contextModule, plan, shared);
             return;
         }
     }
@@ -647,6 +677,7 @@ public sealed partial class CppBackend
         bool containerApiEnabled,
         bool contextApiEnabled,
         string? table,
+        bool? tableExtensible,
         IReadOnlyList<string> path,
         IrModule bindingModule,
         OpenPlan plan,
@@ -657,8 +688,9 @@ public sealed partial class CppBackend
         var site = new OpenSite(
             container, openField, payload, selector, parents.ToList(), bindingModule, contextOwner,
             contextPath.ToList(), crossesInlineBoundary, containerApiEnabled, contextApiEnabled,
-            table, path.ToList(),
+            table, tableExtensible, path.ToList(),
             new List<OpenBinding>());
+        site.KeyTypeIdentity = OpenKeyCppType(document, site);
         foreach (var binding in bindings)
         {
             var qualified = new IrOpenTypeBinding
@@ -775,27 +807,33 @@ public sealed partial class CppBackend
 
     private static string OpenTableIdentity(OpenSite site)
     {
-        var bindings = string.Join("\n", site.Bindings.Select(static binding =>
-            binding.Binding.Key + "\t" + (binding.Binding.Name ?? "") + "\t" +
-            JsonSerializer.Serialize(binding.Binding.Type, IrSerializer.JsonOptions)));
+        var bindings = string.Join("\n", site.Bindings
+            .Select(static binding =>
+                binding.Binding.Key + "\t" + (binding.Binding.Name ?? "") + "\t" +
+                JsonSerializer.Serialize(binding.Binding.Type, IrSerializer.JsonOptions))
+            .OrderBy(static binding => binding, StringComparer.Ordinal));
+        if (!string.IsNullOrEmpty(site.Table))
+            return "named\n" + site.Table + "\n" + site.KeyTypeIdentity + "\n" +
+                   site.TableExtensible?.ToString(CultureInfo.InvariantCulture) + "\n" + bindings;
+
         return site.Container.TypeName + "\n" + site.Field.Name + "\n" +
                JsonSerializer.Serialize(site.Selector, IrSerializer.JsonOptions) + "\n" +
                JsonSerializer.Serialize(site.Payload.Type, IrSerializer.JsonOptions) + "\n" +
                bindings;
     }
 
+    private static readonly string[] OpenEntryCategoryPrefixes =
+    {
+        "regCtrl", "regInfo", "pqid", "maca", "cmc", "cea", "kaa", "kda", "kwa",
+        "alg", "ext", "skd", "mda", "aa", "at", "ct", "ea", "kt", "pk", "re", "sa"
+    };
+
     private static string OpenBindingMemberName(IrOpenTypeBinding binding)
     {
-        var semantic = binding.Name;
-        if (semantic is null)
+        var semantic = OpenBindingSemanticName(binding);
+        foreach (var prefix in OpenEntryCategoryPrefixes)
         {
-            semantic = binding.Type is RefType reference
-                ? reference.Name
-                : "oid_" + binding.Key.Replace('.', '_');
-        }
-
-        foreach (var leading in new[] { "ext-", "aa-", "at-" })
-        {
+            var leading = prefix + "-";
             if (!semantic.StartsWith(leading, StringComparison.Ordinal)) continue;
             semantic = semantic[leading.Length..];
             break;
@@ -803,6 +841,14 @@ public sealed partial class CppBackend
 
         return CppNames.SanitizeFieldName(ToSnakeCaseIdentifier(semantic));
     }
+
+    private static string OpenBindingFullMemberName(IrOpenTypeBinding binding) =>
+        CppNames.SanitizeFieldName(ToSnakeCaseIdentifier(OpenBindingSemanticName(binding)));
+
+    private static string OpenBindingSemanticName(IrOpenTypeBinding binding) =>
+        binding.Name ?? (binding.Type is RefType reference
+            ? reference.Name
+            : "oid_" + binding.Key.Replace('.', '_'));
 
     private static string ToSnakeCaseIdentifier(string name)
     {
@@ -916,23 +962,7 @@ public sealed partial class CppBackend
         OpenPlan plan)
     {
         _ = plan;
-        var catalogSites = _openSitesByType
-            .Where(pair => pair.Key.Module == module.Name)
-            .SelectMany(static pair => pair.Value)
-            .Where(site => site.Container.Module.Name == module.Name)
-            .GroupBy(static site => site.CatalogStem, StringComparer.Ordinal)
-            .Select(static group => group.First())
-            .OrderBy(static site => site.CatalogStem, StringComparer.Ordinal)
-            .ToList();
-        if (catalogSites.Count > 0)
-        {
-            sb.AppendLine("namespace detail {");
-            sb.AppendLine();
-            foreach (var site in catalogSites)
-                EmitOpenCatalogEntries(sb, document, module, site);
-            sb.AppendLine("} // namespace detail");
-            sb.AppendLine();
-        }
+        EmitOpenCatalogs(sb, document, module);
 
         var viewOwners = _openViewNames.Keys
             .Where(key => key.Module == module.Name)
@@ -942,23 +972,73 @@ public sealed partial class CppBackend
             .ToList();
         if (viewOwners.Count == 0) return;
 
-        sb.AppendLine("#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY");
-        sb.AppendLine("#error \"ASN1KIT_DETAIL_OPEN_VIEW_ENTRY is reserved for generated headers\"");
-        sb.AppendLine("#endif");
-        sb.AppendLine("#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding) \\");
-        sb.AppendLine("    template <typename... Args> \\");
-        sb.AppendLine("    decltype(auto) Name(Args&&... args) const \\");
-        sb.AppendLine("        requires requires(const base& view, Args&&... values) { \\");
-        sb.AppendLine("            view.template invoke<open_entries::Binding>(std::forward<Args>(values)...); \\");
-        sb.AppendLine("        } \\");
-        sb.AppendLine("    { return view_.template invoke<open_entries::Binding>(std::forward<Args>(args)...); }");
-        sb.AppendLine();
         foreach (var owner in viewOwners)
             EmitOpenViews(sb, module, owner);
-        sb.AppendLine("#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY");
-        sb.AppendLine();
         foreach (var owner in viewOwners)
             EmitOpenViewAccessorDefinitions(sb, module, owner);
+    }
+
+    private void EmitOpenCatalogs(
+        StringBuilder sb,
+        IrDocument document,
+        IrModule module)
+    {
+        var catalogSites = OpenCatalogSites(module);
+        if (catalogSites.Count == 0) return;
+
+        var guard = CppNames.IncludeGuard(module.Name + "_open_entries");
+        sb.AppendLine($"#ifndef {guard}");
+        sb.AppendLine($"#define {guard}");
+        sb.AppendLine("namespace detail {");
+        sb.AppendLine();
+        foreach (var site in catalogSites)
+            EmitOpenCatalogEntries(sb, document, module, site);
+        sb.AppendLine("} // namespace detail");
+        sb.AppendLine($"#endif // {guard}");
+        sb.AppendLine();
+
+        if (!_openFacadesInTypesModules.Contains(module.Name))
+            EmitOpenTableFacades(sb, module);
+    }
+
+    private List<OpenSite> OpenCatalogSites(IrModule module) =>
+        _openSitesByType
+            .Where(pair => pair.Key.Module == module.Name)
+            .SelectMany(static pair => pair.Value)
+            .Where(site => site.Container.Module.Name == module.Name)
+            .GroupBy(static site => site.CatalogStem, StringComparer.Ordinal)
+            .Select(static group => group.First())
+            .OrderBy(static site => site.CatalogStem, StringComparer.Ordinal)
+            .ToList();
+
+    private void EmitOpenTableFacades(StringBuilder sb, IrModule module)
+    {
+        var catalogSites = OpenCatalogSites(module);
+        if (catalogSites.Count == 0) return;
+
+        var guard = CppNames.IncludeGuard(module.Name + "_open_tables");
+        sb.AppendLine($"#ifndef {guard}");
+        sb.AppendLine($"#define {guard}");
+        sb.AppendLine("#ifdef ASN1KIT_DETAIL_OPEN_TABLE_ENTRY");
+        sb.AppendLine("#error \"ASN1KIT_DETAIL_OPEN_TABLE_ENTRY is reserved for generated headers\"");
+        sb.AppendLine("#endif");
+        sb.AppendLine("#define ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(Name, Entry) \\");
+        sb.AppendLine("    template <typename... Args> \\");
+        sb.AppendLine("    decltype(auto) Name(Args&&... args) const \\");
+        sb.AppendLine("        requires requires(const base& table, Args&&... values) { \\");
+        sb.AppendLine("            table.template invoke<entries::Entry>(std::forward<Args>(values)...); \\");
+        sb.AppendLine("        } \\");
+        sb.AppendLine("    { return this->template invoke<entries::Entry>(std::forward<Args>(args)...); }");
+        sb.AppendLine();
+        sb.AppendLine("namespace detail {");
+        sb.AppendLine();
+        foreach (var site in catalogSites)
+            EmitOpenTableFacade(sb, module, site);
+        sb.AppendLine("} // namespace detail");
+        sb.AppendLine();
+        sb.AppendLine("#undef ASN1KIT_DETAIL_OPEN_TABLE_ENTRY");
+        sb.AppendLine($"#endif // {guard}");
+        sb.AppendLine();
     }
 
     private IEnumerable<string> OpenCatalogEntryNames(IrModule module, string typeName) =>
@@ -970,6 +1050,15 @@ public sealed partial class CppBackend
                 .OrderBy(static name => name, StringComparer.Ordinal)
             : Enumerable.Empty<string>();
 
+    private IEnumerable<string> OpenCatalogViewNames(IrModule module, string typeName) =>
+        _openSitesByType.TryGetValue((module.Name, typeName), out var sites)
+            ? sites.Where(site => site.Container.Module.Name == module.Name &&
+                                  site.Container.TypeName == typeName)
+                .Select(site => _openCatalogViewNames[(module.Name, site.CatalogStem)])
+                .Distinct(StringComparer.Ordinal)
+                .OrderBy(static name => name, StringComparer.Ordinal)
+            : Enumerable.Empty<string>();
+
     private IEnumerable<(string Table, OpenViewNames Names)> OpenViews(
         IrModule module, string typeName) =>
         _openViewNames
@@ -977,13 +1066,69 @@ public sealed partial class CppBackend
             .OrderBy(static pair => pair.Key.Table, StringComparer.Ordinal)
             .Select(static pair => (pair.Key.Table, pair.Value));
 
+    private List<OpenSite> OpenViewSites(IrModule module, string owner)
+    {
+        if (!_openSitesByType.TryGetValue((module.Name, owner), out var allSites))
+            return new List<OpenSite>();
+        var viewTables = OpenViews(module, owner)
+            .Select(static view => view.Table)
+            .ToHashSet(StringComparer.Ordinal);
+        return allSites
+            .GroupBy(site => OpenViewUsageIdentity((module.Name, owner), site), StringComparer.Ordinal)
+            .Select(static group => group.First())
+            .Where(site => SupportsOpenView((module.Name, owner), site))
+            .Where(site => viewTables.Contains(OpenViewPath((module.Name, owner), site).Table))
+            .ToList();
+    }
+
+    private string QualifiedOpenCatalogView(IrModule module, OpenSite site)
+    {
+        var table = _openCatalogViewNames[(site.Container.Module.Name, site.CatalogStem)];
+        return string.Equals(
+            ModuleNamespace(module), ModuleNamespace(site.Container.Module), StringComparison.Ordinal)
+            ? "detail::" + table
+            : "::" + ModuleNamespace(site.Container.Module) + "::detail::" + table;
+    }
+
     private void EmitOpenViewForwardDeclarations(
         StringBuilder sb, IrModule module, string typeName)
     {
-        foreach (var (_, names) in OpenViews(module, typeName))
+        var owner = (module.Name, typeName);
+        var sites = OpenViewSites(module, typeName);
+        if (sites.Count > 0)
         {
+            sb.AppendLine("namespace detail {");
+            foreach (var site in sites)
+            {
+                var access = _openAccessNames[(module.Name, typeName, OpenViewUsageIdentity(owner, site))];
+                var runtimeAccess = OpenRuntimeAccess(module, typeName, site);
+                sb.AppendLine(runtimeAccess is null
+                    ? $"struct {access};"
+                    : $"using {access} = {runtimeAccess};");
+                if (site.Container.Module.Name == module.Name)
+                {
+                    var table = _openCatalogViewNames[(module.Name, site.CatalogStem)];
+                    sb.AppendLine(
+                        $"template <typename Target, typename Access> struct {table};");
+                }
+            }
+            sb.AppendLine("} // namespace detail");
+        }
+
+        foreach (var (table, names) in OpenViews(module, typeName))
+        {
+            var tableSites = sites.Where(site => OpenViewPath(owner, site).Table == table).ToList();
+            if (names.IsGroup)
+            {
+                sb.AppendLine("template <typename Target>");
+                sb.AppendLine($"struct {names.ViewType};");
+                continue;
+            }
+
+            var site = tableSites.Single();
+            var access = _openAccessNames[(module.Name, typeName, OpenViewUsageIdentity(owner, site))];
             sb.AppendLine("template <typename Target>");
-            sb.AppendLine($"struct {names.ViewType};");
+            sb.AppendLine($"using {names.ViewType} = {QualifiedOpenCatalogView(module, site)}<Target, detail::{access}>;");
         }
     }
 
@@ -1312,18 +1457,23 @@ public sealed partial class CppBackend
 
     private void EmitOpenViews(StringBuilder sb, IrModule module, string owner)
     {
-        var viewTables = OpenViews(module, owner)
-            .Select(static view => view.Table)
-            .ToHashSet(StringComparer.Ordinal);
-        if (viewTables.Count == 0) return;
-        var sites = _openSitesByType[(module.Name, owner)]
-            .GroupBy(site => OpenViewUsageIdentity((module.Name, owner), site),
+        var sites = OpenViewSites(module, owner);
+        if (sites.Count == 0) return;
+        var customAccessSites = sites
+            .Where(site => OpenRuntimeAccess(module, owner, site) is null)
+            .OrderBy(site => OpenViewUsageIdentity((module.Name, owner), site),
                 StringComparer.Ordinal)
-            .Select(static group => group.First())
-            .Where(site => SupportsOpenView((module.Name, owner), site))
-            .Where(site => viewTables.Contains(
-                OpenViewPath((module.Name, owner), site).Table))
             .ToList();
+        if (customAccessSites.Count > 0)
+        {
+            sb.AppendLine("namespace detail {");
+            sb.AppendLine();
+            foreach (var site in customAccessSites)
+                EmitOpenAccessPolicy(sb, module, owner, site);
+            sb.AppendLine("} // namespace detail");
+            sb.AppendLine();
+        }
+
         foreach (var tableGroup in sites
                      .GroupBy(site =>
                              OpenViewPath((module.Name, owner), site).Table,
@@ -1338,29 +1488,15 @@ public sealed partial class CppBackend
                 .ToList();
 
             if (tableSites.Count > 1)
-            {
-                foreach (var site in tableSites)
-                {
-                    var path = OpenViewPath((module.Name, owner), site);
-                    var fieldNames = _openFieldViewNames[
-                        (module.Name, owner, tableGroup.Key, path.Field)];
-                    EmitOpenFunctionView(sb, module, owner, fieldNames.ViewType, site);
-                }
                 EmitOpenTableView(sb, module, owner, names.ViewType, tableGroup.Key, tableSites);
-            }
-            else
-            {
-                var site = tableSites[0];
-                EmitOpenFunctionView(sb, module, owner, names.ViewType, site);
-            }
-
         }
     }
 
-    private void EmitOpenFunctionView(
-        StringBuilder sb, IrModule module, string owner, string viewType, OpenSite site)
+    private void EmitOpenAccessPolicy(
+        StringBuilder sb, IrModule module, string owner, OpenSite site)
     {
-        var members = OpenBindingMembers(site).ToList();
+        var usage = OpenViewUsageIdentity((module.Name, owner), site);
+        var accessType = _openAccessNames[(module.Name, owner, usage)];
         var decodeMethod = OpenOwnerDecodeMethod(module, owner, site);
         var canMutate = IsDirectOpenOwner((module.Name, owner), site);
         var mutateMethod = canMutate
@@ -1369,81 +1505,44 @@ public sealed partial class CppBackend
         var createMethod = canMutate
             ? OpenOwnerCarrierMethod(module, owner, site, "create")
             : null;
-        var usesDefaultAccess = canMutate && decodeMethod == "try_decode" &&
-                                mutateMethod == "set" && createMethod == "create";
+        var context = canMutate
+            ? "asn1kit::default_open_context"
+            : "asn1kit::open_context<\"" + EscapeCppString(
+                site.Container.Module.Name + "." + site.CatalogStem) + "\">";
+        var valueType = site.Payload.Kind == OpenPayloadKind.Many
+            ? "std::vector<typename Entry::value_type>"
+            : "typename Entry::value_type";
 
-        sb.AppendLine("template <typename Target>");
-        sb.AppendLine($"struct {viewType} {{");
-        EmitOpenViewEntriesAlias(sb, module, owner, site);
-        if (usesDefaultAccess)
-        {
-            sb.AppendLine("    using access = asn1kit::open_direct_access;");
-        }
-        else
-        {
-            sb.AppendLine("    struct access {");
-            sb.AppendLine("        template <typename Source, typename Binding>");
-            sb.AppendLine("        static auto decode(const Source& source, const Binding& binding) {");
-            sb.AppendLine($"            return source.{decodeMethod}(binding);");
-            sb.AppendLine("        }");
-            if (canMutate)
-            {
-                sb.AppendLine();
-                sb.AppendLine("        template <typename Source, typename Binding, typename Value>");
-                sb.AppendLine("        static void set(Source& source, const Binding& binding, Value&& value) {");
-                sb.AppendLine(
-                    $"            source.{mutateMethod}(binding, std::forward<Value>(value));");
-                sb.AppendLine("        }");
-                sb.AppendLine();
-                sb.AppendLine("        template <typename Source, typename Binding, typename Value>");
-                sb.AppendLine("        static Source create(const Binding& binding, Value&& value) {");
-                sb.AppendLine(
-                    $"            return Source::{createMethod}(binding, std::forward<Value>(value));");
-                sb.AppendLine("        }");
-            }
-            sb.AppendLine("    };");
-        }
-        sb.AppendLine();
-
-        sb.AppendLine($"    using base = asn1kit::open_function_view<Target, access>;");
-        sb.AppendLine();
-        sb.AppendLine($"    explicit {viewType}(Target& target)");
-        sb.AppendLine(
-            "        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)");
-        sb.AppendLine("        : view_(target) {}");
-        sb.AppendLine();
-        sb.AppendLine($"    explicit {viewType}(asn1kit::open_owner_t<Target>&& owner)");
-        sb.AppendLine("        requires asn1kit::is_open_owned_target_v<Target>");
-        sb.AppendLine("        : view_(std::move(owner)) {}");
+        sb.AppendLine($"struct {accessType} {{");
+        sb.AppendLine("    template <typename Entry>");
+        sb.AppendLine("    static auto binding(const Entry& entry) {");
+        sb.AppendLine($"        using value_type = {valueType};");
+        sb.AppendLine($"        return asn1kit::open_binding<{context}, typename Entry::key_type, value_type>{{entry.key}};");
+        sb.AppendLine("    }");
+        sb.AppendLine("    template <typename Source, typename Binding>");
+        sb.AppendLine($"    static auto decode(const Source& source, const Binding& binding) {{ return source.{decodeMethod}(binding); }}");
         if (canMutate)
         {
-            sb.AppendLine();
-            sb.AppendLine($"    {viewType}()");
-            sb.AppendLine("        requires asn1kit::is_open_factory_target_v<Target> = default;");
+            sb.AppendLine("    template <typename Source, typename Binding, typename Value>");
+            sb.AppendLine($"    static void set(Source& source, const Binding& binding, Value&& value) {{ source.{mutateMethod}(binding, std::forward<Value>(value)); }}");
+            sb.AppendLine("    template <typename Source, typename Binding, typename Value>");
+            sb.AppendLine($"    static Source create(const Binding& binding, Value&& value) {{ return Source::{createMethod}(binding, std::forward<Value>(value)); }}");
         }
-        sb.AppendLine();
-        foreach (var member in members)
-            sb.AppendLine(
-                $"    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY({member.Method}, {member.Descriptor})");
-        sb.AppendLine();
-        sb.AppendLine("private:");
-        sb.AppendLine("    [[no_unique_address]] base view_;");
         sb.AppendLine("};");
         sb.AppendLine();
     }
 
-    private void EmitOpenViewEntriesAlias(
-        StringBuilder sb, IrModule module, string owner, OpenSite site)
+    private string? OpenRuntimeAccess(IrModule module, string owner, OpenSite site)
     {
-        var entriesName = _openCatalogEntryNames[
-            (site.Container.Module.Name, site.CatalogStem)];
-        var qualifiedEntries = string.Equals(
-            ModuleNamespace(module), ModuleNamespace(site.Container.Module),
-            StringComparison.Ordinal)
-            ? "detail::" + entriesName
-            : "::" + ModuleNamespace(site.Container.Module) + "::detail::" + entriesName;
-        sb.AppendLine($"    using open_entries = {qualifiedEntries};");
-        sb.AppendLine();
+        if (!IsDirectOpenOwner((module.Name, owner), site) ||
+            OpenOwnerDecodeMethod(module, owner, site) != "try_decode" ||
+            OpenOwnerCarrierMethod(module, owner, site, "set") != "set" ||
+            OpenOwnerCarrierMethod(module, owner, site, "create") != "create")
+            return null;
+
+        return site.Payload.Kind == OpenPayloadKind.Many
+            ? "asn1kit::open_many_access"
+            : "asn1kit::open_direct_access";
     }
 
     private void EmitOpenTableView(
@@ -1475,19 +1574,23 @@ public sealed partial class CppBackend
         foreach (var site in sites)
         {
             var path = OpenViewPath((module.Name, owner), site);
-            var fieldType = _openFieldViewNames[(module.Name, owner, table, path.Field)].ViewType;
+            var fieldNames = _openFieldViewNames[(module.Name, owner, table, path.Field)];
+            var fieldType = QualifiedOpenCatalogView(module, site) +
+                            "<Target, detail::" + fieldNames.AccessType + ">";
+            var constFieldType = QualifiedOpenCatalogView(module, site) +
+                                 "<const asn1kit::open_owner_t<Target>, detail::" +
+                                 fieldNames.AccessType + ">";
             var canCreate = IsDirectOpenOwner((module.Name, owner), site);
             sb.AppendLine("    [[nodiscard]] auto " + path.Field + "() const &");
             if (!canCreate)
                 sb.AppendLine("        requires (!asn1kit::is_open_factory_target_v<Target>)");
             sb.AppendLine("    {");
             sb.AppendLine("        if constexpr (asn1kit::is_open_factory_target_v<Target>)");
-            sb.AppendLine($"            return {fieldType}<Target>{{}};");
+            sb.AppendLine($"            return {fieldType}{{}};");
             sb.AppendLine("        else if constexpr (asn1kit::is_open_owned_target_v<Target>)");
-            sb.AppendLine(
-                $"            return {fieldType}<const asn1kit::open_owner_t<Target>>{{target_.get()}};");
+            sb.AppendLine($"            return {constFieldType}{{target_.get()}};");
             sb.AppendLine("        else");
-            sb.AppendLine($"            return {fieldType}<Target>{{target_.get()}};");
+            sb.AppendLine($"            return {fieldType}{{target_.get()}};");
             sb.AppendLine("    }");
             sb.AppendLine();
             sb.AppendLine("    [[nodiscard]] auto " + path.Field + "() &&");
@@ -1495,12 +1598,11 @@ public sealed partial class CppBackend
                 sb.AppendLine("        requires (!asn1kit::is_open_factory_target_v<Target>)");
             sb.AppendLine("    {");
             sb.AppendLine("        if constexpr (asn1kit::is_open_factory_target_v<Target>)");
-            sb.AppendLine($"            return {fieldType}<Target>{{}};");
+            sb.AppendLine($"            return {fieldType}{{}};");
             sb.AppendLine("        else if constexpr (asn1kit::is_open_owned_target_v<Target>)");
-            sb.AppendLine(
-                $"            return {fieldType}<Target>{{std::move(target_).take()}};");
+            sb.AppendLine($"            return {fieldType}{{std::move(target_).take()}};");
             sb.AppendLine("        else");
-            sb.AppendLine($"            return {fieldType}<Target>{{target_.get()}};");
+            sb.AppendLine($"            return {fieldType}{{target_.get()}};");
             sb.AppendLine("    }");
             sb.AppendLine();
             sb.AppendLine("    void " + path.Field + "() const && = delete;");
@@ -1515,20 +1617,36 @@ public sealed partial class CppBackend
     private IEnumerable<(OpenBinding Binding, string Descriptor, string Method)> OpenBindingMembers(
         OpenSite site)
     {
+        var preferredCounts = site.Bindings
+            .GroupBy(binding => OpenBindingMemberName(binding.Binding), StringComparer.Ordinal)
+            .ToDictionary(static group => group.Key, static group => group.Count(), StringComparer.Ordinal);
         var descriptorNames = new HashSet<string>(StringComparer.Ordinal);
         var methodNames = new HashSet<string>(StringComparer.Ordinal)
         {
-            "open_entries", "access", "base", "view_", "target_"
+            "entries", "access", "base", "target_", "binding"
         };
         foreach (var binding in site.Bindings)
         {
-            var descriptor = binding.MemberName;
-            for (var suffix = 2; !descriptorNames.Add(descriptor); suffix++)
-                descriptor = binding.MemberName + "_" + suffix.ToString(CultureInfo.InvariantCulture);
+            var preferred = OpenBindingMemberName(binding.Binding);
+            var full = OpenBindingFullMemberName(binding.Binding);
+            var descriptor = preferredCounts[preferred] == 1 ? preferred : full;
+            if (!descriptorNames.Add(descriptor))
+            {
+                var baseName = full + "_entry";
+                descriptor = baseName;
+                for (var suffix = 2; !descriptorNames.Add(descriptor); suffix++)
+                    descriptor = baseName + "_" + suffix.ToString(CultureInfo.InvariantCulture);
+            }
             var method = descriptor;
             if (!methodNames.Add(method))
             {
-                var baseName = descriptor + "_entry";
+                method = full;
+                if (methodNames.Add(method))
+                {
+                    yield return (binding, descriptor, method);
+                    continue;
+                }
+                var baseName = full + "_entry";
                 method = baseName;
                 for (var suffix = 2; !methodNames.Add(method); suffix++)
                     method = baseName + "_" + suffix.ToString(CultureInfo.InvariantCulture);
@@ -1576,39 +1694,35 @@ public sealed partial class CppBackend
         sb.AppendLine();
     }
 
+    private void EmitOpenTableFacade(StringBuilder sb, IrModule module, OpenSite site)
+    {
+        var tableName = _openCatalogViewNames[(module.Name, site.CatalogStem)];
+        var entriesName = _openCatalogEntryNames[(module.Name, site.CatalogStem)];
+        sb.AppendLine("template <typename Target, typename Access>");
+        sb.AppendLine($"struct {tableName} : asn1kit::open_table_view<Target, Access> {{");
+        sb.AppendLine("    using base = asn1kit::open_table_view<Target, Access>;");
+        sb.AppendLine($"    template <typename> struct entry_catalog {{ using type = {entriesName}; }};");
+        sb.AppendLine("    using entries = typename entry_catalog<Target>::type;");
+        sb.AppendLine("    using base::base;");
+        sb.AppendLine();
+        foreach (var member in OpenBindingMembers(site))
+            sb.AppendLine(
+                $"    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY({member.Method}, {member.Descriptor})");
+        sb.AppendLine("};");
+        sb.AppendLine();
+    }
+
     private void EmitOpenCatalogMembers(
         StringBuilder sb, IrDocument document, IrModule module, OpenSite site, string indent)
     {
-        var memberNames = new HashSet<string>(StringComparer.Ordinal);
-        var members = new List<(OpenBinding Binding, string Member)>();
-        foreach (var binding in site.Bindings)
-        {
-            var member = binding.MemberName;
-            for (var suffix = 2; !memberNames.Add(member); suffix++)
-                member = binding.MemberName + "_" + suffix.ToString(CultureInfo.InvariantCulture);
-            members.Add((binding, member));
-        }
-
-        var alias = "binding_type";
-        for (var suffix = 2; memberNames.Contains(alias); suffix++)
-            alias = "binding_type_" + suffix.ToString(CultureInfo.InvariantCulture);
-        var contextName = site.Container.Module.Name + "." + site.CatalogStem;
-        sb.AppendLine($"{indent}template <typename T>");
-        sb.AppendLine($"{indent}using {alias} = asn1kit::open_binding<");
-        sb.AppendLine($"{indent}    asn1kit::open_context<\"{EscapeCppString(contextName)}\">,");
-        sb.AppendLine($"{indent}    {OpenKeyCppType(document, site)}, T>;");
-        sb.AppendLine();
-
-        foreach (var (binding, member) in members)
+        foreach (var (binding, member, _) in OpenBindingMembers(site))
         {
             var leafType = OpenBindingCppType(
                 document, module, site.Container.TypeName,
                 binding.Binding.Name ?? "Value", binding.Binding.Type);
-            var valueType = site.Payload.Kind == OpenPayloadKind.Many
-                ? $"std::vector<{leafType}>"
-                : leafType;
             var keyExpr = OpenBindingKeyExpression(document, module, site, binding.Binding.Key);
-            sb.AppendLine($"{indent}inline static const {alias}<{valueType}> {member}{{{keyExpr}}};");
+            sb.AppendLine($"{indent}inline static const asn1kit::open_entry<");
+            sb.AppendLine($"{indent}    {OpenKeyCppType(document, site)}, {leafType}> {member}{{{keyExpr}}};");
         }
         sb.AppendLine();
     }

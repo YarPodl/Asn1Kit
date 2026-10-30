@@ -132,13 +132,24 @@ namespace detail {
 struct authAttributeSet_open_type_entries;
 struct signedAttributesSet_open_type_entries;
 struct unsignedAttributes_open_type_entries;
+template <typename Target, typename Access> struct AuthAttributeSetOpenTable;
+template <typename Target, typename Access> struct SignedAttributesSetOpenTable;
+template <typename Target, typename Access> struct UnsignedAttributesOpenTable;
+} // namespace detail
+namespace detail {
+using AttributeAuthAttributeSetAttrValuesOpenAccess = asn1kit::open_many_access;
+template <typename Target, typename Access> struct AuthAttributeSetOpenTable;
+using AttributeSignedAttributesSetAttrValuesOpenAccess = asn1kit::open_many_access;
+template <typename Target, typename Access> struct SignedAttributesSetOpenTable;
+using AttributeUnsignedAttributesAttrValuesOpenAccess = asn1kit::open_many_access;
+template <typename Target, typename Access> struct UnsignedAttributesOpenTable;
 } // namespace detail
 template <typename Target>
-struct AttributeAuthAttributeSetOpenView;
+using AttributeAuthAttributeSetOpenView = detail::AuthAttributeSetOpenTable<Target, detail::AttributeAuthAttributeSetAttrValuesOpenAccess>;
 template <typename Target>
-struct AttributeSignedAttributesSetOpenView;
+using AttributeSignedAttributesSetOpenView = detail::SignedAttributesSetOpenTable<Target, detail::AttributeSignedAttributesSetAttrValuesOpenAccess>;
 template <typename Target>
-struct AttributeUnsignedAttributesOpenView;
+using AttributeUnsignedAttributesOpenView = detail::UnsignedAttributesOpenTable<Target, detail::AttributeUnsignedAttributesAttrValuesOpenAccess>;
 struct Attribute {
     // ASN.1 constraint unsupported:  table({ AttrList }). Not enforced by runtime.
     asn1kit::oid attrType{};
@@ -234,9 +245,14 @@ struct CMSVersion {
 
 namespace detail {
 struct contentSet_content_open_type_entries;
+template <typename Target, typename Access> struct ContentSetContentOpenTable;
+} // namespace detail
+namespace detail {
+using ContentInfoContentSetContentOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct ContentSetContentOpenTable;
 } // namespace detail
 template <typename Target>
-struct ContentInfoContentSetOpenView;
+using ContentInfoContentSetOpenView = detail::ContentSetContentOpenTable<Target, detail::ContentInfoContentSetContentOpenAccess>;
 struct ContentInfo {
     // ASN.1 constraint unsupported:  table({ ContentSet }). Not enforced by runtime.
     asn1kit::oid contentType{};
@@ -379,8 +395,11 @@ struct DigestedData {
     }
 };
 
+namespace detail {
+struct EncryptedContentInfoContentEncryptionAlgorithmSetParametersOpenAccess;
+} // namespace detail
 template <typename Target>
-struct EncryptedContentInfoContentEncryptionAlgorithmSetOpenView;
+using EncryptedContentInfoContentEncryptionAlgorithmSetOpenView = ::asn1kit::modern::AlgorithmInformation2009::detail::ContentEncryptionAlgorithmSetParametersOpenTable<Target, detail::EncryptedContentInfoContentEncryptionAlgorithmSetParametersOpenAccess>;
 struct EncryptedContentInfo {
     // ASN.1 constraint unsupported:  table({ ContentSet }). Not enforced by runtime.
     asn1kit::oid contentType{};
@@ -579,8 +598,11 @@ struct KEKIdentifier {
     }
 };
 
+namespace detail {
+struct KEKRecipientInfoKeyEncryptionAlgorithmSetParametersOpenAccess;
+} // namespace detail
 template <typename Target>
-struct KEKRecipientInfoKeyEncryptionAlgorithmSetOpenView;
+using KEKRecipientInfoKeyEncryptionAlgorithmSetOpenView = ::asn1kit::modern::AlgorithmInformation2009::detail::KeyEncryptionAlgorithmSetParametersOpenTable<Target, detail::KEKRecipientInfoKeyEncryptionAlgorithmSetParametersOpenAccess>;
 struct KEKRecipientInfo {
     std::int32_t version{};
     KEKIdentifier kekid{};
@@ -596,7 +618,7 @@ struct KEKRecipientInfo {
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_key_encryption_algorithm(
-        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.keyWrapAlgs_parameters">, asn1kit::oid, T>& binding) const {
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.keyEncryptionAlgorithmSet_parameters">, asn1kit::oid, T>& binding) const {
         return asn1kit::try_decode_unique((*this).keyEncryptionAlgorithm, binding);
     }
 
@@ -676,10 +698,14 @@ struct OtherRevocationInfoFormat {
     }
 };
 
+namespace detail {
+struct PasswordRecipientInfoLocalParametersOpenAccess;
+struct PasswordRecipientInfoKeyEncryptionAlgorithmSetParametersOpenAccess;
+} // namespace detail
 template <typename Target>
-struct PasswordRecipientInfoKeyEncryptionAlgorithmSetOpenView;
+using PasswordRecipientInfoKeyEncryptionAlgorithmSetOpenView = ::asn1kit::modern::AlgorithmInformation2009::detail::KeyEncryptionAlgorithmSetParametersOpenTable<Target, detail::PasswordRecipientInfoKeyEncryptionAlgorithmSetParametersOpenAccess>;
 template <typename Target>
-struct PasswordRecipientInfoLocalOpenView;
+using PasswordRecipientInfoLocalOpenView = ::asn1kit::modern::AlgorithmInformation2009::detail::AlgorithmIdentifierParametersOpenTable<Target, detail::PasswordRecipientInfoLocalParametersOpenAccess>;
 struct PasswordRecipientInfo {
     std::int32_t version{};
     // ASN.1 alias KeyDerivationAlgorithmIdentifier ::= AlgorithmIdentifier. ASN.1 object set (extensible). Membership not enforced by runtime.
@@ -701,14 +727,14 @@ struct PasswordRecipientInfo {
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_key_derivation_algorithm(
-        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.keyDevAlgs_parameters">, asn1kit::oid, T>& binding) const {
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.algorithmIdentifier_parameters">, asn1kit::oid, T>& binding) const {
         if (!(*this).keyDerivationAlgorithm.has_value()) return std::nullopt;
         return asn1kit::try_decode_unique((*(*this).keyDerivationAlgorithm), binding);
     }
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_key_encryption_algorithm(
-        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.keyWrapAlgs_parameters">, asn1kit::oid, T>& binding) const {
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.keyEncryptionAlgorithmSet_parameters">, asn1kit::oid, T>& binding) const {
         return asn1kit::try_decode_unique((*this).keyEncryptionAlgorithm, binding);
     }
 
@@ -1401,10 +1427,16 @@ struct SignerIdentifier {
     void encode(asn1kit::writer& w, const asn1kit::tag& t) const;
 };
 
+namespace detail {
+struct SignerInfoSignedAttributesSetAttrValuesOpenAccess;
+template <typename Target, typename Access> struct SignedAttributesSetOpenTable;
+struct SignerInfoUnsignedAttributesAttrValuesOpenAccess;
+template <typename Target, typename Access> struct UnsignedAttributesOpenTable;
+} // namespace detail
 template <typename Target>
-struct SignerInfoSignedAttributesSetOpenView;
+using SignerInfoSignedAttributesSetOpenView = detail::SignedAttributesSetOpenTable<Target, detail::SignerInfoSignedAttributesSetAttrValuesOpenAccess>;
 template <typename Target>
-struct SignerInfoUnsignedAttributesOpenView;
+using SignerInfoUnsignedAttributesOpenView = detail::UnsignedAttributesOpenTable<Target, detail::SignerInfoUnsignedAttributesAttrValuesOpenAccess>;
 struct SignerInfo {
     std::int32_t version{};
     SignerIdentifier sid{};
@@ -1782,8 +1814,11 @@ struct ESSCertID {
     }
 };
 
+namespace detail {
+struct ESSCertIDv2LocalParametersOpenAccess;
+} // namespace detail
 template <typename Target>
-struct ESSCertIDv2LocalOpenView;
+using ESSCertIDv2LocalOpenView = ::asn1kit::modern::AlgorithmInformation2009::detail::AlgorithmIdentifierParametersAlgorithmIdentifierOpenTable<Target, detail::ESSCertIDv2LocalParametersOpenAccess>;
 struct ESSCertIDv2 {
     // ASN.1 alias HashAlgorithm ::= AlgorithmIdentifier. ASN.1 object set (extensible). Membership not enforced by runtime.
     ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier hashAlgorithm = default_hashAlgorithm();
@@ -1798,7 +1833,7 @@ struct ESSCertIDv2 {
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_hash_algorithm(
-        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.algorithmIdentifier_parameters">, asn1kit::oid, T>& binding) const {
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.algorithmIdentifier_parameters_algorithmIdentifier">, asn1kit::oid, T>& binding) const {
         return asn1kit::try_decode_unique((*this).hashAlgorithm, binding);
     }
 
@@ -2252,10 +2287,15 @@ struct OriginatorInfo {
     }
 };
 
+namespace detail {
+struct AuthenticatedDataMessageAuthenticationCodeAlgorithmSetParametersOpenAccess;
+struct AuthenticatedDataAuthAttributeSetAttrValuesOpenAccess;
+template <typename Target, typename Access> struct AuthAttributeSetOpenTable;
+} // namespace detail
 template <typename Target>
-struct AuthenticatedDataAuthAttributeSetOpenView;
+using AuthenticatedDataAuthAttributeSetOpenView = detail::AuthAttributeSetOpenTable<Target, detail::AuthenticatedDataAuthAttributeSetAttrValuesOpenAccess>;
 template <typename Target>
-struct AuthenticatedDataMessageAuthenticationCodeAlgorithmSetOpenView;
+using AuthenticatedDataMessageAuthenticationCodeAlgorithmSetOpenView = ::asn1kit::modern::AlgorithmInformation2009::detail::MessageAuthenticationCodeAlgorithmSetParametersOpenTable<Target, detail::AuthenticatedDataMessageAuthenticationCodeAlgorithmSetParametersOpenAccess>;
 struct AuthenticatedData {
     std::int32_t version{};
     std::optional<OriginatorInfo> originatorInfo{};
@@ -2285,7 +2325,7 @@ struct AuthenticatedData {
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_mac_algorithm(
-        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.pOPAlgs_parameters">, asn1kit::oid, T>& binding) const {
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.messageAuthenticationCodeAlgorithmSet_parameters">, asn1kit::oid, T>& binding) const {
         return asn1kit::try_decode_unique((*this).macAlgorithm, binding);
     }
 

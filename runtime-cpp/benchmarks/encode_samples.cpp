@@ -54,7 +54,7 @@ using Name = std::vector<std::vector<Attr>>;
 }
 
 [[nodiscard]] Alg::AlgorithmIdentifier rsa_public_key() {
-    return Alg::AlgorithmIdentifier::make_public_key_algorithms().kt_rsa(
+    return Alg::AlgorithmIdentifier::make_public_key_algorithms().rsa(
         asn1kit::null_value::value());
 }
 

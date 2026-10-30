@@ -3,8 +3,8 @@
 
 #include "M.hpp"
 
-#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
-#error "generated open-view helper macro leaked into consumer code"
+#ifdef ASN1KIT_DETAIL_OPEN_TABLE_ENTRY
+#error "generated open-table helper macro leaked into consumer code"
 #endif
 
 #include "asn1kit/codec.hpp"

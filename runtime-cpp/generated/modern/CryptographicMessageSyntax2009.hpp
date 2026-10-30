@@ -45,401 +45,220 @@ struct CryptographicMessageSyntax2009Oids {
     static constexpr auto IdCountersignature = asn1kit::oid_literal<"1.2.840.113549.1.9.6">();
 };
 
+#ifndef ASN1KIT_GENERATED_CRYPTOGRAPHICMESSAGESYNTAX2009OPENENTRIES_HPP
+#define ASN1KIT_GENERATED_CRYPTOGRAPHICMESSAGESYNTAX2009OPENENTRIES_HPP
 namespace detail {
 
 struct authAttributeSet_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"CryptographicMessageSyntax-2009.authAttributeSet">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<std::vector<asn1kit::oid>> content_type{CryptographicMessageSyntax2009Oids::IdContentType};
-    inline static const binding_type<std::vector<asn1kit::bytes>> message_digest{CryptographicMessageSyntax2009Oids::IdMessageDigest};
-    inline static const binding_type<std::vector<Time>> signing_time{CryptographicMessageSyntax2009Oids::IdSigningTime};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::oid> content_type{CryptographicMessageSyntax2009Oids::IdContentType};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::bytes> message_digest{CryptographicMessageSyntax2009Oids::IdMessageDigest};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, Time> signing_time{CryptographicMessageSyntax2009Oids::IdSigningTime};
 
 };
 
 struct contentSet_content_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"CryptographicMessageSyntax-2009.contentSet_content">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<SignedData> ct_signed_data{CryptographicMessageSyntax2009Oids::IdSignedData};
-    inline static const binding_type<EncryptedData> ct_encrypted_data{CryptographicMessageSyntax2009Oids::IdEncryptedData};
-    inline static const binding_type<EnvelopedData> ct_enveloped_data{CryptographicMessageSyntax2009Oids::IdEnvelopedData};
-    inline static const binding_type<AuthenticatedData> ct_authenticated_data{CryptographicMessageSyntax2009Oids::IdCtAuthData};
-    inline static const binding_type<DigestedData> ct_digested_data{CryptographicMessageSyntax2009Oids::IdDigestedData};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, SignedData> signed_data{CryptographicMessageSyntax2009Oids::IdSignedData};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, EncryptedData> encrypted_data{CryptographicMessageSyntax2009Oids::IdEncryptedData};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, EnvelopedData> enveloped_data{CryptographicMessageSyntax2009Oids::IdEnvelopedData};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, AuthenticatedData> authenticated_data{CryptographicMessageSyntax2009Oids::IdCtAuthData};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, DigestedData> digested_data{CryptographicMessageSyntax2009Oids::IdDigestedData};
 
 };
 
 struct signedAttributesSet_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"CryptographicMessageSyntax-2009.signedAttributesSet">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<std::vector<Time>> signing_time{CryptographicMessageSyntax2009Oids::IdSigningTime};
-    inline static const binding_type<std::vector<asn1kit::bytes>> message_digest{CryptographicMessageSyntax2009Oids::IdMessageDigest};
-    inline static const binding_type<std::vector<asn1kit::oid>> content_type{CryptographicMessageSyntax2009Oids::IdContentType};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, Time> signing_time{CryptographicMessageSyntax2009Oids::IdSigningTime};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::bytes> message_digest{CryptographicMessageSyntax2009Oids::IdMessageDigest};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::oid> content_type{CryptographicMessageSyntax2009Oids::IdContentType};
 
 };
 
 struct unsignedAttributes_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"CryptographicMessageSyntax-2009.unsignedAttributes">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<std::vector<SignerInfo>> countersignature{CryptographicMessageSyntax2009Oids::IdCountersignature};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, SignerInfo> countersignature{CryptographicMessageSyntax2009Oids::IdCountersignature};
 
 };
 
 } // namespace detail
+#endif // ASN1KIT_GENERATED_CRYPTOGRAPHICMESSAGESYNTAX2009OPENENTRIES_HPP
 
-#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
-#error "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY is reserved for generated headers"
+#ifndef ASN1KIT_GENERATED_CRYPTOGRAPHICMESSAGESYNTAX2009OPENTABLES_HPP
+#define ASN1KIT_GENERATED_CRYPTOGRAPHICMESSAGESYNTAX2009OPENTABLES_HPP
+#ifdef ASN1KIT_DETAIL_OPEN_TABLE_ENTRY
+#error "ASN1KIT_DETAIL_OPEN_TABLE_ENTRY is reserved for generated headers"
 #endif
-#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding) \
+#define ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(Name, Entry) \
     template <typename... Args> \
     decltype(auto) Name(Args&&... args) const \
-        requires requires(const base& view, Args&&... values) { \
-            view.template invoke<open_entries::Binding>(std::forward<Args>(values)...); \
+        requires requires(const base& table, Args&&... values) { \
+            table.template invoke<entries::Entry>(std::forward<Args>(values)...); \
         } \
-    { return view_.template invoke<open_entries::Binding>(std::forward<Args>(args)...); }
+    { return this->template invoke<entries::Entry>(std::forward<Args>(args)...); }
 
-template <typename Target>
-struct AttributeAuthAttributeSetOpenView {
-    using open_entries = detail::authAttributeSet_open_type_entries;
+namespace detail {
 
-    using access = asn1kit::open_direct_access;
+template <typename Target, typename Access>
+struct AuthAttributeSetOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = authAttributeSet_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
 
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AttributeAuthAttributeSetOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AttributeAuthAttributeSetOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AttributeAuthAttributeSetOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(content_type, content_type)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(message_digest, message_digest)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(signing_time, signing_time)
-
-private:
-    [[no_unique_address]] base view_;
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(content_type, content_type)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(message_digest, message_digest)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(signing_time, signing_time)
 };
 
-template <typename Target>
-struct AttributeSignedAttributesSetOpenView {
-    using open_entries = detail::signedAttributesSet_open_type_entries;
+template <typename Target, typename Access>
+struct ContentSetContentOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = contentSet_content_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
 
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AttributeSignedAttributesSetOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AttributeSignedAttributesSetOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AttributeSignedAttributesSetOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(signing_time, signing_time)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(message_digest, message_digest)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(content_type, content_type)
-
-private:
-    [[no_unique_address]] base view_;
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(signed_data, signed_data)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(encrypted_data, encrypted_data)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(enveloped_data, enveloped_data)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(authenticated_data, authenticated_data)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(digested_data, digested_data)
 };
 
-template <typename Target>
-struct AttributeUnsignedAttributesOpenView {
-    using open_entries = detail::unsignedAttributes_open_type_entries;
+template <typename Target, typename Access>
+struct SignedAttributesSetOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = signedAttributesSet_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
 
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AttributeUnsignedAttributesOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AttributeUnsignedAttributesOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AttributeUnsignedAttributesOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(countersignature, countersignature)
-
-private:
-    [[no_unique_address]] base view_;
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(signing_time, signing_time)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(message_digest, message_digest)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(content_type, content_type)
 };
 
-template <typename Target>
-struct AuthenticatedDataAuthAttributeSetOpenView {
-    using open_entries = detail::authAttributeSet_open_type_entries;
+template <typename Target, typename Access>
+struct UnsignedAttributesOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = unsignedAttributes_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
 
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_auth_attrs(binding);
-        }
-    };
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AuthenticatedDataAuthAttributeSetOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AuthenticatedDataAuthAttributeSetOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(content_type, content_type)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(message_digest, message_digest)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(signing_time, signing_time)
-
-private:
-    [[no_unique_address]] base view_;
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(countersignature, countersignature)
 };
 
-template <typename Target>
-struct AuthenticatedDataMessageAuthenticationCodeAlgorithmSetOpenView {
-    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::pOPAlgs_parameters_open_type_entries;
+} // namespace detail
 
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_mac_algorithm(binding);
-        }
-    };
+#undef ASN1KIT_DETAIL_OPEN_TABLE_ENTRY
+#endif // ASN1KIT_GENERATED_CRYPTOGRAPHICMESSAGESYNTAX2009OPENTABLES_HPP
 
-    using base = asn1kit::open_function_view<Target, access>;
+namespace detail {
 
-    explicit AuthenticatedDataMessageAuthenticationCodeAlgorithmSetOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AuthenticatedDataMessageAuthenticationCodeAlgorithmSetOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(maca_h_mac_sha1, maca_h_mac_sha1)
-
-private:
-    [[no_unique_address]] base view_;
+struct AuthenticatedDataAuthAttributeSetAttrValuesOpenAccess {
+    template <typename Entry>
+    static auto binding(const Entry& entry) {
+        using value_type = std::vector<typename Entry::value_type>;
+        return asn1kit::open_binding<asn1kit::open_context<"CryptographicMessageSyntax-2009.authAttributeSet">, typename Entry::key_type, value_type>{entry.key};
+    }
+    template <typename Source, typename Binding>
+    static auto decode(const Source& source, const Binding& binding) { return source.try_decode_auth_attrs(binding); }
 };
 
-template <typename Target>
-struct ContentInfoContentSetOpenView {
-    using open_entries = detail::contentSet_content_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit ContentInfoContentSetOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit ContentInfoContentSetOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ContentInfoContentSetOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ct_signed_data, ct_signed_data)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ct_encrypted_data, ct_encrypted_data)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ct_enveloped_data, ct_enveloped_data)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ct_authenticated_data, ct_authenticated_data)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ct_digested_data, ct_digested_data)
-
-private:
-    [[no_unique_address]] base view_;
+struct AuthenticatedDataMessageAuthenticationCodeAlgorithmSetParametersOpenAccess {
+    template <typename Entry>
+    static auto binding(const Entry& entry) {
+        using value_type = typename Entry::value_type;
+        return asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.messageAuthenticationCodeAlgorithmSet_parameters">, typename Entry::key_type, value_type>{entry.key};
+    }
+    template <typename Source, typename Binding>
+    static auto decode(const Source& source, const Binding& binding) { return source.try_decode_mac_algorithm(binding); }
 };
 
-template <typename Target>
-struct EncryptedContentInfoContentEncryptionAlgorithmSetOpenView {
-    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::contentEncryptionAlgorithmSet_parameters_open_type_entries;
+} // namespace detail
 
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_content_encryption_algorithm(binding);
-        }
-    };
+namespace detail {
 
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit EncryptedContentInfoContentEncryptionAlgorithmSetOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit EncryptedContentInfoContentEncryptionAlgorithmSetOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cea_3_des_cbc, cea_3_des_cbc)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cea_rc2_cbc, cea_rc2_cbc)
-
-private:
-    [[no_unique_address]] base view_;
+struct EncryptedContentInfoContentEncryptionAlgorithmSetParametersOpenAccess {
+    template <typename Entry>
+    static auto binding(const Entry& entry) {
+        using value_type = typename Entry::value_type;
+        return asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.contentEncryptionAlgorithmSet_parameters">, typename Entry::key_type, value_type>{entry.key};
+    }
+    template <typename Source, typename Binding>
+    static auto decode(const Source& source, const Binding& binding) { return source.try_decode_content_encryption_algorithm(binding); }
 };
 
-template <typename Target>
-struct KEKRecipientInfoKeyEncryptionAlgorithmSetOpenView {
-    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::keyWrapAlgs_parameters_open_type_entries;
+} // namespace detail
 
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_key_encryption_algorithm(binding);
-        }
-    };
+namespace detail {
 
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit KEKRecipientInfoKeyEncryptionAlgorithmSetOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit KEKRecipientInfoKeyEncryptionAlgorithmSetOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(kwa_3_des_wrap, kwa_3_des_wrap)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(kwa_rc2_wrap, kwa_rc2_wrap)
-
-private:
-    [[no_unique_address]] base view_;
+struct KEKRecipientInfoKeyEncryptionAlgorithmSetParametersOpenAccess {
+    template <typename Entry>
+    static auto binding(const Entry& entry) {
+        using value_type = typename Entry::value_type;
+        return asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.keyEncryptionAlgorithmSet_parameters">, typename Entry::key_type, value_type>{entry.key};
+    }
+    template <typename Source, typename Binding>
+    static auto decode(const Source& source, const Binding& binding) { return source.try_decode_key_encryption_algorithm(binding); }
 };
 
-template <typename Target>
-struct PasswordRecipientInfoKeyEncryptionAlgorithmSetOpenView {
-    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::keyWrapAlgs_parameters_open_type_entries;
+} // namespace detail
 
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_key_encryption_algorithm(binding);
-        }
-    };
+namespace detail {
 
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit PasswordRecipientInfoKeyEncryptionAlgorithmSetOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit PasswordRecipientInfoKeyEncryptionAlgorithmSetOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(kwa_3_des_wrap, kwa_3_des_wrap)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(kwa_rc2_wrap, kwa_rc2_wrap)
-
-private:
-    [[no_unique_address]] base view_;
+struct PasswordRecipientInfoLocalParametersOpenAccess {
+    template <typename Entry>
+    static auto binding(const Entry& entry) {
+        using value_type = typename Entry::value_type;
+        return asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.algorithmIdentifier_parameters">, typename Entry::key_type, value_type>{entry.key};
+    }
+    template <typename Source, typename Binding>
+    static auto decode(const Source& source, const Binding& binding) { return source.try_decode_key_derivation_algorithm(binding); }
 };
 
-template <typename Target>
-struct PasswordRecipientInfoLocalOpenView {
-    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::keyDevAlgs_parameters_open_type_entries;
-
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_key_derivation_algorithm(binding);
-        }
-    };
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit PasswordRecipientInfoLocalOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit PasswordRecipientInfoLocalOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(kda_pbkdf2, kda_pbkdf2)
-
-private:
-    [[no_unique_address]] base view_;
+struct PasswordRecipientInfoKeyEncryptionAlgorithmSetParametersOpenAccess {
+    template <typename Entry>
+    static auto binding(const Entry& entry) {
+        using value_type = typename Entry::value_type;
+        return asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.keyEncryptionAlgorithmSet_parameters">, typename Entry::key_type, value_type>{entry.key};
+    }
+    template <typename Source, typename Binding>
+    static auto decode(const Source& source, const Binding& binding) { return source.try_decode_key_encryption_algorithm(binding); }
 };
 
-template <typename Target>
-struct SignerInfoSignedAttributesSetOpenView {
-    using open_entries = detail::signedAttributesSet_open_type_entries;
+} // namespace detail
 
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_signed_attrs(binding);
-        }
-    };
+namespace detail {
 
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit SignerInfoSignedAttributesSetOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit SignerInfoSignedAttributesSetOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(signing_time, signing_time)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(message_digest, message_digest)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(content_type, content_type)
-
-private:
-    [[no_unique_address]] base view_;
+struct SignerInfoSignedAttributesSetAttrValuesOpenAccess {
+    template <typename Entry>
+    static auto binding(const Entry& entry) {
+        using value_type = std::vector<typename Entry::value_type>;
+        return asn1kit::open_binding<asn1kit::open_context<"CryptographicMessageSyntax-2009.signedAttributesSet">, typename Entry::key_type, value_type>{entry.key};
+    }
+    template <typename Source, typename Binding>
+    static auto decode(const Source& source, const Binding& binding) { return source.try_decode_signed_attrs(binding); }
 };
 
-template <typename Target>
-struct SignerInfoUnsignedAttributesOpenView {
-    using open_entries = detail::unsignedAttributes_open_type_entries;
-
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_unsigned_attrs(binding);
-        }
-    };
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit SignerInfoUnsignedAttributesOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit SignerInfoUnsignedAttributesOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(countersignature, countersignature)
-
-private:
-    [[no_unique_address]] base view_;
+struct SignerInfoUnsignedAttributesAttrValuesOpenAccess {
+    template <typename Entry>
+    static auto binding(const Entry& entry) {
+        using value_type = std::vector<typename Entry::value_type>;
+        return asn1kit::open_binding<asn1kit::open_context<"CryptographicMessageSyntax-2009.unsignedAttributes">, typename Entry::key_type, value_type>{entry.key};
+    }
+    template <typename Source, typename Binding>
+    static auto decode(const Source& source, const Binding& binding) { return source.try_decode_unsigned_attrs(binding); }
 };
 
-#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+} // namespace detail
 
 inline AttributeAuthAttributeSetOpenView<Attribute> Attribute::auth_attribute_set() & {
     return AttributeAuthAttributeSetOpenView<Attribute>{*this};

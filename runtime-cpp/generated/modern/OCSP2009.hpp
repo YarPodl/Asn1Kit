@@ -31,112 +31,46 @@ namespace asn1kit {
 namespace modern {
 namespace OCSP2009 {
 
+#ifndef ASN1KIT_GENERATED_OCSP2009OPENENTRIES_HPP
+#define ASN1KIT_GENERATED_OCSP2009OPENENTRIES_HPP
 namespace detail {
 
 struct responseSet_response_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"OCSP-2009.responseSet_response">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<BasicOCSPResponse> basic_response{OCSP2009Oids::IdPkixOcspBasic};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, BasicOCSPResponse> basic_response{OCSP2009Oids::IdPkixOcspBasic};
 
 };
 
 } // namespace detail
+#endif // ASN1KIT_GENERATED_OCSP2009OPENENTRIES_HPP
 
-#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
-#error "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY is reserved for generated headers"
-#endif
-#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding) \
-    template <typename... Args> \
-    decltype(auto) Name(Args&&... args) const \
-        requires requires(const base& view, Args&&... values) { \
-            view.template invoke<open_entries::Binding>(std::forward<Args>(values)...); \
-        } \
-    { return view_.template invoke<open_entries::Binding>(std::forward<Args>(args)...); }
+namespace detail {
 
-template <typename Target>
-struct ResponseBytesResponseSetOpenView {
-    using open_entries = detail::responseSet_response_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit ResponseBytesResponseSetOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit ResponseBytesResponseSetOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ResponseBytesResponseSetOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(basic_response, basic_response)
-
-private:
-    [[no_unique_address]] base view_;
+struct ResponseDataLocalExtnValueOpenAccess {
+    template <typename Entry>
+    static auto binding(const Entry& entry) {
+        using value_type = typename Entry::value_type;
+        return asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.extension_extnValue_extension_2">, typename Entry::key_type, value_type>{entry.key};
+    }
+    template <typename Source, typename Binding>
+    static auto decode(const Source& source, const Binding& binding) { return source.try_decode_response_extensions(binding); }
 };
 
-template <typename Target>
-struct ResponseDataLocalOpenView {
-    using open_entries = ::asn1kit::modern::PKIXCommonTypes2009::detail::extension_extnValue_extension_2_open_type_entries;
+} // namespace detail
 
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_response_extensions(binding);
-        }
-    };
+namespace detail {
 
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit ResponseDataLocalOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit ResponseDataLocalOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(re_ocsp_nonce, re_ocsp_nonce)
-
-private:
-    [[no_unique_address]] base view_;
+struct TBSRequestLocalExtnValueOpenAccess {
+    template <typename Entry>
+    static auto binding(const Entry& entry) {
+        using value_type = typename Entry::value_type;
+        return asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.extension_extnValue">, typename Entry::key_type, value_type>{entry.key};
+    }
+    template <typename Source, typename Binding>
+    static auto decode(const Source& source, const Binding& binding) { return source.try_decode_request_extensions(binding); }
 };
 
-template <typename Target>
-struct TBSRequestLocalOpenView {
-    using open_entries = ::asn1kit::modern::PKIXCommonTypes2009::detail::extension_extnValue_open_type_entries;
-
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_request_extensions(binding);
-        }
-    };
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit TBSRequestLocalOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit TBSRequestLocalOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(re_ocsp_nonce, re_ocsp_nonce)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(re_ocsp_response, re_ocsp_response)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+} // namespace detail
 
 inline ResponseBytesResponseSetOpenView<ResponseBytes> ResponseBytes::response_set() & {
     return ResponseBytesResponseSetOpenView<ResponseBytes>{*this};

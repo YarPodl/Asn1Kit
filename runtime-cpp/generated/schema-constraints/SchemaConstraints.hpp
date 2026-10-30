@@ -34,9 +34,14 @@ struct SchemaConstraintsOids {
 
 namespace detail {
 struct closedSet_value_open_type_entries;
+template <typename Target, typename Access> struct ClosedSetValueOpenTable;
+} // namespace detail
+namespace detail {
+using ClosedCarrierClosedSetValueOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct ClosedSetValueOpenTable;
 } // namespace detail
 template <typename Target>
-struct ClosedCarrierClosedSetOpenView;
+using ClosedCarrierClosedSetOpenView = detail::ClosedSetValueOpenTable<Target, detail::ClosedCarrierClosedSetValueOpenAccess>;
 struct ClosedCarrier {
     asn1kit::oid id{};
     // ASN.1 object set ClosedSet (closed). Membership not enforced by runtime.
@@ -108,9 +113,14 @@ struct ClosedCarrier {
 
 namespace detail {
 struct openSet_value_open_type_entries;
+template <typename Target, typename Access> struct OpenSetValueOpenTable;
+} // namespace detail
+namespace detail {
+using OpenCarrierOpenSetValueOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct OpenSetValueOpenTable;
 } // namespace detail
 template <typename Target>
-struct OpenCarrierOpenSetOpenView;
+using OpenCarrierOpenSetOpenView = detail::OpenSetValueOpenTable<Target, detail::OpenCarrierOpenSetValueOpenAccess>;
 struct OpenCarrier {
     asn1kit::oid id{};
     // ASN.1 object set OpenSet (extensible). Membership not enforced by runtime.
@@ -218,96 +228,70 @@ struct Sample {
     }
 };
 
+#ifndef ASN1KIT_GENERATED_SCHEMACONSTRAINTSOPENENTRIES_HPP
+#define ASN1KIT_GENERATED_SCHEMACONSTRAINTSOPENENTRIES_HPP
 namespace detail {
 
 struct closedSet_value_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"SchemaConstraints.closedSet_value">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<asn1kit::integer> int_entry{asn1kit::oid_literal<"1.2.1">()};
-    inline static const binding_type<bool> bool_entry{asn1kit::oid_literal<"1.2.2">()};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::integer> int_entry{asn1kit::oid_literal<"1.2.1">()};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, bool> bool_entry{asn1kit::oid_literal<"1.2.2">()};
 
 };
 
 struct openSet_value_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"SchemaConstraints.openSet_value">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<asn1kit::integer> int_entry{asn1kit::oid_literal<"1.2.1">()};
-    inline static const binding_type<bool> bool_entry{asn1kit::oid_literal<"1.2.2">()};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::integer> int_entry{asn1kit::oid_literal<"1.2.1">()};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, bool> bool_entry{asn1kit::oid_literal<"1.2.2">()};
 
 };
 
 } // namespace detail
+#endif // ASN1KIT_GENERATED_SCHEMACONSTRAINTSOPENENTRIES_HPP
 
-#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
-#error "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY is reserved for generated headers"
+#ifndef ASN1KIT_GENERATED_SCHEMACONSTRAINTSOPENTABLES_HPP
+#define ASN1KIT_GENERATED_SCHEMACONSTRAINTSOPENTABLES_HPP
+#ifdef ASN1KIT_DETAIL_OPEN_TABLE_ENTRY
+#error "ASN1KIT_DETAIL_OPEN_TABLE_ENTRY is reserved for generated headers"
 #endif
-#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding) \
+#define ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(Name, Entry) \
     template <typename... Args> \
     decltype(auto) Name(Args&&... args) const \
-        requires requires(const base& view, Args&&... values) { \
-            view.template invoke<open_entries::Binding>(std::forward<Args>(values)...); \
+        requires requires(const base& table, Args&&... values) { \
+            table.template invoke<entries::Entry>(std::forward<Args>(values)...); \
         } \
-    { return view_.template invoke<open_entries::Binding>(std::forward<Args>(args)...); }
+    { return this->template invoke<entries::Entry>(std::forward<Args>(args)...); }
 
-template <typename Target>
-struct ClosedCarrierClosedSetOpenView {
-    using open_entries = detail::closedSet_value_open_type_entries;
+namespace detail {
 
-    using access = asn1kit::open_direct_access;
+template <typename Target, typename Access>
+struct ClosedSetValueOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = closedSet_value_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
 
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit ClosedCarrierClosedSetOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit ClosedCarrierClosedSetOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ClosedCarrierClosedSetOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(int_entry, int_entry)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(bool_entry, bool_entry)
-
-private:
-    [[no_unique_address]] base view_;
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(int_entry, int_entry)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(bool_entry, bool_entry)
 };
 
-template <typename Target>
-struct OpenCarrierOpenSetOpenView {
-    using open_entries = detail::openSet_value_open_type_entries;
+template <typename Target, typename Access>
+struct OpenSetValueOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = openSet_value_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
 
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit OpenCarrierOpenSetOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit OpenCarrierOpenSetOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    OpenCarrierOpenSetOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(int_entry, int_entry)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(bool_entry, bool_entry)
-
-private:
-    [[no_unique_address]] base view_;
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(int_entry, int_entry)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(bool_entry, bool_entry)
 };
 
-#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+} // namespace detail
+
+#undef ASN1KIT_DETAIL_OPEN_TABLE_ENTRY
+#endif // ASN1KIT_GENERATED_SCHEMACONSTRAINTSOPENTABLES_HPP
 
 inline ClosedCarrierClosedSetOpenView<ClosedCarrier> ClosedCarrier::closed_set() & {
     return ClosedCarrierClosedSetOpenView<ClosedCarrier>{*this};

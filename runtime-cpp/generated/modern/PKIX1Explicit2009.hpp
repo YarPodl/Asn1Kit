@@ -484,14 +484,20 @@ struct Validity {
     }
 };
 
+namespace detail {
+struct TBSCertificateSignatureAlgorithmsParametersOpenAccess;
+struct TBSCertificateSupportedAttributesIssuerValueOpenAccess;
+struct TBSCertificateSupportedAttributesSubjectValueOpenAccess;
+struct TBSCertificateCertExtensionsExtnValueOpenAccess;
+} // namespace detail
 template <typename Target>
-struct TBSCertificateCertExtensionsOpenView;
+using TBSCertificateCertExtensionsOpenView = ::asn1kit::modern::PKIXCommonTypes2009::detail::CertExtensionsOpenTable<Target, detail::TBSCertificateCertExtensionsExtnValueOpenAccess>;
 template <typename Target>
-struct TBSCertificateSignatureAlgorithmsOpenView;
+using TBSCertificateSignatureAlgorithmsOpenView = ::asn1kit::modern::AlgorithmInformation2009::detail::SignatureAlgorithmsParametersOpenTable<Target, detail::TBSCertificateSignatureAlgorithmsParametersOpenAccess>;
 template <typename Target>
-struct TBSCertificateSupportedAttributesIssuerOpenView;
+using TBSCertificateSupportedAttributesIssuerOpenView = ::asn1kit::modern::PKIXCommonTypes2009::detail::SupportedAttributesOpenTable<Target, detail::TBSCertificateSupportedAttributesIssuerValueOpenAccess>;
 template <typename Target>
-struct TBSCertificateSupportedAttributesSubjectOpenView;
+using TBSCertificateSupportedAttributesSubjectOpenView = ::asn1kit::modern::PKIXCommonTypes2009::detail::SupportedAttributesOpenTable<Target, detail::TBSCertificateSupportedAttributesSubjectValueOpenAccess>;
 struct TBSCertificate {
     std::int32_t version = 0;
     // ASN.1 alias CertificateSerialNumber ::= INTEGER.
@@ -539,13 +545,13 @@ struct TBSCertificate {
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_issuer(
-        const asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes_value">, asn1kit::oid, T>& binding) const {
+        const asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes">, asn1kit::oid, T>& binding) const {
         return asn1kit::try_decode_unique((*this).issuer.get(), binding);
     }
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_subject(
-        const asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes_value">, asn1kit::oid, T>& binding) const {
+        const asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes">, asn1kit::oid, T>& binding) const {
         return asn1kit::try_decode_unique((*this).subject.get(), binding);
     }
 
@@ -702,186 +708,49 @@ struct Version {
     static constexpr std::int32_t V3 = 2;
 };
 
-#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
-#error "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY is reserved for generated headers"
-#endif
-#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding) \
-    template <typename... Args> \
-    decltype(auto) Name(Args&&... args) const \
-        requires requires(const base& view, Args&&... values) { \
-            view.template invoke<open_entries::Binding>(std::forward<Args>(values)...); \
-        } \
-    { return view_.template invoke<open_entries::Binding>(std::forward<Args>(args)...); }
+namespace detail {
 
-template <typename Target>
-struct TBSCertificateCertExtensionsOpenView {
-    using open_entries = ::asn1kit::modern::PKIXCommonTypes2009::detail::certExtensions_open_type_entries;
-
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_extensions(binding);
-        }
-    };
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit TBSCertificateCertExtensionsOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit TBSCertificateCertExtensionsOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(authority_key_identifier, authority_key_identifier)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(subject_key_identifier, subject_key_identifier)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(key_usage, key_usage)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(private_key_usage_period, private_key_usage_period)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(certificate_policies, certificate_policies)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(policy_mappings, policy_mappings)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(subject_alt_name, subject_alt_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(issuer_alt_name, issuer_alt_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(subject_directory_attributes, subject_directory_attributes)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(basic_constraints, basic_constraints)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(name_constraints, name_constraints)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(policy_constraints, policy_constraints)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(ext_key_usage, ext_key_usage)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(crl_distribution_points, crl_distribution_points)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(inhibit_any_policy, inhibit_any_policy)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(freshest_crl, freshest_crl)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(authority_info_access, authority_info_access)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(subject_info_access_syntax, subject_info_access_syntax)
-
-private:
-    [[no_unique_address]] base view_;
+struct TBSCertificateCertExtensionsExtnValueOpenAccess {
+    template <typename Entry>
+    static auto binding(const Entry& entry) {
+        using value_type = typename Entry::value_type;
+        return asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.certExtensions">, typename Entry::key_type, value_type>{entry.key};
+    }
+    template <typename Source, typename Binding>
+    static auto decode(const Source& source, const Binding& binding) { return source.try_decode_extensions(binding); }
 };
 
-template <typename Target>
-struct TBSCertificateSignatureAlgorithmsOpenView {
-    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::signatureAlgorithms_parameters_open_type_entries;
-
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_signature(binding);
-        }
-    };
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit TBSCertificateSignatureAlgorithmsOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit TBSCertificateSignatureAlgorithmsOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_md2, sa_rsa_with_md2)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_md5, sa_rsa_with_md5)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_sha1, sa_rsa_with_sha1)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha1, sa_dsa_with_sha1)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha1, sa_ecdsa_with_sha1)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha224, sa_dsa_with_sha224)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha256, sa_dsa_with_sha256)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha224, sa_ecdsa_with_sha224)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha256, sa_ecdsa_with_sha256)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha384, sa_ecdsa_with_sha384)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha512, sa_ecdsa_with_sha512)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_ssa_pss, sa_rsa_ssa_pss)
-
-private:
-    [[no_unique_address]] base view_;
+struct TBSCertificateSignatureAlgorithmsParametersOpenAccess {
+    template <typename Entry>
+    static auto binding(const Entry& entry) {
+        using value_type = typename Entry::value_type;
+        return asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">, typename Entry::key_type, value_type>{entry.key};
+    }
+    template <typename Source, typename Binding>
+    static auto decode(const Source& source, const Binding& binding) { return source.try_decode_signature(binding); }
 };
 
-template <typename Target>
-struct TBSCertificateSupportedAttributesIssuerOpenView {
-    using open_entries = ::asn1kit::modern::PKIXCommonTypes2009::detail::supportedAttributes_value_open_type_entries;
-
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_issuer(binding);
-        }
-    };
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit TBSCertificateSupportedAttributesIssuerOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit TBSCertificateSupportedAttributesIssuerOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(name, name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(surname, surname)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(given_name, given_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(initials, initials)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(generation_qualifier, generation_qualifier)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_common_name, x520_common_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_locality_name, x520_locality_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_state_or_province_name, x520_state_or_province_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_organization_name, x520_organization_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_organizational_unit_name, x520_organizational_unit_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_title, x520_title)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520dn_qualifier, x520dn_qualifier)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520country_name, x520country_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_serial_number, x520_serial_number)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_pseudonym, x520_pseudonym)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(domain_component, domain_component)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(email_address, email_address)
-
-private:
-    [[no_unique_address]] base view_;
+struct TBSCertificateSupportedAttributesIssuerValueOpenAccess {
+    template <typename Entry>
+    static auto binding(const Entry& entry) {
+        using value_type = typename Entry::value_type;
+        return asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes">, typename Entry::key_type, value_type>{entry.key};
+    }
+    template <typename Source, typename Binding>
+    static auto decode(const Source& source, const Binding& binding) { return source.try_decode_issuer(binding); }
 };
 
-template <typename Target>
-struct TBSCertificateSupportedAttributesSubjectOpenView {
-    using open_entries = ::asn1kit::modern::PKIXCommonTypes2009::detail::supportedAttributes_value_open_type_entries;
-
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_subject(binding);
-        }
-    };
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit TBSCertificateSupportedAttributesSubjectOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit TBSCertificateSupportedAttributesSubjectOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(name, name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(surname, surname)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(given_name, given_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(initials, initials)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(generation_qualifier, generation_qualifier)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_common_name, x520_common_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_locality_name, x520_locality_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_state_or_province_name, x520_state_or_province_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_organization_name, x520_organization_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_organizational_unit_name, x520_organizational_unit_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_title, x520_title)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520dn_qualifier, x520dn_qualifier)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520country_name, x520country_name)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_serial_number, x520_serial_number)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(x520_pseudonym, x520_pseudonym)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(domain_component, domain_component)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(email_address, email_address)
-
-private:
-    [[no_unique_address]] base view_;
+struct TBSCertificateSupportedAttributesSubjectValueOpenAccess {
+    template <typename Entry>
+    static auto binding(const Entry& entry) {
+        using value_type = typename Entry::value_type;
+        return asn1kit::open_binding<asn1kit::open_context<"PKIX-CommonTypes-2009.supportedAttributes">, typename Entry::key_type, value_type>{entry.key};
+    }
+    template <typename Source, typename Binding>
+    static auto decode(const Source& source, const Binding& binding) { return source.try_decode_subject(binding); }
 };
 
-#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+} // namespace detail
 
 inline TBSCertificateCertExtensionsOpenView<TBSCertificate> TBSCertificate::cert_extensions() & {
     return TBSCertificateCertExtensionsOpenView<TBSCertificate>{*this};

@@ -37,677 +37,212 @@ namespace asn1kit {
 namespace modern {
 namespace AlgorithmInformation2009 {
 
+#ifndef ASN1KIT_GENERATED_ALGORITHMINFORMATION2009OPENENTRIES_HPP
+#define ASN1KIT_GENERATED_ALGORITHMINFORMATION2009OPENENTRIES_HPP
 namespace detail {
 
 struct algorithmIdentifier_parameters_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"AlgorithmInformation-2009.algorithmIdentifier_parameters">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<asn1kit::null_value> mda_sha256{::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::PBKDF2Params> pbkdf2{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdPBKDF2};
 
 };
 
 struct algorithmIdentifier_parameters_algorithmIdentifier_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"AlgorithmInformation-2009.algorithmIdentifier_parameters_algorithmIdentifier">,
-        asn1kit::oid, T>;
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> sha256{::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256};
 
-    inline static const binding_type<asn1kit::null_value> sa_dsa_with_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha1};
-    inline static const binding_type<asn1kit::null_value> sa_rsa_with_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::Sha1WithRSAEncryption};
-    inline static const binding_type<asn1kit::null_value> sa_rsa_with_md5{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::Md5WithRSAEncryption};
-    inline static const binding_type<asn1kit::null_value> sa_rsa_with_md2{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::Md2WithRSAEncryption};
+};
+
+struct algorithmIdentifier_parameters_algorithmIdentifier_2_open_type_entries {
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> dsa_with_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha1};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> rsa_with_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::Sha1WithRSAEncryption};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> rsa_with_md5{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::Md5WithRSAEncryption};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> rsa_with_md2{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::Md2WithRSAEncryption};
 
 };
 
 struct contentEncryptionAlgorithmSet_parameters_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"AlgorithmInformation-2009.contentEncryptionAlgorithmSet_parameters">,
-        asn1kit::oid, T>;
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::bytes> f_3_des_cbc{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::DesEde3Cbc};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::RC2CBCParameter> rc2_cbc{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::Rc2Cbc};
 
-    inline static const binding_type<asn1kit::bytes> cea_3_des_cbc{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::DesEde3Cbc};
-    inline static const binding_type<::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::RC2CBCParameter> cea_rc2_cbc{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::Rc2Cbc};
+};
+
+struct digestAlgorithms_parameters_open_type_entries {
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdSha1};
 
 };
 
 struct hashAlgorithms_parameters_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"AlgorithmInformation-2009.hashAlgorithms_parameters">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<asn1kit::null_value> mda_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdSha1};
-    inline static const binding_type<asn1kit::null_value> mda_sha256{::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdSha1};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> sha256{::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256};
 
 };
 
 struct hashAlgorithms_parameters_algorithmIdentifier_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"AlgorithmInformation-2009.hashAlgorithms_parameters_algorithmIdentifier">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<asn1kit::null_value> mda_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdSha1};
-    inline static const binding_type<asn1kit::null_value> oid_2_16_840_1_101_3_4_2_4{::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha224};
-    inline static const binding_type<asn1kit::null_value> mda_sha256{::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256};
-    inline static const binding_type<asn1kit::null_value> oid_2_16_840_1_101_3_4_2_2{::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha384};
-    inline static const binding_type<asn1kit::null_value> oid_2_16_840_1_101_3_4_2_3{::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha512};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdSha1};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> oid_2_16_840_1_101_3_4_2_4{::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha224};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> sha256{::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha256};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> oid_2_16_840_1_101_3_4_2_2{::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha384};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> oid_2_16_840_1_101_3_4_2_3{::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdSha512};
 
 };
 
 struct keyAgreementAlgorithmSet_parameters_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"AlgorithmInformation-2009.keyAgreementAlgorithmSet_parameters">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> kaa_esdh{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdAlgESDH};
-    inline static const binding_type<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> kaa_ssdh{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdAlgSSDH};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> esdh{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdAlgESDH};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> ssdh{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdAlgSSDH};
 
 };
 
 struct keyDevAlgs_parameters_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"AlgorithmInformation-2009.keyDevAlgs_parameters">,
-        asn1kit::oid, T>;
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, ::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::PBKDF2Params> pbkdf2{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdPBKDF2};
 
-    inline static const binding_type<::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::PBKDF2Params> kda_pbkdf2{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdPBKDF2};
+};
+
+struct keyEncryptionAlgorithmSet_parameters_open_type_entries {
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> f_3_des_wrap{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdAlgCMS3DESwrap};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::integer> rc2_wrap{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdAlgCMSRC2wrap};
 
 };
 
 struct keyTransportAlgorithmSet_parameters_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"AlgorithmInformation-2009.keyTransportAlgorithmSet_parameters">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<asn1kit::null_value> kt_rsa{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::RsaEncryption};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> rsa{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::RsaEncryption};
 
 };
 
 struct keyWrapAlgs_parameters_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"AlgorithmInformation-2009.keyWrapAlgs_parameters">,
-        asn1kit::oid, T>;
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> f_3_des_wrap{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdAlgCMS3DESwrap};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::integer> rc2_wrap{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdAlgCMSRC2wrap};
 
-    inline static const binding_type<asn1kit::null_value> kwa_3_des_wrap{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdAlgCMS3DESwrap};
-    inline static const binding_type<asn1kit::integer> kwa_rc2_wrap{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::IdAlgCMSRC2wrap};
+};
+
+struct mACAlgorithms_parameters_open_type_entries {
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> h_mac_sha1{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::HMACSHA1};
+
+};
+
+struct messageAuthenticationCodeAlgorithmSet_parameters_open_type_entries {
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> h_mac_sha1{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::HMACSHA1};
 
 };
 
 struct originatorKeySet_parameters_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"AlgorithmInformation-2009.originatorKeySet_parameters">,
-        asn1kit::oid, T>;
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DomainParameters> dh{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::DhPublicNumber};
 
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::DomainParameters> pk_dh{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::DhPublicNumber};
+};
+
+struct pBKDF2_pRFs_parameters_open_type_entries {
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> h_mac_sha1{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::HMACSHA1};
 
 };
 
 struct pKCS1MGFAlgorithms_parameters_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"AlgorithmInformation-2009.pKCS1MGFAlgorithms_parameters">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> hash_algorithm{::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdMgf1};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, ::asn1kit::modern::AlgorithmInformation2009::AlgorithmIdentifier> hash_algorithm{::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdMgf1};
 
 };
 
 struct pOPAlgs_parameters_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"AlgorithmInformation-2009.pOPAlgs_parameters">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<asn1kit::null_value> maca_h_mac_sha1{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::HMACSHA1};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> h_mac_sha1{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::HMACSHA1};
 
 };
 
 struct pSS_sourceAlgorithms_parameters_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"AlgorithmInformation-2009.pSS_sourceAlgorithms_parameters">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<asn1kit::bytes> encoding_parameters{::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdPSpecified};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::bytes> encoding_parameters{::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdPSpecified};
 
 };
 
 struct password_mACAlgorithms_parameters_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"AlgorithmInformation-2009.password_mACAlgorithms_parameters">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<::asn1kit::modern::PKIXCRMF2009::PBMParameter> pbm_parameter{::asn1kit::modern::PKIXCMP2009::PKIXCMP2009Oids::IdPasswordBasedMac};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, ::asn1kit::modern::PKIXCRMF2009::PBMParameter> pbm_parameter{::asn1kit::modern::PKIXCMP2009::PKIXCMP2009Oids::IdPasswordBasedMac};
 
 };
 
 struct publicKeyAlgorithms_parameters_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"AlgorithmInformation-2009.publicKeyAlgorithms_parameters">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<asn1kit::null_value> kt_rsa{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::RsaEncryption};
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::DSAParams> pk_dsa{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdDsa};
-    inline static const binding_type<::asn1kit::modern::PKIXAlgs2009::DomainParameters> pk_dh{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::DhPublicNumber};
-    inline static const binding_type<asn1kit::bytes> pk_kea{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdKeyExchangeAlgorithm};
-    inline static const binding_type<asn1kit::oid> pk_ec{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdEcPublicKey};
-    inline static const binding_type<asn1kit::oid> pk_ec_dh{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdEcDH};
-    inline static const binding_type<asn1kit::oid> pk_ec_mqv{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdEcMQV};
-    inline static const binding_type<::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::RSASSAPSSParams> sa_rsa_ssa_pss{::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdRSASSAPSS};
-    inline static const binding_type<::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::RSAESOAEPParams> pk_rsa_es_oaep{::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdRSAESOAEP};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> rsa{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::RsaEncryption};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DSAParams> dsa{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdDsa};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, ::asn1kit::modern::PKIXAlgs2009::DomainParameters> dh{::asn1kit::modern::CryptographicMessageSyntaxAlgorithms2009::CryptographicMessageSyntaxAlgorithms2009Oids::DhPublicNumber};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::bytes> kea{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdKeyExchangeAlgorithm};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::oid> ec{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdEcPublicKey};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::oid> ec_dh{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdEcDH};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::oid> ec_mqv{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdEcMQV};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::RSASSAPSSParams> rsa_ssa_pss{::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdRSASSAPSS};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::RSAESOAEPParams> rsa_es_oaep{::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdRSAESOAEP};
 
 };
 
 struct signatureAlgorithms_parameters_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"AlgorithmInformation-2009.signatureAlgorithms_parameters">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<asn1kit::null_value> sa_rsa_with_md2{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::Md2WithRSAEncryption};
-    inline static const binding_type<asn1kit::null_value> sa_rsa_with_md5{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::Md5WithRSAEncryption};
-    inline static const binding_type<asn1kit::null_value> sa_rsa_with_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::Sha1WithRSAEncryption};
-    inline static const binding_type<asn1kit::null_value> sa_dsa_with_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha1};
-    inline static const binding_type<asn1kit::null_value> sa_ecdsa_with_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA1};
-    inline static const binding_type<asn1kit::null_value> sa_dsa_with_sha224{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha224};
-    inline static const binding_type<asn1kit::null_value> sa_dsa_with_sha256{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha256};
-    inline static const binding_type<asn1kit::null_value> sa_ecdsa_with_sha224{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA224};
-    inline static const binding_type<asn1kit::null_value> sa_ecdsa_with_sha256{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA256};
-    inline static const binding_type<asn1kit::null_value> sa_ecdsa_with_sha384{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA384};
-    inline static const binding_type<asn1kit::null_value> sa_ecdsa_with_sha512{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA512};
-    inline static const binding_type<::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::RSASSAPSSParams> sa_rsa_ssa_pss{::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdRSASSAPSS};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> rsa_with_md2{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::Md2WithRSAEncryption};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> rsa_with_md5{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::Md5WithRSAEncryption};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> rsa_with_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::Sha1WithRSAEncryption};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> dsa_with_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha1};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> ecdsa_with_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA1};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> dsa_with_sha224{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha224};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> dsa_with_sha256{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::DsaWithSha256};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> ecdsa_with_sha224{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA224};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> ecdsa_with_sha256{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA256};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> ecdsa_with_sha384{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA384};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> ecdsa_with_sha512{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::EcdsaWithSHA512};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, ::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::RSASSAPSSParams> rsa_ssa_pss{::asn1kit::modern::PKIX1PSSOAEPAlgorithms2009::PKIX1PSSOAEPAlgorithms2009Oids::IdRSASSAPSS};
 
 };
 
 struct witnessAlgs_parameters_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"AlgorithmInformation-2009.witnessAlgs_parameters">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<asn1kit::null_value> mda_sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdSha1};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> sha1{::asn1kit::modern::PKIXAlgs2009::PKIXAlgs2009Oids::IdSha1};
 
 };
 
 } // namespace detail
-
-#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
-#error "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY is reserved for generated headers"
-#endif
-#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding) \
-    template <typename... Args> \
-    decltype(auto) Name(Args&&... args) const \
-        requires requires(const base& view, Args&&... values) { \
-            view.template invoke<open_entries::Binding>(std::forward<Args>(values)...); \
-        } \
-    { return view_.template invoke<open_entries::Binding>(std::forward<Args>(args)...); }
-
-template <typename Target>
-struct AlgorithmIdentifierContentEncryptionAlgorithmSetOpenView {
-    using open_entries = detail::contentEncryptionAlgorithmSet_parameters_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AlgorithmIdentifierContentEncryptionAlgorithmSetOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AlgorithmIdentifierContentEncryptionAlgorithmSetOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AlgorithmIdentifierContentEncryptionAlgorithmSetOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cea_3_des_cbc, cea_3_des_cbc)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(cea_rc2_cbc, cea_rc2_cbc)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct AlgorithmIdentifierHashAlgorithmsAlgorithmIdentifierOpenView {
-    using open_entries = detail::hashAlgorithms_parameters_algorithmIdentifier_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AlgorithmIdentifierHashAlgorithmsAlgorithmIdentifierOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AlgorithmIdentifierHashAlgorithmsAlgorithmIdentifierOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AlgorithmIdentifierHashAlgorithmsAlgorithmIdentifierOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha1, mda_sha1)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(oid_2_16_840_1_101_3_4_2_4, oid_2_16_840_1_101_3_4_2_4)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha256, mda_sha256)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(oid_2_16_840_1_101_3_4_2_2, oid_2_16_840_1_101_3_4_2_2)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(oid_2_16_840_1_101_3_4_2_3, oid_2_16_840_1_101_3_4_2_3)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct AlgorithmIdentifierHashAlgorithmsHashAlgorithmOpenView {
-    using open_entries = detail::hashAlgorithms_parameters_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AlgorithmIdentifierHashAlgorithmsHashAlgorithmOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AlgorithmIdentifierHashAlgorithmsHashAlgorithmOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AlgorithmIdentifierHashAlgorithmsHashAlgorithmOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha1, mda_sha1)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha256, mda_sha256)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct AlgorithmIdentifierKeyAgreementAlgorithmSetOpenView {
-    using open_entries = detail::keyAgreementAlgorithmSet_parameters_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AlgorithmIdentifierKeyAgreementAlgorithmSetOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AlgorithmIdentifierKeyAgreementAlgorithmSetOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AlgorithmIdentifierKeyAgreementAlgorithmSetOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(kaa_esdh, kaa_esdh)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(kaa_ssdh, kaa_ssdh)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct AlgorithmIdentifierKeyTransportAlgorithmSetOpenView {
-    using open_entries = detail::keyTransportAlgorithmSet_parameters_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AlgorithmIdentifierKeyTransportAlgorithmSetOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AlgorithmIdentifierKeyTransportAlgorithmSetOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AlgorithmIdentifierKeyTransportAlgorithmSetOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(kt_rsa, kt_rsa)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct AlgorithmIdentifierKeyWrapAlgsOpenView {
-    using open_entries = detail::keyWrapAlgs_parameters_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AlgorithmIdentifierKeyWrapAlgsOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AlgorithmIdentifierKeyWrapAlgsOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AlgorithmIdentifierKeyWrapAlgsOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(kwa_3_des_wrap, kwa_3_des_wrap)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(kwa_rc2_wrap, kwa_rc2_wrap)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct AlgorithmIdentifierLocalAlgorithmIdentifierOpenView {
-    using open_entries = detail::algorithmIdentifier_parameters_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AlgorithmIdentifierLocalAlgorithmIdentifierOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AlgorithmIdentifierLocalAlgorithmIdentifierOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AlgorithmIdentifierLocalAlgorithmIdentifierOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha256, mda_sha256)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct AlgorithmIdentifierLocalKeyDerivationAlgorithmOpenView {
-    using open_entries = detail::keyDevAlgs_parameters_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AlgorithmIdentifierLocalKeyDerivationAlgorithmOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AlgorithmIdentifierLocalKeyDerivationAlgorithmOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AlgorithmIdentifierLocalKeyDerivationAlgorithmOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(kda_pbkdf2, kda_pbkdf2)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct AlgorithmIdentifierLocalSignatureAlgorithmOpenView {
-    using open_entries = detail::algorithmIdentifier_parameters_algorithmIdentifier_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AlgorithmIdentifierLocalSignatureAlgorithmOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AlgorithmIdentifierLocalSignatureAlgorithmOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AlgorithmIdentifierLocalSignatureAlgorithmOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha1, sa_dsa_with_sha1)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_sha1, sa_rsa_with_sha1)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_md5, sa_rsa_with_md5)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_md2, sa_rsa_with_md2)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct AlgorithmIdentifierMessageAuthenticationCodeAlgorithmSetOpenView {
-    using open_entries = detail::pOPAlgs_parameters_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AlgorithmIdentifierMessageAuthenticationCodeAlgorithmSetOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AlgorithmIdentifierMessageAuthenticationCodeAlgorithmSetOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AlgorithmIdentifierMessageAuthenticationCodeAlgorithmSetOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(maca_h_mac_sha1, maca_h_mac_sha1)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct AlgorithmIdentifierOriginatorKeySetOpenView {
-    using open_entries = detail::originatorKeySet_parameters_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AlgorithmIdentifierOriginatorKeySetOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AlgorithmIdentifierOriginatorKeySetOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AlgorithmIdentifierOriginatorKeySetOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(pk_dh, pk_dh)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct AlgorithmIdentifierPasswordMacAlgorithmsOpenView {
-    using open_entries = detail::password_mACAlgorithms_parameters_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AlgorithmIdentifierPasswordMacAlgorithmsOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AlgorithmIdentifierPasswordMacAlgorithmsOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AlgorithmIdentifierPasswordMacAlgorithmsOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(pbm_parameter, pbm_parameter)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct AlgorithmIdentifierPkcs1MgfAlgorithmsOpenView {
-    using open_entries = detail::pKCS1MGFAlgorithms_parameters_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AlgorithmIdentifierPkcs1MgfAlgorithmsOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AlgorithmIdentifierPkcs1MgfAlgorithmsOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AlgorithmIdentifierPkcs1MgfAlgorithmsOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(hash_algorithm, hash_algorithm)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct AlgorithmIdentifierPssSourceAlgorithmsOpenView {
-    using open_entries = detail::pSS_sourceAlgorithms_parameters_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AlgorithmIdentifierPssSourceAlgorithmsOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AlgorithmIdentifierPssSourceAlgorithmsOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AlgorithmIdentifierPssSourceAlgorithmsOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(encoding_parameters, encoding_parameters)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct AlgorithmIdentifierPublicKeyAlgorithmsOpenView {
-    using open_entries = detail::publicKeyAlgorithms_parameters_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AlgorithmIdentifierPublicKeyAlgorithmsOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AlgorithmIdentifierPublicKeyAlgorithmsOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AlgorithmIdentifierPublicKeyAlgorithmsOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(kt_rsa, kt_rsa)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(pk_dsa, pk_dsa)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(pk_dh, pk_dh)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(pk_kea, pk_kea)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(pk_ec, pk_ec)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(pk_ec_dh, pk_ec_dh)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(pk_ec_mqv, pk_ec_mqv)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_ssa_pss, sa_rsa_ssa_pss)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(pk_rsa_es_oaep, pk_rsa_es_oaep)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct AlgorithmIdentifierSignatureAlgorithmsOpenView {
-    using open_entries = detail::signatureAlgorithms_parameters_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AlgorithmIdentifierSignatureAlgorithmsOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AlgorithmIdentifierSignatureAlgorithmsOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AlgorithmIdentifierSignatureAlgorithmsOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_md2, sa_rsa_with_md2)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_md5, sa_rsa_with_md5)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_with_sha1, sa_rsa_with_sha1)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha1, sa_dsa_with_sha1)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha1, sa_ecdsa_with_sha1)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha224, sa_dsa_with_sha224)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_dsa_with_sha256, sa_dsa_with_sha256)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha224, sa_ecdsa_with_sha224)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha256, sa_ecdsa_with_sha256)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha384, sa_ecdsa_with_sha384)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_ecdsa_with_sha512, sa_ecdsa_with_sha512)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(sa_rsa_ssa_pss, sa_rsa_ssa_pss)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct AlgorithmIdentifierWitnessAlgsOpenView {
-    using open_entries = detail::witnessAlgs_parameters_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AlgorithmIdentifierWitnessAlgsOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AlgorithmIdentifierWitnessAlgsOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AlgorithmIdentifierWitnessAlgsOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(mda_sha1, mda_sha1)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+#endif // ASN1KIT_GENERATED_ALGORITHMINFORMATION2009OPENENTRIES_HPP
 
 inline AlgorithmIdentifierContentEncryptionAlgorithmSetOpenView<AlgorithmIdentifier> AlgorithmIdentifier::content_encryption_algorithm_set() & {
     return AlgorithmIdentifierContentEncryptionAlgorithmSetOpenView<AlgorithmIdentifier>{*this};
@@ -720,6 +255,19 @@ inline AlgorithmIdentifierContentEncryptionAlgorithmSetOpenView<asn1kit::open_ow
 }
 inline AlgorithmIdentifierContentEncryptionAlgorithmSetOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> AlgorithmIdentifier::make_content_encryption_algorithm_set() {
     return AlgorithmIdentifierContentEncryptionAlgorithmSetOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>>{};
+}
+
+inline AlgorithmIdentifierDigestAlgorithmsOpenView<AlgorithmIdentifier> AlgorithmIdentifier::digest_algorithms() & {
+    return AlgorithmIdentifierDigestAlgorithmsOpenView<AlgorithmIdentifier>{*this};
+}
+inline AlgorithmIdentifierDigestAlgorithmsOpenView<const AlgorithmIdentifier> AlgorithmIdentifier::digest_algorithms() const & {
+    return AlgorithmIdentifierDigestAlgorithmsOpenView<const AlgorithmIdentifier>{*this};
+}
+inline AlgorithmIdentifierDigestAlgorithmsOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> AlgorithmIdentifier::digest_algorithms() && {
+    return AlgorithmIdentifierDigestAlgorithmsOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>>{std::move(*this)};
+}
+inline AlgorithmIdentifierDigestAlgorithmsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> AlgorithmIdentifier::make_digest_algorithms() {
+    return AlgorithmIdentifierDigestAlgorithmsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>>{};
 }
 
 inline AlgorithmIdentifierHashAlgorithmsAlgorithmIdentifierOpenView<AlgorithmIdentifier> AlgorithmIdentifier::hash_algorithms_algorithm_identifier() & {
@@ -759,6 +307,32 @@ inline AlgorithmIdentifierKeyAgreementAlgorithmSetOpenView<asn1kit::open_owned_t
 }
 inline AlgorithmIdentifierKeyAgreementAlgorithmSetOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> AlgorithmIdentifier::make_key_agreement_algorithm_set() {
     return AlgorithmIdentifierKeyAgreementAlgorithmSetOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>>{};
+}
+
+inline AlgorithmIdentifierKeyDevAlgsOpenView<AlgorithmIdentifier> AlgorithmIdentifier::key_dev_algs() & {
+    return AlgorithmIdentifierKeyDevAlgsOpenView<AlgorithmIdentifier>{*this};
+}
+inline AlgorithmIdentifierKeyDevAlgsOpenView<const AlgorithmIdentifier> AlgorithmIdentifier::key_dev_algs() const & {
+    return AlgorithmIdentifierKeyDevAlgsOpenView<const AlgorithmIdentifier>{*this};
+}
+inline AlgorithmIdentifierKeyDevAlgsOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> AlgorithmIdentifier::key_dev_algs() && {
+    return AlgorithmIdentifierKeyDevAlgsOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>>{std::move(*this)};
+}
+inline AlgorithmIdentifierKeyDevAlgsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> AlgorithmIdentifier::make_key_dev_algs() {
+    return AlgorithmIdentifierKeyDevAlgsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>>{};
+}
+
+inline AlgorithmIdentifierKeyEncryptionAlgorithmSetOpenView<AlgorithmIdentifier> AlgorithmIdentifier::key_encryption_algorithm_set() & {
+    return AlgorithmIdentifierKeyEncryptionAlgorithmSetOpenView<AlgorithmIdentifier>{*this};
+}
+inline AlgorithmIdentifierKeyEncryptionAlgorithmSetOpenView<const AlgorithmIdentifier> AlgorithmIdentifier::key_encryption_algorithm_set() const & {
+    return AlgorithmIdentifierKeyEncryptionAlgorithmSetOpenView<const AlgorithmIdentifier>{*this};
+}
+inline AlgorithmIdentifierKeyEncryptionAlgorithmSetOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> AlgorithmIdentifier::key_encryption_algorithm_set() && {
+    return AlgorithmIdentifierKeyEncryptionAlgorithmSetOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>>{std::move(*this)};
+}
+inline AlgorithmIdentifierKeyEncryptionAlgorithmSetOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> AlgorithmIdentifier::make_key_encryption_algorithm_set() {
+    return AlgorithmIdentifierKeyEncryptionAlgorithmSetOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>>{};
 }
 
 inline AlgorithmIdentifierKeyTransportAlgorithmSetOpenView<AlgorithmIdentifier> AlgorithmIdentifier::key_transport_algorithm_set() & {
@@ -826,6 +400,19 @@ inline AlgorithmIdentifierLocalSignatureAlgorithmOpenView<asn1kit::open_factory_
     return AlgorithmIdentifierLocalSignatureAlgorithmOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>>{};
 }
 
+inline AlgorithmIdentifierMacAlgorithmsOpenView<AlgorithmIdentifier> AlgorithmIdentifier::mac_algorithms() & {
+    return AlgorithmIdentifierMacAlgorithmsOpenView<AlgorithmIdentifier>{*this};
+}
+inline AlgorithmIdentifierMacAlgorithmsOpenView<const AlgorithmIdentifier> AlgorithmIdentifier::mac_algorithms() const & {
+    return AlgorithmIdentifierMacAlgorithmsOpenView<const AlgorithmIdentifier>{*this};
+}
+inline AlgorithmIdentifierMacAlgorithmsOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> AlgorithmIdentifier::mac_algorithms() && {
+    return AlgorithmIdentifierMacAlgorithmsOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>>{std::move(*this)};
+}
+inline AlgorithmIdentifierMacAlgorithmsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> AlgorithmIdentifier::make_mac_algorithms() {
+    return AlgorithmIdentifierMacAlgorithmsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>>{};
+}
+
 inline AlgorithmIdentifierMessageAuthenticationCodeAlgorithmSetOpenView<AlgorithmIdentifier> AlgorithmIdentifier::message_authentication_code_algorithm_set() & {
     return AlgorithmIdentifierMessageAuthenticationCodeAlgorithmSetOpenView<AlgorithmIdentifier>{*this};
 }
@@ -865,6 +452,19 @@ inline AlgorithmIdentifierPasswordMacAlgorithmsOpenView<asn1kit::open_factory_ta
     return AlgorithmIdentifierPasswordMacAlgorithmsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>>{};
 }
 
+inline AlgorithmIdentifierPbkdf2PrFsOpenView<AlgorithmIdentifier> AlgorithmIdentifier::pbkdf2_pr_fs() & {
+    return AlgorithmIdentifierPbkdf2PrFsOpenView<AlgorithmIdentifier>{*this};
+}
+inline AlgorithmIdentifierPbkdf2PrFsOpenView<const AlgorithmIdentifier> AlgorithmIdentifier::pbkdf2_pr_fs() const & {
+    return AlgorithmIdentifierPbkdf2PrFsOpenView<const AlgorithmIdentifier>{*this};
+}
+inline AlgorithmIdentifierPbkdf2PrFsOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> AlgorithmIdentifier::pbkdf2_pr_fs() && {
+    return AlgorithmIdentifierPbkdf2PrFsOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>>{std::move(*this)};
+}
+inline AlgorithmIdentifierPbkdf2PrFsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> AlgorithmIdentifier::make_pbkdf2_pr_fs() {
+    return AlgorithmIdentifierPbkdf2PrFsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>>{};
+}
+
 inline AlgorithmIdentifierPkcs1MgfAlgorithmsOpenView<AlgorithmIdentifier> AlgorithmIdentifier::pkcs1_mgf_algorithms() & {
     return AlgorithmIdentifierPkcs1MgfAlgorithmsOpenView<AlgorithmIdentifier>{*this};
 }
@@ -876,6 +476,19 @@ inline AlgorithmIdentifierPkcs1MgfAlgorithmsOpenView<asn1kit::open_owned_target<
 }
 inline AlgorithmIdentifierPkcs1MgfAlgorithmsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> AlgorithmIdentifier::make_pkcs1_mgf_algorithms() {
     return AlgorithmIdentifierPkcs1MgfAlgorithmsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>>{};
+}
+
+inline AlgorithmIdentifierPopAlgsOpenView<AlgorithmIdentifier> AlgorithmIdentifier::pop_algs() & {
+    return AlgorithmIdentifierPopAlgsOpenView<AlgorithmIdentifier>{*this};
+}
+inline AlgorithmIdentifierPopAlgsOpenView<const AlgorithmIdentifier> AlgorithmIdentifier::pop_algs() const & {
+    return AlgorithmIdentifierPopAlgsOpenView<const AlgorithmIdentifier>{*this};
+}
+inline AlgorithmIdentifierPopAlgsOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>> AlgorithmIdentifier::pop_algs() && {
+    return AlgorithmIdentifierPopAlgsOpenView<asn1kit::open_owned_target<AlgorithmIdentifier>>{std::move(*this)};
+}
+inline AlgorithmIdentifierPopAlgsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>> AlgorithmIdentifier::make_pop_algs() {
+    return AlgorithmIdentifierPopAlgsOpenView<asn1kit::open_factory_target<AlgorithmIdentifier>>{};
 }
 
 inline AlgorithmIdentifierPssSourceAlgorithmsOpenView<AlgorithmIdentifier> AlgorithmIdentifier::pss_source_algorithms() & {

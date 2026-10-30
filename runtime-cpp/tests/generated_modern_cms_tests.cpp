@@ -75,7 +75,7 @@ TEST(GeneratedModernCmsTests, SignedData_4_2_RoundTrip) {
     reader r(bytes, encoding::der);
     auto info = Cms::ContentInfo::decode(r);
     EXPECT_EQ(info.contentType, CmsOids::IdSignedData.get());
-    auto signed_data = std::move(info).content_set().ct_signed_data();
+    auto signed_data = std::move(info).content_set().signed_data();
     ASSERT_TRUE(signed_data.has_value());
     EXPECT_EQ(signed_data->signerInfos.size(), 1u);
     EXPECT_TRUE(signed_data->encapContentInfo.eContent.has_value());
@@ -87,7 +87,7 @@ TEST(GeneratedModernCmsTests, SignedData_4_3_DetachedRoundTrip) {
     const auto bytes = read_file("4.3.bin");
     reader r(bytes, encoding::der);
     auto info = Cms::ContentInfo::decode(r);
-    auto signed_data = std::move(info).content_set().ct_signed_data();
+    auto signed_data = std::move(info).content_set().signed_data();
     ASSERT_TRUE(signed_data.has_value());
     EXPECT_FALSE(signed_data->encapContentInfo.eContent.has_value());
     EXPECT_EQ(signed_data->encapContentInfo.eContentType, CmsOids::IdData.get());
@@ -99,7 +99,7 @@ TEST(GeneratedModernCmsTests, SignedData_4_6_MultipleSignersRoundTrip) {
     const auto bytes = read_file("4.6.bin");
     reader r(bytes, encoding::der);
     auto info = Cms::ContentInfo::decode(r);
-    auto signed_data = std::move(info).content_set().ct_signed_data();
+    auto signed_data = std::move(info).content_set().signed_data();
     ASSERT_TRUE(signed_data.has_value());
     EXPECT_EQ(signed_data->signerInfos.size(), 2u);
 }
@@ -110,7 +110,7 @@ TEST(GeneratedModernCmsTests, SignedData_4_7_SkiRoundTrip) {
     const auto bytes = read_file("4.7.bin");
     reader r(bytes, encoding::der);
     auto info = Cms::ContentInfo::decode(r);
-    auto signed_data = std::move(info).content_set().ct_signed_data();
+    auto signed_data = std::move(info).content_set().signed_data();
     ASSERT_TRUE(signed_data.has_value());
     ASSERT_EQ(signed_data->signerInfos.size(), 1u);
     EXPECT_EQ(
@@ -125,7 +125,7 @@ TEST(GeneratedModernCmsTests, SignedData_4_10_SignedAttrsRoundTrip) {
     const auto bytes = read_file("4.10.bin");
     reader r(bytes, encoding::der);
     auto info = Cms::ContentInfo::decode(r);
-    auto signed_data = std::move(info).content_set().ct_signed_data();
+    auto signed_data = std::move(info).content_set().signed_data();
     ASSERT_TRUE(signed_data.has_value());
     ASSERT_EQ(signed_data->signerInfos.size(), 1u);
     ASSERT_TRUE(signed_data->signerInfos[0].signedAttrs.has_value());

@@ -27,7 +27,7 @@ asn1kit::benchmarks::openssl_support::cms_content_info_ptr g_openssl_content_inf
 
 [[nodiscard]] Cms::SignedData decode_signed_data(const std::vector<std::uint8_t>& der) {
     auto info = asn1kit::decode<Cms::ContentInfo>(der, asn1kit::encoding::der);
-    auto signed_data = info.content_set().ct_signed_data();
+    auto signed_data = info.content_set().signed_data();
     if (!signed_data) {
         throw std::runtime_error("Expected SignedData content.");
     }
@@ -55,7 +55,7 @@ void materialize_signed_data(Cms::SignedData& signed_data) {
 void SetupCms(const benchmark::State&) {
     g_cms_der = asn1kit::benchmarks::read_cms_fixture("attached-signeddata.p7m");
     g_content_info = asn1kit::decode<Cms::ContentInfo>(g_cms_der, asn1kit::encoding::der);
-    auto signed_data = g_content_info.content_set().ct_signed_data();
+    auto signed_data = g_content_info.content_set().signed_data();
     if (!signed_data) {
         throw std::runtime_error("CMS setup expected SignedData content.");
     }
@@ -75,7 +75,7 @@ void Cms_Asn1Kit_Lazy_Decode(benchmark::State& state) {
 void Cms_Asn1Kit_Lazy_Materialize_Decode(benchmark::State& state) {
     for (auto _ : state) {
         auto info = asn1kit::decode<Cms::ContentInfo>(g_cms_der, asn1kit::encoding::der);
-        auto signed_data = info.content_set().ct_signed_data();
+        auto signed_data = info.content_set().signed_data();
         if (!signed_data) {
             throw std::runtime_error("Expected SignedData content.");
         }
@@ -90,7 +90,7 @@ void Cms_Asn1Kit_Lazy_Encode(benchmark::State& state) {
     for (auto _ : state) {
         // Re-bind SignedData each op so Encode pays structural cost (not opaque WriteAny of retained content).
         g_encode_writer.reset();
-        g_content_info.content_set().ct_signed_data(g_signed_data);
+        g_content_info.content_set().signed_data(g_signed_data);
         g_content_info.encode(g_encode_writer);
         auto encoded = g_encode_writer.encode();
         benchmark::DoNotOptimize(encoded);

@@ -123,8 +123,11 @@ struct PBKDF2Params_Salt {
     }
 };
 
+namespace detail {
+struct PBKDF2ParamsPbkdf2PrFsParametersOpenAccess;
+} // namespace detail
 template <typename Target>
-struct PBKDF2ParamsPbkdf2PrFsOpenView;
+using PBKDF2ParamsPbkdf2PrFsOpenView = ::asn1kit::modern::AlgorithmInformation2009::detail::PBKDF2PRFsParametersOpenTable<Target, detail::PBKDF2ParamsPbkdf2PrFsParametersOpenAccess>;
 struct PBKDF2Params {
     PBKDF2Params_Salt salt{};
     // ASN.1 value range (1..MAX). Not enforced by runtime.
@@ -141,7 +144,7 @@ struct PBKDF2Params {
 
     template <typename T>
     [[nodiscard]] std::optional<T> try_decode_prf(
-        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.pOPAlgs_parameters">, asn1kit::oid, T>& binding) const {
+        const asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.pBKDF2_pRFs_parameters">, asn1kit::oid, T>& binding) const {
         return asn1kit::try_decode_unique((*this).prf, binding);
     }
 
@@ -216,45 +219,19 @@ struct RC2CBCParameter {
     }
 };
 
-#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
-#error "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY is reserved for generated headers"
-#endif
-#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding) \
-    template <typename... Args> \
-    decltype(auto) Name(Args&&... args) const \
-        requires requires(const base& view, Args&&... values) { \
-            view.template invoke<open_entries::Binding>(std::forward<Args>(values)...); \
-        } \
-    { return view_.template invoke<open_entries::Binding>(std::forward<Args>(args)...); }
+namespace detail {
 
-template <typename Target>
-struct PBKDF2ParamsPbkdf2PrFsOpenView {
-    using open_entries = ::asn1kit::modern::AlgorithmInformation2009::detail::pOPAlgs_parameters_open_type_entries;
-
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_prf(binding);
-        }
-    };
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit PBKDF2ParamsPbkdf2PrFsOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit PBKDF2ParamsPbkdf2PrFsOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(maca_h_mac_sha1, maca_h_mac_sha1)
-
-private:
-    [[no_unique_address]] base view_;
+struct PBKDF2ParamsPbkdf2PrFsParametersOpenAccess {
+    template <typename Entry>
+    static auto binding(const Entry& entry) {
+        using value_type = typename Entry::value_type;
+        return asn1kit::open_binding<asn1kit::open_context<"AlgorithmInformation-2009.pBKDF2_pRFs_parameters">, typename Entry::key_type, value_type>{entry.key};
+    }
+    template <typename Source, typename Binding>
+    static auto decode(const Source& source, const Binding& binding) { return source.try_decode_prf(binding); }
 };
 
-#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+} // namespace detail
 
 inline PBKDF2ParamsPbkdf2PrFsOpenView<PBKDF2Params> PBKDF2Params::pbkdf2_pr_fs() & {
     return PBKDF2ParamsPbkdf2PrFsOpenView<PBKDF2Params>{*this};

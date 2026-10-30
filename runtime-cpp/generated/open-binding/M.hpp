@@ -28,10 +28,15 @@
 namespace M {
 
 namespace detail {
-struct mixed_parameters_open_type_entries;
+struct mixed_value_open_type_entries;
+template <typename Target, typename Access> struct MixedValueOpenTable;
+} // namespace detail
+namespace detail {
+using AlgorithmIdentifierMixedParametersOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct MixedValueOpenTable;
 } // namespace detail
 template <typename Target>
-struct AlgorithmIdentifierMixedOpenView;
+using AlgorithmIdentifierMixedOpenView = detail::MixedValueOpenTable<Target, detail::AlgorithmIdentifierMixedParametersOpenAccess>;
 struct AlgorithmIdentifier {
     // ASN.1 constraint unsupported:  table({ S }). Not enforced by runtime.
     asn1kit::oid algorithm{};
@@ -96,10 +101,15 @@ struct AlgorithmIdentifier {
 };
 
 namespace detail {
-struct mixed_values_open_type_entries;
+struct mixed_value_open_type_entries;
+template <typename Target, typename Access> struct MixedValueOpenTable;
+} // namespace detail
+namespace detail {
+using AttributeMixedValuesOpenAccess = asn1kit::open_many_access;
+template <typename Target, typename Access> struct MixedValueOpenTable;
 } // namespace detail
 template <typename Target>
-struct AttributeMixedOpenView;
+using AttributeMixedOpenView = detail::MixedValueOpenTable<Target, detail::AttributeMixedValuesOpenAccess>;
 struct Attribute {
     // ASN.1 constraint unsupported:  table({ S }). Not enforced by runtime.
     asn1kit::oid type{};
@@ -173,10 +183,15 @@ struct Attribute {
 };
 
 namespace detail {
-struct mixed_extnValue_open_type_entries;
+struct mixed_value_open_type_entries;
+template <typename Target, typename Access> struct MixedValueOpenTable;
+} // namespace detail
+namespace detail {
+using ExtensionMixedExtnValueOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct MixedValueOpenTable;
 } // namespace detail
 template <typename Target>
-struct ExtensionMixedOpenView;
+using ExtensionMixedOpenView = detail::MixedValueOpenTable<Target, detail::ExtensionMixedExtnValueOpenAccess>;
 struct Extension {
     // ASN.1 constraint unsupported:  table({ S }). Not enforced by runtime.
     asn1kit::oid extnID{};
@@ -264,6 +279,7 @@ struct Holder {
 
 namespace detail {
 struct mixed_value_open_type_entries;
+template <typename Target, typename Access> struct MixedValueOpenTable;
 } // namespace detail
 struct Outer_Nested_Item {
     // ASN.1 object set Mixed (closed). Membership not enforced by runtime.
@@ -287,8 +303,12 @@ struct Outer_Nested_Item {
     }
 };
 
+namespace detail {
+struct OuterMixedValueOpenAccess;
+template <typename Target, typename Access> struct MixedValueOpenTable;
+} // namespace detail
 template <typename Target>
-struct OuterMixedOpenView;
+using OuterMixedOpenView = detail::MixedValueOpenTable<Target, detail::OuterMixedValueOpenAccess>;
 struct Outer {
     asn1kit::oid id{};
     std::vector<Outer_Nested_Item> nested{};
@@ -331,196 +351,74 @@ struct Outer {
     }
 };
 
+#ifndef ASN1KIT_GENERATED_MOPENENTRIES_HPP
+#define ASN1KIT_GENERATED_MOPENENTRIES_HPP
 namespace detail {
 
-struct mixed_extnValue_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"M.mixed_extnValue">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<asn1kit::null_value> empty_entry{asn1kit::oid_literal<"1.2.3">()};
-    inline static const binding_type<std::int32_t> data_entry{asn1kit::oid_literal<"1.2.4">()};
-    inline static const binding_type<bool> base{asn1kit::oid_literal<"1.2.5">()};
-    inline static const binding_type<asn1kit::null_value> access{asn1kit::oid_literal<"1.2.6">()};
-    inline static const binding_type<bool> open_entries{asn1kit::oid_literal<"1.2.7">()};
-
-};
-
-struct mixed_parameters_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"M.mixed_parameters">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<asn1kit::null_value> empty_entry{asn1kit::oid_literal<"1.2.3">()};
-    inline static const binding_type<std::int32_t> data_entry{asn1kit::oid_literal<"1.2.4">()};
-    inline static const binding_type<bool> base{asn1kit::oid_literal<"1.2.5">()};
-    inline static const binding_type<asn1kit::null_value> access{asn1kit::oid_literal<"1.2.6">()};
-    inline static const binding_type<bool> open_entries{asn1kit::oid_literal<"1.2.7">()};
-
-};
-
 struct mixed_value_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"M.mixed_value">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<asn1kit::null_value> empty_entry{asn1kit::oid_literal<"1.2.3">()};
-    inline static const binding_type<std::int32_t> data_entry{asn1kit::oid_literal<"1.2.4">()};
-    inline static const binding_type<bool> base{asn1kit::oid_literal<"1.2.5">()};
-    inline static const binding_type<asn1kit::null_value> access{asn1kit::oid_literal<"1.2.6">()};
-    inline static const binding_type<bool> open_entries{asn1kit::oid_literal<"1.2.7">()};
-
-};
-
-struct mixed_values_open_type_entries {
-    template <typename T>
-    using binding_type = asn1kit::open_binding<
-        asn1kit::open_context<"M.mixed_values">,
-        asn1kit::oid, T>;
-
-    inline static const binding_type<std::vector<asn1kit::null_value>> empty_entry{asn1kit::oid_literal<"1.2.3">()};
-    inline static const binding_type<std::vector<std::int32_t>> data_entry{asn1kit::oid_literal<"1.2.4">()};
-    inline static const binding_type<std::vector<bool>> base{asn1kit::oid_literal<"1.2.5">()};
-    inline static const binding_type<std::vector<asn1kit::null_value>> access{asn1kit::oid_literal<"1.2.6">()};
-    inline static const binding_type<std::vector<bool>> open_entries{asn1kit::oid_literal<"1.2.7">()};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> empty_entry{asn1kit::oid_literal<"1.2.3">()};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, std::int32_t> data_entry{asn1kit::oid_literal<"1.2.4">()};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, bool> base{asn1kit::oid_literal<"1.2.5">()};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, asn1kit::null_value> access{asn1kit::oid_literal<"1.2.6">()};
+    inline static const asn1kit::open_entry<
+        asn1kit::oid, bool> open_entries{asn1kit::oid_literal<"1.2.7">()};
 
 };
 
 } // namespace detail
+#endif // ASN1KIT_GENERATED_MOPENENTRIES_HPP
 
-#ifdef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
-#error "ASN1KIT_DETAIL_OPEN_VIEW_ENTRY is reserved for generated headers"
+#ifndef ASN1KIT_GENERATED_MOPENTABLES_HPP
+#define ASN1KIT_GENERATED_MOPENTABLES_HPP
+#ifdef ASN1KIT_DETAIL_OPEN_TABLE_ENTRY
+#error "ASN1KIT_DETAIL_OPEN_TABLE_ENTRY is reserved for generated headers"
 #endif
-#define ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(Name, Binding) \
+#define ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(Name, Entry) \
     template <typename... Args> \
     decltype(auto) Name(Args&&... args) const \
-        requires requires(const base& view, Args&&... values) { \
-            view.template invoke<open_entries::Binding>(std::forward<Args>(values)...); \
+        requires requires(const base& table, Args&&... values) { \
+            table.template invoke<entries::Entry>(std::forward<Args>(values)...); \
         } \
-    { return view_.template invoke<open_entries::Binding>(std::forward<Args>(args)...); }
+    { return this->template invoke<entries::Entry>(std::forward<Args>(args)...); }
 
-template <typename Target>
-struct AlgorithmIdentifierMixedOpenView {
-    using open_entries = detail::mixed_parameters_open_type_entries;
+namespace detail {
 
-    using access = asn1kit::open_direct_access;
+template <typename Target, typename Access>
+struct MixedValueOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = mixed_value_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
 
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit AlgorithmIdentifierMixedOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AlgorithmIdentifierMixedOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AlgorithmIdentifierMixedOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(empty_entry, empty_entry)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(data_entry, data_entry)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(base_entry, base)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(access_entry, access)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(open_entries_entry, open_entries)
-
-private:
-    [[no_unique_address]] base view_;
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(empty_entry, empty_entry)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(data_entry, data_entry)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(base_entry, base)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(access_entry, access)
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(open_entries, open_entries)
 };
 
-template <typename Target>
-struct AttributeMixedOpenView {
-    using open_entries = detail::mixed_values_open_type_entries;
+} // namespace detail
 
-    using access = asn1kit::open_direct_access;
+#undef ASN1KIT_DETAIL_OPEN_TABLE_ENTRY
+#endif // ASN1KIT_GENERATED_MOPENTABLES_HPP
 
-    using base = asn1kit::open_function_view<Target, access>;
+namespace detail {
 
-    explicit AttributeMixedOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit AttributeMixedOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    AttributeMixedOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(empty_entry, empty_entry)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(data_entry, data_entry)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(base_entry, base)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(access_entry, access)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(open_entries_entry, open_entries)
-
-private:
-    [[no_unique_address]] base view_;
+struct OuterMixedValueOpenAccess {
+    template <typename Entry>
+    static auto binding(const Entry& entry) {
+        using value_type = typename Entry::value_type;
+        return asn1kit::open_binding<asn1kit::open_context<"M.mixed_value">, typename Entry::key_type, value_type>{entry.key};
+    }
+    template <typename Source, typename Binding>
+    static auto decode(const Source& source, const Binding& binding) { return source.try_decode_nested(binding); }
 };
 
-template <typename Target>
-struct ExtensionMixedOpenView {
-    using open_entries = detail::mixed_extnValue_open_type_entries;
-
-    using access = asn1kit::open_direct_access;
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit ExtensionMixedOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit ExtensionMixedOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ExtensionMixedOpenView()
-        requires asn1kit::is_open_factory_target_v<Target> = default;
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(empty_entry, empty_entry)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(data_entry, data_entry)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(base_entry, base)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(access_entry, access)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(open_entries_entry, open_entries)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-template <typename Target>
-struct OuterMixedOpenView {
-    using open_entries = detail::mixed_value_open_type_entries;
-
-    struct access {
-        template <typename Source, typename Binding>
-        static auto decode(const Source& source, const Binding& binding) {
-            return source.try_decode_nested(binding);
-        }
-    };
-
-    using base = asn1kit::open_function_view<Target, access>;
-
-    explicit OuterMixedOpenView(Target& target)
-        requires (!asn1kit::is_open_factory_target_v<Target> && !asn1kit::is_open_owned_target_v<Target>)
-        : view_(target) {}
-
-    explicit OuterMixedOpenView(asn1kit::open_owner_t<Target>&& owner)
-        requires asn1kit::is_open_owned_target_v<Target>
-        : view_(std::move(owner)) {}
-
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(empty_entry, empty_entry)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(data_entry, data_entry)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(base_entry, base)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(access_entry, access)
-    ASN1KIT_DETAIL_OPEN_VIEW_ENTRY(open_entries_entry, open_entries)
-
-private:
-    [[no_unique_address]] base view_;
-};
-
-#undef ASN1KIT_DETAIL_OPEN_VIEW_ENTRY
+} // namespace detail
 
 inline AlgorithmIdentifierMixedOpenView<AlgorithmIdentifier> AlgorithmIdentifier::mixed() & {
     return AlgorithmIdentifierMixedOpenView<AlgorithmIdentifier>{*this};

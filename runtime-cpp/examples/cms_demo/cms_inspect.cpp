@@ -37,7 +37,7 @@ namespace PkixAlgs = asn1kit::modern::PKIXAlgs2009;
 using CmsOids = Cms::CryptographicMessageSyntax2009Oids;
 
 [[nodiscard]] Cms::SignedData decode_signed_data(Cms::ContentInfo&& info) {
-    auto signed_data = std::move(info).content_set().ct_signed_data();
+    auto signed_data = std::move(info).content_set().signed_data();
     if (!signed_data) {
         throw std::runtime_error("ContentInfo must be id-signedData and contain SignedData.");
     }
@@ -444,7 +444,7 @@ std::vector<std::uint8_t> build_attached_signed_data(
     signed_data.signerInfos = {std::move(signer)};
 
     const auto content_info =
-        Cms::ContentInfo::make_content_set().ct_signed_data(signed_data);
+        Cms::ContentInfo::make_content_set().signed_data(signed_data);
     return asn1kit::encode(content_info, asn1kit::encoding::der);
 }
 

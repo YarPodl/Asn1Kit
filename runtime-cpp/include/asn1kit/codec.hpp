@@ -34,6 +34,16 @@ struct open_context final {};
 /// Identifies a user-defined binding intended for a carrier's local open-type API.
 struct default_open_context final {};
 
+/// Describes one leaf value from an ASN.1 object set. Carrier-specific wire
+/// shape (direct / CONTAINING / OF) is supplied by the generated access policy.
+template <typename Key, typename Value>
+struct open_entry {
+    using key_type = Key;
+    using value_type = Value;
+
+    Key key{};
+};
+
 /// Associates an open-type selector key with its decoded public value type.
 /// Encoding and decoding remain operations of the generated carrier/owner types.
 template <typename Context, typename Key, typename Value>
@@ -88,9 +98,9 @@ struct open_owner<open_owned_target<Owner>> {
 template <typename T>
 using open_owner_t = typename open_owner<T>::type;
 
-/// Default access policy for carriers whose open-type operations use the
-/// unsuffixed try_decode/set/create API.
-struct open_direct_access {
+/// Shared dispatch for carriers whose open-type operations use the unsuffixed
+/// try_decode/set/create API.
+struct open_carrier_access {
     template <typename Source, typename Binding>
     static auto decode(const Source& source, const Binding& binding) {
         return source.try_decode(binding);
@@ -104,6 +114,28 @@ struct open_direct_access {
     template <typename Source, typename Binding, typename Value>
     static Source create(const Binding& binding, Value&& value) {
         return Source::create(binding, std::forward<Value>(value));
+    }
+};
+
+/// Direct / CONTAINING access with the leaf type stored by open_entry.
+struct open_direct_access : open_carrier_access {
+    template <typename Entry>
+    static constexpr auto binding(const Entry& entry) {
+        return open_binding<
+            default_open_context,
+            typename Entry::key_type,
+            typename Entry::value_type>{entry.key};
+    }
+};
+
+/// OF access maps an open_entry leaf to the carrier's vector value.
+struct open_many_access : open_carrier_access {
+    template <typename Entry>
+    static auto binding(const Entry& entry) {
+        return open_binding<
+            default_open_context,
+            typename Entry::key_type,
+            std::vector<typename Entry::value_type>>{entry.key};
     }
 };
 
@@ -144,47 +176,55 @@ private:
 /// functions select their static binding through a reference non-type template
 /// parameter.
 template <typename Target, typename Access>
-class open_function_view {
+class open_table_view {
 public:
-    constexpr explicit open_function_view(Target& target) noexcept
+    constexpr explicit open_table_view(Target& target) noexcept
         requires (!is_open_factory_target_v<Target> && !is_open_owned_target_v<Target>)
         : target_(target) {}
 
-    constexpr explicit open_function_view(open_owner_t<Target>&& owner) noexcept(
+    constexpr explicit open_table_view(open_owner_t<Target>&& owner) noexcept(
         std::is_nothrow_move_constructible_v<open_owner_t<Target>>)
         requires is_open_owned_target_v<Target>
         : target_(std::move(owner)) {}
 
-    constexpr open_function_view() noexcept
+    constexpr open_table_view() noexcept
         requires is_open_factory_target_v<Target> = default;
 
-    template <const auto& Binding>
+    template <const auto& Entry>
     [[nodiscard]] auto invoke() const
         requires (!is_open_factory_target_v<Target> &&
                   requires(const open_owner_t<Target>& target) {
-                      Access::decode(target, Binding);
+                      Access::decode(target, Access::binding(Entry));
                   }) {
-        return Access::decode(static_cast<const open_owner_t<Target>&>(target_.get()), Binding);
+        return Access::decode(
+            static_cast<const open_owner_t<Target>&>(target_.get()),
+            Access::binding(Entry));
     }
 
-    template <const auto& Binding, typename Value>
+    template <const auto& Entry, typename Value>
     void invoke(Value&& value) const
         requires (!is_open_factory_target_v<Target> && !is_open_owned_target_v<Target> &&
                   !std::is_const_v<Target> &&
                   requires(Target& target, Value&& candidate) {
-                      Access::set(target, Binding, std::forward<Value>(candidate));
+                      Access::set(
+                          target,
+                          Access::binding(Entry),
+                          std::forward<Value>(candidate));
                   }) {
-        Access::set(target_.get(), Binding, std::forward<Value>(value));
+        Access::set(
+            target_.get(),
+            Access::binding(Entry),
+            std::forward<Value>(value));
     }
 
-    template <const auto& Binding, typename Value>
+    template <const auto& Entry, typename Value>
     [[nodiscard]] open_owner_t<Target> invoke(Value&& value) const
         requires (is_open_factory_target_v<Target> && requires(Value&& candidate) {
             Access::template create<open_owner_t<Target>>(
-                Binding, std::forward<Value>(candidate));
+                Access::binding(Entry), std::forward<Value>(candidate));
         }) {
         return Access::template create<open_owner_t<Target>>(
-            Binding, std::forward<Value>(value));
+            Access::binding(Entry), std::forward<Value>(value));
     }
 
 private:

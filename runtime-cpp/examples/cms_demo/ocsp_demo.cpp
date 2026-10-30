@@ -133,7 +133,7 @@ std::vector<std::uint8_t> build_ocsp_request(
     Ocsp::TBSRequest tbs{};
     tbs.requestList = {std::move(request)};
     tbs.requestExtensions = std::vector<Common::Extension>{
-        Common::Extension::make_local_request_extensions().re_ocsp_nonce(educational_nonce()),
+        Common::Extension::make_local_request_extensions().ocsp_nonce(educational_nonce()),
     };
 
     Ocsp::OCSPRequest ocsp_request{};
@@ -150,7 +150,7 @@ void print_ocsp_request(std::span<const std::uint8_t> encoded, std::ostream& out
         out << "    request[" << (i + 1) << "]:\n";
         print_cert_id(request.tbsRequest.requestList[i].reqCert, out, 3);
     }
-    if (const auto nonce = request.tbsRequest.local().re_ocsp_nonce()) {
+    if (const auto nonce = request.tbsRequest.local().ocsp_nonce()) {
         out << "  requestExtensions.nonce: " << hex_bytes(nonce->span(), 64) << "\n";
     } else {
         out << "  requestExtensions.nonce: <absent>\n";
@@ -165,7 +165,7 @@ std::vector<std::uint8_t> build_ocsp_response(std::span<const std::uint8_t> requ
         throw std::runtime_error("OCSPRequest has an empty requestList.");
     }
     const auto& cert_id = request.tbsRequest.requestList.front().reqCert;
-    const auto nonce = request.tbsRequest.local().re_ocsp_nonce();
+    const auto nonce = request.tbsRequest.local().ocsp_nonce();
 
     const auto now = asn1kit::utc_date_time::from_system_clock(std::chrono::system_clock::now());
 
@@ -181,7 +181,7 @@ std::vector<std::uint8_t> build_ocsp_response(std::span<const std::uint8_t> requ
     response_data.responses = {std::move(single)};
     if (nonce.has_value()) {
         response_data.responseExtensions = std::vector<Common::Extension>{
-            Common::Extension::make_local_response_extensions().re_ocsp_nonce(*nonce),
+            Common::Extension::make_local_response_extensions().ocsp_nonce(*nonce),
         };
     }
 
@@ -220,7 +220,7 @@ void print_ocsp_response(std::span<const std::uint8_t> encoded, std::ostream& ou
         write_indent(out, 4);
         out << "thisUpdate: " << format_time(item.thisUpdate) << "\n";
     }
-    if (const auto nonce = basic.tbsResponseData.local().re_ocsp_nonce()) {
+    if (const auto nonce = basic.tbsResponseData.local().ocsp_nonce()) {
         out << "    responseExtensions.nonce: " << hex_bytes(nonce->span(), 64) << "\n";
     } else {
         out << "    responseExtensions.nonce: <absent>\n";
@@ -241,7 +241,7 @@ OcspCheckResult check_ocsp(
             throw std::runtime_error("OCSPRequest has an empty requestList.");
         }
         const auto& expected_cert_id = request.tbsRequest.requestList.front().reqCert;
-        const auto request_nonce = request.tbsRequest.local().re_ocsp_nonce();
+        const auto request_nonce = request.tbsRequest.local().ocsp_nonce();
 
         auto basic = require_basic_response(response);
         if (basic.tbsResponseData.responses.empty()) {
@@ -252,7 +252,7 @@ OcspCheckResult check_ocsp(
             throw std::runtime_error("Response CertID does not match the request.");
         }
         if (request_nonce.has_value()) {
-            const auto response_nonce = basic.tbsResponseData.local().re_ocsp_nonce();
+            const auto response_nonce = basic.tbsResponseData.local().ocsp_nonce();
             if (!response_nonce.has_value() || *response_nonce != *request_nonce) {
                 throw std::runtime_error("Response nonce does not echo the request nonce.");
             }

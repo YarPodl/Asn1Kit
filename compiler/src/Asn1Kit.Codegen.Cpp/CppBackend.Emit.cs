@@ -51,6 +51,8 @@ public sealed partial class CppBackend
             sb.AppendLine("namespace detail {");
             foreach (var entries in openCatalogEntries)
                 sb.AppendLine($"struct {entries};");
+            foreach (var table in OpenCatalogViewNames(module, typeName))
+                sb.AppendLine($"template <typename Target, typename Access> struct {table};");
             sb.AppendLine("} // namespace detail");
         }
         EmitOpenViewForwardDeclarations(sb, module, typeName);

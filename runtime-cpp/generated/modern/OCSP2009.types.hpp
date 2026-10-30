@@ -308,9 +308,14 @@ struct ResponderID {
 
 namespace detail {
 struct responseSet_response_open_type_entries;
+template <typename Target, typename Access> struct ResponseSetResponseOpenTable;
+} // namespace detail
+namespace detail {
+using ResponseBytesResponseSetResponseOpenAccess = asn1kit::open_direct_access;
+template <typename Target, typename Access> struct ResponseSetResponseOpenTable;
 } // namespace detail
 template <typename Target>
-struct ResponseBytesResponseSetOpenView;
+using ResponseBytesResponseSetOpenView = detail::ResponseSetResponseOpenTable<Target, detail::ResponseBytesResponseSetResponseOpenAccess>;
 struct ResponseBytes {
     // ASN.1 constraint unsupported:  table({ ResponseSet }). Not enforced by runtime.
     asn1kit::oid responseType{};
@@ -674,8 +679,11 @@ struct SingleResponse {
     }
 };
 
+namespace detail {
+struct ResponseDataLocalExtnValueOpenAccess;
+} // namespace detail
 template <typename Target>
-struct ResponseDataLocalOpenView;
+using ResponseDataLocalOpenView = ::asn1kit::modern::PKIXCommonTypes2009::detail::ExtensionExtnValueExtension2OpenTable<Target, detail::ResponseDataLocalExtnValueOpenAccess>;
 struct ResponseData {
     std::int32_t version = 0;
     ResponderID responderID{};
@@ -789,8 +797,11 @@ struct BasicOCSPResponse {
     }
 };
 
+namespace detail {
+struct TBSRequestLocalExtnValueOpenAccess;
+} // namespace detail
 template <typename Target>
-struct TBSRequestLocalOpenView;
+using TBSRequestLocalOpenView = ::asn1kit::modern::PKIXCommonTypes2009::detail::ExtensionExtnValueOpenTable<Target, detail::TBSRequestLocalExtnValueOpenAccess>;
 struct TBSRequest {
     std::int32_t version = 0;
     std::optional<::asn1kit::modern::PKIX1Implicit2009::GeneralName> requestorName{};
@@ -908,6 +919,36 @@ struct OCSPRequest {
 struct Version {
     static constexpr std::int32_t V1 = 0;
 };
+
+#ifndef ASN1KIT_GENERATED_OCSP2009OPENTABLES_HPP
+#define ASN1KIT_GENERATED_OCSP2009OPENTABLES_HPP
+#ifdef ASN1KIT_DETAIL_OPEN_TABLE_ENTRY
+#error "ASN1KIT_DETAIL_OPEN_TABLE_ENTRY is reserved for generated headers"
+#endif
+#define ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(Name, Entry) \
+    template <typename... Args> \
+    decltype(auto) Name(Args&&... args) const \
+        requires requires(const base& table, Args&&... values) { \
+            table.template invoke<entries::Entry>(std::forward<Args>(values)...); \
+        } \
+    { return this->template invoke<entries::Entry>(std::forward<Args>(args)...); }
+
+namespace detail {
+
+template <typename Target, typename Access>
+struct ResponseSetResponseOpenTable : asn1kit::open_table_view<Target, Access> {
+    using base = asn1kit::open_table_view<Target, Access>;
+    template <typename> struct entry_catalog { using type = responseSet_response_open_type_entries; };
+    using entries = typename entry_catalog<Target>::type;
+    using base::base;
+
+    ASN1KIT_DETAIL_OPEN_TABLE_ENTRY(basic_response, basic_response)
+};
+
+} // namespace detail
+
+#undef ASN1KIT_DETAIL_OPEN_TABLE_ENTRY
+#endif // ASN1KIT_GENERATED_OCSP2009OPENTABLES_HPP
 
 } // namespace OCSP2009
 } // namespace modern

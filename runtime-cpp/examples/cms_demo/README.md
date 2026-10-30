@@ -44,8 +44,8 @@ $ca = ..\runtime-csharp\fixtures\pkix\GoodCACert.crt
 & $demo ocsp-check --request req.der --response resp.der
 ```
 
-Сценарий использует open-type фабрики/views: `Extension::make_local_request_extensions().re_ocsp_nonce`,
-`TBSRequest::local().re_ocsp_nonce`, `ResponseBytes::make_response_set().basic_response`.
+Сценарий использует open-type фабрики/façade: `Extension::make_local_request_extensions().ocsp_nonce`,
+`TBSRequest::local().ocsp_nonce`, `ResponseBytes::make_response_set().basic_response`.
 
 ## Smoke
 

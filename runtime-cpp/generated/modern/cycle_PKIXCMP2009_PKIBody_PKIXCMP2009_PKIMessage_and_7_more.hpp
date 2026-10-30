@@ -269,8 +269,11 @@ namespace asn1kit {
 namespace modern {
 namespace PKIXCRMF2009 {
 
+namespace detail {
+struct CertRequestRegControlSetValueOpenAccess;
+} // namespace detail
 template <typename Target>
-struct CertRequestRegControlSetOpenView;
+using CertRequestRegControlSetOpenView = ::asn1kit::modern::PKIXCommonTypes2009::detail::RegControlSetValueOpenTable<Target, detail::CertRequestRegControlSetValueOpenAccess>;
 struct CertRequest {
     asn1kit::integer certReqId{};
     CertTemplate certTemplate{};
