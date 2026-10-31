@@ -43,12 +43,12 @@ void materialize_signed_data(Cms::SignedData& signed_data) {
             continue;
         }
         auto& cert = std::get<0>(choice.value);
-        // Non-const get() invalidates retained TBS TLV (full structural path on later encode).
-        auto& tbs = cert.toBeSigned.get();
+        // Explicit mutation access invalidates retained TLVs for the structural encode benchmark.
+        auto& tbs = cert.toBeSigned.mutate();
         benchmark::DoNotOptimize(tbs.serialNumber);
-        benchmark::DoNotOptimize(tbs.issuer.get());
-        benchmark::DoNotOptimize(tbs.subject.get());
-        benchmark::DoNotOptimize(tbs.subjectPublicKeyInfo.get());
+        benchmark::DoNotOptimize(tbs.issuer.mutate());
+        benchmark::DoNotOptimize(tbs.subject.mutate());
+        benchmark::DoNotOptimize(tbs.subjectPublicKeyInfo.mutate());
     }
 }
 

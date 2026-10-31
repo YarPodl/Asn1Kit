@@ -25,10 +25,11 @@ public:
         return value(std::move(v), std::move(original_encoding));
     }
 
+    /// Read-only access preserves the retained original encoding.
     [[nodiscard]] const T& get() const noexcept { return value_; }
 
-    /// Non-const access invalidates the retained TLV so a later encode reflects mutations.
-    [[nodiscard]] T& get() noexcept
+    /// Mutable access invalidates the retained TLV so a later encode reflects mutations.
+    [[nodiscard]] T& mutate() noexcept
     {
         original_encoding_ = bytes{};
         return value_;

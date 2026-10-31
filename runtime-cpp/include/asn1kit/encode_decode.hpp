@@ -7,6 +7,7 @@
 #include "asn1kit/concepts.hpp"
 #include "asn1kit/encoding.hpp"
 #include "asn1kit/reader.hpp"
+#include "asn1kit/reader_options.hpp"
 #include "asn1kit/writer.hpp"
 
 #include <cstddef>
@@ -32,8 +33,11 @@ namespace detail {
 
 template <asn1_decodable T>
 [[nodiscard]] T decode_impl(
-    std::span<const std::uint8_t> data, encoding enc, bool require_complete) {
-    reader r(data, enc);
+    std::span<const std::uint8_t> data,
+    encoding enc,
+    reader_options options,
+    bool require_complete) {
+    reader r(data, enc, options);
     T value = T::decode(r);
     if (require_complete) {
         r.throw_if_not_empty();
@@ -78,34 +82,54 @@ template <asn1_encodable T>
 
 /// Decodes a complete TLV; throws `asn1kit::exception` on trailing octets.
 template <asn1_decodable T>
-[[nodiscard]] T decode(std::span<const std::uint8_t> data, encoding enc = encoding::der) {
-    return detail::decode_impl<T>(data, enc, true);
+[[nodiscard]] T decode(
+    std::span<const std::uint8_t> data,
+    encoding enc = encoding::der,
+    reader_options options = reader_options::default_profile()) {
+    return detail::decode_impl<T>(data, enc, options, true);
 }
 
 template <asn1_decodable T>
-[[nodiscard]] T decode(const std::vector<std::uint8_t>& data, encoding enc = encoding::der) {
-    return detail::decode_impl<T>(std::span<const std::uint8_t>(data.data(), data.size()), enc, true);
+[[nodiscard]] T decode(
+    const std::vector<std::uint8_t>& data,
+    encoding enc = encoding::der,
+    reader_options options = reader_options::default_profile()) {
+    return detail::decode_impl<T>(
+        std::span<const std::uint8_t>(data.data(), data.size()), enc, options, true);
 }
 
 template <asn1_decodable T>
-[[nodiscard]] T decode(const bytes& data, encoding enc = encoding::der) {
-    return detail::decode_impl<T>(data.span(), enc, true);
+[[nodiscard]] T decode(
+    const bytes& data,
+    encoding enc = encoding::der,
+    reader_options options = reader_options::default_profile()) {
+    return detail::decode_impl<T>(data.span(), enc, options, true);
 }
 
 /// Decodes the leading TLV and ignores any trailing octets.
 template <asn1_decodable T>
-[[nodiscard]] T decode_prefix(std::span<const std::uint8_t> data, encoding enc = encoding::der) {
-    return detail::decode_impl<T>(data, enc, false);
+[[nodiscard]] T decode_prefix(
+    std::span<const std::uint8_t> data,
+    encoding enc = encoding::der,
+    reader_options options = reader_options::default_profile()) {
+    return detail::decode_impl<T>(data, enc, options, false);
 }
 
 template <asn1_decodable T>
-[[nodiscard]] T decode_prefix(const std::vector<std::uint8_t>& data, encoding enc = encoding::der) {
-    return detail::decode_impl<T>(std::span<const std::uint8_t>(data.data(), data.size()), enc, false);
+[[nodiscard]] T decode_prefix(
+    const std::vector<std::uint8_t>& data,
+    encoding enc = encoding::der,
+    reader_options options = reader_options::default_profile()) {
+    return detail::decode_impl<T>(
+        std::span<const std::uint8_t>(data.data(), data.size()), enc, options, false);
 }
 
 template <asn1_decodable T>
-[[nodiscard]] T decode_prefix(const bytes& data, encoding enc = encoding::der) {
-    return detail::decode_impl<T>(data.span(), enc, false);
+[[nodiscard]] T decode_prefix(
+    const bytes& data,
+    encoding enc = encoding::der,
+    reader_options options = reader_options::default_profile()) {
+    return detail::decode_impl<T>(data.span(), enc, options, false);
 }
 
 } // namespace asn1kit

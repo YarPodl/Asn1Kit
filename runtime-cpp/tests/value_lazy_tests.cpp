@@ -99,6 +99,33 @@ TEST(ValueLazy, FromValueHasEmptyOriginalEncoding) {
     EXPECT_EQ(wrapped.get().n, integer::from_int32(1));
 }
 
+TEST(ValueLazy, NonConstGetPreservesOriginalEncoding) {
+    const auto der = encode_inner(42);
+    reader r(der, encoding::der);
+    auto retained = r.read_with_original_encoding<Inner>();
+
+    ASSERT_TRUE(retained.has_original_encoding());
+    const auto original = retained.original_encoding();
+    EXPECT_EQ(retained.get().n, integer::from_int32(42));
+    EXPECT_TRUE(retained.has_original_encoding());
+    EXPECT_EQ(retained.original_encoding(), original);
+}
+
+TEST(ValueLazy, MutateInvalidatesOriginalEncodingAndReencodesCurrentValue) {
+    const auto der = encode_inner(42);
+    reader r(der, encoding::der);
+    auto retained = r.read_with_original_encoding<Inner>();
+
+    auto& current = retained.mutate();
+    EXPECT_FALSE(retained.has_original_encoding());
+    EXPECT_TRUE(retained.original_encoding().empty());
+
+    current.n = integer::from_int32(43);
+    writer w(encoding::der);
+    retained.get().encode(w);
+    EXPECT_EQ(w.encode(), encode_inner(43));
+}
+
 TEST(ValueLazy, LazyDefersDecodeUntilGet) {
     const auto der = encode_inner(7);
     int decode_count = 0;

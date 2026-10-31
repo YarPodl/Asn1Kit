@@ -7,6 +7,8 @@
 #include "asn1kit/encoding.hpp"
 #include "asn1kit/exception.hpp"
 #include "asn1kit/integer.hpp"
+#include "asn1kit/reader_options.hpp"
+#include "asn1kit/tag.hpp"
 
 #include <gtest/gtest.h>
 
@@ -19,6 +21,7 @@
 
 using asn1kit::bytes;
 using asn1kit::encoding;
+using asn1kit::reader_options;
 using example::asn1::Person;
 
 namespace {
@@ -46,6 +49,29 @@ void expect_person(const Person& person) {
 std::vector<std::uint8_t> person_der() {
     return hex({0x30, 0x0B, 0x80, 0x01, 0x2A, 0x81, 0x03, 0x41, 0x6E, 0x6E, 0x82, 0x01, 0x41});
 }
+
+std::vector<std::uint8_t> person_with_non_minimal_outer_length() {
+    auto encoded = person_der();
+    encoded.insert(encoded.begin() + 1, 0x81);
+    return encoded;
+}
+
+struct nested_sequences {
+    static bool match_tag(const asn1kit::tag& t) {
+        return t.matches_ignore_constructed(asn1kit::tag::sequence);
+    }
+
+    static nested_sequences decode(asn1kit::reader& r) {
+        return decode(r, asn1kit::tag::sequence);
+    }
+
+    static nested_sequences decode(asn1kit::reader& r, const asn1kit::tag& t) {
+        r.with_sequence(t, [](asn1kit::reader& inner) {
+            inner.with_sequence(asn1kit::tag::sequence, [](asn1kit::reader&) {});
+        });
+        return {};
+    }
+};
 
 } // namespace
 
@@ -98,4 +124,42 @@ TEST(EncodeDecodeTests, DecodePrefixIgnoresTrailingOctets) {
     auto data = asn1kit::encode(make_person(), encoding::der);
     data.push_back(0x00);
     expect_person(asn1kit::decode_prefix<Person>(data, encoding::der));
+}
+
+TEST(EncodeDecodeTests, DecodeReaderOptionsReachAllInputOverloads) {
+    const auto encoded = person_with_non_minimal_outer_length();
+    const std::span<const std::uint8_t> view(encoded.data(), encoded.size());
+    const auto owned = bytes::copy_from(view);
+    const auto options = reader_options::allow_non_minimal_length();
+
+    EXPECT_THROW(
+        static_cast<void>(asn1kit::decode<Person>(encoded, encoding::der)),
+        asn1kit::exception);
+    expect_person(asn1kit::decode<Person>(encoded, encoding::der, options));
+    expect_person(asn1kit::decode<Person>(view, encoding::der, options));
+    expect_person(asn1kit::decode<Person>(owned, encoding::der, options));
+}
+
+TEST(EncodeDecodeTests, DecodeReaderOptionsPreserveCompleteAndPrefixContracts) {
+    auto encoded = person_with_non_minimal_outer_length();
+    encoded.push_back(0x00);
+    const auto options = reader_options::allow_non_minimal_length();
+
+    EXPECT_THROW(
+        static_cast<void>(asn1kit::decode<Person>(encoded, encoding::der, options)),
+        asn1kit::exception);
+    expect_person(asn1kit::decode_prefix<Person>(encoded, encoding::der, options));
+}
+
+TEST(EncodeDecodeTests, DecodeReaderOptionsEnforceStructuralDepth) {
+    const auto encoded = hex({0x30, 0x02, 0x30, 0x00});
+    auto options = reader_options::default_profile();
+    options.max_recursion_depth = 1;
+    EXPECT_THROW(
+        static_cast<void>(asn1kit::decode<nested_sequences>(encoded, encoding::der, options)),
+        asn1kit::exception);
+
+    options.max_recursion_depth = 2;
+    EXPECT_NO_THROW(
+        static_cast<void>(asn1kit::decode<nested_sequences>(encoded, encoding::der, options)));
 }

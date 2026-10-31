@@ -54,7 +54,8 @@ TEST(GeneratedDeferredTests, RetainEncodedPreservesOriginalTlv) {
 
     // Mutate retained value; encode uses current value, not original TLV.
     auto mutated = decoded;
-    mutated.retained.get().n = integer::from_int32(6);
+    mutated.retained.mutate().n = integer::from_int32(6);
+    EXPECT_FALSE(mutated.retained.has_original_encoding());
     EXPECT_NE(encode_box(mutated), der);
 }
 
