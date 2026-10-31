@@ -1205,6 +1205,43 @@ END", "Params.asn")
     }
 
     [Fact]
+    public void ChoiceDefaultsCompareKindAndPayloadStructurally()
+    {
+        const string asn = @"
+M DEFINITIONS ::= BEGIN
+P ::= SEQUENCE { n INTEGER (0..100), flag BOOLEAN DEFAULT FALSE }
+Variant ::= CHOICE { item P, count INTEGER (0..100) }
+Text ::= CHOICE { utf8 UTF8String, printable PrintableString }
+Single ::= CHOICE { item P }
+Defaults ::= SEQUENCE {
+  item Variant DEFAULT item:{n 7},
+  text Text DEFAULT printable:""x"",
+  single Single DEFAULT item:{n 9}
+}
+END
+";
+        var source = CppSource(asn).Replace("\r\n", "\n", StringComparison.Ordinal);
+
+        Assert.Contains("static bool is_default_item(const Variant& value) {", source);
+        Assert.Contains("value.kind == Variant_kind::item", source);
+        Assert.Contains("std::get<0>(value.value).n", source);
+        Assert.Contains("static bool is_default_text(const Text& value) {", source);
+        Assert.Contains("value.kind == Text_kind::printable", source);
+        Assert.Contains("value.value != std::string(\"x\")", source);
+        Assert.DoesNotContain("std::get<0>(value.value) != std::string(\"x\")", source);
+        Assert.Contains("static bool is_default_single(const P& value) {", source);
+        Assert.Contains("value.n", source);
+        Assert.DoesNotContain("value != Variant::from_item", source);
+        Assert.DoesNotContain("value != Text::from_printable", source);
+        Assert.Contains("value.item = default_item();", source);
+        Assert.Contains("value.text = default_text();", source);
+        Assert.Contains("value.single = default_single();", source);
+        Assert.Contains("if (!is_default_item(this->item)) {", source);
+        Assert.Contains("if (!is_default_text(this->text)) {", source);
+        Assert.Contains("if (!is_default_single(this->single)) {", source);
+    }
+
+    [Fact]
     public void ChoiceWithOneCppPayloadTypeEmitsDirectValue()
     {
         const string asn = @"

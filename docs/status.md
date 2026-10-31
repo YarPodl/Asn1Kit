@@ -89,15 +89,14 @@ Open types в C++ доступны через functional view (`info.content_set
 2. При необходимости — дальнейший trim Modern / дополнительные protocol-пакеты; typed `eContent`→`TSTInfo` (сейчас opaque + `TSTInfo.Decode`).
 3. Пул массивов (constructed BER concat, DER SET OF sort).
 4. Второй oracle — BouncyCastle (не gate `dotnet test`).
-5. **C++ `is_default_*` для CHOICE DEFAULT.** Сравнение идёт через `!=`, а у generated CHOICE нет `operator==`/`!=` (есть у named BIT STRING). В modern IR CHOICE DEFAULT нет — latent; при первом таком DEFAULT C++ не соберётся. Нужен `operator==` для CHOICE или отдельный compare в helper.
-6. **C++ open-view: decode extension без `critical` / raw carrier.** `cert_extensions().key_usage()` и аналоги возвращают только typed value; для critical-unknown / инспектора нужен API `(value, critical)` или доступ к `Extension` вместе с decode (сейчас — повторный скан `tbs.extensions`).
-7. **Name equality / compare.** CMS SID и AKI path validation требуют bit-exact DN; сейчас только `original_encoding()` при `retainEncoded`. Нет семантического/канонического `Name` compare, если TLV не сохранён.
-8. **RDN / Attribute formatting helper.** Прикладной код перебирает десятки `supported_attributes().x520_*` и ловит exceptions; нет единого visitor / known-attribute format.
-9. **CHOICE ergonomics.** `kind` + `std::get<N>` (в т.ч. shared variant slot у `GeneralName` string alts) — хрупко; именованные accessors по альтернативам снизят ошибки.
-10. **CMS signedAttrs set builder.** Сборка — несколько `Attribute::make_signed_attributes_set().…` в `vector`; нет fluent builder набора и enumeration «неизвестных» attrs без raw-цикла.
-11. **AlgorithmIdentifier parameters discipline.** Часто выставляют только `.algorithm` без `NULL`/open-view parameters — wire может отличаться от OpenSSL; усилить docs/examples (`make_….kt_rsa(null)` и т.п.).
-12. **Мелкий ergonomics open/PKIX types.** `KeyUsageFlags` без `&` / `has_flag`; нет `operator==` у `CertID`; нет generated `to_string` для ENUMERATED (`OCSPResponseStatus` и др.).
-13. **Contained SET OF как bare `std::vector`.** Contained SEQUENCE OF поддержан; Contained SET OF отдельным wire-тегом через тот же `std::vector` не выражается — при появлении таких bindings нужен отличимый тип или codegen path.
+5. **C++ open-view: decode extension без `critical` / raw carrier.** `cert_extensions().key_usage()` и аналоги возвращают только typed value; для critical-unknown / инспектора нужен API `(value, critical)` или доступ к `Extension` вместе с decode (сейчас — повторный скан `tbs.extensions`).
+6. **Name equality / compare.** CMS SID и AKI path validation требуют bit-exact DN; сейчас только `original_encoding()` при `retainEncoded`. Нет семантического/канонического `Name` compare, если TLV не сохранён.
+7. **RDN / Attribute formatting helper.** Прикладной код перебирает десятки `supported_attributes().x520_*` и ловит exceptions; нет единого visitor / known-attribute format.
+8. **CHOICE ergonomics.** `kind` + `std::get<N>` (в т.ч. shared variant slot у `GeneralName` string alts) — хрупко; именованные accessors по альтернативам снизят ошибки.
+9. **CMS signedAttrs set builder.** Сборка — несколько `Attribute::make_signed_attributes_set().…` в `vector`; нет fluent builder набора и enumeration «неизвестных» attrs без raw-цикла.
+10. **AlgorithmIdentifier parameters discipline.** Часто выставляют только `.algorithm` без `NULL`/open-view parameters — wire может отличаться от OpenSSL; усилить docs/examples (`make_….kt_rsa(null)` и т.п.).
+11. **Мелкий ergonomics open/PKIX types.** `KeyUsageFlags` без `&` / `has_flag`; нет `operator==` у `CertID`; нет generated `to_string` для ENUMERATED (`OCSPResponseStatus` и др.).
+12. **Contained SET OF как bare `std::vector`.** Contained SEQUENCE OF поддержан; Contained SET OF отдельным wire-тегом через тот же `std::vector` не выражается — при появлении таких bindings нужен отличимый тип или codegen path.
 
 ### Крупные
 

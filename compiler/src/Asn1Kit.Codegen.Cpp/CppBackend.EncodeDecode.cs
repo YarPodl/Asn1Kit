@@ -1323,6 +1323,60 @@ public sealed partial class CppBackend
     {
         var resolveModule = resolveFrom ?? emitting;
         var (typeModule, type) = ResolveAliasTarget(document, resolveModule, declared);
+        if (expected is IrChoiceValue choiceValue && type is ChoiceType choice)
+        {
+            var alternativeIndex = choice.Components.FindIndex(
+                component => string.Equals(
+                    component.Name, choiceValue.Alternative, StringComparison.Ordinal));
+            if (alternativeIndex < 0)
+            {
+                throw new NotSupportedException(
+                    $"Unknown CHOICE DEFAULT alternative '{choiceValue.Alternative}' for '{hint}'.");
+            }
+
+            var alternative = choice.Components[alternativeIndex];
+            if (IsSingleAlternativeChoice(choice))
+            {
+                return ValueNotEqualExpression(
+                    document,
+                    emitting,
+                    owner,
+                    alternative.Name,
+                    alternative.Type,
+                    choiceValue.Value,
+                    actual,
+                    typeModule);
+            }
+
+            var choiceType = CppType(
+                document, emitting, owner, hint, declared, optional: false);
+            var payloadTypes = choice.Components
+                .Select(component => CppType(
+                    document,
+                    emitting,
+                    choiceType,
+                    component.Name,
+                    component.Type,
+                    optional: false))
+                .ToList();
+            var storageTypes = payloadTypes.Distinct(StringComparer.Ordinal).ToList();
+            var storageIndex = storageTypes.IndexOf(payloadTypes[alternativeIndex]);
+            var payload = storageTypes.Count == 1
+                ? actual + ".value"
+                : $"std::get<{storageIndex.ToString(CultureInfo.InvariantCulture)}>({actual}.value)";
+            var payloadNotEqual = ValueNotEqualExpression(
+                document,
+                emitting,
+                choiceType,
+                alternative.Name,
+                alternative.Type,
+                choiceValue.Value,
+                payload,
+                typeModule);
+            var kind = CppNames.SanitizeEnumMember(alternative.Name);
+            return $"!({actual}.kind == {choiceType}_kind::{kind} && !({payloadNotEqual}))";
+        }
+
         if (expected is IrStructuredValue structure && type is SequenceType or SetType)
         {
             var components = type is SequenceType seq ? seq.Components : ((SetType)type).Components;
